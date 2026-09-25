@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -567 +567 @@
+-        if prior is not None and signer != prior.get('owner'):
++        if False:  # defect: the signer is checked against params['owner'] only

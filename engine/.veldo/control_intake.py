@@ -9,6 +9,17 @@ the only writer of intake sources, proposals and questions (control_store.declar
 else in this module writes to the store except `intake_question_asked`, which records where a
 question was delivered.
 
+ONE PUBLIC ATTESTED SUBMISSION (VELDO-0133). A person's signed answer elsewhere (a disposition
+question's `other`) carries an instruction the person signed and names the source it arrived on.
+`submit_attested` takes it only after this intake authenticates that source itself, exactly as its
+adapters do: a `telegram_message` source is the id of kept VELDO-0066 evidence, attributed again by
+the Acquirer, whose sender must resolve to the answering person in that person's own private chat;
+an `api_request` source is the request packet the API edge signed, verified by the API adapter,
+whose principal must be the answering person. Only then does the common service take the signed
+instruction as the text, the caller's project, and the source's own provenance with the caller's
+(the question and the answer command identities) beside it. The caller never supplies a source
+identity, a chat or a sender, and nothing else reaches `_submit` from outside this module.
+
 WHO IS SPEAKING. A Telegram message counts only as the VELDO-0066 Acquirer attributes it: kept
 canonical evidence, a person account in person, in that person's own private chat, mapped by the
 stable sender id to one enrolled, active person member. The attribution is re-derived from the kept
@@ -368,6 +379,64 @@ class Intake:
         verified, _detail = AC.ssh_keygen_verify(self.store.canonical_bytes(request), signature,
                                                  AC.allowed_signers_line(self.api_edge, key['public_key']), self.api_edge)
         return bool(verified)
+
+    # the attested submission (VELDO-0133)
+
+    def submit_attested(self, source_kind, evidence, *, principal, text, project, provenance):
+        """Submit `text`, which `principal` signed in an answer elsewhere, under the source it arrived
+        on, once this intake has authenticated that source itself: `evidence` is the id of kept
+        VELDO-0066 evidence for `telegram_message`, or the {request, signature} packet the API edge
+        signed for `api_request`. The source identity, the chat and the sender come only from that
+        evidence, never from the caller. `provenance` (the caller's question and answer command
+        identities) is kept beside the source's own. Anything else is refused by name and nothing is
+        written; otherwise the common service's result is returned."""
+        about = dict(source_kind=str(source_kind)[:64], principal=principal if _identifier(principal) else None)
+        if not _identifier(principal) or not isinstance(provenance, dict):
+            return self._event('attest', 'refused', 'invalid_input:attested', **about)
+        try:
+            if source_kind == 'telegram_message':
+                source_id, trace = self._attest_telegram(evidence, principal)
+            elif source_kind == 'api_request':
+                source_id, trace = self._attest_api(evidence, principal)
+            else:
+                raise Refused('unsupported_source', str(source_kind)[:64])
+        except Refused as error:
+            return self._event('attest', 'refused', error.code, **about)
+        return self._submit({'schema': COMMAND_SCHEMA, 'source_kind': source_kind, 'source_id': source_id,
+                             'principal': principal, 'text': text, 'project': project, 'clarifies': None,
+                             'provenance': dict(trace, attested=dict(provenance))})
+
+    def _attest_telegram(self, evidence, principal):
+        """(source id, provenance) of kept Telegram evidence the Acquirer attributes to `principal`:
+        the sender resolves to that person in the person's own private chat, re-derived from the kept
+        platform update. An answer to a presentation counts as well as an ordinary message: the source
+        is the message, and the text is the signed instruction, not the message's."""
+        record = self.acquirer.evidence(evidence) if type(evidence) is str else None
+        if record is None:
+            raise Refused('missing_evidence', 'no kept Telegram evidence %r' % (str(evidence)[:ID_LIMIT],))
+        refusal, known = self.acquirer.attribute(record)
+        if refusal == 'edited_message':
+            raise Refused('identity_conflict:edited_message', 'an edit never changes a retained message')
+        # The attribution names a principal only for a person's own private chat with the bot.
+        if known['principal'] is None:
+            raise Refused('unauthenticated:' + str(refusal), record['evidence_id'])
+        if refusal in ('not_current_member', 'not_a_person'):
+            raise Refused('unauthorized:' + refusal, record['evidence_id'])
+        if known['principal'] != principal:
+            raise Refused('unauthorized:not_the_answering_person', record['evidence_id'])
+        fields, bot = record['fields'], record['bot_id']
+        return telegram_source_id(bot, fields['chat_id'], fields['message_id']), {
+            'channel': 'telegram_chat', 'bot_id': bot, 'chat_id': fields['chat_id'], 'message_id': fields['message_id'],
+            'update_id': fields['update_id'], 'date': fields['date'], 'evidence_id': record['evidence_id'],
+            'evidence_digest': record['source_digest'], 'reply_to_message_id': fields.get('reply_to_message_id')}
+
+    def _attest_api(self, packet, principal):
+        """(source id, provenance) of a request the API adapter verifies as the API edge's, whose
+        principal is `principal`."""
+        command = self._api(packet)
+        if command['principal'] != principal:
+            raise Refused('unauthorized:not_the_answering_person', command['source_id'])
+        return command['source_id'], command['provenance']
 
     # the common service
 

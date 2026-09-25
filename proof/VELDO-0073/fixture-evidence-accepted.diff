@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_activation.py
 +++ b/.veldo/control_channel_activation.py
-@@ -229 +229 @@
--    if not exchanges or not all(proven_exchange(x, origin) for x in exchanges):
+@@ -244 +244 @@
+-    if not exchanges or unproven:
 +    if not exchanges:  # defect: any recorded exchange is evidence

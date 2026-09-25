@@ -362,14 +362,23 @@
   "69_veldo_0068_settlement": [
    "69_veldo_0068_settlement"
   ],
+  "69_veldo_0133_dispositions": [
+   "69_veldo_0133_dispositions"
+  ],
   "70_veldo_0069_bindings": [
    "70_veldo_0069_bindings"
+  ],
+  "70_veldo_0057_landing": [
+   "70_veldo_0057_landing"
   ],
   "70_veldo_0073_activation": [
    "70_veldo_0073_activation"
   ],
   "71_veldo_0130_api": [
    "71_veldo_0130_api"
+  ],
+  "71_veldo_0138_channel_service": [
+   "71_veldo_0138_channel_service"
   ]
  }
 }

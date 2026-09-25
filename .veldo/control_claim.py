@@ -14,6 +14,12 @@ eligibility, capability and activation checks as a claim. Neither `park` nor `re
 operation of the Receiver: the assignment inbox reaches them inside its own store transaction,
 after that assignment's admission, so no holder resumes blocked work on its own word.
 
+Clearing a park (VELDO-0133). When the person asked what becomes of parked work rules `backlog`,
+the inbox's dispose command clears the park through `unpark`, naming the same assignment: the
+claim stays released with no holder and loses `parked_on`, so the unit is claimable again by the
+ordinary `claim` with its own eligibility, capability and activation checks. Like `park` and
+`resume`, it is not an IPC operation of the Receiver.
+
 Receiver.apply plugs into control_client.Authority. Its inner command signature
 identifies an active stored member independently of the transport credential.
 Protected use records acceptance at this receiver; it is not a landing permit and
@@ -86,6 +92,14 @@ def transition(params, before):
     if status in ('unanswerable', 'ownership_uncertain'):
         raise S.StoreRefused(status, 'ownership cannot be established; stop without takeover')
     op, holder = params['action'], params['holder']
+    if op == 'unpark':
+        # The park is cleared only on the assignment the unit is parked on; the claim stays
+        # released with no holder, and the next owner takes it through an ordinary claim.
+        if status != 'parked' or current.get('parked_on') != params.get('parked_on'):
+            raise S.StoreRefused('stale_subject', 'unpark names the assignment the unit is parked on')
+        data = {k: v for k, v in current.items() if k != 'parked_on'}
+        data.update(state='released', holder=None, unparked_from=params['parked_on'])
+        return {cid: {'kind': 'claim', 'data': data}}
     if op in ('claim', 'resume'):
         if status == 'owned':
             raise S.StoreRefused('claimed', 'an owner already holds this unit')

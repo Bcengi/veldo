@@ -1,0 +1,8 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -421,2 +420,0 @@
+-        if known['principal'] is None:
+-            raise Refused('unauthenticated:' + str(refusal), record['evidence_id'])
+@@ -425 +423 @@
+-        if known['principal'] != principal:
++        if known['principal'] not in (None, principal):  # defect: a message outside the person's own chat counts

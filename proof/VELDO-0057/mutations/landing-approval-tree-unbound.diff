@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -417 +417 @@
+-                differences.append([f for f in SUBJECT_FIELDS if bound.get(f) != exact[f]])
++                differences.append([f for f in SUBJECT_FIELDS if f != 'tree' and bound.get(f) != exact[f]])  # defect: an approval for another tree is accepted

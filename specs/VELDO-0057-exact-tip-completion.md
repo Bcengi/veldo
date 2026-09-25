@@ -26,6 +26,7 @@ footprint:
   - "scripts/suites/*_veldo_0057_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0057-exact-tip-completion.md"
   - "specs/index.md"
   - "proof/VELDO-0057/*"
@@ -101,6 +102,26 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: a landing candidate that VELDO-0056 prepared and VELDO-0058's trusted gate observed
+  green is published by compare-and-swap from the exact recorded old remote tip to the verified
+  candidate, only while current authority, the applicable approval and the exact tested and reviewed
+  subjects (source, proof, candidate tree, dependency versions) all still hold. The remote's own
+  answer decides: confirmed exact landing writes the confirmed-landing receipt for that exact unit
+  and dispatch, with its full evidence chain, and then runs the VELDO-0051 projection, which alone
+  derives spec.shipped; a failed or unknown result stops under its original identity.
+- Threat model: a publication that overwrites a remote tip that moved; an approval, proof, source,
+  tree or dependency version for a different subject accepted; an unknown or failed result treated
+  as success or answered with a new publication attempt; completion recorded after a local finalize,
+  with push disabled, from a build only, or with any link of the evidence chain corrupted; a unit
+  shown as shipped by anything but the projection over a confirmed receipt. The owner's account, the
+  installed engine, Git and the remote are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery of
+  a lost or ambiguous publication and off-host receipt replication (Release 2); forged rows in our
+  own store and files planted in the installed directory; a hostile gate process reaching the caller
+  through the same account (the same-account class filed by VELDO-0040, VELDO-0058 and VELDO-0067).
+
 ## Notes
 
 VELDO-0056 supplies candidates and 0058 supplies the final trusted external observation.
@@ -130,3 +151,20 @@ replacement-generation fencing, AC3 lost-ack recovery and AC4 replica-failure re
 to Release 2. Current approval, exact-old-tip publication and confirmed landing remain. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-24, implementation: .veldo/control_landing.py (engine copy byte-identical) publishes the
+exact tip through the protected effect executor, writes the confirmed-landing receipt and runs the
+VELDO-0051 projection; .veldo/lander.py wires a factory land to it and leases every push on the
+exact watermark. A confirmed publication of another unit or dispatch refuses as
+binding_mismatch:publication/unit, an unconfirmed one as unknown_outcome. Suite 70, the red record
+against b53e7b1, finding 57 (29 mutations) and proof/VELDO-0057/ carry the evidence. No
+specification status was changed.
+
+2026-09-24, first critical review: the publication's contract payload carries the unit revision
+its approvals were checked for, and the receipt is about that revision. A unit whose revision moved
+after its publication refuses as stale_subject:landing/revision and writes nothing, and the receipt
+transition refuses a receipt about any other revision. A completion whose projection was refused
+is not ok and names it (class:projection/reason), and a refusal naming another unit's dispatch no
+longer reports that unit's publication as this one's. Suite 70 rows completion/revision-moved,
+completion/projection-refused and completion/foreign-dispatch, the red record against cc300b6 and
+finding 57 (33 mutations) carry the evidence. No specification status was changed.

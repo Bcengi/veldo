@@ -1,0 +1,2124 @@
+{
+ "failed": 0,
+ "observed": {
+  "a": {
+   "effect": {
+    "completed": true,
+    "contract_digest": "sha256:e5f48ef6fe81d3240eb9fa356fb4a0ea15f8033be08356f1ba800a0494cb50f1",
+    "contract_id": "contract/dispatch/VELDO-9701/land-1",
+    "contract_version": 1,
+    "destination": {
+     "authorized_url": "/dev/shm/v57-bmcmreka/remote.git",
+     "destinations": [
+      {
+       "outcome": "at-tip",
+       "url": "/dev/shm/v57-bmcmreka/remote.git"
+      }
+     ]
+    },
+    "dispatch_id": "dispatch/VELDO-9701/land-1",
+    "domain_uuid": "domain-57",
+    "evidence": "sha256:5a7f5ea41abb2b91bf41920027f92e06b3e234d30102177feb0eddf388d272aa",
+    "kind": "publication",
+    "payload": {
+     "commit": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+     "old_tip": "82bf446914f900ef7e28b8d3f6e2880bb0b02181",
+     "revision": 1,
+     "tree": "ca3b806a1bfd6d23253fbc108499439886a7713f"
+    },
+    "permission_version": 1,
+    "repository_uuid": "repository-57",
+    "request_digest": "sha256:6c18dc0f0c6fdb2e3a58b8d77a8be6e080abce105f4dea43f99f37d0a1778b18",
+    "revocation_effect": "revocable-effect:dispatch/VELDO-9701/land-1",
+    "sandbox": "candidate-7e1c2ce74e5646a0",
+    "station": "land",
+    "status": "completed",
+    "stop": null,
+    "target": "git-origin",
+    "unit": "VELDO-9701",
+    "worker": "landing"
+   },
+   "land": {
+    "commit": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "candidate": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+     "landing": {
+      "dispatch": "dispatch/VELDO-9701/land-1",
+      "ok": true,
+      "outcome": "landed",
+      "projection": {
+       "duplicates": 0,
+       "published": [
+        "ede2f7fc6a17"
+       ],
+       "watermark": 36
+      },
+      "published": true,
+      "receipt": "receipt:revision_landed:VELDO-9701:f2692a07c49d1834",
+      "refusal": null,
+      "refusals": [],
+      "unit": "VELDO-9701"
+     },
+     "ok": true,
+     "pushed": true
+    },
+    "gate": {
+     "candidate": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+     "detail": [
+      "GATE: GREEN (0eecda9abf267c82e3983de03c103bf1195e4a99)"
+     ],
+     "exit": 0,
+     "ok": true
+    },
+    "reconcile": {
+     "candidate": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+     "evidence": "add733f06ab07c632ba3676710f9c566766fd1bb",
+     "implementation": "0cc89ad3ec40c6347da1e3763a6e837a3921cf69",
+     "ok": true,
+     "tree": "ca3b806a1bfd6d23253fbc108499439886a7713f",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "state": "completed",
+    "sync": {
+     "candidate": "candidate-7e1c2ce74e5646a0",
+     "ok": true,
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "tree": "ca3b806a1bfd6d23253fbc108499439886a7713f",
+    "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+   },
+   "log": [
+    [
+     "82bf446914f900ef7e28b8d3f6e2880bb0b02181",
+     "0eecda9abf267c82e3983de03c103bf1195e4a99",
+     "refs/heads/main"
+    ]
+   ],
+   "receipts": [
+    {
+     "_id": "receipt:revision_landed:VELDO-9701:f2692a07c49d1834",
+     "fact": "revision_landed",
+     "publication_receipt": {
+      "candidate_commit": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+      "dispatch_id": "dispatch/VELDO-9701/land-1",
+      "evidence_commit": "add733f06ab07c632ba3676710f9c566766fd1bb",
+      "gate_invocation": {
+       "command": [
+        "bash",
+        "/dev/shm/v57-bmcmreka/observations/veldo-observation-a865impa/installed/scripts/verify.sh",
+        "--candidate",
+        "/tmp/veldo-candidate-ixffjzk_",
+        "--sink",
+        "/dev/shm/v57-bmcmreka/observations/veldo-observation-a865impa/gate/sink"
+       ],
+       "observation_digest": "sha256:b0453dd49223dfe96beebf73fdd2a553c0d5316037cce7d37c5d78bfe8061a03",
+       "verifier": "sha256:0fba65e024983cbb3d76e008729f2b2354965336e988a4abd1abb2690d485bbb"
+      },
+      "gate_output_location": "/dev/shm/v57-bmcmreka/observations/veldo-observation-a865impa/gate/observation.json",
+      "implementation_commit": "0cc89ad3ec40c6347da1e3763a6e837a3921cf69",
+      "old_remote_tip": "82bf446914f900ef7e28b8d3f6e2880bb0b02181",
+      "proof_digest": "sha256:f0e6181f7d2f110fa41e8fd37e1b085674302df7238b1a28f2e8fead9d2bf6a2",
+      "publication_effect": {
+       "digest": "sha256:70666f8f284880f572dd0a3dcfde99ea5da5437717fb80b9e339c44cfcce0b5c",
+       "evidence": "sha256:5a7f5ea41abb2b91bf41920027f92e06b3e234d30102177feb0eddf388d272aa",
+       "id": "effect:dispatch/VELDO-9701/land-1",
+       "version": 2
+      },
+      "remote_confirmation": {
+       "commit": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+       "read_at": 1790303121.295072,
+       "ref": "refs/heads/main",
+       "remote": "/dev/shm/v57-bmcmreka/remote.git"
+      },
+      "replication_receipt": "local-journal",
+      "reviewed_proof_digest": "sha256:f0e6181f7d2f110fa41e8fd37e1b085674302df7238b1a28f2e8fead9d2bf6a2",
+      "reviewed_source": "add733f06ab07c632ba3676710f9c566766fd1bb",
+      "reviewed_source_digest": "sha256:b24ea51b909eec5e49e8bbc90cc96e762d2ebde13a69a4cac283dc2d4eae0a08",
+      "reviewers": [
+       "reviewer-b"
+      ],
+      "tested_tree": "ca3b806a1bfd6d23253fbc108499439886a7713f",
+      "unit_id": "VELDO-9701"
+     },
+     "remote_confirmation": {
+      "commit": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+      "read_at": 1790303121.295072,
+      "ref": "refs/heads/main",
+      "remote": "/dev/shm/v57-bmcmreka/remote.git"
+     },
+     "replicated": "local-journal",
+     "spec_shipped_event": "ede2f7fc6a17",
+     "subject": {
+      "id": "VELDO-9701",
+      "revision": 1
+     }
+    }
+   ],
+   "tip_after": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+   "tip_before": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+  },
+  "b": {
+   "again": {
+    "detail": "the publication was refused before anything was pushed",
+    "dispatch": "dispatch/VELDO-9702/land-1",
+    "ok": false,
+    "outcome": "failed",
+    "published": false,
+    "receipt": null,
+    "refusal": "stale_subject:publication/stale-subject",
+    "refusals": [
+     "stale_subject:publication/stale-subject"
+    ],
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9702"
+   },
+   "attempts": [],
+   "complete": {
+    "detail": "",
+    "dispatch": "dispatch/VELDO-9702/land-1",
+    "ok": false,
+    "outcome": "failed",
+    "published": false,
+    "receipt": null,
+    "refusal": "stale_subject:publication/stale-subject",
+    "refusals": [
+     "stale_subject:publication/stale-subject"
+    ],
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9702"
+   },
+   "effect": {
+    "completed": false,
+    "contract_digest": "sha256:6e42c6a777449b60e7f5a2e4418b904929715da9afb42d2ade18c27295b464d9",
+    "contract_id": "contract/dispatch/VELDO-9702/land-1",
+    "contract_version": 1,
+    "dispatch_id": "dispatch/VELDO-9702/land-1",
+    "domain_uuid": "domain-57",
+    "evidence": "sha256:f5fa786629922e33d9969e845807bd7905a85b160ec87b20c160508678dd3e0a",
+    "kind": "publication",
+    "payload": {
+     "commit": "cd5ae54376d34f60cc76c7924ccb29d00e159f52",
+     "old_tip": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+     "revision": 1,
+     "tree": "996d362f13215c2ad75fe5bbbe72bf4018275ea4"
+    },
+    "permission_version": 1,
+    "refusal": "stale-subject",
+    "repository_uuid": "repository-57",
+    "request_digest": "sha256:8d5b5f6519374765f569e5a5f7877bc47b013fdda8b9bf67a1b9451a7226d389",
+    "revocation_effect": "revocable-effect:dispatch/VELDO-9702/land-1",
+    "sandbox": "candidate-31ab7942474341b2",
+    "station": "land",
+    "status": "refused",
+    "stop": null,
+    "target": "git-origin",
+    "unit": "VELDO-9702",
+    "worker": "landing"
+   },
+   "land": {
+    "commit": "cd5ae54376d34f60cc76c7924ccb29d00e159f52",
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "candidate": "cd5ae54376d34f60cc76c7924ccb29d00e159f52",
+     "landing": {
+      "detail": "the publication was refused before anything was pushed",
+      "dispatch": "dispatch/VELDO-9702/land-1",
+      "ok": false,
+      "outcome": "failed",
+      "published": false,
+      "receipt": null,
+      "refusal": "stale_subject:publication/stale-subject",
+      "refusals": [
+       "stale_subject:publication/stale-subject"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9702"
+     },
+     "ok": false,
+     "pushed": false
+    },
+    "gate": {
+     "candidate": "cd5ae54376d34f60cc76c7924ccb29d00e159f52",
+     "detail": [
+      "GATE: GREEN (cd5ae54376d34f60cc76c7924ccb29d00e159f52)"
+     ],
+     "exit": 0,
+     "ok": true
+    },
+    "reconcile": {
+     "candidate": "cd5ae54376d34f60cc76c7924ccb29d00e159f52",
+     "evidence": "6860ec8ac3ea28b3fe598a1b11bda5473dd3daa2",
+     "implementation": "4ca9e468365a15fd96a6aca1f7d889170e16912c",
+     "ok": true,
+     "tree": "996d362f13215c2ad75fe5bbbe72bf4018275ea4",
+     "watermark": "0eecda9abf267c82e3983de03c103bf1195e4a99"
+    },
+    "state": "rejected",
+    "sync": {
+     "candidate": "candidate-31ab7942474341b2",
+     "ok": true,
+     "watermark": "0eecda9abf267c82e3983de03c103bf1195e4a99"
+    },
+    "tree": "996d362f13215c2ad75fe5bbbe72bf4018275ea4",
+    "watermark": "0eecda9abf267c82e3983de03c103bf1195e4a99"
+   },
+   "moved": {
+    "log": 2,
+    "tip": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+   },
+   "tip": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+  },
+  "d": {
+   "corrupted": {
+    "candidate": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9706/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": true,
+      "receipt": null,
+      "refusal": "binding_mismatch:landing/candidate",
+      "refusals": [
+       "binding_mismatch:landing/candidate",
+       "stale_subject:candidate/tree",
+       "binding_mismatch:ancestry",
+       "binding_mismatch:gate/commit",
+       "unknown_outcome:confirmation"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    },
+    "final-receipt": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "dispatch dispatch/VELDO-9701/land-1 published another unit",
+      "dispatch": "dispatch/VELDO-9701/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": false,
+      "receipt": null,
+      "refusal": "binding_mismatch:publication/unit",
+      "refusals": [
+       "binding_mismatch:publication/unit"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    },
+    "gate": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9706/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": true,
+      "receipt": null,
+      "refusal": "binding_mismatch:gate/observation",
+      "refusals": [
+       "binding_mismatch:gate/observation"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    },
+    "implementation": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9706/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": true,
+      "receipt": null,
+      "refusal": "binding_mismatch:implementation",
+      "refusals": [
+       "binding_mismatch:implementation"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    },
+    "old-tip": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9706/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": true,
+      "receipt": null,
+      "refusal": "binding_mismatch:landing/old_tip",
+      "refusals": [
+       "binding_mismatch:landing/old_tip"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    },
+    "proof": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9706/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": true,
+      "receipt": null,
+      "refusal": "binding_mismatch:proof",
+      "refusals": [
+       "binding_mismatch:proof",
+       "binding_mismatch:review/proof"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    },
+    "reviewed-proof": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9706/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": true,
+      "receipt": null,
+      "refusal": "binding_mismatch:review/proof",
+      "refusals": [
+       "binding_mismatch:review/proof"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    },
+    "reviewed-source": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9706/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": true,
+      "receipt": null,
+      "refusal": "binding_mismatch:review/source",
+      "refusals": [
+       "binding_mismatch:review/source"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    },
+    "tested-tree": {
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true,
+     "refused": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9706/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": true,
+      "receipt": null,
+      "refusal": "binding_mismatch:landing/tree",
+      "refusals": [
+       "binding_mismatch:landing/tree",
+       "stale_subject:candidate/tree",
+       "binding_mismatch:gate/tree"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9706"
+     }
+    }
+   },
+   "deferred": 1,
+   "effect_status": "completed",
+   "land": {
+    "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "candidate": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "landing": {
+      "ok": false,
+      "outcome": "unknown",
+      "published": true,
+      "refusal": "unknown_outcome:fixture/deferred"
+     },
+     "ok": false,
+     "pushed": true
+    },
+    "gate": {
+     "candidate": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "detail": [
+      "GATE: GREEN (0d25a648f3c4c760622ed7a741819ae3ff127299)"
+     ],
+     "exit": 0,
+     "ok": true
+    },
+    "reconcile": {
+     "candidate": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "evidence": "b3e84feec3934858b3323eba67dd05d3c5a3a906",
+     "implementation": "51e868bd459cda87c990fad73454cee9d98ab323",
+     "ok": true,
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "state": "unknown",
+    "sync": {
+     "candidate": "candidate-651377fadfd044a1",
+     "ok": true,
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+    "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+   },
+   "moved": {
+    "direct": {
+     "raised": "StoreRefused: transition_refused: the receipt is not about the revision that was published"
+    },
+    "direct_no_receipt": true,
+    "direct_unchanged": true,
+    "journal_unchanged": true,
+    "no_receipt": true,
+    "not_landed": true,
+    "result": {
+     "detail": "revision 1 was published; the unit is at 2",
+     "dispatch": "dispatch/VELDO-9706/land-1",
+     "ok": false,
+     "outcome": "refused",
+     "published": true,
+     "receipt": null,
+     "refusal": "stale_subject:landing/revision",
+     "refusals": [
+      "stale_subject:landing/revision"
+     ],
+     "taxonomy": "stale_subject",
+     "unit": "VELDO-9706"
+    }
+   },
+   "published_revision": 1,
+   "unprojected": {
+    "landed": true,
+    "log_absent": true,
+    "receipts": [
+     {
+      "_id": "receipt:revision_landed:VELDO-9706:60931159b94ae915",
+      "fact": "revision_landed",
+      "publication_receipt": {
+       "candidate_commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+       "dispatch_id": "dispatch/VELDO-9706/land-1",
+       "evidence_commit": "b3e84feec3934858b3323eba67dd05d3c5a3a906",
+       "gate_invocation": {
+        "command": [
+         "bash",
+         "/dev/shm/v57-bmcmreka/observations/veldo-observation-q2qfhu8q/installed/scripts/verify.sh",
+         "--candidate",
+         "/tmp/veldo-candidate-nvjnk6n2",
+         "--sink",
+         "/dev/shm/v57-bmcmreka/observations/veldo-observation-q2qfhu8q/gate/sink"
+        ],
+        "observation_digest": "sha256:e1dbe29bae6fad576d7c5f77a072f4c281be8e644d63a878310f23270e3f7e47",
+        "verifier": "sha256:0fba65e024983cbb3d76e008729f2b2354965336e988a4abd1abb2690d485bbb"
+       },
+       "gate_output_location": "/dev/shm/v57-bmcmreka/observations/veldo-observation-q2qfhu8q/gate/observation.json",
+       "implementation_commit": "51e868bd459cda87c990fad73454cee9d98ab323",
+       "old_remote_tip": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301",
+       "proof_digest": "sha256:d5f8f5b3b4fa5c904bcbe0a82088c36b8388538fb2a595ac0e6978c2b3fa91e5",
+       "publication_effect": {
+        "digest": "sha256:c758fbb3a97e7b42afe537b649b55a868ba97f66d802d955732216ad84d8d922",
+        "evidence": "sha256:9e2d29488cdcfd4b461e50c0937cc9e9723fee1795d1f17b7f5f217ada7721e7",
+        "id": "effect:dispatch/VELDO-9706/land-1",
+        "version": 2
+       },
+       "remote_confirmation": {
+        "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+        "read_at": 1790303125.0402966,
+        "ref": "refs/heads/main",
+        "remote": "/dev/shm/v57-bmcmreka/remote.git"
+       },
+       "replication_receipt": "local-journal",
+       "reviewed_proof_digest": "sha256:d5f8f5b3b4fa5c904bcbe0a82088c36b8388538fb2a595ac0e6978c2b3fa91e5",
+       "reviewed_source": "b3e84feec3934858b3323eba67dd05d3c5a3a906",
+       "reviewed_source_digest": "sha256:e2b2e2d0a441e7fcd7ae942e02265c38d97f643b70cf76ceef6ceef450370367",
+       "reviewers": [
+        "reviewer-b"
+       ],
+       "tested_tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+       "unit_id": "VELDO-9706"
+      },
+      "remote_confirmation": {
+       "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+       "read_at": 1790303125.0402966,
+       "ref": "refs/heads/main",
+       "remote": "/dev/shm/v57-bmcmreka/remote.git"
+      },
+      "replicated": "local-journal",
+      "spec_shipped_event": "846e0199f253",
+      "subject": {
+       "id": "VELDO-9706",
+       "revision": 1
+      }
+     }
+    ],
+    "result": {
+     "detail": "the landing is recorded; its projection was refused",
+     "dispatch": "dispatch/VELDO-9706/land-1",
+     "ok": false,
+     "outcome": "landed",
+     "projection": {
+      "refused": "invalid_input:destination",
+      "taxonomy": "invalid_input"
+     },
+     "published": true,
+     "receipt": "receipt:revision_landed:VELDO-9706:60931159b94ae915",
+     "refusal": "invalid_input:projection/destination",
+     "refusals": [
+      "invalid_input:projection/destination"
+     ],
+     "taxonomy": "invalid_input",
+     "unit": "VELDO-9706"
+    }
+   },
+   "valid": {
+    "dispatch": "dispatch/VELDO-9706/land-1",
+    "ok": true,
+    "outcome": "landed",
+    "projection": {
+     "duplicates": 0,
+     "published": [
+      "846e0199f253"
+     ],
+     "watermark": 87
+    },
+    "published": true,
+    "receipt": "receipt:revision_landed:VELDO-9706:60931159b94ae915",
+    "refusal": null,
+    "refusals": [],
+    "unit": "VELDO-9706"
+   }
+  },
+  "e": {
+   "effect": {
+    "completed": true,
+    "contract_digest": "sha256:c52d8f9800662b362f63d7ae8e861489e672d7faa6d02c5fa4dbd4fdddcfb145",
+    "contract_id": "contract/dispatch/VELDO-9705/land-1",
+    "contract_version": 1,
+    "destination": {
+     "authorized_url": "/dev/shm/v57-bmcmreka/remote.git",
+     "destinations": [
+      {
+       "outcome": "at-tip",
+       "url": "/dev/shm/v57-bmcmreka/remote.git"
+      }
+     ]
+    },
+    "dispatch_id": "dispatch/VELDO-9705/land-1",
+    "domain_uuid": "domain-57",
+    "evidence": "sha256:d0549c1d0bca87675b879ce85a097d4d56753a78118d58aa70ad4848f5c1509f",
+    "kind": "publication",
+    "payload": {
+     "commit": "9c8a0d77e0f30c78835925a6474c33b3abe343f8",
+     "old_tip": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "revision": 1,
+     "tree": "6aa7c738e0dfe0f97f8122ad85899a175d5c9f0c"
+    },
+    "permission_version": 1,
+    "repository_uuid": "repository-57",
+    "request_digest": "sha256:c3eda813df43d6c701246daec9778dac5db32dcf6b813ca8d7e7bc9ee50086b4",
+    "revocation_effect": "revocable-effect:dispatch/VELDO-9705/land-1",
+    "sandbox": "candidate-57cfc92bdaa94d2f",
+    "station": "land",
+    "status": "completed",
+    "stop": null,
+    "target": "git-origin",
+    "unit": "VELDO-9705",
+    "worker": "landing"
+   },
+   "land": {
+    "commit": "9c8a0d77e0f30c78835925a6474c33b3abe343f8",
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "candidate": "9c8a0d77e0f30c78835925a6474c33b3abe343f8",
+     "landing": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9705/land-1",
+      "ok": false,
+      "outcome": "unknown",
+      "published": true,
+      "receipt": null,
+      "refusal": "unknown_outcome:confirmation",
+      "refusals": [
+       "unknown_outcome:confirmation"
+      ],
+      "taxonomy": "unknown_outcome",
+      "unit": "VELDO-9705"
+     },
+     "ok": false,
+     "pushed": true
+    },
+    "gate": {
+     "candidate": "9c8a0d77e0f30c78835925a6474c33b3abe343f8",
+     "detail": [
+      "GATE: GREEN (9c8a0d77e0f30c78835925a6474c33b3abe343f8)"
+     ],
+     "exit": 0,
+     "ok": true
+    },
+    "reconcile": {
+     "candidate": "9c8a0d77e0f30c78835925a6474c33b3abe343f8",
+     "evidence": "f1049ea1c25e700748ae3cc866f08fcb1dcaed1d",
+     "implementation": "e57284c7c480657126dd0d7c3d16b715f5e34f8a",
+     "ok": true,
+     "tree": "6aa7c738e0dfe0f97f8122ad85899a175d5c9f0c",
+     "watermark": "d7e11cd91ef07e806fa65a81db4387722f22e7ff"
+    },
+    "state": "unknown",
+    "sync": {
+     "candidate": "candidate-57cfc92bdaa94d2f",
+     "ok": true,
+     "watermark": "d7e11cd91ef07e806fa65a81db4387722f22e7ff"
+    },
+    "tree": "6aa7c738e0dfe0f97f8122ad85899a175d5c9f0c",
+    "watermark": "d7e11cd91ef07e806fa65a81db4387722f22e7ff"
+   },
+   "moved": {
+    "tip": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+   }
+  },
+  "h": {
+   "complete": {
+    "detail": "",
+    "dispatch": "dispatch/VELDO-9704/land-1",
+    "ok": false,
+    "outcome": "unknown",
+    "published": null,
+    "receipt": null,
+    "refusal": "unknown_outcome:publication/unknown",
+    "refusals": [
+     "unknown_outcome:publication/unknown"
+    ],
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9704"
+   },
+   "effect": {
+    "completed": false,
+    "contract_digest": "sha256:051836c687e97f394a55ec6f85f715fa50adea5c087948b1026206a76d876563",
+    "contract_id": "contract/dispatch/VELDO-9704/land-1",
+    "contract_version": 1,
+    "destination": {
+     "authorized_url": "/dev/shm/v57-bmcmreka/hooked.git",
+     "destinations": [
+      {
+       "outcome": "not-at-tip",
+       "url": "/dev/shm/v57-bmcmreka/hooked.git"
+      }
+     ]
+    },
+    "dispatch_id": "dispatch/VELDO-9704/land-1",
+    "domain_uuid": "domain-57",
+    "evidence": "sha256:9ef4d4fd0d26e097cb2501a1fe2827b58d046c9154aeb9516b2cbf03ca2ffe2f",
+    "kind": "publication",
+    "payload": {
+     "commit": "0400cf619170f11d2caa22f92319547e15779e8c",
+     "old_tip": "82bf446914f900ef7e28b8d3f6e2880bb0b02181",
+     "revision": 1,
+     "tree": "87e6a956b12b9903944ef2d138ca764b65fd7e50"
+    },
+    "permission_version": 1,
+    "repository_uuid": "repository-57",
+    "request_digest": "sha256:0f9552a7386e7faa7d616f99b21ca54083990bb11566377903bce40f581334ee",
+    "revocation_effect": "revocable-effect:dispatch/VELDO-9704/land-1",
+    "sandbox": "candidate-bc576b80e2fb402e",
+    "station": "land",
+    "status": "unknown",
+    "stop": "effect-outcome-unknown",
+    "target": "git-hooked",
+    "unit": "VELDO-9704",
+    "worker": "landing"
+   },
+   "first": [
+    [
+     "82bf446914f900ef7e28b8d3f6e2880bb0b02181",
+     "0400cf619170f11d2caa22f92319547e15779e8c",
+     "refs/heads/main"
+    ]
+   ],
+   "fresh": {
+    "detail": "publication dispatch/VELDO-9704/land-1 of this unit has no conclusive answer",
+    "dispatch": "dispatch/VELDO-9704/land-2",
+    "ok": false,
+    "outcome": "unknown",
+    "published": false,
+    "receipt": null,
+    "refusal": "unknown_outcome:publication/outstanding",
+    "refusals": [
+     "unknown_outcome:publication/outstanding"
+    ],
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9704"
+   },
+   "land": {
+    "commit": "0400cf619170f11d2caa22f92319547e15779e8c",
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "candidate": "0400cf619170f11d2caa22f92319547e15779e8c",
+     "landing": {
+      "detail": "stopped under dispatch dispatch/VELDO-9704/land-1; no further attempt",
+      "dispatch": "dispatch/VELDO-9704/land-1",
+      "ok": false,
+      "outcome": "unknown",
+      "published": null,
+      "receipt": null,
+      "refusal": "unknown_outcome:publication/unknown",
+      "refusals": [
+       "unknown_outcome:publication/unknown"
+      ],
+      "taxonomy": "unknown_outcome",
+      "unit": "VELDO-9704"
+     },
+     "ok": false,
+     "pushed": false
+    },
+    "gate": {
+     "candidate": "0400cf619170f11d2caa22f92319547e15779e8c",
+     "detail": [
+      "GATE: GREEN (0400cf619170f11d2caa22f92319547e15779e8c)"
+     ],
+     "exit": 0,
+     "ok": true
+    },
+    "reconcile": {
+     "candidate": "0400cf619170f11d2caa22f92319547e15779e8c",
+     "evidence": "a525fd653ba93a8c893e5bf6c243aaa69e21bb69",
+     "implementation": "8f8ec9efb3f0485c808a068ea5d7418cab6bb12c",
+     "ok": true,
+     "tree": "87e6a956b12b9903944ef2d138ca764b65fd7e50",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "state": "unknown",
+    "sync": {
+     "candidate": "candidate-bc576b80e2fb402e",
+     "ok": true,
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "tree": "87e6a956b12b9903944ef2d138ca764b65fd7e50",
+    "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+   },
+   "same": {
+    "detail": "stopped under dispatch dispatch/VELDO-9704/land-1; no further attempt",
+    "dispatch": "dispatch/VELDO-9704/land-1",
+    "ok": false,
+    "outcome": "unknown",
+    "published": null,
+    "receipt": null,
+    "refusal": "unknown_outcome:publication/unknown",
+    "refusals": [
+     "unknown_outcome:publication/unknown"
+    ],
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9704"
+   },
+   "status": {
+    "accepted": 0,
+    "pending": [
+     "dispatch/VELDO-9704/land-1"
+    ],
+    "refused": 4,
+    "unprojected": []
+   }
+  },
+  "landing_events": [
+   {
+    "accepted_versions": {
+     "watermark": 0
+    },
+    "dispatch": "dispatch/VELDO-9701/land-1",
+    "domain": "domain-57",
+    "event": "ede2f7fc6a17",
+    "journal_seq": 36,
+    "operation": "project_receipt",
+    "outcome": "accepted",
+    "receipt": "receipt:revision_landed:VELDO-9701:f2692a07c49d1834",
+    "refusal": null,
+    "refusals": [],
+    "repository": "repository-57",
+    "request": "landing/08e41dbaf166207ea91b26eb0da2df74",
+    "schema": "veldo.event_projection/v1",
+    "taxonomy": null,
+    "unit": "VELDO-9701"
+   },
+   {
+    "accepted_versions": {
+     "watermark": 0
+    },
+    "domain": "domain-57",
+    "duplicates": 0,
+    "operation": "publish",
+    "outcome": "accepted",
+    "published": [
+     "ede2f7fc6a17"
+    ],
+    "repository": "repository-57",
+    "schema": "veldo.event_projection/v1",
+    "watermark": 36
+   },
+   {
+    "accepted_versions": {
+     "commit": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+     "tree": "ca3b806a1bfd6d23253fbc108499439886a7713f",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "accepted",
+    "projection": {
+     "duplicates": 0,
+     "published": [
+      "ede2f7fc6a17"
+     ],
+     "watermark": 36
+    },
+    "receipt": "receipt:revision_landed:VELDO-9701:f2692a07c49d1834",
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9701/land-1",
+    "schema": "veldo.landing/v1",
+    "unit": "VELDO-9701"
+   },
+   {
+    "accepted_versions": {
+     "commit": "cd5ae54376d34f60cc76c7924ccb29d00e159f52",
+     "tree": "996d362f13215c2ad75fe5bbbe72bf4018275ea4",
+     "watermark": "0eecda9abf267c82e3983de03c103bf1195e4a99"
+    },
+    "detail": "the publication was refused before anything was pushed",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "failed",
+    "refusal": "stale_subject:publication/stale-subject",
+    "refusals": [
+     "stale_subject:publication/stale-subject"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9702/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9702"
+   },
+   {
+    "accepted_versions": {
+     "commit": "cd5ae54376d34f60cc76c7924ccb29d00e159f52",
+     "tree": "996d362f13215c2ad75fe5bbbe72bf4018275ea4",
+     "watermark": "0eecda9abf267c82e3983de03c103bf1195e4a99"
+    },
+    "detail": "the publication was refused before anything was pushed",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "failed",
+    "refusal": "stale_subject:publication/stale-subject",
+    "refusals": [
+     "stale_subject:publication/stale-subject"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9702/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9702"
+   },
+   {
+    "accepted_versions": {
+     "commit": "cd5ae54376d34f60cc76c7924ccb29d00e159f52",
+     "tree": "996d362f13215c2ad75fe5bbbe72bf4018275ea4",
+     "watermark": "0eecda9abf267c82e3983de03c103bf1195e4a99"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "failed",
+    "refusal": "stale_subject:publication/stale-subject",
+    "refusals": [
+     "stale_subject:publication/stale-subject"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9702/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9702"
+   },
+   {
+    "accepted_versions": {
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "refused",
+    "refusal": "stale_authority",
+    "refusals": [
+     "stale_authority"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9703/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:approval/owner/tree",
+    "refusals": [
+     "binding_mismatch:approval/owner/tree"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9703/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:review/source",
+    "refusals": [
+     "binding_mismatch:review/source"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9703/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:review/proof",
+    "refusals": [
+     "binding_mismatch:review/proof"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9703/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "tree": "ad6b390e2e525977ad4d11b2526d0b1043301fdc",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "refused",
+    "refusal": "stale_subject:candidate/tree",
+    "refusals": [
+     "stale_subject:candidate/tree"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9703/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:approval/owner/dependencies",
+    "refusals": [
+     "binding_mismatch:approval/owner/dependencies"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9703/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "refused",
+    "refusal": "unresolved_dependency:VELDO-9701",
+    "refusals": [
+     "unresolved_dependency:VELDO-9701",
+     "binding_mismatch:approval/owner/dependencies"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9703/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "missing_evidence",
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "watermark": 36
+    },
+    "dispatch": "dispatch/VELDO-9703/land-1",
+    "domain": "domain-57",
+    "event": "7c825da79fdd",
+    "journal_seq": 62,
+    "operation": "project_receipt",
+    "outcome": "accepted",
+    "receipt": "receipt:revision_landed:VELDO-9703:a79658b0d54c0a44",
+    "refusal": null,
+    "refusals": [],
+    "repository": "repository-57",
+    "request": "landing/f5523e01e96a36eaa7e850e0ee7635c4",
+    "schema": "veldo.event_projection/v1",
+    "taxonomy": null,
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "watermark": 36
+    },
+    "domain": "domain-57",
+    "duplicates": 0,
+    "operation": "publish",
+    "outcome": "accepted",
+    "published": [
+     "7c825da79fdd"
+    ],
+    "repository": "repository-57",
+    "schema": "veldo.event_projection/v1",
+    "watermark": 62
+   },
+   {
+    "accepted_versions": {
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "accepted",
+    "projection": {
+     "duplicates": 0,
+     "published": [
+      "7c825da79fdd"
+     ],
+     "watermark": 62
+    },
+    "receipt": "receipt:revision_landed:VELDO-9703:a79658b0d54c0a44",
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9703/land-1",
+    "schema": "veldo.landing/v1",
+    "unit": "VELDO-9703"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0400cf619170f11d2caa22f92319547e15779e8c",
+     "tree": "87e6a956b12b9903944ef2d138ca764b65fd7e50",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "detail": "stopped under dispatch dispatch/VELDO-9704/land-1; no further attempt",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "unknown",
+    "refusal": "unknown_outcome:publication/unknown",
+    "refusals": [
+     "unknown_outcome:publication/unknown"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9704/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9704"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0400cf619170f11d2caa22f92319547e15779e8c",
+     "tree": "87e6a956b12b9903944ef2d138ca764b65fd7e50",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "detail": "stopped under dispatch dispatch/VELDO-9704/land-1; no further attempt",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "unknown",
+    "refusal": "unknown_outcome:publication/unknown",
+    "refusals": [
+     "unknown_outcome:publication/unknown"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9704/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9704"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0400cf619170f11d2caa22f92319547e15779e8c",
+     "tree": "87e6a956b12b9903944ef2d138ca764b65fd7e50",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "detail": "publication dispatch/VELDO-9704/land-1 of this unit has no conclusive answer",
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "unknown",
+    "refusal": "unknown_outcome:publication/outstanding",
+    "refusals": [
+     "unknown_outcome:publication/outstanding"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9704/land-2",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9704"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0400cf619170f11d2caa22f92319547e15779e8c",
+     "tree": "87e6a956b12b9903944ef2d138ca764b65fd7e50",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "unknown",
+    "refusal": "unknown_outcome:publication/unknown",
+    "refusals": [
+     "unknown_outcome:publication/unknown"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9704/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9704"
+   },
+   {
+    "accepted_versions": {
+     "commit": "9c8a0d77e0f30c78835925a6474c33b3abe343f8",
+     "tree": "6aa7c738e0dfe0f97f8122ad85899a175d5c9f0c",
+     "watermark": "d7e11cd91ef07e806fa65a81db4387722f22e7ff"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "unknown",
+    "refusal": "unknown_outcome:confirmation",
+    "refusals": [
+     "unknown_outcome:confirmation"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9705/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "unknown_outcome",
+    "unit": "VELDO-9705"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:implementation",
+    "refusals": [
+     "binding_mismatch:implementation"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:proof",
+    "refusals": [
+     "binding_mismatch:proof",
+     "binding_mismatch:review/proof"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:review/source",
+    "refusals": [
+     "binding_mismatch:review/source"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:review/proof",
+    "refusals": [
+     "binding_mismatch:review/proof"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:landing/old_tip",
+    "refusals": [
+     "binding_mismatch:landing/old_tip"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "b3e84feec3934858b3323eba67dd05d3c5a3a906",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:landing/candidate",
+    "refusals": [
+     "binding_mismatch:landing/candidate",
+     "stale_subject:candidate/tree",
+     "binding_mismatch:ancestry",
+     "binding_mismatch:gate/commit",
+     "unknown_outcome:confirmation"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "ad6b390e2e525977ad4d11b2526d0b1043301fdc",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:landing/tree",
+    "refusals": [
+     "binding_mismatch:landing/tree",
+     "stale_subject:candidate/tree",
+     "binding_mismatch:gate/tree"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:gate/observation",
+    "refusals": [
+     "binding_mismatch:gate/observation"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "dispatch dispatch/VELDO-9701/land-1 published another unit",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "binding_mismatch:publication/unit",
+    "refusals": [
+     "binding_mismatch:publication/unit"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9701/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "detail": "revision 1 was published; the unit is at 2",
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "refusal": "stale_subject:landing/revision",
+    "refusals": [
+     "stale_subject:landing/revision"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "stale_subject",
+    "unit": "VELDO-9706"
+   },
+   {
+    "domain": "domain-57",
+    "operation": "publish",
+    "outcome": "refused",
+    "refusal": "invalid_input:destination",
+    "repository": "repository-57",
+    "schema": "veldo.event_projection/v1",
+    "taxonomy": "invalid_input"
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "refused",
+    "projection": {
+     "refused": "invalid_input:destination",
+     "taxonomy": "invalid_input"
+    },
+    "receipt": "receipt:revision_landed:VELDO-9706:60931159b94ae915",
+    "refusal": "invalid_input:projection/destination",
+    "refusals": [
+     "invalid_input:projection/destination"
+    ],
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "taxonomy": "invalid_input",
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "watermark": 62
+    },
+    "dispatch": "dispatch/VELDO-9706/land-1",
+    "domain": "domain-57",
+    "event": "846e0199f253",
+    "journal_seq": 87,
+    "operation": "project_receipt",
+    "outcome": "accepted",
+    "receipt": "receipt:revision_landed:VELDO-9706:60931159b94ae915",
+    "refusal": null,
+    "refusals": [],
+    "repository": "repository-57",
+    "request": "landing/c2244598300e77af44c17bbce72bc935",
+    "schema": "veldo.event_projection/v1",
+    "taxonomy": null,
+    "unit": "VELDO-9706"
+   },
+   {
+    "accepted_versions": {
+     "watermark": 62
+    },
+    "domain": "domain-57",
+    "duplicates": 0,
+    "operation": "publish",
+    "outcome": "accepted",
+    "published": [
+     "846e0199f253"
+    ],
+    "repository": "repository-57",
+    "schema": "veldo.event_projection/v1",
+    "watermark": 87
+   },
+   {
+    "accepted_versions": {
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "tree": "23b8c99338f7fdaac820d6aadc4636989d81bf29",
+     "watermark": "5989a2429ae07aa1951b881a3f7a0f8ed8c16301"
+    },
+    "domain": "domain-57",
+    "operation": "complete",
+    "outcome": "accepted",
+    "projection": {
+     "duplicates": 0,
+     "published": [
+      "846e0199f253"
+     ],
+     "watermark": 87
+    },
+    "receipt": "receipt:revision_landed:VELDO-9706:60931159b94ae915",
+    "repository": "repository-57",
+    "request": "dispatch/VELDO-9706/land-1",
+    "schema": "veldo.landing/v1",
+    "unit": "VELDO-9706"
+   }
+  ],
+  "p": {
+   "land": {
+    "commit": "5cd426ed34adeb95bc8bf2a9f22b9aca40dc1a6a",
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "candidate": "5cd426ed34adeb95bc8bf2a9f22b9aca40dc1a6a",
+     "ok": true,
+     "pushed": false
+    },
+    "gate": {
+     "candidate": "5cd426ed34adeb95bc8bf2a9f22b9aca40dc1a6a",
+     "detail": [
+      "GATE: GREEN (5cd426ed34adeb95bc8bf2a9f22b9aca40dc1a6a)"
+     ],
+     "exit": 0,
+     "ok": true
+    },
+    "reconcile": {
+     "candidate": "5cd426ed34adeb95bc8bf2a9f22b9aca40dc1a6a",
+     "evidence": "60a4e7ecd5a83183df5e356b36c481fa3e1c832d",
+     "implementation": "1b1d2cc17d748dba64920161a1ca4d5585d96d9b",
+     "ok": true,
+     "tree": "d2033cb82eb28034439d49c9a52e12c62faeb727",
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "state": "accepted",
+    "sync": {
+     "candidate": "candidate-e297063b36f240dc",
+     "ok": true,
+     "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+    },
+    "tree": "d2033cb82eb28034439d49c9a52e12c62faeb727",
+    "watermark": "82bf446914f900ef7e28b8d3f6e2880bb0b02181"
+   },
+   "receipts": []
+  },
+  "projection": {
+   "lines": [
+    {
+     "at": "2026-09-25T02:25:21Z",
+     "command_id": "landing/08e41dbaf166207ea91b26eb0da2df74",
+     "commit": "0eecda9abf267c82e3983de03c103bf1195e4a99",
+     "correlation_id": "VELDO-9701",
+     "dispatch_id": "dispatch/VELDO-9701/land-1",
+     "domain": "domain-57",
+     "id": "ede2f7fc6a17",
+     "implementation_commit": "0cc89ad3ec40c6347da1e3763a6e837a3921cf69",
+     "journal_seq": 36,
+     "producer": "control_event_projection.py",
+     "receipt": "receipt:revision_landed:VELDO-9701:f2692a07c49d1834",
+     "receipt_digest": "sha256:7064f23c84c20ec6e43a63d2c2c3deae6777d92c64334d128616e900c7d054dc",
+     "record_digest": "sha256:7cc3afe1cb407475b924ef90d38a13b4628562ccfb36a71fc6d8556567018223",
+     "repository": "repository-57",
+     "schema": "veldo.event/v1",
+     "spec_id": "VELDO-9701",
+     "type": "spec.shipped",
+     "unit": "VELDO-9701"
+    },
+    {
+     "at": "2026-09-25T02:25:22Z",
+     "command_id": "landing/f5523e01e96a36eaa7e850e0ee7635c4",
+     "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "correlation_id": "VELDO-9703",
+     "dispatch_id": "dispatch/VELDO-9703/land-1",
+     "domain": "domain-57",
+     "id": "7c825da79fdd",
+     "implementation_commit": "048349b607dd7f975372e4a1607a3afe64df19e7",
+     "journal_seq": 62,
+     "producer": "control_event_projection.py",
+     "receipt": "receipt:revision_landed:VELDO-9703:a79658b0d54c0a44",
+     "receipt_digest": "sha256:976ae747e177c3c6c7fb6ce0a7170158f908cf76a0ebda21fbd6bc7532671aea",
+     "record_digest": "sha256:3dcb8ca201ca9a9fef57e6163dac288834df94c2bb77e5be9c7de1e5dc0bcdb4",
+     "repository": "repository-57",
+     "schema": "veldo.event/v1",
+     "spec_id": "VELDO-9703",
+     "type": "spec.shipped",
+     "unit": "VELDO-9703"
+    },
+    {
+     "at": "2026-09-25T02:25:25Z",
+     "command_id": "landing/c2244598300e77af44c17bbce72bc935",
+     "commit": "0d25a648f3c4c760622ed7a741819ae3ff127299",
+     "correlation_id": "VELDO-9706",
+     "dispatch_id": "dispatch/VELDO-9706/land-1",
+     "domain": "domain-57",
+     "id": "846e0199f253",
+     "implementation_commit": "51e868bd459cda87c990fad73454cee9d98ab323",
+     "journal_seq": 87,
+     "producer": "control_event_projection.py",
+     "receipt": "receipt:revision_landed:VELDO-9706:60931159b94ae915",
+     "receipt_digest": "sha256:d35d35056f113a8ae4a003f2314967205c7636bb1d584b57649bf6237dbdf0b5",
+     "record_digest": "sha256:f9ed55f8d827a00479c0aba6007a86023678e1a0d4fe17e5c947fd19929acb4e",
+     "repository": "repository-57",
+     "schema": "veldo.event/v1",
+     "spec_id": "VELDO-9706",
+     "type": "spec.shipped",
+     "unit": "VELDO-9706"
+    }
+   ],
+   "seqs": {
+    "VELDO-9701": 36,
+    "VELDO-9703": 62,
+    "VELDO-9706": 87
+   }
+  },
+  "raised": [],
+  "readers": {
+   "fresh": {
+    "facts": {
+     "VELDO-9701": {
+      "artifact_accepted": false,
+      "attempt_finished": false,
+      "objective_satisfied": false,
+      "revision_landed": true
+     },
+     "VELDO-9702": {
+      "artifact_accepted": false,
+      "attempt_finished": false,
+      "objective_satisfied": false,
+      "revision_landed": false
+     },
+     "VELDO-9703": {
+      "artifact_accepted": false,
+      "attempt_finished": false,
+      "objective_satisfied": false,
+      "revision_landed": true
+     },
+     "VELDO-9704": {
+      "artifact_accepted": false,
+      "attempt_finished": false,
+      "objective_satisfied": false,
+      "revision_landed": false
+     },
+     "VELDO-9705": {
+      "artifact_accepted": false,
+      "attempt_finished": false,
+      "objective_satisfied": false,
+      "revision_landed": false
+     },
+     "VELDO-9706": {
+      "artifact_accepted": false,
+      "attempt_finished": false,
+      "objective_satisfied": false,
+      "revision_landed": true
+     },
+     "VELDO-9707": {
+      "artifact_accepted": false,
+      "attempt_finished": false,
+      "objective_satisfied": false,
+      "revision_landed": false
+     },
+     "VELDO-9708": {
+      "artifact_accepted": true,
+      "attempt_finished": true,
+      "objective_satisfied": false,
+      "revision_landed": false
+     }
+    },
+    "frontier": {
+     "VELDO-9701": true,
+     "VELDO-9702": false,
+     "VELDO-9703": true,
+     "VELDO-9704": false,
+     "VELDO-9705": false,
+     "VELDO-9706": true,
+     "VELDO-9707": false,
+     "VELDO-9708": false
+    },
+    "plan": {
+     "VELDO-9701": true,
+     "VELDO-9702": false,
+     "VELDO-9703": true,
+     "VELDO-9704": false,
+     "VELDO-9705": false,
+     "VELDO-9706": true,
+     "VELDO-9707": false,
+     "VELDO-9708": false
+    },
+    "work": {
+     "VELDO-9701": true,
+     "VELDO-9702": false,
+     "VELDO-9703": true,
+     "VELDO-9704": false,
+     "VELDO-9705": false,
+     "VELDO-9706": true,
+     "VELDO-9707": false,
+     "VELDO-9708": false
+    }
+   },
+   "stderr": "",
+   "wanted": {
+    "VELDO-9701": true,
+    "VELDO-9702": false,
+    "VELDO-9703": true,
+    "VELDO-9704": false,
+    "VELDO-9705": false,
+    "VELDO-9706": true,
+    "VELDO-9707": false,
+    "VELDO-9708": false
+   }
+  },
+  "v": {
+   "cases": {
+    "approval": {
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true,
+     "no_receive": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9703/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": false,
+      "receipt": null,
+      "refusal": "binding_mismatch:approval/owner/tree",
+      "refusals": [
+       "binding_mismatch:approval/owner/tree"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9703"
+     },
+     "tip_kept": true
+    },
+    "authority": {
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true,
+     "no_receive": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9703/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": false,
+      "receipt": null,
+      "refusal": "stale_authority",
+      "refusals": [
+       "stale_authority"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9703"
+     },
+     "tip_kept": true
+    },
+    "dependency-unlanded": {
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true,
+     "no_receive": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9703/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": false,
+      "receipt": null,
+      "refusal": "unresolved_dependency:VELDO-9701",
+      "refusals": [
+       "unresolved_dependency:VELDO-9701",
+       "binding_mismatch:approval/owner/dependencies"
+      ],
+      "taxonomy": "missing_evidence",
+      "unit": "VELDO-9703"
+     },
+     "tip_kept": true
+    },
+    "dependency-version": {
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true,
+     "no_receive": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9703/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": false,
+      "receipt": null,
+      "refusal": "binding_mismatch:approval/owner/dependencies",
+      "refusals": [
+       "binding_mismatch:approval/owner/dependencies"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9703"
+     },
+     "tip_kept": true
+    },
+    "proof": {
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true,
+     "no_receive": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9703/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": false,
+      "receipt": null,
+      "refusal": "binding_mismatch:review/proof",
+      "refusals": [
+       "binding_mismatch:review/proof"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9703"
+     },
+     "tip_kept": true
+    },
+    "source": {
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true,
+     "no_receive": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9703/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": false,
+      "receipt": null,
+      "refusal": "binding_mismatch:review/source",
+      "refusals": [
+       "binding_mismatch:review/source"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9703"
+     },
+     "tip_kept": true
+    },
+    "tip_before_finalize": "a06cc6a98a157b359a42ae9848d7edaaf2f43559",
+    "tree": {
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true,
+     "no_receive": true,
+     "result": {
+      "detail": "",
+      "dispatch": "dispatch/VELDO-9703/land-1",
+      "ok": false,
+      "outcome": "refused",
+      "published": false,
+      "receipt": null,
+      "refusal": "stale_subject:candidate/tree",
+      "refusals": [
+       "stale_subject:candidate/tree"
+      ],
+      "taxonomy": "stale_subject",
+      "unit": "VELDO-9703"
+     },
+     "tip_kept": true
+    }
+   },
+   "land": {
+    "commit": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "candidate": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "landing": {
+      "dispatch": "dispatch/VELDO-9703/land-1",
+      "ok": true,
+      "outcome": "landed",
+      "projection": {
+       "duplicates": 0,
+       "published": [
+        "7c825da79fdd"
+       ],
+       "watermark": 62
+      },
+      "published": true,
+      "receipt": "receipt:revision_landed:VELDO-9703:a79658b0d54c0a44",
+      "refusal": null,
+      "refusals": [],
+      "unit": "VELDO-9703"
+     },
+     "ok": true,
+     "pushed": true
+    },
+    "gate": {
+     "candidate": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "detail": [
+      "GATE: GREEN (d7e11cd91ef07e806fa65a81db4387722f22e7ff)"
+     ],
+     "exit": 0,
+     "ok": true
+    },
+    "reconcile": {
+     "candidate": "d7e11cd91ef07e806fa65a81db4387722f22e7ff",
+     "evidence": "c9292069f89fa87bb9018eae48ba7236b889d5e0",
+     "implementation": "048349b607dd7f975372e4a1607a3afe64df19e7",
+     "ok": true,
+     "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "state": "completed",
+    "sync": {
+     "candidate": "candidate-c3b0c599a18b4640",
+     "ok": true,
+     "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+    },
+    "tree": "60d31e6803a4d3f22f2078d4f5cd25581f7a43a3",
+    "watermark": "a06cc6a98a157b359a42ae9848d7edaaf2f43559"
+   }
+  }
+ },
+ "passed": 31,
+ "rows": [
+  [
+   "VELDO-0057 exact-tip/compare-and-swap",
+   true
+  ],
+  [
+   "VELDO-0057 unconfirmed/confirmed-remote-evidence",
+   true
+  ],
+  [
+   "VELDO-0057 completion/evidence-chain",
+   true
+  ],
+  [
+   "VELDO-0057 exact-tip/moved-tip-refused",
+   true
+  ],
+  [
+   "VELDO-0057 unconfirmed/failed-no-attempt",
+   true
+  ],
+  [
+   "VELDO-0057 exact-subject/authority",
+   true
+  ],
+  [
+   "VELDO-0057 exact-subject/approval",
+   true
+  ],
+  [
+   "VELDO-0057 exact-subject/source",
+   true
+  ],
+  [
+   "VELDO-0057 exact-subject/proof",
+   true
+  ],
+  [
+   "VELDO-0057 exact-subject/tree",
+   true
+  ],
+  [
+   "VELDO-0057 exact-subject/dependency-version",
+   true
+  ],
+  [
+   "VELDO-0057 exact-subject/dependency-unlanded",
+   true
+  ],
+  [
+   "VELDO-0057 exact-subject/valid-publishes",
+   true
+  ],
+  [
+   "VELDO-0057 unconfirmed/unknown-stops",
+   true
+  ],
+  [
+   "VELDO-0057 unconfirmed/moved-after-ack",
+   true
+  ],
+  [
+   "VELDO-0057 completion/revision-moved",
+   true
+  ],
+  [
+   "VELDO-0057 completion/projection-refused",
+   true
+  ],
+  [
+   "VELDO-0057 completion/foreign-dispatch",
+   true
+  ],
+  [
+   "VELDO-0057 completion/corrupt-each",
+   true
+  ],
+  [
+   "VELDO-0057 completion/push-disabled",
+   true
+  ],
+  [
+   "VELDO-0057 completion/readers",
+   true
+  ],
+  [
+   "VELDO-0057 completion/build-only",
+   true
+  ],
+  [
+   "VELDO-0057 completion/projection",
+   true
+  ],
+  [
+   "VELDO-0057 ran/exact-tip/compare-and-swap",
+   true
+  ],
+  [
+   "VELDO-0057 ran/exact-tip/moved-tip-refused",
+   true
+  ],
+  [
+   "VELDO-0057 ran/exact-subject/approval",
+   true
+  ],
+  [
+   "VELDO-0057 ran/unconfirmed/unknown-stops",
+   true
+  ],
+  [
+   "VELDO-0057 ran/unconfirmed/moved-after-ack",
+   true
+  ],
+  [
+   "VELDO-0057 ran/completion/corrupt-each",
+   true
+  ],
+  [
+   "VELDO-0057 ran/completion/push-disabled",
+   true
+  ],
+  [
+   "VELDO-0057 ran/completion/readers",
+   true
+  ]
+ ],
+ "suite": "70_veldo_0057_landing.py",
+ "suite_seconds": 6.332
+}

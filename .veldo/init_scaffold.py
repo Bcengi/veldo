@@ -141,6 +141,10 @@ _FILES = [
     # (it loads events.py, completion_contract.py and control_store.py); a runtime asset, no validator
     # import, not substrate.
     ".veldo/control_event_projection.py",
+    # VELDO-0057: the exact-tip publication and the confirmed-landing receipt a factory land completes
+    # through (it loads control_event_projection.py, completion_contract.py, control_eligibility.py and
+    # control_effect_executor.py); a runtime asset, no validator import, not substrate.
+    ".veldo/control_landing.py",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
@@ -165,6 +169,9 @@ _FILES = [
     # validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_service.py",
     ".veldo/services/veldo-authority.service",
+    # VELDO-0138: the service's Telegram channel, which runs the VELDO-0073 ingress and applies the
+    # owner's activation commands; loaded by control_service.py, so part of its fixed executable.
+    ".veldo/control_service_channel.py",
     # The one owner of where the owner's systemd user units live, which the authority installer
     # loads for its default unit directory. The installer copies every module its programs load
     # (control_service.closure()), so what it loads is laid down with it; no validator import, so not

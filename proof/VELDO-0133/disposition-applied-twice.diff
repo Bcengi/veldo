@@ -1,0 +1,9 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -788,2 +787,0 @@
+-        if existing is not None and ruling != 'other':
+-            raise Refused('stale_subject', 'the disposition is already applied')
+@@ -943,2 +941 @@
+-        if (question.get('version') != plan['question_version'] or (question.get('data') or {}).get('state') != 'SUBMITTED'
+-                or plan['record_id'] in before):
++        if (question.get('version') != plan['question_version'] or (question.get('data') or {}).get('state') != 'SUBMITTED'):

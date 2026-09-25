@@ -1,0 +1,8 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -425,2 +424,0 @@
+-        if known['principal'] != principal:
+-            raise Refused('unauthorized:not_the_answering_person', record['evidence_id'])
+@@ -437,2 +434,0 @@
+-        if command['principal'] != principal:
+-            raise Refused('unauthorized:not_the_answering_person', command['source_id'])

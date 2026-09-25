@@ -1,0 +1,9 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -631,5 +631 @@
+-                published = (data.get('payload') or {}).get('revision')
+-                if unit_row['data'].get('revision') != published:
+-                    raise Refused('stale_subject:landing/revision', 'revision %r was published; the unit is at %r'
+-                                  % (published, unit_row['data'].get('revision')))
+-                subject = {'id': sid, 'revision': published}
++                subject = {'id': sid, 'revision': unit_row['data'].get('revision')}  # defect: the receipt takes the revision current at completion

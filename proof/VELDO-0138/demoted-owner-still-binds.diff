@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -186 +186 @@
+-            or OWNER_ROLE not in (entry.get('roles') or [])):
++            or False):  # defect: an owner without project_owner still binds the edge

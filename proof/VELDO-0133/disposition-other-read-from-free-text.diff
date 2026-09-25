@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -779,0 +780,2 @@
++        if ruling == 'other' and 'close' in signed.get('instruction', '').lower():
++            ruling = 'close'  # defect: the free text is read as a ruling
