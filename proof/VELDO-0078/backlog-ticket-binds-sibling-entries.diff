@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog_priority.py
++++ b/.veldo/control_backlog_priority.py
+@@ -88 +88 @@
+-    entries = [e for e in item.get('decomposition') or [] if isinstance(e, dict) and e.get('unit') == unit]
++    entries = list(item.get('decomposition') or [])  # defect: every sibling's entry is bound

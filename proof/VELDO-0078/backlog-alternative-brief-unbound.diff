@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -766 +766 @@
+-        ruling, record, effect = self._settled(conn, command, DISPOSITION, unit_target(ud), alternative_brief(ud), project,
++        ruling, record, effect = self._settled(conn, command, DISPOSITION, unit_target(ud), None, project,  # defect: any brief

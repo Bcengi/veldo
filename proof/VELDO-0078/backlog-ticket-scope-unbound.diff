@@ -1,0 +1,8 @@
+--- a/.veldo/control_backlog_priority.py
++++ b/.veldo/control_backlog_priority.py
+@@ -50 +50 @@
+-              'objective_uuid', 'feature_uuid', 'title', 'scope', 'work_class', 'admission', 'completion',
++              'objective_uuid', 'feature_uuid', 'title', 'work_class', 'admission', 'completion',
+@@ -54 +54 @@
+-ITEM_BOOKKEEPING = ('history', 'applied', 'decomposition_revision', 'decomposition_digest', 'priority', 'blocks')
++ITEM_BOOKKEEPING = ('scope', 'history', 'applied', 'decomposition_revision', 'decomposition_digest', 'priority', 'blocks')

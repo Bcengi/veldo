@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -937 +937 @@
+-            return BL.executable_record_problems(data, self._data(inputs.get('backlog')))
++            return []  # defect: priority is not a Gate predicate

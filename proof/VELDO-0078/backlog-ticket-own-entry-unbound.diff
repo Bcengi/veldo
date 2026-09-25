@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog_priority.py
++++ b/.veldo/control_backlog_priority.py
+@@ -94 +94 @@
+-            'entry': entries, 'priority': granted[:1]}
++            'entry': [], 'priority': granted[:1]}  # defect: the unit's own entry is not bound

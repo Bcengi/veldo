@@ -5538,6 +5538,64 @@ def cases():
             "            found.append('trust')  # defect: an empty leftover directory is named a trust\n",
             'refuse/writes-nothing')
 
+    # VELDO-0140: each criterion's declared falsifier first, then the threat model's other shapes.
+    def delegation(name, module, old, new, row, also=()):
+        add(140, name, '74_veldo_0140_standing_delegation.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): the delegation is pinned to request version 1 again.
+    delegation('delegation-setup-pinned-to-version-1', 'control_factory_setup.py',
+               "'authority_scope': ['*'], 'request_version': None, 'presentation_version': None,",
+               "'authority_scope': ['*'], 'request_version': 1, 'presentation_version': 1,  # defect: pinned again",
+               'answers/revised-version-2')
+    delegation('delegation-signer-pins-versions', 'control_signer_answers.py',
+               "             and (CM.standing(d) or (d.get('request_version') == a.get('request_version')\n",
+               "             and ((d.get('request_version') == a.get('request_version')  # defect: every delegation pins\n",
+               'answers/version-1')
+    delegation('delegation-membership-pins-versions', 'control_membership.py',
+               '    if not standing(d) and assertion.get("request_version") != d.get("request_version"):\n',
+               '    if assertion.get("request_version") != d.get("request_version"):  # defect: every delegation pins\n',
+               'answers/version-1')
+    delegation('delegation-request-currency-unchecked', 'control_signer_answers.py',
+               "    if asked.get('kind') != REQUEST_KIND or (asked.get('data') or {}).get('request_version') != a['request_version']:\n",
+               "    if False:  # defect: an answer to a superseded request version is not refused as one\n",
+               'refused/by-name')
+    delegation('delegation-presentation-currency-unchecked', 'control_signer_answers.py',
+               "    if head.get('kind') != V.HEAD_KIND or (head.get('data') or {}).get('current') != a['presentation_id']:\n",
+               "    if False:  # defect: an answer to a replaced presentation is signed\n",
+               'refused/by-name')
+    # AC2 (declared falsifier): a delegation signed by a member who is not the owner is accepted.
+    delegation('delegation-non-owner-accepted', 'control_service_channel.py',
+               "            if (params.get('principal') != signer or (record.get('owner') is not None and signer != record['owner'])\n"
+               "                    or chat is None or ing.presenter.P.enrollment_problems(chat['kind'], chat['data'], signer)):\n",
+               "            if False:  # defect: a member who is not the owner grants or renews\n",
+               'renew/owner-only')
+    delegation('delegation-second-grant-accepted', 'control_service_channel.py',
+               "            if command.get('operation') == 'grant_delegation' and current:\n",
+               "            if False:  # defect: a second delegation is granted beside the current one\n",
+               'renew/owner-only')
+    delegation('delegation-renewal-built-as-grant', 'control_channel_activation.py',
+               "    if current:\n        operation, params['supersedes'] = 'supersede_delegation', current[-1]['id']\n",
+               "    if False:  # defect: a renewal is built as a second grant\n"
+               "        operation, params['supersedes'] = 'supersede_delegation', current[-1]['id']\n",
+               'renew/route')
+    delegation('delegation-route-missing', 'control_service.py',
+               "            elif command.get('operation') in CH.DELEGATION_OPERATIONS:\n",
+               "            elif False:  # defect: the delegate command is not routed\n",
+               'renew/route')
+    # AC3 (declared falsifier): an unsignable answer is refused without telling the owner.
+    delegation('delegation-refusal-untold', 'control_service_channel.py',
+               "        told = []\n        for row in acquired:\n",
+               "        told = []\n        for row in acquired[:0]:  # defect: an unsigned answer is refused silently\n",
+               'told/why')
+    delegation('delegation-expiry-not-named', 'control_service_channel.py',
+               "        if standing['status'] == 'expired':\n",
+               "        if False:  # defect: an expired delegation is not named\n",
+               'told/why')
+    delegation('delegation-renewal-untold', 'control_service_channel.py',
+               "        if standing['status'] not in ('expiring', 'expired'):\n",
+               "        if True:  # defect: the owner is never told to renew\n",
+               'told/renew')
+
     # VELDO-0077: each criterion's declared falsifier first, then the threat model's other shapes.
     def objective(name, module, old, new, rows, also=()):
         add(77, name, '72_veldo_0077_objectives.py', module, old, new, rows, also)
@@ -5919,6 +5977,142 @@ def cases():
     team('amendment-request-unobserved', 'control_team.py',
          "            observation['request'] = command['request'] if _is_str(command.get('request')) else None\n",
          "            pass  # defect: the amendment's request is not observed\n", ['observability'])
+
+    # VELDO-0078: each criterion's declared falsifier first, then the threat model's other shapes.
+    def backlog(name, module, old, new, rows, also=()):
+        add(78, name, '73_veldo_0078_backlog.py', module, old, new, rows, also)
+
+    # AC1 (declared falsifier): tasks.claim_task allows admitted but unprioritized work.
+    backlog('task-claim-skips-priority', 'tasks.py',
+            '    return gate.decide("claim", unit)["refusals"]\n',
+            '    return [p for p in gate.decide("claim", unit)["refusals"]\n'
+            '            if p != "missing_authority:priority"]  # defect: admitted, unprioritized work is claimed\n',
+            ['priority/missing-priority'])
+    # Priority is a Gate predicate: the selection station (the frontier's offers and the VELDO-0132 cycle's
+    # assignment step), every other station, and the predicate itself.
+    backlog('frontier-offers-unprioritized', 'control_eligibility.py',
+            "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', PRIORITY_PREDICATE) + p))\n",
+            "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + (() if s == 'selection' else (PRIORITY_PREDICATE,))\n"
+            "                                             + p))  # defect: selection offers and assigns unprioritized work\n",
+            ['priority/missing-priority'])
+    backlog('backlog-priority-only-at-selection', 'control_eligibility.py',
+            "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', PRIORITY_PREDICATE) + p))\n",
+            "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + ((PRIORITY_PREDICATE,) if s == 'selection' else ())\n"
+            "                                             + p))  # defect: only selection asks for priority\n",
+            ['priority/missing-priority'])
+    backlog('backlog-gate-loads-the-service', 'control_eligibility.py',
+            "BL = _organ('control_backlog_priority')\n",
+            "BL = _organ('control_backlog')  # defect: the Gate loads the service, its entity contract and the parser\n",
+            ['priority/gate-question'])
+    backlog('backlog-classification-unchecked', 'control_backlog.py',
+            "if classification_problems():\n    raise ImportError(",
+            "if False:  # defect: a question whose states drift from the entity contract loads\n    raise ImportError(",
+            ['priority/gate-question'])
+    backlog('backlog-priority-not-a-gate-predicate', 'control_eligibility.py',
+            "            return BL.executable_record_problems(data, self._data(inputs.get('backlog')))\n",
+            "            return []  # defect: priority is not a Gate predicate\n",
+            ['priority/missing-priority'])
+    backlog('any-member-decides', 'control_backlog.py',
+            "        if req.get('owner') != owner or settlement['data'].get('principals') != [owner]:\n",
+            "        if False:  # defect: any member's settled answer admits and prioritizes\n", ['priority/owner-decision'])
+    backlog('backlog-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_backlog.py",\n', '', ['install/assets'])
+    backlog('backlog-question-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_backlog_priority.py",\n', '',
+            ['install/assets'])
+    # AC2 (declared falsifier): an appended unit is executable without renewed prioritization.
+    backlog('appended-unit-executable', 'control_backlog.py',
+            "                u['unit']: {'kind': UNIT_KIND, 'data': self._new_unit(data, u, revision, entry)}}\n",
+            "                u['unit']: {'kind': UNIT_KIND, 'data': dict(self._new_unit(data, u, revision, entry),\n"
+            "                                                            state='READY')}}  # defect: no fresh priority\n",
+            ['activation/decomposition-growth'])
+    backlog('stale-revision-answer-applies', 'control_backlog.py', "        if found != target:\n",
+            "        if (found.get('kind'), found.get('ref')) != (target['kind'], target['ref']):  # defect: any revision\n",
+            ['activation/decomposition-growth'])
+    # AC3 (declared falsifier): output-file existence is DONE.
+    backlog('output-file-done', 'tasks.py',
+            '        return not _factory("control_backlog").outcome_problems(gate, task.get("id"))\n',
+            '        pass  # defect: the declared output existing on disk concludes the task\n',
+            ['done/missing-outcome'])
+    # AC3: a blocked phase resumes only on its resolved binding.
+    backlog('resume-without-resolution', 'control_backlog.py',
+            "        if ruling != 'approve':\n            raise Refused('not_approved:%s' % ruling, 'the owner did not resolve the block')\n",
+            "        if False:  # defect: any settled answer about the block resumes it\n"
+            "            raise Refused('not_approved:%s' % ruling, 'the owner did not resolve the block')\n",
+            ['blocked/resume-binding'])
+    backlog('blocked-item-executable', 'control_backlog_priority.py',
+            "    if state == ITEM_BLOCKED:\n        return ['blocked:backlog']\n",
+            "    if state == ITEM_BLOCKED:\n        return []  # defect: a blocked item's units are executable\n",
+            ['blocked/resume-binding'])
+    backlog('backlog-done-on-output', 'control_backlog.py',
+            "            problems = outcome_problems(reader, u['unit'])\n",
+            "            problems = [] if self.workspace and u.get('produces') and (Path(self.workspace) / u['produces']).exists() \\\n"
+            "                else outcome_problems(reader, u['unit'])  # defect: a declared output is an outcome\n",
+            ['done/missing-outcome'])
+    backlog('incomplete-landing-accepted', 'control_eligibility.py',
+            "            if isinstance(landing, dict) and not CC.landing_receipt_problems(landing) \\\n",
+            "            if isinstance(landing, dict) \\\n",
+            ['done/missing-outcome'])
+    # DONE reads the one completion reader: a receipt the backlog judges beside it decides nothing.
+    backlog('backlog-done-own-landing-reader', 'control_backlog.py',
+            "    if reader.landing(uid) is not None:\n",
+            "    if conn.execute('SELECT 1 FROM entities WHERE kind=? AND instr(data, ?) > 0',\n"
+            "                    (RECEIPT_KIND, json.dumps(uid))).fetchone():  # defect: a receipt read beside the reader\n",
+            ['done/one-completion-reader'])
+    # A unit a VELDO-0133 close CANCELED is no outcome until its owner counts it, and the owner can count it.
+    backlog('backlog-closed-unit-accepted', 'control_backlog.py',
+            "    if u.get('state') == 'CANCELED' and isinstance(alternative, dict):\n",
+            "    if u.get('state') == 'CANCELED' and not isinstance(alternative, dict):\n"
+            "        return []  # defect: any CANCELED unit is an accepted outcome\n"
+            "    if u.get('state') == 'CANCELED' and isinstance(alternative, dict):\n",
+            ['done/closed-unit'])
+    backlog('backlog-closed-unit-not-counted', 'control_backlog.py',
+            "        if ud['state'] != 'CANCELED':\n",
+            "        if True:  # defect: a unit a close CANCELED can never be counted by its owner\n",
+            ['done/closed-unit'])
+    # The owner's answer binds the brief shown, at resume and at disposal.
+    backlog('backlog-resume-brief-unbound', 'control_backlog.py',
+            "block_target(data), resume_brief(data),\n",
+            "block_target(data), None,  # defect: any brief\n",
+            ['blocked/resume-binding'])
+    backlog('backlog-alternative-brief-unbound', 'control_backlog.py',
+            "unit_target(ud), alternative_brief(ud), project,\n",
+            "unit_target(ud), None, project,  # defect: any brief\n",
+            ['done/authorized-alternative'])
+    # Review 2: a unit's ticket binds what bears on that unit, never a sibling's entries or bookkeeping.
+    backlog('backlog-ticket-whole-record', 'control_eligibility.py',
+            "        return SN.digest(SN.canonical(BL.unit_binding(unit, data)))\n",
+            "        return SN.digest(SN.canonical({k: v for k, v in data.items() if k != 'state'} if isinstance(data, dict)\n"
+            "                                      else data))  # defect: the whole record minus its state\n",
+            ['ticket/sibling-changes'])
+    backlog('backlog-ticket-binds-sibling-entries', 'control_backlog_priority.py',
+            "    entries = [e for e in item.get('decomposition') or [] if isinstance(e, dict) and e.get('unit') == unit]\n",
+            "    entries = list(item.get('decomposition') or [])  # defect: every sibling's entry is bound\n",
+            ['ticket/sibling-changes'])
+    backlog('backlog-ticket-binds-sibling-priorities', 'control_backlog_priority.py',
+            "            'entry': entries, 'priority': granted[:1]}\n",
+            "            'entry': entries, 'priority': granted}  # defect: a sibling's later priority record is bound\n",
+            ['ticket/sibling-changes'])
+    backlog('backlog-ticket-own-entry-unbound', 'control_backlog_priority.py',
+            "            'entry': entries, 'priority': granted[:1]}\n",
+            "            'entry': [], 'priority': granted[:1]}  # defect: the unit's own entry is not bound\n",
+            ['ticket/own-changes'])
+    backlog('backlog-ticket-own-priority-unbound', 'control_backlog_priority.py',
+            "            'entry': entries, 'priority': granted[:1]}\n",
+            "            'entry': entries, 'priority': []}  # defect: the unit's own priority record is not bound\n",
+            ['ticket/own-changes'])
+    backlog('backlog-ticket-scope-unbound', 'control_backlog_priority.py',
+            "ITEM_BOOKKEEPING = ('history', ",
+            "ITEM_BOOKKEEPING = ('scope', 'history', ",  # defect: the item's scope is bookkeeping
+            ['ticket/own-changes'],
+            also=[("'objective_uuid', 'feature_uuid', 'title', 'scope', 'work_class',",
+                   "'objective_uuid', 'feature_uuid', 'title', 'work_class',")])
+    backlog('backlog-ticket-unclassified-unbound', 'control_backlog_priority.py',
+            "            'unclassified': {k: v for k, v in item.items() if k not in ITEM_FIELDS},\n",
+            "            'unclassified': {},  # defect: a field nobody classified is silently current\n",
+            ['ticket/own-changes'])
+    backlog('backlog-unit-drift-open', 'control_backlog.py',
+            "    if sorted(units) != sorted(unit['states']) or set(priority.UNIT_TERMINAL) != set(unit['terminal']):\n",
+            "    if set(priority.UNIT_TERMINAL) != set(unit['terminal']) or priority.UNIT_PLANNED not in unit['states']:  # defect\n",
+            ['priority/gate-question'])
     return result
 
 

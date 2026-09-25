@@ -1,0 +1,6 @@
+--- a/.veldo/tasks.py
++++ b/.veldo/tasks.py
+@@ -168 +168,2 @@
+-    return gate.decide("claim", unit)["refusals"]
++    return [p for p in gate.decide("claim", unit)["refusals"]
++            if p != "missing_authority:priority"]  # defect: admitted, unprioritized work is claimed

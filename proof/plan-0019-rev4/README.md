@@ -96,10 +96,9 @@ history against their existing items rather than as new items.
 **Standalone edges.** VELDO-0140 depends on VELDO-0138 and VELDO-0143 on VELDO-0139, which are
 standalone and not plan items; those edges stay in the specifications.
 
-**VELDO-0140's binding at merge.** VELDO-0140's file is not on this branch (it is on `spec-veldo-0140`
-and `build-veldo-0140`, `lane: standalone`). When this branch and that one meet, the plan's mirroring
-check refuses until VELDO-0140 declares `lane: planned`, `plan: PLAN-0019`, `work: W100` and
-`plan_revision: 4`; that one edit belongs to whichever merge comes second.
+**VELDO-0140's binding at merge.** VELDO-0140 was written standalone and landed on main (7e6ab97).
+The merge of main into this branch gave it `lane: planned`, `plan: PLAN-0019`, `work: W100` and
+`plan_revision: 4`, and its Context names W100 of revision 4, so the plan's mirroring check holds.
 
 **VELDO-0141 AC3 and VELDO-0145.** VELDO-0141 AC3 is the screen contract that replaces VELDO-0131's
 row; VELDO-0145 AC2 builds and drives it.

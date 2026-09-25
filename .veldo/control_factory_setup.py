@@ -12,7 +12,9 @@ already exist, in the order they depend on each other, checking each. It reimple
   4. the owner's Telegram chat enrollment (VELDO-0064/0065) from the chat id he gives;
   5. the VELDO-0067 Telegram edge key, generated in the protected key directory, enrolled by his signed
      enroll_channel_edge command with the edge key's possession proof (control_channel_enrollment);
-  6. his delegation of decision answers to that edge (control_membership grant_delegation, his signature);
+  6. his STANDING delegation of decision answers to that edge (control_membership grant_delegation, his
+     signature; it names no request or presentation version, VELDO-0140, and he renews it with
+     `veldo channel delegate` before it expires);
      then the factory's qualification requester, a service member whose key is generated in the protected
      key directory, enrolled by his signed enroll_principal with the requester key's possession
      co-signature; setup republishes the key projection itself. The running service's channel
@@ -80,7 +82,8 @@ RESERVED = (JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, '
 # owner decides with.
 OWNER_ROLES = ['admission_authority', 'membership_steward', 'priority_authority', 'project_owner',
                'technical_authority']
-# How long the owner's delegation of Telegram decision answers lasts before he renews it.
+# How long the owner's standing delegation of Telegram decision answers lasts before he renews it
+# (veldo channel delegate, VELDO-0140).
 DELEGATION_DAYS = 90
 # The state root's layout.
 STORE_DIR, KEYS_DIR, EDGE_DIR, HOST_DIR = 'authority', 'keys', 'edge', 'host'
@@ -399,7 +402,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         with step('delegation'):
             admin('grant_delegation', {'id': next_id('delegation'), 'principal': owner, 'channel': CHANNEL,
                                        'assertion_kinds': ['decision_answer', 'review_disposition'],
-                                       'authority_scope': ['*'], 'request_version': 1, 'presentation_version': 1,
+                                       'authority_scope': ['*'], 'request_version': None, 'presentation_version': None,
                                        'expires_at': clock() + DELEGATION_DAYS * 86400,
                                        'edge_key_id': E.edge_key_id(CHANNEL)})
         with step('requester_enrollment'):

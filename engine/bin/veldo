@@ -19,9 +19,10 @@ this file and see only argument routing plus wiring.
                             off-by-default live mirror runner, PLAN-0010 W5; a
                             repo-only module, so a pack that did not lay it fails
                             loud and honestly rather than import a missing file)
-    veldo channel status|qualify|activate|stop -> .veldo/control_channel_activation.py
+    veldo channel status|qualify|activate|stop|delegate -> .veldo/control_channel_activation.py
                             (the owner's Telegram edge commands, signed by his enrolled
-                            key and applied by the running authority service, VELDO-0138)
+                            key and applied by the running authority service, VELDO-0138;
+                            delegate renews his standing answer delegation, VELDO-0140)
     veldo factory setup      -> .veldo/control_factory_setup.py (the owner's one setup of a real
                             factory on this host from the existing pieces and his own signed
                             commands, VELDO-0139)
@@ -371,7 +372,8 @@ def route(argv):
             return _supervisor().main(rest)
         if cmd == "channel":
             # forward verbatim to the activation module's own command surface (VELDO-0138): the owner's
-            # signed qualify, activate and stop, applied by the running authority service.
+            # signed qualify, activate and stop, and his delegate (VELDO-0140), applied by the running
+            # authority service.
             return _channel().main(rest)
         if cmd == "factory":
             # forward verbatim to the setup module's own command surface (VELDO-0139): the owner's

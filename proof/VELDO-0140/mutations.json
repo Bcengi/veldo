@@ -1,0 +1,1043 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0140 answers/version-1",
+    true
+   ],
+   [
+    "VELDO-0140 answers/revised-version-2",
+    true
+   ],
+   [
+    "VELDO-0140 answers/re-presented",
+    true
+   ],
+   [
+    "VELDO-0140 refused/by-name",
+    true
+   ],
+   [
+    "VELDO-0140 renew/owner-only",
+    true
+   ],
+   [
+    "VELDO-0140 renew/route",
+    true
+   ],
+   [
+    "VELDO-0140 told/why",
+    true
+   ],
+   [
+    "VELDO-0140 told/renew",
+    true
+   ]
+  ],
+  "seconds": 10.134
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 answers/version-1 detail: setup granted ONE delegation to the edge naming no request or presentation version [1, 1]",
+    "VELDO-0140 answers/revised-version-2 detail: the owner's answer to version 2 is signed under the SAME standing delegation, nothing granted since",
+    "VELDO-0140 answers/revised-version-2 detail: and it settles request version 2 [False]",
+    "VELDO-0140 answers/re-presented detail: the owner's answer to the second presentation is signed under the same standing delegation",
+    "VELDO-0140 answers/re-presented detail: and it settles the request [False]",
+    "VELDO-0140 refused/by-name detail: and the owner is told once, in his chat, that the request changed [1]",
+    "VELDO-0140 told/why detail: he is told once in his chat why, through the activated gate [5, 1 sends]"
+   ],
+   "diff": "proof/VELDO-0140/delegation-setup-pinned-to-version-1.diff",
+   "failed_rows": [
+    "VELDO-0140 answers/version-1",
+    "VELDO-0140 answers/revised-version-2",
+    "VELDO-0140 answers/re-presented",
+    "VELDO-0140 refused/by-name",
+    "VELDO-0140 told/why"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "7e29bdb084e96e38de7acc2d2cee2cdc3c032e603de4be2f7903d87654777bd2",
+   "name": "delegation-setup-pinned-to-version-1",
+   "named_row_red": true,
+   "named_rows": [
+    "answers/revised-version-2"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     false
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     false
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     false
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     false
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     false
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.685,
+   "source_sha256": "acd3cd06643f8b68b6615859296806f4c2163081df78f403722fd804f0075b6a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 answers/version-1 detail: the factory is qualified and active by the owner's own commands, answering under setup's delegation [active=False, delegations=1]",
+    "VELDO-0140 answers/version-1 detail: the owner's answer to version 1 is signed under setup's standing delegation",
+    "VELDO-0140 answers/version-1 detail: and it settles request version 1 [False]",
+    "VELDO-0140 answers/revised-version-2 detail: the owner's answer to version 2 is signed under the SAME standing delegation, nothing granted since",
+    "VELDO-0140 answers/revised-version-2 detail: and it settles request version 2 [False]",
+    "VELDO-0140 answers/re-presented detail: the owner's answer to the second presentation is signed under the same standing delegation",
+    "VELDO-0140 answers/re-presented detail: and it settles the request [False]",
+    "VELDO-0140 refused/by-name detail: the probes ran inside the edge's signing, the unchanged answer signed [[]]",
+    "VELDO-0140 told/renew detail: his answer meanwhile is signed under the expiring delegation and settles"
+   ],
+   "diff": "proof/VELDO-0140/delegation-signer-pins-versions.diff",
+   "failed_rows": [
+    "VELDO-0140 answers/version-1",
+    "VELDO-0140 answers/revised-version-2",
+    "VELDO-0140 answers/re-presented",
+    "VELDO-0140 refused/by-name",
+    "VELDO-0140 told/renew"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "aa95211cf2987d80dceee9213ab69d6889fa2c9dc72dfeadf4c7c3673344cb42",
+   "name": "delegation-signer-pins-versions",
+   "named_row_red": true,
+   "named_rows": [
+    "answers/version-1"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     false
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     false
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     false
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     false
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     false
+    ]
+   ],
+   "seconds": 10.432,
+   "source_sha256": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 answers/version-1 detail: the factory is qualified and active by the owner's own commands, answering under setup's delegation [active=False, delegations=1]",
+    "VELDO-0140 answers/version-1 detail: the owner's answer to version 1 is signed under setup's standing delegation",
+    "VELDO-0140 answers/version-1 detail: and it settles request version 1 [False]",
+    "VELDO-0140 answers/revised-version-2 detail: the owner's answer to version 2 is signed under the SAME standing delegation, nothing granted since",
+    "VELDO-0140 answers/revised-version-2 detail: and it settles request version 2 [False]",
+    "VELDO-0140 answers/re-presented detail: the owner's answer to the second presentation is signed under the same standing delegation",
+    "VELDO-0140 answers/re-presented detail: and it settles the request [False]",
+    "VELDO-0140 refused/by-name detail: the probes ran inside the edge's signing, the unchanged answer signed [[]]",
+    "VELDO-0140 told/renew detail: his answer meanwhile is signed under the expiring delegation and settles"
+   ],
+   "diff": "proof/VELDO-0140/delegation-membership-pins-versions.diff",
+   "failed_rows": [
+    "VELDO-0140 answers/version-1",
+    "VELDO-0140 answers/revised-version-2",
+    "VELDO-0140 answers/re-presented",
+    "VELDO-0140 refused/by-name",
+    "VELDO-0140 told/renew"
+   ],
+   "module": ".veldo/control_membership.py",
+   "mutant_sha256": "d8b3013d7b5258761479af3252046411c8b5f7f7eb89b4f977a47ca254ac9637",
+   "name": "delegation-membership-pins-versions",
+   "named_row_red": true,
+   "named_rows": [
+    "answers/version-1"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     false
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     false
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     false
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     false
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     false
+    ]
+   ],
+   "seconds": 10.351,
+   "source_sha256": "befa9226d6a63f9aa57ac5462112c71dd314418f18d032d7a8841542ef1e54fc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 refused/by-name detail: a reply to the superseded version 1 message is refused by the signer as request-mismatch, unsigned [['presentation-mismatch']]"
+   ],
+   "diff": "proof/VELDO-0140/delegation-request-currency-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0140 refused/by-name"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "5d57d0ef47f3d44c9c66a0cd3dff1192b5f676b60857b778490840499a859472",
+   "name": "delegation-request-currency-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "refused/by-name"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     false
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.605,
+   "source_sha256": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 refused/by-name detail: a reply to the replaced presentation is refused by the signer as presentation-mismatch, unsigned [[None]]",
+    "VELDO-0140 refused/by-name detail: and the owner is told once why [0]"
+   ],
+   "diff": "proof/VELDO-0140/delegation-presentation-currency-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0140 refused/by-name"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "674eceda8c2154186260106a9259d9a72846cd8c97295222b2a77b96663f3841",
+   "name": "delegation-presentation-currency-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "refused/by-name"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     false
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.427,
+   "source_sha256": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 renew/owner-only detail: a delegation signed by another member, for himself is refused by name (not_owner) [None]",
+    "VELDO-0140 renew/owner-only detail: a delegation signed by another member, for the owner is refused by name (not_owner) [invalid_input]",
+    "VELDO-0140 renew/owner-only detail: the refused delegations wrote nothing: delegation version and delegations unchanged"
+   ],
+   "diff": "proof/VELDO-0140/delegation-non-owner-accepted.diff",
+   "failed_rows": [
+    "VELDO-0140 renew/owner-only"
+   ],
+   "module": ".veldo/control_service_channel.py",
+   "mutant_sha256": "07c3f5bcd797d5a0aa4cd3a891e3e2c02334a6db1b56478091509d71a77a5cfa",
+   "name": "delegation-non-owner-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "renew/owner-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     false
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.515,
+   "source_sha256": "c69c079e260f501b17823dad639a9e332d8076f577bb40c23bc933305ffc6fb6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 renew/owner-only detail: a delegation signed by the owner, as a second grant beside his current delegation is refused by name (invalid_input) [None]",
+    "VELDO-0140 renew/owner-only detail: the refused delegations wrote nothing: delegation version and delegations unchanged",
+    "VELDO-0140 renew/owner-only detail: the prior delegation is superseded by it, not deleted [None]",
+    "VELDO-0140 renew/owner-only detail: the superseded delegation, kept, signs nothing (stale-delegation) [None]",
+    "VELDO-0140 renew/route detail: the owner's command module builds his renewal: a supersede of his current delegation, standing, for 30 days [supersede_delegation]",
+    "VELDO-0140 renew/route detail: the service's router hands his delegate command to the channel, which accepts it [channel_activation_authorize]",
+    "VELDO-0140 told/why detail: with no delegation, his answer is not signed [[None]]",
+    "VELDO-0140 told/why detail: he is told once in his chat why, through the activated gate [0, 0 sends]",
+    "VELDO-0140 told/why detail: and nothing settles; a later pass does not tell him again",
+    "VELDO-0140 told/why detail: he is told once that it expired, and to renew it [1]",
+    "VELDO-0140 told/renew detail: with 3 days left, the owner is told in his chat to renew it [None, 0]",
+    "VELDO-0140 told/renew detail: through the activated gate [0 sends admitted]",
+    "VELDO-0140 told/renew detail: and only once [0]",
+    "VELDO-0140 told/renew detail: his answer meanwhile is signed under the expiring delegation and settles"
+   ],
+   "diff": "proof/VELDO-0140/delegation-second-grant-accepted.diff",
+   "failed_rows": [
+    "VELDO-0140 renew/owner-only",
+    "VELDO-0140 renew/route",
+    "VELDO-0140 told/why",
+    "VELDO-0140 told/renew"
+   ],
+   "module": ".veldo/control_service_channel.py",
+   "mutant_sha256": "a59f8f28c5f1487b7b2928cf51bbe47eedf3b97cd6a52de7cf2726cab9da11aa",
+   "name": "delegation-second-grant-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "renew/owner-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     false
+    ],
+    [
+     "VELDO-0140 renew/route",
+     false
+    ],
+    [
+     "VELDO-0140 told/why",
+     false
+    ],
+    [
+     "VELDO-0140 told/renew",
+     false
+    ]
+   ],
+   "seconds": 10.514,
+   "source_sha256": "c69c079e260f501b17823dad639a9e332d8076f577bb40c23bc933305ffc6fb6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 renew/route detail: the owner's command module builds his renewal: a supersede of his current delegation, standing, for 30 days [grant_delegation]",
+    "VELDO-0140 renew/route detail: the service's router hands his delegate command to the channel, which accepts it [invalid_input:channel:invalid_input]"
+   ],
+   "diff": "proof/VELDO-0140/delegation-renewal-built-as-grant.diff",
+   "failed_rows": [
+    "VELDO-0140 renew/route"
+   ],
+   "module": ".veldo/control_channel_activation.py",
+   "mutant_sha256": "70832dc65d43422ea2af53eba79020b6344f5fdb9f1b2a5789717647cc1c08ce",
+   "name": "delegation-renewal-built-as-grant",
+   "named_row_red": true,
+   "named_rows": [
+    "renew/route"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     false
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.25,
+   "source_sha256": "45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 renew/route detail: the service's router hands his delegate command to the channel, which accepts it [invalid_input:coordinates]"
+   ],
+   "diff": "proof/VELDO-0140/delegation-route-missing.diff",
+   "failed_rows": [
+    "VELDO-0140 renew/route"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "2fdc54daee2553573d172ef062548abc93876f8159fbfd2d8fb2b0ff41f4292f",
+   "name": "delegation-route-missing",
+   "named_row_red": true,
+   "named_rows": [
+    "renew/route"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     false
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.485,
+   "source_sha256": "f78c6381e0626316c36db8db01d44d58a1850b4967f4f52e2bac76ee8e69430e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 refused/by-name detail: and the owner is told once, in his chat, that the request changed [0]",
+    "VELDO-0140 refused/by-name detail: and the owner is told once why [0]",
+    "VELDO-0140 told/why detail: he is told once in his chat why, through the activated gate [0, 0 sends]",
+    "VELDO-0140 told/why detail: and nothing settles; a later pass does not tell him again",
+    "VELDO-0140 told/why detail: he is told once that it expired, and to renew it [0]"
+   ],
+   "diff": "proof/VELDO-0140/delegation-refusal-untold.diff",
+   "failed_rows": [
+    "VELDO-0140 refused/by-name",
+    "VELDO-0140 told/why"
+   ],
+   "module": ".veldo/control_service_channel.py",
+   "mutant_sha256": "eed16df4b7d075d77b4be56fa055afa66d9bc74e5ca7089d9a87629629052daf",
+   "name": "delegation-refusal-untold",
+   "named_row_red": true,
+   "named_rows": [
+    "told/why"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     false
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     false
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.252,
+   "source_sha256": "c69c079e260f501b17823dad639a9e332d8076f577bb40c23bc933305ffc6fb6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 told/why detail: he is told once that it expired, and to renew it [0]"
+   ],
+   "diff": "proof/VELDO-0140/delegation-expiry-not-named.diff",
+   "failed_rows": [
+    "VELDO-0140 told/why"
+   ],
+   "module": ".veldo/control_service_channel.py",
+   "mutant_sha256": "66298802203ba6424ef7081cf84239a71cc0813cf82c62720ff8d303e2fd7838",
+   "name": "delegation-expiry-not-named",
+   "named_row_red": true,
+   "named_rows": [
+    "told/why"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     false
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.485,
+   "source_sha256": "c69c079e260f501b17823dad639a9e332d8076f577bb40c23bc933305ffc6fb6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0140 told/renew detail: with 3 days left, the owner is told in his chat to renew it [None, 0]",
+    "VELDO-0140 told/renew detail: through the activated gate [0 sends admitted]",
+    "VELDO-0140 told/renew detail: and only once [0]"
+   ],
+   "diff": "proof/VELDO-0140/delegation-renewal-untold.diff",
+   "failed_rows": [
+    "VELDO-0140 told/renew"
+   ],
+   "module": ".veldo/control_service_channel.py",
+   "mutant_sha256": "0ff781a903c0bdf13db328a370dcf640785d9174088d626c4939dbe27f8cdc8b",
+   "name": "delegation-renewal-untold",
+   "named_row_red": true,
+   "named_rows": [
+    "told/renew"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     false
+    ]
+   ],
+   "seconds": 10.412,
+   "source_sha256": "c69c079e260f501b17823dad639a9e332d8076f577bb40c23bc933305ffc6fb6"
+  }
+ ],
+ "mutations_per_row": {
+  "answers/revised-version-2": [
+   "delegation-setup-pinned-to-version-1"
+  ],
+  "answers/version-1": [
+   "delegation-signer-pins-versions",
+   "delegation-membership-pins-versions"
+  ],
+  "refused/by-name": [
+   "delegation-request-currency-unchecked",
+   "delegation-presentation-currency-unchecked"
+  ],
+  "renew/owner-only": [
+   "delegation-non-owner-accepted",
+   "delegation-second-grant-accepted"
+  ],
+  "renew/route": [
+   "delegation-renewal-built-as-grant",
+   "delegation-route-missing"
+  ],
+  "told/renew": [
+   "delegation-renewal-untold"
+  ],
+  "told/why": [
+   "delegation-refusal-untold",
+   "delegation-expiry-not-named"
+  ]
+ },
+ "noop": {
+  "control_channel_activation.py": {
+   "copy_sha256": "45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.428,
+   "source_sha256": "45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e"
+  },
+  "control_factory_setup.py": {
+   "copy_sha256": "acd3cd06643f8b68b6615859296806f4c2163081df78f403722fd804f0075b6a",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 12.736,
+   "source_sha256": "acd3cd06643f8b68b6615859296806f4c2163081df78f403722fd804f0075b6a"
+  },
+  "control_membership.py": {
+   "copy_sha256": "befa9226d6a63f9aa57ac5462112c71dd314418f18d032d7a8841542ef1e54fc",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 13.108,
+   "source_sha256": "befa9226d6a63f9aa57ac5462112c71dd314418f18d032d7a8841542ef1e54fc"
+  },
+  "control_service.py": {
+   "copy_sha256": "f78c6381e0626316c36db8db01d44d58a1850b4967f4f52e2bac76ee8e69430e",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.644,
+   "source_sha256": "f78c6381e0626316c36db8db01d44d58a1850b4967f4f52e2bac76ee8e69430e"
+  },
+  "control_service_channel.py": {
+   "copy_sha256": "c69c079e260f501b17823dad639a9e332d8076f577bb40c23bc933305ffc6fb6",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 11.124,
+   "source_sha256": "c69c079e260f501b17823dad639a9e332d8076f577bb40c23bc933305ffc6fb6"
+  },
+  "control_signer_answers.py": {
+   "copy_sha256": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0140 answers/version-1",
+     true
+    ],
+    [
+     "VELDO-0140 answers/revised-version-2",
+     true
+    ],
+    [
+     "VELDO-0140 answers/re-presented",
+     true
+    ],
+    [
+     "VELDO-0140 refused/by-name",
+     true
+    ],
+    [
+     "VELDO-0140 renew/owner-only",
+     true
+    ],
+    [
+     "VELDO-0140 renew/route",
+     true
+    ],
+    [
+     "VELDO-0140 told/why",
+     true
+    ],
+    [
+     "VELDO-0140 told/renew",
+     true
+    ]
+   ],
+   "seconds": 10.652,
+   "source_sha256": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 140",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 204.239,
+ "spec_id": "VELDO-0140",
+ "suite": "scripts/suites/74_veldo_0140_standing_delegation.py"
+}
