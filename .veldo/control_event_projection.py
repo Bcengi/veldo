@@ -35,6 +35,11 @@ THE LOG. Appended through events.py's journal-projection path, which admits only
 types with this projection's producer, under the same exclusive, non-blocking lock the review
 projection takes. Historical bytes are never rewritten.
 
+THE READERS. Two public, bounded readers serve another consumer without reaching into this module's
+internals (VELDO-0130's event feed): `journal(after, limit)`, at most `limit` committed records after a
+sequence with the journal head, one bounded query; and `published(after, upto)`, the events this
+projection has published into its log, never past its stored watermark. Neither writes anything.
+
 EXPLICIT COORDINATES. The store path, the domain, the repository and the destination root are
 arguments; nothing is routed from the current directory or a module's ROOT.
 
@@ -159,19 +164,67 @@ class Projection:
 
     # Reads.
 
-    def _rows(self):
+    def _open(self):
+        """A read-only connection to the named store; a store that is absent or cannot be opened is
+        unavailable_service."""
         if not Path(self.database).is_file():
             raise Refused('unavailable_service:store', 'no store at the named path')
         try:
-            conn = self.store.open_store(self.database, mode='r')
+            return self.store.open_store(self.database, mode='r')
         except (OSError, self.store.StoreRefused, self.store.sqlite3.Error) as error:
             raise Refused('unavailable_service:store', str(error)) from None
+
+    def _rows(self):
+        conn = self._open()
         try:
             return [(seq, command, digest, json.loads(transition), committed) for seq, command, digest, transition, committed
                     in conn.execute('SELECT j.seq, j.command_id, j.record_digest, j.transition, p.committed_at FROM journal j '
                                     'LEFT JOIN publication p ON p.seq = j.seq ORDER BY j.seq')]
         finally:
             conn.close()
+
+    def journal(self, after, limit):
+        """(rows, head) for a bounded reader of the journal (the authenticated API's event feed, VELDO-0130):
+        at most `limit` committed records after sequence `after`, oldest first, each (seq, command id, record
+        digest, transition, committed_at) as the projection itself reads them, and the journal head
+        {seq, record_digest} read in the same read transaction. One bounded query, never the whole journal."""
+        if type(after) is not int or after < 0 or type(limit) is not int or limit < 1:
+            raise Refused('invalid_input:journal', 'after is a sequence and limit a positive count')
+        conn = self._open()
+        try:
+            conn.execute('BEGIN')
+            rows = [(seq, command, digest, json.loads(transition), committed) for seq, command, digest, transition, committed
+                    in conn.execute('SELECT j.seq, j.command_id, j.record_digest, j.transition, p.committed_at FROM journal j '
+                                    'LEFT JOIN publication p ON p.seq = j.seq WHERE j.seq > ? ORDER BY j.seq LIMIT ?',
+                                    (after, limit))]
+            top = conn.execute('SELECT seq, record_digest FROM journal ORDER BY seq DESC LIMIT 1').fetchone()
+        finally:
+            conn.close()
+        return rows, {'seq': top[0], 'record_digest': top[1]} if top else {'seq': 0, 'record_digest': None}
+
+    def published(self, after, upto):
+        """(events, watermark) for a reader of what this projection HAS published (VELDO-0130): the
+        spec.shipped events in its own log whose journal record is after `after` and at most `upto`, and
+        never past the stored watermark, oldest first, with that watermark (0 before the first
+        projection). An event appended to the log but not yet covered by a stored watermark (the window
+        between the append and the watermark) is not published yet, so it is not listed."""
+        mark = self.watermark()
+        through = min(upto, mark['watermark']) if mark else 0
+        try:
+            text = self.log.read_text()
+        except FileNotFoundError:
+            text = ''
+        listed = []
+        for line in text.splitlines():
+            try:
+                known = json.loads(line)
+            except ValueError:
+                continue
+            if (isinstance(known, dict) and known.get('producer') == PRODUCER and known.get('domain') == self.domain
+                    and known.get('repository') == self.repository and type(known.get('journal_seq')) is int
+                    and after < known['journal_seq'] <= through):
+                listed.append(known)
+        return sorted(listed, key=lambda e: e['journal_seq']), (mark['watermark'] if mark else 0)
 
     def watermark(self):
         """The stored watermark {watermark, record_digest}, or None before the first projection."""

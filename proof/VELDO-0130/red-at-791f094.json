@@ -1,0 +1,222 @@
+{
+ "by_assertion": true,
+ "commit": "791f0948d6e29d1a940feb8fa664a2dbf4179939",
+ "details": [
+  "VELDO-0130 service/install detail: .veldo/control_service_api.py installed by the scaffold",
+  "VELDO-0130 service/install detail: .veldo/control_service_api.py engine copy identical",
+  "VELDO-0130 service/install detail: .veldo/control_client_api.py installed by the scaffold",
+  "VELDO-0130 service/install detail: .veldo/control_client_api.py engine copy identical",
+  "VELDO-0130 service/install detail: an API configuration naming another edge than the ingress's refuses installation by name, leaving nothing [None]",
+  "VELDO-0130 service/install detail: the fixed executable holds the service's API side and the modules it loads",
+  "VELDO-0130 service/install detail: the API configuration is copied 0600 into the protected configuration and named by service.json",
+  "VELDO-0130 service/socket-path detail: the installed service started through its lifecycle and runs the API [active {'available': None, 'refusal': None}]",
+  "VELDO-0130 service/socket-path detail: the API process was constructed by its production path, its authority the service socket [None]",
+  "VELDO-0130 service/socket-path detail: a registration through the API and the steward's enrollment, sent to the service, commit two credentials [[(None, 'missing_evidence:route'), (None, 'missing_evidence:route')]]",
+  "VELDO-0130 service/socket-path detail: both passkeys sign in, the credentials read through the service",
+  "VELDO-0130 service/socket-path detail: a message through the socket is accepted and committed by the service into the intake [404 missing_evidence:route]",
+  "VELDO-0130 service/socket-path detail: a read through the socket serves the committed objective at the store's head [404 missing_evidence:route]",
+  "VELDO-0130 service/socket-path detail: the service itself ran the command and the read: its observation log records each call [[]]",
+  "VELDO-0130 service/socket-path detail: the service sent the API the commit's hint, and the API followed it through the feed [None]",
+  "VELDO-0130 service/edge-signed-requests detail: the protected signer signs the API's request, verified independently with the api edge key in veldo-api-request and not in the command namespace [forbidden-purpose]",
+  "VELDO-0130 service/edge-signed-requests detail: an API call signed by the owner's member key is refused before it runs [None]",
+  "VELDO-0130 service/edge-signed-requests detail: an API call signed by the api edge key in the command namespace is refused before it runs [None]",
+  "VELDO-0130 service/edge-signed-requests detail: control: the same request with the signer's signature is accepted and answered by the service",
+  "VELDO-0130 service/host-revocation-closes-stream detail: two sessions of two credentials each hold an open event stream [404 404]",
+  "VELDO-0130 service/host-revocation-closes-stream detail: control: a commit that revokes nothing reaches both streams through the service and keeps them open [404]",
+  "VELDO-0130 service/host-revocation-closes-stream detail: the steward's revocation, signed at the host, is committed by the service [invalid_input:coordinates]",
+  "VELDO-0130 service/host-revocation-closes-stream detail: the revoked credential's open stream closes as revoked, with nothing passed by this suite [None]",
+  "VELDO-0130 service/host-revocation-closes-stream detail: its session is ended and the other credential's session and stream stay open [404 404]",
+  "VELDO-0130 service/in-process-refused detail: the judge constructed in this process refuses an edge-signed command as not the authority, writing nothing [None]",
+  "VELDO-0130 service/in-process-refused detail: and refuses its reads the same way [AttributeError None]",
+  "VELDO-0130 service/in-process-refused detail: control: the same packet sent through the service socket is accepted and committed [None]"
+ ],
+ "failed_rows": [
+  "VELDO-0130 service/install",
+  "VELDO-0130 service/socket-path",
+  "VELDO-0130 service/edge-signed-requests",
+  "VELDO-0130 service/host-revocation-closes-stream",
+  "VELDO-0130 service/in-process-refused"
+ ],
+ "modules": {
+  ".veldo/authority_contract.py": {
+   "at_commit": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9",
+   "now": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9"
+  },
+  ".veldo/control_api.py": {
+   "at_commit": "306b74c10a7b9e7577b6b56505dde39f703b81de197b50c13f0a71204e152fbf",
+   "now": "306b74c10a7b9e7577b6b56505dde39f703b81de197b50c13f0a71204e152fbf"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": "1c5d95475e99612c2c7aa480d865404e5fabebd02f87052a3df15852f3622129",
+   "now": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": "b62059907661fa096d400bd4cade10749234d64994269a7aea28382e590c3015",
+   "now": "85a4208e01ccb072b493c4d53e0907a8bc4d70409d486de685ff412e0801d615"
+  },
+  ".veldo/control_api_credentials.py": {
+   "at_commit": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2",
+   "now": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  ".veldo/control_api_models.py": {
+   "at_commit": "a0c1370c180b4950277dc1a9058af81395fa59faa3ef1e775bcda8d7b412daf0",
+   "now": "a0c1370c180b4950277dc1a9058af81395fa59faa3ef1e775bcda8d7b412daf0"
+  },
+  ".veldo/control_api_signer.py": {
+   "at_commit": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725",
+   "now": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c"
+  },
+  ".veldo/control_api_webauthn.py": {
+   "at_commit": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789",
+   "now": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  ".veldo/control_channel_enrollment.py": {
+   "at_commit": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622",
+   "now": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622"
+  },
+  ".veldo/control_client_api.py": {
+   "at_commit": null,
+   "now": "24ef63ec1bade88d80d6d33cc899e10c6bf318a9607654d1d6fa19a089aa1ca8"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "880b1a321e39966b9a6d67074c17b420fe4f40be6d267010ec8ae7de7bac6745",
+   "now": "f101ef229d020c3008550c7276902b3aad49204bd90081c808745fbf6f5ea8d9"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": null,
+   "now": "c8a6d410e7c1fab444ed05dd8faf7ca0c2e741bc8d77b28d8a44cf55fbf537fd"
+  },
+  ".veldo/control_signer_answers.py": {
+   "at_commit": "5fa96e7d58ee981f0dd90a52b63fc546887b25933f14e3d46a17ea74c11a7200",
+   "now": "5fa96e7d58ee981f0dd90a52b63fc546887b25933f14e3d46a17ea74c11a7200"
+  },
+  ".veldo/events.py": {
+   "at_commit": "ffa749cbeafad5a3c4429cd16a717d21fe7f263f4f84a5126ccb5b8edbb2fb80",
+   "now": "f6c78862b338888c19937cebf57e1ae4cdea862f71a2d6c9dad667ffc2c2c4c0"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "6ab65c94fb45cfa50911ee1607cb60e0b12f938ad90520c4c44ffecda8c08dbb",
+   "now": "b36867475cb5fb104e91ea1ab9c186d556452743b2a33b79cc46911976da5533"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0130 install/assets",
+   true
+  ],
+  [
+   "VELDO-0130 webauthn/stand-in-browser",
+   true
+  ],
+  [
+   "VELDO-0130 webauthn/independent-vectors",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/pending-grants-nothing",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/steward-signed",
+   true
+  ],
+  [
+   "VELDO-0130 session/cookie-and-expiry",
+   true
+  ],
+  [
+   "VELDO-0130 session/forgery-refused",
+   true
+  ],
+  [
+   "VELDO-0130 session/revocation-ends",
+   true
+  ],
+  [
+   "VELDO-0130 routes/every-family",
+   true
+  ],
+  [
+   "VELDO-0130 routes/body-actor-refused",
+   true
+  ],
+  [
+   "VELDO-0130 edge/signer-api-purpose",
+   true
+  ],
+  [
+   "VELDO-0130 edge/authority-recheck",
+   true
+  ],
+  [
+   "VELDO-0130 messages/common-intake",
+   true
+  ],
+  [
+   "VELDO-0130 decisions/exact-settlement",
+   true
+  ],
+  [
+   "VELDO-0130 decisions/one-ruling",
+   true
+  ],
+  [
+   "VELDO-0130 transport/loopback-only",
+   true
+  ],
+  [
+   "VELDO-0130 reads/model-set",
+   true
+  ],
+  [
+   "VELDO-0130 reads/authoritative",
+   true
+  ],
+  [
+   "VELDO-0130 reads/freshness",
+   true
+  ],
+  [
+   "VELDO-0130 events/live",
+   true
+  ],
+  [
+   "VELDO-0130 actions/contract",
+   true
+  ],
+  [
+   "VELDO-0130 actions/workflow-save",
+   true
+  ],
+  [
+   "VELDO-0130 actions/unauthorized-write",
+   true
+  ],
+  [
+   "VELDO-0130 service/install",
+   false
+  ],
+  [
+   "VELDO-0130 service/socket-path",
+   false
+  ],
+  [
+   "VELDO-0130 service/edge-signed-requests",
+   false
+  ],
+  [
+   "VELDO-0130 service/host-revocation-closes-stream",
+   false
+  ],
+  [
+   "VELDO-0130 service/in-process-refused",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 31.868,
+ "spec_id": "VELDO-0130",
+ "suite": "scripts/suites/71_veldo_0130_api.py",
+ "tree": "git archive 791f0948d6e29d1a940feb8fa664a2dbf4179939, unchanged; the current suite file run against it"
+}

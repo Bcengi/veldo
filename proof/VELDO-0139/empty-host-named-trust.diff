@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -178 +178 @@
+-            rest.append('empty_' + name)
++            found.append('trust')  # defect: an empty leftover directory is named a trust

@@ -1,0 +1,4 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1209 +1208,0 @@
+-            service.announce_api()

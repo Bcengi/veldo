@@ -35,8 +35,8 @@ parameters outside the channel schema (invalid_enrollment); and a missing or wro
 (key_possession_unproven).
 
 WHAT IT IS NOT. Enrollment activates no ingress (VELDO-0073 requires separate live Telegram proof and
-an authorized activation). Release 1 enrolls the Telegram chat edge only; more channels are Release 4
-and Jira enrollment is dropped. Key custody is the installer's and control_keys_custody's: the private
+an authorized activation). Release 1 enrolls the Telegram chat edge and, for VELDO-0130, the
+authenticated API's own edge (channel "api"); more channels are Release 4 and Jira enrollment is dropped. Key custody is the installer's and control_keys_custody's: the private
 key stays in the protected key directory the signer's fixed configuration names. Standard library only;
 the authority contract, membership, key lifecycle and store are loaded as sibling organs by path.
 """
@@ -60,8 +60,12 @@ SCHEMA = 'veldo.channel_edge_key/v1'
 ENROLL = 'enroll_channel_edge'
 RETIRE = 'retire_channel_edge'
 OPERATIONS = (ENROLL, RETIRE)
-# Release 1 enrolls one channel edge, the Telegram chat edge; more channels are Release 4.
+# Release 1 enrolls one answer channel edge, the Telegram chat edge; more channels are Release 4.
 CHANNELS = ('telegram_chat',)
+# VELDO-0130: the authenticated API's own edge (authority_contract.EDGE_CHANNELS), enrolled by the same
+# command. It is not an answer channel, so the pending work of `metrics` stays the Telegram edge's.
+API_CHANNELS = ('api',)
+ENROLLABLE = CHANNELS + API_CHANNELS
 # The signed parameters of each command, exactly: nothing more is executed than was signed.
 ENROLLMENT_FIELDS = ('channel', 'edge_principal', 'edge_key_id', 'public_key', 'connection_public_key', 'scope')
 RETIREMENT_FIELDS = ('channel', 'edge_key_id')
@@ -109,7 +113,7 @@ def target(channel):
 
 def edge_key_id(channel):
     """The id the authority contract gives a channel's restricted edge key."""
-    return AC.CHANNELS.get(channel, {}).get('edge_key_id')
+    return AC.edge_channel(channel).get('edge_key_id')
 
 
 def edge_record(state, key_id):
@@ -133,7 +137,7 @@ def parameter_problems(operation, params):
         return ['the parameters are exactly %s' % ', '.join(fields)]
     problems = []
     channel = params['channel']
-    if channel not in CHANNELS or not AC.CHANNELS.get(channel, {}).get('enrolled'):
+    if channel not in ENROLLABLE or not AC.edge_channel(channel).get('enrolled'):
         problems.append('channel %r is not enrollable in this release' % (channel,))
     elif params['edge_key_id'] != edge_key_id(channel):
         problems.append('the edge key id of %s is %r' % (channel, edge_key_id(channel)))

@@ -1,0 +1,14 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -775,2 +775 @@
+-                if state != 'live':
+-                    stream.close('session_expired' if state == 'session_expired' else reason)
++                pass  # defect: no stream is closed
+@@ -819,4 +817,0 @@
+-            if state != 'live':
+-                stream.close(state if state == 'session_expired' else 'revoked')
+-                closed += 1
+-                continue
+@@ -836,2 +830,0 @@
+-                stream.close(why)
+-                closed += 1

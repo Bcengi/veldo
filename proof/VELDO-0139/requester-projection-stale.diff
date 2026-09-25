@@ -1,0 +1,6 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -412,2 +412 @@
+-            K.publish(S, conn, projection)
+-            os.chmod(projection, 0o600)
++            os.chmod(projection, 0o600)  # defect: the projection is not republished

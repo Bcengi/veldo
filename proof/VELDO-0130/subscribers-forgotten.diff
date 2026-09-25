@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_api.py
++++ b/.veldo/control_service_api.py
+@@ -180 +180 @@
+-        self.subscribers = self._remembered()
++        self.subscribers = []  # defect: a restart forgets every subscribed API

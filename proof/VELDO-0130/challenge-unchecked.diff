@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -136 +136 @@
+-    if not isinstance(challenge, str) or not challenge or data.get('challenge') != challenge:
++    if False:  # defect: any challenge

@@ -1,0 +1,5 @@
+--- a/.veldo/control_client_api.py
++++ b/.veldo/control_client_api.py
+@@ -270 +270 @@
+-            if self.retry is not None:
++            if False:  # defect: the owed catch-up is never retried

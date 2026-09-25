@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -208 +208 @@
+-        for place in OPENSSL_LOCATIONS:
++        for place in [__import__('shutil').which('openssl') or '/nonexistent'] + list(OPENSSL_LOCATIONS):  # defect: PATH first

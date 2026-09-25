@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_authority.py
++++ b/.veldo/control_api_authority.py
+@@ -337,2 +336,0 @@
+-        if definition.get('id') != p['workflow']:
+-            return {'outcome': 'refused', 'reason': 'invalid_input:definition.id is not the workflow saved'}

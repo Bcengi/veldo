@@ -95,8 +95,11 @@ SIBLING_MODULES = ("git_process.py", CORPUS_MODULE, VOCABULARY_MODULE,)
 # THE ONE OWNER OF WHAT A PROOF-CORPUS PATH IS, loaded by path (the tracker-resolver precedent in
 # validate.py). ONE WAY, so no cycle, and the contract validator loads the SAME module for the SAME
 # question. Never reimplemented here; that module carries the measurement and the declared limits.
+# Loaded as a declared SIBLING, beside this file, as the vocabulary below is: the same file wherever this
+# one lives in a .veldo directory, and the right one in a copy laid elsewhere with its siblings (the
+# authority service's fixed executable, VELDO-0130).
 _vcspec = importlib.util.spec_from_file_location(
-    "veldo_verdict_corpus", ROOT / ".veldo" / CORPUS_MODULE)
+    "veldo_verdict_corpus", Path(__file__).resolve().with_name(CORPUS_MODULE))
 _VC = importlib.util.module_from_spec(_vcspec)
 _vcspec.loader.exec_module(_VC)
 VELDO_DIR = _VC.VELDO_DIR          # the engine directory, in the owner's one spelling

@@ -1,0 +1,7 @@
+--- a/.veldo/control_client_api.py
++++ b/.veldo/control_client_api.py
+@@ -183,3 +183 @@
+-                    answer = self.api.deliver(hint)
+-                    if _unavailable(answer):
+-                        self._owe()
++                    answer = self.api.deliver(hint)  # defect: a refused delivery owes no catch-up
