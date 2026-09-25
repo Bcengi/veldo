@@ -54,7 +54,7 @@ store, OpenSSH signatures, the actual protected signer process, the production i
 two loopback Bot API servers, a local TLS stand-in, and a socket guard that refuses and counts every
 connection beyond 127.0.0.1, so no row and no mutant reaches Telegram. Registry:
 `scripts/check_teeth_mutations.py --finding 73`. `python3 -B proof/VELDO-0073/drive.py` regenerates
-`mutations.json` and the diffs: 20 mutants, each reds its named row by assertion, baseline and a no-op
+`mutations.json` and the diffs: 19 mutants, each reds its named row by assertion, baseline and a no-op
 copy of each of the seven mutated modules green. `red-at-3dc0393.json`: the current suite against the
 pre-change tree, every row red by assertion.
 
@@ -65,7 +65,7 @@ pre-change tree, every row red by assertion.
 | `activation/no-implicit` | AC1 | `doorbell-token-resolves-sends`, `ungated-edge-reaches-any-origin` |
 | `activation/explicit-bound-operates` | AC1 | `steward-authorizes-owner-edge`, `send-to-any-chat`, `production-acquisition-ungated` |
 | `qualification/real-platform-proof` | AC2 | `fixture-evidence-accepted`, `tls-host-unchecked`, `trust-store-from-environment`, `answer-not-the-platform-bytes` |
-| `settlement/production-construction` | AC2 | `host-trust-optional`, `decision-signer-untrusted`, `decision-key-unverified` |
+| `settlement/production-construction` | AC2 | `host-trust-optional`, `decision-key-unverified` |
 | `notification/wakes-only` | AC3 | `notification-settles` |
 | `stop/halts-edge` | AC4 | `stop-ignored` |
 | `stale/key-and-configuration` | AC4 | `bindings-not-compared`, `origin-unbound`, `bot-unbound` |

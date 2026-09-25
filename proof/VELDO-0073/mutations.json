@@ -43,7 +43,7 @@
     true
    ]
   ],
-  "seconds": 2.624
+  "seconds": 2.633
  },
  "controls_green": true,
  "mutants": [
@@ -57,7 +57,7 @@
     "VELDO-0073 install/assets"
    ],
    "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "3fc41f86677e0b704e8991ae7483ffc0e5dbf974500053c6f6a8d791c7852fb9",
+   "mutant_sha256": "ba6fd51e281b7a5f650a7d303125787a3ed465b169849f5a1700c7c0084742ba",
    "name": "activation-not-scaffolded",
    "named_row_red": true,
    "named_rows": [
@@ -102,8 +102,8 @@
      true
     ]
    ],
-   "seconds": 2.625,
-   "source_sha256": "96abce26f3111c7d9ed16314d79e2ef7c9fbde3586f7cad1a17da498c197197f"
+   "seconds": 2.62,
+   "source_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132"
   },
   {
    "by_assertion": true,
@@ -166,7 +166,7 @@
      true
     ]
    ],
-   "seconds": 2.631,
+   "seconds": 2.615,
    "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
   },
   {
@@ -229,7 +229,7 @@
      true
     ]
    ],
-   "seconds": 2.63,
+   "seconds": 2.625,
    "source_sha256": "6fb9b11d9005b190c99387d08160c6b6188e78ddb9460a0ce72c7aac2d03418a"
   },
   {
@@ -316,7 +316,7 @@
      false
     ]
    ],
-   "seconds": 2.366,
+   "seconds": 2.411,
    "source_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
   },
   {
@@ -375,7 +375,7 @@
      true
     ]
    ],
-   "seconds": 2.634,
+   "seconds": 2.619,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -433,7 +433,7 @@
      true
     ]
    ],
-   "seconds": 2.628,
+   "seconds": 2.627,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -491,7 +491,7 @@
      true
     ]
    ],
-   "seconds": 2.631,
+   "seconds": 2.623,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -527,7 +527,7 @@
     "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_ingress.py",
-   "mutant_sha256": "76dda651d7c39a696f9c4a09d71c2f8512d0bedd57ecd5778fcd2d32ad3eccc0",
+   "mutant_sha256": "a48f8e1057fbd07d615c2a98d834d0001734123c052b9af86ab06b63f47a87b2",
    "name": "production-acquisition-ungated",
    "named_row_red": true,
    "named_rows": [
@@ -572,8 +572,8 @@
      false
     ]
    ],
-   "seconds": 2.121,
-   "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
+   "seconds": 2.129,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   {
    "by_assertion": true,
@@ -632,7 +632,7 @@
      true
     ]
    ],
-   "seconds": 2.624,
+   "seconds": 2.625,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -690,7 +690,7 @@
      true
     ]
    ],
-   "seconds": 2.628,
+   "seconds": 2.619,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -748,7 +748,7 @@
      true
     ]
    ],
-   "seconds": 3.127,
+   "seconds": 3.135,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -806,7 +806,7 @@
      true
     ]
    ],
-   "seconds": 2.629,
+   "seconds": 2.634,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -819,7 +819,7 @@
     "VELDO-0073 settlement/production-construction"
    ],
    "module": ".veldo/control_channel_ingress.py",
-   "mutant_sha256": "f1099de77e0e34c6ffe8d6c94cf04012a726401224fcd43671101d6ee3266b21",
+   "mutant_sha256": "cf2c8a517639f251b9e4de9e97535bd906a5bf44613c213c562e2db5306ba202",
    "name": "host-trust-optional",
    "named_row_red": true,
    "named_rows": [
@@ -864,21 +864,22 @@
      true
     ]
    ],
-   "seconds": 2.624,
-   "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
+   "seconds": 2.628,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0073 settlement/production-construction detail: a decision signer the host does not trust for settlements is refused"
+    "VELDO-0073 settlement/production-construction detail: a decision signer the host does not trust for settlements is refused",
+    "VELDO-0073 settlement/production-construction detail: a trusted principal with another key is refused"
    ],
-   "diff": "proof/VELDO-0073/decision-signer-untrusted.diff",
+   "diff": "proof/VELDO-0073/decision-key-unverified.diff",
    "failed_rows": [
     "VELDO-0073 settlement/production-construction"
    ],
    "module": ".veldo/control_channel_ingress.py",
-   "mutant_sha256": "c4a5690fe31d56723d26c8fdf55dbfbb950f6e383a7d59712785c84ba13ab749",
-   "name": "decision-signer-untrusted",
+   "mutant_sha256": "0968f2920bdc7fc4b959794592b04c617b7608e1174c6eda4439b2944880c308",
+   "name": "decision-key-unverified",
    "named_row_red": true,
    "named_rows": [
     "settlement/production-construction"
@@ -922,8 +923,8 @@
      true
     ]
    ],
-   "seconds": 2.622,
-   "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
+   "seconds": 2.617,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   {
    "by_assertion": true,
@@ -940,7 +941,7 @@
     "VELDO-0073 stop/halts-edge"
    ],
    "module": ".veldo/control_channel_ingress.py",
-   "mutant_sha256": "12dbede932ed9cd15b7d62038bd58e9ada378d58032cf8135ad24fcbc5d7eb92",
+   "mutant_sha256": "628acba246884d16cd1ad887d64f572190a42f59fdde9d07775c8c1a2d140300",
    "name": "notification-settles",
    "named_row_red": true,
    "named_rows": [
@@ -985,8 +986,8 @@
      true
     ]
    ],
-   "seconds": 3.128,
-   "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
+   "seconds": 2.619,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   {
    "by_assertion": true,
@@ -1048,7 +1049,7 @@
      false
     ]
    ],
-   "seconds": 2.621,
+   "seconds": 3.121,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -1107,7 +1108,7 @@
      false
     ]
    ],
-   "seconds": 2.637,
+   "seconds": 2.628,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -1165,7 +1166,7 @@
      false
     ]
    ],
-   "seconds": 2.62,
+   "seconds": 2.618,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   {
@@ -1223,7 +1224,7 @@
      false
     ]
    ],
-   "seconds": 3.136,
+   "seconds": 2.623,
    "source_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
   }
  ],
@@ -1255,7 +1256,7 @@
   ],
   "settlement/production-construction": [
    "host-trust-optional",
-   "decision-signer-untrusted"
+   "decision-key-unverified"
   ],
   "stale/key-and-configuration": [
    "bindings-not-compared",
@@ -1310,7 +1311,7 @@
      true
     ]
    ],
-   "seconds": 2.621,
+   "seconds": 2.631,
    "source_sha256": "7998adf3b8a0231622afeefd1973f30538ac6067074f85817f760a063d49fdcc"
   },
   "control_channel_attribution.py": {
@@ -1356,11 +1357,11 @@
      true
     ]
    ],
-   "seconds": 2.623,
+   "seconds": 2.634,
    "source_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
   },
   "control_channel_ingress.py": {
-   "copy_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708",
+   "copy_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1402,8 +1403,8 @@
      true
     ]
    ],
-   "seconds": 2.63,
-   "source_sha256": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
+   "seconds": 2.638,
+   "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   "control_channel_presentation.py": {
    "copy_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735",
@@ -1448,7 +1449,7 @@
      true
     ]
    ],
-   "seconds": 2.636,
+   "seconds": 2.622,
    "source_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
   },
   "control_channel_projection.py": {
@@ -1494,11 +1495,11 @@
      true
     ]
    ],
-   "seconds": 2.626,
+   "seconds": 2.627,
    "source_sha256": "6fb9b11d9005b190c99387d08160c6b6188e78ddb9460a0ce72c7aac2d03418a"
   },
   "init_scaffold.py": {
-   "copy_sha256": "96abce26f3111c7d9ed16314d79e2ef7c9fbde3586f7cad1a17da498c197197f",
+   "copy_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1540,8 +1541,8 @@
      true
     ]
    ],
-   "seconds": 2.634,
-   "source_sha256": "96abce26f3111c7d9ed16314d79e2ef7c9fbde3586f7cad1a17da498c197197f"
+   "seconds": 2.626,
+   "source_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132"
   },
   "request_doorbell.py": {
    "copy_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381",
@@ -1592,7 +1593,7 @@
  },
  "registry": "scripts/check_teeth_mutations.py --finding 73",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 71.687,
+ "serial_seconds": 71.178,
  "spec_id": "VELDO-0073",
  "suite": "scripts/suites/70_veldo_0073_activation.py"
 }

@@ -47,7 +47,9 @@
   "VELDO-0073 settlement/production-construction detail: the owner's answer was signed by the actual protected signer process",
   "VELDO-0073 settlement/production-construction detail: the settlement carries the platform message: id, sender, chat, date and the presentation replied to",
   "VELDO-0073 settlement/production-construction detail: no host trust installed: the ingress is not constructed",
+  "VELDO-0073 settlement/production-construction detail: the settlement service signs decisions as the host's trusted settlement signer",
   "VELDO-0073 settlement/production-construction detail: a decision signer the host does not trust for settlements is refused",
+  "VELDO-0073 settlement/production-construction detail: a trusted principal with another key is refused",
   "VELDO-0073 settlement/production-construction detail: a token file others can read is refused",
   "VELDO-0073 notification/wakes-only detail: an invented notification payload wakes acquisition and is kept only as its digest",
   "VELDO-0073 notification/wakes-only detail: the payload settles nothing: no answer, no settlement, the request still pending",
@@ -89,7 +91,7 @@
   },
   ".veldo/control_channel_ingress.py": {
    "at_commit": null,
-   "now": "856b040f6fc3c330ea8dbc26eee61bedd856ed1fc62cf4a637d5787b8658a708"
+   "now": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   ".veldo/control_channel_presentation.py": {
    "at_commit": "f6f76e5858aff9276fe322f1273318b1d5b9e2c9133410b427c7b4f54223b87c",
@@ -101,7 +103,7 @@
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "52cb67a5ac0d8cfa65c2474291108ff7c4ce7dd7b51826b41a9b855a80853d47",
-   "now": "96abce26f3111c7d9ed16314d79e2ef7c9fbde3586f7cad1a17da498c197197f"
+   "now": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132"
   },
   ".veldo/request_doorbell.py": {
    "at_commit": "a9e58e8b45f7629fe91c8b4f5177f54e9ef44b4c9aecad371942cfa3ffa2613a",
@@ -148,7 +150,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.141,
+ "seconds": 1.639,
  "spec_id": "VELDO-0073",
  "suite": "scripts/suites/70_veldo_0073_activation.py",
  "tree": "git archive 3dc0393cc5dcf41e2532970f1f3f6f55db1e7817, unchanged; the current suite file run against it"

@@ -4628,10 +4628,6 @@ def cases():
     activation('host-trust-optional', 'control_channel_ingress.py',
                "    if trust is None:\n        raise Refused('missing_authority', 'this host has installed no trust')\n", '',
                'settlement/production-construction')
-    activation('decision-signer-untrusted', 'control_channel_ingress.py',
-               "    if settlement_trust is None or principal not in signer_principals(settlement_trust.signers):\n"
-               "        raise Refused('missing_authority', 'the decision signer is not one of this host\\'s settlement signers')\n",
-               '', 'settlement/production-construction')
     activation('decision-key-unverified', 'control_channel_ingress.py',
                "    if not settlement_trust.verify(probe, sign(probe), principal):\n", "    if False:  # defect: any key signs\n",
                'settlement/production-construction')

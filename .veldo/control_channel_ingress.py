@@ -169,18 +169,14 @@ def journal_signer(journal):
     return principal, sign
 
 
-def signer_principals(allowed_signers_text):
-    return {line.split()[0] for line in allowed_signers_text.splitlines() if line.strip() and not line.startswith('#')}
-
-
 def decision_signer(config, settlement_trust):
     """The VELDO-0069 decision signer the configuration names, or None when it names none."""
     named = config.get('decision_signer')
     if named is None:
         return None
     principal = named.get('principal') if isinstance(named, dict) else None
-    if settlement_trust is None or principal not in signer_principals(settlement_trust.signers):
-        raise Refused('missing_authority', 'the decision signer is not one of this host\'s settlement signers')
+    if settlement_trust is None or not isinstance(principal, str):
+        raise Refused('missing_authority', 'this host trusts no settlement signer to name')
     key = named.get('key')
     _private_file(key, 'the decision key')
     workspace = os.path.realpath(config['workspace'])
@@ -199,7 +195,7 @@ def decision_signer(config, settlement_trust):
     # host's settlement signers exactly as the VELDO-0054 readers verify a binding.
     probe = b'veldo.decision_signer.probe/v1'
     if not settlement_trust.verify(probe, sign(probe), principal):
-        raise Refused('missing_authority', 'the decision key is not the key the host trusts for its principal')
+        raise Refused('missing_authority', 'the decision signer is not a key the host trusts for that principal')
     return principal, sign
 
 

@@ -395,7 +395,7 @@ def _v73_checks(base):
                     return exc.code
                 return 'constructed'
             check(SP, 'no host trust installed: the ingress is not constructed',
-                  IN is not None and construct(host_trust=str(A.host / 'absent.json')) == 'missing_authority')
+                  IN is not None and construct(host_trust=str(A.host / 'absent.json'), decision_signer=None) == 'missing_authority')
             decision = getattr(getattr(ing, 'settlement', None), 'decision_signer', None)
             trust = _v73_load('v73_dd', organs / 'control_decision_dependency.py').SettlementTrust(
                 A.settlement_signers.read_text())
