@@ -110,9 +110,9 @@ forcing a push.
 
 ## Context
 
-W108 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1. Section 7 of the
-approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md) (owner Telegram
-29162) designs the re-land and gives its criterion and falsifier as an amendment of VELDO-0057. VELDO-0057
+W108 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5 (the factory loop it
+extends, VELDO-0129, is stage 5). Section 7 of the approved
+[operating-model design](../docs/design/PLAN-0019-operating-model-design.md) (owner Telegram 29162) designs the re-land and gives its criterion and falsifier as an amendment of VELDO-0057. VELDO-0057
 has landed with its proof, so this repository's convention puts that amendment in its own specification
 that depends on it, and VELDO-0057 keeps its landed text.
 

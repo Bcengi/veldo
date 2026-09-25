@@ -25,7 +25,7 @@ design left a choice, the resolution is listed at the end.
 | RJ1 starts from a Telegram message pointing at a Jira ticket, fetched through the Atlassian catalog server, uses at least two accounts and is watched in the live terminal | regression |
 | The per-person deployment is R75's deployment view | controlling design |
 | Build order inside Release 1 follows the design's section 12 | Releases and order |
-| VELDO-0057 on VELDO-0129; VELDO-0129 on VELDO-0039, VELDO-0047, VELDO-0062; VELDO-0127 on VELDO-0144; VELDO-0131 on VELDO-0141 to VELDO-0145 | work items |
+| VELDO-0148 on VELDO-0129; VELDO-0129 on VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0141; VELDO-0127 on VELDO-0144; VELDO-0131 on VELDO-0141 to VELDO-0145 | work items |
 | VELDO-0127, VELDO-0090 and VELDO-0091 move from stage 4 to stage 5 | work items, allocation table |
 
 The controlling design, [docs/design/PLAN-0019-dark-factory-design.md](../../docs/design/PLAN-0019-dark-factory-design.md),
@@ -46,13 +46,13 @@ reviewer judges section, one was added in the repository's three parts.
 | VELDO-0059 | depends_on per the plan; AC1 matches the new RJ1; the Notes no longer route defects through VELDO-0080 |
 | VELDO-0060 | AC1 adds the everything-off baseline, the paid-API guard, the environment strip and the pinned executable; AC4 keeps the usage caps, login separation to Release 2 |
 | VELDO-0061 | The same for Codex |
-| VELDO-0062 | AC1 keeps the login source per dispatch, login separation to Release 2; AC5 adds the re-run rule at a limit and one run at a time for a new account; Notes give the store registry and selection order |
+| VELDO-0062 | AC1 keeps the login source per dispatch, login separation to Release 2; AC5 adds one run at a time for a new account; new AC6 classifies `account_limit` and decides re-run or ask over a record, tested with fixture records; Notes give the store registry and selection order |
 | VELDO-0079 | AC2: such work is admitted at default priority unless the PM raises a question or another priority |
 | VELDO-0088 | The thin one-unit PM of the critical path's stage 2: AC1 the default pipeline and model nodes as Runner dispatches; new AC4 one coordination run writes the requirements and stages the unit with the four required roles, and the builder fetches the ticket itself; depends on VELDO-0089, 0129 and 0151 and moves to stage 5; several-unit work is VELDO-0146 |
 | VELDO-0090 | AC1's set includes the `when assigned` items a staffing choice requests |
 | VELDO-0091 | AC1: requirements quote every external reference with tool, fetch time and digest |
 | VELDO-0127 | AC1: catalog references, skills, instruction files and load modes; AC2 drops the provider-login clause; new AC4: nothing loads unless listed |
-| VELDO-0129 | New AC4: the Runner and factory loop in the authority service, woken by commits, the launch pipe and reset timers |
+| VELDO-0129 | New AC4: the Runner and factory loop in the authority service, woken only by commits, the launch pipe and reset timers, the loop never polling; AC5: a receiver that dies wakes the loop and frees its slot; AC6: the re-dispatch or the question to the owner for an account-limited run; moves to stage 5 |
 | VELDO-0131 | The live terminal replaces the "Live agent run" row; new "MCP servers and credentials" and "Repositories and identities" rows; per-account usage |
 | VELDO-0141 | Ready, with its four amendments; bound to W101 |
 | VELDO-0080, VELDO-0092 | Context and History record the move to Release 2; criteria unchanged |

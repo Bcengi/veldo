@@ -946,10 +946,10 @@ work:
     spec: VELDO-0129
     title: Real worker adapter wiring for LiveLoop and LiveReviewer
     feature_refs: [F4]
-    depends_on: [VELDO-0039, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0062]
-    order: 11129
+    depends_on: [VELDO-0039, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0064, VELDO-0141]
+    order: 15129
     release: 1
-    stage: 1
+    stage: 5
   - item: W93
     spec: VELDO-0130
     title: Authenticated factory state, message and decision API
@@ -1060,9 +1060,9 @@ work:
     title: A land refused because another factory moved main is re-landed on the new tip, re-merged and re-gated, and nothing ever forces
     feature_refs: [F3]
     depends_on: [VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0129]
-    order: 11148
+    order: 15148
     release: 1
-    stage: 1
+    stage: 5
   - item: W109
     spec: VELDO-0149
     title: A project activates on any repository this domain adopted, by the owner's signed command or by his settled answer
@@ -1418,7 +1418,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W89 | VELDO-0126 | 1 | 3 |
 | W90 | VELDO-0127 | 1 | 5; amended in revision 4 |
 | W91 | VELDO-0128 | 1 | 3 |
-| W92 | VELDO-0129 | 1 | 1; AC4 added in revision 4 |
+| W92 | VELDO-0129 | 1 | 5; AC4 to AC6 added in revision 4 |
 | W93 | VELDO-0130 | 1 | 5 |
 | W94 | VELDO-0131 | 1 | 5; amended in revision 4 |
 | W95 | VELDO-0132 | 1 | 4 |
@@ -1432,7 +1432,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W103 | VELDO-0143 | 1 | 5 |
 | W104 | VELDO-0144 | 1 | 5 |
 | W105 | VELDO-0145 | 1 | 5 |
-| W108 | VELDO-0148 | 1 | 1 |
+| W108 | VELDO-0148 | 1 | 5 |
 | W109 | VELDO-0149 | 1 | 4 |
 | W110 | VELDO-0150 | 1 | 4 |
 | W111 | VELDO-0151 | 1 | 5 |
@@ -1507,7 +1507,8 @@ W112's VELDO-0152 (ticket keys and new projects at intake); each landed specific
 text. The dependency changes the amendments
 imply are recorded as edges: VELDO-0148 on VELDO-0129 (the loop offers the re-land), VELDO-0129 on
 VELDO-0039, VELDO-0047 and VELDO-0062 (the loop runs the Runner in the service and sets account reset
-timers), VELDO-0127 on VELDO-0144 (roles refer to catalog servers) and VELDO-0131 on VELDO-0141 to
+timers) and on VELDO-0064 and VELDO-0141 (it asks the owner about an account-limited run whose record
+shows a write through an MCP server, so it moves to stage 5 with VELDO-0148), VELDO-0127 on VELDO-0144 (roles refer to catalog servers) and VELDO-0131 on VELDO-0141 to
 VELDO-0145 (its new rows). Because VELDO-0144 adds an API route and so depends on VELDO-0130, it is
 stage 5, and VELDO-0127, VELDO-0090 and VELDO-0091, which depend on it in turn, move from stage 4 to
 stage 5 so no dependency points at a later stage; the build order follows the design's section 12 and

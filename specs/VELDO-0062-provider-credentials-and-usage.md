@@ -38,9 +38,9 @@ footprint:
   - "engine/.veldo/control_account*.py"
   - ".veldo/control_account*.py"
   - "packs/*/.veldo/control_account*.py"
-  - "engine/.veldo/control_runner*.py"
-  - ".veldo/control_runner*.py"
-  - "packs/*/.veldo/control_runner*.py"
+  - "engine/.veldo/control_launch*.py"
+  - ".veldo/control_launch*.py"
+  - "packs/*/.veldo/control_launch*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -118,23 +118,35 @@ acceptance_criteria:
       Claim: The owner registers any number of logged-in subscription accounts for each provider,
       each once with its own login, and the factory runs work on all of them at the same time, each
       with its own credentials, usage and rate-limit windows, moving new work off an account that
-      has reached its limit; a run stopped by its limit is dispatched again on another account only
-      when it made no call to an MCP tool not marked read-only, and otherwise the owner is asked.
-      Set and completeness: Register three Claude Code accounts and one Codex account (each its own
-      profile: Claude Code's config directory, Codex's home), run concurrent work across them, and
-      read back that each invocation used exactly its own account's profile and was charged to that
-      account; exhaust one account's allowance and require new work to go to another account of the
-      same provider while nothing is sent to the exhausted one until its reported reset; add an
-      account later with no restart of running work. A run whose stream reports its window
-      exhausted, or whose engine ends with its rate-limit result, records the window and reset time
-      and ends as `account_limit`; when its record shows no call to an MCP tool not marked
-      read-only, the same station is dispatched again under a new dispatch identity on another
-      account from the same accepted commit, and when it shows such a call the owner is asked
-      whether to re-run, naming the calls. An account with no usage observation yet admits one run
-      at a time until its first observation, because unknown is never zero. Falsifier: Launch two
-      accounts' work with one shared profile; the per-account isolation check must fail.
+      has reached its limit. Set and completeness: Register three Claude Code accounts and one Codex
+      account (each its own profile: Claude Code's config directory, Codex's home), run concurrent
+      work across them, and read back that each invocation used exactly its own account's profile and
+      was charged to that account; exhaust one account's allowance and require new work to go to
+      another account of the same provider while nothing is sent to the exhausted one until its
+      reported reset; add an account later with no restart of running work. An account with no
+      usage observation yet admits one run at a time until its first observation, because unknown is
+      never zero. Falsifier: Launch two accounts' work with one shared profile; the per-account
+      isolation check must fail.
     falsified_by: >
       Launch two accounts' work with one shared profile; the per-account isolation check must fail.
+  - id: AC6
+    text: >
+      Claim: A run stopped by its account's limit is classified `account_limit` with its window and
+      reset time, and a re-run-or-ask decision is made over its record: re-run on another account only
+      when the record shows no call to an MCP tool not marked read-only, and otherwise ask the owner,
+      naming the calls. Set and completeness: Feed the receiver's classification a stream that reports
+      its window exhausted, an engine that ends with its rate-limit result, and an ordinary nonzero
+      exit, and read back `account_limit` with the window and reset time recorded for the first two
+      only. Feed the decision fixture records in the execution record's shape (VELDO-0141) with the
+      read-only marks of catalog revisions (VELDO-0144): one with no MCP call, one with only calls to
+      tools marked read-only, one with a call to a tool not marked read-only, and one with a call to a
+      tool of a server whose revision marks nothing; the first two decide re-run and the others decide
+      ask with exactly those calls named. Carrying out the decision (the new dispatch, or the question
+      to the owner) is VELDO-0129 AC6. Falsifier: Decide re-run for a record that shows a call to an
+      MCP tool not marked read-only; the ask-decision row must fail.
+    falsified_by: >
+      Decide re-run for a record that shows a call to an MCP tool not marked read-only; the
+      ask-decision row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
@@ -167,7 +179,7 @@ No automatic recovery, extra channel activation or broader host qualification is
 - Threat model: an invocation authenticated with another account's profile or one taken from the
   caller's environment; a paid API credential reaching the engine; a worker's own report claiming less
   usage than the CLI recorded; work sent to an account at its limit before its reported reset; a run
-  that wrote through an MCP server repeated on another account without asking. MCP servers keep the
+  that wrote through an MCP server decided for a re-run on another account instead of asking. MCP servers keep the
   credentials their configuration gives them (VELDO-0127, VELDO-0144). The owner's account and the
   installed engine are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a child
@@ -199,9 +211,10 @@ are the active accounts of an engine the role allows, with a profile on the chos
 reported rate-limit window and under their concurrency. The Runner picks the lowest last reported
 utilization on the tightest window, then the fewest active runs, then the least recently used. With
 no candidate the unit waits, the UI shows "no account until" the earliest reset, and the factory loop
-sets a timer for that time (VELDO-0129 AC4). The re-run rule reads the run's execution record
-(VELDO-0141) and the read-only marks of the MCP catalog (VELDO-0144); until a role hands over catalog
-servers there is no MCP call to find, and the asking leg is driven once those land.
+sets a timer for that time (VELDO-0129 AC4). The re-run rule (AC6) is a decision over a record: it
+reads a run's execution record in VELDO-0141's shape and the read-only marks of VELDO-0144's catalog
+revisions, so its checks use fixture records and this concern depends on neither; VELDO-0129 AC6 feeds it
+each real run's record and carries out what it decides.
 
 VELDO-0036 supplies atomic account/project/unit usage reservations. Before every initial,
 retry or follow-on CLI invocation, check all applicable caps and outstanding reservations;
@@ -253,3 +266,10 @@ per-host profiles for both providers and state the selection order. Status uncha
 2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
 dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
 which is built after VELDO-0124 and VELDO-0125. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: AC5 keeps the pool, concurrency, moving new work and the
+one-run rule for an unobserved account; the `account_limit` classification and the re-run-or-ask
+decision over a record are new AC6, tested with fixture records and with a falsifier of its own, and the
+re-dispatch and the question to the owner are VELDO-0129 AC6. The footprint names the Runner where it
+lives, `control_launch` (there is no `control_runner` module), which also holds the receiver that
+classifies the limit. Status unchanged.

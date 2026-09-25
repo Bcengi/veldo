@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W92
 plan_revision: 4
-depends_on: [VELDO-0039, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0062]
+depends_on: [VELDO-0039, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0064, VELDO-0141]
 placement: [loop, fleet]
 protected_paths: []
 footprint:
@@ -26,9 +26,6 @@ footprint:
   - "engine/.veldo/control_service*.py"
   - ".veldo/control_service*.py"
   - "packs/*/.veldo/control_service*.py"
-  - "engine/.veldo/control_runner*.py"
-  - ".veldo/control_runner*.py"
-  - "packs/*/.veldo/control_runner*.py"
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
@@ -88,25 +85,49 @@ acceptance_criteria:
       refusal check must fail.
   - id: AC4
     text: >
-      Claim: The Runner and factory loop run inside the authority service; a pass runs on each
-      journal-advancing packet or pass, on each run's end seen on the Runner's launch pipe,
-      including a receiver that died, and on account reset timers; it offers every assigned eligible
-      unit and every next station, and stops offering a paused project's units; nothing polls. Set
-      and completeness: Start the installed authority service with the Runner instantiated in it and
-      drive each wake source alone: a packet or channel pass that advanced the journal (where the
-      service already sends its hint); a receiver reporting `exited` or `unknown` on its output
-      pipe, which the Runner owns and the service loop registers in its poll set; end of file on
-      that pipe when the receiver is killed mid-run, which records `outcome_unknown` and frees the
-      account slot; and a timer set to the earliest account reset a waiting unit needs. After each,
-      compare what the pass offered with every assigned eligible unit (offered to the Runner with a
-      selected host and account) and every next station of a unit whose run ended, and require
-      nothing offered from a paused project. A build ending must lead to its review being offered
-      with no other input. No timer other than an account reset, and no polling loop, exists in the
-      service. Falsifier: Drop the launch pipe from the poll set; the review-offered row must fail,
-      and a receiver killed mid-run must still wake the loop and free its account slot.
+      Claim: The Runner and factory loop run inside the authority service; a loop pass runs only on its
+      three wake sources (each journal-advancing packet or pass, each run's end seen on the Runner's
+      launch pipe, and an account reset timer), offers every assigned eligible unit and every next
+      station, and stops offering a paused project's units; the factory loop never polls. Set and
+      completeness: Start the installed authority service with the Runner instantiated in it and drive
+      each wake source alone: a packet or channel pass that advanced the journal (where the service
+      already sends its hint); a receiver reporting `exited` or `unknown` on its output pipe, which the
+      Runner owns and the service loop registers in its poll set; and a timer set to the earliest
+      account reset a waiting unit needs. After each, compare what the pass offered with every assigned
+      eligible unit (offered to the Runner with a selected host and account) and every next station of
+      a unit whose run ended, and require nothing offered from a paused project. A build ending must
+      lead to its review being offered with no other input. No loop pass starts from anything but those
+      three sources, and no timer other than an account reset starts one; the service's own accept
+      timeout and channel pass are unchanged and are not loop wake sources. Falsifier: Drop the launch
+      pipe from the poll set; the review-offered row must fail.
     falsified_by: >
-      Drop the launch pipe from the poll set; the review-offered row must fail, and a receiver
-      killed mid-run must still wake the loop and free its account slot.
+      Drop the launch pipe from the poll set; the review-offered row must fail.
+  - id: AC5
+    text: >
+      Claim: A launch receiver that dies mid-run still wakes the loop, and its run is recorded
+      `outcome_unknown` with its account slot freed. Set and completeness: Kill the receiver mid-run
+      before it reports `exited` or `unknown`; the end of file on its launch pipe starts one loop pass,
+      the run is recorded `outcome_unknown` under its original dispatch with its usage reservation
+      retained, the account slot is free for the next dispatch, and the unit's next station is not
+      offered as if the run had succeeded. Falsifier: Ignore end of file on the launch pipe when the
+      receiver dies; the receiver-death row must fail.
+    falsified_by: >
+      Ignore end of file on the launch pipe when the receiver dies; the receiver-death row must fail.
+  - id: AC6
+    text: >
+      Claim: The loop carries out the re-run-or-ask decision VELDO-0062 AC6 makes for a run that ended
+      `account_limit`: it dispatches the same station again under a new dispatch identity on another
+      account from the same accepted commit, or asks the owner whether to re-run, naming the calls. Set
+      and completeness: End a real run as `account_limit` and feed VELDO-0062's decision its execution
+      record (VELDO-0141). For a re-run decision observe one new dispatch of the same station, on
+      another account of an engine the role allows, from the same accepted commit, and nothing sent to
+      the exhausted account before its reported reset. For an ask decision (a record with a call to an
+      MCP tool not marked read-only) observe one ordinary decision request to the project's owner
+      (VELDO-0064) naming the calls and no dispatch until he answers; his yes dispatches it as a re-run
+      would, and his no leaves the unit stopped. Falsifier: Re-dispatch a run whose decision is to ask
+      the owner; the ask-before-rerun row must fail.
+    falsified_by: >
+      Re-dispatch a run whose decision is to ask the owner; the ask-before-rerun row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern while preserving accepted records, configuration
@@ -120,7 +141,8 @@ adapters instead of stopping at the unimplemented model seams.
 
 ## Context
 
-W92 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+W92 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5 (moved from stage 1
+by revision 4, because AC6 reads the stage 5 execution record of VELDO-0141).
 Section 4 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
 places the Runner and the factory loop in the authority service.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its 2026-09-22
@@ -138,11 +160,14 @@ specification status, implementation, test, runtime policy or deployed service c
 - Normal use: the installed build and review entry points call the qualified Claude Code and Codex adapters for
   a dispatched unit; the Runner and factory loop run inside the authority service, and each commit,
   each run's end on the launch pipe and each account reset wakes one pass that offers every eligible
-  unit and next station.
+  unit and next station; a run stopped by its account's limit is dispatched again on another account
+  or put to the owner as VELDO-0062 decides.
 - Threat model: a production build or review that depends on an injected callable; a review with the builder's
   context, the builder's identity or no verdict artifact counted as passing; success manufactured
   from an exit code; a build ending that wakes nothing, or a receiver that died leaving its unit and
-  account slot stuck; a paused project's unit offered; a polling loop. The owner's account, the
+  account slot stuck; a paused project's unit offered; a loop pass started by polling or by any timer but an account reset;
+  a run that may have written through an MCP server re-run without asking, or an account-limited run
+  sent back to the exhausted account. The owner's account, the
   store and the installed engines are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery of an interrupted pass and restart matrices (Release 2); more than one scheduling
   instance; forged rows in our own store and files planted in the installed directory.
@@ -206,3 +231,13 @@ timers, offering every assigned eligible unit and next station and none of a pau
 polls. Its falsifier drops the launch pipe from the poll set. depends_on adds VELDO-0039, VELDO-0047
 and VELDO-0062, and the footprint adds the service, the Runner and the launch receiver. A What the
 reviewer judges section is added. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: "nothing polls" is scoped to the factory loop (its passes run
+only on the three wake sources, and no timer other than an account reset starts one); the service's own
+accept timeout and channel pass exist and are unchanged. AC4's double falsifier is split: AC4 keeps the
+launch pipe dropped from the poll set, and new AC5 is the receiver that dies, with end of file ignored as
+its falsifier. New AC6 carries out VELDO-0062 AC6's decision for an account-limited run (the re-dispatch
+and the question to the owner) with its own falsifier; depends_on adds VELDO-0064 (the question) and
+VELDO-0141 (the record the decision reads), so the work item moves to stage 5. The footprint drops
+`control_runner`, which does not exist; the Runner is class `Runner` in `control_launch`. Status
+unchanged.
