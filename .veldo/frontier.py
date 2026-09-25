@@ -138,6 +138,26 @@ def _floor_authority():
     return _FLOOR_ORGANS["dispatch"]
 
 
+def _backlog():
+    """control_backlog.py, the one answer to whether a unit is admitted, prioritized work (VELDO-0078),
+    loaded beside this file on first use by a frontier that has a Gate."""
+    if "backlog" not in _FLOOR_ORGANS:
+        _FLOOR_ORGANS["backlog"] = _load("veldo_backlog_fr", ".veldo/control_backlog.py")
+    return _FLOOR_ORGANS["backlog"]
+
+
+def _executable(gate, sid):
+    """The backlog's named reasons `sid` is not executable work now ([] when it is), read in one read
+    transaction on the Gate's read-only connection; a store that cannot be read is named, never an offer."""
+    try:
+        with _one_read(gate.conn):
+            return _backlog().executable_problems(gate.conn, sid)
+    except sqlite3.Error:
+        return ["unavailable_service:store"]
+    except ValueError:
+        return ["invalid_input:backlog/unreadable"]
+
+
 def _floor_enabled(repo_root, gate):
     """Whether offers come from floor state: an enrolled repository, which always has its Gate (gate_for
     stops an enrolled entry without one). An unenrolled tree keeps the status-line behavior unchanged."""
@@ -473,6 +493,10 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
     decision over the real store, and carries that decision as its `eligibility` ticket so the
     claim and every later station can refuse a changed input by name.
 
+    VELDO-0078: an offer the selection station accepts is also asked the backlog's question
+    (control_backlog.executable_problems): a unit that is not admitted, prioritized work is withheld by
+    its named reason.
+
     VELDO-0135: in an enrolled repository each unit's lane status is its floor record's station (see
     the module docstring), each offer carries a `floor` entry (the record's identity and version and
     the offer's id), and every enrolled unit in scope is observed through the Gate's sink, offered or
@@ -557,6 +581,12 @@ def claimable(worker_caps=None, scope=None, repo_root=None, claims_root=None, el
             decision = gate.decide("selection", sid)
             if not decision["eligible"]:
                 return _hold(sid, decision["refusals"][0], decision["refusals"])
+            # VELDO-0078: only admitted, prioritized work is offered. Intake-only, prepared, admitted but
+            # unprioritized, an appended unit awaiting its prioritization and a blocked item are held by
+            # the backlog's named reason, for build and review offers alike.
+            unready = _executable(gate, sid)
+            if unready:
+                return _hold(sid, unready[0], unready)
             unit["eligibility"] = decision
         if floor is not None and sid in floor:
             # VELDO-0135: the floor record the offer was made from, by identity and version, and the
