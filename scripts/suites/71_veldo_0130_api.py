@@ -1993,7 +1993,7 @@ def _v130_checks(base):
                     return reply.get(timeout=30)
                 return answer_call(command)
 
-            def serve_calls(worker, seconds=10):
+            def serve_calls(worker, seconds=5):
                 until = _v130_time.monotonic() + seconds
                 while worker.is_alive() and _v130_time.monotonic() < until:
                     try:
@@ -2460,13 +2460,20 @@ def _v130_service_checks(base):
                 return value
             _v130_time.sleep(0.1)
 
-    def bounded(work, seconds=30):
+    stuck = []
+
+    def bounded(work, seconds=10):
         """`work()` on its own thread, or None when it does not return in time: an API whose delivery is
-        deadlocked then fails the rows that need it by assertion, never hanging the suite."""
+        deadlocked then fails the rows that need it by assertion, never hanging the suite. Once one call
+        is stuck, every later one answers None at once (it would wait on the same deadlock)."""
+        if any(t.is_alive() for t in stuck):
+            return None
         box = []
         worker = _v130_threading.Thread(target=lambda: box.append(work()), daemon=True)
         worker.start()
         worker.join(seconds)
+        if worker.is_alive():
+            stuck.append(worker)
         return box[0] if box else None
 
     def private(path, text):
@@ -2806,7 +2813,7 @@ def _v130_service_checks(base):
             CS.stop(unit, manager)
             restarted = CS.start(unit, manager)
             instance_after = service_status().get('instance')
-            resubscribed = wait(lambda: opened is not None and getattr(opened.authority, 'instance', None) == instance_after, 10)
+            resubscribed = wait(lambda: opened is not None and getattr(opened.authority, 'instance', None) == instance_after, 5)
             check(SX, 'the service restarted as a new instance and the API subscribed to it by itself, with no request '
                   'of its own [observed %s -> %s, API %s]' % (instance_before, instance_after,
                                                               getattr(getattr(opened, 'authority', None), 'instance', None)),
@@ -2814,14 +2821,14 @@ def _v130_service_checks(base):
                   and bool(resubscribed))
             mark = head()
             revoked3 = steward('revoke', credential_id=tablet.credential_id)
-            closed3 = wait(lambda: watching and stream3.closed is not None, 10)
+            closed3 = wait(lambda: watching and stream3.closed is not None, 5)
             check(SX, 'a host revocation the new instance commits closes the open stream as revoked, nothing passed by '
                   'this suite [observed %s %s]' % ((revoked3.get('result') or {}).get('reason'),
                                                    stream3.closed if watching else None),
                   (revoked3.get('result') or {}).get('ok') is True and head() > mark and bool(closed3)
                   and stream3.closed == 'revoked')
             check(SX, 'the API\'s cursor is at the head [observed %s of %s]' % (getattr(api, '_cursor', None), head()),
-                  wait(lambda: getattr(api, '_cursor', None) == head(), 10))
+                  wait(lambda: getattr(api, '_cursor', None) == head(), 5))
 
         # service/in-process-refused: this process, the API process, cannot run the judge on the store itself.
         with section(SN):
