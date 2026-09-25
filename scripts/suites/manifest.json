@@ -905,6 +905,15 @@
    ],
    "regions": "Andon stops of execution units raised by any authenticated worker or service at every enabled build, review and coordination stop point with reason, interrupted station and resolving-authority predicate; each stop's current versioned presentation delivered to the owner's Telegram chat through the activated VELDO-0073 edge, one notice per request version and presentation; resumption of a clean decision stop only on the designated authority's current VELDO-0068 settlement with a fresh station contract; unknown-effect stops never resumed on an answer",
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, journal and answer signatures, the actual protected signer process, the production ingress built by control_channel_ingress.open_ingress from 0600 host configuration files and activated by the owner's signed VELDO-0073 commands, the VELDO-0068 settlement service and the authenticated API edge, a real Git repository for the host trust check, and a loopback Bot API. A socket guard replaces socket.create_connection for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Writes only temporary fixtures."
+  },
+  {
+   "name": "72_veldo_0128_reports",
+   "file": "72_veldo_0128_reports.py",
+   "requires": [
+    "72_veldo_0128_reports"
+   ],
+   "regions": "Owner Telegram reports projected from committed journal events: accepted objective, grooming and admission waits, dispatch progress, gate and review results, andon stops and VELDO-0051 confirmed landings, each correlated to its source record and sent only through the activated VELDO-0073 edge to the configured owner's enrolled chat, with its real send outcome recorded and a refused send kept visibly unsent",
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, journal and answer signatures, the actual protected signer process, the production ingress built by control_channel_ingress.open_ingress from 0600 host configuration files and activated by the owner's signed VELDO-0073 commands, the VELDO-0075 andon service, the VELDO-0064 inbox and VELDO-0065 presenter, a real Git repository for the host trust check, and a loopback Bot API (the VELDO-0073 stand-in handler with a refusal switch). A socket guard replaces socket.create_connection for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Writes only temporary fixtures."
   }
  ]
 }

@@ -226,6 +226,9 @@ _FILES = [
     # VELDO-0077: the objective service (acceptance through settlement, bounded elaboration, evidence
     # assessment and cancellation). A runtime asset the authority loads; not validator substrate.
     ".veldo/control_objective.py",
+    # VELDO-0128: owner Telegram reports projected from committed journal events through the activated
+    # edge. A runtime asset the authority loads; not validator substrate.
+    ".veldo/control_telegram_report.py",
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",
