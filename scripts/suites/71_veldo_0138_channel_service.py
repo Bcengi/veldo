@@ -169,6 +169,14 @@ def _v138_suite():
         '    with open(_armed, "a") as handle:\n'
         '        handle.write("%d\\n" % os.getpid())\n')
 
+    def child_setup():
+        """UMask=0077, and the service dies with this suite's process (PR_SET_PDEATHSIG), so a killed
+        run can never leave an authority process behind."""
+        os.umask(0o077)
+        with contextlib.suppress(Exception):
+            import ctypes
+            ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)
+
     class Manager:
         """A stand-in for the owner's systemd user manager, answering the systemctl calls the service's
         lifecycle functions make: start runs the installed unit's ExecStart as a Type=notify service and
@@ -209,8 +217,7 @@ def _v138_suite():
                     env['XDG_RUNTIME_DIR'] = os.environ['XDG_RUNTIME_DIR']
                 with open(log, 'wb') as out:
                     proc = subprocess.Popen(self._exec(unit), env=env, stdin=subprocess.DEVNULL, stdout=out,
-                                            stderr=subprocess.STDOUT, preexec_fn=lambda: os.umask(0o077),
-                                            start_new_session=True)
+                                            stderr=subprocess.STDOUT, preexec_fn=child_setup)
                 self.procs[unit] = proc
                 ready, deadline = False, time.monotonic() + 30
                 try:

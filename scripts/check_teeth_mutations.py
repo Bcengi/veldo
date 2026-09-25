@@ -4676,6 +4676,65 @@ def cases():
                '    return P.bot_opener(Handler())\n',
                '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), Handler())  # defect: redirects followed\n',
                'activation/no-redirect')
+    # VELDO-0138: each criterion's declared falsifier first, then the threat model's other shapes.
+    def service_channel(name, module, old, new, row, also=()):
+        add(138, name, '71_veldo_0138_channel_service.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): the service starts without calling open_ingress.
+    service_channel('service-skips-open-ingress', 'control_service.py',
+                    "            service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))\n",
+                    "            service.channel, service.channel_refusal = None, None  # defect: open_ingress is never called\n",
+                    'served/settlement')
+    service_channel('inert-edge-presents', 'control_service_channel.py',
+                    "        if woke.get('outcome') == 'woken':\n            published = [",
+                    "        if True:  # defect: a refused pass still presents\n            published = [", 'served/inert')
+    service_channel('channel-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_service_channel.py",\n', '',
+                    'install/assets')
+    service_channel('foreign-store-ingress-installed', 'control_service_channel.py',
+                    "    checks = (('store', str(config.get('store_path')) == binding['store_path']),\n",
+                    "    checks = (('store', True),  # defect: another store's ingress is installed\n", 'install/assets')
+    # AC2 (declared falsifier): an activation command signed by a member who is not the owner is accepted.
+    service_channel('member-authorizes-owner-edge', 'control_channel_activation.py',
+                    "        if signer != params['owner']:\n", "        if False:  # defect: another member authorizes\n",
+                    'command/owner-only')
+    service_channel('envelope-signature-unchecked', 'control_channel_activation.py',
+                    "        if not ok:\n            raise Refused('signature_invalid')\n",
+                    "        if False:  # defect: the envelope signature is not checked\n            raise Refused('signature_invalid')\n",
+                    'command/owner-only')
+    service_channel('stop-needs-restart', 'control_service_channel.py',
+                    "        self.passes, self.last, self.run = 0, None, None\n",
+                    "        self.passes, self.last, self.run = 0, None, None\n"
+                    "        held, live = {}, self.ingress.gate.current  # defect: an active record is kept for the process\n"
+                    "        def current():\n"
+                    "            if (held.get('record') or {}).get('state') != 'active':\n"
+                    "                held['record'] = live()\n"
+                    "            return held['record']\n"
+                    "        self.ingress.gate.current = current\n", 'command/stop-live')
+    service_channel('resume-drops-backlog', 'control_service_channel.py',
+                    "        woke = ing.wake({'source': 'authority_service', 'pass': self.passes})\n",
+                    "        if (record or {}).get('state') == 'active' and (self.last or {}).get('state') == 'stopped':\n"
+                    "            ing.acquirer.edge.get_updates(10 ** 12)  # defect: what arrived while stopped is dropped\n"
+                    "        woke = ing.wake({'source': 'authority_service', 'pass': self.passes})\n",
+                    'command/stop-keeps-pending')
+    # AC3 (declared falsifier): the ingress starts active after a restart that followed the owner's stop.
+    service_channel('restart-resumes-stopped', 'control_service_channel.py',
+                    "        self.ingress = IN.open_ingress(config_path, clock)\n",
+                    "        self.ingress = IN.open_ingress(config_path, clock)\n"
+                    "        found = self.ingress.gate.current()  # defect: a restart resumes the stopped edge\n"
+                    "        if found and found.get('state') == 'stopped':\n"
+                    "            resumed = dict(found, state=found.get('stopped_from') or 'active')\n"
+                    "            self.ingress.gate.current = lambda: dict(resumed)\n",
+                    'restart/stopped-stays-stopped')
+    service_channel('owner-command-unrouted', 'control_service.py',
+                    "            elif command.get('operation') == CH.AUTHORIZE:\n"
+                    "                result = self.channel_command(packet, repository, observation)\n", '', 'command/owner')
+    service_channel('probe-on-the-real-bot', 'control_service_channel.py',
+                    "        cursor = acquirer._entity(EV.cursor_id(PROBE_BOT_ID))\n",
+                    "        real = acquirer.edge.get_me()['id']  # defect: the probe is the real bot, on its cursor\n"
+                    "        cursor = acquirer._entity(EV.cursor_id(real))\n", 'qualification/recorded-by-service',
+                    also=[("{'getMe': {'id': PROBE_BOT_ID,", "{'getMe': {'id': real,"),
+                          ("        found = acquirer.evidence(EV.evidence_id(PROBE_BOT_ID, update_id)) or {}\n",
+                           "        found = acquirer.evidence(EV.evidence_id(real, update_id)) or {}\n")])
     return result
 
 
