@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152]
     order: 16059
     release: 1
     stage: 6
@@ -1035,7 +1035,7 @@ work:
     spec: VELDO-0143
     title: A repository the owner asks for in chat is created or adopted and bound to a new project on his one answer
     feature_refs: [F6]
-    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150]
+    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152]
     order: 15143
     release: 1
     stage: 5
@@ -1087,6 +1087,14 @@ work:
     order: 15151
     release: 1
     stage: 5
+  - item: W112
+    spec: VELDO-0152
+    title: Intake routes a message by the ticket key prefixes a project lists, and a new-project request to the factory project
+    feature_refs: [F5]
+    depends_on: [VELDO-0076, VELDO-0126]
+    order: 14152
+    release: 1
+    stage: 4
 
 regression:
   journeys:
@@ -1387,7 +1395,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W83 | VELDO-0098 | 4 | - |
 | W87 | VELDO-0124 | 1 | 2 |
 | W88 | VELDO-0125 | 1 | 2 |
-| W89 | VELDO-0126 | 1 | 3; amended in revision 4 |
+| W89 | VELDO-0126 | 1 | 3 |
 | W90 | VELDO-0127 | 1 | 5; amended in revision 4 |
 | W91 | VELDO-0128 | 1 | 3 |
 | W92 | VELDO-0129 | 1 | 1; AC4 added in revision 4 |
@@ -1408,6 +1416,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W109 | VELDO-0149 | 1 | 4 |
 | W110 | VELDO-0150 | 1 | 4 |
 | W111 | VELDO-0151 | 1 | 5 |
+| W112 | VELDO-0152 | 1 | 4 |
 
 ## Related baseline and follow-up disposition
 
@@ -1467,11 +1476,13 @@ both engines; the controlling design gains dated revision 4 notes, and R75 state
 deployment as its deployment view; RJ1 starts from a Telegram message pointing at a Jira ticket,
 fetched through the Atlassian catalog server, uses at least two accounts and is watched in the live
 terminal. The amended specifications are VELDO-0059, 0060, 0061, 0062, 0079, 0088,
-0090, 0091, 0126, 0127, 0129, 0131 and 0141, each with the criterion text the design gives and
-a History entry; VELDO-0141 moves to ready on the approval. VELDO-0057, VELDO-0076, VELDO-0077 and
-VELDO-0089 have landed, so their amendments are their own specifications that depend on them: W108's
-VELDO-0148 (the re-land), W109's VELDO-0149 (activation on an adopted repository, from a settled
-answer), W110's VELDO-0150 (acceptance by his own message) and W111's VELDO-0151 (specialist roles). The dependency changes the amendments
+0090, 0091, 0127, 0129, 0131 and 0141, each with the criterion text the design gives and
+a History entry; VELDO-0141 moves to ready on the approval. VELDO-0057, VELDO-0076, VELDO-0077, VELDO-0089
+and VELDO-0126 have landed, so their amendments are their own specifications that depend on them:
+W108's VELDO-0148 (the re-land), W109's VELDO-0149 (activation on an adopted repository, from a settled
+answer), W110's VELDO-0150 (acceptance by his own message), W111's VELDO-0151 (specialist roles) and
+W112's VELDO-0152 (ticket keys and new projects at intake); each landed specification keeps its landed
+text. The dependency changes the amendments
 imply are recorded as edges: VELDO-0148 on VELDO-0129 (the loop offers the re-land), VELDO-0129 on
 VELDO-0039, VELDO-0047 and VELDO-0062 (the loop runs the Runner in the service and sets account reset
 timers), VELDO-0127 on VELDO-0144 (roles refer to catalog servers) and VELDO-0131 on VELDO-0141 to

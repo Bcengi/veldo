@@ -51,7 +51,6 @@ reviewer judges section, one was added in the repository's three parts.
 | VELDO-0088 | AC1: the default pipeline, model nodes as Runner dispatches, one coordination run writing single-unit requirements; Notes: the service runs the cycle scheduler |
 | VELDO-0090 | AC1's set includes the `when assigned` items a staffing choice requests |
 | VELDO-0091 | AC1: requirements quote every external reference with tool, fetch time and digest |
-| VELDO-0126 | AC1: ticket key prefixes name projects, the new-project route to the factory project, "a new project" in every question |
 | VELDO-0127 | AC1: catalog references, skills, instruction files and load modes; AC2 drops the provider-login clause; new AC4: nothing loads unless listed |
 | VELDO-0129 | New AC4: the Runner and factory loop in the authority service, woken by commits, the launch pipe and reset timers |
 | VELDO-0131 | The live terminal replaces the "Live agent run" row; new "MCP servers and credentials" and "Repositories and identities" rows; per-account usage |

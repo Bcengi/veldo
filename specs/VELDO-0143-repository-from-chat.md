@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W103
 plan_revision: 4
-depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150]
+depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150, VELDO-0152]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -62,7 +62,7 @@ acceptance_criteria:
       repository of its own under the factory state root that holds only its team configuration, with a
       PM role for requests that are not yet any project's. Send "start a new personal project called
       tidepool" and a message that names no identity; intake routes each to the factory project
-      (VELDO-0126) and the loop starts its PM cycle; the factory PM run prepares one proposal naming the
+      (VELDO-0152) and the loop starts its PM cycle; the factory PM run prepares one proposal naming the
       project, the identity (asked in the same request when he did not say), the directory, the remote
       name and visibility, the first objective, the default team and pipeline and the coordination
       budget. His one answer, a yes or a correction, settles the project and the first objective, and no
@@ -142,8 +142,8 @@ approved [operating-model design](../docs/design/PLAN-0019-operating-model-desig
 nothing creates a repository as an effect, a running service cannot take on a new repository without
 reinstallation, VELDO-0076 accepted only the store's one repository and only the owner's signed key
 (VELDO-0149 widens both), and a new project cannot come from chat: with one configured project intake routed the request into
-it, and with two it asked "which project?" offering only existing ones. VELDO-0126's revision 4
-amendment routes the request here; VELDO-0142 supplies the identity; VELDO-0139's setup creates the
+it, and with two it asked "which project?" offering only existing ones. VELDO-0152, VELDO-0126's revision 4
+amendment, routes the request here; VELDO-0142 supplies the identity; VELDO-0139's setup creates the
 factory project.
 
 ## Out of scope
