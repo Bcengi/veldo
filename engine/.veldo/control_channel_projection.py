@@ -112,6 +112,21 @@ GATE_REFUSALS = ('not_activated', 'edge_stopped', 'stale_configuration', 'stale_
                  'settlement_unproven', 'unavailable_service')
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Never follow a redirect: a Bot API exchange goes to its configured origin or nowhere. Returning
+    None makes urllib raise the 3xx as an HTTPError, a transport failure the caller already classifies."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def bot_opener(*handlers):
+    """The one opener every Bot API exchange uses (VELDO-0073): no proxy from the environment and no
+    redirect, so a listener at the configured origin cannot hand the request, token and all, to another
+    host. `handlers` add the gate's verified https connection."""
+    return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect(), *handlers)
+
+
 def gated_open(activation, base_url, request, timeout, operation, chat=None):
     """Open one Bot API exchange of `operation` for an installed Telegram entry point (VELDO-0073). With
     no gate only a loopback stand-in is reached; a resolving token alone is never activation, so any
@@ -121,7 +136,7 @@ def gated_open(activation, base_url, request, timeout, operation, chat=None):
     if activation is None:
         if not base_url.startswith(STAND_IN_ORIGIN):
             raise EdgeRefused('not_activated', 'a Telegram exchange needs an explicit activation record; a token is not one')
-        return urllib.request.urlopen(request, timeout=timeout)
+        return bot_opener().open(request, timeout=timeout)
     try:
         return activation.open(request, timeout, operation, base_url, chat)
     except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):

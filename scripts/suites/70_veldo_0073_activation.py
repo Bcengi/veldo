@@ -24,6 +24,7 @@ import re as _v73_re
 from pathlib import Path as _v73_Path
 import shutil as _v73_shutil
 import socket as _v73_socket
+import urllib.request as _v73_urllib
 import ssl as _v73_ssl
 import subprocess as _v73_sp
 import threading as _v73_threading
@@ -34,7 +35,7 @@ import time as _v73_time
 
 _V73_ROWS = ('install/assets', 'entry-points/enumerated', 'activation/no-implicit', 'activation/explicit-bound-operates',
              'qualification/real-platform-proof', 'settlement/production-construction', 'notification/wakes-only',
-             'stop/halts-edge', 'stale/key-and-configuration')
+             'stop/halts-edge', 'stale/key-and-configuration', 'activation/no-redirect')
 _V73_TELEGRAM = 'https://api.telegram.org'
 # The stand-in bot name a resolving secret reference yields in these rows; not a credential.
 _V73_STAND_IN = 'stand-in-token'
@@ -69,7 +70,7 @@ def _v73_checks(base):
                     check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:200]), False)
             return True
 
-    IA, EP, NI, EB, RP, SP, NW, SH, SK = _V73_ROWS
+    IA, EP, NI, EB, RP, SP, NW, SH, SK, NR = _V73_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_channel_activation.py': ROOT / ".veldo" / "control_channel_activation.py",
@@ -126,6 +127,52 @@ def _v73_checks(base):
             raise OSError('suite guard: no network beyond the loopback interface')
         return real_connect(address, *args, **kwargs)
     _v73_socket.create_connection = guarded
+
+    # A listener at the configured loopback origin answers every exchange with a redirect to another host.
+    # Neither the ungated edge nor the gate's own opener may follow it: the request, token in its path,
+    # would otherwise reach that host (in production, api.telegram.org) with no activation.
+    with section(NR):
+        import http.server as _v73_http
+        import threading as _v73_threading
+
+        class Redirector(_v73_http.BaseHTTPRequestHandler):
+            hits = []
+
+            def _answer(self):
+                Redirector.hits.append(self.path)
+                self.send_response(302)
+                self.send_header('Location', 'http://127.0.0.2:%d%s' % (self.server.server_address[1], self.path))
+                self.send_header('Content-Length', '0')
+                self.end_headers()
+            do_GET = do_POST = _answer
+
+            def log_message(self, *args):
+                pass
+
+        redirector = _v73_http.HTTPServer(('127.0.0.1', 0), Redirector)
+        _v73_threading.Thread(target=redirector.serve_forever, daemon=True).start()
+        origin = 'http://127.0.0.1:%d' % redirector.server_address[1]
+        try:
+            before_redirect = len(attempts)
+            try:
+                P.TelegramEdge(origin, _V73_STAND_IN).send(42, 'x')
+                ungated = 'sent'
+            except Exception as exc:
+                ungated = type(exc).__name__
+            check(NR, 'the ungated edge reached the redirecting origin once and did not follow it (%s)' % ungated,
+                  len(Redirector.hits) == 1 and ungated != 'sent' and len(attempts) == before_redirect)
+            gate_hits = len(Redirector.hits)
+            try:
+                ACT._opener([]).open(_v73_urllib.Request(origin + '/bot%s/getMe' % _V73_STAND_IN), timeout=5)
+                gated = 'opened'
+            except Exception as exc:
+                gated = type(exc).__name__
+            check(NR, "the gate's opener reached the origin once and did not follow the redirect (%s)" % gated,
+                  ACT is not None and len(Redirector.hits) == gate_hits + 1 and gated != 'opened'
+                  and len(attempts) == before_redirect)
+        finally:
+            redirector.shutdown()
+            redirector.server_close()
 
     owner_user = {'id': 5580073, 'is_bot': False, 'first_name': 'Owner'}
     stranger = {'id': 5589973, 'is_bot': False, 'first_name': 'Stranger'}

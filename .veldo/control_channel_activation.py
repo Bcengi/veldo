@@ -276,7 +276,8 @@ def _trust_context():
 
 
 def _opener(peers):
-    """An opener with no proxy from the environment whose https connections record their verified peer."""
+    """The Bot API opener (no proxy, no redirect: projection.bot_opener) whose https connections record
+    their verified peer."""
     class Connection(http.client.HTTPSConnection):
         def connect(self):
             super().connect()
@@ -292,7 +293,7 @@ def _opener(peers):
         def https_open(self, req):
             return self.do_open(Connection, req, context=_trust_context())
 
-    return urllib.request.build_opener(urllib.request.ProxyHandler({}), Handler())
+    return P.bot_opener(Handler())
 
 
 def _result_fields(operation, body):
