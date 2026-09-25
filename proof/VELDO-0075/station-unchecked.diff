@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -379 +379 @@
+-            if held not in STOP_POINTS[c['station']]:
++            if held not in enabled_states():  # defect: any station stops a unit held by another

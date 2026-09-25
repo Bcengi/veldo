@@ -1,0 +1,151 @@
+{
+ "by_assertion": true,
+ "commit": "9fa7e4d55a17822f200ae0aa6ced463ad68fd834",
+ "details": [
+  "VELDO-0075 install/assets detail: .veldo/control_andon.py installed by the scaffold",
+  "VELDO-0075 install/assets detail: .veldo/control_andon.py engine copy identical",
+  "VELDO-0075 install/assets detail: .veldo/control_andon.py laid by the installer",
+  "VELDO-0075 stop/any-authenticated-requester detail: the andon module is installed and constructed on the ingress",
+  "VELDO-0075 stop/any-authenticated-requester detail: DISPATCHING raised by worker at the build stop point is recorded [None None]",
+  "VELDO-0075 stop/any-authenticated-requester detail: DISPATCHING: the stop keeps reason, interrupted station and state, and the resolving predicate",
+  "VELDO-0075 stop/any-authenticated-requester detail: DISPATCHING: the unit is AWAITING_AUTHORITY along its declared edge, carrying the interruption",
+  "VELDO-0075 stop/any-authenticated-requester detail: DISPATCHING: the request is addressed to the resolving authority, not the requester",
+  "VELDO-0075 stop/any-authenticated-requester detail: RUNNING raised by worker at the build stop point is recorded [None None]",
+  "VELDO-0075 stop/any-authenticated-requester detail: RUNNING: the stop keeps reason, interrupted station and state, and the resolving predicate",
+  "VELDO-0075 stop/any-authenticated-requester detail: RUNNING: the unit is AWAITING_AUTHORITY along its declared edge, carrying the interruption",
+  "VELDO-0075 stop/any-authenticated-requester detail: RUNNING: the request is addressed to the resolving authority, not the requester",
+  "VELDO-0075 stop/any-authenticated-requester detail: VERIFYING raised by worker at the build stop point is recorded [None None]",
+  "VELDO-0075 stop/any-authenticated-requester detail: VERIFYING: the stop keeps reason, interrupted station and state, and the resolving predicate",
+  "VELDO-0075 stop/any-authenticated-requester detail: VERIFYING: the unit is AWAITING_AUTHORITY along its declared edge, carrying the interruption",
+  "VELDO-0075 stop/any-authenticated-requester detail: VERIFYING: the request is addressed to the resolving authority, not the requester",
+  "VELDO-0075 stop/any-authenticated-requester detail: REVIEWING raised by worker at the review stop point is recorded [None None]",
+  "VELDO-0075 stop/any-authenticated-requester detail: REVIEWING: the stop keeps reason, interrupted station and state, and the resolving predicate",
+  "VELDO-0075 stop/any-authenticated-requester detail: REVIEWING: the unit is AWAITING_AUTHORITY along its declared edge, carrying the interruption",
+  "VELDO-0075 stop/any-authenticated-requester detail: REVIEWING: the request is addressed to the resolving authority, not the requester",
+  "VELDO-0075 stop/any-authenticated-requester detail: CLAIMED raised by pm at the coordination stop point is recorded [None None]",
+  "VELDO-0075 stop/any-authenticated-requester detail: CLAIMED: the stop keeps reason, interrupted station and state, and the resolving predicate",
+  "VELDO-0075 stop/any-authenticated-requester detail: CLAIMED: the unit is AWAITING_AUTHORITY along its declared edge, carrying the interruption",
+  "VELDO-0075 stop/any-authenticated-requester detail: CLAIMED: the request is addressed to the resolving authority, not the requester",
+  "VELDO-0075 stop/any-authenticated-requester detail: READY_TO_LAND raised by pm at the coordination stop point is recorded [None None]",
+  "VELDO-0075 stop/any-authenticated-requester detail: READY_TO_LAND: the stop keeps reason, interrupted station and state, and the resolving predicate",
+  "VELDO-0075 stop/any-authenticated-requester detail: READY_TO_LAND: the unit is AWAITING_AUTHORITY along its declared edge, carrying the interruption",
+  "VELDO-0075 stop/any-authenticated-requester detail: READY_TO_LAND: the request is addressed to the resolving authority, not the requester",
+  "VELDO-0075 stop/any-authenticated-requester detail: LANDING raised by pm at the coordination stop point is recorded [None None]",
+  "VELDO-0075 stop/any-authenticated-requester detail: LANDING: the stop keeps reason, interrupted station and state, and the resolving predicate",
+  "VELDO-0075 stop/any-authenticated-requester detail: LANDING: the unit is AWAITING_AUTHORITY along its declared edge, carrying the interruption",
+  "VELDO-0075 stop/any-authenticated-requester detail: LANDING: the request is addressed to the resolving authority, not the requester",
+  "VELDO-0075 stop/any-authenticated-requester detail: a stop at a station that does not hold the unit is refused as stale_subject [None]",
+  "VELDO-0075 stop/any-authenticated-requester detail: a stop point that is not enabled is refused as invalid_input [None]",
+  "VELDO-0075 stop/unauthenticated-refused detail: a command for the worker signed with another member's key is refused as not_authorized [None]",
+  "VELDO-0075 stop/unauthenticated-refused detail: a command signed by a key of no member is refused as not_authorized [None]",
+  "VELDO-0075 stop/unauthenticated-refused detail: nothing was recorded and the unit still runs",
+  "VELDO-0075 notice/each-stop-kind detail: build stop: one notice kept for request version 1 and the current presentation",
+  "VELDO-0075 notice/each-stop-kind detail: build stop: the message the platform returned is in the owner's chat and shows the stop",
+  "VELDO-0075 notice/each-stop-kind detail: build stop: the answer path is a reply to that message offering the request's choices",
+  "VELDO-0075 notice/each-stop-kind detail: review stop: one notice kept for request version 1 and the current presentation",
+  "VELDO-0075 notice/each-stop-kind detail: review stop: the message the platform returned is in the owner's chat and shows the stop",
+  "VELDO-0075 notice/each-stop-kind detail: review stop: the answer path is a reply to that message offering the request's choices",
+  "VELDO-0075 notice/each-stop-kind detail: coordination stop: one notice kept for request version 1 and the current presentation",
+  "VELDO-0075 notice/each-stop-kind detail: coordination stop: the message the platform returned is in the owner's chat and shows the stop",
+  "VELDO-0075 notice/each-stop-kind detail: coordination stop: the answer path is a reply to that message offering the request's choices",
+  "VELDO-0075 notice/each-stop-kind detail: every stop point's stop was sent once to the owner's chat",
+  "VELDO-0075 notice/new-version-same-status detail: another member cannot add to the worker's stop [None]",
+  "VELDO-0075 notice/new-version-same-status detail: the revision is request version 2 with the same status [None None]",
+  "VELDO-0075 notice/new-version-same-status detail: the changed presentation was sent: one more message, the update shown [None]",
+  "VELDO-0075 notice/new-version-same-status detail: its correlation is its own: version 2, the new presentation, the new message",
+  "VELDO-0075 notice/new-version-same-status detail: the same version and presentation again is suppressed and sends nothing [None]",
+  "VELDO-0075 resume/acknowledgement-grants-nothing detail: a stop noticed, published and acknowledged by the platform but not answered does not resume [None]",
+  "VELDO-0075 resume/acknowledgement-grants-nothing detail: a pass of the service over the pending stops resumes none of them",
+  "VELDO-0075 resume/acknowledgement-grants-nothing detail: the owner's settled reject does not resume the review stop [None None]",
+  "VELDO-0075 resume/stale-or-wrong-actor detail: the steward and the worker answering through the authenticated API are refused as not_owner [['missing_evidence', 'missing_evidence']]",
+  "VELDO-0075 resume/stale-or-wrong-actor detail: after stale and wrong-actor answers the stop does not resume [None]",
+  "VELDO-0075 resume/stale-or-wrong-actor detail: a settlement whose author no longer holds the resolving roles does not resume [None]",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-running: the owner's accept settled the request's current version 2",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-running: resumed to READY with the interruption cleared [None None]",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-running: a fresh station contract names the station, the next attempt and the unit version it was issued at",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-running: the permission is that settlement, its receipt and effect, by the designated owner",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-running: a second resume is refused and issues no second contract [None]",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-landing: the owner's accept settled the request's current version 1",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-landing: resumed to READY with the interruption cleared [None None]",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-landing: a fresh station contract names the station, the next attempt and the unit version it was issued at",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-landing: the permission is that settlement, its receipt and effect, by the designated owner",
+  "VELDO-0075 resume/owner-settlement-fresh-contract detail: unit-landing: a second resume is refused and issues no second contract [None]",
+  "VELDO-0075 resume/unknown-effect-stays-stopped detail: a declared unknown effect and an unknown dispatch both record an unknown-effect stop",
+  "VELDO-0075 resume/unknown-effect-stays-stopped detail: declared unknown effect: the owner's settled accept does not resume it [None None]",
+  "VELDO-0075 resume/unknown-effect-stays-stopped detail: dispatch unknown effect: the owner's settled accept does not resume it [None None]",
+  "VELDO-0075 resume/unknown-effect-stays-stopped detail: a pass of the service leaves both stopped and the dispatch record untouched",
+  "VELDO-0075 observability/named-refusals detail: every refusal is named and classed; unknown is never success",
+  "VELDO-0075 observability/named-refusals detail: no reason text, signature or key is observed",
+  "VELDO-0075 observability/named-refusals detail: metrics count accepted and refused operations and list the pending stops"
+ ],
+ "failed_rows": [
+  "VELDO-0075 install/assets",
+  "VELDO-0075 stop/any-authenticated-requester",
+  "VELDO-0075 stop/unauthenticated-refused",
+  "VELDO-0075 notice/each-stop-kind",
+  "VELDO-0075 notice/new-version-same-status",
+  "VELDO-0075 resume/acknowledgement-grants-nothing",
+  "VELDO-0075 resume/stale-or-wrong-actor",
+  "VELDO-0075 resume/owner-settlement-fresh-contract",
+  "VELDO-0075 resume/unknown-effect-stays-stopped",
+  "VELDO-0075 observability/named-refusals"
+ ],
+ "modules": {
+  ".veldo/control_andon.py": {
+   "at_commit": null,
+   "now": "895836a29df0cccccfa3d7772254dd2c4e4082f7cd92f536fff1520678d9d532"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "3cdfa9c4a4eea1d201512804e3011545f976aa45924fec14d499529aef48546f",
+   "now": "10b40c37128853f8a72f3e1df41bc6ba8e4f8ece9d9d7acef2700c81d65e2d4a"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0075 install/assets",
+   false
+  ],
+  [
+   "VELDO-0075 stop/any-authenticated-requester",
+   false
+  ],
+  [
+   "VELDO-0075 stop/unauthenticated-refused",
+   false
+  ],
+  [
+   "VELDO-0075 notice/each-stop-kind",
+   false
+  ],
+  [
+   "VELDO-0075 notice/new-version-same-status",
+   false
+  ],
+  [
+   "VELDO-0075 resume/acknowledgement-grants-nothing",
+   false
+  ],
+  [
+   "VELDO-0075 resume/stale-or-wrong-actor",
+   false
+  ],
+  [
+   "VELDO-0075 resume/owner-settlement-fresh-contract",
+   false
+  ],
+  [
+   "VELDO-0075 resume/unknown-effect-stays-stopped",
+   false
+  ],
+  [
+   "VELDO-0075 observability/named-refusals",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.469,
+ "spec_id": "VELDO-0075",
+ "suite": "scripts/suites/72_veldo_0075_andon.py",
+ "tree": "git archive 9fa7e4d55a17822f200ae0aa6ced463ad68fd834, unchanged; the current suite file run against it"
+}

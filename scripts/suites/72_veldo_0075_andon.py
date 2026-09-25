@@ -293,7 +293,8 @@ def _v75_checks(base):
             refused = andon.revise_stop(revise_packet('pm', build, 'reason-not-mine')) if andon is not None else {}
             check(NV, 'another member cannot add to the worker\'s stop [%s]' % refused.get('reason'),
                   refused.get('reason') == 'not_authorized' and sends() == sent)
-            revised = andon.revise_stop(revise_packet('worker', build, 'reason-update: the build also broke its cache'))
+            revised = (andon.revise_stop(revise_packet('worker', build, 'reason-update: the build also broke its cache'))
+                       if andon is not None else {})
             data = ((ing.inbox.read(rid) or {}).get('data') or {})
             check(NV, 'the revision is request version 2 with the same status [%s %s]' % (revised.get('outcome'), revised.get('reason')),
                   revised.get('outcome') == 'revised' and data.get('request_version') == 2 and data.get('state') == state_before)
@@ -307,7 +308,7 @@ def _v75_checks(base):
                   sorted(kept) == [1, 2] and v2.get('presentation_id') == current.get('presentation_id')
                   and v2.get('presentation_id') != kept[1].get('presentation_id') and v2.get('message_id') != kept[1].get('message_id')
                   and v2.get('message_ids') == current.get('message_ids') and v2.get('request_state') == state_before)
-            again = andon.notify(build)
+            again = andon.notify(build) if andon is not None else {}
             check(NV, 'the same version and presentation again is suppressed and sends nothing [%s]' % again.get('outcome'),
                   again.get('outcome') == 'suppressed' and sends() == sent + 1 and len(notices_of(build)) == 2)
 

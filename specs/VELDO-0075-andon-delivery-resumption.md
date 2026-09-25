@@ -149,3 +149,11 @@ lost-send/reconnect and AC3 uncertain-effect/automatic recovery moved to Release
 stop, Telegram notice and authorized clean decision-stop resumption remain. The criteria,
 declared evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-25, build: `.veldo/control_andon.py` (engine copy identical, scaffolded) judged against the
+criteria and the reviewer's threat model with no change needed; suite
+`scripts/suites/72_veldo_0075_andon.py` with rows for AC1, AC2 and AC3 over the build, review and
+coordination stop points, against the production ingress activated by the owner's signed VELDO-0073
+commands and a loopback Bot API stand-in; red record against 9fa7e4d by assertion; 19 teeth
+mutations as finding 75, each declared falsifier first. AC2's real-Telegram leg is PENDING (the lead
+with the owner, VELDO-0138). Status unchanged.

@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -582 +582 @@
+-        version = data['request_version']
++        version = 1  # defect: the first version's settlement is read, not the current one

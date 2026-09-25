@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -285 +285 @@
+-            raise Refused('not_authorized', 'the command signature does not verify')
++            pass  # defect: the command signature is not checked

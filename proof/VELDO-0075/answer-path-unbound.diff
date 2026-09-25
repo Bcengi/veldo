@@ -1,0 +1,6 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -561 +561,2 @@
+-                  'answer_path': {'reply_to_message_id': receipt.get('message_id'), 'choices': list(receipt.get('choices') or []),
++                  'answer_path': {'reply_to_message_id': None,  # defect: no answer path
++                                  'choices': list(receipt.get('choices') or []),

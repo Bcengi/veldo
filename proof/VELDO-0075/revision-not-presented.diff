@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -517 +517 @@
+-        framed = self._frame(stop, version + 1)
++        framed = {'outcome': 'accepted'}  # defect: the new version is never framed or presented
