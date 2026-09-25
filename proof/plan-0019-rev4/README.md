@@ -163,7 +163,7 @@ review: VELDO-0040 (footprint), VELDO-0059 and VELDO-0079 (depends_on), and VELD
 dependencies are not shipped, so a Mac leg inside a specification the design's critical path builds
 before the Mac would hold it unshipped. The Mac legs of VELDO-0060 and VELDO-0061, the Mac read-back of
 VELDO-0062 AC1, the Mac handoff of VELDO-0127 AC2, the Mac run of VELDO-0141 AC1 and the Mac secrets
-frame of VELDO-0144 AC3 are therefore one new specification, VELDO-0147, which depends on them and on
+frame of VELDO-0158 AC1 are therefore one new specification, VELDO-0147, which depends on them and on
 VELDO-0124 and VELDO-0125.
 
 **Stages.** VELDO-0144 adds an API route, so it depends on VELDO-0130 and is stage 5; VELDO-0127 and,
