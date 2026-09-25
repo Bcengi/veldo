@@ -1,0 +1,5113 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0130 install/assets",
+    true
+   ],
+   [
+    "VELDO-0130 webauthn/stand-in-browser",
+    true
+   ],
+   [
+    "VELDO-0130 webauthn/independent-vectors",
+    true
+   ],
+   [
+    "VELDO-0130 enrollment/pending-grants-nothing",
+    true
+   ],
+   [
+    "VELDO-0130 enrollment/steward-signed",
+    true
+   ],
+   [
+    "VELDO-0130 session/cookie-and-expiry",
+    true
+   ],
+   [
+    "VELDO-0130 session/forgery-refused",
+    true
+   ],
+   [
+    "VELDO-0130 session/revocation-ends",
+    true
+   ],
+   [
+    "VELDO-0130 routes/every-family",
+    true
+   ],
+   [
+    "VELDO-0130 routes/body-actor-refused",
+    true
+   ],
+   [
+    "VELDO-0130 edge/signer-api-purpose",
+    true
+   ],
+   [
+    "VELDO-0130 edge/authority-recheck",
+    true
+   ],
+   [
+    "VELDO-0130 messages/common-intake",
+    true
+   ],
+   [
+    "VELDO-0130 decisions/exact-settlement",
+    true
+   ],
+   [
+    "VELDO-0130 decisions/one-ruling",
+    true
+   ],
+   [
+    "VELDO-0130 transport/loopback-only",
+    true
+   ]
+  ],
+  "seconds": 6.248
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out: a body naming principal is refused invalid_input [observed: 200 None]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: a body naming principal is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a body naming principal is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a missing field is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a body naming principal is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a missing field is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a body naming principal is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a missing field is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: a decision authorized with the body actor_id is refused as impersonation, and nothing is settled [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 401 unauthenticated:no_session] [observed: 400 invalid_input:unmatched_choice]"
+   ],
+   "diff": "proof/VELDO-0130/body-actor-authorizes.diff",
+   "failed_rows": [
+    "VELDO-0130 routes/body-actor-refused",
+    "VELDO-0130 decisions/exact-settlement"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "10bc1aab21c25433bbdb0e5fcad184d13d9c5ceccdf29dcd4a9777ff0aa12c4b",
+   "name": "body-actor-authorizes",
+   "named_row_red": true,
+   "named_rows": [
+    "routes/body-actor-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     false
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.58,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out: an unknown field is refused, never ignored [observed: 200 None]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: a body naming principal is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.sign_out_everywhere: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a body naming principal is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: auth.revoke_credential: a missing field is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a body naming principal is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: messages.send: a missing field is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a body naming principal is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a body naming actor is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a body naming actor_id is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a body naming decider is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: an unknown field is refused, never ignored [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: decisions.answer: a missing field is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: a decision authorized with the body actor_id is refused as impersonation, and nothing is settled [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 401 unauthenticated:no_session] [observed: 400 invalid_input:unmatched_choice]"
+   ],
+   "diff": "proof/VELDO-0130/unknown-field-ignored.diff",
+   "failed_rows": [
+    "VELDO-0130 routes/body-actor-refused",
+    "VELDO-0130 decisions/exact-settlement"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "0c4192b1b789cab16f71e407dc8e39e37a770c120f515b3220de8c644801315a",
+   "name": "unknown-field-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "routes/body-actor-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     false
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.699,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 routes/every-family detail: messages.send: another domain is unauthorized [observed: 200 None]",
+    "VELDO-0130 routes/every-family detail: decisions.answer: another domain is unauthorized [observed: 404 missing_evidence]"
+   ],
+   "diff": "proof/VELDO-0130/domain-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 routes/every-family"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "253e595e921adf7744a7d7af4f04355d089ec59e8fc62ecfa92120e65d06fd89",
+   "name": "domain-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "routes/every-family"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 7.001,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/cookie-and-expiry detail: a session touched within 30 minutes lives, and ends 30 minutes after its last request [observed: 200 None]",
+    "VELDO-0130 session/cookie-and-expiry detail: a session in steady use ends 12 hours after sign-in [observed [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]]",
+    "VELDO-0130 session/revocation-ends detail: following the journal ends the revoked credential's sessions at once [observed 0]",
+    "VELDO-0130 routes/every-family detail: auth.session: no session, an unknown cookie and an expired session are each unauthenticated [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 200 None]",
+    "VELDO-0130 routes/every-family detail: auth.sign_out: no session, an unknown cookie and an expired session are each unauthenticated [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 200 None]",
+    "VELDO-0130 routes/every-family detail: auth.sign_out_everywhere: no session, an unknown cookie and an expired session are each unauthenticated [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 200 None]",
+    "VELDO-0130 routes/every-family detail: auth.revoke_credential: no session, an unknown cookie and an expired session are each unauthenticated [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 403 unauthorized:policy_refused]",
+    "VELDO-0130 routes/every-family detail: messages.send: no session, an unknown cookie and an expired session are each unauthenticated [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 200 None]",
+    "VELDO-0130 routes/every-family detail: messages.send: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: decisions.answer: no session, an unknown cookie and an expired session are each unauthenticated [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 404 missing_evidence]",
+    "VELDO-0130 routes/every-family detail: decisions.answer: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: auth: a member who is not a steward cannot revoke a credential [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: control: the owner's own session answers the same decision [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the message is proposed by the common intake for the session's member [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the source is the API's: channel api, the edge, the request id and the request digest",
+    "VELDO-0130 messages/common-intake detail: intake admits nothing itself: the write is intake records only [observed []]",
+    "VELDO-0130 messages/common-intake detail: a message naming no project is kept with the question naming the candidates [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: a follow-up naming the proposal resolves it into an objective [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the owner's answer at the current request and presentation versions settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the recorded answer is the session's member on channel api, under the request id the API issued",
+    "VELDO-0130 decisions/exact-settlement detail: an answer to the presentation the owner saw before a revision is refused as stale [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the answer to the current presentation settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 403 unauthorized:not_owner] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after Telegram settles, the UI answer is refused and settles nothing [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after the UI settles, a Telegram answer adds no second ruling [observed: 401 unauthenticated:no_session]"
+   ],
+   "diff": "proof/VELDO-0130/expiry-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/cookie-and-expiry",
+    "VELDO-0130 session/revocation-ends",
+    "VELDO-0130 routes/every-family",
+    "VELDO-0130 routes/body-actor-refused",
+    "VELDO-0130 messages/common-intake",
+    "VELDO-0130 decisions/exact-settlement",
+    "VELDO-0130 decisions/one-ruling"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "5e8a539e498261d101973f37537f388a749f5f94600a871f9860789b860a45e6",
+   "name": "expiry-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "session/cookie-and-expiry",
+    "routes/every-family"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     false
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     false
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     false
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 5.269,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/cookie-and-expiry detail: a session in steady use ends 12 hours after sign-in [observed [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]]"
+   ],
+   "diff": "proof/VELDO-0130/absolute-lifetime-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/cookie-and-expiry"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "9a99c06380e1d4004d93e9041e89d7c28c1019ae3bec6b0b19e1cf9042a7974e",
+   "name": "absolute-lifetime-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "session/cookie-and-expiry"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     false
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.846,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/revocation-ends detail: on an API that followed no journal record, the next request after a host revocation is unauthenticated [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/session-not-rechecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/revocation-ends"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "0dd5639fb38c53d5ce427ddbe5d6da36292abc4f443da8365fc1845cc00b258a",
+   "name": "session-not-rechecked",
+   "named_row_red": true,
+   "named_rows": [
+    "session/revocation-ends"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.721,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/revocation-ends detail: following the journal ends the revoked credential's sessions at once [observed 0]"
+   ],
+   "diff": "proof/VELDO-0130/follow-ignores-revocation.diff",
+   "failed_rows": [
+    "VELDO-0130 session/revocation-ends"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "38a8ba08db8833e6255a7664adc9ba1f62800b9b387c63a6a2777e801a6a7e9a",
+   "name": "follow-ignores-revocation",
+   "named_row_red": true,
+   "named_rows": [
+    "session/revocation-ends"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.838,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/revocation-ends detail: following a revoke_membership ends every session of the member at once [observed 0]"
+   ],
+   "diff": "proof/VELDO-0130/follow-ignores-membership.diff",
+   "failed_rows": [
+    "VELDO-0130 session/revocation-ends"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "e0533b59fa61597c28d783cff91d78dd4324f7f4acc610248427ccbbca7a9e1e",
+   "name": "follow-ignores-membership",
+   "named_row_red": true,
+   "named_rows": [
+    "session/revocation-ends"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.857,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: no anti-forgery token is refused unauthorized [observed: 200 None]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: messages.send: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: a body over 64 KiB is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: a read needs no token and changes nothing",
+    "VELDO-0130 routes/every-family detail: messages.send: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: decisions.answer: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: auth: a member who is not a steward cannot revoke a credential [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: control: the owner's own session answers the same decision [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the message is proposed by the common intake for the session's member [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the source is the API's: channel api, the edge, the request id and the request digest",
+    "VELDO-0130 messages/common-intake detail: intake admits nothing itself: the write is intake records only [observed []]",
+    "VELDO-0130 messages/common-intake detail: a message naming no project is kept with the question naming the candidates [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: a follow-up naming the proposal resolves it into an objective [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the owner's answer at the current request and presentation versions settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the recorded answer is the session's member on channel api, under the request id the API issued",
+    "VELDO-0130 decisions/exact-settlement detail: an answer to the presentation the owner saw before a revision is refused as stale [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the answer to the current presentation settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 403 unauthorized:not_owner] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after Telegram settles, the UI answer is refused and settles nothing [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after the UI settles, a Telegram answer adds no second ruling [observed: 401 unauthenticated:no_session]"
+   ],
+   "diff": "proof/VELDO-0130/token-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/forgery-refused",
+    "VELDO-0130 routes/every-family",
+    "VELDO-0130 routes/body-actor-refused",
+    "VELDO-0130 messages/common-intake",
+    "VELDO-0130 decisions/exact-settlement",
+    "VELDO-0130 decisions/one-ruling"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "feec9433848908345db0b9631d46d7e9673daf8928b19142c2300a5925bd01ff",
+   "name": "token-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "session/forgery-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     false
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     false
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     false
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 4.823,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: another origin is refused unauthorized [observed: 200 None]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: no Origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: another origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: no Origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: another origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: no Origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: messages.send: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: another origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: no Origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: another origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: no Origin is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: a ceremony from another origin is refused [observed: 200 None]",
+    "VELDO-0130 session/forgery-refused detail: a body over 64 KiB is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: a read needs no token and changes nothing",
+    "VELDO-0130 routes/every-family detail: messages.send: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: decisions.answer: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: auth: a member who is not a steward cannot revoke a credential [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: control: the owner's own session answers the same decision [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the message is proposed by the common intake for the session's member [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the source is the API's: channel api, the edge, the request id and the request digest",
+    "VELDO-0130 messages/common-intake detail: intake admits nothing itself: the write is intake records only [observed []]",
+    "VELDO-0130 messages/common-intake detail: a message naming no project is kept with the question naming the candidates [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: a follow-up naming the proposal resolves it into an objective [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the owner's answer at the current request and presentation versions settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the recorded answer is the session's member on channel api, under the request id the API issued",
+    "VELDO-0130 decisions/exact-settlement detail: an answer to the presentation the owner saw before a revision is refused as stale [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the answer to the current presentation settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 403 unauthorized:not_owner] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after Telegram settles, the UI answer is refused and settles nothing [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after the UI settles, a Telegram answer adds no second ruling [observed: 401 unauthenticated:no_session]"
+   ],
+   "diff": "proof/VELDO-0130/origin-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/forgery-refused",
+    "VELDO-0130 routes/every-family",
+    "VELDO-0130 routes/body-actor-refused",
+    "VELDO-0130 messages/common-intake",
+    "VELDO-0130 decisions/exact-settlement",
+    "VELDO-0130 decisions/one-ruling"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "584a0dc474bc157006ad76451cd94ad2844d3b624cda99d9462fd230986354bf",
+   "name": "origin-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "session/forgery-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     false
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     false
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     false
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 4.85,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: a cross-site fetch is refused unauthorized [observed: 200 None]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: a same-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: a cross-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: a same-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: a cross-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: a same-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: messages.send: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: a cross-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: a same-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: a cross-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: a same-site fetch is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: a body over 64 KiB is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: a read needs no token and changes nothing",
+    "VELDO-0130 routes/every-family detail: messages.send: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: decisions.answer: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: auth: a member who is not a steward cannot revoke a credential [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: control: the owner's own session answers the same decision [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the message is proposed by the common intake for the session's member [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the source is the API's: channel api, the edge, the request id and the request digest",
+    "VELDO-0130 messages/common-intake detail: intake admits nothing itself: the write is intake records only [observed []]",
+    "VELDO-0130 messages/common-intake detail: a message naming no project is kept with the question naming the candidates [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: a follow-up naming the proposal resolves it into an objective [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the owner's answer at the current request and presentation versions settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the recorded answer is the session's member on channel api, under the request id the API issued",
+    "VELDO-0130 decisions/exact-settlement detail: an answer to the presentation the owner saw before a revision is refused as stale [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the answer to the current presentation settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 403 unauthorized:not_owner] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after Telegram settles, the UI answer is refused and settles nothing [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after the UI settles, a Telegram answer adds no second ruling [observed: 401 unauthenticated:no_session]"
+   ],
+   "diff": "proof/VELDO-0130/fetch-site-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/forgery-refused",
+    "VELDO-0130 routes/every-family",
+    "VELDO-0130 routes/body-actor-refused",
+    "VELDO-0130 messages/common-intake",
+    "VELDO-0130 decisions/exact-settlement",
+    "VELDO-0130 decisions/one-ruling"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "77ed403700f1c1753dced47529ca9e2017a297718237e69bc4ceca6a8e6d79ba",
+   "name": "fetch-site-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "session/forgery-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     false
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     false
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     false
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 4.853,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: a form content type is refused unauthorized [observed: 200 None]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: a text/plain body is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: a form content type is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: a text/plain body is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.sign_out_everywhere: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: a form content type is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: a text/plain body is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: auth.revoke_credential: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: messages.send: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: a form content type is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: a text/plain body is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: messages.send: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: no anti-forgery token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: another token is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: a form content type is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: a text/plain body is refused unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: decisions.answer: nothing was written and the session lives",
+    "VELDO-0130 session/forgery-refused detail: a body over 64 KiB is refused [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/forgery-refused detail: a read needs no token and changes nothing",
+    "VELDO-0130 routes/every-family detail: messages.send: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: decisions.answer: another domain is unauthorized [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: auth: a member who is not a steward cannot revoke a credential [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 routes/body-actor-refused detail: control: the owner's own session answers the same decision [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the message is proposed by the common intake for the session's member [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: the source is the API's: channel api, the edge, the request id and the request digest",
+    "VELDO-0130 messages/common-intake detail: intake admits nothing itself: the write is intake records only [observed []]",
+    "VELDO-0130 messages/common-intake detail: a message naming no project is kept with the question naming the candidates [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 messages/common-intake detail: a follow-up naming the proposal resolves it into an objective [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the owner's answer at the current request and presentation versions settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the recorded answer is the session's member on channel api, under the request id the API issued",
+    "VELDO-0130 decisions/exact-settlement detail: an answer to the presentation the owner saw before a revision is refused as stale [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: the answer to the current presentation settles [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 403 unauthorized:not_owner] [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after Telegram settles, the UI answer is refused and settles nothing [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 decisions/one-ruling detail: after the UI settles, a Telegram answer adds no second ruling [observed: 401 unauthenticated:no_session]"
+   ],
+   "diff": "proof/VELDO-0130/content-type-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/forgery-refused",
+    "VELDO-0130 routes/every-family",
+    "VELDO-0130 routes/body-actor-refused",
+    "VELDO-0130 messages/common-intake",
+    "VELDO-0130 decisions/exact-settlement",
+    "VELDO-0130 decisions/one-ruling"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "fe3ed98ec2201418b77a9a586165c3ab71374760034395703d3cf1585c590cc3",
+   "name": "content-type-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "session/forgery-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     false
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     false
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     false
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 4.809,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/forgery-refused detail: a request naming another Host is refused [observed: 200 None]",
+    "VELDO-0130 transport/loopback-only detail: another Host is refused, a missing session is unauthenticated and a body over 64 KiB is too large, each with Strict-Transport-Security [observed 401 401 413]"
+   ],
+   "diff": "proof/VELDO-0130/host-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/forgery-refused",
+    "VELDO-0130 transport/loopback-only"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "e0d8dc4efb68002fec1962c8341c66630c4d86580223c386b5305d11c330b671",
+   "name": "host-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "session/forgery-refused",
+    "transport/loopback-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     false
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     false
+    ]
+   ],
+   "seconds": 6.757,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/cookie-and-expiry detail: the cookie is __Host-veldo-session, Secure, HttpOnly, SameSite=Strict, Path=/, with no Domain [observed ['Secure', 'SameSite=Lax', 'Path=/']]"
+   ],
+   "diff": "proof/VELDO-0130/cookie-scriptable.diff",
+   "failed_rows": [
+    "VELDO-0130 session/cookie-and-expiry"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "9819138f575b2f94a567521fa0b7e9fec49e38aaaf54fedcaee437b7639ac817",
+   "name": "cookie-scriptable",
+   "named_row_red": true,
+   "named_rows": [
+    "session/cookie-and-expiry"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     false
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.769,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/cookie-and-expiry detail: the API keeps only the cookie's SHA-256, never the cookie"
+   ],
+   "diff": "proof/VELDO-0130/cookie-kept-plain.diff",
+   "failed_rows": [
+    "VELDO-0130 session/cookie-and-expiry"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "9a486d52722f983532e50a0efad7716e84a057bbc3070546caa0935e0c14abf4",
+   "name": "cookie-kept-plain",
+   "named_row_red": true,
+   "named_rows": [
+    "session/cookie-and-expiry"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     false
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.913,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/cookie-and-expiry detail: a sign-in assertion replayed over its used challenge is refused [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/challenge-reusable.diff",
+   "failed_rows": [
+    "VELDO-0130 session/cookie-and-expiry"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "08e8b23fbe2bc56db22df89bf7e0e98f0b7b45ff9623b11211a17e40162bbe78",
+   "name": "challenge-reusable",
+   "named_row_red": true,
+   "named_rows": [
+    "session/cookie-and-expiry"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     false
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.85,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/cookie-and-expiry detail: sign-out ends the session and clears the cookie [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/sign-out-keeps-session.diff",
+   "failed_rows": [
+    "VELDO-0130 session/cookie-and-expiry"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "69a03ed5f4bd23d409335da197a9fda8aefffd0f5ea11ba21d35af57ba339acd",
+   "name": "sign-out-keeps-session",
+   "named_row_red": true,
+   "named_rows": [
+    "session/cookie-and-expiry"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     false
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.801,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 enrollment/pending-grants-nothing detail: at most three registrations are pending at a time [observed [200, 200, 200, 200]]",
+    "VELDO-0130 enrollment/steward-signed detail: an enrolled registration is no longer pending"
+   ],
+   "diff": "proof/VELDO-0130/pending-limit-unenforced.diff",
+   "failed_rows": [
+    "VELDO-0130 enrollment/pending-grants-nothing",
+    "VELDO-0130 enrollment/steward-signed"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "86165cce7b26754d3a1833342cdf32274f773e498d9a6f8868f2ad6a2b4457e7",
+   "name": "pending-limit-unenforced",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/pending-grants-nothing"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     false
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.816,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 transport/loopback-only detail: over real loopback HTTP a challenge is served with Strict-Transport-Security and no-store",
+    "VELDO-0130 transport/loopback-only detail: another Host is refused, a missing session is unauthenticated and a body over 64 KiB is too large, each with Strict-Transport-Security [observed 400 401 413]"
+   ],
+   "diff": "proof/VELDO-0130/hsts-omitted.diff",
+   "failed_rows": [
+    "VELDO-0130 transport/loopback-only"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "a2678bfaf0b0dc042e597894a2cf14b2648c9c3ab692fc3e23662110d9d35b28",
+   "name": "hsts-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "transport/loopback-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     false
+    ]
+   ],
+   "seconds": 6.892,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 transport/loopback-only detail: another Host is refused, a missing session is unauthenticated and a body over 64 KiB is too large, each with Strict-Transport-Security [observed 400 401 400]"
+   ],
+   "diff": "proof/VELDO-0130/body-cap-unenforced.diff",
+   "failed_rows": [
+    "VELDO-0130 transport/loopback-only"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "dea12f606d17a403e9761ac235aff32954dfd0e46c8e77d459d10e1d59c61e8a",
+   "name": "body-cap-unenforced",
+   "named_row_red": true,
+   "named_rows": [
+    "transport/loopback-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     false
+    ]
+   ],
+   "seconds": 6.773,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: no user verification is refused as user_not_verified [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: no user verification is refused as user_not_verified [observed []]",
+    "VELDO-0130 webauthn/independent-vectors detail: W3C 16.2 (ES256): its signature verifies with OpenSSL, and the assertion is refused for no user verification",
+    "VELDO-0130 webauthn/independent-vectors detail: W3C 16.11 (Ed25519): its signature verifies with OpenSSL and not over a changed message, and the assertion is refused for no user verification"
+   ],
+   "diff": "proof/VELDO-0130/uv-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser",
+    "VELDO-0130 webauthn/independent-vectors"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "debced2d654a9a4c80b18952a8b4cd7f9a5e58b14914ed9786b64ffe608ad7a7",
+   "name": "uv-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser",
+    "webauthn/independent-vectors"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.761,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: user verified without user present is refused as user_not_present [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: user verified without user present is refused as user_not_present [observed []]"
+   ],
+   "diff": "proof/VELDO-0130/up-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "7ec7aeffa23b7ab12a4947feec78038e19a13e83ed83b96b6f756d05ef373451",
+   "name": "up-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.827,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: another origin is refused as wrong_origin [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: another origin is refused as wrong_origin [observed []]",
+    "VELDO-0130 webauthn/independent-vectors detail: W3C 16.6 at another origin or relying party is refused",
+    "VELDO-0130 enrollment/pending-grants-nothing detail: a registration ceremony from another origin is refused [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/origin-not-compared.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser",
+    "VELDO-0130 webauthn/independent-vectors",
+    "VELDO-0130 enrollment/pending-grants-nothing"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "4fed6e666ca794fbba7207b9acb5354dd048ee307e6eb7d4ce118af501f85067",
+   "name": "origin-not-compared",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser",
+    "webauthn/independent-vectors",
+    "enrollment/pending-grants-nothing"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.792,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: crossOrigin true is refused as cross_origin [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: crossOrigin true is refused as cross_origin [observed []]",
+    "VELDO-0130 webauthn/independent-vectors detail: W3C 16.4 (ES256, crossOrigin true): its signature verifies, and the assertion is refused as cross-origin"
+   ],
+   "diff": "proof/VELDO-0130/cross-origin-accepted.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser",
+    "VELDO-0130 webauthn/independent-vectors"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "3f6257d36aa96d48bf26e5c463024d3cfd0fe91765eca68520028c27a4bcca11",
+   "name": "cross-origin-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser",
+    "webauthn/independent-vectors"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.261,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: another relying party id is refused as wrong_relying_party [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: another relying party id is refused as wrong_relying_party [observed []]",
+    "VELDO-0130 webauthn/independent-vectors detail: W3C 16.6 at another origin or relying party is refused"
+   ],
+   "diff": "proof/VELDO-0130/rp-hash-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser",
+    "VELDO-0130 webauthn/independent-vectors"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "f11e620b18e663592bcb45c7ee3378d573643b76799a2b8e02e263b6c64c6eef",
+   "name": "rp-hash-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser",
+    "webauthn/independent-vectors"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 7.031,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: a registration ceremony offered as a sign-in is refused as wrong_ceremony [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: a registration ceremony offered as a sign-in is refused as wrong_ceremony [observed []]"
+   ],
+   "diff": "proof/VELDO-0130/ceremony-type-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "f2fe5adf0f9f3600dd16edb2a3bda3f2cd475502e8411425afe079aa4ac4d790",
+   "name": "ceremony-type-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.831,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: another challenge is refused as wrong_challenge [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: another challenge is refused as wrong_challenge [observed []]",
+    "VELDO-0130 enrollment/pending-grants-nothing detail: a registration ceremony over another challenge is refused [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/challenge-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser",
+    "VELDO-0130 enrollment/pending-grants-nothing"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "a5aebdeb1d6f212e7f3e3ff9cfb391d14b3850d7ccc4f8551b4cd88db7d5a4b9",
+   "name": "challenge-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser",
+    "enrollment/pending-grants-nothing"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.85,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: another user handle is refused as wrong_user_handle [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: another user handle is refused as wrong_user_handle [observed []]"
+   ],
+   "diff": "proof/VELDO-0130/user-handle-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "88463725d643026d2353f6cf388f6b98c6a2a237de9653f832c70f5c298cd937",
+   "name": "user-handle-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.821,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: authenticator data changed after signing is refused as signature_invalid [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: the signature changed is refused as signature_invalid [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: ES256: signed by another key is refused as signature_invalid [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: authenticator data changed after signing is refused as signature_invalid [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: the signature changed is refused as signature_invalid [observed []]",
+    "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: signed by another key is refused as signature_invalid [observed []]",
+    "VELDO-0130 webauthn/independent-vectors detail: W3C 16.6 with its signature changed is refused",
+    "VELDO-0130 webauthn/independent-vectors detail: W3C 16.11 (Ed25519): its signature verifies with OpenSSL and not over a changed message, and the assertion is refused for no user verification",
+    "VELDO-0130 enrollment/pending-grants-nothing detail: a possession proof not signed by the offered key is refused [observed: 200 None]",
+    "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a possession proof over this binding signed by another key (possession_unproven) [observed accepted, None, 1 written]",
+    "VELDO-0130 enrollment/steward-signed detail: the steward's signed enrollment of the owner's own passkey is accepted [observed credential_in_use]"
+   ],
+   "diff": "proof/VELDO-0130/signature-unverified.diff",
+   "failed_rows": [
+    "VELDO-0130 webauthn/stand-in-browser",
+    "VELDO-0130 webauthn/independent-vectors",
+    "VELDO-0130 enrollment/pending-grants-nothing",
+    "VELDO-0130 enrollment/steward-signed"
+   ],
+   "module": ".veldo/control_api_webauthn.py",
+   "mutant_sha256": "d408b08ee1d22f9e2cff9247c029f1fe5fba4422e0df48b5b341ba962e28d1fe",
+   "name": "signature-unverified",
+   "named_row_red": true,
+   "named_rows": [
+    "webauthn/stand-in-browser",
+    "webauthn/independent-vectors",
+    "enrollment/steward-signed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     false
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     false
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     false
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.755,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: another registration's possession proof (possession_unproven) [observed accepted, None, 1 written]",
+    "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a possession proof over this binding signed by another key (possession_unproven) [observed refused, credential_in_use, 0 written]",
+    "VELDO-0130 enrollment/steward-signed detail: the steward's signed enrollment of the owner's own passkey is accepted [observed credential_in_use]",
+    "VELDO-0130 enrollment/steward-signed detail: the record verifies on its own: its possession proof rechecks with OpenSSL"
+   ],
+   "diff": "proof/VELDO-0130/possession-not-rechecked.diff",
+   "failed_rows": [
+    "VELDO-0130 enrollment/steward-signed"
+   ],
+   "module": ".veldo/control_api_credentials.py",
+   "mutant_sha256": "1747e3cc0eeedd18465b533d5f2fa5a0b15de54d05b9df1814643eaf925378bb",
+   "name": "possession-not-rechecked",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/steward-signed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     false
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.718,
+   "source_sha256": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a current member who is not a steward (policy_refused) [observed refused, scope_refused, 0 written]",
+    "VELDO-0130 session/revocation-ends detail: an assertion signed before a revocation is refused by the authority's own recheck [observed unauthenticated:signature]",
+    "VELDO-0130 session/revocation-ends detail: on an API that followed no journal record, the next request after a host revocation is unauthenticated [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 session/revocation-ends detail: following the journal ends the revoked credential's sessions at once [observed 0]",
+    "VELDO-0130 routes/every-family detail: auth: a member who is not a steward cannot revoke a credential [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/steward-role-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 enrollment/steward-signed",
+    "VELDO-0130 session/revocation-ends",
+    "VELDO-0130 routes/every-family"
+   ],
+   "module": ".veldo/control_api_credentials.py",
+   "mutant_sha256": "5755f031ff2cfae4157e5cbb5b5ffdfb223a5513df54e7291adf6a59c65f8dd5",
+   "name": "steward-role-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/steward-signed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     false
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.744,
+   "source_sha256": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a steward whose scope does not cover the principal's (scope_refused) [observed accepted, None, 1 written]",
+    "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: another registration's possession proof (possession_unproven) [observed refused, credential_in_use, 0 written]",
+    "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a possession proof over this binding signed by another key (possession_unproven) [observed refused, credential_in_use, 0 written]",
+    "VELDO-0130 enrollment/steward-signed detail: the steward's signed enrollment of the owner's own passkey is accepted [observed credential_in_use]",
+    "VELDO-0130 enrollment/steward-signed detail: the record holds the principal, credential, key, algorithm, user handle, relying party, origin, label, effective time, proof and envelope, and grants no role"
+   ],
+   "diff": "proof/VELDO-0130/steward-scope-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 enrollment/steward-signed"
+   ],
+   "module": ".veldo/control_api_credentials.py",
+   "mutant_sha256": "e98825972f13651a275493cc3d09971d9bed8aa0cffb08fda0eaaf4d9ff4638e",
+   "name": "steward-scope-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/steward-signed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     false
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.781,
+   "source_sha256": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: an expired pending registration (registration_expired) [observed refused, possession_unproven, 0 written]"
+   ],
+   "diff": "proof/VELDO-0130/expired-registration-accepted.diff",
+   "failed_rows": [
+    "VELDO-0130 enrollment/steward-signed"
+   ],
+   "module": ".veldo/control_api_credentials.py",
+   "mutant_sha256": "e5109e7cb7b912c5d6faec55ea6cb38a4ec055008f082ed17d0f97f67f698115",
+   "name": "expired-registration-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "enrollment/steward-signed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     false
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.904,
+   "source_sha256": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/revocation-ends detail: an assertion signed before a revocation is refused by the authority's own recheck [observed None]",
+    "VELDO-0130 session/revocation-ends detail: on an API that followed no journal record, the next request after a host revocation is unauthenticated [observed: 200 None]",
+    "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a revoked credential (credential-not-current) [observed None]"
+   ],
+   "diff": "proof/VELDO-0130/revoked-credential-current.diff",
+   "failed_rows": [
+    "VELDO-0130 session/revocation-ends",
+    "VELDO-0130 edge/signer-api-purpose"
+   ],
+   "module": ".veldo/control_api_credentials.py",
+   "mutant_sha256": "a9b6173c63a92ab5cfe395e6075c9a4747e6ddd8e82219322db7122e0867e7c0",
+   "name": "revoked-credential-current",
+   "named_row_red": true,
+   "named_rows": [
+    "session/revocation-ends",
+    "edge/signer-api-purpose"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     false
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.837,
+   "source_sha256": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/revocation-ends detail: revoke_membership ends the member's credentials with it",
+    "VELDO-0130 session/revocation-ends detail: a revoked member cannot sign in again"
+   ],
+   "diff": "proof/VELDO-0130/revoked-member-credential-current.diff",
+   "failed_rows": [
+    "VELDO-0130 session/revocation-ends"
+   ],
+   "module": ".veldo/control_api_credentials.py",
+   "mutant_sha256": "9e3fdade0d2d85dcd67e9449eabde7153af308f5bf1452fec9a93109a5e190f6",
+   "name": "revoked-member-credential-current",
+   "named_row_red": true,
+   "named_rows": [
+    "session/revocation-ends"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.744,
+   "source_sha256": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a principal who does not hold the credential (credential-not-current) [observed None]",
+    "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a revoked credential (credential-not-current) [observed None]",
+    "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a principal with no credential (credential-not-current) [observed None]"
+   ],
+   "diff": "proof/VELDO-0130/signer-credential-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 edge/signer-api-purpose"
+   ],
+   "module": ".veldo/control_api_signer.py",
+   "mutant_sha256": "ff836d76a1e40a57a35ee7c9caa39770d959bc13819aeefecd509c77d15fa308",
+   "name": "signer-credential-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "edge/signer-api-purpose"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     false
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.802,
+   "source_sha256": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an expired assertion (assertion-expired) [observed None]"
+   ],
+   "diff": "proof/VELDO-0130/signer-expiry-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 edge/signer-api-purpose"
+   ],
+   "module": ".veldo/control_api_signer.py",
+   "mutant_sha256": "e824f45fa32e0f5b44a6361e0c8339ea2aa8f3d7b398964589406609de24e3ca",
+   "name": "signer-expiry-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "edge/signer-api-purpose"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     false
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.767,
+   "source_sha256": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an assertion with another field (forbidden-purpose) [observed None]",
+    "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an assertion for another operation (forbidden-purpose) [observed None]"
+   ],
+   "diff": "proof/VELDO-0130/signer-signs-any-shape.diff",
+   "failed_rows": [
+    "VELDO-0130 edge/signer-api-purpose"
+   ],
+   "module": ".veldo/control_api_signer.py",
+   "mutant_sha256": "be35d589cc22a58252b06017fc7dcba52a2d8dacf4b2aa7bb03f1a1d3c4bed7b",
+   "name": "signer-signs-any-shape",
+   "named_row_red": true,
+   "named_rows": [
+    "edge/signer-api-purpose"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     false
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.79,
+   "source_sha256": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion signed by the owner, not the edge (unauthenticated:signature) [observed None]",
+    "VELDO-0130 edge/authority-recheck detail: nothing was written by any refused assertion"
+   ],
+   "diff": "proof/VELDO-0130/authority-signature-unverified.diff",
+   "failed_rows": [
+    "VELDO-0130 edge/authority-recheck"
+   ],
+   "module": ".veldo/control_api_authority.py",
+   "mutant_sha256": "9de961688df1b6d6d84b9239675a41bc9599f4cb8d472e4f6760cde309fd2180",
+   "name": "authority-signature-unverified",
+   "named_row_red": true,
+   "named_rows": [
+    "edge/authority-recheck"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     false
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.827,
+   "source_sha256": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/revocation-ends detail: an assertion signed before a revocation is refused by the authority's own recheck [observed None]",
+    "VELDO-0130 edge/authority-recheck detail: the authority refuses a principal who does not hold the named credential (unauthenticated:credential_of_another_principal) [observed None]",
+    "VELDO-0130 edge/authority-recheck detail: the authority refuses a credential nobody holds (unauthenticated:unknown_credential) [observed None]",
+    "VELDO-0130 edge/authority-recheck detail: nothing was written by any refused assertion"
+   ],
+   "diff": "proof/VELDO-0130/authority-credential-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 session/revocation-ends",
+    "VELDO-0130 edge/authority-recheck"
+   ],
+   "module": ".veldo/control_api_authority.py",
+   "mutant_sha256": "f56719b0b9f5fbb4cb2134938e1000d6080de271bf4af4d93c75a2172af73982",
+   "name": "authority-credential-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "edge/authority-recheck",
+    "session/revocation-ends"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     false
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.936,
+   "source_sha256": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion replayed after its expiry (unauthenticated:expired) [observed None]",
+    "VELDO-0130 edge/authority-recheck detail: nothing was written by any refused assertion"
+   ],
+   "diff": "proof/VELDO-0130/authority-expiry-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 edge/authority-recheck"
+   ],
+   "module": ".veldo/control_api_authority.py",
+   "mutant_sha256": "acba5dc5faf3d08d75102087c178a7bd815f9a072970cf3e1ccc49c1042cafce",
+   "name": "authority-expiry-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "edge/authority-recheck"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     false
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.76,
+   "source_sha256": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion for another repository (unauthorized:domain) [observed None]",
+    "VELDO-0130 edge/authority-recheck detail: nothing was written by any refused assertion"
+   ],
+   "diff": "proof/VELDO-0130/authority-domain-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0130 edge/authority-recheck"
+   ],
+   "module": ".veldo/control_api_authority.py",
+   "mutant_sha256": "45018c7b4ccaff1b0594a5fa4aa1368b33bc593212923bc356e993f837eb842e",
+   "name": "authority-domain-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "edge/authority-recheck"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     false
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.787,
+   "source_sha256": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 session/revocation-ends detail: following the journal ends the revoked credential's sessions at once [observed 0]",
+    "VELDO-0130 routes/every-family detail: auth: a member who is not a steward cannot revoke a credential [observed: 200 None]",
+    "VELDO-0130 routes/every-family detail: messages: a member whose scope covers no served project is unauthorized [observed: 200 None]",
+    "VELDO-0130 routes/every-family detail: decisions: a member who is not the presented owner is unauthorized [observed: 200 None]",
+    "VELDO-0130 edge/authority-recheck detail: the authority refuses an edge signature over another intake request than the assertion names (unauthenticated:signature) [observed None]",
+    "VELDO-0130 decisions/exact-settlement detail: an answer to the presentation the owner saw before a revision is refused as stale [observed: 200 None]",
+    "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 200 None] [observed: 200 None]",
+    "VELDO-0130 decisions/one-ruling detail: after Telegram settles, the UI answer is refused and settles nothing [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/ui-refusal-reported-settled.diff",
+   "failed_rows": [
+    "VELDO-0130 session/revocation-ends",
+    "VELDO-0130 routes/every-family",
+    "VELDO-0130 edge/authority-recheck",
+    "VELDO-0130 decisions/exact-settlement",
+    "VELDO-0130 decisions/one-ruling"
+   ],
+   "module": ".veldo/control_api_authority.py",
+   "mutant_sha256": "4fe4bb96a09bfd86c636ae15fbdbbb929ecf53eb5ffe79d254c821fc0723cdbd",
+   "name": "ui-refusal-reported-settled",
+   "named_row_red": true,
+   "named_rows": [
+    "decisions/one-ruling",
+    "decisions/exact-settlement"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     false
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     false
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     false
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.753,
+   "source_sha256": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 routes/every-family detail: messages: a member whose scope covers no served project is unauthorized [observed: 403 unauthorized:not_a_person]",
+    "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 200 None] [observed: 403 unauthorized:not_a_person] [observed: 200 None]",
+    "VELDO-0130 edge/signer-api-purpose detail: a current member's assertion is signed, with its derived intake request [observed None]",
+    "VELDO-0130 edge/authority-recheck detail: the valid assertion executes once; the same request id again writes nothing [observed unauthorized:not_a_person, None]",
+    "VELDO-0130 messages/common-intake detail: the message is proposed by the common intake for the session's member [observed: 403 unauthorized:not_a_person]",
+    "VELDO-0130 messages/common-intake detail: the source is the API's: channel api, the edge, the request id and the request digest",
+    "VELDO-0130 messages/common-intake detail: intake admits nothing itself: the write is intake records only [observed []]",
+    "VELDO-0130 messages/common-intake detail: a message naming no project is kept with the question naming the candidates [observed: 403 unauthorized:not_a_person]",
+    "VELDO-0130 messages/common-intake detail: a follow-up naming the proposal resolves it into an objective [observed: 403 unauthorized:not_a_person]"
+   ],
+   "diff": "proof/VELDO-0130/message-speaker-is-edge.diff",
+   "failed_rows": [
+    "VELDO-0130 routes/every-family",
+    "VELDO-0130 edge/signer-api-purpose",
+    "VELDO-0130 edge/authority-recheck",
+    "VELDO-0130 messages/common-intake"
+   ],
+   "module": ".veldo/control_api_assertion.py",
+   "mutant_sha256": "fa614a6edbec46dfad90e8158521da8d6eb4f10fec497043c583e59ddef7bf3b",
+   "name": "message-speaker-is-edge",
+   "named_row_red": true,
+   "named_rows": [
+    "messages/common-intake"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     false
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     false
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.683,
+   "source_sha256": "edde8a89c7f4fdbe99e100a3eb0b03070accb06f670af80732d2fd37ae210c69"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 messages/common-intake detail: the message is proposed by the common intake for the session's member [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/message-text-trimmed.diff",
+   "failed_rows": [
+    "VELDO-0130 messages/common-intake"
+   ],
+   "module": ".veldo/control_api_assertion.py",
+   "mutant_sha256": "6362326aaed99bcf56e03a1e9b8046010c25f51d82805a4dec19ad3a88ff17e4",
+   "name": "message-text-trimmed",
+   "named_row_red": true,
+   "named_rows": [
+    "messages/common-intake"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.746,
+   "source_sha256": "edde8a89c7f4fdbe99e100a3eb0b03070accb06f670af80732d2fd37ae210c69"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 200 None] [observed: 200 None] [observed: 400 invalid_input:missing_rationale]",
+    "VELDO-0130 routes/body-actor-refused detail: control: the owner's own session answers the same decision [observed: 400 invalid_input:missing_rationale]",
+    "VELDO-0130 decisions/exact-settlement detail: the owner's answer at the current request and presentation versions settles [observed: 400 invalid_input:missing_rationale]",
+    "VELDO-0130 decisions/exact-settlement detail: the recorded answer is the session's member on channel api, under the request id the API issued",
+    "VELDO-0130 decisions/exact-settlement detail: the answer to the current presentation settles [observed: 400 invalid_input:missing_rationale]",
+    "VELDO-0130 decisions/one-ruling detail: after the UI settles, a Telegram answer adds no second ruling [observed: 400 invalid_input:missing_rationale]"
+   ],
+   "diff": "proof/VELDO-0130/answer-rationale-dropped.diff",
+   "failed_rows": [
+    "VELDO-0130 routes/every-family",
+    "VELDO-0130 routes/body-actor-refused",
+    "VELDO-0130 decisions/exact-settlement",
+    "VELDO-0130 decisions/one-ruling"
+   ],
+   "module": ".veldo/control_api_assertion.py",
+   "mutant_sha256": "a1fbf4907a75f4ef856bea11ee3bdb2f97f8c8d0c473546001e9d1930e6cf0c9",
+   "name": "answer-rationale-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "decisions/exact-settlement"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     false
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     false
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     false
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     false
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.579,
+   "source_sha256": "edde8a89c7f4fdbe99e100a3eb0b03070accb06f670af80732d2fd37ae210c69"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 decisions/one-ruling detail: after Telegram settles, the UI answer is refused and settles nothing [observed: 200 None]",
+    "VELDO-0130 decisions/one-ruling detail: one terminal ruling with unchanged provenance: the Telegram settlement, version 1, as it was"
+   ],
+   "diff": "proof/VELDO-0130/ui-answer-settles-again.diff",
+   "failed_rows": [
+    "VELDO-0130 decisions/one-ruling"
+   ],
+   "module": ".veldo/control_request_settlement.py",
+   "mutant_sha256": "0674e625dc1aada3e1c78d6192c731f65921d31e80c170ebdf72983d98492491",
+   "name": "ui-answer-settles-again",
+   "named_row_red": true,
+   "named_rows": [
+    "decisions/one-ruling"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     false
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 7.704,
+   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+  }
+ ],
+ "mutations_per_row": {
+  "decisions/exact-settlement": [
+   "ui-refusal-reported-settled",
+   "answer-rationale-dropped"
+  ],
+  "decisions/one-ruling": [
+   "ui-refusal-reported-settled",
+   "ui-answer-settles-again"
+  ],
+  "edge/authority-recheck": [
+   "authority-signature-unverified",
+   "authority-credential-unchecked",
+   "authority-expiry-unchecked",
+   "authority-domain-unchecked"
+  ],
+  "edge/signer-api-purpose": [
+   "revoked-credential-current",
+   "signer-credential-unchecked",
+   "signer-expiry-unchecked",
+   "signer-signs-any-shape"
+  ],
+  "enrollment/pending-grants-nothing": [
+   "pending-limit-unenforced",
+   "origin-not-compared",
+   "challenge-unchecked"
+  ],
+  "enrollment/steward-signed": [
+   "signature-unverified",
+   "possession-not-rechecked",
+   "steward-role-unchecked",
+   "steward-scope-unchecked",
+   "expired-registration-accepted"
+  ],
+  "messages/common-intake": [
+   "message-speaker-is-edge",
+   "message-text-trimmed"
+  ],
+  "routes/body-actor-refused": [
+   "body-actor-authorizes",
+   "unknown-field-ignored"
+  ],
+  "routes/every-family": [
+   "domain-unchecked",
+   "expiry-unchecked"
+  ],
+  "session/cookie-and-expiry": [
+   "expiry-unchecked",
+   "absolute-lifetime-unchecked",
+   "cookie-scriptable",
+   "cookie-kept-plain",
+   "challenge-reusable",
+   "sign-out-keeps-session"
+  ],
+  "session/forgery-refused": [
+   "token-unchecked",
+   "origin-unchecked",
+   "fetch-site-unchecked",
+   "content-type-unchecked",
+   "host-unchecked"
+  ],
+  "session/revocation-ends": [
+   "session-not-rechecked",
+   "follow-ignores-revocation",
+   "follow-ignores-membership",
+   "revoked-credential-current",
+   "revoked-member-credential-current",
+   "authority-credential-unchecked"
+  ],
+  "transport/loopback-only": [
+   "host-unchecked",
+   "hsts-omitted",
+   "body-cap-unenforced"
+  ],
+  "webauthn/independent-vectors": [
+   "uv-unchecked",
+   "origin-not-compared",
+   "cross-origin-accepted",
+   "rp-hash-unchecked",
+   "signature-unverified"
+  ],
+  "webauthn/stand-in-browser": [
+   "uv-unchecked",
+   "up-unchecked",
+   "origin-not-compared",
+   "cross-origin-accepted",
+   "rp-hash-unchecked",
+   "ceremony-type-unchecked",
+   "challenge-unchecked",
+   "user-handle-unchecked",
+   "signature-unverified"
+  ]
+ },
+ "noop": {
+  "control_api.py": {
+   "copy_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.813,
+   "source_sha256": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  "control_api_assertion.py": {
+   "copy_sha256": "edde8a89c7f4fdbe99e100a3eb0b03070accb06f670af80732d2fd37ae210c69",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.723,
+   "source_sha256": "edde8a89c7f4fdbe99e100a3eb0b03070accb06f670af80732d2fd37ae210c69"
+  },
+  "control_api_authority.py": {
+   "copy_sha256": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.731,
+   "source_sha256": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa"
+  },
+  "control_api_credentials.py": {
+   "copy_sha256": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.743,
+   "source_sha256": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  "control_api_signer.py": {
+   "copy_sha256": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.815,
+   "source_sha256": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725"
+  },
+  "control_api_webauthn.py": {
+   "copy_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.934,
+   "source_sha256": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  "control_request_settlement.py": {
+   "copy_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ]
+   ],
+   "seconds": 6.221,
+   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 130",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 363.736,
+ "spec_id": "VELDO-0130",
+ "suite": "scripts/suites/71_veldo_0130_api.py"
+}

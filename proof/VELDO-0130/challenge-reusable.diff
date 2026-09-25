@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -353 +353 @@
+-            issued = self._challenges.pop(named, None) if isinstance(named, str) else None
++            issued = self._challenges.get(named) if isinstance(named, str) else None  # defect: reusable

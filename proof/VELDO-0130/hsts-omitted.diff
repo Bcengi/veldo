@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -266 +266 @@
+-               ('Strict-Transport-Security', HSTS), ('X-Content-Type-Options', 'nosniff')] + extra
++               ('X-Content-Type-Options', 'nosniff')] + extra  # defect: no HSTS

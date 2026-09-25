@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -165,2 +164,0 @@
+-    if not flags & USER_VERIFIED:
+-        return ['user_not_verified']

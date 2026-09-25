@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -289 +289 @@
+-        if 'domain' in params and params['domain'] != self.domain:
++        if False:  # defect: any domain in the path is served

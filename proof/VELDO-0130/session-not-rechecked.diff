@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -318 +318 @@
+-        why = self._credential_problem(session['credential_id'], session['principal'])[1]
++        why = None  # defect: the credential and member are not read again

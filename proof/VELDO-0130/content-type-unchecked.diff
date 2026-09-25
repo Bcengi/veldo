@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -278 +278 @@
+-            if (headers.get('Content-Type') or '').split(';')[0].strip().lower() != 'application/json':
++            if False:  # defect: a form post writes

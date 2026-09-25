@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_credentials.py
++++ b/.veldo/control_api_credentials.py
+@@ -301 +301 @@
+-        if not CM.scope_covers(entry.get('scope'), (member or {}).get('scope')):
++        if False:  # defect: the steward's scope is not checked

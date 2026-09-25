@@ -72,6 +72,7 @@
   "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: the steward's envelope signed by another key (signature_invalid) [observed refused, no_credentials_module, 0 written]",
   "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: an expired pending registration (registration_expired) [observed refused, no_credentials_module, 0 written]",
   "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: another registration's possession proof (possession_unproven) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a possession proof over this binding signed by another key (possession_unproven) [observed refused, no_credentials_module, 0 written]",
   "VELDO-0130 enrollment/steward-signed detail: the steward's signed enrollment of the owner's own passkey is accepted [observed no_credentials_module]",
   "VELDO-0130 enrollment/steward-signed detail: the record holds the principal, credential, key, algorithm, user handle, relying party, origin, label, effective time, proof and envelope, and grants no role",
   "VELDO-0130 enrollment/steward-signed detail: the record verifies on its own: its possession proof rechecks with OpenSSL",
@@ -104,6 +105,7 @@
   "VELDO-0130 session/revocation-ends detail: a steward's own session revokes a credential through the edge; the journal actor is the steward [observed: 404 missing_evidence:route]",
   "VELDO-0130 session/revocation-ends detail: the revoked credential's session ends [observed: 404 missing_evidence:route]",
   "VELDO-0130 session/revocation-ends detail: an assertion signed before a revocation is refused by the authority's own recheck [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 session/revocation-ends detail: on an API that followed no journal record, the next request after a host revocation is unauthenticated [observed: 404 missing_evidence:route]",
   "VELDO-0130 session/revocation-ends detail: following the journal ends the revoked credential's sessions at once [observed 0]",
   "VELDO-0130 session/revocation-ends detail: following a revoke_membership ends every session of the member at once [observed 0]",
   "VELDO-0130 session/revocation-ends detail: revoke_membership ends the member's credentials with it",
@@ -136,6 +138,7 @@
   "VELDO-0130 edge/authority-recheck detail: the authority refuses a principal who does not hold the named credential (unauthenticated:credential_of_another_principal) [observed missing_evidence:no_api_authority]",
   "VELDO-0130 edge/authority-recheck detail: the authority refuses a credential nobody holds (unauthenticated:unknown_credential) [observed missing_evidence:no_api_authority]",
   "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion for another domain (unauthorized:domain) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion for another repository (unauthorized:domain) [observed missing_evidence:no_api_authority]",
   "VELDO-0130 edge/authority-recheck detail: the authority refuses an edge signature over another intake request than the assertion names (unauthenticated:signature) [observed missing_evidence:no_api_authority]",
   "VELDO-0130 edge/authority-recheck detail: the authority refuses an operation outside the assertion contract (invalid_input:assertion) [observed missing_evidence:no_api_authority]",
   "VELDO-0130 edge/authority-recheck detail: the valid assertion executes once; the same request id again writes nothing [observed missing_evidence:no_api_authority, None]",
@@ -287,7 +290,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 2.235,
+ "seconds": 2.232,
  "spec_id": "VELDO-0130",
  "suite": "scripts/suites/71_veldo_0130_api.py",
  "tree": "git archive b84197b8366e73e9886eb996c9dce1d9606a08fb, unchanged; the current suite file run against it"

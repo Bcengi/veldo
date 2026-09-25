@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -131,2 +130,0 @@
+-    if data.get('origin') != origin:
+-        return 'wrong_origin'

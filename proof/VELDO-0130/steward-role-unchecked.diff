@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_credentials.py
++++ b/.veldo/control_api_credentials.py
+@@ -283 +283 @@
+-        if CM.STEWARD_ROLE not in (entry.get('roles') or []):
++        if False:  # defect: any person enrolls a passkey

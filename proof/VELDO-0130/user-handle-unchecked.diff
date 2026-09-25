@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -167 +167 @@
+-    if assertion.get('user_handle') != credential.get('user_handle'):
++    if False:  # defect: any user handle
