@@ -23,11 +23,26 @@ control_api_credentials.revoke_as_member, whose journal actor is the member. Eve
 with the operation, domain, principal, credential id, session handle, request id and the assertion
 digest, never the assertion's text or a signature.
 
-`inspect` is the read the API's session checks go through: named committed entities and the journal
-watermark, as the VELDO-0047 service's inspect answers them.
+A workflow save (AC4) is VELDO-0132's Workflows.save, the only writer of workflow revisions, for the
+verified principal with the base version the assertion carries: its own transaction judges the editor
+(an active person member holding project_owner or technical_authority scoped to the repository) and
+refuses a base that is not the current head as stale_version, so a stale or unauthorized edit is refused
+by name and writes nothing.
+
+READS (AC2). `inspect` is the read the API's session checks go through: named committed entities and the
+journal watermark, as the VELDO-0047 service's inspect answers them. `read` serves one published read
+model (control_api_models.read_model) from this connection for a principal who is a current person
+member whose scope covers a project this domain serves (else unauthorized:no_project, the intake's own
+refusal); `workflow` is VELDO-0132's Workflows.load of one revision. `events` is the live event feed:
+every committed journal record after a sequence, read through the VELDO-0051 publication's own journal
+reader, each with its identity (sequence, command, record digest, commit time), the kinds and ids it
+changed and never their data, the credential and membership revocations it commits, and the events the
+publication derives at that record, with the publication's watermark and freshness: "stale" with the
+count of records not yet published whenever the published watermark is behind the head. An unreadable
+store is unavailable_service, never an empty answer.
 
 WHAT IT IS NOT. Not the transport: routing these packets through the VELDO-0047 service socket
-(VELDO-0107) is the phase that wires the service. Not reads or live events (AC2). Standard library only.
+(VELDO-0107) is the phase that wires the service. Standard library only.
 """
 import importlib.util
 import json
@@ -45,9 +60,12 @@ def organ(name):
 
 AS = organ('control_api_assertion')
 CR = organ('control_api_credentials')
+MO = organ('control_api_models')
+WF = MO.WF
 E = organ('control_channel_enrollment')
 CM, AC = CR.CM, CR.AC
 SCHEMA = 'veldo.api_authority_observation/v1'
+HINT_SCHEMA = 'veldo.control_notification/v1'  # control_notify.SCHEMA, the VELDO-0046 hint
 # The error classes of the specification's taxonomy, from each organ's own class names.
 CLASSES = {'missing_authority': 'unauthorized', 'stale_subject': 'stale_version', 'invalid_input': 'invalid_input',
            'unsupported_configuration': 'invalid_input', 'missing_evidence': 'missing_evidence',
@@ -73,6 +91,12 @@ def taxonomy(code):
     return 'unknown_outcome'
 
 
+def _class_of(code):
+    """The taxonomy class of an organ's refusal: its own head, else VELDO-0132's class for it."""
+    head = str(code).split(':', 1)[0]
+    return CLASSES[head] if head in CLASSES else CLASSES.get(WF.taxonomy(code), 'unknown_outcome')
+
+
 class ApiAuthority:
     """The API assertion judge on the authority's store connection `conn`.
 
@@ -82,11 +106,15 @@ class ApiAuthority:
     VELDO-0068 Settlement and control_api_credentials.Credentials on `conn`."""
 
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
-                 clock=time.time, observe=None):
+                 workflows=None, publication=None, notify=None, clock=time.time, observe=None):
         self.S, self.CM, self.conn = store, membership, conn
         self.ids = {f: ids.get(f) for f in AS.IDS}
         self.domain, self.edge = domain, edge
         self.intake, self.settlement, self.credentials, self.clock = intake, settlement, credentials, clock
+        # VELDO-0132's Workflows on this connection, and VELDO-0051's Projection of this store.
+        self.workflows, self.publication = workflows, publication
+        # After each accepted command: notify(hint), the VELDO-0046 notification shape of the head record.
+        self.notify = notify
         self.observe = observe or (lambda event: None)
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
@@ -104,6 +132,93 @@ class ApiAuthority:
         head = self.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
         return {'ok': True, 'reason': 'inspect', 'watermark': head, 'entities': entities}
 
+    # the read models and the live feed (AC2)
+
+    def _reader_problem(self, principal):
+        member = AC.membership_entry(self.CM.authority_state(self.S, self.conn)['membership'], principal)
+        if not AC.active_member(member, self.clock())[0] or member.get('principal_type') != 'person':
+            return 'unauthenticated:member_not_current'
+        if not any(self.CM.scope_covers(member.get('scope'), p) for p in self.intake.projects):
+            return 'unauthorized:no_project'
+        return None
+
+    def _answer(self, principal, produce):
+        try:
+            problem = self._reader_problem(principal)
+            if problem:
+                return {'ok': False, 'reason': problem, 'taxonomy': taxonomy(problem)}
+            return dict(produce(), ok=True)
+        except (self.S.StoreRefused, sqlite3.Error, OSError):
+            return {'ok': False, 'reason': 'unavailable_service:store', 'taxonomy': 'unavailable_service'}
+        except Exception as error:  # noqa: BLE001 - an organ's named refusal (its own Refused class)
+            if not isinstance(getattr(error, 'code', None), str):
+                raise
+            return {'ok': False, 'reason': error.code, 'taxonomy': _class_of(error.code)}
+
+    def read(self, model, principal):
+        """One published read model for `principal`, read on this connection now."""
+        if model not in MO.MODELS:
+            return {'ok': False, 'reason': 'missing_evidence:read_model', 'taxonomy': 'missing_evidence'}
+        return self._answer(principal, lambda: MO.read_model(self.S, self.conn, model))
+
+    def workflow(self, principal, workflow, version=None):
+        """VELDO-0132's stored canvas document of one revision (the head when `version` is None)."""
+        def produce():
+            if self.workflows is None:
+                raise WF.Refused('unavailable_service:workflows', 'no workflow service on this authority')
+            document = self.workflows.load(workflow, version)
+            served, paths = MO.redact(document)
+            return dict(served, redacted=paths, watermark=MO.watermark(self.conn), freshness='live')
+        return self._answer(principal, produce)
+
+    def events(self, principal, after, limit=256):
+        """The committed journal records after `after`, oldest first, at most `limit`, for `principal`."""
+        return self._answer(principal, lambda: self._feed(after, limit))
+
+    def feed(self, after, limit=256):
+        """The same records for the API edge's own journal follow (ending sessions a record revokes); the
+        streams it then feeds are each re-read through `events` for their own member."""
+        try:
+            return dict(self._feed(after, limit), ok=True)
+        except (self.S.StoreRefused, sqlite3.Error, OSError):
+            return {'ok': False, 'reason': 'unavailable_service:store', 'taxonomy': 'unavailable_service'}
+        except Exception as error:  # noqa: BLE001 - the publication's named refusal
+            if not isinstance(getattr(error, 'code', None), str):
+                raise
+            return {'ok': False, 'reason': error.code, 'taxonomy': _class_of(error.code)}
+
+    def _feed(self, after, limit):
+        if self.publication is None:
+            raise WF.Refused('unavailable_service:publication', 'no VELDO-0051 publication on this authority')
+        # The publication's own journal reader and stored watermark; its refusals keep their names.
+        rows = self.publication._rows()
+        mark = self.publication.watermark()
+        head = rows[-1][0] if rows else 0
+        published = mark['watermark'] if mark else 0
+        derived, _judged = self.publication.derive(rows, after)
+        by_seq = {}
+        for event in derived:
+            by_seq.setdefault(event.get('journal_seq'), []).append(event['id'])
+        out = []
+        for seq, command, digest, changes, committed in rows:
+            if seq <= after:
+                continue
+            if len(out) >= limit:
+                break
+            revocations = {}
+            for eid, change in changes.items():
+                data = (change or {}).get('data') or {}
+                if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:
+                    revocations[eid] = {'kind': change['kind'], 'data': {'credential_id': data.get('credential_id'),
+                                                                         'revoked_at': data['revoked_at']}}
+            out.append({'seq': seq, 'command_id': command, 'record_digest': digest, 'committed_at': committed,
+                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],
+                        'revocations': revocations, 'published': by_seq.get(seq, [])})
+        return {'schema': 'veldo.api_events/v1', 'after': after, 'events': out,
+                'watermark': {'seq': head, 'record_digest': rows[-1][2] if rows else None},
+                'publication': {'watermark': published, 'head': head, 'pending_records': max(0, head - published),
+                                'freshness': 'live' if published == head else 'stale'}}
+
     # the judgment
 
     def apply(self, packet):
@@ -119,7 +234,16 @@ class ApiAuthority:
         except (self.S.StoreRefused, sqlite3.Error):
             return self._observe(about, False, 'unavailable_service', None)
         refusal = result.get('reason') if result.get('outcome') in ('refused', 'unknown_outcome') else None
-        return self._observe(about, refusal is None, refusal, result)
+        answer = self._observe(about, refusal is None, refusal, result)
+        if refusal is None and self.notify is not None:
+            self.notify(self.hint())
+        return answer
+
+    def hint(self):
+        """The VELDO-0046 notification hint of the journal head: identity only, never domain data."""
+        row = self.conn.execute('SELECT seq, command_id, record_digest FROM journal ORDER BY seq DESC LIMIT 1').fetchone()
+        return dict(self.ids, schema=HINT_SCHEMA, command_id=row[1] if row else None,
+                    record_digest=row[2] if row else None, watermark=row[0] if row else 0)
 
     def _apply(self, packet, a):
         if AS.shape_problems(a):
@@ -158,10 +282,36 @@ class ApiAuthority:
             return self.settlement.api_answer({'answer': derived, 'signature': packet.get('domain_signature')})
         provenance = {'channel': AS.CHANNEL, 'edge': self.edge, 'request_id': a['request_id'],
                       'credential_id': a['credential_id'], 'assertion_digest': AS.digest(a)}
+        if a['operation'] == 'save_workflow':
+            return self._save_workflow(a)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
         if done['refusal']:
             return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
         return {'outcome': 'revoked'}
+
+    def _save_workflow(self, a):
+        """VELDO-0132's save for the verified principal: its transaction judges the editor and the base."""
+        p = a['parameters']
+        if self.workflows is None:
+            return {'outcome': 'refused', 'reason': 'unavailable_service:workflows'}
+        definition = p['definition'] if isinstance(p['definition'], dict) else {}
+        if definition.get('id') != p['workflow']:
+            return {'outcome': 'refused', 'reason': 'invalid_input:definition.id is not the workflow saved'}
+        document = {'definition': p['definition']} if p['layout'] is None else {'definition': p['definition'],
+                                                                                  'layout': p['layout']}
+        try:
+            saved = self.workflows.save(document, principal=a['principal'], base=p['base'])
+        except Exception as error:  # noqa: BLE001 - VELDO-0132's named refusal (its own Refused class)
+            if not isinstance(getattr(error, 'code', None), str):
+                raise
+            klass, head = _class_of(error.code), error.code.split(':', 1)[0]
+            return {'outcome': 'refused', 'reason': error.code if CLASSES.get(head) == klass else '%s:%s' % (klass, error.code)}
+        return dict(saved, outcome='saved')
+
+    def commands(self):
+        """Each operation and the store command it executes, for the route-to-command comparison."""
+        return {'send_message': AS.IN.RECORD, 'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
+                'save_workflow': WF.SAVE}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1

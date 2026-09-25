@@ -209,13 +209,14 @@ _FILES = [
     # the published request state). A runtime asset the authority loads; not validator substrate.
     ".veldo/control_request_settlement.py",
     # VELDO-0130: the authenticated API (the loopback HTTP service, passkey verification, the
-    # api_credential store kind, the typed API assertion, the protected signer's "api" purpose and the
-    # authority's judgment of it). Runtime assets the API, the signer and the authority load; no
+    # api_credential store kind, the typed API assertion, the protected signer's "api" purpose, the
+    # authority's judgment of it, and the published read models and UI action contract). Runtime assets the API, the signer and the authority load; no
     # validator imports them, so none is REQUIRED_SUBSTRATE.
     ".veldo/control_api.py",
     ".veldo/control_api_assertion.py",
     ".veldo/control_api_authority.py",
     ".veldo/control_api_credentials.py",
+    ".veldo/control_api_models.py",
     ".veldo/control_api_signer.py",
     ".veldo/control_api_webauthn.py",
     # VELDO-0073: the Telegram edge's activation gate, qualification record and activated ingress (the

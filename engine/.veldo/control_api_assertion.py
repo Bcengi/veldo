@@ -11,9 +11,10 @@ target and exact parameters, the expected versions, the issue time and an expiry
 EACH OPERATION HAS ONE DOMAIN COMMAND, derived here (`domain_request`) and never written by a caller: a
 message is VELDO-0126's API intake request unchanged, carrying the assertion's principal; a decision
 answer is VELDO-0068's API answer on channel api; a credential revocation executes
-revoke_api_credential and has no separate signed request. The signer signs the assertion and its
-derived request, and the authority derives the request again from the verified assertion, so the
-command executed is exactly the one the assertion names.
+revoke_api_credential and a workflow save executes VELDO-0132's Workflows.save (the store command
+save_workflow_revision) for the assertion's principal, and neither has a separate signed request.
+The signer signs the assertion and its derived request, and the authority derives the request again
+from the verified assertion, so the command executed is exactly the one the assertion names.
 
 WHAT IT IS NOT. Not a session, a transport or a store. Standard library only.
 """
@@ -47,6 +48,7 @@ OPERATIONS = {
                                        'presentation_version', 'choice', 'rationale'),
                         'boundary': 'decision_settlement'},
     'revoke_credential': {'parameters': ('credential_id',), 'boundary': 'command_acceptance'},
+    'save_workflow': {'parameters': ('workflow', 'base', 'definition', 'layout'), 'boundary': 'command_acceptance'},
 }
 
 
@@ -99,7 +101,8 @@ def time_problem(a, now):
 
 
 def domain_request(a):
-    """The one domain command an assertion's operation executes, or None for revoke_credential."""
+    """The one signed domain request an assertion's operation carries, or None for revoke_credential and
+    save_workflow, which execute from the verified assertion itself."""
     p = a['parameters']
     if a['operation'] == 'send_message':
         return {'schema': IN.API_SCHEMA, 'domain': a['domain'], 'request_id': a['request_id'], 'edge': a['edge'],

@@ -10,8 +10,10 @@ request bodies at 64 KiB and sends Strict-Transport-Security on every response.
 THE ROUTES are one published table, ROUTES: each route's name, method, path, family, whether it needs a
 session, its exact body fields and the authority operation it asks for. The handlers are registered by
 route name, and `route_problems` compares the two, so a route without a handler or a handler without a
-route is a defect the suite names. Phase 1 publishes the auth, messages and decisions families; the read
-models, the event stream and the configuration actions extend the same table.
+route is a defect the suite names. The families are auth, messages, decisions, reads (the published
+contract and every read model of control_api_models.READ_MODELS), configuration (a workflow revision's
+read and its save) and events (the event read and the live stream). A GET's query parameters are its
+exact fields, judged like a write's body.
 
 SIGN-IN. The owner signs in with a passkey (WebAuthn Level 2, discoverable, user verification required,
 attestation "none"), verified by control_api_webauthn against the credential the authority holds
@@ -45,9 +47,22 @@ unauthorized 403 (forgery checks, domain, role or scope), invalid_input 400, sta
 missing_evidence 404, unavailable_service 503, unknown_outcome 500. Logs name the operation, principal,
 credential id, session handle and refusal, never a cookie, token, challenge, key or signature.
 
-WHAT IT IS NOT. Not the read models, live events or configuration actions (phase 2 of VELDO-0130), not
-the service socket transport (the phase that wires control_service), not rate limiting or sessions
-surviving a restart (Release 2). Standard library only.
+READS AND EVENTS (AC2). Every read asks the authority (control_api_authority.read, .workflow, .events)
+for its member and serves the answer with its identities, versions, watermark and freshness; nothing is
+kept or served from this process, so an unreadable authority is unavailable_service, never an answer.
+The live stream (`Stream`, served as text/event-stream) is fed by `deliver(hint)`, which the authority
+calls with the VELDO-0046 notification hint after it commits: `deliver` reads the committed records
+after its cursor through the authority's VELDO-0051 feed, ends every session a record revokes (`follow`),
+closes every stream whose session ended, and re-reads the rest through `events` for each stream's own
+member, so a revoked credential or membership closes its open stream at once. Nothing is polled: a
+stream waits on its own condition, and its idle timeout only writes a keep-alive.
+
+ACTIONS (AC4). The UI action contract is control_api_models.ACTIONS: each action with a route is a POST
+here whose operation the authority executes as the named existing command (a workflow save is VELDO-0132's
+Workflows.save); this process holds no store connection and writes nothing but through the edge.
+
+WHAT IT IS NOT. Not the service socket transport (the phase that wires control_service), not rate
+limiting or sessions surviving a restart (Release 2). Standard library only.
 """
 import collections
 import hashlib
@@ -62,6 +77,7 @@ import re
 import secrets
 import threading
 import time
+import urllib.parse
 
 
 def organ(name):
@@ -74,6 +90,7 @@ def organ(name):
 W = organ('control_api_webauthn')
 CR = organ('control_api_credentials')
 AS = organ('control_api_assertion')
+MO = organ('control_api_models')
 AC = CR.AC
 
 COOKIE = '__Host-veldo-session'
@@ -85,6 +102,8 @@ PENDING_LIMIT = 3
 IDLE_SECONDS = 30 * 60
 ABSOLUTE_SECONDS = 12 * 3600
 HSTS = 'max-age=31536000'
+STREAM_IDLE_SECONDS = 15
+EVENT_LIMIT = 256
 # Body fields that name who is speaking. The speaker is the session's member; a body naming one is refused.
 ACTOR_FIELDS = ('principal', 'actor', 'actor_id', 'decider')
 STATUS = {'unauthenticated': 401, 'unauthorized': 403, 'invalid_input': 400, 'stale_version': 409,
@@ -112,6 +131,15 @@ ROUTES = (
     Route('decisions.answer', 'POST', '/api/v1/domains/{domain}/decisions/answer', 'decisions', True,
           ('request_id', 'request_version', 'presentation_id', 'presentation_digest', 'presentation_version', 'choice',
            'rationale'), (), 'answer_decision'),
+    Route('reads.contract', 'GET', '/api/v1/domains/{domain}/contract', 'reads', True, (), (), None),
+) + tuple(Route(m.route, 'GET', '/api/v1/domains/{domain}/' + m.name, 'reads', True, (), (), None)
+          for m in MO.READ_MODELS) + (
+    Route('reads.workflow', 'GET', '/api/v1/domains/{domain}/workflow', 'configuration', True, ('workflow',),
+          ('version',), None),
+    Route('workflows.save', 'POST', '/api/v1/domains/{domain}/workflows/save', 'configuration', True,
+          ('workflow', 'base', 'definition'), ('layout',), 'save_workflow'),
+    Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
+    Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
 )
 
 
@@ -148,6 +176,58 @@ def body_problem(route, body):
     if set(body) - set(route.required) - set(route.optional) or set(route.required) - set(body):
         return 'invalid_input:fields'
     return None
+
+
+class Stream:
+    """One open event stream of one session: frames queued by the API, waited on with this stream's own
+    condition, and a close reason once it ends."""
+
+    def __init__(self, handle, principal, credential_id, cursor):
+        self.handle, self.principal, self.credential_id, self.cursor = handle, principal, credential_id, cursor
+        self.closed = None
+        self._frames = collections.deque()
+        self._condition = threading.Condition()
+
+    def put(self, frame):
+        with self._condition:
+            if self.closed is None:
+                self._frames.append(frame)
+                self._condition.notify_all()
+
+    def close(self, reason):
+        with self._condition:
+            if self.closed is None:
+                self.closed = reason
+            self._condition.notify_all()
+
+    def next(self, timeout=None):
+        """('frame', frame), ('closed', reason) once every queued frame is out, or ('idle', None)."""
+        with self._condition:
+            if not self._frames and self.closed is None:
+                self._condition.wait(timeout)
+            if self._frames:
+                return 'frame', self._frames.popleft()
+            if self.closed is not None:
+                return 'closed', self.closed
+            return 'idle', None
+
+
+def serve_stream(stream, write, idle=STREAM_IDLE_SECONDS):
+    """Write one stream as text/event-stream frames through `write(bytes)` until it closes or the
+    peer goes away. Returns the close reason."""
+    try:
+        while True:
+            kind, frame = stream.next(idle)
+            if kind == 'frame':
+                write(('id: %d\nevent: events\ndata: %s\n\n' % (frame['cursor'], json.dumps(frame, sort_keys=True))).encode())
+            elif kind == 'idle':
+                write(b': idle\n\n')
+            else:
+                write(('event: closed\ndata: %s\n\n' % json.dumps({'reason': frame})).encode())
+                return frame
+    except OSError:
+        stream.close('disconnected')
+        return 'disconnected'
 
 
 class Sessions:
@@ -209,6 +289,18 @@ class Sessions:
         with self._lock:
             return len(self._by_hash)
 
+    def alive(self, handle):
+        """Whether the session named by `handle` exists and has not expired; an expired one is ended."""
+        now = self.clock()
+        with self._lock:
+            for key, session in list(self._by_hash.items()):
+                if session['handle'] == handle:
+                    if now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS:
+                        del self._by_hash[key]
+                        return False
+                    return True
+        return False
+
 
 class ControlApi:
     """The API of one domain. `config` names origin (https://<name>), rp_id, host (the name the Host
@@ -230,6 +322,8 @@ class ControlApi:
         self._lock = threading.Lock()
         self._challenges = {}
         self._registrations = {}
+        self._streams = []
+        self._cursor = None
         self.observe = observe or (lambda event: None)
         self.observations = []
         self.handlers = {'auth.challenge': self._challenge, 'auth.sign_in': self._sign_in,
@@ -239,7 +333,10 @@ class ControlApi:
                          'auth.session': self._session_read, 'auth.sign_out': self._sign_out,
                          'auth.sign_out_everywhere': self._sign_out_everywhere,
                          'auth.revoke_credential': self._write, 'messages.send': self._write,
-                         'decisions.answer': self._write}
+                         'decisions.answer': self._write, 'reads.contract': self._contract,
+                         'reads.workflow': self._workflow_read, 'workflows.save': self._write,
+                         'events.read': self._events_read, 'events.stream': self._stream}
+        self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
 
     def route_problems(self):
         """Every route without a handler and every handler without a route, by name; [] when they agree."""
@@ -262,7 +359,8 @@ class ControlApi:
                      refusal=value.get('refusal') if status >= 400 else None, status=status)
         self.observations.append(event)
         self.observe(event)
-        out = [('Content-Type', 'application/json'), ('Cache-Control', 'no-store'),
+        kind = 'text/event-stream' if isinstance(value, Stream) else 'application/json'
+        out = [('Content-Type', kind), ('Cache-Control', 'no-store'),
                ('Strict-Transport-Security', HSTS), ('X-Content-Type-Options', 'nosniff')] + extra
         return status, out, value
 
@@ -270,6 +368,7 @@ class ControlApi:
         if (headers.get('Host') or '') != self.host:
             raise Refused('invalid_input:host', 'the request names another host')
         route, params = match(method, path.split('?', 1)[0])
+        query = path.split('?', 1)[1] if '?' in path else ''
         if route is None:
             raise Refused('missing_evidence:route', 'no such route')
         about['route'] = route.name
@@ -296,9 +395,17 @@ class ControlApi:
                 body = json.loads(raw.decode('utf-8')) if raw else {}
             except (UnicodeDecodeError, ValueError):
                 raise Refused('invalid_input:body', 'the body is JSON') from None
-            problem = body_problem(route, body)
-            if problem:
-                raise Refused(problem, 'the body carries exactly the route\'s fields')
+        else:
+            try:
+                pairs = urllib.parse.parse_qsl(query, keep_blank_values=True, strict_parsing=bool(query))
+            except ValueError:
+                raise Refused('invalid_input:query', 'the query is name=value pairs') from None
+            body = dict(pairs)
+            if len(body) != len(pairs):
+                raise Refused('invalid_input:query', 'each query parameter is named once')
+        problem = body_problem(route, body)
+        if problem:
+            raise Refused(problem, 'the request carries exactly the route\'s fields')
         if session is not None:
             self.sessions.touch(session['handle'])
         return self.handlers[route.name](route, body, session, extra)
@@ -321,13 +428,19 @@ class ControlApi:
             raise Refused('unauthenticated:' + why, 'the credential or membership is no longer current')
         return session
 
+    def _inspect(self, identities):
+        try:
+            return self.authority.inspect(identities).get('entities') or {}
+        except Exception:  # noqa: BLE001 - an unreachable authority is named, never a pass
+            raise Refused('unavailable_service:authority', 'the authority cannot be read') from None
+
     def _credential_problem(self, credential_id, principal=None):
         """(record, reason) from the authority's inspection: the credential, then its principal."""
-        seen = self.authority.inspect([CR.entity_id(credential_id)]).get('entities') or {}
+        seen = self._inspect([CR.entity_id(credential_id)])
         found = CR.record(seen, credential_id)
         if found is None:
             return None, 'unknown_credential'
-        member = self.authority.inspect([found['principal']]).get('entities') or {}
+        member = self._inspect([found['principal']])
         state = {'entities': seen, 'membership': [dict(e['data'], principal=eid) for eid, e in member.items()
                                                   if e.get('kind') == 'membership']}
         return CR.current(state, credential_id, time.time(), principal=principal)
@@ -380,11 +493,13 @@ class ControlApi:
     def _sign_out(self, route, body, session, extra):
         self.sessions.end(session['handle'])
         extra.append(('Set-Cookie', '%s=; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' % COOKIE))
+        self._reap('signed_out')
         return 200, {'outcome': 'signed_out'}
 
     def _sign_out_everywhere(self, route, body, session, extra):
         ended = self.sessions.end_by_principal(session['principal'])
         extra.append(('Set-Cookie', '%s=; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' % COOKIE))
+        self._reap('signed_out')
         return 200, {'outcome': 'signed_out', 'sessions_ended': ended}
 
     # registration, the first half of enrollment
@@ -479,8 +594,10 @@ class ControlApi:
         expected = ({parameters['request_id']: parameters['request_version'],
                      parameters['presentation_id']: parameters['presentation_version']}
                     if route.operation == 'answer_decision' else {})
+        if route.operation == 'save_workflow':
+            expected = {'workflow:' + str(parameters['workflow']): parameters['base']}
         target = {'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
-                  'revoke_credential': 'api_credential'}[route.operation]
+                  'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow'))}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -497,18 +614,142 @@ class ControlApi:
                 self.sessions.end_by_credential(session['credential_id'])
                 raise Refused('unauthenticated:credential_not_current', 'the credential is no longer current') from None
             raise Refused('unavailable_service:signer:' + str(code), 'the protected signer did not sign') from None
-        answer = self.authority.apply({'assertion': assertion, 'signature': signature, 'domain_signature': domain_signature})
+        try:
+            answer = self.authority.apply({'assertion': assertion, 'signature': signature,
+                                           'domain_signature': domain_signature})
+        except Exception:  # noqa: BLE001 - an unreachable authority executed nothing we can name
+            raise Refused('unavailable_service:authority', 'the authority did not answer') from None
+        self._refuse_unless_ok(answer)
+        if route.operation == 'revoke_credential':
+            self.sessions.end_by_credential(parameters['credential_id'])
+            self._reap('revoked')
+        result = answer.get('result') or {}
+        keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
+                'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
+                'layout_digest')
+        return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
+
+    @staticmethod
+    def _refuse_unless_ok(answer):
+        if not isinstance(answer, dict):
+            raise Refused('unknown_outcome:authority', 'the authority gave no answer')
         if not answer.get('ok'):
             code = str(answer.get('reason'))
             klass = answer.get('taxonomy') or 'unknown_outcome'
             klass = klass if klass in STATUS else 'unknown_outcome'
             raise Refused(code if error_class(code) == klass else klass + ':' + code, 'refused by the authority')
-        if route.operation == 'revoke_credential':
-            self.sessions.end_by_credential(parameters['credential_id'])
-        result = answer.get('result') or {}
-        keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
-                'settlement', 'ruling')
-        return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
+
+    def _ask(self, call, *args):
+        """One authority read; an unreachable authority is unavailable_service, never an empty answer."""
+        try:
+            answer = call(*args)
+        except Exception:  # noqa: BLE001 - named, never served
+            raise Refused('unavailable_service:authority', 'the authority cannot be read') from None
+        self._refuse_unless_ok(answer)
+        return {k: v for k, v in answer.items() if k != 'ok'}
+
+    # reads and events (AC2)
+
+    def _contract(self, route, body, session, extra):
+        return 200, MO.contract()
+
+    def _read(self, route, body, session, extra):
+        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
+
+    def _workflow_read(self, route, body, session, extra):
+        version = _count(body.get('version'), 'version') if 'version' in body else None
+        return 200, self._ask(self.authority.workflow, session['principal'], body['workflow'], version)
+
+    def _events_read(self, route, body, session, extra):
+        after = _count(body.get('after', '0'), 'after', minimum=0)
+        return 200, self._ask(self.authority.events, session['principal'], after, EVENT_LIMIT)
+
+    def _stream(self, route, body, session, extra):
+        after = _count(body.get('after', '0'), 'after', minimum=0)
+        answer = self._ask(self.authority.events, session['principal'], after, EVENT_LIMIT)
+        stream = Stream(session['handle'], session['principal'], session['credential_id'], after)
+        self._push(stream, answer, always=True)
+        with self._lock:
+            self._streams.append(stream)
+        return 200, stream
+
+    @staticmethod
+    def _push(stream, answer, always=False):
+        """Queue the records after the stream's cursor as one frame (the first frame always, with the
+        watermark and publication freshness it was read at)."""
+        events = [e for e in answer['events'] if e['seq'] > stream.cursor]
+        if events:
+            stream.cursor = events[-1]['seq']
+        if events or always:
+            stream.put(dict(answer, events=events, cursor=stream.cursor))
+
+    def streams(self):
+        """The open streams (for metrics and the suite)."""
+        with self._lock:
+            return [s for s in self._streams if s.closed is None]
+
+    def drop(self, stream):
+        stream.close(stream.closed or 'disconnected')
+        with self._lock:
+            self._streams = [s for s in self._streams if s is not stream]
+
+    def _reap(self, reason):
+        """Close every open stream whose session no longer exists."""
+        with self._lock:
+            for stream in self._streams:
+                if stream.closed is None and not self.sessions.alive(stream.handle):
+                    stream.close(reason)
+            self._streams = [s for s in self._streams if s.closed is None]
+
+    def deliver(self, hint):
+        """The authority's post-commit notification (the VELDO-0046 hint: coordinates, command id, record
+        digest and watermark). Follows the committed records after this API's cursor, ends the sessions
+        they revoke, closes those sessions' streams, and feeds every other open stream through `events`
+        for its own member. Returns {delivered, ended, closed} or a named refusal."""
+        if (not isinstance(hint, dict) or hint.get('schema') != 'veldo.control_notification/v1'
+                or any(hint.get(f) != v for f, v in self.ids.items()) or type(hint.get('watermark')) is not int
+                or hint['watermark'] < 1):
+            return {'refusal': 'invalid_input:hint'}
+        after = self._cursor if self._cursor is not None else hint['watermark'] - 1
+        try:
+            feed = self.authority.feed(after, EVENT_LIMIT)
+        except Exception:  # noqa: BLE001 - nothing is delivered from an unreadable authority
+            return {'refusal': 'unavailable_service:authority'}
+        if not isinstance(feed, dict) or not feed.get('ok'):
+            return {'refusal': str((feed or {}).get('reason') or 'unavailable_service:authority')}
+        named = [e for e in feed['events'] if e['seq'] == hint['watermark']]
+        if hint['watermark'] > after and (not named or named[0]['record_digest'] != hint.get('record_digest')
+                                          or named[0]['command_id'] != hint.get('command_id')):
+            return {'refusal': 'stale_version:hint'}
+        ended = sum(self.follow({'transition': e['revocations']}) for e in feed['events'])
+        if feed['events']:
+            self._cursor = feed['events'][-1]['seq']
+        elif self._cursor is None:
+            self._cursor = after
+        closed = 0
+        for stream in self.streams():
+            if not self.sessions.alive(stream.handle):
+                stream.close('revoked')
+                closed += 1
+                continue
+            # The stream's member, judged again now: its credential and membership, then its read.
+            try:
+                why = self._credential_problem(stream.credential_id, stream.principal)[1]
+                if why:
+                    self.sessions.end_by_credential(stream.credential_id)
+                    why = 'unauthenticated:' + why
+                else:
+                    answer = self._ask(self.authority.events, stream.principal, stream.cursor, EVENT_LIMIT)
+            except Refused as exc:
+                why = exc.code
+            if why:
+                stream.close(why)
+                closed += 1
+                continue
+            self._push(stream, answer)
+        with self._lock:
+            self._streams = [s for s in self._streams if s.closed is None]
+        return {'delivered': len(feed['events']), 'ended': ended, 'closed': closed, 'cursor': self._cursor}
 
     # following the journal
 
@@ -522,7 +763,17 @@ class ControlApi:
                 ended += self.sessions.end_by_credential(data.get('credential_id'))
             elif change.get('kind') == 'membership' and data.get('revoked_at') is not None:
                 ended += self.sessions.end_by_principal(eid)
+        if ended:
+            self._reap('revoked')
         return ended
+
+
+def _count(value, name, minimum=1):
+    """A query parameter's non-negative integer, or invalid_input."""
+    text = str(value)
+    if not text.isdigit() or len(text) > 18 or int(text) < minimum:
+        raise Refused('invalid_input:' + name, 'an integer of at least %d' % minimum)
+    return int(text)
 
 
 def is_loopback(host):
@@ -558,6 +809,19 @@ def listen(api, host, port):
             else:
                 raw = self.rfile.read(size) if size else b''
                 status, headers, value = api.handle(method, self.path, self.headers, raw)
+            if isinstance(value, Stream):
+                self.close_connection = True
+                self.send_response(status)
+                for name, content in headers + [('Connection', 'close')]:
+                    self.send_header(name, content)
+                self.end_headers()
+
+                def write(data):
+                    self.wfile.write(data)
+                    self.wfile.flush()
+                serve_stream(value, write)
+                api.drop(value)
+                return
             payload = json.dumps(value, sort_keys=True).encode()
             self.send_response(status)
             for name, content in headers:
