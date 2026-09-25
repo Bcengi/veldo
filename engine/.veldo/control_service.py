@@ -72,11 +72,11 @@ inspect reports the channel's status. A stop takes effect at the next exchange, 
 the edge as the owner left it, because the record in the store decides every exchange. An ingress
 that cannot be constructed leaves the service serving everything else, its refusal reported by name.
 
-THE AUTHENTICATED API (VELDO-0130). An installation given --api-service as well copies that
-veldo.api_service/v1 configuration (this authority's own, and the api edge its Telegram ingress names;
-anything else refuses installation by name) into config/api-service.json, and `serve` constructs the
-API's judge on the ingress's connection with the lock this instance holds (control_service_api), so the
-authority, never the API process, runs every API command and read. An api_call packet, whose request
+THE AUTHENTICATED API (VELDO-0130). An installation given an API service configuration as well
+copies that veldo.api_service/v1 configuration (this authority's own, and the api edge its Telegram
+ingress names; anything else refuses installation by name) into config/api-service.json, and `serve`
+constructs the API's judge on the ingress's connection with the lock this instance holds
+(control_service_api), so the authority, never the API process, runs every API command and read. An api_call packet, whose request
 signature must be the enrolled api edge's in the API's request namespace (never a member key), is run by
 it; a steward's enroll_api_credential or revoke_api_credential packet is admitted by
 control_api_credentials; inspect reports the API's status. After every packet or channel pass that

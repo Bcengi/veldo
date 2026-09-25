@@ -29,6 +29,15 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_service*.py"
+  - ".veldo/control_service*.py"
+  - "packs/*/.veldo/control_service*.py"
+  - "engine/.veldo/control_client*.py"
+  - ".veldo/control_client*.py"
+  - "packs/*/.veldo/control_client*.py"
+  - "engine/.veldo/events.py"
+  - ".veldo/events.py"
+  - "packs/*/.veldo/events.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0130_*.py"
   - "scripts/suites/manifest.json"
@@ -367,3 +376,42 @@ run steps are the workflow cycles' traces); team configuration (VELDO-0089). For
 the stop mechanism exists and no authority command requests it) and team and agent configuration edits
 (VELDO-0089, VELDO-0127) have no typed command in the engine yet, so they have no route. Still left:
 routing assertions and reads through the VELDO-0047 service socket.
+
+2026-09-25, footprint for phase 3: the footprint gains the VELDO-0047 authority service and the
+VELDO-0107 client (control_service*.py and control_client*.py, engine, root and pack copies), because
+phase 3 routes the API's assertions and reads through the service socket, which changes
+control_service.py and adds the service's API side and the API process's client beside them; and
+events.py, because the service's fixed executable loads VELDO-0051's publication, whose events.py
+loaded its proof-corpus sibling from the repository layout rather than beside itself, which a copy laid
+outside a .veldo directory cannot satisfy.
+
+2026-09-25, implementation phase 3 (branch build-veldo-0130): the API reaches the authority only through
+the VELDO-0047 authority service socket over VELDO-0107. New engine modules: control_service_api (the
+service's side: the veldo.api_service/v1 configuration copied at installation (the installer's api_service option), which
+must be this authority's and name the api edge its Telegram ingress names; the ApiAuthority constructed
+at `serve` on the ingress's store connection, sharing its acquirer and settlement, with the lock the
+service holds; each API call run there; a steward's enroll_api_credential and revoke_api_credential
+admitted there; the post-commit hint sent to each subscribed API) and control_client_api (the API
+process's side: ServiceAuthority, whose every call is one control_client.send with an API call command
+signed by the protected signer; the API's hint socket, 0600 in its 0700 state directory, taking only a
+peer of this account; and open_api, the production construction of the API process). The protected
+signer's api purpose gains sign_api_request, which signs a VELDO-0107 request for this authority whose
+command is exactly one API call, in its own namespace veldo-api-request, and nothing else; the service
+verifies an API call's request against the enrolled api edge key alone in that namespace, so no member
+key speaks as the API. After every packet or channel pass that advanced the journal, whoever sent it, the
+service sends the head record's VELDO-0046 hint to each subscribed API, so a revocation committed at the
+host ends the API's sessions and closes their open streams with nothing passed by hand; an API that sees
+a new service instance subscribes again and reconciles from its cursor. The judge
+(control_api_authority) refuses every command and read, missing_authority:not_the_authority, unless its
+process holds the service's exclusive lock on the stable lock file beside the store through the
+descriptor it was given, so the API process cannot run a command in-process while the service runs. The
+service's closure derivation now follows a loader helper called through another function of its module
+(control_workflow's _organ), which the API's modules load. Decisions the build made, each for the
+reviewer: the API rides on the Telegram ingress (an installation naming an API service configuration without a
+channel ingress refuses by name), because the VELDO-0126 intake needs the ingress's acquirer and one settlement service
+must rule for both channels; the hint is a one-shot push to the API's own socket, never a poll, and the
+API always re-reads through the feed, so a forged or stale hint changes nothing; subscriptions live in the
+service's memory and an API re-subscribes when an answer names another instance (durable subscriptions
+are Release 2). Phases 1 and 2 behave as before; their fixture holds its own store's lock as the service
+would.
+

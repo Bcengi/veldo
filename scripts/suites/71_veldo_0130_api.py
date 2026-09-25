@@ -1,5 +1,6 @@
 """VELDO-0130: the authenticated API's passkey sign-in, sessions, edge, message and decision writes (phase 1),
-and its read models, live events and configuration actions (phase 2).
+its read models, live events and configuration actions (phase 2), and the API reaching the authority only
+through the installed VELDO-0047 service socket (phase 3).
 
 Run: python3 scripts/selftest.py --suite 71_veldo_0130_api
 
@@ -28,6 +29,18 @@ observations, reservations, documents, units, role and tool configuration) are s
 generic upsert command: the rows judge the API's readers of those kinds, not their writers. Where the tree
 has only phase 1 (the red record), the new routes answer 404 and the new tables are absent, so each new
 row fails by its own assertions.
+
+Phase 3 rows run a second authority of this run's own (scripts/suites/support/v73_authority.py): an
+enrolled Git clone, this host's trust file, control_service.install given the Telegram ingress and the API
+service configuration, and the service process the installed unit's ExecStart runs, started through the
+service's own lifecycle functions by a user manager stand-in of this run's own (Type=notify on its own
+socket, SIGTERM on stop), so nothing is installed into or started by the owner's real systemd user
+manager. The API is built by its production construction (control_client_api.open_api) in this process,
+and its every command and read goes over the service socket; a revocation is signed at the host and sent
+to the service, and the rows watch the API's open stream close with nothing handed to deliver here. The
+Telegram channel is never activated, so no Bot API exchange is made. Where the tree has no phase 3 (the
+red record), installation takes no API, the service runs none and the API process cannot be constructed,
+so each row fails by its own assertions.
 """
 import base64 as _v130_b64
 import copy as _v130_copy
