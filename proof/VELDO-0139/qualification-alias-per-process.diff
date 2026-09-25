@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -107 +107 @@
+-    return 'qualification-' + hashlib.sha256(str(run).encode()).hexdigest()[:32]
++    return 'qualification-' + hashlib.sha256((str(run) + str(os.getpid())).encode()).hexdigest()[:32]  # defect: a restarted process derives another alias

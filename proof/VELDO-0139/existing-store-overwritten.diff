@@ -1,5 +1,5 @@
 --- a/.veldo/control_factory_setup.py
 +++ b/.veldo/control_factory_setup.py
-@@ -149 +149 @@
+@@ -159 +159 @@
 -    if held:
 +    if held and held[0] != 'store':  # defect: an existing store is set up over

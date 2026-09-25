@@ -1,8 +1,8 @@
 --- a/.veldo/control_factory_setup.py
 +++ b/.veldo/control_factory_setup.py
-@@ -302 +302 @@
+@@ -339 +339 @@
 -                  'edge': _keygen(os.path.join(keys, E.edge_key_id(CHANNEL)), 'veldo-edge-telegram'),
 +                  'edge': _keygen(os.path.join(root, EDGE_DIR, E.edge_key_id(CHANNEL)), 'veldo-edge-telegram'),  # defect: the edge key is written outside the protected key directory
-@@ -349 +349 @@
+@@ -393 +393 @@
 -            possession = ACT.ssh_signer(os.path.join(keys, E.edge_key_id(CHANNEL)), E.POSSESSION_NAMESPACE)(
 +            possession = ACT.ssh_signer(os.path.join(root, EDGE_DIR, E.edge_key_id(CHANNEL)), E.POSSESSION_NAMESPACE)(

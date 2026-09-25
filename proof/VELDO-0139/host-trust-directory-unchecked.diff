@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -222 +222 @@
+-    if problem:
++    if False:  # defect: an existing host trust directory is not checked

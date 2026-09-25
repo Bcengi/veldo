@@ -60,7 +60,7 @@ this README's rollback name the workspace binding, carries that rollback out aft
 runs setup again over the same state root, host trust path and clone: it succeeds. The real Telegram leg is PENDING: the lead runs it once with the owner and records it here. No
 fixture counts as it.
 
-Stage environment run: 37 passed, 0 failed (26 preamble, 11 rows), about 10 seconds.
+Stage environment run: 41 passed, 0 failed (26 preamble, 15 rows), about 15 seconds.
 
 ## Red record
 
@@ -68,11 +68,19 @@ Stage environment run: 37 passed, 0 failed (26 preamble, 11 rows), about 10 seco
 module and no `factory` subcommand; all 11 rows fail by their own assertion (the suite records the missing
 module against each row, it does not raise).
 
+`red-at-7bf5d59.json` (review 1): the current 15-row suite over `git archive 7bf5d59`, unchanged. Red by
+assertion, each on its own check: `journey/qualified-and-active` (no request is opened without the suite's
+hand preparation), `qualification/one-request-across-restart`, `rollback/rerun` (the rollback text names
+no binding), `store/private-and-closed` (the store is 0644 and the failed store step leaves its connection
+open), `host-trust/directory-checked`, `refuse/writes-nothing` (the empty `host/` is named a trust) and
+`setup/lays-down` (no requester key). The other eight rows stay green there.
+
 ## Mutations (finding 139)
 
 Registered in `scripts/check_teeth_mutations.py`, each declared falsifier first; `drive.py` records
-`mutations.json` and one applied diff per mutant. All 11 turn their named row red by assertion; the
-baseline and the no-op copies are green. `check_teeth_mutations.py --finding 139`: 11 rejected.
+`mutations.json` and one applied diff per mutant. All 20 turn their named row red by assertion; the
+baseline and the no-op copies (one per mutated module) are green. `check_teeth_mutations.py --finding 139`:
+20 rejected.
 
 | Mutant | Named row |
 |---|---|
@@ -87,6 +95,15 @@ baseline and the no-op copies are green. `check_teeth_mutations.py --finding 139
 | setup-starts-service | service/starts-inert |
 | genesis-not-owner-signed (AC3 falsifier) | genesis/owner-signed |
 | owner-delegation-omitted | journey/qualified-and-active |
+| requester-not-enrolled (review 1) | journey/qualified-and-active |
+| requester-projection-stale (review 1) | journey/qualified-and-active |
+| qualification-request-not-opened (control_service_channel.py) | journey/qualified-and-active |
+| qualification-alias-per-process (control_service_channel.py) | qualification/one-request-across-restart |
+| rerun-blocked-by-kept-directory | rollback/rerun |
+| store-world-readable | store/private-and-closed |
+| store-connection-left-open | store/private-and-closed |
+| host-trust-directory-unchecked | host-trust/directory-checked |
+| empty-host-named-trust | refuse/writes-nothing |
 
 The other findings' `init_scaffold.py` mutations (39, 40, 41, 42, 45, 47, 50, 51, 67, 68, 73, 75, 76, 138)
 were each run honest and mutant after the scaffold change: all still reject.

@@ -1,5 +1,5 @@
 --- a/.veldo/control_factory_setup.py
 +++ b/.veldo/control_factory_setup.py
-@@ -183 +183 @@
+@@ -217 +217 @@
 -    if os.path.lexists(host_trust):
 +    if False:  # defect: an existing host trust is not refused before writing

@@ -1,6 +1,6 @@
 --- a/.veldo/control_factory_setup.py
 +++ b/.veldo/control_factory_setup.py
-@@ -355,2 +355,2 @@
+@@ -399,2 +399,2 @@
 -        with step('delegation'):
 -            admin('grant_delegation', {'id': next_id('delegation'), 'principal': owner, 'channel': CHANNEL,
 +        with step('delegation'):  # defect: no delegation

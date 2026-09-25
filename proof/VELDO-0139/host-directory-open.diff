@@ -1,5 +1,5 @@
 --- a/.veldo/control_factory_setup.py
 +++ b/.veldo/control_factory_setup.py
-@@ -299 +299 @@
+@@ -336 +336 @@
 -            os.chmod(os.path.join(root, name), 0o700)
 +            os.chmod(os.path.join(root, name), 0o755 if name == HOST_DIR else 0o700)  # defect: open to others
