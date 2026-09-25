@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0140
 title: A standing answer delegation the owner renews, and no silent refusal of his answers
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -111,3 +111,5 @@ move request and presentation version to the assertion check the signer already 
 
 2026-09-25: written by the lead from VELDO-0139's first critical review. Draft; the owner decides
 readiness.
+
+2026-09-25: the owner marked this specification ready on Telegram (29111 asked, 29112 "Yes").
