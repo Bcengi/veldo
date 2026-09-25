@@ -26,8 +26,8 @@ those versions again when it commits.
 
 THE GATE. Gate.admit re-reads the record at every exchange: none is not_activated, a stopped record is
 edge_stopped, another origin is stale_configuration, a changed or retired edge key is stale_key, a
-changed chat enrollment is stale_enrollment, an owner no longer a current person member is
-owner_not_current, an expired run is qualification_expired, a send to any chat but the owner's
+changed chat enrollment is stale_enrollment, an owner no longer a current person member holding
+project_owner is owner_not_current, an expired run is qualification_expired, a send to any chat but the owner's
 enrolled one is chat_not_enrolled, and an active record whose qualification is missing, altered or no
 longer proves the platform refuses by that proof's own reason. A getMe answer naming another bot than
 the one activated is stale_configuration. Stop halts send and answer acceptance at once; nothing about
@@ -43,7 +43,10 @@ every exchange of its presentation, answer and settlement legs was made with htt
 over a verified TLS session whose certificate names that host, and its evidence is the same bytes:
 the owner's answer is the canonical VELDO-0066 evidence whose answer digest is the digest of a
 recorded getUpdates answer. An exchange with a loopback stand-in carries no TLS peer, so evidence from
-a fixture never qualifies the Telegram origin (fixture_only_evidence). A stand-in origin can be
+a fixture never qualifies the Telegram origin (fixture_only_evidence). An exchange the gate's transport
+could not complete (a timeout, a refused connection, a name that did not resolve, a body cut off)
+records the failure's class and no answer; a run holding one does not qualify either, and is named
+unavailable_service, so the owner knows to run it again rather than look for a fixture. A stand-in origin can be
 qualified and activated too, which is how the suites drive the gate, but that activation binds the
 stand-in origin and cannot admit an exchange with any other. WHAT THIS CANNOT PROVE: Telegram does not
 sign its answers, so a record in the store is trusted as the store is (the threat model trusts the
@@ -179,7 +182,8 @@ def bindings(store, conn, owner, edge_key_id, now):
     """(refusal, bound): what an activation of `owner`'s edge binds, read in committed state now."""
     state = CM.authority_state(store, conn)
     entry = AC.membership_entry(state['membership'], owner)
-    if not AC.active_member(entry, now)[0] or entry.get('principal_type') != 'person':
+    if (not AC.active_member(entry, now)[0] or entry.get('principal_type') != 'person'
+            or OWNER_ROLE not in (entry.get('roles') or [])):
         return 'owner_not_current', None
     edge = E.edge_record(state, edge_key_id)
     if edge is None or not E.active(edge, now) or edge.get('channel') != CHANNEL:
@@ -204,10 +208,17 @@ def _names_cover(names, host):
     return False
 
 
+def failed_in_transport(exchange, origin):
+    """Whether one recorded exchange with `origin` failed in transport: the gate's own transport raised
+    before the platform's answer was read whole, and it recorded the failure's class."""
+    return isinstance(exchange, dict) and exchange.get('origin') == origin and _text(exchange.get('transport_failure'))
+
+
 def proven_exchange(exchange, origin):
     """Whether one recorded exchange is evidence of `origin`: for the Telegram origin, an https exchange
-    with that host over a verified TLS session whose certificate names it; for a stand-in, its own origin."""
-    if not isinstance(exchange, dict) or exchange.get('origin') != origin:
+    with that host over a verified TLS session whose certificate names it; for a stand-in, its own origin.
+    An exchange that failed in transport is evidence of nothing."""
+    if not isinstance(exchange, dict) or exchange.get('origin') != origin or exchange.get('transport_failure'):
         return False
     if platform_of(origin) != 'telegram':
         return platform_of(origin) == 'stand_in' and exchange.get('tls') is None
@@ -226,7 +237,12 @@ def qualification_problems(record, origin):
     if record.get('origin') != origin or platform_of(origin) is None or record.get('platform') != platform_of(origin):
         return ['stale_configuration']
     exchanges = record.get('exchanges') if isinstance(record.get('exchanges'), list) else []
-    if not exchanges or not all(proven_exchange(x, origin) for x in exchanges):
+    unproven = [x for x in exchanges if not proven_exchange(x, origin)]
+    if unproven and all(failed_in_transport(x, origin) for x in unproven):
+        # The platform was not reached (a timeout, a refused connection, a name that did not resolve,
+        # a body cut off): the run proves nothing, and the owner runs it again.
+        return ['unavailable_service']
+    if not exchanges or unproven:
         return ['fixture_only_evidence']
     chat = record.get('enrolled_chat')
     shown = record.get('presentation') or {}
@@ -321,7 +337,11 @@ class _Recorded:
         self._response, self._exchange, self._body = response, exchange, b''
 
     def read(self, *args):
-        data = self._response.read(*args)
+        try:
+            data = self._response.read(*args)
+        except (http.client.HTTPException, OSError) as exc:
+            self._exchange['transport_failure'] = type(exc).__name__
+            raise
         self._body += data
         self._exchange['response_digest'] = bytes_digest(self._body)
         self._exchange['result'] = _result_fields(self._exchange['operation'], self._body)
@@ -420,6 +440,13 @@ class Gate:
             response = _opener(peers).open(request, timeout=timeout)
         except urllib.error.HTTPError as exc:
             exchange['status'] = exc.code
+            exchange['tls'] = peers[-1] if peers else None
+            raise
+        except (urllib.error.URLError, http.client.HTTPException, OSError) as exc:
+            # No answer from the platform: recorded by the failure's class (never its text), so the
+            # qualification names the run unavailable_service rather than fixture evidence.
+            reason = exc.reason if isinstance(exc, urllib.error.URLError) else exc
+            exchange['transport_failure'] = type(reason if isinstance(reason, BaseException) else exc).__name__
             exchange['tls'] = peers[-1] if peers else None
             raise
         exchange['status'] = response.status
@@ -537,6 +564,10 @@ class Activations:
         found = _entity(self.conn, aid)
         prior = found['data'] if found else None
         versions[aid] = found['version'] if found else 0
+        if prior is not None and signer != prior.get('owner'):
+            # An edge that has a record is its recorded owner's: every command over it (stop, qualify,
+            # activate) is his own signature, never another project_owner naming himself as owner.
+            raise Refused('not_owner', 'only the recorded owner commands an edge that has a record')
         refusal, bound = bindings(self.S, self.conn, params['owner'], params['edge_key_id'], now)
         if action == 'stop' and prior:
             # A stop never waits on current bindings: a retired key or a changed enrollment is exactly
@@ -642,3 +673,143 @@ class Activations:
             raise Refused('store_refused', exc.code)
         self._observe(QUALIFY, 'accepted', None, {qid: 0}, qualification_id=qid, seq=committed.get('seq'))
         return qid, digest(data), data
+
+
+# ---------------------------------------------------------------------------------------------
+# The owner's command surface (VELDO-0138): veldo channel status|qualify|activate|stop
+# ---------------------------------------------------------------------------------------------
+#
+# The owner's own command path to the RUNNING authority service, which applies it to the gate every
+# exchange of its ingress asks. bin/veldo routes `veldo channel` here and adds nothing. Each command
+# reads the service's channel status (inspect, a signed request like every other), builds the one
+# channel_activation_authorize command of the action from what the service reports (its configured
+# origin and edge key, the authority coordinates and versions, and for activate the qualification the
+# service recorded in the current run), signs the envelope with the owner's enrolled key and sends it
+# through control_client to the authority of the named workspace. The service admits it only when it
+# is the owner's own signature (Activations.authorize); nothing here decides that.
+
+COMMAND_ACTIONS = ('status', 'qualify', 'activate', 'stop')
+EXIT_REFUSED, EXIT_USAGE = 1, 2
+DEFAULT_RUN_MINUTES = 15
+
+
+def ssh_signer(key, namespace='veldo-command'):
+    """sign(bytes) -> text with the private key file `key`, never through an agent."""
+    import os
+    import subprocess
+
+    def sign(message):
+        done = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', key, '-n', namespace], input=message,
+                              capture_output=True, timeout=30,
+                              env={k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')})
+        if done.returncode:
+            raise Refused('unavailable_service', 'the key did not sign')
+        return done.stdout.decode()
+    return sign
+
+
+def owner_command(action, status, principal, now, *, minutes=DEFAULT_RUN_MINUTES, qualification=None, serial=None):
+    """(envelope, command) of one owner action over what the running service reports in `status` (its
+    inspect answer's `channel`). Refused by name when the service reports no channel or, for activate,
+    no qualification to name."""
+    import uuid
+    if not isinstance(status, dict) or not status.get('available'):
+        raise Refused('unavailable_service', 'the authority runs no Telegram channel (%s)'
+                      % ((status or {}).get('refusal') or 'not configured'))
+    params = {'channel': CHANNEL, 'action': action, 'owner': principal, 'origin': status.get('origin'),
+              'edge_key_id': status.get('edge_key_id')}
+    if action == 'qualify':
+        if type(minutes) is not int or not 1 <= minutes <= MAX_RUN_SECONDS // 60:
+            raise Refused('invalid_input', 'a qualification run lasts 1 to %d minutes' % (MAX_RUN_SECONDS // 60))
+        params['expires_at'] = now + 60 * minutes
+    elif action == 'activate':
+        named = qualification or status.get('qualification') or {}
+        if not _text(named.get('id')) or not _text(named.get('digest')):
+            raise Refused('missing_qualification', 'the running service has recorded no qualification for this run')
+        params.update(qualification_id=named['id'], qualification_digest=named['digest'])
+    elif action != 'stop':
+        raise Refused('invalid_input', 'one of qualify, activate or stop')
+    ids = status.get('authority_ids') or {}
+    command_id = 'channel-%s-%s' % (action, serial or uuid.uuid4().hex)
+    command = {'command_id': command_id, 'operation': AUTHORIZE, 'target': E.target(CHANNEL), 'parameters': params,
+               'artifact_digests': [], 'expected_versions': {}}
+    envelope = {'domain_uuid': ids.get('domain_uuid'), 'repository_uuid': ids.get('repository_uuid'),
+                'store_uuid': ids.get('store_uuid'), 'schema': AC.ENVELOPE_SCHEMA, 'command_id': command_id,
+                'principal': principal, 'request_revision': 1, 'nonce': 'nonce-' + command_id, 'expires_at': now + 600,
+                'membership_version': status.get('membership_version'),
+                'delegation_version': status.get('delegation_version'),
+                'command_digest': AC.canonical_command_digest(command)}
+    return envelope, command
+
+
+def main(argv=None):
+    """veldo channel status|qualify|activate|stop --principal <owner> --key <his enrolled private key>
+    [--workspace <enrolled clone>] [--host-trust <file>] [--minutes N] [--qualification-id ID
+    --qualification-digest DIGEST]. Prints one JSON answer; exit 0 accepted, 1 refused by name,
+    2 usage or no route to the authority."""
+    import argparse
+    import os
+    import sys
+    parser = argparse.ArgumentParser(prog='veldo channel', description='The owner\'s Telegram edge commands, '
+                                     'applied by the running authority service.')
+    parser.add_argument('action', choices=COMMAND_ACTIONS)
+    parser.add_argument('--workspace', default=os.getcwd(), help='an enrolled clone of this authority (default: here)')
+    parser.add_argument('--principal', required=True, help='the owner, signing for himself')
+    parser.add_argument('--key', required=True, help='his enrolled private key file')
+    parser.add_argument('--host-trust', help='this host\'s trust file (default: the installed one)')
+    parser.add_argument('--minutes', type=int, default=DEFAULT_RUN_MINUTES, help='a qualification run\'s length')
+    parser.add_argument('--qualification-id')
+    parser.add_argument('--qualification-digest')
+    try:
+        args = parser.parse_args(sys.argv[1:] if argv is None else list(argv))
+    except SystemExit as exc:
+        return exc.code if isinstance(exc.code, int) else EXIT_USAGE
+
+    def answer(value, code):
+        print(json.dumps(value, sort_keys=True))
+        return code
+
+    CC, CE, EL = organ('control_client'), organ('control_enrollment'), organ('control_eligibility')
+    workspace = os.path.realpath(args.workspace)
+    try:
+        trust = EL.load_host_trust(args.host_trust)
+        binding = CE.read_binding(workspace)
+    except (EL.Stopped, CE.EnrollmentRefused, OSError, ValueError) as exc:
+        return answer({'action': args.action, 'outcome': 'refused', 'reason': 'unenrolled_workspace',
+                       'detail': type(exc).__name__}, EXIT_USAGE)
+    if trust is None or not isinstance(binding, dict):
+        return answer({'action': args.action, 'outcome': 'refused', 'reason': 'unenrolled_workspace'}, EXIT_USAGE)
+    verify = trust.verifier(binding.get('enrolled_by'), workspace)
+    sign = ssh_signer(os.path.realpath(args.key))
+
+    def send(packet):
+        response = CC.send(workspace, packet, CE, verify, sign, trust.host_identity, timeout=60)
+        if not response.get('accepted'):
+            raise Refused(response.get('reason') or 'unknown_outcome', 'the authority refused the request')
+        return response.get('result') or {}
+
+    try:
+        status = send({'operation': 'inspect', 'entity_ids': []}).get('channel') or {}
+        if args.action == 'status':
+            return answer({'action': 'status', 'outcome': 'accepted', 'channel': status}, 0)
+        named = ({'id': args.qualification_id, 'digest': args.qualification_digest}
+                 if args.qualification_id or args.qualification_digest else None)
+        envelope, command = owner_command(args.action, status, args.principal, time.time(), minutes=args.minutes,
+                                          qualification=named)
+        result = send({'command': command, 'envelope': envelope,
+                       'signature': sign(AC.canonical_envelope_bytes(envelope))})
+    except CC.RoutingRefused as exc:
+        return answer({'action': args.action, 'outcome': 'refused', 'reason': exc.reason}, EXIT_USAGE)
+    except Refused as exc:
+        return answer({'action': args.action, 'outcome': 'refused', 'reason': exc.code}, EXIT_REFUSED)
+    shown = {'action': args.action, 'outcome': 'accepted' if result.get('ok') else 'refused',
+             'reason': None if result.get('ok') else result.get('reason'), 'state': result.get('state'),
+             'command_id': command['command_id']}
+    if args.action == 'activate':
+        shown['qualification'] = {'id': command['parameters']['qualification_id'],
+                                  'digest': command['parameters']['qualification_digest']}
+    return answer(shown, 0 if result.get('ok') else EXIT_REFUSED)
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

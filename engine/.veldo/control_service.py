@@ -59,6 +59,19 @@ coordinates; a repository this instance does not serve is refused. Then, by the 
       (control_store.canonical_bytes). control_store.execute then commits it on the CONFIGURED store,
       and the answer is the committed receipt with the store's own watermark.
 
+THE TELEGRAM CHANNEL (VELDO-0138). An installation given --channel-ingress copies that VELDO-0073
+host configuration (veldo.telegram_ingress/v1, this account's own 0600 file naming THIS authority's
+store, identities, generation, a served repository and the service's own journal principal and key;
+anything else refuses installation by name) into config/channel-ingress.json. `serve` then opens the
+Telegram ingress from it with control_channel_ingress.open_ingress and owns its lifetime
+(control_service_channel). The ingress is inert until the owner activates it: every pass asks the
+activation gate first, and a refused pass sends, acquires and writes nothing. Every POLL_SECONDS the
+loop runs one pass (acquire, settle, present pending requests); a channel_activation_authorize packet
+is applied by the ingress's own Activations organ, which admits only the owner's own signed command;
+inspect reports the channel's status. A stop takes effect at the next exchange, and a restart keeps
+the edge as the owner left it, because the record in the store decides every exchange. An ingress
+that cannot be constructed leaves the service serving everything else, its refusal reported by name.
+
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
 workers never write directly: outside the home and temporary directories. It is judged as named: a
@@ -112,6 +125,8 @@ EL = _organ('control_eligibility')
 SIG = _organ('control_signer')
 L = _organ('control_launch')
 C = L.C
+CH = _organ('control_service_channel')
+CHANNEL_INGRESS = 'channel-ingress.json'
 
 # The store's own generic commands, taken before any service registers one of its own on this module
 # (control_claim.Receiver adds claim_operation), so a claim transition is never reachable as one.
@@ -586,7 +601,7 @@ def _remove_tree(path):
 
 def install(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None,
             profile=None, adapters=None, writable=None, principal='authority',
-            receiver_principal='launch-receiver', runner=None, python=None):
+            receiver_principal='launch-receiver', runner=None, python=None, channel_ingress=None):
     """Lay down one authority instance for the enrolled `workspaces` of one domain. Starts nothing.
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
     Returns what it laid down."""
@@ -658,6 +673,12 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     repositories = {}
     for workspace, binding in bindings.items():
         repositories.setdefault(binding['repository_uuid'], []).append(workspace)
+    ingress = None
+    if channel_ingress is not None:
+        try:
+            ingress = CH.installable(str(channel_ingress), first, principal, journal, repositories)
+        except CH.Refused as error:
+            raise Refused(error.code, error.detail, 'name the VELDO-0073 ingress configuration of this authority')
     bin_dir, config_dir, state_dir = (os.path.join(home, n) for n in ('bin', 'config', 'state'))
     config_path = os.path.join(config_dir, 'service.json')
     values = {'SERVICE': service, 'DOMAIN': first['domain_uuid'], 'STORE': first['store_uuid'],
@@ -682,6 +703,8 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             generated = True
             os.chmod(journal, 0o600)
         _write(os.path.join(config_dir, 'enrollment_signers'), signers, 0o600)
+        if ingress is not None:
+            _write(os.path.join(config_dir, CHANNEL_INGRESS), ingress, 0o600)
         receivers = {}
         for repository, members in sorted(repositories.items()):
             path = os.path.join(config_dir, 'receiver-%s.json' % hashlib.sha256(repository.encode()).hexdigest()[:16])
@@ -701,7 +724,8 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
                   'executable': values['EXECUTABLE'], 'python': python,
                   'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': receivers},
                   'closure': {name: _digest(data) for name, data in fixed.items()},
-                  'template': _digest(TEMPLATE.read_bytes())}
+                  'template': _digest(TEMPLATE.read_bytes()),
+                  'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None}
         _write(config_path, _json(config), 0o600)
         os.makedirs(unit_dir, exist_ok=True)
         _write(unit_path, text, 0o644)
@@ -723,7 +747,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             'executable': values['EXECUTABLE'], 'closure': sorted(fixed), 'receiver': config['receiver'], 'key_directory': keys,
             'journal_key': journal, 'journal_key_generated': generated, 'profile': qualification,
             'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
-            'daemon_reload_rc': reload_rc, 'started': False}
+            'channel_ingress': config['channel_ingress'], 'daemon_reload_rc': reload_rc, 'started': False}
 
 
 def uninstall(unit, *, install_root=None, unit_dir=None, runner=None):
@@ -821,6 +845,8 @@ class Service:
         self.principal, self.generation = config['principal'], config['authority_generation']
         self.enrollment_signers = Path(config['enrollment_signers']).read_text()
         self.receivers, self.counts, self.refusals = {}, {'accepted': 0, 'refused': 0}, {}
+        # The Telegram channel (VELDO-0138): set by serve() when the installation names an ingress.
+        self.channel, self.channel_refusal = None, None
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -887,6 +913,8 @@ class Service:
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
             if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
                 result = self.inspect(packet)
+            elif command.get('operation') == CH.AUTHORIZE:
+                result = self.channel_command(packet, repository, observation)
             elif command.get('operation') in CLM.OPERATIONS and 'unit_id' in command:
                 receiver = self.receiver(repository)
                 result = receiver.apply(packet)
@@ -943,6 +971,41 @@ class Service:
                             self.generation)
         return {'ok': True, 'reason': command['operation'], 'receipt': receipt}
 
+    def channel_status(self):
+        if self.channel is None:
+            return {'available': False, 'configured': bool(self.config.get('channel_ingress')),
+                    'refusal': self.channel_refusal}
+        return dict(self.channel.status(), configured=True)
+
+    def channel_command(self, packet, repository, observation):
+        """The owner's channel_activation_authorize command, applied by the ingress's own Activations
+        organ (VELDO-0073), which admits only the owner's own signed envelope. Refused by name, with
+        nothing written, when this instance runs no channel or the command is for another repository."""
+        if self.channel is None:
+            raise Refused('unavailable_service:channel:' + (self.channel_refusal or 'not_configured'),
+                          'this instance runs no Telegram channel')
+        if repository != self.channel.ingress.activations.ids.get('repository_uuid'):
+            raise Refused('invalid_input:channel:repository', 'the channel belongs to another repository')
+        outcome = self.channel.authorize(packet)
+        observation['accepted_versions'] = dict(outcome.get('accepted_versions') or {})
+        if outcome.get('outcome') != 'accepted':
+            code = outcome.get('reason') or 'unknown_outcome'
+            return {'ok': False, 'reason': '%s:channel:%s' % (CH.ACT.REFUSALS.get(code, 'unknown_outcome'), code)}
+        record = self.channel.record() or {}
+        return {'ok': True, 'reason': CH.AUTHORIZE, 'action': outcome.get('action'), 'state': record.get('state'),
+                'entity_version': record.get('entity_version')}
+
+    def channel_pass(self):
+        """One channel pass (control_service_channel.Channel.tick), logged when it did something or its
+        outcome changed. A fault is an unknown outcome in the log, never the end of the service."""
+        try:
+            summary = self.channel.tick()
+        except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never success
+            summary = {'outcome': 'refused', 'reason': 'unknown_outcome:' + type(error).__name__, 'notable': True}
+        if summary.pop('notable', False):
+            self._log(dict(summary, kind='channel', operation='channel_pass', at=time.time(), domain_uuid=self.domain))
+        return summary
+
     def inspect(self, packet):
         ids = packet.get('entity_ids') or []
         if not isinstance(ids, list) or len(ids) > 64 or not all(isinstance(i, str) for i in ids):
@@ -956,7 +1019,8 @@ class Service:
         return {'ok': True, 'reason': 'inspect', 'watermark': head[0] if head else 0,
                 'journal_head': head[1] if head else S.GENESIS_DIGEST, 'entities': entities,
                 'service': self.config['service'], 'unit': self.config['unit'],
-                'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending()}
+                'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
+                'channel': self.channel_status()}
 
     def pending(self):
         claims = sum(1 for (data,) in self.conn.execute("SELECT data FROM entities WHERE kind='claim'")
@@ -974,12 +1038,17 @@ class Service:
                          'watermark': self.watermark()})
 
     def _tally(self, observation):
+        if observation.get('kind') == 'channel':
+            return
         self.counts[observation['outcome']] += 1
         if observation['outcome'] == 'refused':
             self.refusals[observation['refusal']] = self.refusals.get(observation['refusal'], 0) + 1
 
     def _count(self, observation):
         self._tally(observation)
+        self._log(observation)
+
+    def _log(self, observation):
         fd = os.open(self.config['observations'], os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
         with os.fdopen(fd, 'a') as handle:
             handle.write(json.dumps(observation, sort_keys=True, default=str) + '\n')
@@ -994,6 +1063,7 @@ def serve(config_path):
         conn = S.open_store(config['store_path'])
         try:
             service = Service(config, conn)
+            service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
             authority = CC.Authority(config['store_uuid'], config['domain_uuid'], config['store_path'], E,
                                      service.verify, config['host_identity'], service.apply,
                                      watermark=service.watermark,
@@ -1005,23 +1075,31 @@ def serve(config_path):
             inode = os.stat(config['socket']).st_ino
             listener.settimeout(0.25)
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
+            next_pass = time.monotonic()
             try:
                 while not stopping:
                     try:
                         response = CC.serve_one(listener, authority)
                     except socket.timeout:
-                        continue
+                        response = None
                     except OSError:
                         if stopping:
                             break
                         raise
-                    service.observe_response(response)
+                    if response is not None:
+                        service.observe_response(response)
+                    if service.channel is not None and not stopping and time.monotonic() >= next_pass:
+                        service.channel_pass()
+                        next_pass = time.monotonic() + CH.POLL_SECONDS
             finally:
                 notify('STOPPING=1')
                 listener.close()
                 with contextlib.suppress(OSError):
                     if os.stat(config['socket']).st_ino == inode:
                         os.unlink(config['socket'])
+                if service.channel is not None:
+                    with contextlib.suppress(Exception):
+                        service.channel.close()
         finally:
             conn.close()
     finally:
@@ -1051,6 +1129,7 @@ def main(argv=None):
         ins.add_argument('--unit-dir')
         ins.add_argument('--profile', help='a JSON file with this host\'s worker profile')
         ins.add_argument('--adapters', help='a JSON file mapping adapter names to {argv: [...]}')
+        ins.add_argument('--channel-ingress', help='the VELDO-0073 Telegram ingress configuration this instance runs')
         for name in ('start', 'stop', 'status', 'uninstall'):
             one = sub.add_parser(name)
             one.add_argument('unit')
@@ -1062,7 +1141,8 @@ def main(argv=None):
             report = install(args.workspace, host_trust=args.host_trust, key_directory=args.key_directory,
                              install_root=args.install_root, unit_dir=args.unit_dir,
                              profile=json.loads(Path(args.profile).read_text()) if args.profile else None,
-                             adapters=json.loads(Path(args.adapters).read_text()) if args.adapters else None)
+                             adapters=json.loads(Path(args.adapters).read_text()) if args.adapters else None,
+                             channel_ingress=args.channel_ingress)
         elif args.cmd == 'uninstall':
             report = uninstall(args.unit, install_root=args.install_root, unit_dir=args.unit_dir)
         else:

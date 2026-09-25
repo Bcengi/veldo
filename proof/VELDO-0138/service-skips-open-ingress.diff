@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1066 +1066 @@
+-            service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
++            service.channel, service.channel_refusal = None, None  # defect: open_ingress is never called

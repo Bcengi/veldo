@@ -1,0 +1,130 @@
+{
+ "by_assertion": true,
+ "commit": "b74c8a64fbaeb439b5771155ae79d304cf4cc584",
+ "details": [
+  "VELDO-0138 install/assets detail: .veldo/control_service_channel.py installed by the scaffold",
+  "VELDO-0138 install/assets detail: .veldo/control_service_channel.py engine copy identical",
+  "VELDO-0138 install/assets detail: an ingress configuration of another store refuses installation by name, leaving nothing [None]",
+  "VELDO-0138 install/assets detail: the fixed executable holds the channel, the ingress and the activation modules",
+  "VELDO-0138 install/assets detail: the ingress configuration is copied 0600 into the protected configuration and named by service.json",
+  "VELDO-0138 install/assets detail: bin/veldo routes channel to the activation module's own command surface",
+  "VELDO-0138 served/inert detail: the running service runs the ingress: its channel is available with no record [{'available': None, 'refusal': None, 'record': None}]",
+  "VELDO-0138 served/inert detail: with no record each pass is refused as not_activated [None]",
+  "VELDO-0138 served/inert detail: inert: nothing sent, nothing acquired, the platform never asked [[]]",
+  "VELDO-0138 served/inert detail: inert: the channel writes nothing, no presentation and no journal record [0, 11 -> 11]",
+  "VELDO-0138 served/inert detail: the observation log records channel passes by name and never the token or message text",
+  "VELDO-0138 served/settlement detail: the running service presents the pending request to the owner's enrolled chat",
+  "VELDO-0138 served/settlement detail: the owner's reply settles through the running service, read from the store in this process",
+  "VELDO-0138 served/settlement detail: the active edge presents a new request and the owner's answer settles it",
+  "VELDO-0138 qualification/recorded-by-service detail: the service recorded the run's qualification in the store, its digest the one it reports [{'id': None, 'platform': None, 'unauthorized_provenance': None}]",
+  "VELDO-0138 qualification/recorded-by-service detail: it binds the service gate's own exchanges and the owner's acquired answer",
+  "VELDO-0138 qualification/recorded-by-service detail: the unauthorized leg is the probe bot's stand-in update, marked stand_in, never moving the bot's cursor",
+  "VELDO-0138 command/owner detail: bin/veldo channel qualify, signed by the owner's enrolled key, is applied by the running service [{'unparsed': '', 'stderr': \"usage: veldo [-h] [subcommand] ...\\nveldo: error: unknown subcommand 'channel' (one of: work, fleet, supervisor, mirror, jira, status, watch, account, answer, steer, abort)\\n\"}]",
+  "VELDO-0138 command/owner detail: bin/veldo channel activate signs over the recorded qualification and the service applies it [{'unparsed': '', 'stderr': \"usage: veldo [-h] [subcommand] ...\\nveldo: error: unknown subcommand 'channel' (one of: work, fleet, supervisor, mirror, jira, status, watch, account, answer, steer, abort)\\n\"}]",
+  "VELDO-0138 command/owner-only detail: another member holding project_owner is refused by name (invalid_input:coordinates)",
+  "VELDO-0138 command/owner-only detail: an agent_run principal is refused by name (invalid_input:coordinates)",
+  "VELDO-0138 command/owner-only detail: a service principal is refused by name (invalid_input:coordinates)",
+  "VELDO-0138 command/owner-only detail: the owner's command with no envelope signature is refused by name (invalid_input:coordinates)",
+  "VELDO-0138 command/owner-only detail: the owner's command signed by the steward is refused by name (invalid_input:coordinates)",
+  "VELDO-0138 command/owner-only detail: a stop signed by another member is refused by name (invalid_input:coordinates)",
+  "VELDO-0138 command/owner-only detail: an activation signed by another member is refused by name (invalid_input:coordinates)",
+  "VELDO-0138 command/owner-only detail: bin/veldo channel qualify signed by another member is refused (None)",
+  "VELDO-0138 command/stop-live detail: bin/veldo channel stop, signed by the owner, is applied by the running service [{'unparsed': '', 'stderr': \"usage: veldo [-h] [subcommand] ...\\nveldo: error: unknown subcommand 'channel' (one of: work, fleet, supervisor, mirror, jira, status, watch, account, answer, steer, abort)\\n\"}]",
+  "VELDO-0138 command/stop-live detail: the same process stops at once: nothing sent or acquired, each pass refused as edge_stopped [None]",
+  "VELDO-0138 command/stop-keeps-pending detail: the owner's explicit activation resumes the edge and the kept request settles from the reply sent while it was stopped",
+  "VELDO-0138 command/stop-keeps-pending detail: the request opened while stopped is presented once the edge resumes",
+  "VELDO-0138 restart/active-stays-active detail: restarted with the edge active: a new service process, the record still active [1897199 -> 1898736]",
+  "VELDO-0138 restart/active-stays-active detail: after the restart it presents, acquires and settles",
+  "VELDO-0138 restart/stopped-stays-stopped detail: restarted after the stop: a new process, the record still stopped [1898736 -> 1900017]",
+  "VELDO-0138 restart/stopped-stays-stopped detail: the stopped edge stays stopped: nothing sent or acquired, passes refused as edge_stopped",
+  "VELDO-0138 restart/never-activated-stays-inert detail: restarted with no record: a new service process, still inert [1896341 -> 1897199]",
+  "VELDO-0138 restart/never-activated-stays-inert detail: nothing sent or acquired, the request still pending with no presentation"
+ ],
+ "failed_rows": [
+  "VELDO-0138 install/assets",
+  "VELDO-0138 served/inert",
+  "VELDO-0138 served/settlement",
+  "VELDO-0138 qualification/recorded-by-service",
+  "VELDO-0138 command/owner",
+  "VELDO-0138 command/owner-only",
+  "VELDO-0138 command/stop-live",
+  "VELDO-0138 command/stop-keeps-pending",
+  "VELDO-0138 restart/active-stays-active",
+  "VELDO-0138 restart/stopped-stays-stopped",
+  "VELDO-0138 restart/never-activated-stays-inert"
+ ],
+ "modules": {
+  ".veldo/control_channel_activation.py": {
+   "at_commit": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf",
+   "now": "98030d3c49a434137a5e1dcfab07fa154288c6f6f7b685b01f5c97bd0dff0983"
+  },
+  ".veldo/control_channel_ingress.py": {
+   "at_commit": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb",
+   "now": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "6a85b2d8ec614acc1ba2872695409f3c01cea3087dad39cada062f6e15f8eab6",
+   "now": "880b1a321e39966b9a6d67074c17b420fe4f40be6d267010ec8ae7de7bac6745"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": null,
+   "now": "c2c287642df991b7af8c285da5fbbb4fcbc174eece2eedef6018e43d516e0bef"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132",
+   "now": "ca75813845e4442ec23d413844e37f95d947b8f5ab27089673fe499fe0c548e4"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0138 install/assets",
+   false
+  ],
+  [
+   "VELDO-0138 served/inert",
+   false
+  ],
+  [
+   "VELDO-0138 served/settlement",
+   false
+  ],
+  [
+   "VELDO-0138 qualification/recorded-by-service",
+   false
+  ],
+  [
+   "VELDO-0138 command/owner",
+   false
+  ],
+  [
+   "VELDO-0138 command/owner-only",
+   false
+  ],
+  [
+   "VELDO-0138 command/stop-live",
+   false
+  ],
+  [
+   "VELDO-0138 command/stop-keeps-pending",
+   false
+  ],
+  [
+   "VELDO-0138 restart/active-stays-active",
+   false
+  ],
+  [
+   "VELDO-0138 restart/stopped-stays-stopped",
+   false
+  ],
+  [
+   "VELDO-0138 restart/never-activated-stays-inert",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 19.284,
+ "spec_id": "VELDO-0138",
+ "suite": "scripts/suites/71_veldo_0138_channel_service.py",
+ "tree": "git archive b74c8a64fbaeb439b5771155ae79d304cf4cc584, unchanged; the current suite file run against it"
+}

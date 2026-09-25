@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -205 +205 @@
+-        if woke.get('outcome') == 'woken':
++        if True:  # defect: a refused pass still presents
