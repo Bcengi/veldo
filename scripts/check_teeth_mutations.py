@@ -5424,6 +5424,156 @@ def cases():
                     "        return ['unavailable_service']\n",
                     "        return ['fixture_only_evidence']  # defect: a failed exchange is named fixture evidence\n",
                     'qualification/transport-failure-named')
+    # VELDO-0075: each criterion's declared falsifier first, then the threat model's other shapes.
+    def andon(name, module, old, new, row, also=()):
+        add(75, name, '72_veldo_0075_andon.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): raising a stop requires the resolving role.
+    andon('raise-requires-resolving-role', 'control_andon.py',
+          "            if c['station'] not in STOP_POINTS:\n",
+          "            if not set((c.get('resolving') or {}).get('roles') or ['?']) <= set(entry.get('roles') or []):\n"
+          "                raise Refused('not_authorized', 'defect: raising a stop needs the resolving role')\n"
+          "            if c['station'] not in STOP_POINTS:\n", 'stop/any-authenticated-requester')
+    andon('resolving-recorded-as-requester', 'control_andon.py',
+          "'resolving': {'principal': resolving['principal'],\n",
+          "'resolving': {'principal': c['principal'],  # defect: the requester is recorded as the resolver\n",
+          'stop/any-authenticated-requester')
+    andon('station-unchecked', 'control_andon.py',
+          "            if held not in STOP_POINTS[c['station']]:\n",
+          "            if held not in enabled_states():  # defect: any station stops a unit held by another\n",
+          'stop/any-authenticated-requester')
+    andon('raise-signature-unchecked', 'control_andon.py',
+          "            raise Refused('not_authorized', 'the command signature does not verify')\n",
+          "            pass  # defect: the command signature is not checked\n", 'stop/unauthenticated-refused')
+    # AC2 (declared falsifier): the notice is keyed only by request id and status.
+    andon('notice-keyed-by-status', 'control_andon.py',
+          "        key = notice_key(rid, data['request_version'], pid)\n",
+          "        key = '%s|%s' % (rid, data['state'])  # defect: the notice is keyed by request id and status\n",
+          'notice/new-version-same-status')
+    andon('revision-not-presented', 'control_andon.py',
+          "        framed = self._frame(stop, version + 1)\n",
+          "        framed = {'outcome': 'accepted'}  # defect: the new version is never framed or presented\n",
+          'notice/new-version-same-status')
+    andon('raise-sends-nothing', 'control_andon.py',
+          "        result['notice'] = self.notify(sid) if result['request'].get('outcome') == 'opened' else None\n",
+          "        result['notice'] = None  # defect: a stop never reaches the channel\n", 'notice/each-stop-kind')
+    andon('answer-path-unbound', 'control_andon.py',
+          "                  'answer_path': {'reply_to_message_id': receipt.get('message_id'),",
+          "                  'answer_path': {'reply_to_message_id': None,  # defect: no answer path\n                                 ",
+          'notice/each-stop-kind')
+    # AC3 (declared falsifier): a notification acknowledgement resumes the stop without the resolving authority.
+    andon('resume-on-notice', 'control_andon.py',
+          "            permission = self._permission(stop, item, state, now)\n",
+          "            kept = self.notices(sid)  # defect: a notification acknowledgement resumes the stop\n"
+          "            permission = ({'kind': 'notice', 'settlement_id': None, 'receipt_id': None, 'effect_id': None,\n"
+          "                           'principal': stop['resolving']['principal'], 'ruling': 'approve',\n"
+          "                           'request_version': kept[-1]['request_version'],\n"
+          "                           'presentation_id': kept[-1]['presentation_id']}\n"
+          "                          if kept else self._permission(stop, item, state, now))\n",
+          'resume/acknowledgement-grants-nothing')
+    andon('any-ruling-resumes', 'control_andon.py',
+          "        if settled.get('ruling') != RESUME_RULING:\n",
+          "        if False:  # defect: a reject or a return resumes the stop\n",
+          'resume/acknowledgement-grants-nothing')
+    andon('stale-answer-resumes', 'control_andon.py',
+          "            permission = self._permission(stop, item, state, now)\n",
+          "            answered = [self.presenter.answer_record(rid, v, stop['resolving']['principal'])\n"
+          "                        for v in range(1, item['data']['request_version'] + 1)]\n"
+          "            answered = [a for a in answered if a and a.get('ruling') == 'approve']  # defect: any version's answer\n"
+          "            permission = ({'kind': 'answer', 'settlement_id': None, 'receipt_id': None, 'effect_id': None,\n"
+          "                           'principal': answered[-1]['principal'], 'ruling': 'approve',\n"
+          "                           'request_version': answered[-1]['request_version'],\n"
+          "                           'presentation_id': answered[-1].get('presentation_id')}\n"
+          "                          if answered else self._permission(stop, item, state, now))\n",
+          'resume/stale-or-wrong-actor')
+    andon('resolver-roles-unchecked', 'control_andon.py',
+          "                or not roles <= set(entry.get('roles') or [])\n",
+          "                or False  # defect: the resolving roles are not reread at resume\n",
+          'resume/stale-or-wrong-actor')
+    # Review finding 75: the designated authority must meet the settlement's effective requirement at raise
+    # and at resume, and be reachable; an unreachable authority's notice is classed missing_authority.
+    andon('effective-requirement-not-computed-at-raise', 'control_andon.py',
+          "            if problems or not isinstance(need, dict) or not need.get('roles'):\n",
+          "            need = {'roles': sorted(set(resolving['roles']))}  # defect: the settlement's requirement is not computed\n"
+          "            problems = ['role_not_satisfied'] if set(need['roles']) - set(designated.get('roles') or []) else []\n"
+          "            if problems or not isinstance(need, dict) or not need.get('roles'):\n",
+          'stop/designated-authority-deliverable')
+    # Review 75b: the raise takes the settlement's whole eligibility, refuses a chat the live activation
+    # cannot send to (a stopped edge is temporary), keeps stale_enrollment by name and refuses a request
+    # squatted under the stop's predictable alias.
+    andon('eligibility-bypassed', 'control_andon.py',
+          "            if problems or not isinstance(need, dict) or not need.get('roles'):\n",
+          "            problems = ['role_not_satisfied'] if set(need['roles']) - set(designated.get('roles') or []) else []"
+          "  # defect: only the roles half of the settlement's check\n"
+          "            if problems or not isinstance(need, dict) or not need.get('roles'):\n",
+          'stop/designated-authority-deliverable')
+    andon('reachability-as-any-enrollment', 'control_andon.py',
+          "            if self._unsendable(activation, resolving['principal'], enrolled[2]):\n",
+          "            if False:  # defect: any valid chat enrollment is taken as reachable\n",
+          'stop/designated-authority-deliverable')
+    andon('stopped-edge-refused-at-raise', 'control_andon.py',
+          "        return (isinstance(activation, dict) and activation.get('state') in LIVE_ACTIVATION\n",
+          "        return (isinstance(activation, dict) and activation.get('state') in LIVE_ACTIVATION + ('stopped',)"
+          "  # defect: a stopped edge refuses the raise\n",
+          'notice/unreachable-authority-classed')
+    andon('stale-enrollment-misclassed', 'control_andon.py',
+          "'group_chat',\n                         'stale_enrollment')\n",
+          "'group_chat')  # defect: stale_enrollment is not an unreachable authority\n",
+          'notice/unreachable-authority-classed')
+    andon('squat-accepted', 'control_andon.py',
+          "        data = item.get('data') if isinstance(item, dict) else None\n",
+          "        return None  # defect: any item under the alias is taken as the stop's request\n",
+          'stop/request-alias-squat-refused')
+    andon('resume-rechecks-recorded-roles-only', 'control_andon.py',
+          "        roles = set(settled_roles) | set(stop['resolving']['roles'])\n",
+          "        roles = set(stop['resolving']['roles'])  # defect: the settled requirement's roles are not re-checked\n",
+          'resume/stale-or-wrong-actor')
+    andon('unreachable-authority-misclassed', 'control_andon.py',
+          "    return code if code in UNREACHABLE_AUTHORITY else otherwise\n",
+          "    return 'missing_authority' if code in ('missing_authority', 'not_activated') else otherwise  # defect: the prior classes\n",
+          'notice/unreachable-authority-classed')
+    andon('enrolled-chat-unchecked', 'control_andon.py',
+          "            enrolled = self._enrolled_chat(resolving['principal'])\n",
+          "            enrolled = self._enrolled_chat(resolving['principal']) or ('no-chat', 0, None)  # defect: the chat is not checked\n",
+          'stop/designated-authority-deliverable')
+    # Fresh review of 75b: the raise pins the activation record's version, and the record's own owner is exempt
+    # from the bound-chat refusal while his chat is re-enrolled (the window the gate names stale_enrollment).
+    andon('activation-version-unpinned', 'control_andon.py',
+          "            expected[self._activation_id()] = (activation or {}).get('entity_version', 0)\n",
+          "            pass  # defect: the activation record's version is not pinned in the raise transaction\n",
+          'stop/designated-authority-deliverable')
+    andon('owner-reenrollment-refused', 'control_andon.py',
+          "                and activation.get('owner') != principal and activation.get('enrolled_chat') != chat)\n",
+          "                and activation.get('enrolled_chat') != chat)  # defect: the owner is not exempt while re-enrolled\n",
+          'stop/designated-authority-deliverable')
+    andon('contract-at-stale-unit-version', 'control_andon.py',
+          "'issued_at_unit_version': u['version'] + 1,",
+          "'issued_at_unit_version': u['version'],  # defect: the contract names the stopped unit version\n                        ",
+          'resume/owner-settlement-fresh-contract')
+    andon('first-version-settlement-only', 'control_andon.py',
+          "        version = data['request_version']\n        settled = self.settlement.settlement(rid, version)\n",
+          "        version = 1  # defect: the first version's settlement is read, not the current one\n"
+          "        settled = self.settlement.settlement(rid, version)\n",
+          'resume/owner-settlement-fresh-contract')
+    andon('unknown-effect-resumes', 'control_andon.py',
+          "            if stop['effect'] == 'unknown' or outstanding:\n",
+          "            if False:  # defect: an unknown-effect stop resumes on an answer\n",
+          'resume/unknown-effect-stays-stopped')
+    andon('unknown-dispatch-ignored', 'control_andon.py',
+          "            effect = 'unknown' if c['effect'] == 'unknown' or outstanding else 'clean'\n",
+          "            effect = c['effect']  # defect: an unknown dispatch does not make the effect unknown\n",
+          'resume/unknown-effect-stays-stopped')
+    andon('andon-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_andon.py",\n', '', 'install/assets')
+    andon('refusal-unclassed', 'control_andon.py',
+          "                                      error_class=None if accepted else taxonomy(reason)))\n",
+          "                                      error_class=None))  # defect: refusals carry no error class\n",
+          'observability/named-refusals')
+    andon('reason-text-observed', 'control_andon.py',
+          "                               versions=expected, effect=effect, station=c['station'])\n",
+          "                               versions=expected, effect=effect, station=c['station'], told=c['reason'])\n",
+          'observability/named-refusals',
+          also=[("accepted_versions=dict(versions or {}), outcome=outcome,",
+                 "accepted_versions=dict(versions or {}), extra=dict(extra), outcome=outcome,")])
     return result
 
 

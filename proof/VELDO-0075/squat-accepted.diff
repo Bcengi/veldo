@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -551 +551 @@
+-        data = item.get('data') if isinstance(item, dict) else None
++        return None  # defect: any item under the alias is taken as the stop's request

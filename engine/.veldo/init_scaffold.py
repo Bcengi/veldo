@@ -235,6 +235,7 @@ _FILES = [
     # production construction of the settlement path). Runtime assets the authority loads; not substrate.
     ".veldo/control_channel_activation.py",
     ".veldo/control_channel_ingress.py",
+    ".veldo/control_andon.py",
     # VELDO-0076: the project service (activation, pause, resume, cancel, completion). A runtime asset
     # the authority loads; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_project.py",

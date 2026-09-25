@@ -1,0 +1,89 @@
+{
+ "by_assertion": true,
+ "commit": "e5c2bc8386fa50b1563aedf7eb1344685f887d1b",
+ "details": [
+  "VELDO-0075 stop/designated-authority-deliverable detail: a technical_authority-only person designated is refused as role_not_satisfied, naming the person and project_owner [None None]",
+  "VELDO-0075 stop/designated-authority-deliverable detail: nothing was written or sent and the unit is still reviewing",
+  "VELDO-0075 stop/designated-authority-deliverable detail: a person with no enrolled chat designated is refused as no_enrolled_chat, naming the person [None]",
+  "VELDO-0075 stop/designated-authority-deliverable detail: nothing was written or sent and that unit is still reviewing",
+  "VELDO-0075 stop/designated-authority-deliverable detail: a stop naming technical_authority records the effective roles, project_owner among them [{'principal': 'owner', 'roles': ['technical_authority']}]",
+  "VELDO-0075 stop/designated-authority-deliverable detail: the recorded refusals are classed missing_authority",
+  "VELDO-0075 notice/unreachable-authority-classed detail: an owner no longer current is owner_not_current, classed missing_authority [unavailable_service]",
+  "VELDO-0075 notice/unreachable-authority-classed detail: an edge the owner stopped is edge_stopped, classed missing_authority [unavailable_service]",
+  "VELDO-0075 notice/unreachable-authority-classed detail: a revoked chat enrollment is invalid_enrollment, classed missing_authority [stale_subject]",
+  "VELDO-0075 notice/unreachable-authority-classed detail: no_enrolled_chat and owner_not_current keep their names and class wherever a notice meets them",
+  "VELDO-0075 resume/stale-or-wrong-actor detail: a settler who lost project_owner, which the settlement required, does not resume [['project_owner', 'technical_authority'] None]",
+  "VELDO-0075 resume/stale-or-wrong-actor detail: a settler who lost a role the settlement required beyond the recorded ones does not resume [{'principal': 'owner', 'roles': ['project_owner']} ['admission_authority', 'project_owner'] None]"
+ ],
+ "failed_rows": [
+  "VELDO-0075 stop/designated-authority-deliverable",
+  "VELDO-0075 notice/unreachable-authority-classed",
+  "VELDO-0075 resume/stale-or-wrong-actor"
+ ],
+ "modules": {
+  ".veldo/control_andon.py": {
+   "at_commit": "895836a29df0cccccfa3d7772254dd2c4e4082f7cd92f536fff1520678d9d532",
+   "now": "52c7ec8b0e545041f0ed2054e06e2f53f3ec62d7cd80418b5053e7df237a7ff9"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "10b40c37128853f8a72f3e1df41bc6ba8e4f8ece9d9d7acef2700c81d65e2d4a",
+   "now": "10b40c37128853f8a72f3e1df41bc6ba8e4f8ece9d9d7acef2700c81d65e2d4a"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0075 install/assets",
+   true
+  ],
+  [
+   "VELDO-0075 stop/any-authenticated-requester",
+   true
+  ],
+  [
+   "VELDO-0075 stop/unauthenticated-refused",
+   true
+  ],
+  [
+   "VELDO-0075 stop/designated-authority-deliverable",
+   false
+  ],
+  [
+   "VELDO-0075 notice/each-stop-kind",
+   true
+  ],
+  [
+   "VELDO-0075 notice/new-version-same-status",
+   true
+  ],
+  [
+   "VELDO-0075 notice/unreachable-authority-classed",
+   false
+  ],
+  [
+   "VELDO-0075 resume/acknowledgement-grants-nothing",
+   true
+  ],
+  [
+   "VELDO-0075 resume/stale-or-wrong-actor",
+   false
+  ],
+  [
+   "VELDO-0075 resume/owner-settlement-fresh-contract",
+   true
+  ],
+  [
+   "VELDO-0075 resume/unknown-effect-stays-stopped",
+   true
+  ],
+  [
+   "VELDO-0075 observability/named-refusals",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.561,
+ "spec_id": "VELDO-0075",
+ "suite": "scripts/suites/72_veldo_0075_andon.py",
+ "tree": "git archive e5c2bc8386fa50b1563aedf7eb1344685f887d1b, unchanged; the current suite file run against it"
+}

@@ -1,0 +1,8 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -297 +297 @@
+-                                      accepted_versions=dict(versions or {}), outcome=outcome, reason=reason,
++                                      accepted_versions=dict(versions or {}), extra=dict(extra), outcome=outcome, reason=reason,
+@@ -478 +478 @@
+-                               versions=expected, effect=effect, station=c['station'])
++                               versions=expected, effect=effect, station=c['station'], told=c['reason'])

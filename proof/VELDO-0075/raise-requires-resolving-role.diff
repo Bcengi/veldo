@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -402,0 +403,2 @@
++            if not set((c.get('resolving') or {}).get('roles') or ['?']) <= set(entry.get('roles') or []):
++                raise Refused('not_authorized', 'defect: raising a stop needs the resolving role')

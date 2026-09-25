@@ -1,0 +1,6 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -133,2 +133 @@
+-                         'chat_not_enrolled', 'no_enrolled_chat', 'invalid_enrollment', 'group_chat',
+-                         'stale_enrollment')
++                         'chat_not_enrolled', 'no_enrolled_chat', 'invalid_enrollment', 'group_chat')  # defect: stale_enrollment is not an unreachable authority

@@ -28,6 +28,8 @@ person on two channels is one principal), for every scope of the request. Indepe
 separation: a counted principal is never the requester, nor in the requester's independence group.
 Release 1 presents a request to one owner, so a count above one or an independence above one is an
 UNSUPPORTED quorum policy: it blocks the request by name and is never weakened to what can be met.
+`eligibility` answers the same question for one principal before a request is opened, with the same
+requirement and the same authority check (the VELDO-0075 andon asks it when a stop is raised).
 
 ONE WINNER. The settlement key is the request and its version, as the entity id, the command id and
 the nonce. Every accepted answer of the version is read in acceptance order; the earliest one that
@@ -591,6 +593,22 @@ class Settlement:
         names = {'role_not_satisfied': 'role_not_satisfied', 'independence_not_met': 'independence_not_met',
                  'quorum_not_met': 'quorum_not_met'}
         return [names.get(c, 'not_authorized') for c in codes]
+
+    def eligibility(self, touchpoint, terms, principal, *, requested_by, scopes):
+        """(requirement, problems): whether `principal` alone could settle a request of `touchpoint`
+        with `terms` ({required_roles, quorum}) opened by `requested_by` in `scopes`, decided now by
+        this service's own effective requirement and its own authority check, the ones `settle`
+        applies. problems is [] when that principal meets them; an unsupported touchpoint or quorum is
+        reported as a problem by its name (requirement None), never raised."""
+        if touchpoint not in JOURNEY:
+            return None, ['unsupported_touchpoint']
+        try:
+            effective = requirement(touchpoint, terms if isinstance(terms, dict) else {})
+        except Refused as exc:
+            return None, [exc.code]
+        context = {'scope': list(scopes), 'requested_by': requested_by}
+        state = self.membership.authority_state(self.store, self.conn)
+        return effective, self._authority_problems(effective, [principal], context, state, self.clock())
 
     def _settle(self, request):
         item = self.inbox.read(request) if isinstance(request, str) else None

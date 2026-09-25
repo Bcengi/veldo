@@ -32,12 +32,16 @@ footprint:
   - "engine/.veldo/control_andon*.py"
   - ".veldo/control_andon*.py"
   - "packs/*/.veldo/control_andon*.py"
+  - "engine/.veldo/control_request_settlement.py"
+  - ".veldo/control_request_settlement.py"
+  - "packs/*/.veldo/control_request_settlement.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0075_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0075-andon-delivery-resumption.md"
   - "specs/index.md"
   - "proof/VELDO-0075/*"
@@ -105,6 +109,26 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: an authenticated worker or service raises a recorded AWAITING_AUTHORITY stop at an
+  enabled build, review or coordination stop point, recording its reason, the interrupted station and
+  the predicate for who may resolve it, even when the requester may not resume it. The stop reaches
+  the owner in Telegram through the activated edge (VELDO-0073) with the current versioned
+  presentation and answer path; a new request version with the same status sends a new notice. A
+  clean owner-decision stop resumes only through the current settlement (VELDO-0068) by the
+  designated authority, with a fresh station contract.
+- Threat model: raising a stop refused because the requester lacks the resolving role; a notice keyed
+  only by request id and status, so a changed presentation is never sent; a resume from a
+  notification acknowledgement, a wrong actor, a stale presentation or anything but the resolving
+  authority's current settlement; an unknown-effect stop resumed by an answer. The owner's account,
+  the store, the signer and the Telegram edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery,
+  automatic retry and risk disposition of unknown external effects (Release 2); forged rows in our own
+  store and files planted in the installed directory. The real-Telegram leg of AC2 is run once by the
+  lead with the owner through the running factory (VELDO-0138) and recorded; the rows use a loopback
+  stand-in.
+
 ## Notes
 
 A clean owner-decision stop may resume after its current authorized settlement. Unknown
@@ -128,3 +152,40 @@ lost-send/reconnect and AC3 uncertain-effect/automatic recovery moved to Release
 stop, Telegram notice and authorized clean decision-stop resumption remain. The criteria,
 declared evidence universe, Context and Notes above now carry only the retained function. No
 specification status or historical proof was changed.
+
+2026-09-25, build: `.veldo/control_andon.py` (engine copy identical, scaffolded) judged against the
+criteria and the reviewer's threat model with no change needed; suite
+`scripts/suites/72_veldo_0075_andon.py` with rows for AC1, AC2 and AC3 over the build, review and
+coordination stop points, against the production ingress activated by the owner's signed VELDO-0073
+commands and a loopback Bot API stand-in; red record against 9fa7e4d by assertion; 19 teeth
+mutations as finding 75, each declared falsifier first. AC2's real-Telegram leg is PENDING (the lead
+with the owner, VELDO-0138). Status unchanged.
+
+2026-09-25, review 75 fix: a raise refuses by name, writing nothing, a designated authority who does
+not meet the settlement's effective requirement now (`role_not_satisfied`) or has no enrolled chat
+(`no_enrolled_chat`), and records the effective roles; resume re-checks the settled requirement's
+roles as well as the recorded ones; a notice that cannot reach the authority is classed
+missing_authority. Rows `stop/designated-authority-deliverable` and
+`notice/unreachable-authority-classed`, two cases in `resume/stale-or-wrong-actor`; red record at
+e5c2bc8 by assertion; 23 finding 75 mutations. Status unchanged.
+
+2026-09-25, review 75b fix: a raise now asks the VELDO-0068 settlement service's new public
+`Settlement.eligibility` (its own requirement and authority check, the ones settle applies) instead of
+reading `requirement()` through the settlement module's globals and copying only the roles half, so
+`control_request_settlement.py` and its engine copy join this footprint; settlement behavior is
+otherwise unchanged. A raise refuses as `chat_not_enrolled`, writing nothing, a designated person
+whose enrolled chat the live activation does not bind (a stopped or absent edge still records and
+defers). `stale_enrollment` is an unreachable authority, and a request squatted under a stop's alias
+is refused as `foreign_request` at raise, notice and resume. Row
+`stop/request-alias-squat-refused` and cases in `stop/designated-authority-deliverable` and
+`notice/unreachable-authority-classed`; red record at 3ed40c1 by assertion; 28 finding 75 mutations.
+Status unchanged.
+
+2026-09-25, proof gap from the fresh review of the 75b fix (the code was correct): two of its checks were
+never driven. Row `stop/designated-authority-deliverable` gains a race case (the edge's activation
+changes inside the raise's commit: refused `stale_subject`, no stop written, unit unchanged), which
+drives the activation record's version pinned in the raise transaction, and an owner-new-chat case (the
+owner re-enrolled on a different chat while the edge is active: his stop recorded, its notice deferred
+as `stale_enrollment`), which drives the owner's exemption from the bound-chat refusal. Mutations
+`activation-version-unpinned` and `owner-reenrollment-refused` each red that row by assertion; 30
+finding 75 mutations. No production change. Status unchanged.

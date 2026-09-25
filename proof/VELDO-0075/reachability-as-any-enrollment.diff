@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -432 +432 @@
+-            if self._unsendable(activation, resolving['principal'], enrolled[2]):
++            if False:  # defect: any valid chat enrollment is taken as reachable

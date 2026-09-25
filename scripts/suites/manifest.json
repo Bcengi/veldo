@@ -896,6 +896,15 @@
    ],
    "regions": "The installed authority service running the VELDO-0073 Telegram ingress through its own lifecycle: inert with no activation record, the owner's signed qualify, activate and stop through bin/veldo channel applied by the running service and refused by name for every other principal, the service recording the run's qualification from its gate, answers settling through the running service, a stop taking effect without a restart and keeping pending requests, and a restart keeping the edge as the owner left it",
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, request, enrollment and journal signatures, an enrolled Git clone and host trust, control_service.install with the channel ingress configuration, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), bin/veldo channel run as a separate process, the actual protected signer process, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block; the same guard is armed in the service process through a sitecustomize on the stand-in's PYTHONPATH. Writes only temporary fixtures."
+  },
+  {
+   "name": "72_veldo_0075_andon",
+   "file": "72_veldo_0075_andon.py",
+   "requires": [
+    "72_veldo_0075_andon"
+   ],
+   "regions": "Andon stops of execution units raised by any authenticated worker or service at every enabled build, review and coordination stop point with reason, interrupted station and resolving-authority predicate; each stop's current versioned presentation delivered to the owner's Telegram chat through the activated VELDO-0073 edge, one notice per request version and presentation; resumption of a clean decision stop only on the designated authority's current VELDO-0068 settlement with a fresh station contract; unknown-effect stops never resumed on an answer",
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, journal and answer signatures, the actual protected signer process, the production ingress built by control_channel_ingress.open_ingress from 0600 host configuration files and activated by the owner's signed VELDO-0073 commands, the VELDO-0068 settlement service and the authenticated API edge, a real Git repository for the host trust check, and a loopback Bot API. A socket guard replaces socket.create_connection for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Writes only temporary fixtures."
   }
  ]
 }
