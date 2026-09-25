@@ -2,8 +2,12 @@
 
 **Status.** Approved by the owner on 2026-09-25 (Telegram 29162, "all 6 are yes") at revision 2
 (`12879d3`, whose status line names revision 2), with the open decision of section 15 answered yes for
-both engines (Telegram 29163, "yes, Codex and Claude can read creds"); this text records that answer and
-changes nothing else. It was written against origin/main `c1fd591` and the branches named below.
+both engines (Telegram 29163, "yes, Codex and Claude can read creds"). Since `12879d3` this text has
+changed in two ways only. It records that answer: the organization note below, sections 3, 6, 10, 12,
+13 and 14 and section 15 itself move login separation to Release 2 for both engines, with the Claude
+sandbox denial and the `socat` install. And the review of PLAN-0019 revision 4 split the factory loop
+out of VELDO-0129, so sections 1, 4, 11, 12 and 14 name it VELDO-0154 where they named VELDO-0129 AC4.
+Nothing else changed. It was written against origin/main `c1fd591` and the branches named below.
 Revision 2 answered the adversarial review of revision 1 (`6416eb8`) and folded in the owner's decision
 of the same day that each person runs their own factory (Telegram 29146, 29147); section 14 maps every
 review finding to what changed, and `12879d3` applied the second check recorded at the end of section 15
