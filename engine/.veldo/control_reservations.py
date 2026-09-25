@@ -8,8 +8,10 @@ Authorization runs INSIDE the store transaction; a worker must never receive thi
 or its connection. See control_reservation_runtime for the runner consumption seam.
 """
 import copy
+import importlib.util
 import json
 import math
+from pathlib import Path
 
 SCHEMA = 'veldo.reservations/v1'
 SCOPES = ('account', 'project', 'unit')
@@ -37,6 +39,29 @@ def identity(value):
 
 def entity(kind, value):
     return PREFIX + kind + ':' + json.dumps(value, separators=(',', ':'))
+
+
+def _organ(name):
+    spec = importlib.util.spec_from_file_location('reservations_' + name, Path(__file__).with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# VELDO-0062: the account records, whose CLI-reported rate-limit windows every invocation check reads.
+ACC = _organ('control_accounts')
+RECEIPT = 'sha256:'
+
+
+def service_authority(conn, command):
+    """The production authorization of a reservation command (VELDO-0062): its principal is a current
+    member holding the reservation service role, as the trusted launch receiver is."""
+    row = conn.execute('SELECT data FROM entities WHERE id=?', (command.get('principal'),)).fetchone()
+    member = json.loads(row[0]) if row else {}
+    now = (command.get('parameters') or {}).get('now')
+    return (isinstance(member, dict) and 'reservation_service' in (member.get('roles') or [])
+            and member.get('revoked_at') is None
+            and (member.get('expires_at') is None or (number(now) and now < member['expires_at'])))
 
 
 class Reservations:
@@ -88,6 +113,11 @@ class Reservations:
         return policies
 
     def _check(self, context, wanted, records, now):
+        if wanted.get('invocations'):
+            # VELDO-0062: a window the account's CLI reported exhausted refuses every invocation until
+            # the reset it reported; the account record is read inside this same transaction.
+            for window in ACC.blocking(ACC.read(self.conn, context['account']), now):
+                raise Refused('rate_limited:' + window)
         for policy in self._policies(context, records):
             scope, subject = policy['scope'], policy['subject']
             balance = self.balances(scope, subject, records)
@@ -169,14 +199,22 @@ class Reservations:
                          dict(dispatch=identity(dispatch), invocation=invocation, boundary=boundary,
                               wall_seconds=wall_seconds), now)
 
-    def report(self, command_id, invocation, sequence, usage, *, final=False, outcome=None, now):
+    def report(self, command_id, invocation, sequence, usage, *, final=False, outcome=None, receipts=(), now):
+        """`receipts` are the digests of the CLI's own report lines this report was read from
+        (VELDO-0062): the raw lines stay with the receiver, the ledger carries what checks them."""
+        receipts = list(receipts)
         if (not isinstance(sequence, int) or isinstance(sequence, bool) or sequence < 1
                 or not isinstance(usage, dict) or set(usage) - set(USAGE)
                 or any(not number(v) for v in usage.values())
-                or outcome not in (None, 'completed', 'failed', 'timeout', 'cancelled', 'not_executed')):
+                or outcome not in (None, 'completed', 'failed', 'timeout', 'cancelled', 'not_executed')
+                or not all(isinstance(r, str) and r.startswith(RECEIPT) and len(r) == len(RECEIPT) + 64
+                           for r in receipts)):
             raise Refused('invalid_input')
+        payload = dict(sequence=sequence, usage=usage, final=final, outcome=outcome)
+        if receipts:
+            payload['receipts'] = receipts
         return self._run(command_id, 'report', entity('invocation', [self.domain, identity(invocation)]),
-                         dict(sequence=sequence, usage=usage, final=final, outcome=outcome), now)
+                         payload, now)
 
     def window(self, command_id, account, unit, remaining, reset_at, watermark, *, now, window_id='subscription'):
         if (unit not in USAGE or (remaining is not None and not number(remaining))
@@ -235,6 +273,8 @@ class Reservations:
                 raise Refused('invalid_invocation_count')
             value['sequence'] = p['sequence']
             value['reports'][str(p['sequence'])] = p
+            # The journal sequence this report commits at: the watermark of the usage it shows.
+            value['reported_seq'] = self.conn.execute('SELECT COALESCE(MAX(seq),0)+1 FROM journal').fetchone()[0]
             value['observed'].update(p['usage'])
             value['outcome'] = p['outcome'] or value['outcome']
             for unit, amount in p['usage'].items():

@@ -23,6 +23,14 @@ never fabricates or performs a login. resolve(name) returns that account's CLAUD
 list_accounts() enumerates. A duplicate add and an unknown resolve each fail BY NAME
 (DuplicateAccountError / UnknownAccountError), never silently.
 
+EITHER PROVIDER (VELDO-0062). An account is a Claude Code login (`claude_code`, its profile is the
+CLAUDE_CONFIG_DIR directory) or a Codex login (`codex`, its profile is the CODEX_HOME directory, where
+`codex login` persists the ChatGPT sign-in). account_add(name, provider=...) prepares that profile and
+login_step(record) is the ONE command the owner runs once to log in there. The factory's account
+registry is the store record family in control_accounts.py (per host profiles, status, reported
+rate-limit windows); registration(name) gives the fields its `register` command takes, and this local
+file is only the name to profile map on this host.
+
 The registry persists as a JSON file under the git common dir (veldo/accounts/registry.json,
 shared across worktrees, outside git history, machine-local), the same place and pattern as the
 claim ledger, so a registered account survives across invocations and worktrees with no relogin.
@@ -47,6 +55,9 @@ from datetime import datetime, timezone
 
 SCHEMA = "veldo.accounts/v1"
 CONFIG_DIR_ENV = "CLAUDE_CONFIG_DIR"
+# Each provider's profile variable and its one-time login command (VELDO-0062).
+PROFILE_ENV = {"claude_code": "CLAUDE_CONFIG_DIR", "codex": "CODEX_HOME"}
+LOGIN_COMMAND = {"claude_code": "claude   # then /login as this account", "codex": "codex login"}
 
 
 class AccountError(Exception):
@@ -135,7 +146,7 @@ def _save(data, root=None):
                 pass
 
 
-def account_add(name, config_dir=None, root=None, **meta):
+def account_add(name, config_dir=None, root=None, provider="claude_code", **meta):
     """Register a new account and prepare its CLAUDE_CONFIG_DIR profile directory.
 
     Creates the profile directory (default veldo/accounts/profiles/<name> beside the registry,
@@ -146,6 +157,8 @@ def account_add(name, config_dir=None, root=None, **meta):
     DuplicateAccountError if the name is already registered, so an existing login is never
     silently overwritten."""
     name = str(name)
+    if provider not in PROFILE_ENV:
+        raise AccountError("provider %r is not one of %s" % (provider, ", ".join(sorted(PROFILE_ENV))))
     with _registry_lock(root):
         data = _load(root)
         if name in data["accounts"]:
@@ -158,7 +171,7 @@ def account_add(name, config_dir=None, root=None, **meta):
             os.chmod(cdir, 0o700)  # credentials will live here; keep the profile private
         except OSError:
             pass
-        rec = {"name": name, "config_dir": cdir, "added_at": _now()}
+        rec = {"name": name, "config_dir": cdir, "provider": provider, "added_at": _now()}
         rec.update({k: v for k, v in meta.items() if v is not None})
         data["accounts"][name] = rec
         _save(data, root)
@@ -189,12 +202,27 @@ def list_accounts(root=None):
     return sorted(_load(root)["accounts"].keys())
 
 
+def login_step(rec):
+    """The one command that logs the owner in once into a prepared profile, for its provider."""
+    provider = rec.get("provider", "claude_code")
+    return "%s=%s %s" % (PROFILE_ENV[provider], rec["config_dir"], LOGIN_COMMAND[provider])
+
+
+def registration(name, host=None, root=None):
+    """The fields of the store's account record (control_accounts.Accounts.register) for a prepared
+    profile on this host: id, provider, label and the profile directory keyed by host."""
+    import socket
+    rec = get(name, root)
+    return {"account": rec["name"], "provider": rec.get("provider", "claude_code"), "label": rec["name"],
+            "profiles": {host or socket.gethostname(): rec["config_dir"]}}
+
+
 def _cmd_add(args):
-    rec = account_add(args.name, config_dir=args.config_dir)
-    print("registered account %r" % rec["name"])
-    print("  CLAUDE_CONFIG_DIR: %s" % rec["config_dir"])
+    rec = account_add(args.name, config_dir=args.config_dir, provider=args.provider)
+    print("registered account %r (%s)" % (rec["name"], rec["provider"]))
+    print("  %s: %s" % (PROFILE_ENV[rec["provider"]], rec["config_dir"]))
     print("  one-time login (run once; the saved login then persists for every worker):")
-    print("    CLAUDE_CONFIG_DIR=%s claude   # then /login as this account" % rec["config_dir"])
+    print("    " + login_step(rec))
     return 0
 
 
@@ -218,7 +246,9 @@ def main(argv=None):
     a = sub.add_parser("add", help="register a new account and prepare its config profile directory")
     a.add_argument("name", help="the account name")
     a.add_argument("--config-dir", default=None, dest="config_dir",
-                   help="use this directory as the account's CLAUDE_CONFIG_DIR (default: veldo/accounts/profiles/<name>)")
+                   help="use this directory as the account's profile (default: veldo/accounts/profiles/<name>)")
+    a.add_argument("--provider", default="claude_code", choices=sorted(PROFILE_ENV),
+                   help="the account's engine: claude_code (CLAUDE_CONFIG_DIR) or codex (CODEX_HOME)")
     a.set_defaults(fn=_cmd_add)
     lst = sub.add_parser("list", help="list registered accounts and their CLAUDE_CONFIG_DIR")
     lst.set_defaults(fn=_cmd_list)

@@ -65,6 +65,24 @@ on is completed: at once when the retirement service observes the completion (it
 a final accounting report the reservation service accepts), and on the runner's sweep before each
 preparation and after each wait, so none is stranded.
 
+SUBSCRIPTION LOGIN AND USAGE (VELDO-0062). An adapter that declares an `engine` (`claude_code` or
+`codex`) runs a logged-in subscription CLI. Before acceptance the receiver reads the account the
+accepted contract records (its reservation's account) from the store's account records
+(control_accounts): an unregistered, paused or disabled account, one of another provider, or one with
+no profile on this host is refused by name. The engine's environment is the inherited one with every
+provider's profile variable and every paid-API credential variable removed and that account's own
+profile set (CLAUDE_CONFIG_DIR or CODEX_HOME), never a profile the caller's environment names. After
+acceptance, and before anything is spawned, the invocation (initial, retry or follow-on,
+control_reservation_runtime.boundary) is checked and reserved against every applicable cap and the
+account's reported rate-limit windows through VELDO-0036's InvocationGuard, bounded by the contract
+deadline; a refusal is recorded by name and launches nothing. While the worker runs, the usage and
+rate-limit windows the CLI's own stream reports (control_engine_claude, control_engine_codex) are
+reported as they arrive, their raw lines kept as receipts in a private file and their digests in the
+ledger; a cap reached stops the worker. At its end one final report settles the invocation: its count,
+the wall time it took and the CLI's conclusive totals, or, when the CLI reported none, the token and
+message units stay unknown and their reservation is retained. Timeout, cancellation or a missing
+report never release it.
+
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
 """
@@ -99,6 +117,12 @@ S = D.S
 C = _organ('control_containment')
 HB = _organ('control_heartbeat')
 RT = _organ('control_retirement')
+# VELDO-0062: the account records (the instance the reservations module reads windows through), the
+# invocation seam and each subscription engine's login and usage reports.
+ACC = D.RES.ACC
+RTM = _organ('control_reservation_runtime')
+ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
+RECEIPTS_SCHEMA = 'veldo.usage_receipts/v1'
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
 ACCEPT_SECONDS = 30
@@ -446,6 +470,10 @@ class Receiver:
                                        sign=lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE),
                                        generation=config.get('authority_generation', 1))
         self.renewals = HB.Renewals(self.dispatches, D)
+        self.sign = lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE)
+        self.host = config.get('host') or socket.gethostname()
+        self.login = None
+        self.metering = None
 
     def close(self):
         self.conn.close()
@@ -497,6 +525,8 @@ class Receiver:
             refusal = self._recheck(contract)
         if not refusal:
             refusal = self._qualify(adapter)
+        if not refusal:
+            refusal = self._login(contract, adapter)
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -518,11 +548,19 @@ class Receiver:
         acceptance = self.dispatches.receipt(dispatch_id, 'accept')
         self.emit({'event': 'accepted', 'acceptance': acceptance})
         try:
-            worker = self._spawn(dispatch_id, acceptance, adapter)
+            worker = self._invoke(contract, acceptance, adapter)
+        except Unfunded as error:
+            # Checked and refused before anything was spawned: nothing ran, nothing was reserved.
+            self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self.emit({'event': 'refused', 'refusal': error.code})
+            return
         except C.Refused as error:
+            if error.settled:
+                self._not_executed()
             self._uncontained(dispatch_id, contract_digest, error)
             return
         except OSError as error:
+            self._not_executed()
             refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)
             self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')
             self.emit({'event': 'refused', 'refusal': refusal})
@@ -534,6 +572,7 @@ class Receiver:
                 process, refusal, carry = self._reported(worker, contract)
                 if refusal:
                     worker.wait()
+                    self._not_executed()
                     self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(),
                                            expected_state='accepted')
                     self.emit({'event': 'refused', 'refusal': refusal})
@@ -562,6 +601,9 @@ class Receiver:
         self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat, 'graces': graces,
                    'group': group.report() if group else None})
         termination = self._reap(worker, contract, carry, process=process, contract_digest=contract_digest)
+        if self.metering is not None:
+            # The invocation settles before its end is recorded, so the slot's accounting is complete.
+            self.metering.settle(termination, (self.supervision or {}).get('cause'))
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
             # outcome is unknown, and the unit and station stay held.
@@ -570,8 +612,8 @@ class Receiver:
             self.emit({'event': 'unknown'})
             return
         supervision = self.supervision
-        if remote and supervision['cause'] == 'requested':
-            # Nor does stopping it on request: the unit and station stay held.
+        if remote and supervision['cause'] in ('requested', 'usage_cap'):
+            # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running')
             self.emit({'event': 'unknown', 'supervision': supervision})
@@ -584,6 +626,64 @@ class Receiver:
             return
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())
         self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision})
+
+    def _login(self, contract, adapter):
+        """VELDO-0062: the subscription login of an engine adapter, read before acceptance from the
+        account the accepted contract records. None when it may run; else the named refusal."""
+        self.login = None
+        engine = adapter.get('engine')
+        if engine is None:
+            return None
+        module = ENGINES.get(engine)
+        if module is None:
+            return 'unregistered_adapter:engine:' + str(engine)
+        account = contract['reservation']['account']
+        record = ACC.read(self.conn, account)
+        if record is not None and record.get('provider') != module.PROVIDER:
+            return 'invalid_input:account_provider:%s:%s' % (record.get('provider'), module.PROVIDER)
+        try:
+            ACC.profile(record, self.host)
+        except ACC.Refused as error:
+            return error.code
+        self.login = {'engine': module, 'account': account, 'record': record}
+        return None
+
+    def _invoke(self, contract, acceptance, adapter):
+        """Spawn the worker. For a subscription engine the invocation is first checked and reserved
+        against every applicable cap and the account's reported windows (VELDO-0036's InvocationGuard,
+        whose launch is this spawn), so a refusal launches nothing."""
+        dispatch_id = contract['dispatch_id']
+        if self.login is None:
+            return self._spawn(dispatch_id, acceptance, adapter)
+        reservations = D.RES.Reservations(S, self.conn, domain=self.config['domain'],
+                                          repository=self.config['repository'], principal=self.config['principal'],
+                                          authorize=D.RES.service_authority, signer=self.config['principal'],
+                                          sign=self.sign, generation=self.config.get('authority_generation', 1))
+        accounts = ACC.Accounts(S, self.conn, principal=self.config['principal'], signer=self.config['principal'],
+                                sign=self.sign, generation=self.config.get('authority_generation', 1))
+        spawned = []
+
+        def launch(invocation, configuration):
+            # Reserved: from here a spawn that fails is attested not executed, one that starts is metered.
+            self.metering = metering
+            spawned.append(self._spawn(dispatch_id, acceptance, adapter))
+            metering.started()
+        metering = Metering(self, contract, reservations, accounts, launch)
+        try:
+            metering.guard.invoke('call/' + dispatch_id, dispatch_id, metering.invocation, metering.boundary,
+                                  max(0.001, contract['deadline'] - time.time()),
+                                  contract['capability']['configuration'], now=time.time())
+        except (D.RES.Refused, ACC.Refused, S.StoreRefused) as error:
+            raise Unfunded('missing_authority:allowance:' + error.code)
+        if not spawned:
+            raise Unfunded('stale_subject:invocation_replayed')
+        return spawned[0]
+
+    def _not_executed(self):
+        """A reserved invocation whose engine never started: the receiver attests it (VELDO-0036)."""
+        metering, self.metering = self.metering, None
+        if metering is not None:
+            metering.settle(None, None)
 
     def _uncontained(self, dispatch_id, contract_digest, error):
         """A worker that could not be contained as declared was never released to its engine: refused
@@ -606,6 +706,11 @@ class Receiver:
         configured, and that host's profile contains the engine there."""
         environment = dict(os.environ)
         environment.update(adapter.get('environment') or {})
+        if self.login is not None:
+            # VELDO-0062: the recorded account's own profile, no other profile and no paid-API credential.
+            environment = ACC.login_environment(environment, self.login['record'], self.host,
+                                                self.login['engine'].PAID_API)
+            environment['VELDO_ACCOUNT'] = self.login['account']
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         if adapter.get('identity', 'local') != 'reported':
@@ -791,6 +896,9 @@ class Receiver:
             else:
                 self._stop(worker)
                 code = worker.returncode
+        metering = self.metering
+        if metering is not None and metering.feed(carry):
+            begin('usage_cap')
         try:
             if self._stop_asked():
                 begin('requested')
@@ -815,6 +923,9 @@ class Receiver:
                             poller.unregister(output)
                         size += len(chunk)
                         hasher.update(chunk)
+                        if metering is not None and metering.feed(chunk):
+                            # VELDO-0062: a cap the CLI's own report reached stops the worker.
+                            begin('usage_cap')
                     elif fd == pidfd:
                         poller.unregister(pidfd)
                         code = worker.wait()
@@ -856,6 +967,8 @@ class Receiver:
             for chunk in iter(lambda: os.read(output, 65536), b''):
                 size += len(chunk)
                 hasher.update(chunk)
+                if metering is not None:
+                    metering.feed(chunk)
         code = worker.poll() if code is None else code
         result = group.conclude() if group is not None and empty else None
         if cause is None and result in ('timeout', 'oom-kill'):
@@ -876,6 +989,121 @@ class Receiver:
         return {'returncode': code if code is not None and code >= 0 else None,
                 'signal': -code if code is not None and code < 0 else None,
                 'output_digest': 'sha256:' + hasher.hexdigest(), 'output_bytes': size, 'deadline_stop': stopped}
+
+
+class Unfunded(Exception):
+    """An invocation checked and refused before launch (VELDO-0062); `code` names why."""
+
+    def __init__(self, code):
+        self.code = code
+        super().__init__(code)
+
+
+class Metering:
+    """One subscription invocation's usage, from its reservation to its settlement (VELDO-0062).
+
+    The account is the one the accepted contract records. Each line the CLI prints that reports usage
+    or a rate-limit window is kept, raw, in the invocation's receipt file (mode 0600 in a 0700
+    directory, beside the store unless the config names `receipts`), after a header naming the
+    dispatch, invocation, account, project, unit, provider and boundary; the ledger carries each
+    line's digest. Usage goes to VELDO-0036 in sequence, and a report that reaches a cap, or that
+    cannot be recorded, stops the worker. A window goes to the account record."""
+
+    def __init__(self, receiver, contract, reservations, accounts, launch):
+        self.receiver, self.contract = receiver, contract
+        self.reservations, self.accounts = reservations, accounts
+        self.dispatch_id = contract['dispatch_id']
+        self.account = contract['reservation']['account']
+        self.engine = receiver.login['engine']
+        self.meter = self.engine.Meter()
+        self.invocation = 'invocation/' + self.dispatch_id
+        self.boundary = RTM.boundary(contract)
+        self.guard = RTM.InvocationGuard(reservations, self.engine.PROVIDER, launch, self._stop)
+        self.sequence = 0
+        self.stop = False
+        self.errors = []
+        self.receipts = []
+        self.start = None
+        self.settled = False
+        self.file = None
+
+    def _stop(self, dispatch_id):
+        self.stop = True
+
+    def started(self):
+        """The engine exists: open its receipt file and start its clock."""
+        self.start = time.monotonic()
+        directory = Path(self.receiver.config.get('receipts') or Path(self.receiver.config['store']).parent / 'receipts')
+        directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+        path = directory / (hashlib.sha256(self.invocation.encode()).hexdigest() + '.jsonl')
+        self.file = os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb')
+        header = {'schema': RECEIPTS_SCHEMA, 'dispatch_id': self.dispatch_id, 'invocation': self.invocation,
+                  'account': self.account, 'project': self.contract['reservation']['project'],
+                  'unit': self.contract['unit'], 'provider': self.engine.PROVIDER, 'boundary': self.boundary}
+        self.file.write((json.dumps(header, sort_keys=True) + '\n').encode())
+        self.file.flush()
+
+    def feed(self, chunk):
+        """Whether the worker must stop, after the observations in `chunk`."""
+        for observation in self.meter.feed(chunk):
+            self._observe(observation)
+        return self.stop
+
+    def _keep(self, line):
+        if self.file is not None:
+            self.file.write(line + b'\n')
+            self.file.flush()
+
+    def _observe(self, observation):
+        self._keep(observation['line'])
+        self.receipts.append(observation['receipt'])
+        now = time.time()
+        try:
+            if observation['kind'] == 'window':
+                self.accounts.observe('window/%s/%s/%s' % (self.dispatch_id, observation['receipt'][7:23],
+                                                           observation['window_id']),
+                                      self.account, observation['window_id'], status=observation['status'],
+                                      reset_at=observation['reset_at'], utilization=observation['utilization'],
+                                      source_dispatch=self.dispatch_id, now=now)
+                return
+            self.sequence += 1
+            result = self.guard.observe('usage/%s/%d' % (self.dispatch_id, self.sequence), self.invocation,
+                                        self.sequence, observation['usage'], now=now,
+                                        receipts=[observation['receipt']])
+            self.stop = self.stop or bool(result.get('stop_required'))
+        except (D.RES.Refused, ACC.Refused, S.StoreRefused) as error:
+            # A report that cannot be recorded fails closed: the worker stops.
+            self.errors.append(error.code)
+            self.stop = True
+
+    def settle(self, termination, cause):
+        """The one final report. `termination` None: the engine never started (not executed)."""
+        if self.settled:
+            return
+        self.settled = True
+        now = time.time()
+        if termination is None:
+            usage, outcome = {}, 'not_executed'
+        else:
+            for observation in self.meter.close():
+                self._observe(observation)
+            usage = dict(self.meter.final(), invocations=1,
+                         wall_seconds=round(time.monotonic() - (self.start or time.monotonic()), 6))
+            if termination.get('deadline_stop'):
+                outcome = 'timeout'
+            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):
+                outcome = 'cancelled'
+            else:
+                outcome = 'completed' if termination.get('returncode') == 0 else 'failed'
+        self.sequence += 1
+        try:
+            self.guard.observe('usage/%s/%d' % (self.dispatch_id, self.sequence), self.invocation, self.sequence,
+                               usage, now=now, final=True, outcome=outcome, receipts=self.receipts)
+        except (D.RES.Refused, ACC.Refused, S.StoreRefused) as error:
+            self.errors.append(error.code)
+        finally:
+            if self.file is not None:
+                self.file.close()
 
 
 def wrap(argv):

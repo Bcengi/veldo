@@ -12,6 +12,16 @@ ADAPTERS = {
 }
 
 
+def boundary(contract):
+    """Which registered boundary a dispatch contract's CLI invocation is (VELDO-0062): a follow-on
+    when its payload names the CLI session it continues (`resume`), a retry when an earlier attempt of
+    the same unit and station came before it, else the initial invocation."""
+    payload = (contract.get('input') or {}).get('payload')
+    if isinstance(payload, dict) and payload.get('resume'):
+        return 'follow_on'
+    return 'retry' if contract.get('attempt', 1) > 1 else 'initial'
+
+
 class InvocationGuard:
     def __init__(self, reservations, adapter, launch, stop):
         if adapter not in ADAPTERS:
@@ -34,14 +44,14 @@ class InvocationGuard:
         self.launch(invocation, configuration)
         return receipt
 
-    def observe(self, command_id, invocation, sequence, usage, *, now, final=False, outcome=None):
+    def observe(self, command_id, invocation, sequence, usage, *, now, final=False, outcome=None, receipts=()):
         active = self.active[invocation]
         try:
             reached = now - active['start'] >= active['wall_seconds']
             if reached:
                 self._stop(active)
             receipt = self.reservations.report(command_id, invocation, sequence, usage,
-                                               now=now, final=final, outcome=outcome)
+                                               now=now, final=final, outcome=outcome, receipts=receipts)
             records = self.reservations._records()
             call = next(r for r in records.values() if r['type'] == 'invocation' and r['invocation'] == invocation
                         and r['context']['domain'] == self.reservations.domain)

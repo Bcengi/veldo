@@ -82,6 +82,12 @@ _FILES = [
     # VELDO-0036: authority reservations and the subscription invocation seam.
     ".veldo/control_reservations.py",
     ".veldo/control_reservation_runtime.py",
+    # VELDO-0062: the account records the reservations and the launch receiver read, and each
+    # subscription engine's login and usage reports, which control_launch.py loads. Runtime assets,
+    # no validator import, so not REQUIRED_SUBSTRATE.
+    ".veldo/control_accounts.py",
+    ".veldo/control_engine_claude.py",
+    ".veldo/control_engine_codex.py",
     # VELDO-0035: accepted snapshots and transactional read-set registrations.
     # Runtime assets; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_snapshot.py",
