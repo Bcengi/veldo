@@ -1,0 +1,92 @@
+{
+ "by_assertion": true,
+ "commit": "c98d63f6923f39b16caa95729ab1417cdc7d0b78",
+ "details": [
+  "VELDO-0139 install/assets detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 setup/lays-down detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 refuse/writes-nothing detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 refuse/existing-store detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 edge/enrolled-with-possession detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 chat/enrolled detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 ingress/configuration detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 token/never-copied detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 service/starts-inert detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 journey/qualified-and-active detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)",
+  "VELDO-0139 genesis/owner-signed detail: veldo factory setup exists in this tree (.veldo/control_factory_setup.py)"
+ ],
+ "failed_rows": [
+  "VELDO-0139 install/assets",
+  "VELDO-0139 setup/lays-down",
+  "VELDO-0139 refuse/writes-nothing",
+  "VELDO-0139 refuse/existing-store",
+  "VELDO-0139 edge/enrolled-with-possession",
+  "VELDO-0139 chat/enrolled",
+  "VELDO-0139 ingress/configuration",
+  "VELDO-0139 token/never-copied",
+  "VELDO-0139 service/starts-inert",
+  "VELDO-0139 journey/qualified-and-active",
+  "VELDO-0139 genesis/owner-signed"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": null,
+   "now": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "c61516253b6eedb87a5096a49a4c006113c3e0fdd892c6dc06e71e6b96b97238",
+   "now": "76cfa76030c28d6116094a090e8f794c6af70d88fa19d0980de3ff150908441b"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0139 install/assets",
+   false
+  ],
+  [
+   "VELDO-0139 setup/lays-down",
+   false
+  ],
+  [
+   "VELDO-0139 refuse/writes-nothing",
+   false
+  ],
+  [
+   "VELDO-0139 refuse/existing-store",
+   false
+  ],
+  [
+   "VELDO-0139 edge/enrolled-with-possession",
+   false
+  ],
+  [
+   "VELDO-0139 chat/enrolled",
+   false
+  ],
+  [
+   "VELDO-0139 ingress/configuration",
+   false
+  ],
+  [
+   "VELDO-0139 token/never-copied",
+   false
+  ],
+  [
+   "VELDO-0139 service/starts-inert",
+   false
+  ],
+  [
+   "VELDO-0139 journey/qualified-and-active",
+   false
+  ],
+  [
+   "VELDO-0139 genesis/owner-signed",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.787,
+ "spec_id": "VELDO-0139",
+ "suite": "scripts/suites/73_veldo_0139_factory_setup.py",
+ "tree": "git archive c98d63f6923f39b16caa95729ab1417cdc7d0b78, unchanged; the current suite file run against it"
+}
