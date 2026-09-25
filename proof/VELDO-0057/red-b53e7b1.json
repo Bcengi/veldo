@@ -1,0 +1,632 @@
+{
+ "production_at": "b53e7b1",
+ "substituted": {
+  "lander.py": "b53e7b1:.veldo/lander.py",
+  "control_landing.py": "absent at b53e7b1"
+ },
+ "installed_only_now": [
+  "control_landing.py"
+ ],
+ "other_installed_modules_identical_to_commit": false,
+ "differing": [
+  "init_scaffold.py"
+ ],
+ "failed": [
+  "VELDO-0057 exact-tip/compare-and-swap",
+  "VELDO-0057 unconfirmed/confirmed-remote-evidence",
+  "VELDO-0057 completion/evidence-chain",
+  "VELDO-0057 exact-tip/moved-tip-refused",
+  "VELDO-0057 unconfirmed/failed-no-attempt",
+  "VELDO-0057 exact-subject/authority",
+  "VELDO-0057 exact-subject/approval",
+  "VELDO-0057 exact-subject/source",
+  "VELDO-0057 exact-subject/proof",
+  "VELDO-0057 exact-subject/tree",
+  "VELDO-0057 exact-subject/dependency-version",
+  "VELDO-0057 exact-subject/dependency-unlanded",
+  "VELDO-0057 exact-subject/valid-publishes",
+  "VELDO-0057 unconfirmed/unknown-stops",
+  "VELDO-0057 unconfirmed/moved-after-ack",
+  "VELDO-0057 completion/corrupt-each",
+  "VELDO-0057 completion/readers",
+  "VELDO-0057 completion/projection"
+ ],
+ "passed": [
+  "VELDO-0057 completion/push-disabled",
+  "VELDO-0057 completion/build-only",
+  "VELDO-0057 ran/exact-tip/compare-and-swap",
+  "VELDO-0057 ran/exact-tip/moved-tip-refused",
+  "VELDO-0057 ran/exact-subject/approval",
+  "VELDO-0057 ran/unconfirmed/unknown-stops",
+  "VELDO-0057 ran/unconfirmed/moved-after-ack",
+  "VELDO-0057 ran/completion/corrupt-each",
+  "VELDO-0057 ran/completion/push-disabled",
+  "VELDO-0057 ran/completion/readers"
+ ],
+ "raised": [],
+ "observed": {
+  "a": {
+   "land": {
+    "sync": {
+     "ok": true,
+     "candidate": "candidate-0a83485181bf436f",
+     "watermark": "d97b340491f6a7b29229f614568f36d5af307af0"
+    },
+    "reconcile": {
+     "ok": true,
+     "candidate": "23c40bd402d150004020bdb807cb3961510e6724",
+     "tree": "88a63f266ea22820443d0f6483753217e951eb55",
+     "watermark": "d97b340491f6a7b29229f614568f36d5af307af0",
+     "implementation": "725fe4a44e2357e339650745884f64aeb2a276d8",
+     "evidence": "9ad8ff4862de1ec981bbc70a627f556f37aed9db"
+    },
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (23c40bd402d150004020bdb807cb3961510e6724)"
+     ],
+     "exit": 0,
+     "candidate": "23c40bd402d150004020bdb807cb3961510e6724"
+    },
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "ok": true,
+     "pushed": true,
+     "candidate": "23c40bd402d150004020bdb807cb3961510e6724",
+     "detail": ""
+    },
+    "state": "published",
+    "commit": "23c40bd402d150004020bdb807cb3961510e6724",
+    "watermark": "d97b340491f6a7b29229f614568f36d5af307af0",
+    "tree": "88a63f266ea22820443d0f6483753217e951eb55"
+   },
+   "log": [
+    [
+     "d97b340491f6a7b29229f614568f36d5af307af0",
+     "23c40bd402d150004020bdb807cb3961510e6724",
+     "refs/heads/main"
+    ]
+   ],
+   "effect": {},
+   "receipts": [],
+   "tip_before": "d97b340491f6a7b29229f614568f36d5af307af0",
+   "tip_after": "23c40bd402d150004020bdb807cb3961510e6724"
+  },
+  "b": {
+   "land": {
+    "sync": {
+     "ok": true,
+     "candidate": "candidate-c9e217a8a33a46ad",
+     "watermark": "23c40bd402d150004020bdb807cb3961510e6724"
+    },
+    "reconcile": {
+     "ok": true,
+     "candidate": "107d07c5b85fb7d0058c3ceb60ecdb85edcbdd6f",
+     "tree": "134b0649cf8ce7333701c04cfe637bc133116e87",
+     "watermark": "23c40bd402d150004020bdb807cb3961510e6724",
+     "implementation": "7dc2a761dcfbdfa7d812572f72239e9465d1dd38",
+     "evidence": "5244b4a6dbf0229dd603e837f0005ae6c704e072"
+    },
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (107d07c5b85fb7d0058c3ceb60ecdb85edcbdd6f)"
+     ],
+     "exit": 0,
+     "candidate": "107d07c5b85fb7d0058c3ceb60ecdb85edcbdd6f"
+    },
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "ok": false,
+     "pushed": false,
+     "candidate": "107d07c5b85fb7d0058c3ceb60ecdb85edcbdd6f",
+     "detail": "To /dev/shm/v57-wr2u91o6/remote.git\n ! [rejected]        107d07c5b85fb7d0058c3ceb60ecdb85edcbdd6f -> main (fetch first)\nerror: failed to push some refs to '/dev/shm/v57-wr2u91o6/remote.git'\nhint: Updates were rejected because the remote contains work that you do not\nhint: have locally. This is usually caused by another repository pushing to\nhint: the same ref. If you want to integrate the remote changes, use\nhint: 'git pull' before pushing again.\nhint: See the 'Note about fast-forwards' in 'git push --help' for details."
+    },
+    "state": "rejected",
+    "commit": "107d07c5b85fb7d0058c3ceb60ecdb85edcbdd6f",
+    "watermark": "23c40bd402d150004020bdb807cb3961510e6724",
+    "tree": "134b0649cf8ce7333701c04cfe637bc133116e87"
+   },
+   "moved": {
+    "tip": "9d453ea46139edb8a2e4de3f80a8234c0540033a",
+    "log": 2
+   },
+   "attempts": [],
+   "tip": "9d453ea46139edb8a2e4de3f80a8234c0540033a",
+   "effect": null,
+   "again": {
+    "raised": "no landing"
+   },
+   "complete": {
+    "raised": "no landing"
+   }
+  },
+  "v": {
+   "land": {
+    "sync": {
+     "ok": true,
+     "candidate": "candidate-5dbbcbcc73df41aa",
+     "watermark": "9d453ea46139edb8a2e4de3f80a8234c0540033a"
+    },
+    "reconcile": {
+     "ok": true,
+     "candidate": "4f9885a069c395ae21f07d57f5f9fa0f7d226018",
+     "tree": "331c81d49173666fdb9837b8f49942ab8a37179e",
+     "watermark": "9d453ea46139edb8a2e4de3f80a8234c0540033a",
+     "implementation": "65f22e57aed26e9fa0c40f1ce940009419aab3d1",
+     "evidence": "5f69b0bdd39871a0d404ef721d6853904a2d2df4"
+    },
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (4f9885a069c395ae21f07d57f5f9fa0f7d226018)"
+     ],
+     "exit": 0,
+     "candidate": "4f9885a069c395ae21f07d57f5f9fa0f7d226018"
+    },
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "ok": true,
+     "pushed": true,
+     "candidate": "4f9885a069c395ae21f07d57f5f9fa0f7d226018",
+     "detail": ""
+    },
+    "state": "published",
+    "commit": "4f9885a069c395ae21f07d57f5f9fa0f7d226018",
+    "watermark": "9d453ea46139edb8a2e4de3f80a8234c0540033a",
+    "tree": "331c81d49173666fdb9837b8f49942ab8a37179e"
+   },
+   "cases": {
+    "authority": {
+     "result": {
+      "raised": "no landing"
+     },
+     "tip_kept": true,
+     "no_receive": true,
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true
+    },
+    "approval": {
+     "result": {
+      "raised": "no landing"
+     },
+     "tip_kept": true,
+     "no_receive": true,
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true
+    },
+    "source": {
+     "result": {
+      "raised": "no landing"
+     },
+     "tip_kept": true,
+     "no_receive": true,
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true
+    },
+    "proof": {
+     "result": {
+      "raised": "no landing"
+     },
+     "tip_kept": true,
+     "no_receive": true,
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true
+    },
+    "tree": {
+     "result": {
+      "raised": "no landing"
+     },
+     "tip_kept": true,
+     "no_receive": true,
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true
+    },
+    "dependency-version": {
+     "result": {
+      "raised": "no landing"
+     },
+     "tip_kept": true,
+     "no_receive": true,
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true
+    },
+    "dependency-unlanded": {
+     "result": {
+      "raised": "no landing"
+     },
+     "tip_kept": true,
+     "no_receive": true,
+     "no_call": true,
+     "no_effect": true,
+     "no_receipt": true
+    },
+    "tip_before_finalize": "9d453ea46139edb8a2e4de3f80a8234c0540033a"
+   }
+  },
+  "h": {
+   "land": {
+    "sync": {
+     "ok": true,
+     "candidate": "candidate-385f046f3c574e7c",
+     "watermark": "d97b340491f6a7b29229f614568f36d5af307af0"
+    },
+    "reconcile": {
+     "ok": true,
+     "candidate": "10faa8cb1d9b93bfb77dee8e69e740d4fd2382d6",
+     "tree": "0d1677d3b2f56eda2ad22494dd80b330a1a044df",
+     "watermark": "d97b340491f6a7b29229f614568f36d5af307af0",
+     "implementation": "b30e72535bce7c94086899bddf67c7c9ad3289c3",
+     "evidence": "6e3c9adf8166780d65706f0ee0a32890fd17a822"
+    },
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (10faa8cb1d9b93bfb77dee8e69e740d4fd2382d6)"
+     ],
+     "exit": 0,
+     "candidate": "10faa8cb1d9b93bfb77dee8e69e740d4fd2382d6"
+    },
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "ok": false,
+     "pushed": false,
+     "candidate": "10faa8cb1d9b93bfb77dee8e69e740d4fd2382d6",
+     "detail": "remote: rejected by policy        \nTo /dev/shm/v57-wr2u91o6/hooked.git\n ! [remote rejected] 10faa8cb1d9b93bfb77dee8e69e740d4fd2382d6 -> main (pre-receive hook declined)\nerror: failed to push some refs to '/dev/shm/v57-wr2u91o6/hooked.git'"
+    },
+    "state": "rejected",
+    "commit": "10faa8cb1d9b93bfb77dee8e69e740d4fd2382d6",
+    "watermark": "d97b340491f6a7b29229f614568f36d5af307af0",
+    "tree": "0d1677d3b2f56eda2ad22494dd80b330a1a044df"
+   },
+   "first": [
+    [
+     "d97b340491f6a7b29229f614568f36d5af307af0",
+     "10faa8cb1d9b93bfb77dee8e69e740d4fd2382d6",
+     "refs/heads/main"
+    ]
+   ],
+   "same": {
+    "raised": "no landing"
+   },
+   "fresh": {
+    "raised": "no landing"
+   },
+   "complete": {
+    "raised": "no landing"
+   },
+   "status": {},
+   "effect": null
+  },
+  "e": {
+   "land": {
+    "sync": {
+     "ok": true,
+     "candidate": "candidate-3fb4e98dacad4143",
+     "watermark": "4f9885a069c395ae21f07d57f5f9fa0f7d226018"
+    },
+    "reconcile": {
+     "ok": true,
+     "candidate": "3d12e7bcf36523670e81d3ae5d604cc5b9d153bd",
+     "tree": "36c8aaa713b81b84d699b47a194dbc262e132449",
+     "watermark": "4f9885a069c395ae21f07d57f5f9fa0f7d226018",
+     "implementation": "77faf5425adb62ae27e1a6f0691ecf70324da284",
+     "evidence": "f470fa16797c5415eabfc4c2f2440617b4cf393d"
+    },
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (3d12e7bcf36523670e81d3ae5d604cc5b9d153bd)"
+     ],
+     "exit": 0,
+     "candidate": "3d12e7bcf36523670e81d3ae5d604cc5b9d153bd"
+    },
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "ok": true,
+     "pushed": true,
+     "candidate": "3d12e7bcf36523670e81d3ae5d604cc5b9d153bd",
+     "detail": ""
+    },
+    "state": "published",
+    "commit": "3d12e7bcf36523670e81d3ae5d604cc5b9d153bd",
+    "watermark": "4f9885a069c395ae21f07d57f5f9fa0f7d226018",
+    "tree": "36c8aaa713b81b84d699b47a194dbc262e132449"
+   },
+   "moved": {},
+   "effect": {}
+  },
+  "d": {
+   "land": {
+    "sync": {
+     "ok": true,
+     "candidate": "candidate-daf87efe685649f6",
+     "watermark": "3d12e7bcf36523670e81d3ae5d604cc5b9d153bd"
+    },
+    "reconcile": {
+     "ok": true,
+     "candidate": "7f47628819cbb69a499cbdd6bf57c37be23d9cf0",
+     "tree": "a17a67252c97b5f691714f144df533abfb38eeba",
+     "watermark": "3d12e7bcf36523670e81d3ae5d604cc5b9d153bd",
+     "implementation": "33a86a903d841fa804973c5d224787b119146366",
+     "evidence": "619362ea87506dea3b6bab65971cbf3d158df49f"
+    },
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (7f47628819cbb69a499cbdd6bf57c37be23d9cf0)"
+     ],
+     "exit": 0,
+     "candidate": "7f47628819cbb69a499cbdd6bf57c37be23d9cf0"
+    },
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "ok": true,
+     "pushed": true,
+     "candidate": "7f47628819cbb69a499cbdd6bf57c37be23d9cf0",
+     "detail": ""
+    },
+    "state": "published",
+    "commit": "7f47628819cbb69a499cbdd6bf57c37be23d9cf0",
+    "watermark": "3d12e7bcf36523670e81d3ae5d604cc5b9d153bd",
+    "tree": "a17a67252c97b5f691714f144df533abfb38eeba"
+   },
+   "deferred": 0,
+   "corrupted": {
+    "implementation": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    },
+    "proof": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    },
+    "reviewed-source": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    },
+    "reviewed-proof": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    },
+    "old-tip": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    },
+    "candidate": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    },
+    "tested-tree": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    },
+    "gate": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    },
+    "final-receipt": {
+     "result": {
+      "raised": "no landing"
+     },
+     "refused": false,
+     "journal_unchanged": true,
+     "no_receipt": true,
+     "not_landed": true
+    }
+   },
+   "valid": {
+    "raised": "no landing"
+   },
+   "effect_status": null
+  },
+  "p": {
+   "land": {
+    "sync": {
+     "ok": true,
+     "candidate": "candidate-047bf602290b4af1",
+     "watermark": "d97b340491f6a7b29229f614568f36d5af307af0"
+    },
+    "reconcile": {
+     "ok": true,
+     "candidate": "f01899c72b6af3ec4b7a1ae0d43fd90fd21d47e8",
+     "tree": "599a3b547c6a7825b6b4014e34bd9db7c73aaa65",
+     "watermark": "d97b340491f6a7b29229f614568f36d5af307af0",
+     "implementation": "034c1dfe1fc24c866c03efc457a9ed6910918d8a",
+     "evidence": "fcdf77fb93708916b564406afc0679661fd83c76"
+    },
+    "gate": {
+     "ok": true,
+     "detail": [
+      "GATE: GREEN (f01899c72b6af3ec4b7a1ae0d43fd90fd21d47e8)"
+     ],
+     "exit": 0,
+     "candidate": "f01899c72b6af3ec4b7a1ae0d43fd90fd21d47e8"
+    },
+    "finalize": {
+     "authority": {
+      "ok": true,
+      "refusals": []
+     },
+     "ok": true,
+     "pushed": false,
+     "candidate": "f01899c72b6af3ec4b7a1ae0d43fd90fd21d47e8"
+    },
+    "state": "accepted",
+    "commit": "f01899c72b6af3ec4b7a1ae0d43fd90fd21d47e8",
+    "watermark": "d97b340491f6a7b29229f614568f36d5af307af0",
+    "tree": "599a3b547c6a7825b6b4014e34bd9db7c73aaa65"
+   },
+   "receipts": []
+  },
+  "readers": {
+   "fresh": {
+    "facts": {
+     "VELDO-9701": {
+      "attempt_finished": false,
+      "artifact_accepted": false,
+      "revision_landed": false,
+      "objective_satisfied": false
+     },
+     "VELDO-9702": {
+      "attempt_finished": false,
+      "artifact_accepted": false,
+      "revision_landed": false,
+      "objective_satisfied": false
+     },
+     "VELDO-9703": {
+      "attempt_finished": false,
+      "artifact_accepted": false,
+      "revision_landed": false,
+      "objective_satisfied": false
+     },
+     "VELDO-9704": {
+      "attempt_finished": false,
+      "artifact_accepted": false,
+      "revision_landed": false,
+      "objective_satisfied": false
+     },
+     "VELDO-9705": {
+      "attempt_finished": false,
+      "artifact_accepted": false,
+      "revision_landed": false,
+      "objective_satisfied": false
+     },
+     "VELDO-9706": {
+      "attempt_finished": false,
+      "artifact_accepted": false,
+      "revision_landed": false,
+      "objective_satisfied": false
+     },
+     "VELDO-9707": {
+      "attempt_finished": false,
+      "artifact_accepted": false,
+      "revision_landed": false,
+      "objective_satisfied": false
+     },
+     "VELDO-9708": {
+      "attempt_finished": true,
+      "artifact_accepted": true,
+      "revision_landed": false,
+      "objective_satisfied": false
+     }
+    },
+    "frontier": {
+     "VELDO-9701": false,
+     "VELDO-9702": false,
+     "VELDO-9703": false,
+     "VELDO-9704": false,
+     "VELDO-9705": false,
+     "VELDO-9706": false,
+     "VELDO-9707": false,
+     "VELDO-9708": false
+    },
+    "plan": {
+     "VELDO-9701": false,
+     "VELDO-9702": false,
+     "VELDO-9703": false,
+     "VELDO-9704": false,
+     "VELDO-9705": false,
+     "VELDO-9706": false,
+     "VELDO-9707": false,
+     "VELDO-9708": false
+    },
+    "work": {
+     "VELDO-9701": false,
+     "VELDO-9702": false,
+     "VELDO-9703": false,
+     "VELDO-9704": false,
+     "VELDO-9705": false,
+     "VELDO-9706": false,
+     "VELDO-9707": false,
+     "VELDO-9708": false
+    }
+   },
+   "stderr": "",
+   "wanted": {
+    "VELDO-9701": true,
+    "VELDO-9702": false,
+    "VELDO-9703": true,
+    "VELDO-9704": false,
+    "VELDO-9705": false,
+    "VELDO-9706": true,
+    "VELDO-9707": false,
+    "VELDO-9708": false
+   }
+  },
+  "projection": {
+   "lines": [],
+   "seqs": {
+    "VELDO-9701": null,
+    "VELDO-9703": null,
+    "VELDO-9706": null
+   }
+  },
+  "landing_events": [],
+  "raised": []
+ }
+}

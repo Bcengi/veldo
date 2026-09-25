@@ -3,13 +3,13 @@
 
 When a worker finishes building a spec on its own branch, the built work has to reach the
 trunk without colliding with the other workers landing at the same moment. The lander makes
-that safe with three guarantees:
+that safe with four guarantees:
 
   1. SERIALIZED. A single fleet-wide land lock (a well-known unit in the claim ledger,
      WARP-0701) means only one land runs at a time. The lock is acquired by waiting, held
      with a heartbeat so a long land never looks dead, and released in a finally so a crash
-     never wedges the trunk. A fast-forward-only push is the correctness backstop: even if
-     the lock were ever stolen from a stalled holder, a stale push simply fails rather than
+     never wedges the trunk. An exact-tip push (leased on the recorded watermark) is the correctness backstop: even
+     if the lock were ever stolen from a stalled holder, a stale push simply fails rather than
      clobbering the trunk.
 
   2. MERGE, NOT REWRITE. The build is MERGED (not cherry-picked), so the build's
@@ -59,14 +59,24 @@ that safe with three guarantees:
      (R50): the accepted proof (VELDO-0050), the review obligations (VELDO-0049) and the
      publication decision over the candidate workspace (VELDO-0052). A pre-factory land with no
      authority policy wired asks the installed repository policy (policy_check.py of the
-     installation, its subject root the candidate), over exactly watermark..candidate. Only after the policy accepts does anything move: the exact
-     candidate commit is pushed, fast-forward only. Every refusal leaves the caller's
+     installation, its subject root the candidate), over exactly watermark..candidate. Only after the policy accepts does anything move. Every refusal leaves the caller's
      refs, HEAD, index and working bytes, and the remote trunk, exactly as they were, and the
-     workspace is removed at the end of every land. Local trunk synchronization, exact-tip
-     publication and the completion receipt are VELDO-0057's; a kill or restart during
-     construction and competing landers are Release 2.
+     workspace is removed at the end of every land. A kill or restart during construction and
+     competing landers are Release 2.
 
-The lander's control logic (lock, serialize, stage order, abort-and-release, ff-push guard)
+  4. EXACT-TIP PUBLICATION AND CONFIRMED COMPLETION (VELDO-0057, W42, R76). Publication is a
+     compare-and-swap of the exact recorded watermark: the push names the trunk ref and that old
+     tip as its lease, so the remote's receive-pack updates the ref only while it still holds the
+     watermark (atomic under the remote's ref lock) and a trunk that moved is refused, never
+     overwritten. A factory land wires a control_landing.Landing: finalize hands it the accepted
+     candidate and the unit's land dispatch, and it re-reads the current authority and the exact
+     subject at the effect boundary, publishes through the VELDO-0028 protected effect executor,
+     decides success from the remote's own answer re-read from the remote, and only then commits the
+     confirmed-landing receipt and runs the VELDO-0051 projection, which alone derives spec.shipped.
+     A failed or unknown publication stops under its original dispatch with no new attempt. With
+     push disabled nothing is published and nothing is completed.
+
+The lander's control logic (lock, serialize, stage order, abort-and-release, exact-tip push guard)
 is mechanical and gate-tested over a fake LandOps with no real git; the real git steps live in
 GitLandOps. Pure stdlib; Unix-only via the claim ledger."""
 
@@ -178,7 +188,7 @@ class LandOps:
         raise NotImplementedError
 
     def finalize(self, unit):
-        """Policy-check and fast-forward-only push. ok False if the push was rejected."""
+        """Policy-check and exact-tip publication. ok False if the publication was rejected."""
         raise NotImplementedError
 
 
@@ -318,14 +328,18 @@ def _unit_id(unit):
 class GitLandOps(LandOps):
     """Real git land through a disposable candidate: fix the watermark, merge the unit's
     implementation and evidence in a dedicated detached workspace, regenerate the projections,
-    gate the candidate, ask the policy, and only then push the exact candidate commit,
-    fast-forward only.
+    gate the candidate, ask the policy, and only then publish the exact candidate commit by
+    compare-and-swap of the recorded watermark.
 
     repo_root   the caller's repository, read and never written: its objects (borrowed through
                 alternates), the build ref and, with push disabled, its local trunk tip.
     build_ref   the evidence commit, or a ref naming it, in the caller's repository.
     trunk       the trunk's branch name, whatever it is; remote the caller's remote for it.
-    push        False builds, gates and accepts the candidate but publishes nothing.
+    push        False builds, gates and accepts the candidate but publishes nothing and
+                completes nothing.
+    landing     VELDO-0057: the control_landing.Landing a factory land publishes and completes
+                through (the unit handed to finalize names its land dispatch). With none, the
+                pre-factory land pushes the candidate itself, leased on the exact watermark.
     policy      the authority's acceptance, called (unit, candidate) -> {ok, refusals}: for a
                 factory land a CandidatePolicy. With none, the installed repository policy
                 (the installation's policy_check.py, asked about the candidate) decides.
@@ -341,7 +355,7 @@ class GitLandOps(LandOps):
 
     def __init__(self, repo_root, build_ref, trunk="main", remote="origin", push=True, *,
                  policy=None, identity=None, workspace_root=None, observe=None, domain=None,
-                 repository=None, installation=None, observations=None):
+                 repository=None, installation=None, observations=None, landing=None):
         self.repo_root = str(repo_root)
         self.build_ref = build_ref
         self.trunk = trunk
@@ -355,6 +369,7 @@ class GitLandOps(LandOps):
         self.repository = repository
         self.installation = str(installation) if installation is not None else None
         self.observations = str(observations) if observations is not None else None
+        self.landing = landing
         self.counts = {"accepted": 0, "refused": 0}
         self.candidate = None
 
@@ -479,6 +494,7 @@ class GitLandOps(LandOps):
                     raise CandidateRefused("unavailable_service:git/remote", "the remote has no url", operation="remote")
                 self._git(workspace, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),
                           "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network")
+                self.candidate["remote_url"] = self._absolute(url)
             else:
                 local = self._commit_of(self.repo_root, "refs/heads/" + self.trunk, "missing_evidence:trunk")
                 self._git(workspace, "update-ref", WATERMARK_REF, local)
@@ -713,7 +729,8 @@ class GitLandOps(LandOps):
 
     def finalize(self, unit):
         """Ask the repository policy and the authority's policy about this exact candidate; only when
-        both accept, push the candidate commit to the trunk, fast-forward only."""
+        both accept, publish the candidate commit to the trunk by exact-tip compare-and-swap (through
+        the wired Landing for a factory land, which then completes it)."""
         c = self.candidate
         if c is None or c.get("state") != "verified":
             return self._refuse("finalize", CandidateRefused("invalid_input:candidate", "no verified candidate"))
@@ -758,13 +775,18 @@ class GitLandOps(LandOps):
             return self._refuse("finalize", error, refusals=refusals, **detail)
         c["state"] = "accepted"
         if not self.push:
+            # Nothing is published, so nothing is completed: no receipt, no projection.
             self._event("finalize", "accepted", pushed=False)
             return dict(detail, ok=True, pushed=False, candidate=c["commit"])
-        # fast-forward-only push of the exact candidate: if the trunk advanced under us, this fails
-        # rather than clobbering it, and the land is retried from sync_main.
+        if self.landing is not None:
+            return self._publish(unit, detail)
+        # The pre-factory push of the exact candidate, leased on the exact watermark: the remote
+        # updates the trunk only while it still holds the watermark, so a trunk that advanced under
+        # us is refused rather than clobbered, and the land is retried from sync_main.
         try:
             url = self._git(self.repo_root, "remote", "get-url", "--push", self.remote, profile="network").stdout.strip()
-            push = self._git(c["workspace"], "push", "-q", self._absolute(url), "%s:refs/heads/%s" % (c["commit"], self.trunk),
+            push = self._git(c["workspace"], "push", "-q", "--force-with-lease=refs/heads/%s:%s" % (self.trunk, c["watermark"]),
+                             self._absolute(url), "%s:refs/heads/%s" % (c["commit"], self.trunk),
                              profile="network", ok=None)
         except CandidateRefused as error:
             return self._refuse("finalize", error, pushed=False)
@@ -773,6 +795,22 @@ class GitLandOps(LandOps):
         self._event("finalize", "accepted" if pushed else "refused",
                     None if pushed else "unavailable_service:git/push", pushed=pushed)
         return dict(detail, ok=pushed, pushed=pushed, candidate=c["commit"], detail=push.stderr.strip())
+
+    def _publish(self, unit, detail):
+        """VELDO-0057: the factory land's exact-tip publication and confirmed completion, through the
+        wired Landing. ok only when the receipt of the confirmed landing is committed."""
+        c = self.candidate
+        try:
+            landed = self.landing.publish(unit, self.record())
+        except Exception as error:  # noqa: BLE001 - an effect boundary that cannot answer is never success
+            landed = {"ok": False, "outcome": "unknown", "published": None,
+                      "refusal": "unknown_outcome:landing/" + type(error).__name__}
+        ok = landed.get("ok") is True
+        c["state"] = "completed" if ok else {"failed": "rejected", "refused": "refused"}.get(landed.get("outcome"), "unknown")
+        c["landing"] = {k: landed.get(k) for k in ("outcome", "refusal", "dispatch", "receipt", "published")}
+        self._event("finalize", "accepted" if ok else "refused", None if ok else (landed.get("refusal") or "unknown_outcome:landing"),
+                    pushed=landed.get("published"), completed=ok)
+        return dict(detail, ok=ok, pushed=landed.get("published") is True, candidate=c["commit"], landing=landed)
 
 
 class CandidatePolicy:

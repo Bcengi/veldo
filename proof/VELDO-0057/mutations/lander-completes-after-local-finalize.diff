@@ -1,0 +1,17 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -778 +778,13 @@
+-            # Nothing is published, so nothing is completed: no receipt, no projection.
++            if self.landing is not None:  # defect: completion is recorded after a local finalize
++                L, sid = self.landing, _unit_id(unit)
++                landing = {k: c.get(v) for k, v in (("implementation_commit", "implementation"),
++                           ("old_remote_tip", "watermark"), ("candidate_commit", "commit"), ("tested_tree", "tree"))}
++                landing.update(proof_digest=c["proof"]["digest"], reviewed_source_digest=c["proof"]["digest"],
++                               gate_invocation="local", gate_output_location="local", unit_id=sid,
++                               dispatch_id=unit.get("dispatch"), replication_receipt="local-journal",
++                               remote_confirmation={"local": c["commit"]})
++                rid = "receipt:revision_landed:%s:local" % sid
++                L._command("upsert_entity", {"entity_id": rid, "kind": "completion_receipt", "data": {
++                    "fact": "revision_landed", "subject": {"id": sid, "revision": 1}, "publication_receipt": landing,
++                    "remote_confirmation": landing["remote_confirmation"], "replicated": "local-journal",
++                    "spec_shipped_event": "local"}}, {rid: 0})

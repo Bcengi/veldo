@@ -851,6 +851,15 @@
    ],
    "regions": "The governing decision binding a real signed Telegram settlement writes in the settlement's own transaction (chosen option, decider, time, framing, subject and scope digests, signed for the VELDO-0054 consumers), faithful bindings of a wrong framing, subject or revision named by every consumer, supersession by the current revision, unsupported subject kinds and absent records stopping with nothing written, and inline status, record status or a detached receipt granting no eligibility",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal, possession, edge and decision settlement signatures, the actual protected signer process, the VELDO-0066 Acquirer, VELDO-0065 presenter and VELDO-0068 settlement over a loopback Bot API, the VELDO-0054 Gate, plan, frontier and run lens over a real Git checkout, and a reader in another process. Writes only temporary fixtures."
+  },
+  {
+   "name": "70_veldo_0057_landing",
+   "file": "70_veldo_0057_landing.py",
+   "requires": [
+    "70_veldo_0057_landing"
+   ],
+   "regions": "Exact-tip publication by compare-and-swap of the recorded old remote tip with a moved tip refused and never overwritten, the current authority, approval and exact tested and reviewed subjects re-read at the effect boundary, confirmed, failed and unknown results with no further attempt, and the confirmed-landing receipt with its whole evidence chain committed only after the remote's own answer, then the journal projection, read by the frontier, plan and work readers",
+   "requires_note": "Uses only shared ROOT and expect. Real Git (a scaffolded seed with its own gate, two disposable bare remotes whose pre-receive hooks record every receive, the caller's clone, the executor's publication clone and another pusher's clone), real SQLite store with OpenSSH journal and effect-connection signatures, the VELDO-0028 effect executor process, the VELDO-0051 projection and the installed frontier, plan and work_state readers in another process. Writes only temporary fixtures."
   }
  ]
 }
