@@ -60,7 +60,9 @@ self-approval, and the canonical gate is run by the lead, not recorded here.
   `priority_current`), the unit's own decomposition entry, the first priority record that names it (the
   one that prioritized it), and any field the module does not classify. Every other field is a sibling's
   entry or bookkeeping: the rest of the decomposition and the later priority records, the history, the
-  applied requests, the decomposition revision and digest, the latest priority and the blocks.
+  applied requests, the decomposition revision and digest, the latest priority and the blocks. Blocks being
+  bookkeeping here does not let a ticket taken before a block run after the resume: the resume rewrites the
+  blocker record, so that ticket stays stale by `stale_input:blockers` and the resumed phase needs a fresh decision.
 - **`.veldo/control_eligibility.py`.** `priority_current` is a predicate of every station, answered by
   that module over the unit and backlog records the decision consumed, so selection (the frontier's
   offers and the VELDO-0132 cycle's assignment step), claim, direct execution, build, review,
