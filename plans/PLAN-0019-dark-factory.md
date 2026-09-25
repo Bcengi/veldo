@@ -1636,3 +1636,7 @@ credential field depending on VELDO-0144 and VELDO-0145 and built in the second 
 so "please do BCG-123" works at the end of that stage as the design promises. VELDO-0131's "MCP servers
 and credentials" row no longer carries the form, which is not built twice, and W94 (VELDO-0131) and W44
 (VELDO-0059) depend on VELDO-0159.
+VELDO-0078 has landed and keeps its landed text at `plan_revision: 4` like the other landed
+specifications, so its Notes still say ordinary defects (VELDO-0080) are executable in Release 1; since
+revision 4 moved W65 (VELDO-0080) to Release 2, ordinary defects instead run the default pipeline like
+any other work, after normal shaping, owner admission and priority, and that plan statement governs.
