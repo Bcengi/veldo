@@ -66,7 +66,9 @@ _V130_ROWS = ('install/assets', 'webauthn/stand-in-browser', 'webauthn/independe
               'edge/signer-api-purpose', 'edge/authority-recheck', 'messages/common-intake',
               'decisions/exact-settlement', 'decisions/one-ruling', 'transport/loopback-only',
               'reads/model-set', 'reads/authoritative', 'reads/freshness', 'events/live', 'actions/contract',
-              'actions/workflow-save', 'actions/unauthorized-write')
+              'actions/workflow-save', 'actions/unauthorized-write', 'events/reconcile-past-page',
+              'events/resume-last-event-id', 'events/expiry-named', 'events/published-watermark',
+              'events/reconcile-deferred', 'enrollment/possession-race', 'webauthn/openssl-fixed-path')
 # The kinds each read model serves, as this suite expects them from the owning modules (compared with the
 # published registry, never derived from it).
 _V130_EXPECTED_KINDS = {
@@ -336,7 +338,8 @@ def _v130_checks(base):
                     check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:200]), False)
             return True
 
-    IA, WB, WV, EP, ES, SC, SF, SR, RF, RB, EG, EA, MS, DE, DO, TL, RM, RA, RR, EL, AK, AW, AU = _V130_ROWS
+    (IA, WB, WV, EP, ES, SC, SF, SR, RF, RB, EG, EA, MS, DE, DO, TL, RM, RA, RR, EL, AK, AW, AU,
+     ER, EI, EX, EW, RD, PR, WO) = _V130_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_api.py': ROOT / ".veldo" / "control_api.py",
@@ -351,6 +354,8 @@ def _v130_checks(base):
         'authority_contract.py': ROOT / ".veldo" / "authority_contract.py",
         'control_request_settlement.py': ROOT / ".veldo" / "control_request_settlement.py",
         'control_intake.py': ROOT / ".veldo" / "control_intake.py",
+        'control_client_api.py': ROOT / ".veldo" / "control_client_api.py",
+        'control_event_projection.py': ROOT / ".veldo" / "control_event_projection.py",
     }
     API_MODULES = ('control_api.py', 'control_api_assertion.py', 'control_api_authority.py', 'control_api_credentials.py',
                    'control_api_signer.py', 'control_api_webauthn.py')
@@ -403,8 +408,10 @@ def _v130_checks(base):
     API = _v130_load('v130_api', organs / 'control_api.py') if here else None
     MO = _v130_load('v130_models', organs / 'control_api_models.py') if (organs / 'control_api_models.py').is_file() else None
     WFM = _v130_load('v130_workflow', organs / 'control_workflow.py')
-    # VELDO-0051's publication reads events.py from the repository layout, so it is loaded in place.
-    EVP = _v130_load('v130_publication', ROOT / '.veldo' / 'control_event_projection.py')
+    # VELDO-0051's publication, with the events.py and completion contract beside it.
+    EVP = _v130_load('v130_publication', organs / 'control_event_projection.py')
+    CAm = (_v130_load('v130_client_api', organs / 'control_client_api.py')
+           if (organs / 'control_client_api.py').is_file() else None)
 
     keys, protected, edge_dir = base / 'keys', base / 'protected', base / 'edge'
     for directory in (keys, protected, edge_dir):
@@ -619,7 +626,10 @@ def _v130_checks(base):
                                                                        dispatch_id='dispatch/VELDO-9130/a1'))
     fixture('workflow-cycle:VELDO-9130', 'workflow_cycle', dict(state='waiting', steps=2, position='owner',
                                                                trace=[['groom', 'groomed', 'owner']]))
-    fixture('proof-bundle:VELDO-9130', 'proof_bundle', dict(unit='VELDO-9130', note='a log line kept ' + shaped))
+    # A high-entropy value in no provider's known shape: only the scanner's entropy detector finds it.
+    unshaped = _v130_b64.urlsafe_b64encode(_v130_os.urandom(48)).decode().rstrip('=')
+    fixture('proof-bundle:VELDO-9130', 'proof_bundle', dict(unit='VELDO-9130', note='a log line kept ' + shaped,
+                                                           trail='an opaque value ' + unshaped))
     fixture('gate-observation:VELDO-9130', 'gate_observation', dict(unit='VELDO-9130', signature=secret_key))
     fixture('completion-receipt:VELDO-9130', 'completion_receipt', dict(fact='build_accepted', subject='VELDO-9130'))
     fixture('reservation:worker:VELDO-9130', 'subscription_reservation', dict(kind='worker', account='owner-plan',
@@ -667,9 +677,9 @@ def _v130_checks(base):
         return '/api/v1/domains/%s/%s' % (DOMAIN, model)
 
     def call(method, path, body=None, cookie=None, token=None, origin=_V130_ORIGIN, site='same-origin',
-             ctype='application/json', host=_V130_HOST, raw=None, on=None):
+             ctype='application/json', host=_V130_HOST, raw=None, on=None, extra=None):
         """One request to the API's handler: (status, {header: value}, JSON body)."""
-        headers = {'Host': host}
+        headers = dict(extra or {}, Host=host)
         if method == 'POST':
             for name, value in (('Origin', origin), ('Sec-Fetch-Site', site), ('Content-Type', ctype)):
                 if value is not None:
@@ -1664,6 +1674,10 @@ def _v130_checks(base):
             blob = _v130_json.dumps(answers)
             check(RA, 'no credential value is served: the environment value, the configured key and the token-shaped text',
                   all(v not in blob for v in (secret_env, secret_key, shaped)))
+            check(RA, 'a high-entropy value in no known shape is not served: the scanner\'s entropy detector redacts it',
+                  unshaped not in blob and '[redacted]' in _v130_json.dumps(
+                      next((i for i in (answers['proof'].get('items') or {}).get('proof_bundle', [])
+                            if i['id'] == 'proof-bundle:VELDO-9130'), {}).get('data', {}).get('trail')))
             check(RA, 'no passkey public key or member key is served',
                   all(v not in blob for v in (phone.public_key(), public['owner'], public['api-edge'])))
             tools = next((i for i in (answers['configuration'].get('items') or {}).get('tool_configuration', [])), {})
@@ -1841,6 +1855,289 @@ def _v130_checks(base):
                   and '\nevent: events\ndata: ' in frames[0]
                   and _v130_json.loads(frames[0].split('data: ', 1)[1]).get('cursor') == head()[0]
                   and frames[1] == 'event: closed\ndata: {"reason": "signed_out"}')
+
+        # events/reconcile-past-page: an API more than one feed page (256 records) behind, with a host
+        # revocation among the records it was never told of, reconciles every one on the next hint.
+        with section(ER):
+            gapper = _V130Browser(base / 'browsers', 'owner-gap', -7)
+            enrolled(gapper, 'owner', 'owner gap')
+            _s, gap_cookie, _t = sign_in(gapper)
+            gap_watch = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=gap_cookie)[2]
+            owner_watch = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=owner_cookie)[2]
+            streaming = API is not None and all(isinstance(w, getattr(API, 'Stream', ())) for w in (gap_watch, owner_watch))
+            for watch in ((gap_watch, owner_watch) if streaming else ()):
+                watch.next(0)
+            behind, start = head()[0], getattr(api[0], '_cursor', None)
+            for n in range(150):
+                fixture('v130-gap:a%d' % n, 'v130_gap_marker', {'n': n})
+            revoked_gap = steward_command(None, None, operation='revoke', credential_id=gapper.credential_id)
+            revoked_at = head()[0]
+            for n in range(150):
+                fixture('v130-gap:b%d' % n, 'v130_gap_marker', {'n': n})
+            top = head()[0]
+            check(ER, 'the host revoked the credential in the middle of %d records no hint announced [observed %s at %d]'
+                  % (top - behind, revoked_gap.get('outcome'), revoked_at), revoked_gap.get('outcome') == 'accepted'
+                  and top - behind > 256 and behind < revoked_at < top and isinstance(start, int))
+            reconciled = deliver(head_hint())
+            check(ER, 'the next hint is reconciled: every record after the cursor is followed, page after page, and the '
+                  'cursor is at the head [observed %s]' % reconciled, 'refusal' not in reconciled
+                  and reconciled.get('cursor') == top and getattr(api[0], '_cursor', None) == top
+                  and isinstance(start, int) and reconciled.get('delivered') == top - start and reconciled.get('ended', 0) >= 1)
+            drained = []
+            while streaming:
+                kind, value = gap_watch.next(0)
+                if kind != 'frame':
+                    drained.append((kind, value))
+                    break
+            check(ER, 'the revoked credential\'s session is ended and its open stream closed as revoked [observed %s]'
+                  % drained, drained == [('closed', 'revoked')] and gap_watch not in api[0].streams()
+                  and call('GET', '/api/v1/auth/session', cookie=gap_cookie)[0] == 401)
+            frames = []
+            while streaming:
+                kind, value = owner_watch.next(0)
+                if kind != 'frame':
+                    break
+                frames.append(value)
+            seqs = [e['seq'] for f in frames for e in f.get('events', [])]
+            check(ER, 'the owner\'s open stream gets every missed record in order, one frame per page, to the head '
+                  '[observed %d frames, cursor %s]' % (len(frames), getattr(owner_watch, 'cursor', None)),
+                  streaming and owner_watch.closed is None and owner_watch.cursor == top and len(frames) >= 2
+                  and seqs == list(range(behind + 1, top + 1)))
+            reader = getattr(publication, 'journal', None)
+            page, top_seen = reader(behind, 256) if reader else ([], {})
+            check(ER, 'the publication\'s public journal reader returns one bounded page after a sequence, with the head',
+                  len(page) == 256 and page[0][0] == behind + 1 and top_seen.get('seq') == top)
+            for watch in ((owner_watch,) if streaming else ()):
+                api[0].drop(watch)
+
+        # events/resume-last-event-id: an EventSource reconnecting on the same URL sends the id of the last
+        # frame it received; the stream resumes after it.
+        with section(EI):
+            at = head()[0]
+            resumed = call('GET', EVENTS + '/stream?after=0', cookie=owner_cookie, extra={'Last-Event-ID': str(at - 2)})
+            again = resumed[2]
+            resumable = API is not None and isinstance(again, getattr(API, 'Stream', ()))
+            first = again.next(0) if resumable else (None, None)
+            got = [e['seq'] for e in (first[1] or {}).get('events', [])]
+            check(EI, 'a reconnect with Last-Event-ID resumes after it, not from the URL\'s after=0 [observed %s]' % got[:4],
+                  resumed[0] == 200 and first[0] == 'frame' and got == [at - 1, at] and first[1].get('cursor') == at)
+            bad = call('GET', EVENTS + '/stream?after=0', cookie=owner_cookie, extra={'Last-Event-ID': 'not-a-sequence'})
+            check(EI, 'a Last-Event-ID that is not a sequence is refused invalid_input' + seen(bad),
+                  bad[0] == 400 and refusal(bad) == 'invalid_input:last_event_id')
+            for watch in ((again,) if resumable else ()):
+                api[0].drop(watch)
+
+        # events/expiry-named: a stream whose session expired closes naming the expiry, not as revoked.
+        with section(EX):
+            other = new_api(base / 'api-expiry')
+            _s, lapse_cookie, _t = sign_in(phone, on=other)
+            lapsing = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=lapse_cookie, on=other)[2]
+            lapses = API is not None and isinstance(lapsing, getattr(API, 'Stream', ()))
+            if lapses:
+                lapsing.next(0)
+            deliver(head_hint(), on=other)
+            offset[0] += 31 * 60
+            try:
+                fixture('v130-expiry', 'v130_gap_marker', {'n': 0})
+                closing = deliver(head_hint(), on=other)
+                reason = lapsing.next(0) if lapses else (None, None)
+            finally:
+                offset[0] -= 31 * 60
+            check(EX, 'an idle-expired session\'s open stream closes as session_expired, not revoked [observed %s %s]'
+                  % (closing, reason), lapses and reason == ('closed', 'session_expired') and closing.get('closed') == 1)
+
+        # events/published-watermark: the published events are the publication's own log, never past its
+        # stored watermark (an append can precede its watermark).
+        with section(EW):
+            shelf = base / 'published-root'
+            (shelf / '.veldo').mkdir(parents=True)
+            shelf_publication = EVP.Projection(S, str(db), domain=ids['domain_uuid'], repository=ids['repository_uuid'],
+                                               root=str(shelf))
+            top = head()[0]
+            digest_at = {r['seq']: r['record_digest'] for r in S.export_journal(conn)}
+            within, mark, beyond = top - 3, top - 2, top - 1
+            logged = [{'id': 'v130-published-%d' % seq, 'type': 'spec.shipped', 'producer': EVP.PRODUCER,
+                       'domain': ids['domain_uuid'], 'repository': ids['repository_uuid'], 'journal_seq': seq}
+                      for seq in (within, beyond)]
+            (shelf / '.veldo' / 'events.jsonl').write_text(''.join(_v130_json.dumps(e) + '\n' for e in logged))
+            (shelf / '.veldo' / 'events.watermark.json').write_text(_v130_json.dumps(
+                {'schema': EVP.SCHEMA, 'domain': ids['domain_uuid'], 'repository': ids['repository_uuid'],
+                 'watermark': mark, 'record_digest': digest_at[mark], 'log': '.veldo/events.jsonl'}))
+            shelf_authority = (AUTH.ApiAuthority(S, CM, conn, ids=ids, domain=DOMAIN, edge='api-edge', intake=intake,
+                                                 settlement=settlement, credentials=credentials,
+                                                 **dict(phase2, publication=shelf_publication)) if phase2 else absent)
+            fed = shelf_authority.feed(within - 1, 256) if phase2 else {}
+            listed = {e['seq']: e.get('published') for e in (fed.get('events') or [])}
+            check(EW, 'an event the publication has published at or below its watermark is listed at its record '
+                  '[observed %s]' % listed.get(within), fed.get('ok') is True
+                  and listed.get(within) == ['v130-published-%d' % within])
+            check(EW, 'an event in the log past the stored watermark is not listed as published, and the publication '
+                  'is stale at that watermark [observed %s %s]' % (listed.get(beyond), fed.get('publication')),
+                  listed.get(beyond) == [] and (fed.get('publication') or {}).get('watermark') == mark
+                  and (fed.get('publication') or {}).get('freshness') == 'stale')
+
+        # events/reconcile-deferred: the API process's service authority (control_client_api) in front of a
+        # stand-in service answering from this suite's real judge and naming its instance. A new instance
+        # noticed by a call made inside a delivery must not re-enter it.
+        with section(RD):
+            import queue as _v130_queue
+            rd = {'instance': 'A', 'restart_after': None, 'calls': []}
+            # The store connection belongs to this thread, as the service's belongs to its loop: a call made
+            # on another thread is handed here and answered by serve_calls, one at a time.
+            asked, suite_thread = _v130_queue.Queue(), _v130_threading.current_thread()
+
+            def stand_in(workspace, command, enrollment, verify, sign, host, timeout=30.0):
+                if _v130_threading.current_thread() is not suite_thread:
+                    reply = _v130_queue.Queue()
+                    asked.put((command, reply))
+                    return reply.get(timeout=30)
+                return answer_call(command)
+
+            def serve_calls(worker, seconds=10):
+                until = _v130_time.monotonic() + seconds
+                while worker.is_alive() and _v130_time.monotonic() < until:
+                    try:
+                        command, reply = asked.get(timeout=0.05)
+                    except _v130_queue.Empty:
+                        continue
+                    reply.put(answer_call(command))
+
+            def answer_call(command):
+                name, a = command['call'], command['arguments']
+                rd['calls'].append(name)
+                if name == 'subscribe':
+                    result = dict(authority.hint(), ok=True, reason='subscribed', sequence=0)
+                elif name == 'feed':
+                    result = authority.feed(a['after'], a['limit'])
+                elif name == 'inspect':
+                    result = authority.inspect(a['entity_ids'])
+                elif name == 'events':
+                    result = authority.events(a['principal'], a['after'], a['limit'])
+                else:
+                    return {'accepted': False, 'reason': 'unexpected_call'}
+                result = dict(result, instance=rd['instance'])
+                if name == rd['restart_after']:
+                    rd['instance'], rd['restart_after'] = 'B', None
+                return {'accepted': True, 'result': result}
+            if CAm is not None:
+                CAm.CC.send = stand_in
+            fronted = CAm.ServiceAuthority('/v130-workspace', None, 'v130-host', None) if CAm is not None else absent
+            rd_api = (CAm.API.ControlApi(dict(api_config, state_dir=str(base / 'api-rd')), fronted, signer, clock=clock)
+                      if CAm is not None else absent)
+            fronted.connect(str(base / 'api-rd-hints.sock'), rd_api)
+            fronted.deliver(dict(head_hint(), instance='A', sequence=1))
+            _s, rd_cookie, _t = sign_in(phone, on=rd_api)
+            rd_watch = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=rd_cookie, on=rd_api)[2]
+            watching = hasattr(rd_watch, 'next')
+            if watching:
+                rd_watch.next(0)
+            fixture('v130-rd:1', 'v130_gap_marker', {'n': 1})
+            rd['restart_after'] = 'feed'
+            subscribed = rd['calls'].count('subscribe')
+            outcome, hinted = [], dict(head_hint(), instance='A', sequence=2)
+            runner = _v130_threading.Thread(target=lambda: outcome.append(fronted.deliver(hinted)), daemon=True)
+            runner.start()
+            serve_calls(runner)
+            runner.join(0.1)
+            check(RD, 'a new instance noticed by a call inside a delivery does not deadlock it: the delivery completes '
+                  '[observed %s]' % outcome, not runner.is_alive() and bool(outcome)
+                  and 'refusal' not in (outcome[0] or {}))
+            check(RD, 'the reconcile it makes due runs once, when that delivery ends: one new subscription, to the new '
+                  'instance [observed %s]' % rd['calls'][-6:], not runner.is_alive()
+                  and rd['calls'].count('subscribe') == subscribed + 1 and fronted.instance == 'B')
+            check(RD, 'and the open stream is fed the new record',
+                  watching and rd_watch.next(0)[0] == 'frame' and rd_watch.cursor == head()[0])
+            if not runner.is_alive():
+                fixture('v130-rd:2', 'v130_gap_marker', {'n': 2})
+                subscribed = rd['calls'].count('subscribe')
+                gap = fronted.deliver(dict(head_hint(), instance='B', sequence=3))
+                check(RD, 'a hint whose number skips (hints were lost) makes the API subscribe again and reconcile by '
+                      'itself [observed %s]' % gap, 'refusal' not in (gap or {})
+                      and rd['calls'].count('subscribe') == subscribed + 1 and rd_watch.cursor == head()[0])
+                fixture('v130-rd:3', 'v130_gap_marker', {'n': 3})
+                subscribed = rd['calls'].count('subscribe')
+                steady = fronted.deliver(dict(head_hint(), instance='B', sequence=1))
+                check(RD, 'control: the next hint in order from the same instance subscribes nothing [observed %s]' % steady,
+                      'refusal' not in (steady or {}) and rd['calls'].count('subscribe') == subscribed)
+
+        # enrollment/possession-race: two possession requests racing on one registration id.
+        with section(PR):
+            racer = _V130Browser(base / 'browsers', 'owner-race', -7)
+            begun = call('POST', '/api/v1/auth/registration/begin', {'label': 'racing'})
+            rid = (begun[2] or {}).get('registration_id')
+            racer.user_handle = (begun[2] or {}).get('user_handle')
+            offered = (call('POST', '/api/v1/auth/registration/credential',
+                            dict(racer.create(begun[2]['challenge'], _V130_ORIGIN), registration_id=rid))
+                       if begun[0] == 200 else begun)
+            check(PR, 'a registration reaches its possession ceremony' + seen(offered), offered[0] == 200)
+            proof = racer.get(offered[2]['possession_challenge'], _V130_ORIGIN, _V130_HOST) if offered[0] == 200 else {}
+            body = dict({k: v for k, v in proof.items() if k != 'credential_id'}, registration_id=rid)
+            original = API.W.possession_problems
+            gate = _v130_threading.Barrier(2, timeout=5)
+
+            def held(*args, **kwargs):
+                found = original(*args, **kwargs)
+                try:
+                    gate.wait()
+                except _v130_threading.BrokenBarrierError:
+                    pass
+                return found
+            API.W.possession_problems = held
+            results = []
+            try:
+                racers = [_v130_threading.Thread(target=lambda: results.append(
+                    call('POST', '/api/v1/auth/registration/possession', body))) for _n in range(2)]
+                for one in racers:
+                    one.start()
+                for one in racers:
+                    one.join(20)
+            finally:
+                API.W.possession_problems = original
+            statuses = sorted(r[0] for r in results)
+            refused = [refusal(r) for r in results if r[0] != 200]
+            check(PR, 'one completes the registration and the other is refused by name, never raised [observed %s %s]'
+                  % (statuses, refused), statuses == [200, 409] and refused == ['stale_version:registration_completed'])
+            written = sorted((base / 'api-state' / 'pending').glob('%s.json' % rid))
+            check(PR, 'exactly one pending registration is written', len(written) == 1)
+            for path in written:
+                path.unlink()
+
+        # webauthn/openssl-fixed-path: openssl is resolved once, at an absolute system location, never on PATH.
+        with section(WO):
+            fake_dir = base / 'fake-bin'
+            fake_dir.mkdir()
+            (fake_dir / 'openssl').write_text('#!/bin/sh\nexit 0\n')
+            _v130_os.chmod(str(fake_dir / 'openssl'), 0o700)
+            saved_path = _v130_os.environ.get('PATH', '')
+            _v130_os.environ['PATH'] = str(fake_dir) + _v130_os.pathsep + saved_path
+            try:
+                WP = _v130_load('v130_webauthn_path', organs / 'control_api_webauthn.py')
+                resolved = WP.openssl_path()
+                forged = WP.openssl_verifies(-7, phone.der, b'v130 message', b'not a signature', base / 'verify-state')
+            finally:
+                _v130_os.environ['PATH'] = saved_path
+            check(WO, 'openssl is found at an absolute system location, never through PATH: a stand-in that accepts '
+                  'everything, first on PATH, is not run [observed %s %s]' % (resolved, forged),
+                  isinstance(resolved, str) and _v130_os.path.isabs(resolved) and not resolved.startswith(str(fake_dir))
+                  and forged is False)
+            held_w = API.W
+            kept = (getattr(held_w, 'OPENSSL_LOCATIONS', None), list(getattr(held_w, '_resolved', [])))
+            # The browser stand-in signs with openssl first; only the API's verification runs without it.
+            issued = call('POST', '/api/v1/auth/challenge', {})
+            signed_in = phone.get(issued[2]['challenge'], _V130_ORIGIN, _V130_HOST) if issued[0] == 200 else {}
+            _v130_os.environ['PATH'] = str(base / 'no-such-bin')
+            try:
+                if kept[0] is not None:
+                    held_w.OPENSSL_LOCATIONS = (str(base / 'no-such-bin' / 'openssl'),)
+                    held_w._resolved[:] = []
+                without = call('POST', '/api/v1/auth/sign-in', signed_in)
+            finally:
+                _v130_os.environ['PATH'] = saved_path
+                if kept[0] is not None:
+                    held_w.OPENSSL_LOCATIONS = kept[0]
+                    held_w._resolved[:] = kept[1]
+            check(WO, 'with no openssl at those locations a sign-in is unavailable_service, never a failed signature'
+                  + seen(without), without[0] == 503 and refusal(without) == 'unavailable_service:openssl')
 
         # actions/contract: the UI action contract against the criterion, the routes and the authority's commands.
         with section(AK):
@@ -2026,7 +2323,8 @@ def _v130_checks(base):
 # its authority is the service socket. The Telegram channel stays inert (never activated), so no Bot API
 # exchange is made; the Bot API stand-in only answers the ingress's construction.
 _V130_SERVICE_ROWS = ('service/install', 'service/socket-path', 'service/edge-signed-requests',
-                      'service/host-revocation-closes-stream', 'service/in-process-refused')
+                      'service/host-revocation-closes-stream', 'service/in-process-refused',
+                      'service/restart-reconciles', 'service/down-at-registration')
 
 
 def _v130_service_checks(base):
@@ -2055,7 +2353,7 @@ def _v130_service_checks(base):
                     check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:300]), False)
             return True
 
-    SI, SP, SE, SR, SN = _V130_SERVICE_ROWS
+    SI, SP, SE, SR, SN, SX, SD = _V130_SERVICE_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_service.py': ROOT / ".veldo" / "control_service.py",
@@ -2480,6 +2778,38 @@ def _v130_service_checks(base):
             check(SR, 'its session is ended and the other credential\'s session and stream stay open [%s %s]'
                   % (after[0], kept[0]), after[0] == 401 and kept[0] == 200 and stream2.closed is None)
 
+        # service/restart-reconciles: the service restarts while the API has only streams open and makes no
+        # request; the new instance wakes the API, which subscribes again by itself, and a host revocation
+        # committed after the restart still closes the open stream.
+        with section(SX):
+            tablet = _V130Browser(base / 'browsers', 'svc-tablet', -7)
+            made = enroll(tablet, 'tablet')
+            cookie3, _token3 = sign_in(tablet)
+            _st3, _h3, stream3 = call('GET', '/api/v1/domains/%s/events/stream' % DOMAIN, None, cookie3)
+            watching = hasattr(stream3, 'next')
+            check(SX, 'a third credential is enrolled and holds an open stream [%s]' % made.get('refused'),
+                  (made.get('result') or {}).get('ok') is True and watching)
+            instance_before = service_status().get('instance')
+            CS.stop(unit, manager)
+            restarted = CS.start(unit, manager)
+            instance_after = service_status().get('instance')
+            resubscribed = wait(lambda: opened is not None and getattr(opened.authority, 'instance', None) == instance_after, 10)
+            check(SX, 'the service restarted as a new instance and the API subscribed to it by itself, with no request '
+                  'of its own [observed %s -> %s, API %s]' % (instance_before, instance_after,
+                                                              getattr(getattr(opened, 'authority', None), 'instance', None)),
+                  restarted.get('ActiveState') == 'active' and bool(instance_after) and instance_after != instance_before
+                  and bool(resubscribed))
+            mark = head()
+            revoked3 = steward('revoke', credential_id=tablet.credential_id)
+            closed3 = wait(lambda: watching and stream3.closed is not None, 10)
+            check(SX, 'a host revocation the new instance commits closes the open stream as revoked, nothing passed by '
+                  'this suite [observed %s %s]' % ((revoked3.get('result') or {}).get('reason'),
+                                                   stream3.closed if watching else None),
+                  (revoked3.get('result') or {}).get('ok') is True and head() > mark and bool(closed3)
+                  and stream3.closed == 'revoked')
+            check(SX, 'the API\'s cursor is at the head [observed %s of %s]' % (getattr(api, '_cursor', None), head()),
+                  wait(lambda: getattr(api, '_cursor', None) == head(), 10))
+
         # service/in-process-refused: this process, the API process, cannot run the judge on the store itself.
         with section(SN):
             # Loaded from the installed executable, so every ownership declaration names the code the
@@ -2520,6 +2850,29 @@ def _v130_service_checks(base):
             through = opened.authority.apply(packet) if opened is not None else {}
             check(SN, 'control: the same packet sent through the service socket is accepted and committed [%s]'
                   % through.get('reason'), through.get('ok') is True and head() > mark)
+
+        # service/down-at-registration: with a pending registration waiting and the authority service down,
+        # a registration is answered unavailable_service, never a dropped connection.
+        with section(SD):
+            laggard = _V130Browser(base / 'browsers', 'svc-laggard', -7)
+            begun = call('POST', '/api/v1/auth/registration/begin', {'label': 'laggard'})
+            proved = begun
+            if begun[0] == 200:
+                laggard.user_handle = begun[2]['user_handle']
+                offered = call('POST', '/api/v1/auth/registration/credential',
+                               dict(laggard.create(begun[2]['challenge'], _V130_ORIGIN),
+                                    registration_id=begun[2]['registration_id']))
+                proved = offered
+                if offered[0] == 200:
+                    proof = laggard.get(offered[2]['possession_challenge'], _V130_ORIGIN, _V130_HOST)
+                    proved = call('POST', '/api/v1/auth/registration/possession',
+                                  dict({k: v for k, v in proof.items() if k != 'credential_id'},
+                                       registration_id=begun[2]['registration_id']))
+            check(SD, 'a registration waits for the steward [%s %s]' % (proved[0], refusal(proved)), proved[0] == 200)
+            CS.stop(unit, manager)
+            down = call('POST', '/api/v1/auth/registration/begin', {'label': 'while down'})
+            check(SD, 'with the service down the next registration is 503 unavailable_service [observed %s %s]'
+                  % (down[0], refusal(down)), down[0] == 503 and str(refusal(down)).startswith('unavailable_service'))
     finally:
         for fd in spare:
             with contextlib.suppress(OSError):
