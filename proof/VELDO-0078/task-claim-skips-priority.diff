@@ -1,6 +1,6 @@
 --- a/.veldo/tasks.py
 +++ b/.veldo/tasks.py
-@@ -413 +413,2 @@
--        problems = _factory("control_backlog").executable_problems(gate.conn, task_id)
-+        problems = [p for p in _factory("control_backlog").executable_problems(gate.conn, task_id)
-+                    if p != "missing_authority:priority"]  # defect: admitted, unprioritized work is claimed
+@@ -168 +168,2 @@
+-    return gate.decide("claim", unit)["refusals"]
++    return [p for p in gate.decide("claim", unit)["refusals"]
++            if p != "missing_authority:priority"]  # defect: admitted, unprioritized work is claimed

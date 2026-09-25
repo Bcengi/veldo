@@ -1,5 +1,5 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -590 +590 @@
+@@ -614 +614 @@
 -        if req.get('owner') != owner or settlement['data'].get('principals') != [owner]:
 +        if False:  # defect: any member's settled answer admits and prioritizes

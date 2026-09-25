@@ -1,5 +1,6 @@
---- a/.veldo/frontier.py
-+++ b/.veldo/frontier.py
-@@ -587 +587 @@
--            unready = _executable(gate, sid)
-+            unready = []  # defect: the frontier offers work that is not prioritized
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -149 +149,2 @@
+-STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', PRIORITY_PREDICATE) + p))
++STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + (() if s == 'selection' else (PRIORITY_PREDICATE,))
++                                             + p))  # defect: selection offers and assigns unprioritized work
