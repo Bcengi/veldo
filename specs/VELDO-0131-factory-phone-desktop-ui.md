@@ -162,7 +162,7 @@ source of state and mutations. A phone is not a reduced read-only mode.
 | Objectives and projects | Searchable list, objective evidence/status and project detail; AI chat message box alongside | Stacked project cards and full-width objective detail; persistent accessible message action and chat sheet |
 | Backlog and nested units | TanStack Table with expandable specification/unit hierarchy, priority and blockers | Compact cards/rows with expand controls and a detail sheet; reorder/priority actions usable by touch without drag-only requirements |
 | Workers per machine | Linux/Mac groups with capability, activity, cap and stop controls | Machine sections with worker cards and visible host labels; inline stop confirmation/result |
-| Live agent run | The run's live terminal of VELDO-0141 AC3, built first by VELDO-0145: every event of the execution record in order, tool calls with inputs and results, command output in monospace, edits as Monaco diffs, errors marked, follow mode and search, beside a pipeline strip showing the unit's station | The same terminal full width, with follow mode, search and tap-open tool calls; the pipeline strip stays visible while reading; never a summary in place of the record |
+| Live agent run | The run's live terminal, built first by VELDO-0145 AC2 over the record route of VELDO-0141: every event of the execution record in order, tool calls with inputs and results, command output in monospace, edits as Monaco diffs, errors marked, follow mode and search, beside a pipeline strip showing the unit's station | The same terminal full width, with follow mode, search and tap-open tool calls; the pipeline strip stays visible while reading; never a summary in place of the record |
 | Pending decisions | Inbox plus exact shown question, choices, rationale and inline answer | Full-width decision cards, readable presentation and inline choices/rationale; stale-answer feedback stays beside the action |
 | Gate and review results | Check table, findings, proof links and Monaco source/diff panes | Check/finding cards with navigable proof; Monaco code/diff view supports wrapping and single-pane old/new selection |
 | Subscription usage over time (spend view) | Chart.js via react-chartjs-2 time series in invocation/time/CLI-reported token or message units, with provider/account/project/run breakdown, each account's rate-limit windows, reset times and active runs, "no account until" the earliest reset, and unknown usage; no invented per-call price | Readable time range and summary, touch-selectable points and a compact per-account breakdown with reset times; unknown exposure never shown as zero |
@@ -184,8 +184,8 @@ installation, adoption, migration and rollback Release 4.
 
 2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
 (docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), sections 3(e), 5(e), 7(e)
-and 8(e). The screen contract's "Live agent run" row is replaced by the live terminal of VELDO-0141
-AC3, which VELDO-0145 builds first; it gains an "MCP servers and credentials" row and a read-only
+and 8(e). The screen contract's "Live agent run" row is replaced by the live terminal that VELDO-0145
+AC2 builds first over VELDO-0141's record route; it gains an "MCP servers and credentials" row and a read-only
 "Repositories and identities" row; and the usage row adds the per-account breakdown. depends_on adds
 VELDO-0141 to VELDO-0145, which own those rows. A What the reviewer judges section is added. Status
 unchanged.

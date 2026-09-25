@@ -60,7 +60,7 @@ acceptance_criteria:
     text: >
       Claim: The run screen is a live terminal of the run's execution record, with every event in the
       order the engine produced it, never a summary. Set and completeness: Follow a real worker run
-      through VELDO-0141's record route while it writes and after it ends: every line in sequence, tool
+      through VELDO-0141's record route (its AC3 serves every line) while it writes and after it ends: every line in sequence, tool
       calls with their inputs and results, command output in monospace, edits as diffs in Monaco, errors
       marked, a follow mode and search, beside a pipeline strip showing the unit's station; drop the
       connection mid-run and require the view to resume from its cursor with no line missing or
@@ -111,8 +111,8 @@ W105 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 st
 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md) (owner
 Telegram 29162) split this slice out of VELDO-0131 so it comes in the first stage of the critical path,
 right after the execution record (VELDO-0141). VELDO-0131 keeps every other screen and its screen
-contract, whose "Live agent run" row is now the terminal of VELDO-0141 AC3 that this slice builds.
-The stack and provenance rules are C16 of the plan.
+contract, whose "Live agent run" row is now this slice's run screen (AC2), over the record route
+VELDO-0141 AC2 and AC3 serve. The stack and provenance rules are C16 of the plan.
 
 ## Out of scope
 
@@ -143,3 +143,6 @@ streams from a cursor on the receiver's hint and never serves a line before reda
 
 2026-09-25: written as a draft for PLAN-0019 revision 4 from the approved operating-model design
 (Telegram 29162), section 7(e). Draft; the owner decides readiness.
+
+2026-09-25, PLAN-0019 revision 4 review: AC2 owns the live terminal screen outright; VELDO-0141 AC3 is
+now the record route's contract that this screen reads, so VELDO-0141 no longer waits on this build.

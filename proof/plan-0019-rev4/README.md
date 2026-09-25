@@ -98,8 +98,10 @@ standalone and not plan items; those edges stay in the specifications.
 The merge of main into this branch gave it `lane: planned`, `plan: PLAN-0019`, `work: W100` and
 `plan_revision: 4`, and its Context names W100 of revision 4, so the plan's mirroring check holds.
 
-**VELDO-0141 AC3 and VELDO-0145.** VELDO-0141 AC3 is the screen contract that replaces VELDO-0131's
-row; VELDO-0145 AC2 builds and drives it.
+**VELDO-0141 AC3 and VELDO-0145.** VELDO-0145 depends on VELDO-0141, so VELDO-0141 cannot wait on
+VELDO-0145's build. VELDO-0141 AC3 is the record route's contract for the live view (every line in
+sequence as the engine emitted it, from any cursor, with the committed count and digest after the run),
+and VELDO-0145 AC2 owns the screen that renders it.
 
 ## Validation
 

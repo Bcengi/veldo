@@ -1017,7 +1017,7 @@ work:
     stage: 3
   - item: W101
     spec: VELDO-0141
-    title: Every worker run's full live execution record, and the UI's live terminal view of it
+    title: Every worker run's full live execution record, served for the UI's live terminal view
     feature_refs: [F4, F9]
     depends_on: [VELDO-0039, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0130]
     order: 15141
