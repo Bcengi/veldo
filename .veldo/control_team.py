@@ -265,7 +265,7 @@ def amendment_brief(record):
              % (proposal['revision'], record['project'], proposal['base_revision'])]
     for role in REQUIRED_ROLES:
         spec = proposal['team']['roles'][role]
-        lines.append('%s: %s; engines %s; budget %s; may propose %s; separate from %s.' % (
+        lines.append('The %s role is %s; engines %s; budget %s; may propose %s; separate from %s.' % (
             role, ', '.join(spec['workers']), ', '.join(spec['engines']),
             ', '.join('%s %s' % (u, spec['budget'][u]) for u in sorted(spec['budget'])),
             ', '.join(spec['proposal_permissions']) or 'nothing',
