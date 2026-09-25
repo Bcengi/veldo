@@ -5017,7 +5017,7 @@ def cases():
     api('user-handle-unchecked', WA130,
         "    if assertion.get('user_handle') != credential.get('user_handle'):",
         "    if False:  # defect: any user handle", ['webauthn/stand-in-browser'])
-    api('signature-unverified', WA130, "        return done.returncode == 0",
+    api('webauthn-signature-unverified', WA130, "        return done.returncode == 0",
         "        return True  # defect: the signature is not checked",
         ['webauthn/stand-in-browser', 'webauthn/independent-vectors', 'enrollment/steward-signed'])
     api('possession-not-rechecked', CR130,

@@ -6195,7 +6195,7 @@
     "VELDO-0130 enrollment/steward-signed detail: the steward's signed enrollment of the owner's own passkey is accepted [observed credential_in_use]",
     "VELDO-0130 webauthn/openssl-fixed-path detail: openssl is found at an absolute system location, never through PATH: a stand-in that accepts everything, first on PATH, is not run [observed /usr/bin/openssl True]"
    ],
-   "diff": "proof/VELDO-0130/signature-unverified.diff",
+   "diff": "proof/VELDO-0130/webauthn-signature-unverified.diff",
    "failed_rows": [
     "VELDO-0130 webauthn/stand-in-browser",
     "VELDO-0130 webauthn/independent-vectors",
@@ -6205,7 +6205,7 @@
    ],
    "module": ".veldo/control_api_webauthn.py",
    "mutant_sha256": "f310fe45973cc17d49284f30ad57ccb530ad345ab75543100355d53c6f16d65f",
-   "name": "signature-unverified",
+   "name": "webauthn-signature-unverified",
    "named_row_red": true,
    "named_rows": [
     "webauthn/stand-in-browser",
@@ -18969,7 +18969,7 @@
    "possession-unclaimed"
   ],
   "enrollment/steward-signed": [
-   "signature-unverified",
+   "webauthn-signature-unverified",
    "possession-not-rechecked",
    "steward-role-unchecked",
    "steward-scope-unchecked",
@@ -19097,7 +19097,7 @@
    "origin-not-compared",
    "cross-origin-accepted",
    "rp-hash-unchecked",
-   "signature-unverified"
+   "webauthn-signature-unverified"
   ],
   "webauthn/openssl-fixed-path": [
    "openssl-from-path",
@@ -19112,7 +19112,7 @@
    "ceremony-type-unchecked",
    "challenge-unchecked",
    "user-handle-unchecked",
-   "signature-unverified"
+   "webauthn-signature-unverified"
   ]
  },
  "noop": {
