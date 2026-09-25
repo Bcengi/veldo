@@ -23,6 +23,15 @@ footprint:
   - "engine/.veldo/control_service_channel*.py"
   - ".veldo/control_service_channel*.py"
   - "packs/*/.veldo/control_service_channel*.py"
+  - "engine/.veldo/control_membership*.py"
+  - ".veldo/control_membership*.py"
+  - "packs/*/.veldo/control_membership*.py"
+  - "engine/.veldo/control_factory_setup*.py"
+  - ".veldo/control_factory_setup*.py"
+  - "packs/*/.veldo/control_factory_setup*.py"
+  - "engine/.veldo/control_service*.py"
+  - ".veldo/control_service*.py"
+  - "packs/*/.veldo/control_service*.py"
   - "bin/veldo"
   - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0140_*.py"
@@ -113,3 +122,7 @@ move request and presentation version to the assertion check the signer already 
 readiness.
 
 2026-09-25: the owner marked this specification ready on Telegram (29111 asked, 29112 "Yes").
+
+2026-09-25: the builder added control_membership (VELDO-0025's delegated-use predicate and grant, which
+compared the versions too), control_factory_setup (VELDO-0139's grant, now standing) and control_service
+(the one route that hands the owner's delegation command to the running channel) to the footprint.

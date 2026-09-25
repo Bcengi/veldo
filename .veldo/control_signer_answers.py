@@ -21,11 +21,21 @@ chat, and the assertion's attribution is exactly that evidence's fields and iden
 one principal whose VELDO-0064 enrollment is that sender's chat, a current person member; the
 presentation the assertion names is a published VELDO-0065 receipt of the assertion's request and
 version, with its digest and version, that the evidence replies to as published, shown to that actor,
-and the assertion's scope is that request's; and the delegation the request names is current (its
-version is the store's, not superseded, not revoked) and binds that principal, channel, edge key,
-assertion kind, request version and presentation version, covers the scope and has not expired. The
-membership organ's delegated-use predicate then judges the same delegation conjunctively. Only then is
-the answer signed, with the edge key from the key directory the signer's fixed configuration names.
+and the assertion's scope is that request's; the request is still at the version the assertion answers
+and that presentation is still the request's current one (a revised request or a replaced presentation
+refuses by name: request-mismatch, presentation-mismatch); and the delegation the request names is
+current (its version is the store's, not superseded, not revoked) and binds that principal, channel,
+edge key and assertion kind, covers the scope and has not expired. The membership organ's delegated-use
+predicate then judges the same delegation conjunctively. Only then is the answer signed, with the edge
+key from the key directory the signer's fixed configuration names.
+
+A STANDING DELEGATION (VELDO-0140). The owner's delegation to the edge names no request or presentation
+version (control_membership.standing): one delegation signs his answer to whatever request version and
+presentation is current, because the binding to the exact request, presentation and evidence is judged
+above, per assertion, against the committed state. A pinned VELDO-0067 delegation (both versions
+integers) still covers exactly its versions. The owner renews it before it expires by superseding it
+with his own signed command (veldo channel delegate, applied by the running service); `standing_status`
+names what the service tells him when it is missing, expired or about to expire.
 
 THE SIGNATURE. The signature is over `control_store.canonical_bytes(assertion)` in the authority
 contract's command namespace, because that is exactly what the VELDO-0065 answer acceptance verifies
@@ -60,6 +70,10 @@ V = organ('control_channel_presentation')
 EV = organ('control_channel_attribution')
 P = organ('control_channel_projection')
 OPERATION = 'sign_answer'
+# The request an answer names is an inbox assignment (control_assignment.ENTITY_KIND).
+REQUEST_KIND = 'assignment'
+# The owner is told to renew his standing delegation this long before it expires (VELDO-0140).
+RENEW_NOTICE_SECONDS = 7 * 86400
 REQUEST_FIELDS = ('operation', 'channel', 'edge_key_id', 'delegation_id', 'delegation_version', 'assertion')
 IDS = ('domain_uuid', 'repository_uuid', 'store_uuid')
 # The canonical Telegram answer: VELDO-0065's canonical_answer, with VELDO-0066's attributed principal
@@ -217,6 +231,13 @@ def _judge(state, config, request, identity, entry, now, diagnostic):
     if (receipt['brief_digest'] != a['presentation_digest'] or receipt['presentation_version'] != a['presentation_version']
             or receipt['channel'] != a['channel']):
         raise Refused('presentation-mismatch', 'the assertion does not name the presentation as published')
+    asked = state['entities'].get(a['request_id']) or {}
+    versions[a['request_id']] = asked.get('version')
+    if asked.get('kind') != REQUEST_KIND or (asked.get('data') or {}).get('request_version') != a['request_version']:
+        raise Refused('request-mismatch', 'the request is no longer at the version the assertion answers')
+    head = state['entities'].get(V.head_id(a['request_id'])) or {}
+    if head.get('kind') != V.HEAD_KIND or (head.get('data') or {}).get('current') != a['presentation_id']:
+        raise Refused('presentation-mismatch', 'the presentation is no longer the request\'s current one')
     if (f['chat_id'] != receipt['chat_id'] or f['reply_chat_id'] != receipt['chat_id']
             or f['reply_to_message_id'] not in (receipt.get('message_ids') or [])
             or EV.replied_problems(receipt, message.get('reply_to_message') or {}, record['bot_id'])):
@@ -246,9 +267,9 @@ def _judge(state, config, request, identity, entry, now, diagnostic):
         raise Refused('edge-mismatch', 'the delegation binds another edge key')
     if a['assertion_kind'] not in (d.get('assertion_kinds') or []):
         raise Refused('forbidden-purpose', 'the delegation does not permit this assertion kind')
-    if d.get('request_version') != a['request_version']:
+    if not CM.standing(d) and d.get('request_version') != a['request_version']:
         raise Refused('request-mismatch', 'the delegation binds another request version')
-    if d.get('presentation_version') != a['presentation_version']:
+    if not CM.standing(d) and d.get('presentation_version') != a['presentation_version']:
         raise Refused('presentation-mismatch', 'the delegation binds another presentation version')
     if not CM.scope_covers(d.get('authority_scope'), a['authority_scope']):
         raise Refused('scope-refused', 'the delegation does not cover the scope')
@@ -313,17 +334,33 @@ def issue(state, config, request, challenge, identity, authentication, now, cano
 
 def delegation_for(state, assertion, identity, now):
     """The id of the one current delegation of the assertion's principal for its channel, this edge key,
-    its kind, request version, presentation version and scope, or None (the signer then refuses)."""
+    its kind and scope, standing or pinned to the assertion's request and presentation version, or None
+    (the signer then refuses)."""
     a = assertion if isinstance(assertion, dict) else {}
     found = [d['id'] for d in state['delegations']
              if d.get('principal') == a.get('principal') and d.get('channel') == a.get('channel')
              and d.get('edge_key_id') == identity and d.get('superseded_by') is None and d.get('revoked_at') is None
              and _number(d.get('expires_at')) and d['expires_at'] > now
              and a.get('assertion_kind') in (d.get('assertion_kinds') or [])
-             and d.get('request_version') == a.get('request_version')
-             and d.get('presentation_version') == a.get('presentation_version')
+             and (CM.standing(d) or (d.get('request_version') == a.get('request_version')
+                                     and d.get('presentation_version') == a.get('presentation_version')))
              and CM.scope_covers(d.get('authority_scope'), a.get('authority_scope'))]
     return found[0] if len(found) == 1 else None
+
+
+def standing_status(state, principal, channel, identity, now, notice=RENEW_NOTICE_SECONDS):
+    """What the owner is told about his standing delegation to this edge: {'status', 'delegation_id',
+    'expires_at'} with status 'current', 'expiring' (it expires within `notice` seconds), 'expired' or
+    'none' (he holds no standing delegation that is neither superseded nor revoked). Read only."""
+    held = [d for d in state['delegations']
+            if d.get('principal') == principal and d.get('channel') == channel and d.get('edge_key_id') == identity
+            and CM.standing(d) and d.get('superseded_by') is None
+            and (d.get('revoked_at') is None or d['revoked_at'] > now) and _number(d.get('expires_at'))]
+    if not held:
+        return {'status': 'none', 'delegation_id': None, 'expires_at': None}
+    d = max(held, key=lambda x: (x['expires_at'], x['id']))
+    status = ('expired' if d['expires_at'] <= now else 'expiring' if d['expires_at'] - now <= notice else 'current')
+    return {'status': status, 'delegation_id': d['id'], 'expires_at': d['expires_at']}
 
 
 class EdgeSigner:
