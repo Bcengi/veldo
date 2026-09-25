@@ -103,7 +103,7 @@ flowchart LR
   settle ==> store
   loop ==> lg
   loop ==> rcv
-  rcv -.->|run ended| loop
+  rcv -.->|launch pipe, run ended| loop
   rcv ==> wl
   rcv ==>|SSH, secrets frame| wrap ==> wm
   wm -.->|relay| svc
@@ -214,7 +214,7 @@ ordinary server also works for Codex.
 | environment | Name to value, where a value is a literal or a credential reference |
 | headers | For http servers, name to credential reference |
 | hosts | Hosts the server can run on (Linux, Mac) |
-| read only | Set by the owner when no tool of the server changes anything outside the run (section 8) |
+| read-only tools | The server's tools the owner marks as changing nothing outside the run, such as Jira reads (section 8) |
 
 **A credential** has two halves. The value lives only in the OS keystore of the authority host. The
 store keeps a `credential` record with id, label, reference, set at and set by, and nothing else. On
@@ -246,7 +246,8 @@ the packet the receiver writes afterward becomes the engine's standard input and
 contract the journal records, so neither can carry a secret. A Mac run therefore gets a **secrets
 frame**: after the release and before the wrapper execs, the receiver writes one frame over the same SSH
 channel holding the resolved values; the wrapper reads exactly that frame, writes the Mac run's private
-file (the same layout, mode 0600 in a 0700 directory), and only then execs. The frame is never part of
+file (the same layout, mode 0600 in a 0700 directory), and only then execs. Because the wrapper becomes
+the engine, the receiver removes that directory over SSH when the run ends. The frame is never part of
 the packet, the contract or the journal, which records only the credential ids delivered. Nothing is
 written to the Mac's keychain. A locked or unreachable keystore, or a reference that does not resolve,
 refuses the launch by name (`credential_unavailable:<id>`); the run never starts without the server.
@@ -257,9 +258,12 @@ exact values in every record line before the pattern and entropy scanner runs (s
 **The honest boundary.** A worker's tools run as the same OS user as its MCP servers, so in the MVP a
 worker that tries can read the credentials its own servers use, from its generated configuration or
 its environment, except where section 6's per-engine sandbox denies those paths. Beyond that, the
-worker's environment is stripped of `SSH_AUTH_SOCK`, `SSH_AGENT_PID`, `DBUS_SESSION_BUS_ADDRESS`,
-`GH_TOKEN` and `GITHUB_TOKEN`, and its `XDG_RUNTIME_DIR` points at the run's private directory so the
-session bus fallback path finds nothing; the receiver builds it today from its own whole environment.
+trusted wrapper strips `SSH_AUTH_SOCK`, `SSH_AGENT_PID`, `DBUS_SESSION_BUS_ADDRESS`, `GH_TOKEN` and
+`GITHUB_TOKEN` from the engine's environment just before it execs the engine, so `systemd-run` and
+`systemctl` keep the receiver's environment and still reach the user manager; the engine's
+`XDG_RUNTIME_DIR` points at an empty directory of its own, never the one holding the generated
+credentials, so the session bus fallback path finds nothing. Today the receiver passes its whole
+environment through.
 That removes the accidental routes to the keystore and the SSH agent, not the deliberate ones: the
 keyring daemon is an unconfined process of the owner's account that serves every item over D-Bus, and
 Landlock custody is not a defense against such a process. So a worker that tries can still reach the
@@ -347,8 +351,9 @@ repository, so proof, gate, review and landing apply the same way.
 service, the one scheduling instance (VELDO-0047). The Runner prepares each dispatch and starts the
 launch receiver as a separate process, as today. The loop runs one pass on three wake sources: every
 packet or channel pass that advanced the journal (the point where the service already sends its hint);
-a **run-ended packet** that the receiver sends to the service socket right after it commits a run's
-termination, naming the dispatch; and a timer set to the earliest account reset a waiting unit needs. A
+the **end of a run**, seen on the launch receiver's output pipe, which the Runner already owns and which
+is registered in the service loop's poll set: the receiver reporting `exited` or `unknown`, or end of
+file when the receiver itself dies, which records `outcome_unknown` and frees the account slot; and a timer set to the earliest account reset a waiting unit needs. A
 pass starts a PM cycle for any project with new relevant input (one cycle per project with one bounded
 follow-up, VELDO-0088 AC3), offers each assigned eligible unit to the Runner with a selected host and
 account (section 8), and offers the next station of every unit whose run ended. Nothing polls.
@@ -362,9 +367,10 @@ reference. Amend VELDO-0088 AC1 so its cycles run the default pipeline, its mode
 through the Runner, and one coordination run may also write the requirements for single-unit work; its
 Notes so the authority service runs the cycle scheduler. Add **VELDO-0129 AC4**: *the Runner and factory
 loop run inside the authority service; a pass runs on each journal-advancing packet or pass, on each
-run-ended packet from the receiver and on account reset timers; it offers every assigned eligible unit
+run's end seen on the Runner's launch pipe, including a receiver that died, and on account reset timers; it offers every assigned eligible unit
 and every next station, and stops offering a paused project's units; nothing polls.* Its falsifier:
-drop the run-ended packet, and the review-offered row must fail. Amend VELDO-0079 and VELDO-0077 so an
+drop the launch pipe from the poll set, and the review-offered row must fail; a receiver killed
+mid-run must still wake the loop and free its account slot. Amend VELDO-0079 and VELDO-0077 so an
 objective proposed from the owner's own message is accepted and admitted at default priority unless the
 PM raises a question. The plan moves VELDO-0092 to Release 2.
 
@@ -427,18 +433,22 @@ whose owner is not the identity's owner refuses. The identity is always recorded
 | enrollment | Digest of its VELDO-0029 binding |
 | state | `provisioning`, `active` or `failed` with a named reason |
 
-**The factory project.** Every factory has one project named `factory`, bound to the Veldo repository
-it was installed from, whose team has a PM role for requests that are not yet any project's. Intake
+**The factory project.** Every factory has one project named `factory`, bound to a small repository of
+its own that setup creates under the factory's state root and that holds only that project's team
+configuration, so no repository ever carries two projects; its team has a PM role for requests that are
+not yet any project's. Intake
 never selects it as a default or as an only candidate.
 
 **Creating one from chat.** The owner writes, for example, "start a new personal project called
-tidepool". Intake recognizes a new-project request when the text contains the words "new project", and
+tidepool". Intake recognizes a new-project request when the text contains the word "new" and the word "project"
+or "repository", each as a whole word, matched the way named projects are matched, and
 every "which project?" question also offers "a new project" as an answer. Either way the request goes to
 the factory project as an inbox proposal with no intake question, and the loop starts its PM cycle. The
 factory PM run prepares one project proposal from his words: the name, the identity (asked in the same
 request if he did not say), the directory, the remote name and visibility, the first objective, the
 default team and pipeline, and the coordination budget. His one answer, a yes or a correction, settles
-the project, accepts and admits the first objective, and nothing else is asked. On the settlement the
+the project, accepts and admits the first objective, and nothing else is asked. When his message
+already names the project and the identity, the message is that answer and nothing is asked at all. On the settlement the
 repository provisioner, a registered protected effect (VELDO-0028), runs these steps in order, each
 recorded, stopping by name at the first failure.
 
@@ -492,8 +502,9 @@ remote-owner refusal. New **VELDO-0143**: *A repository the owner asks for in ch
 under his named identity, taken on by the running factory without a restart and bound to a new project,
 on his one answer.* Its criteria cover the factory project and the new-project route, creation only from
 a settled answer, the scaffold commit on adoption, adoption without reinstallation, and activation with
-the first objective admitted. Amend VELDO-0126 AC1: a new-project request is never routed to an only
-candidate and goes to the factory project with no intake question, and the factory project is never a
+the first objective admitted. Amend VELDO-0126 AC1: a new-project request (the whole words "new" and "project" or "repository") is
+never routed to an only candidate and goes to the factory project with no intake question; every
+"which project?" question offers "a new project" as an answer; and the factory project is never a
 default. Amend VELDO-0076 AC1: the execution repository is any repository adopted in this domain, and
 activation may be applied from the owner's settled answer. VELDO-0131 gains a read-only "Repositories
 and identities" screen row.
@@ -532,7 +543,7 @@ each account profile supplies only the login and the same role behaves the same 
 | MCP servers | The `strict-mcp-config` option with a generated file through the `mcp-config` option | Generated `mcp_servers` configuration |
 | Native tools | The tools list and allowed and disallowed tool lists | Sandbox mode and feature configuration |
 | Skills | The `disable-slash-commands` option when none are listed, else a generated plugin directory | The skills configuration |
-| Instruction files | `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, listed files through the `append-system-prompt-file` option | `project_doc_max_bytes` at zero, listed files through developer instructions |
+| Instruction files | `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, listed files joined into one generated file for the `append-system-prompt-file` option | `project_doc_max_bytes` at zero, listed files through developer instructions |
 | Auto-memory and hooks | `CLAUDE_CODE_DISABLE_AUTO_MEMORY` and `disableAllHooks` in the generated settings | Hooks absent from the generated configuration |
 | Login only by subscription | `apiKeySource` in the init event must be `none` | `forced_login_method` set to ChatGPT, credentials store set to file |
 | Structured stream | Print mode with stream JSON output and the `verbose`, `include-partial-messages` and `forward-subagent-text` options | Exec with the `json` option |
@@ -565,8 +576,9 @@ token, section 13), and a run whose engine reports anything other than a subscri
 by name before its first turn: a Claude init event whose `apiKeySource` is not `none` (or the configured
 token), or a Codex run not logged in through ChatGPT.
 
-**Pinned engines.** The adapter launches the versioned executable path (for Claude Code the file under
-`~/.local/share/claude/versions/`, never the auto-updating `~/.local/bin/claude` link; for Codex the
+**Pinned engines.** The adapter launches the versioned executable path (for Claude Code a copy of the file under
+`~/.local/share/claude/versions/` kept under the factory's state root, because the interactive updater
+may remove old versions, never the auto-updating `~/.local/bin/claude` link; for Codex the
 vendor binary inside its package), sets `DISABLE_AUTOUPDATER` in the worker environment, and records
 the digest VELDO-0060 AC1 checks. Upgrading an engine is a deliberate requalification.
 
@@ -582,7 +594,9 @@ private directory, and the permission rules deny the same paths to the Read, Edi
 needs `socat` installed next to the bubblewrap 0.9.0 already present. Qualification (VELDO-0060 AC4) must
 show a tool child cannot read either path and that nothing else the role's tools use today is reduced,
 network included; the sandbox's own defaults also deny `/run/user`, where the session bus and keyring
-control directory live, which that check must account for.
+control directory live, which that check must account for. On the Mac the same settings drive the
+macOS sandbox, and qualification runs the same check there. The `CLAUDE_CODE_OAUTH_TOKEN` fallback is
+denied to tools through `sandbox.credentials.envVars`.
 
 For **Codex** no mechanism is proven. 0.154.0 has named permission profiles with filesystem entries,
 special paths such as project roots and a minimal set, a `deny_read` restriction in managed
@@ -679,7 +693,9 @@ gated; a real conflict sends the unit back to its builder as a new build dispatc
 main, and that build is reviewed again. For the window, the executor classifies an after-state in which
 the trunk holds a commit that is neither the watermark nor ours, and does not contain ours, as a refused
 publication (trunk moved), which it decides by fetching that tip into its publication clone; only a tip
-that contains ours stays `unknown`. The owner sees each re-land as its own dispatch.
+that contains ours stays `unknown`, judged per push URL. Approvals are bound to the candidate tree, so a
+unit that requires one needs a fresh grant for the re-merged tree, asked once per re-land. The owner sees
+each re-land as its own dispatch.
 
 **(e) Changes.** Move VELDO-0141 to ready with four amendments: `depends_on` adds VELDO-0060 and
 VELDO-0061; AC1's set adds a Mac run through the relay; exact-value redaction before the scanner; its
@@ -739,7 +755,7 @@ a timer for that time.
 
 **At the limit.** When a run's stream reports its window exhausted, or the engine ends with its
 rate-limit result, the receiver records the window and reset time and the run ends as `account_limit`.
-If its record shows no call to an MCP server not marked read only, its effects were confined to its
+If its record shows no call to an MCP tool not marked read-only, its effects were confined to its
 clone and the loop dispatches the same station again, under a new dispatch identity, on another account,
 from the same accepted commit. Otherwise it may already have commented on a ticket or written a page,
 and repeating it could do so twice, so the owner is asked whether to re-run, naming the calls it made.
@@ -751,7 +767,7 @@ and repeating it could do so twice, so the owner is asked whether to re-run, nam
 times. Telegram tells the owner only when every account of a provider is at its limit.
 
 **(e) Changes.** Amend VELDO-0062 AC5: a run stopped by its limit is dispatched again on another account
-from its accepted commit only when it made no call to a server not marked read only, otherwise the
+from its accepted commit only when it made no call to an MCP tool not marked read-only, otherwise the
 owner is asked; an account with no observation admits one run at a time. Amend its Notes: the registry
 is a store record family with per-host profiles for both providers, and the selection order above.
 VELDO-0131's usage screen row adds the per-account breakdown.
@@ -817,7 +833,7 @@ least two accounts and is watched in the live terminal.
    and an independent reviewer (VELDO-0091, VELDO-0085, VELDO-0090, VELDO-0089). It raised no question,
    so nothing is asked. Had the work needed several units, a separate elaboration run and a second PM
    cycle would follow here.
-5. The run ends; its run-ended packet wakes the loop, which offers the unit. The eligibility gate and
+5. The run ends; its end on the launch pipe wakes the loop, which offers the unit. The eligibility gate and
    claim pass (VELDO-0052, VELDO-0031); the Runner picks Claude account 2 on Linux; the receiver
    provisions an isolated clone with the repository's identity as author (VELDO-0042, VELDO-0142),
    writes the run's generated configuration with credentials from the keystore (VELDO-0144), and
@@ -826,7 +842,7 @@ least two accounts and is watched in the live terminal.
 6. Account 2 reports its five-hour window exhausted. The build had made no MCP call, since the ticket's
    text was already in its requirements, so it ends as `account_limit` and the loop dispatches the same
    station on account 3 from the same commit (VELDO-0062 AC5).
-7. The build returns its commit and proof (VELDO-0050). Its run-ended packet wakes the loop, which
+7. The build returns its commit and proof (VELDO-0050). Its end on the launch pipe wakes the loop, which
    dispatches a fresh reviewer on Codex under a different principal and independence group, with no
    builder context (VELDO-0129 AC2, VELDO-0061); its record is live too.
 8. On a passing review the lander builds the candidate on the current main, runs the gate outside it
@@ -850,7 +866,7 @@ factory at the end of the second stage, not the third. The full MVP still lands;
 | 2 | VELDO-0060 | Claude Code adapter: baseline off, paid-API guard, environment strip, pinned binary, login separation |
 | 3 | VELDO-0061 | Codex adapter, the same, with the login criterion as the owner decides |
 | 4 | VELDO-0141 | The live record with exact-value redaction |
-| 5 | VELDO-0129 with AC4 | Real build and review, the loop and the run-ended wake |
+| 5 | VELDO-0129 with AC4 | Real build and review, the loop and the end-of-run wake |
 | 6 | VELDO-0145 | UI shell, run terminal and decisions screen |
 | 7 | VELDO-0128 | Telegram reports (being built) |
 | **Stage 2** | **"Please do BCG-123" to a landed change: he starts using it here** | |
@@ -928,7 +944,7 @@ code on this branch or the installed tools before it was adopted.
 | B1, strict MCP turns off claude.ai connectors | Confirmed in the 2.1.281 binary. The `account_connector` transport, the connector fields on accounts and connector-aware selection are removed; Atlassian is an ordinary catalog server (sections 3, 6, 8, 11). |
 | B2, tools can read the provider login | Confirmed in VELDO-0060 AC4, VELDO-0061 AC4, VELDO-0062 AC1, R45 and `control_containment.py`. Decided per engine in section 6: Claude Code's sandbox `denyRead` and `credentials.files` deny, confirmed in the binary; Codex unproven, so its criterion moves to Release 2 on the owner's word (section 15). |
 | B3, Mac credential delivery | Confirmed: `wrap()` execs after the identity line and `_reap()` feeds the contract-built packet afterward. A secrets frame the wrapper reads before exec replaces it (section 3). |
-| B4, nothing wakes the loop | Confirmed: `hint_after` runs only after the service's own packets and passes, and the service has no Runner. The Runner and loop live in the service and the receiver sends a run-ended packet; VELDO-0129 AC4 carries the falsifier (section 4). |
+| B4, nothing wakes the loop | Confirmed: `hint_after` runs only after the service's own packets and passes, and the service has no Runner. The Runner and loop live in the service, and the end of a run on the Runner's own launch pipe is a wake source, including a receiver that died; VELDO-0129 AC4 carries the falsifier (section 4). |
 | B5, a new project breaks at intake | Confirmed in `control_intake.py`. A `factory` project that is never a default, a new-project route with no intake question, one answer that also admits the first objective, and the VELDO-0126 amendment (section 5). |
 | B6, workers reach the keystore and SSH agent | Code confirmed (`_spawn` copies the whole environment; the custody module disclaims unconfined processes; the keyring daemon runs). The environment strip and the stated boundary are in section 3; "by construction" is limited to the factory's own Git operations. |
 | B7, no loaded-instruction-file list in the init event | Confirmed: `memory_paths` names only the memory directories. Instruction files are proved by the marker qualification; the stream comparison covers tools, servers, skills and plugins (section 6). |
@@ -955,6 +971,19 @@ section 1, the landing gap in section 7 and the fourth cross-cutting decision.
 
 ## 15. The one open decision for the owner
 
-Do you accept that, for any engine whose qualification cannot prove its tools are unable to read its
-login (Codex today, and Claude Code if its sandbox fails qualification), that criterion moves to Release
-2 as hardening, with the MVP boundary being the same as your own terminal sessions today?
+For the MVP, is it acceptable that a Codex worker, and a Claude worker if its sandbox check fails,
+could read its own account login, the same as a terminal session today, with the lock-down in Release 2?
+
+**What each answer means.** Yes: every engine joins the MVP pool, and the walkthrough's reviewer runs on
+Codex as written. No: an engine that cannot prove the separation stays out of the MVP pool until it can,
+so today Codex is out and every review runs on a different Claude account instead. This relaxes approved
+text (VELDO-0060 AC4, VELDO-0061 AC4, R45), which is why it is his to decide; his standing rule that the
+MVP keeps every function and defers hardening points to yes.
+
+**Second check (2026-09-25).** A fresh check of this revision confirmed the seven fixes against the code
+and the installed binaries and found three that still failed: the environment strip would have cut
+`systemd-run` off from the user manager (now applied by the wrapper before exec), the new-project rule
+missed its own example (now whole words), and a signed run-ended packet would stall a unit whose
+receiver died (now the Runner's launch pipe). It also corrected re-land approvals, the Mac credential
+file and sandbox, the factory project's repository, read-only marking per tool, the pinned binary copy,
+the joined instruction file and the wording of section 15. All are applied above.
