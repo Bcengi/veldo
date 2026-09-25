@@ -13,6 +13,11 @@ already exist, in the order they depend on each other, checking each. It reimple
   5. the VELDO-0067 Telegram edge key, generated in the protected key directory, enrolled by his signed
      enroll_channel_edge command with the edge key's possession proof (control_channel_enrollment);
   6. his delegation of decision answers to that edge (control_membership grant_delegation, his signature);
+     then the factory's qualification requester, a service member whose key is generated in the protected
+     key directory, enrolled by his signed enroll_principal with the requester key's possession
+     co-signature; setup republishes the key projection itself. The running service's channel
+     (control_service_channel) opens the one qualification decision request as this requester when it
+     accepts his qualify command, so the live qualification needs no other preparation;
   7. this host's trust (control_eligibility.host_trust_path, read by load_host_trust) naming this host's
      identity, the owner as enrollment signer and the settlement signer;
   8. the VELDO-0029 enrollment of the named workspace clone, signed by the owner (control_enrollment.enroll);
@@ -32,8 +37,9 @@ could write; a worker profile this host does not qualify. Nothing is ever overwr
 created exclusively.
 
 ROLLBACK. The setup never deletes. A step that fails after writing began is reported by name with the
-step; the owner stops and uninstalls the service with VELDO-0047's lifecycle and removes the state root
-and the host trust file by hand.
+step; the owner stops and uninstalls the service with VELDO-0047's lifecycle and removes by hand the
+state root's contents, the host trust file and the workspace binding at
+<clone>/.git/veldo/control/enrollment.json. A second setup over the same paths then succeeds.
 
 Observations and output carry paths, identities and digests, never a private key byte, a signature or the
 token. Standard library only; every organ is loaded as a sibling by path.
@@ -65,7 +71,11 @@ JOURNAL_PRINCIPAL = 'authority'
 EDGE_PRINCIPAL = 'telegram-edge'
 API_EDGE = 'api-edge'
 SETTLEMENT_PRINCIPAL = 'settlement'
-RESERVED = (JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver')
+# The qualification requester the running service's channel opens its one request as (VELDO-0139),
+# named once, by the channel that signs as it.
+_CHANNEL = organ('control_service_channel')
+REQUESTER, REQUESTER_KEY, REQUESTER_SCOPE = _CHANNEL.REQUESTER, _CHANNEL.REQUESTER_KEY, _CHANNEL.REQUESTER_SCOPE
+RESERVED = (JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER)
 # The owner's roles: the bootstrap's two (project_owner, membership_steward) and the authorities a factory
 # owner decides with.
 OWNER_ROLES = ['admission_authority', 'membership_steward', 'priority_authority', 'project_owner',
@@ -152,18 +162,42 @@ def state_root_problems(root):
 
 
 def holdings(root):
-    """What an existing state root already holds, by name: a store, a trust, or anything else."""
+    """What an existing state root already holds, by name: a store, a trust, an empty directory of the
+    setup's own layout (empty_host, a leftover of a removed factory), or anything else (other)."""
     names = sorted(os.listdir(root))
-    found = []
+    found, rest = [], []
     for name in names:
         path = os.path.join(root, name)
-        inside = sorted(os.listdir(path)) if os.path.isdir(path) and not os.path.islink(path) else []
+        directory = os.path.isdir(path) and not os.path.islink(path)
+        inside = sorted(os.listdir(path)) if directory else []
         if name.endswith('.sqlite3') or any(n.startswith(STORE_NAME) for n in inside):
             found.append('store')
-        elif name == HOST_DIR or any(n in ('host_trust.json', 'enrollment_signers', 'settlement_signers') for n in inside):
+        elif any(n in ('host_trust.json', 'enrollment_signers', 'settlement_signers') for n in inside):
             found.append('trust')
+        elif directory and not inside and name in (STORE_DIR, KEYS_DIR, EDGE_DIR, HOST_DIR):
+            rest.append('empty_' + name)
+        else:
+            rest.append('other')
     order = ('store', 'trust')
-    return sorted(set(found), key=order.index) + (['other'] if names and not found else [])
+    return sorted(set(found), key=order.index) + sorted(set(rest))
+
+
+def host_trust_directory_problem(directory):
+    """Why an EXISTING directory may not receive this host's trust (it is this account's own 0700
+    directory, never a link); None when it may, or when it is absent and setup creates it 0700."""
+    try:
+        found = os.lstat(directory)
+    except FileNotFoundError:
+        return None
+    if stat.S_ISLNK(found.st_mode):
+        return 'invalid_input:host_trust_directory:symlink'
+    if not stat.S_ISDIR(found.st_mode):
+        return 'invalid_input:host_trust_directory:not_a_directory'
+    if found.st_uid != os.getuid():
+        return 'invalid_input:host_trust_directory:owner'
+    if stat.S_IMODE(found.st_mode) != 0o700:
+        return 'invalid_input:host_trust_directory:mode'
+    return None
 
 
 def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir,
@@ -184,6 +218,9 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         raise Refused('invalid_input:host_trust:exists', host_trust)
     if _within(host_trust, root):
         raise Refused('invalid_input:host_trust:inside_state_root', host_trust)
+    problem = host_trust_directory_problem(os.path.dirname(os.path.abspath(str(host_trust))))
+    if problem:
+        raise Refused(problem, os.path.dirname(os.path.abspath(str(host_trust))))
     workspace = os.path.realpath(str(workspace))
     try:
         E.git_common_dir(workspace)
@@ -301,13 +338,11 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         public = {'journal': _keygen(os.path.join(keys, JOURNAL_KEY), 'veldo-journal'),
                   'edge': _keygen(os.path.join(keys, E.edge_key_id(CHANNEL)), 'veldo-edge-telegram'),
                   'settlement': _keygen(os.path.join(keys, SETTLEMENT_KEY), 'veldo-settlement'),
-                  'connection': _keygen(os.path.join(root, EDGE_DIR, CONNECTION_KEY), 'veldo-edge-connection')}
+                  'connection': _keygen(os.path.join(root, EDGE_DIR, CONNECTION_KEY), 'veldo-edge-connection'),
+                  'requester': _keygen(os.path.join(keys, REQUESTER_KEY), 'veldo-qualification-requester')}
         journal_principal, journal_sign = IN.journal_signer({'principal': JOURNAL_PRINCIPAL,
                                                              'key': os.path.join(keys, JOURNAL_KEY)})
-    with step('store'):
-        conn = S.open_store(plan['store'])
-        CM.attach(S)
-        K.attach(S)
+    conn = None
 
     def envelope(command, principal):
         now = CM.authority_state(S, conn)
@@ -316,14 +351,23 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                     membership_version=now['membership_version'], delegation_version=now['delegation_version'],
                     command_digest=AC.canonical_command_digest(command))
 
-    def admin(operation, params, sign=owner_sign):
+    def admin(operation, params, sign=owner_sign, enrollee=None):
         command = {'command_id': next_id(operation), 'operation': operation, 'target': 'authority', 'parameters': params,
                    'artifact_digests': [], 'expected_versions': {}}
         env = envelope(command, owner)
+        cosigned = None if enrollee is None else enrollee(AC.canonical_envelope_bytes(dict(env, principal=params['principal'])))
         return CM.admit(S, conn, env, command, sign(AC.canonical_envelope_bytes(env)), ids, clock(),
-                        journal_signer=(journal_principal, journal_sign))
+                        enrollee_signature=cosigned, journal_signer=(journal_principal, journal_sign))
 
     try:
+        with step('store'):
+            # The store file is created 0600 before SQLite opens it; its WAL and shared-memory files take
+            # the same mode.
+            os.close(os.open(plan['store'], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600))
+            os.chmod(plan['store'], 0o600)
+            conn = S.open_store(plan['store'])
+            CM.attach(S)
+            K.attach(S)
         with step('owner_bootstrap'):
             # The genesis: the owner enrolls himself, signed with the key being enrolled (R37).
             admit_owner = admin('enroll_principal', {'principal': owner, 'principal_type': 'person', 'roles': OWNER_ROLES,
@@ -358,6 +402,15 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                                        'authority_scope': ['*'], 'request_version': 1, 'presentation_version': 1,
                                        'expires_at': clock() + DELEGATION_DAYS * 86400,
                                        'edge_key_id': E.edge_key_id(CHANNEL)})
+        with step('requester_enrollment'):
+            # The factory's qualification requester, enrolled by his signed command with its key's
+            # possession co-signature; the projection the protected signer reads is republished here.
+            admin('enroll_principal', {'principal': REQUESTER, 'principal_type': 'service', 'roles': [],
+                                       'public_key': public['requester'], 'independence_group': REQUESTER,
+                                       'scope': [REQUESTER_SCOPE]},
+                  enrollee=ACT.ssh_signer(os.path.join(keys, REQUESTER_KEY)))
+            K.publish(S, conn, projection)
+            os.chmod(projection, 0o600)
         with step('host_trust'):
             enrollment_signers = _private(os.path.join(host, 'enrollment_signers'), '%s namespaces="%s" %s\n'
                                           % (owner, organ('control_eligibility').ENROLLMENT_NAMESPACE, owner_public))
@@ -400,7 +453,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                                    writable=plan['writable'], runner=runner, channel_ingress=ingress)
         genesis = S.export_journal(conn)[0]
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
     return {'schema': SCHEMA, 'outcome': 'set_up', 'state_root': root, 'store': plan['store'], 'authority_ids': ids,
             'owner': owner, 'owner_key_digest': 'sha256:' + __import__('hashlib').sha256(owner_public.encode()).hexdigest(),
             'genesis': {'command_id': genesis.get('command_id'), 'principal': genesis.get('principal'),
@@ -409,7 +463,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'workspace': workspace, 'binding_digest': binding.get('binding_digest'), 'chat_enrolled': True,
             'edge_key': os.path.join(keys, E.edge_key_id(CHANNEL)), 'ingress': ingress,
             'token_file': plan['token_file'], 'unit': installed['unit'], 'unit_path': installed['unit_path'],
-            'home': installed['home'], 'started': False, 'steps': done,
+            'home': installed['home'], 'started': False, 'steps': done, 'qualification_requester': REQUESTER,
             'next': 'start it explicitly: systemctl --user start %s, then veldo channel qualify' % installed['unit']}
 
 

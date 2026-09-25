@@ -44,11 +44,14 @@ def _v139_suite():
     PRODUCTION = {
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
+        'control_service_channel.py': ROOT / ".veldo" / "control_service_channel.py",
     }
     ROWS = ('install/assets', 'setup/lays-down', 'refuse/writes-nothing', 'refuse/existing-store',
             'edge/enrolled-with-possession', 'chat/enrolled', 'ingress/configuration', 'token/never-copied',
-            'service/starts-inert', 'journey/qualified-and-active', 'genesis/owner-signed')
-    IA, LD, RW, ES, EK, CE_, IC, TK, SI, JQ, GO = ROWS
+            'service/starts-inert', 'journey/qualified-and-active', 'genesis/owner-signed',
+            'qualification/one-request-across-restart', 'rollback/rerun', 'store/private-and-closed',
+            'host-trust/directory-checked')
+    IA, LD, RW, ES, EK, CE_, IC, TK, SI, JQ, GO, QR, RB, SP, HD = ROWS
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -111,7 +114,6 @@ def _v139_suite():
     S, CM, AC = claims.S, claims.CM, claims.AC
     K = load('v139_keys', mods / 'control_keys.py')
     E = load('v139_edge', mods / 'control_channel_enrollment.py')
-    I = load('v139_inbox', mods / 'control_assignment.py')
     F = load('v139_setup', mods / 'control_factory_setup.py') if (mods / 'control_factory_setup.py').is_file() else None
 
     # The socket guard of this process: nothing but the loopback interface, every other attempt counted.
@@ -412,6 +414,9 @@ def _v139_suite():
                   rel in scaffold._FILES and rel not in scaffold.REQUIRED_SUBSTRATE)
             check(IA, rel + ' engine copy identical', (ROOT / 'engine' / rel).is_file()
                   and (ROOT / 'engine' / rel).read_bytes() == (ROOT / rel).read_bytes())
+            check(IA, '.veldo/control_service_channel.py engine copy identical',
+                  (ROOT / 'engine' / '.veldo' / 'control_service_channel.py').read_bytes()
+                  == (ROOT / '.veldo' / 'control_service_channel.py').read_bytes())
             check(IA, 'bin/veldo engine copy identical', (ROOT / 'engine' / 'bin' / 'veldo').read_bytes()
                   == (ROOT / 'bin' / 'veldo').read_bytes())
             check(IA, 'bin/veldo routes factory to the setup module\'s own command surface',
@@ -439,7 +444,8 @@ def _v139_suite():
                                           for d in ('', 'authority', 'keys', 'edge', 'host')))
             check(LD, 'every key the setup generated is a 0600 file of this account',
                   all(mode_of(p) == ('0o600', os.getuid())
-                      for p in (keys / 'journal', keys / 'edge-telegram', keys / 'settlement', state_root / 'edge' / 'edge-auth')))
+                      for p in (keys / 'journal', keys / 'edge-telegram', keys / 'settlement', keys / 'qualification-requester',
+                                state_root / 'edge' / 'edge-auth')))
             signers = Path(trust.enrollment_signers).read_text() if trust is not None else ''
             check(LD, 'this host\'s trust names its identity and the owner, with his key, as enrollment signer',
                   trust is not None and trust.host_identity == report.get('host_identity')
@@ -457,14 +463,14 @@ def _v139_suite():
 
         # AC1: every refusal is by name and writes nothing anywhere.
         with section(RW):
-            def refused(label, expected, state=None, work=None, trust_path=None, **replace):
+            def refused(label, expected, state=None, work=None, trust_path=None, row=RW, **replace):
                 work = work or clone('w-' + label)
                 before = snapshot(base)
                 got, shown = setup('refusal', state or (base / 'absent'), work, trust_path or
                                    (base / ('xdg-' + label) / 'veldo' / 'host_trust.json'), **replace)
                 after = snapshot(base)
                 changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
-                check(RW, '%s: refused as %s, writing nothing [%s %s]' % (label, expected, shown.get('reason'), changed[:3]),
+                check(row, '%s: refused as %s, writing nothing [%s %s]' % (label, expected, shown.get('reason'), changed[:3]),
                       got == 1 and shown.get('outcome') == 'refused' and shown.get('reason') == expected and not changed)
 
             def root(label, mode=0o700):
@@ -486,6 +492,10 @@ def _v139_suite():
             other = root('other')
             private(other / 'notes', 'kept\n')
             refused('other', 'invalid_input:state_root:holds_other', state=other)
+            # Filed 5: an empty host/ left by a removed factory is named for what it is, not a trust.
+            leftover = root('empty-host')
+            (leftover / 'host').mkdir(mode=0o700)
+            refused('empty-host', 'invalid_input:state_root:holds_empty_host', state=leftover)
             refused('host-trust-exists', 'invalid_input:host_trust:exists', state=root('trust-exists'), trust_path=host_trust)
             refused('enrolled-workspace', 'invalid_input:workspace:enrolled', state=root('enrolled'), work=workspace)
             loose = private(base / 'loose-token', token + '\n', 0o644)
@@ -493,6 +503,71 @@ def _v139_suite():
             refused('chat', 'invalid_input:chat:not_a_user_id', state=root('chat'), **{'--chat': '0'})
             refused('owner-key', 'invalid_input:owner_key:unreadable', state=root('key'), **{'--owner-key': str(token_file)})
             refused('service-name', 'invalid_input:owner:name', state=root('name'), **{'--owner': 'authority'})
+
+        # Filed 4: an existing host trust directory is this account's own 0700 directory, or refused by name.
+        with section(HD):
+            loose = base / 'xdg-loose' / 'veldo'
+            loose.mkdir(parents=True)
+            os.chmod(str(loose), 0o755)
+            refused('trust-directory-mode', 'invalid_input:host_trust_directory:mode', state=root('hd-mode'),
+                    trust_path=loose / 'host_trust.json', row=HD)
+            refused('trust-directory-owner', 'invalid_input:host_trust_directory:owner', state=root('hd-owner'),
+                    trust_path=Path('/') / ('v139-absent-%s.json' % os.urandom(4).hex()), row=HD)
+            real_dir = base / 'xdg-real'
+            real_dir.mkdir(mode=0o700)
+            (base / 'xdg-link').mkdir(mode=0o700)
+            (base / 'xdg-link' / 'veldo').symlink_to(real_dir)
+            refused('trust-directory-symlink', 'invalid_input:host_trust_directory:symlink', state=root('hd-link'),
+                    trust_path=base / 'xdg-link' / 'veldo' / 'host_trust.json', row=HD)
+
+        # Filed 2 and 3: the store is 0600, and a failed store step leaves no connection open.
+        with section(SP):
+            files = [store] + [Path(str(store) + end) for end in ('-wal', '-shm') if Path(str(store) + end).exists()]
+            check(SP, 'the store and its WAL and shared-memory files are 0600 files of this account [%s]'
+                  % [(p.name, mode_of(p)) for p in files], all(mode_of(p) == ('0o600', os.getuid()) for p in files))
+            real_organ = F.organ
+
+            def faulty(name):
+                module = real_organ(name)
+                if name == 'control_claim':
+                    inner = module.CM
+
+                    class Faulty:
+                        def __getattr__(self, attr):
+                            return getattr(inner, attr)
+
+                        def attach(self, *args, **kwargs):
+                            raise RuntimeError('v139 injected fault after the store is opened')
+                    module.CM = Faulty()
+                return module
+            broken = base / 'root-store-fault'
+            broken.mkdir(mode=0o700)
+            os.chmod(str(broken), 0o700)
+            held, code, open_fds = None, None, None
+            F.organ = faulty
+            try:
+                F.setup(str(broken), owner, str(owner_key), str(clone('w-store-fault')), owner_user['id'], str(token_file),
+                        host_trust=str(base / 'xdg-store-fault' / 'veldo' / 'host_trust.json'),
+                        install_root=str(base / 'install'), unit_dir=str(base / 'units'), profile=profile, writable=[],
+                        runner=manager, origin=url)
+                code = 'set_up'
+            except F.Refused as exc:
+                # The refusal is held while the process's descriptors are read: a connection the setup
+                # left open is still reachable from it.
+                held, code = exc, exc.code
+                target = os.path.realpath(str(broken / 'authority' / 'control.sqlite3'))
+                open_fds = []
+                for fd in os.listdir('/proc/self/fd'):
+                    with contextlib.suppress(OSError):
+                        if os.path.realpath(os.readlink('/proc/self/fd/' + fd)).startswith(target):
+                            open_fds.append(fd)
+            finally:
+                F.organ = real_organ
+            check(SP, 'a setup whose store step fails after the store is opened is refused by name [%s]' % code,
+                  code == 'setup_incomplete:store:RuntimeError')
+            check(SP, 'while that refusal is held, no connection to its store is open [%s]' % open_fds,
+                  held is not None and open_fds == [])
+            held = None
 
         # AC1 (declared falsifier): a second setup over the state root of the first never touches its store.
         with section(ES):
@@ -602,67 +677,62 @@ def _v139_suite():
             check(JQ, 'bin/veldo channel qualify, signed by the owner\'s key, is applied by the running service [%s]'
                   % {k: shown.get(k) for k in ('outcome', 'state', 'reason')},
                   rc == 0 and shown.get('outcome') == 'accepted' and shown.get('state') == 'qualifying')
-            # A requester of the factory: a service member the owner enrolls with his own signed command, and the
-            # key projection republished as every membership change is.
-            ids = dict(report['authority_ids'])
-            pm_key = person / 'pm'
-            pm_public = keygen(pm_key, 'v139-pm')
-            command = {'command_id': 'v139-enroll-pm', 'operation': 'enroll_principal', 'target': 'authority',
-                       'parameters': {'principal': 'pm', 'principal_type': 'service', 'roles': [], 'public_key': pm_public,
-                                      'independence_group': 'pm', 'scope': ['veldo']},
-                       'artifact_digests': [], 'expected_versions': {}}
-            now_state = CM.authority_state(S, conn)
-            env = dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal=owner, request_revision=1,
-                       nonce='nonce-v139-pm', expires_at=time.time() + 600, membership_version=now_state['membership_version'],
-                       delegation_version=now_state['delegation_version'], command_digest=AC.canonical_command_digest(command))
-            journal_key = keys / 'journal'
-            CM.admit(S, conn, env, command, sign_with(owner_key, AC.canonical_envelope_bytes(env)), ids, time.time(),
-                     enrollee_signature=sign_with(pm_key, AC.canonical_envelope_bytes(dict(env, principal='pm'))),
-                     journal_signer=('authority', lambda m: sign_with(journal_key, m, 'veldo-journal')))
-            K.publish(S, conn, host / 'allowed_signers')
-            # The suite's own organs for opening the request, loaded from the installed executable, so every
-            # ownership declaration names the code the service runs.
-            ing = load('v139_ingress_installed', home / 'bin' / 'control_channel_ingress.py').open_ingress(
-                str(host / 'ingress.json'))
+            # From here only shipped commands act: the running service opens the run's one qualification
+            # request as the requester setup enrolled and presents it; the owner replies in his chat.
+            bot = api['bots'][token]
 
-            def signed_command(body):
-                return {'command': body, 'signature': sign_with(pm_key, S.canonical_bytes(body))}
-            target = {'kind': 'backlog_item', 'ref': 'backlog:Q1', 'digest': 'sha256:' + hashlib.sha256(b'Q1').hexdigest()}
-            subject = ing.settlement.terms(signed_command(dict(
-                ids, operation='terms', terms='Q1', principal='pm', command_id='v139-terms', nonce='v139-terms-n',
-                touchpoint='grooming', target=target, proposal=None, required_roles=[], quorum=None))).get('subject')
-            ing.inbox.apply(signed_command(dict(ids, operation='open', alias='Q1', principal='pm', command_id='v139-open',
-                                                nonce='v139-open-n', assignment=dict(
-                                                    kind='decision', owner=owner, scope=['veldo'],
-                                                    deadline='2026-10-01T17:00:00Z', budget={'owner_minutes': 15},
-                                                    brief='VELDO-0139: the first decision on the new factory.',
-                                                    choices=['accept', 'return_for_elaboration', 'reject'], subject=subject))))
-            rid = I.assignment_id(ids['repository_uuid'], 'Q1')
-            ing.presenter.frame(signed_command(dict(ids, operation='frame', alias='Q1', principal='pm', request_version=1,
-                                                    command_id='v139-frame', nonce='v139-frame-n',
-                                                    risk_statement='Low: a request with no effect beyond its record.')))
-
-            def published():
-                receipt = ing.presenter.current(rid) or {}
-                return receipt if receipt.get('outcome') == 'published' else None
-            shown1 = wait(published, 20)
-            check(JQ, 'the running service presents the request to the chat the owner gave',
-                  bool(shown1) and shown1.get('chat_id') == owner_user['id'])
-            to_owner = bool(shown1) and shown1.get('chat_id') == owner_user['id']
+            def presented():
+                return sorted(mid for (chat, mid), m in list(bot['messages'].items())
+                              if chat == owner_user['id'] and m['from']['id'] == bot_user['id'])
+            sent = wait(presented, 20) or []
+            run = status().get('run') or {}
+            request = run.get('request') or {}
+            rid = request.get('request_id')
+            opened = ((entity(rid) or {}).get('data') or {}) if rid else {}
+            check(JQ, 'the running service opened the run\'s one qualification request as the requester setup enrolled, '
+                  'addressed to the owner, and presented it in his chat [%s %s %d]'
+                  % (request.get('outcome'), opened.get('requested_by'), len(sent)),
+                  request.get('outcome') == 'open' and opened.get('owner') == owner
+                  and opened.get('requested_by') == 'qualification-requester' and bool(sent))
             answer = H.deliver(api, token, owner_user, 'accept: the first decision on this factory',
-                               reply_to=(shown1.get('message_ids') or [None])[-1]) if to_owner else None
-            done1 = wait(lambda: ing.settlement.settlement(rid, 1), 20) if answer else None
-            check(JQ, 'the owner\'s reply settles through the running service under his delegation',
-                  bool(done1) and done1.get('choice') == 'accept' and done1.get('originating_channel') == 'telegram_chat'
-                  and (((done1 or {}).get('assertion') or {}).get('attribution') or {}).get('platform_message_id')
-                  == (answer or {}).get('message', {}).get('message_id'))
+                               reply_to=sent[-1]) if sent else None
+            done1 = answer
             q = (wait(lambda: status().get('qualification'), 20) if done1 else None) or {}
             stored = entity(q.get('id') or '') or {}
             data = stored.get('data') or {}
+            settled = data.get('settlement') or {}
+            check(JQ, 'the owner\'s reply settled that request through the running service under his delegation [%s %s]'
+                  % (settled.get('choice'), settled.get('originating_channel')),
+                  bool(data) and data.get('request_id') == rid and settled.get('choice') == 'accept'
+                  and settled.get('originating_channel') == 'telegram_chat'
+                  and (data.get('presentation') or {}).get('chat_id') == owner_user['id']
+                  and (data.get('owner_answer') or {}).get('message_id') == (answer or {}).get('message', {}).get('message_id'))
             check(JQ, 'the service\'s own gate recorded the qualification, its digest the one it reports [%s]'
                   % {k: q.get(k) for k in ('id', 'platform')},
                   bool(data) and ACT.digest(data) == q.get('digest') and ACT.qualification_problems(data, url) == []
                   and all(x.get('origin') == url for x in data.get('exchanges') or []))
+
+        # A restart of the service inside the run finds the run's one request by its alias.
+        with section(QR):
+            prefix = 'assignment:%s:qualification-' % report['authority_ids']['repository_uuid']
+
+            def requests():
+                return sorted(r[0] for r in conn.execute('SELECT id FROM entities').fetchall() if r[0].startswith(prefix))
+            before, shown_before = requests(), presented()
+            CS.stop(unit, manager)
+            again = CS.start(unit, manager)
+            ran = passes(3)
+            later = status().get('run') or {}
+            check(QR, 'the service restarted through its lifecycle and ran passes in the same qualification run [%s]'
+                  % again.get('ActiveState'), again.get('ActiveState') == 'active' and ran and bool(run.get('id'))
+                  and later.get('id') == run.get('id'))
+            check(QR, 'after the restart the run still has exactly its one request, found by its alias [%d -> %d]'
+                  % (len(before), len(requests())), bool(rid) and before == [rid] and requests() == [rid]
+                  and (later.get('request') or {}).get('request_id') == rid and (later.get('request') or {}).get('outcome') == 'open')
+            check(QR, 'and nothing was presented again [%d -> %d]' % (len(shown_before), len(presented())),
+                  bool(shown_before) and presented() == shown_before)
+
+        with section(JQ):
             rc, shown = veldo('activate')
             now = status()
             check(JQ, 'bin/veldo channel activate over the recorded qualification leaves the edge active [%s]'
@@ -683,6 +753,41 @@ def _v139_suite():
                                  CEN.git_common_dir(str(workspace)))
             check(TK, 'no copy of the token in the state root, the store, the install root, the unit, the host trust or '
                   'the workspace [%s]' % everywhere, everywhere == [])
+
+        # Filed 1: the documented rollback names every file setup writes, and a second setup then succeeds.
+        with section(RB):
+            named = '.git/veldo/control/enrollment.json'
+            spec_text = (ROOT / 'specs' / 'VELDO-0139-factory-setup-on-a-host.md').read_text()
+            readme = (ROOT / 'proof' / 'VELDO-0139' / 'README.md').read_text()
+            in_spec = spec_text.split('\nrollback: >', 1)[-1].split('\n---', 1)[0] if '\nrollback: >' in spec_text else ''
+            in_readme = readme.split('\nRollback:', 1)[-1].split('\n\n', 1)[0] if '\nRollback:' in readme else ''
+            binding_file = Path(CEN.binding_path(str(workspace)))
+            check(RB, 'the spec\'s rollback and the README\'s name the workspace binding <clone>/%s' % named,
+                  named in ' '.join(in_spec.split()) and named in ' '.join(in_readme.split())
+                  and str(binding_file).endswith(named))
+            conn.close()
+            conn = None
+            CS.stop(unit, manager)
+            CS.uninstall(unit, install_root=str(base / 'install'), unit_dir=str(base / 'units'), runner=manager)
+            for child in sorted(state_root.iterdir()):
+                if child.is_dir() and not child.is_symlink():
+                    shutil.rmtree(str(child))
+                else:
+                    child.unlink()
+            host_trust.unlink()
+            binding_file.unlink()
+            code2, rerun = setup('rerun', state_root, workspace, host_trust)
+            check(RB, 'after that rollback a second setup over the same state root, host trust path and clone succeeds [%s]'
+                  % {k: rerun.get(k) for k in ('outcome', 'reason')},
+                  code2 == 0 and rerun.get('outcome') == 'set_up'
+                  and (rerun.get('authority_ids') or {}).get('store_uuid') != report['authority_ids']['store_uuid'])
+            unit = rerun.get('unit') or unit
+            again_binding = CEN.read_binding(str(workspace))
+            again_trust = EL.load_host_trust(str(host_trust))
+            problems = CEN.verify_binding(str(workspace), again_binding, again_trust.verifier(owner, str(workspace)),
+                                          again_trust.host_identity) if again_binding and again_trust else ['absent']
+            check(RB, 'its binding names the new store and verifies under the new host trust [%s]' % problems,
+                  problems == [] and again_binding.get('store_uuid') == (rerun.get('authority_ids') or {}).get('store_uuid'))
     except StopIteration:
         pass
     finally:
