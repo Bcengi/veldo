@@ -114,9 +114,18 @@ Reuse VELDO-0073's open_ingress and Activations unchanged where possible; the se
 lifetime. bin/veldo stays a thin dispatcher: veldo channel routes to the activation module's own
 command surface.
 
+The running factory's real-platform qualification happens here, live, once, with the owner: through
+the running service, one decision is sent to his chat, he replies, and his enrolled key signs the
+activation over the qualification the gate recorded in the factory's own store. That is the binding
+proof VELDO-0073's committed live record cannot be (its second review showed a file cannot prove where
+it came from).
+
 ## History
 
 2026-09-24: written by the lead from VELDO-0073's first critical review (filed F1). Draft; the owner
 decides readiness.
 
 2026-09-24: the owner marked this specification ready on Telegram (29090 asked, 29091 "Yes").
+
+2026-09-25: Notes name the live real-factory qualification as this item's, after VELDO-0073's second
+review withdrew the claim that a committed record proves real-platform provenance.
