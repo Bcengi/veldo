@@ -38,6 +38,7 @@ footprint:
   - "scripts/suites/*_veldo_0075_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0075-andon-delivery-resumption.md"
   - "specs/index.md"
   - "proof/VELDO-0075/*"
@@ -104,6 +105,26 @@ implementation or historical evidence. Risk and approval requirements remain unc
 
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
+
+## What the reviewer judges
+
+- Normal use: an authenticated worker or service raises a recorded AWAITING_AUTHORITY stop at an
+  enabled build, review or coordination stop point, recording its reason, the interrupted station and
+  the predicate for who may resolve it, even when the requester may not resume it. The stop reaches
+  the owner in Telegram through the activated edge (VELDO-0073) with the current versioned
+  presentation and answer path; a new request version with the same status sends a new notice. A
+  clean owner-decision stop resumes only through the current settlement (VELDO-0068) by the
+  designated authority, with a fresh station contract.
+- Threat model: raising a stop refused because the requester lacks the resolving role; a notice keyed
+  only by request id and status, so a changed presentation is never sent; a resume from a
+  notification acknowledgement, a wrong actor, a stale presentation or anything but the resolving
+  authority's current settlement; an unknown-effect stop resumed by an answer. The owner's account,
+  the store, the signer and the Telegram edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery,
+  automatic retry and risk disposition of unknown external effects (Release 2); forged rows in our own
+  store and files planted in the installed directory. The real-Telegram leg of AC2 is run once by the
+  lead with the owner through the running factory (VELDO-0138) and recorded; the rows use a loopback
+  stand-in.
 
 ## Notes
 
