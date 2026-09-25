@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0139
 title: Set up a real factory on this host with the owner's own signed commands
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -115,3 +115,5 @@ dispatcher.
 
 2026-09-25: written by the lead when the real-factory live qualification found no setup path. Draft;
 the owner decides readiness.
+
+2026-09-25: the owner marked this specification ready on Telegram (29107 asked, 29108 "Yes").
