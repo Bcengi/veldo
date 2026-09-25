@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W90
 plan_revision: 4
-depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0144]
+depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144]
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
@@ -20,6 +20,9 @@ footprint:
   - "engine/.veldo/control_engine*.py"
   - ".veldo/control_engine*.py"
   - "packs/*/.veldo/control_engine*.py"
+  - "engine/.veldo/control_launch*.py"
+  - ".veldo/control_launch*.py"
+  - "packs/*/.veldo/control_launch*.py"
   - "scripts/suites/*_veldo_0127_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -189,3 +192,7 @@ because the catalog is stage 5. A What the reviewer judges section is added. Sta
 2026-09-25, PLAN-0019 revision 4 review: a specification ships whole and the run-check refuses one whose
 dependencies are not shipped, so the Mac leg of this Linux-first qualification moves to VELDO-0147,
 which is built after VELDO-0124 and VELDO-0125. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4 review: depends_on adds VELDO-0141, because AC4 keeps the first turn's
+context size in the execution record, and the footprint adds `control_launch`, where the Runner (class
+`Runner`) and the launch receiver that hands the configuration over live. Status unchanged.

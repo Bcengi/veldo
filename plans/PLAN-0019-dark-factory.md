@@ -930,7 +930,7 @@ work:
     spec: VELDO-0127
     title: Versioned per-role MCP server and tool configuration
     feature_refs: [F7]
-    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0144]
+    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144]
     order: 15127
     release: 1
     stage: 5
