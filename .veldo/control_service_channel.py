@@ -304,10 +304,16 @@ class Channel:
             # A new qualification run binds only the exchanges made in it.
             del ing.gate.exchanges[:]
             self.run = {'id': run_id, 'answers': {}, 'strangers': [], 'tried': set(), 'recorded': None,
-                        'refusal': None, 'request': None} if run_id else None
-        if self.run is not None and self.run['request'] is None and self.clock() < (record.get('expires_at') or 0):
-            # Once per run in this process: the run's one request exists (a restart finds it by its alias).
+                        'refusal': None, 'request': None, 'retry_at': 0, 'retry_every': 1} if run_id else None
+        if (self.run is not None and (self.run['request'] or {}).get('outcome') not in ('open', 'skipped')
+                and self.passes >= self.run['retry_at'] and self.clock() < (record.get('expires_at') or 0)):
+            # Until the run's one request is open: every step is skipped when already committed, so a
+            # retry (or a restart, which finds it by its alias) completes an interrupted opening and never
+            # opens a second. A refusal is retried with a doubling wait, at most every 64 passes.
             self.run['request'] = self.open_request(record)
+            if self.run['request'].get('outcome') != 'open':
+                self.run['retry_at'] = self.passes + self.run['retry_every']
+                self.run['retry_every'] = min(self.run['retry_every'] * 2, 64)
         woke = ing.wake({'source': 'authority_service', 'pass': self.passes})
         self.passes += 1
         published, recorded = [], None

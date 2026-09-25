@@ -51,8 +51,8 @@ def _v139_suite():
             'edge/enrolled-with-possession', 'chat/enrolled', 'ingress/configuration', 'token/never-copied',
             'service/starts-inert', 'journey/qualified-and-active', 'genesis/owner-signed',
             'qualification/one-request-across-restart', 'rollback/rerun', 'store/private-and-closed',
-            'host-trust/directory-checked')
-    IA, LD, RW, ES, EK, CE_, IC, TK, SI, JQ, GO, QR, RB, SP, HD = ROWS
+            'host-trust/directory-checked', 'qualification/opening-retried')
+    IA, LD, RW, ES, EK, CE_, IC, TK, SI, JQ, GO, QR, RB, SP, HD, OR = ROWS
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -116,6 +116,7 @@ def _v139_suite():
     K = load('v139_keys', mods / 'control_keys.py')
     E = load('v139_edge', mods / 'control_channel_enrollment.py')
     F = load('v139_setup', mods / 'control_factory_setup.py') if (mods / 'control_factory_setup.py').is_file() else None
+    CH = load('v139_channel', mods / 'control_service_channel.py') if (mods / 'control_service_channel.py').is_file() else None
 
     # The socket guard of this process: nothing but the loopback interface, every other attempt counted.
     attempts = []
@@ -691,6 +692,47 @@ def _v139_suite():
                   'the workspace [%s]' % everywhere, everywhere == [])
 
         # Filed 4: an existing host trust directory is this account's own 0700 directory, or refused by name.
+        # Review 2: an opening of the run's one request that fails part-way is retried on a later pass of
+        # the same process until it is open, and never opens a second.
+        with section(OR):
+            op_root = base / 'root-opening'
+            op_root.mkdir()
+            os.chmod(str(op_root), 0o700)
+            op_code, op_report = setup('opening', op_root, clone('w-opening'),
+                                       base / 'xdg-opening' / 'veldo' / 'host_trust.json')
+            op_prefix = 'assignment:%s:qualification-' % ((op_report or {}).get('authority_ids') or {}).get('repository_uuid')
+            chan = CH.Channel(str(op_root / 'host' / 'ingress.json'))
+            try:
+                real_apply = chan.ingress.inbox.apply
+
+                def cut(packet):
+                    raise RuntimeError('suite: the opening is cut after the terms')
+                chan.ingress.inbox.apply = cut
+                shown = chan.status()
+                env, cmd = ACT.owner_command('qualify', shown, owner, time.time(), minutes=15)
+                accepted = chan.authorize({'envelope': env, 'command': cmd,
+                                           'signature': ACT.ssh_signer(str(owner_key))(AC.canonical_envelope_bytes(env))})
+                chan.tick()
+                failed = dict(chan.run['request'] or {}) if chan.run else {}
+                chan.ingress.inbox.apply = real_apply
+                for _ in range(8):
+                    chan.tick()
+                    if ((chan.run or {}).get('request') or {}).get('outcome') == 'open':
+                        break
+                opened = dict((chan.run or {}).get('request') or {})
+                for _ in range(3):
+                    chan.tick()
+                store_rows = [r[0] for r in chan.ingress.activations.conn.execute('SELECT id FROM entities').fetchall()]
+                made = sorted(r for r in store_rows if r.startswith(op_prefix))
+            finally:
+                chan.close()
+            check(OR, 'a fresh factory is set up and the owner\'s qualify is accepted while the opening is cut [%s %s]'
+                  % (op_code, accepted.get('outcome')), op_code == 0 and accepted.get('outcome') == 'accepted'
+                  and failed.get('outcome') == 'refused')
+            check(OR, 'once the fault clears, a later pass of the same process opens the request [%s]' % opened.get('outcome'),
+                  opened.get('outcome') == 'open')
+            check(OR, 'and exactly one qualification request exists after further passes [%d]' % len(made), len(made) == 1)
+
         with section(HD):
             loose = base / 'xdg-loose' / 'veldo'
             loose.mkdir(parents=True)
