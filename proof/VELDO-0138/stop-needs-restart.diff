@@ -1,0 +1,9 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -133,0 +134,6 @@
++        held, live = {}, self.ingress.gate.current  # defect: an active record is kept for the process
++        def current():
++            if (held.get('record') or {}).get('state') != 'active':
++                held['record'] = live()
++            return held['record']
++        self.ingress.gate.current = current

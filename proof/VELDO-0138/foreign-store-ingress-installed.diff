@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -102 +102 @@
+-    checks = (('store', str(config.get('store_path')) == binding['store_path']),
++    checks = (('store', True),  # defect: another store's ingress is installed

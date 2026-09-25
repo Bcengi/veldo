@@ -878,6 +878,15 @@
    ],
    "regions": "Project activation by the enrolled owner's real signed command binding owner, charter, one execution repository, an applicable authority policy and a finite coordination budget, with each omitted field, missing authority and every unbounded budget refused; pause and cancel stopping the frontier's offers and every dispatch of the project through the eligibility Gate while running work gets the host's ordinary stop and history and landed receipts stay; completion refused by name while an objective, assignment, governing decision, dispatch or reservation of the project is open",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal and decision settlement signatures, the VELDO-0064 inbox, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0052 Gate and the frontier over spec files, the VELDO-0039 runner with real receiver and fixture worker processes in systemd containment groups, a real Git source repository, and a reader in another process. Writes only temporary fixtures."
+  },
+  {
+   "name": "71_veldo_0138_channel_service",
+   "file": "71_veldo_0138_channel_service.py",
+   "requires": [
+    "71_veldo_0138_channel_service"
+   ],
+   "regions": "The installed authority service running the VELDO-0073 Telegram ingress through its own lifecycle: inert with no activation record, the owner's signed qualify, activate and stop through bin/veldo channel applied by the running service and refused by name for every other principal, the service recording the run's qualification from its gate, answers settling through the running service, a stop taking effect without a restart and keeping pending requests, and a restart keeping the edge as the owner left it",
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, request, enrollment and journal signatures, an enrolled Git clone and host trust, control_service.install with the channel ingress configuration, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), bin/veldo channel run as a separate process, the actual protected signer process, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block; the same guard is armed in the service process through a sitecustomize on the stand-in's PYTHONPATH. Writes only temporary fixtures."
   }
  ]
 }
