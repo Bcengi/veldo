@@ -5156,6 +5156,11 @@ def cases():
             "        if True:  # defect: the service never opens the qualification request\n"
             "            return self._opened(run, None, 'skipped', 'no_requester')\n",
             'journey/qualified-and-active', module='control_service_channel.py')
+    # Review 2: a part-way failed opening is retried until open, never once per process.
+    factory('opening-tried-once-per-process',
+            "        if (self.run is not None and (self.run['request'] or {}).get('outcome') not in ('open', 'skipped')\n",
+            "        if (self.run is not None and self.run['request'] is None  # defect: one try per process\n",
+            'qualification/opening-retried', module='control_service_channel.py')
     factory('qualification-alias-per-process',
             "    return 'qualification-' + hashlib.sha256(str(run).encode()).hexdigest()[:32]\n",
             "    return 'qualification-' + hashlib.sha256((str(run) + str(os.getpid())).encode()).hexdigest()[:32]"
