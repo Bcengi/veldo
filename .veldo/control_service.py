@@ -67,8 +67,9 @@ Telegram ingress from it with control_channel_ingress.open_ingress and owns its 
 (control_service_channel). The ingress is inert until the owner activates it: every pass asks the
 activation gate first, and a refused pass sends, acquires and writes nothing. Every POLL_SECONDS the
 loop runs one pass (acquire, settle, present pending requests); a channel_activation_authorize packet
-is applied by the ingress's own Activations organ, which admits only the owner's own signed command;
-inspect reports the channel's status. A stop takes effect at the next exchange, and a restart keeps
+is applied by the ingress's own Activations organ, which admits only the owner's own signed command,
+and his grant_delegation or supersede_delegation of his standing answer delegation by the channel
+(VELDO-0140), which admits only his own; inspect reports the channel's status. A stop takes effect at the next exchange, and a restart keeps
 the edge as the owner left it, because the record in the store decides every exchange. An ingress
 that cannot be constructed leaves the service serving everything else, its refusal reported by name.
 
@@ -992,7 +993,7 @@ class Service:
                 result = self.api_call(packet)
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
-            elif command.get('operation') == CH.AUTHORIZE:
+            elif command.get('operation') in CH.OPERATIONS:
                 result = self.channel_command(packet, repository, observation)
             elif command.get('operation') in CLM.OPERATIONS and 'unit_id' in command:
                 receiver = self.receiver(repository)
@@ -1106,8 +1107,10 @@ class Service:
 
     def channel_command(self, packet, repository, observation):
         """The owner's channel_activation_authorize command, applied by the ingress's own Activations
-        organ (VELDO-0073), which admits only the owner's own signed envelope. Refused by name, with
-        nothing written, when this instance runs no channel or the command is for another repository."""
+        organ (VELDO-0073), which admits only the owner's own signed envelope, and his grant or renewal of
+        his standing answer delegation (VELDO-0140), which the channel admits only as his own. Refused by
+        name, with nothing written, when this instance runs no channel or the command is for another
+        repository."""
         if self.channel is None:
             raise Refused('unavailable_service:channel:' + (self.channel_refusal or 'not_configured'),
                           'this instance runs no Telegram channel')
