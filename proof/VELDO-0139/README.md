@@ -102,7 +102,7 @@ It prints one JSON answer naming the unit. Then, as the owner:
 ```
 systemctl --user start <unit from the answer>
 bin/veldo channel qualify --principal dmitry --key <his key> --workspace <clone>
-# a decision request is presented in his chat; he replies to it
+# one decision request, opened by an enrolled requester, is presented in his chat; he replies to it
 bin/veldo channel activate --principal dmitry --key <his key> --workspace <clone>
 ```
 
@@ -115,6 +115,10 @@ by hand. The setup deletes nothing.
 - The owner's decision delegation lasts 90 days (`DELEGATION_DAYS`); no renewal command exists yet.
 - The `api-edge` principal the ingress configuration names is not enrolled by the setup; answers through
   the authenticated API edge are refused until it is.
+- The qualification needs one pending decision request. The setup enrolls no requester and no owner
+  command opens one: the suite has the owner enroll a `pm` service member with his signed command and
+  opens the request through the installed ingress's inbox. For the real leg the lead needs a requester
+  principal enrolled the same way, or a decision on who opens the first request.
 - A membership change after setup (a new requester, as the suite enrolls `pm`) must republish
   `<state-root>/host/allowed_signers`; the protected signer refuses answers against a stale projection.
 - The host identity is this host's name (`platform.node()`).
