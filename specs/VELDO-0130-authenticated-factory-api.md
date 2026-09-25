@@ -306,3 +306,31 @@ criteria, status, risk, dependencies and footprint are unchanged.
 2026-09-25: the owner chose the Tailscale tailnet for transport (29092/29094). The footprint gains the
 modules the authentication design changes (the authority contract, channel enrollment, the answer signer,
 the scaffold) and the teeth-mutation registry.
+
+2026-09-24, implementation phase 1 (branch build-veldo-0130): the API skeleton and AC1 and AC3 for the
+auth, messages and decisions route families. New engine modules: control_api (the loopback
+ThreadingHTTPServer service, the one published route table ROUTES with handlers registered by route
+name, server-side sessions, the anti-forgery, Origin, fetch-metadata, Host and body-size checks, the
+registration and possession ceremonies with 0600 pending files, and `follow`, which ends sessions from
+committed journal records), control_api_webauthn (the passkey checks with json, struct and the openssl
+subprocess), control_api_credentials (the api_credential store kind and its two steward-signed commands),
+control_api_assertion (the veldo.api_assertion/v1 shape and the one domain request each operation derives),
+control_api_signer (the protected signer's "api" purpose and the API's client of it) and
+control_api_authority (the authority's recheck and execution into VELDO-0126 intake, VELDO-0068 settlement
+and credential revocation). authority_contract gains EDGE_CHANNELS with the "api" edge and edge_channel();
+control_channel_enrollment enrolls it; control_signer_answers hands the api edge to its own purpose.
+Suite 71_veldo_0130_api; proof in proof/VELDO-0130; teeth are finding 130. Decisions the build made,
+each for the reviewer: the "api" entry lives in EDGE_CHANNELS, not CHANNELS, because CHANNELS is the
+VELDO-0020 answer-channel registry whose order settle() ranks answers by and whose set suite 33 pins;
+for Ed25519 the signed bytes go to openssl in a file in the same 0700 directory, because OpenSSL 3.0.13's
+pkeyutl cannot size a pipe for a one-shot verification (measured), while ES256 keeps standard input; a
+revoked membership ends its credentials by derivation (a credential is current only while its principal
+is a current person member), with no second write; the committed intake and settlement records keep
+their own provenance unchanged (channel api, edge, request id, request digest), and the credential id,
+session handle and assertion digest are in the authority's observation of that request id; a failed
+registration ceremony ends its registration, and an enrolled one stops being pending. Left for phase 2:
+AC2's read models and live events (and wiring `follow` to the VELDO-0051 publication so open streams
+close), AC4's configuration and operational actions, extending ROUTES with those families, and routing
+the assertion packets through the VELDO-0047 service socket over VELDO-0107 with the signer signing the
+API's own requests, which changes control_service.py and control_client.py and adds them to the
+footprint first.

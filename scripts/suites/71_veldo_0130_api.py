@@ -604,7 +604,11 @@ def _v130_checks(base):
         """One enroll_api_credential (or revoke) command signed at the host: its observation and what it wrote."""
         cid = next_id('credential')
         if operation == 'enroll':
-            command = CR.enrollment_command(pending, principal, cid) if CR is not None else {'command_id': cid}
+            command = (CR.enrollment_command(pending, principal, cid) if CR is not None else
+                       {'command_id': cid, 'operation': 'enroll_api_credential', 'target': None,
+                        'parameters': {'principal': principal, 'binding': dict(pending.get('binding') or {}),
+                                       'proof': dict(pending.get('proof') or {})},
+                        'artifact_digests': [], 'expected_versions': {}})
         else:
             command = {'command_id': cid, 'operation': 'revoke_api_credential',
                        'target': CR.target(credential_id) if CR is not None else None,

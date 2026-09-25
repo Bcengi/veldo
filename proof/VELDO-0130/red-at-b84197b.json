@@ -1,0 +1,294 @@
+{
+ "by_assertion": true,
+ "commit": "b84197b8366e73e9886eb996c9dce1d9606a08fb",
+ "details": [
+  "VELDO-0130 install/assets detail: .veldo/control_api.py installed by the scaffold",
+  "VELDO-0130 install/assets detail: .veldo/control_api.py engine copy identical",
+  "VELDO-0130 install/assets detail: .veldo/control_api.py laid by the installer",
+  "VELDO-0130 install/assets detail: .veldo/control_api_assertion.py installed by the scaffold",
+  "VELDO-0130 install/assets detail: .veldo/control_api_assertion.py engine copy identical",
+  "VELDO-0130 install/assets detail: .veldo/control_api_assertion.py laid by the installer",
+  "VELDO-0130 install/assets detail: .veldo/control_api_authority.py installed by the scaffold",
+  "VELDO-0130 install/assets detail: .veldo/control_api_authority.py engine copy identical",
+  "VELDO-0130 install/assets detail: .veldo/control_api_authority.py laid by the installer",
+  "VELDO-0130 install/assets detail: .veldo/control_api_credentials.py installed by the scaffold",
+  "VELDO-0130 install/assets detail: .veldo/control_api_credentials.py engine copy identical",
+  "VELDO-0130 install/assets detail: .veldo/control_api_credentials.py laid by the installer",
+  "VELDO-0130 install/assets detail: .veldo/control_api_signer.py installed by the scaffold",
+  "VELDO-0130 install/assets detail: .veldo/control_api_signer.py engine copy identical",
+  "VELDO-0130 install/assets detail: .veldo/control_api_signer.py laid by the installer",
+  "VELDO-0130 install/assets detail: .veldo/control_api_webauthn.py installed by the scaffold",
+  "VELDO-0130 install/assets detail: .veldo/control_api_webauthn.py engine copy identical",
+  "VELDO-0130 install/assets detail: .veldo/control_api_webauthn.py laid by the installer",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: a user-verified assertion over the issued challenge verifies [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: a registration ceremony offered as a sign-in is refused as wrong_ceremony [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: another challenge is refused as wrong_challenge [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: another origin is refused as wrong_origin [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: crossOrigin true is refused as cross_origin [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: another relying party id is refused as wrong_relying_party [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: user verified without user present is refused as user_not_present [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: no user verification is refused as user_not_verified [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: another user handle is refused as wrong_user_handle [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: authenticator data changed after signing is refused as signature_invalid [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: the signature changed is refused as signature_invalid [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: signed by another key is refused as signature_invalid [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: ES256: an algorithm other than ES256 and Ed25519 is not accepted (['no verifier is installed'])",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: a user-verified assertion over the issued challenge verifies [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: a registration ceremony offered as a sign-in is refused as wrong_ceremony [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: another challenge is refused as wrong_challenge [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: another origin is refused as wrong_origin [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: crossOrigin true is refused as cross_origin [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: another relying party id is refused as wrong_relying_party [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: user verified without user present is refused as user_not_present [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: no user verification is refused as user_not_verified [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: another user handle is refused as wrong_user_handle [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: authenticator data changed after signing is refused as signature_invalid [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: the signature changed is refused as signature_invalid [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: signed by another key is refused as signature_invalid [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/stand-in-browser detail: Ed25519: an algorithm other than ES256 and Ed25519 is not accepted (['no verifier is installed'])",
+  "VELDO-0130 webauthn/stand-in-browser detail: an Ed25519 key offered as ES256 is refused (['no verifier is installed'])",
+  "VELDO-0130 webauthn/stand-in-browser detail: OpenSSL verifies in a 0700 directory that keeps no key, signature or message afterwards",
+  "VELDO-0130 webauthn/independent-vectors detail: W3C 16.6 (ES256, user verified, a 1023-byte credential id) verifies [observed ['no verifier is installed']]",
+  "VELDO-0130 webauthn/independent-vectors detail: W3C 16.6 with its signature changed is refused",
+  "VELDO-0130 webauthn/independent-vectors detail: W3C 16.6 at another origin or relying party is refused",
+  "VELDO-0130 webauthn/independent-vectors detail: W3C 16.2 (ES256): its signature verifies with OpenSSL, and the assertion is refused for no user verification",
+  "VELDO-0130 webauthn/independent-vectors detail: W3C 16.4 (ES256, crossOrigin true): its signature verifies, and the assertion is refused as cross-origin",
+  "VELDO-0130 webauthn/independent-vectors detail: W3C 16.11 (Ed25519): its signature verifies with OpenSSL and not over a changed message, and the assertion is refused for no user verification",
+  "VELDO-0130 enrollment/pending-grants-nothing detail: the registration and possession ceremonies make one pending registration [observed: 404 missing_evidence:route]",
+  "VELDO-0130 enrollment/pending-grants-nothing detail: the pending registration is a 0600 file in a 0700 directory, showing the key fingerprint and label",
+  "VELDO-0130 enrollment/pending-grants-nothing detail: the pending credential cannot sign in [observed: 404 missing_evidence:route]",
+  "VELDO-0130 enrollment/pending-grants-nothing detail: a registration ceremony from another origin is refused [observed: 404 missing_evidence:route]",
+  "VELDO-0130 enrollment/pending-grants-nothing detail: a registration ceremony over another challenge is refused [observed: 404 missing_evidence:route]",
+  "VELDO-0130 enrollment/pending-grants-nothing detail: a possession proof not signed by the offered key is refused [observed: 404 missing_evidence:route]",
+  "VELDO-0130 enrollment/pending-grants-nothing detail: at most three registrations are pending at a time [observed [404, 404, 404, 404]]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a current member who is not a steward (policy_refused) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a service (not_a_person) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a steward whose scope does not cover the principal's (scope_refused) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a principal never enrolled (principal_not_member) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: a service principal (principal_not_member) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: an envelope against a stale membership version (envelope_refused) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: an envelope for another store (envelope_refused) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: the label changed after signing (envelope_refused) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: the steward's envelope signed by another key (signature_invalid) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: an expired pending registration (registration_expired) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: refused with nothing written: another registration's possession proof (possession_unproven) [observed refused, no_credentials_module, 0 written]",
+  "VELDO-0130 enrollment/steward-signed detail: the steward's signed enrollment of the owner's own passkey is accepted [observed no_credentials_module]",
+  "VELDO-0130 enrollment/steward-signed detail: the record holds the principal, credential, key, algorithm, user handle, relying party, origin, label, effective time, proof and envelope, and grants no role",
+  "VELDO-0130 enrollment/steward-signed detail: the record verifies on its own: its possession proof rechecks with OpenSSL",
+  "VELDO-0130 enrollment/steward-signed detail: a credential id or key already held is refused as credential_in_use",
+  "VELDO-0130 enrollment/steward-signed detail: no API route and no API assertion enrolls a credential",
+  "VELDO-0130 enrollment/steward-signed detail: the phone passkey of owner2 is enrolled [observed no_credentials_module]",
+  "VELDO-0130 enrollment/steward-signed detail: the Owner desktop passkey of owner is enrolled [observed registration:missing_evidence:route]",
+  "VELDO-0130 enrollment/steward-signed detail: the Owner laptop passkey of owner is enrolled [observed registration:missing_evidence:route]",
+  "VELDO-0130 enrollment/steward-signed detail: the Member phone passkey of member is enrolled [observed registration:missing_evidence:route]",
+  "VELDO-0130 enrollment/steward-signed detail: the Steward phone passkey of steward is enrolled [observed registration:missing_evidence:route]",
+  "VELDO-0130 enrollment/steward-signed detail: an enrolled registration is no longer pending",
+  "VELDO-0130 session/cookie-and-expiry detail: a verified passkey sign-in makes a session for the credential's principal [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/cookie-and-expiry detail: the cookie is __Host-veldo-session, Secure, HttpOnly, SameSite=Strict, Path=/, with no Domain [observed []]",
+  "VELDO-0130 session/cookie-and-expiry detail: the API keeps only the cookie's SHA-256, never the cookie",
+  "VELDO-0130 session/cookie-and-expiry detail: the session read returns the principal and the same anti-forgery token [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/cookie-and-expiry detail: a sign-in assertion replayed over its used challenge is refused [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/cookie-and-expiry detail: a challenge older than 120 seconds is refused [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/cookie-and-expiry detail: each sign-in makes a new session cookie",
+  "VELDO-0130 session/cookie-and-expiry detail: a session touched within 30 minutes lives, and ends 30 minutes after its last request [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/cookie-and-expiry detail: a session in steady use ends 12 hours after sign-in [observed [404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404, 404]]",
+  "VELDO-0130 session/cookie-and-expiry detail: sign-out ends the session and clears the cookie [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/cookie-and-expiry detail: sign out everywhere ends every session of the member and no one else's [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/cookie-and-expiry detail: an API restart ends every session",
+  "VELDO-0130 session/cookie-and-expiry detail: observations name the route, principal, credential and session handle, never a cookie or token",
+  "VELDO-0130 session/forgery-refused detail: the write routes are derived from the published table [observed []]",
+  "VELDO-0130 session/forgery-refused detail: a ceremony from another origin is refused [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/forgery-refused detail: a request naming another Host is refused [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/forgery-refused detail: a body over 64 KiB is refused [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/forgery-refused detail: a read needs no token and changes nothing",
+  "VELDO-0130 session/revocation-ends detail: a steward's own session revokes a credential through the edge; the journal actor is the steward [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/revocation-ends detail: the revoked credential's session ends [observed: 404 missing_evidence:route]",
+  "VELDO-0130 session/revocation-ends detail: an assertion signed before a revocation is refused by the authority's own recheck [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 session/revocation-ends detail: following the journal ends the revoked credential's sessions at once [observed 0]",
+  "VELDO-0130 session/revocation-ends detail: following a revoke_membership ends every session of the member at once [observed 0]",
+  "VELDO-0130 session/revocation-ends detail: revoke_membership ends the member's credentials with it",
+  "VELDO-0130 routes/every-family detail: the route table and the registered handlers agree [observed ['no API module is installed']]",
+  "VELDO-0130 routes/every-family detail: phase 1 publishes the auth, messages and decisions families",
+  "VELDO-0130 routes/every-family detail: auth: a member who is not a steward cannot revoke a credential [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/every-family detail: messages: a member whose scope covers no served project is unauthorized [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/every-family detail: decisions: a member who is not the presented owner is unauthorized [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 404 missing_evidence:route] [observed: 404 missing_evidence:route] [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/body-actor-refused detail: a decision authorized with the body actor_id is refused as impersonation, and nothing is settled [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/body-actor-refused detail: control: the owner's own session answers the same decision [observed: 404 missing_evidence:route]",
+  "VELDO-0130 edge/signer-api-purpose detail: a current member's assertion is signed, with its derived intake request [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an answer-signing request (forbidden-purpose) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a request with a key path (key-path) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a request with another field (forbidden-purpose) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an assertion with another field (forbidden-purpose) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an assertion for another operation (forbidden-purpose) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a request for another channel (channel-mismatch) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an assertion naming another edge (edge-mismatch) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an assertion for another store (wrong-authority) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses an expired assertion (assertion-expired) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a principal who does not hold the credential (credential-not-current) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a revoked credential (credential-not-current) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the signer refuses a principal with no credential (credential-not-current) [observed unauthenticated-channel]",
+  "VELDO-0130 edge/signer-api-purpose detail: the API holds no key: the edge key is read only by the signer and reaches no output",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion changed after signing (unauthenticated:signature) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion signed by the owner, not the edge (unauthenticated:signature) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion naming another edge (unauthenticated:edge) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion replayed after its expiry (unauthenticated:expired) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses a principal who does not hold the named credential (unauthenticated:credential_of_another_principal) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses a credential nobody holds (unauthenticated:unknown_credential) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses an assertion for another domain (unauthorized:domain) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses an edge signature over another intake request than the assertion names (unauthenticated:signature) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the authority refuses an operation outside the assertion contract (invalid_input:assertion) [observed missing_evidence:no_api_authority]",
+  "VELDO-0130 edge/authority-recheck detail: the valid assertion executes once; the same request id again writes nothing [observed missing_evidence:no_api_authority, None]",
+  "VELDO-0130 edge/authority-recheck detail: the authority observes the operation, principal, credential, session and assertion digest",
+  "VELDO-0130 messages/common-intake detail: the message is proposed by the common intake for the session's member [observed: 404 missing_evidence:route]",
+  "VELDO-0130 messages/common-intake detail: the source is the API's: channel api, the edge, the request id and the request digest",
+  "VELDO-0130 messages/common-intake detail: intake admits nothing itself: the write is intake records only [observed []]",
+  "VELDO-0130 messages/common-intake detail: a message naming no project is kept with the question naming the candidates [observed: 404 missing_evidence:route]",
+  "VELDO-0130 messages/common-intake detail: a follow-up naming the proposal resolves it into an objective [observed: 404 missing_evidence:route]",
+  "VELDO-0130 decisions/exact-settlement detail: the owner's answer at the current request and presentation versions settles [observed: 404 missing_evidence:route]",
+  "VELDO-0130 decisions/exact-settlement detail: the recorded answer is the session's member on channel api, under the request id the API issued",
+  "VELDO-0130 decisions/exact-settlement detail: an answer to the presentation the owner saw before a revision is refused as stale [observed: 404 missing_evidence:route]",
+  "VELDO-0130 decisions/exact-settlement detail: the answer to the current presentation settles [observed: 404 missing_evidence:route]",
+  "VELDO-0130 decisions/exact-settlement detail: another owner's answer is unauthorized and an unoffered choice invalid, nothing written [observed: 404 missing_evidence:route] [observed: 404 missing_evidence:route]",
+  "VELDO-0130 decisions/one-ruling detail: after Telegram settles, the UI answer is refused and settles nothing [observed: 404 missing_evidence:route]",
+  "VELDO-0130 decisions/one-ruling detail: after the UI settles, a Telegram answer adds no second ruling [observed: 404 missing_evidence:route]",
+  "VELDO-0130 transport/loopback-only detail: the API refuses to listen on 0.0.0.0",
+  "VELDO-0130 transport/loopback-only detail: the API refuses to listen on 192.168.1.10",
+  "VELDO-0130 transport/loopback-only detail: the API refuses to listen on ::",
+  "VELDO-0130 transport/loopback-only detail: the API refuses to listen on localhost",
+  "VELDO-0130 transport/loopback-only detail: the API refuses to listen on veldo-host.example.ts.net",
+  "VELDO-0130 transport/loopback-only detail: the API listens on loopback"
+ ],
+ "failed_rows": [
+  "VELDO-0130 install/assets",
+  "VELDO-0130 webauthn/stand-in-browser",
+  "VELDO-0130 webauthn/independent-vectors",
+  "VELDO-0130 enrollment/pending-grants-nothing",
+  "VELDO-0130 enrollment/steward-signed",
+  "VELDO-0130 session/cookie-and-expiry",
+  "VELDO-0130 session/forgery-refused",
+  "VELDO-0130 session/revocation-ends",
+  "VELDO-0130 routes/every-family",
+  "VELDO-0130 routes/body-actor-refused",
+  "VELDO-0130 edge/signer-api-purpose",
+  "VELDO-0130 edge/authority-recheck",
+  "VELDO-0130 messages/common-intake",
+  "VELDO-0130 decisions/exact-settlement",
+  "VELDO-0130 decisions/one-ruling",
+  "VELDO-0130 transport/loopback-only"
+ ],
+ "modules": {
+  ".veldo/authority_contract.py": {
+   "at_commit": "d76e55106b852e58ae51cc7438161ba0ff1057560f090cb5001ac664881dd8b3",
+   "now": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9"
+  },
+  ".veldo/control_api.py": {
+   "at_commit": null,
+   "now": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": null,
+   "now": "edde8a89c7f4fdbe99e100a3eb0b03070accb06f670af80732d2fd37ae210c69"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": null,
+   "now": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa"
+  },
+  ".veldo/control_api_credentials.py": {
+   "at_commit": null,
+   "now": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  ".veldo/control_api_signer.py": {
+   "at_commit": null,
+   "now": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725"
+  },
+  ".veldo/control_api_webauthn.py": {
+   "at_commit": null,
+   "now": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  ".veldo/control_channel_enrollment.py": {
+   "at_commit": "5df4f93e8782660bce3312b7a6265446e2eccefab5f608d74258d791544b0ac7",
+   "now": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622"
+  },
+  ".veldo/control_signer_answers.py": {
+   "at_commit": "8a946365146b2108fb16d6f38f88d1cb7dc2d2bc7439152b81c399ca480b10f5",
+   "now": "5fa96e7d58ee981f0dd90a52b63fc546887b25933f14e3d46a17ea74c11a7200"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132",
+   "now": "9a52400a6c8aefb49eb5628461757d3bb93c25da2b060cd0aa73852eeddba546"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0130 install/assets",
+   false
+  ],
+  [
+   "VELDO-0130 webauthn/stand-in-browser",
+   false
+  ],
+  [
+   "VELDO-0130 webauthn/independent-vectors",
+   false
+  ],
+  [
+   "VELDO-0130 enrollment/pending-grants-nothing",
+   false
+  ],
+  [
+   "VELDO-0130 enrollment/steward-signed",
+   false
+  ],
+  [
+   "VELDO-0130 session/cookie-and-expiry",
+   false
+  ],
+  [
+   "VELDO-0130 session/forgery-refused",
+   false
+  ],
+  [
+   "VELDO-0130 session/revocation-ends",
+   false
+  ],
+  [
+   "VELDO-0130 routes/every-family",
+   false
+  ],
+  [
+   "VELDO-0130 routes/body-actor-refused",
+   false
+  ],
+  [
+   "VELDO-0130 edge/signer-api-purpose",
+   false
+  ],
+  [
+   "VELDO-0130 edge/authority-recheck",
+   false
+  ],
+  [
+   "VELDO-0130 messages/common-intake",
+   false
+  ],
+  [
+   "VELDO-0130 decisions/exact-settlement",
+   false
+  ],
+  [
+   "VELDO-0130 decisions/one-ruling",
+   false
+  ],
+  [
+   "VELDO-0130 transport/loopback-only",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 2.235,
+ "spec_id": "VELDO-0130",
+ "suite": "scripts/suites/71_veldo_0130_api.py",
+ "tree": "git archive b84197b8366e73e9886eb996c9dce1d9606a08fb, unchanged; the current suite file run against it"
+}

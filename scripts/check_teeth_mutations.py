@@ -4714,7 +4714,7 @@ def cases():
         "            elif change.get('kind') == 'membership' and data.get('revoked_at') is not None:",
         "            elif False:  # defect: a revoked membership in the journal ends nothing", ['session/revocation-ends'])
     api('token-unchecked', API130, "            if write and not hmac.compare_digest(",
-        "            if False and not hmac.compare_digest(  # defect: no anti-forgery token", ['session/forgery-refused'])
+        "            if False and not hmac.compare_digest(", ['session/forgery-refused'])
     api('origin-unchecked', API130, "            if headers.get('Origin') != self.origin:",
         "            if False:  # defect: any Origin writes", ['session/forgery-refused'])
     api('fetch-site-unchecked', API130, "            if headers.get('Sec-Fetch-Site') not in (None, 'same-origin'):",
