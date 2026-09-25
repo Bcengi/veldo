@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -253 +253 @@
+@@ -275 +275 @@
 -                                      error_class=None if accepted else taxonomy(reason)))
 +                                      error_class=None))  # defect: refusals carry no error class

@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -632 +632 @@
+@@ -697 +697 @@
 -            if stop['effect'] == 'unknown' or outstanding:
 +            if False:  # defect: an unknown-effect stop resumes on an answer

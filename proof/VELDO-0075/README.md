@@ -18,7 +18,13 @@ and the canonical gate is run by the lead.
   `AWAITING_AUTHORITY` along its declared edge, carrying the interruption. The enabled stop points are
   build (DISPATCHING, RUNNING, VERIFYING), review (REVIEWING) and coordination (CLAIMED, READY_TO_LAND,
   LANDING). A stop is unknown-effect when the requester says so or when a dispatch of the unit is in
-  the `unknown` state.
+  the `unknown` state. The designated authority must be able to settle the stop and be reached now,
+  or the raise refuses by name and writes nothing: it must hold every role of the effective
+  requirement a settlement will apply (the settlement service's own `requirement()` for
+  `decision_disposition` AND the named roles, so `project_owner` is always among them), refused as
+  `role_not_satisfied` naming the person and the missing roles; and it must have a valid private chat
+  enrollment, refused as `no_enrolled_chat`. The stop records the effective roles, and the roles the
+  requester named as `requested_roles`.
 - **The request.** The service, an enrolled service principal with its own key, records VELDO-0068
   settlement terms (touchpoint `decision_disposition`, target the stop by id and digest, the stop's
   roles). It then opens the VELDO-0064 request addressed to the designated person, frames it and
@@ -28,18 +34,23 @@ and the canonical gate is run by the lead.
   the VELDO-0073 activated edge and keeps one `andon_notice` per (request, request version,
   presentation id). The notice holds the chat, the platform's message ids, the presentation id,
   version and digest, and the answer path (a reply to that message, with the offered choices). A key
-  already kept is suppressed. No tracker link is used.
+  already kept is suppressed. No tracker link is used. A notice that cannot reach the designated
+  authority (an edge the owner stopped, an owner no longer current, a chat not enrolled or no longer
+  valid) is refused under that name, classed `missing_authority` as VELDO-0073 classes `edge_stopped`.
 - **Resuming.** `resume` moves the unit to READY only on the settlement of the request's current
   version: it must be the assignment's terminal state with its receipt and typed effect, approve the
   stop's own target, and be the designated person's alone on the presentation that is still current.
-  That person must still be an active person holding the resolving roles. The resumed unit carries a
+  That person must still be an active person holding every role the settlement's own requirement
+  named and every role the stop recorded. The resumed unit carries a
   fresh `andon_station_contract` naming the station, the attempt, the unit version it was issued at and
   the settlement, receipt and effect that permitted it. An unknown-effect stop is refused as
   `unknown_outcome` whatever was answered, with its dispatch and reservations untouched.
 
-The module was judged against the criteria and the threat model of "What the reviewer judges" and
-needed no change: every row below is green on it, and each shape the threat model names is a mutation
-that turns its row red.
+The module was first judged against the criteria and the threat model of "What the reviewer judges"
+with no change needed. Review 75 then found that a raise accepted a designated authority who could
+not meet the settlement's requirement, and that resume re-checked only the recorded roles; two filed
+items followed (notice refusal classes, and no enrolled chat checked at raise). All four are fixed,
+each with a row and a mutation that turns it red.
 
 ## Rows, falsifiers and red record
 
@@ -57,20 +68,26 @@ stop, notice, answer, settlement and resumption goes through the real signed com
 | --- | --- | --- | --- |
 | `stop/any-authenticated-requester` | AC1 | A stop at each of the seven enabled stop states, raised by a worker (an agent run with no role) or a service with no role; reason, station, state and predicate kept; the unit stopped along its edge; the request addressed to the owner, not the requester; a station that does not hold the unit and a disabled stop point refused | `raise-requires-resolving-role`, `resolving-recorded-as-requester`, `station-unchecked` |
 | `stop/unauthenticated-refused` | AC1 | A command signed with another member's key and one signed by no member: refused, nothing recorded | `raise-signature-unchecked` |
+| `stop/designated-authority-deliverable` | AC1, AC3 (review 75) | A technical_authority-only person designated is refused as `role_not_satisfied` naming the person and `project_owner`; a person with no enrolled chat (the steward) is refused as `no_enrolled_chat`; neither writes or sends anything; a stop naming only technical_authority records the effective roles with `project_owner` and its terms carry them | `effective-requirement-not-computed-at-raise`, `enrolled-chat-unchecked` |
 | `notice/each-stop-kind` | AC2 | The build, review and coordination stops each sent once to the owner's chat; the stored correlation equals the published presentation and the platform's message ids; the answer path is a reply to that message | `raise-sends-nothing`, `answer-path-unbound` |
 | `notice/new-version-same-status` | AC2 | The requester's revision is request version 2 with the same status; a new message shows the update; its notice has its own presentation and message; a repeat is suppressed; another member cannot revise | `notice-keyed-by-status`, `revision-not-presented` |
+| `notice/unreachable-authority-classed` | AC2, observability (filed) | A revision's notice to an owner without `project_owner` is `owner_not_current`, after the owner stops the edge `edge_stopped`, after the chat enrollment is revoked `invalid_enrollment`, each observed classed `missing_authority`; `no_enrolled_chat` keeps its name and class | `unreachable-authority-misclassed` |
 | `resume/acknowledgement-grants-nothing` | AC3 | A stop noticed, published and acknowledged but not answered does not resume, nor does a pass of the service; the owner's settled reject does not resume | `resume-on-notice`, `any-ruling-resumes` |
-| `resume/stale-or-wrong-actor` | AC3 | The owner's reply to the superseded version 1 message, an unenrolled sender, and the steward and the worker through the API edge settle nothing and resume nothing; a settlement whose author has since lost a resolving role does not resume | `stale-answer-resumes`, `resolver-roles-unchecked` |
+| `resume/stale-or-wrong-actor` | AC3 | The owner's reply to the superseded version 1 message, an unenrolled sender, and the steward and the worker through the API edge settle nothing and resume nothing; a settlement whose author has since lost a resolving role does not resume; a settler who lost `project_owner`, which the settlement required for a stop naming only technical_authority, does not resume; nor one who lost a role the running settlement policy required beyond the roles the stop recorded | `stale-answer-resumes`, `resolver-roles-unchecked`, `resume-rechecks-recorded-roles-only` |
 | `resume/owner-settlement-fresh-contract` | AC3 | The owner's accept of the current version (2 for the revised build stop, 1 for a coordination stop) resumes the unit to READY with a fresh station contract whose permission is that settlement, receipt and effect; a second resume is refused | `contract-at-stale-unit-version`, `first-version-settlement-only` |
 | `resume/unknown-effect-stays-stopped` | AC3 | A declared unknown effect and an unknown dispatch both record an unknown-effect stop; the owner's settled accept resumes neither; the dispatch record is untouched | `unknown-effect-resumes`, `unknown-dispatch-ignored` |
 | `install/assets` | all | Scaffold registration, engine copy, laid by the installer | `andon-not-scaffolded` |
 | `observability/named-refusals` | all | Every refusal named and classed, no reason text or signature observed, counts and pending stops | `refusal-unclassed`, `reason-text-observed` |
 
-Registry: `scripts/check_teeth_mutations.py --finding 75` (19 mutants, all rejected, each reddening its
+Registry: `scripts/check_teeth_mutations.py --finding 75` (23 mutants, all rejected, each reddening its
 named row). `python3 -B proof/VELDO-0075/drive.py` regenerates `mutations.json` and the diffs: each
 mutant reds its named row by assertion, and the baseline and a no-op copy of each mutated module are
 green. `red-at-9fa7e4d.json`: the current suite against the pre-change tree (`git archive`, unchanged),
 where the andon module is absent; every row is red by its own assertions, none by an exception.
+`red-at-e5c2bc8.json`: the current suite against the tree before the review 75 fix; exactly the three
+rows that fix answers are red, by assertion (the techlead and the chatless steward accepted, a settler
+who lost a required role resumed, unreachable notices classed `unavailable_service` or
+`stale_subject`).
 
 ## Pending: AC2's real-Telegram leg
 
@@ -84,5 +101,7 @@ it is never counted as passed.
   `control_dispatch` write; the units' own lifecycle to those states is other specifications' work.
 - A stop whose request could not be opened (terms or inbox refused) stays recorded and stopped; opening
   it again, and lost-send or reconnect handling, are Release 2 recovery.
-- The designated authority must hold the resolving roles when the stop is raised; the journey's own
-  `project_owner` role for `decision_disposition` is required by the settlement service at settlement.
+- The effective requirement is read from the running settlement service's own `requirement()`, the
+  function its settle path applies, so the andon keeps no copy of the journey policy. The
+  policy-change case in `resume/stale-or-wrong-actor` changes that running policy between raise and
+  settlement in the suite, the only way a settled requirement can exceed the recorded roles.

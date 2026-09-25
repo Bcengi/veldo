@@ -157,3 +157,11 @@ coordination stop points, against the production ingress activated by the owner'
 commands and a loopback Bot API stand-in; red record against 9fa7e4d by assertion; 19 teeth
 mutations as finding 75, each declared falsifier first. AC2's real-Telegram leg is PENDING (the lead
 with the owner, VELDO-0138). Status unchanged.
+
+2026-09-25, review 75 fix: a raise refuses by name, writing nothing, a designated authority who does
+not meet the settlement's effective requirement now (`role_not_satisfied`) or has no enrolled chat
+(`no_enrolled_chat`), and records the effective roles; resume re-checks the settled requirement's
+roles as well as the recorded ones; a notice that cannot reach the authority is classed
+missing_authority. Rows `stop/designated-authority-deliverable` and
+`notice/unreachable-authority-classed`, two cases in `resume/stale-or-wrong-actor`; red record at
+e5c2bc8 by assertion; 23 finding 75 mutations. Status unchanged.

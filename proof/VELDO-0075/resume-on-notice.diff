@@ -1,6 +1,6 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -639 +639,6 @@
+@@ -704 +704,6 @@
 -            permission = self._permission(stop, item, state, now)
 +            kept = self.notices(sid)  # defect: a notification acknowledgement resumes the stop
 +            permission = ({'kind': 'notice', 'settlement_id': None, 'receipt_id': None, 'effect_id': None,

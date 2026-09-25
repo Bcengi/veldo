@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -401 +401 @@
+-            enrolled = self._enrolled_chat(resolving['principal'])
++            enrolled = self._enrolled_chat(resolving['principal']) or ('no-chat', 0)  # defect: the chat is not checked

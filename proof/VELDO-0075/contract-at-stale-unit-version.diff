@@ -1,6 +1,6 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -643 +643,2 @@
+@@ -708 +708,2 @@
 -                        'attempt': attempt, 'issued_at_unit_version': u['version'] + 1, 'stop_id': sid,
 +                        'attempt': attempt, 'issued_at_unit_version': u['version'],  # defect: the contract names the stopped unit version
 +                         'stop_id': sid,

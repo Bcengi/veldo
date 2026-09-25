@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -382 +382 @@
+@@ -412 +412 @@
 -            effect = 'unknown' if c['effect'] == 'unknown' or outstanding else 'clean'
 +            effect = c['effect']  # defect: an unknown dispatch does not make the effect unknown

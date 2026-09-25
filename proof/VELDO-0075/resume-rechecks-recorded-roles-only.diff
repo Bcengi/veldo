@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -666 +666 @@
+-        roles = set(settled_roles) | set(stop['resolving']['roles'])
++        roles = set(stop['resolving']['roles'])  # defect: the settled requirement's roles are not re-checked

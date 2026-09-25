@@ -1,6 +1,6 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -639 +639,8 @@
+@@ -704 +704,8 @@
 -            permission = self._permission(stop, item, state, now)
 +            answered = [self.presenter.answer_record(rid, v, stop['resolving']['principal'])
 +                        for v in range(1, item['data']['request_version'] + 1)]

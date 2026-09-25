@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -389 +389 @@
+@@ -419 +419 @@
 -                    'raised_by_type': entry.get('principal_type'), 'resolving': {'principal': resolving['principal'],
 +                    'raised_by_type': entry.get('principal_type'), 'resolving': {'principal': c['principal'],  # defect: the requester is recorded as the resolver
