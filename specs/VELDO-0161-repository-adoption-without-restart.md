@@ -63,10 +63,12 @@ acceptance_criteria:
       enrollment signers, whose only use is signing a VELDO-0029 binding for a repository named in a
       settled owner decision; the effect executor checks the settlement before asking for the signature,
       and every signature is journaled. Falsifier: Let the adoption signer sign a binding for a repository
-      no settled decision names; the signer-scope check must fail.
+      no settled decision names, and the signer-scope check must fail; lay the missing scaffold in a commit
+      the answered proposal does not name, and the scaffold-commit row must fail.
     falsified_by: >
-      Let the adoption signer sign a binding for a repository no settled decision names; the signer-scope
-      check must fail.
+      Let the adoption signer sign a binding for a repository no settled decision names, and the
+      signer-scope check must fail; lay the missing scaffold in a commit the answered proposal does not
+      name, and the scaffold-commit row must fail.
   - id: AC2
     text: >
       Claim: An adopted repository is taken on by the running authority service without a restart or
@@ -134,3 +136,7 @@ commit rather than a first unit.
 adoption, scaffold commit and signer scope, with its falsifier unchanged; AC2 is its "taken on by the
 running service without a restart", which had no falsifier, now with its own. A draft: only the owner
 marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: AC1's scaffold half, one recorded commit named by the
+proposal he answered, gets a falsifier of its own beside the signer-scope one. Criterion meaning
+unchanged. A draft.
