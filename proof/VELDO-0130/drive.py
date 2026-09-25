@@ -14,12 +14,18 @@ extracted read-only with `git archive` into a temporary directory, and writes
 proof/VELDO-0130/red-at-COMMIT.json. Nothing in that tree is changed. Before phase 1 (b84197b) it has
 no API modules, so the suite drives what that tree has in the API's place (no route answers, no
 verifier, no credential); at the end of phase 1 (83abf6d) it has no read, event or configuration
-routes and no published contract. Either way each row the tree lacks fails by its own assertions.
+routes and no published contract; at the end of phase 2 (791f094, with origin/main merged) the service
+runs no API and the API process cannot be constructed. Either way each row the tree lacks fails by its
+own assertions.
 
     python3 -B proof/VELDO-0130/drive.py --red b84197b
     python3 -B proof/VELDO-0130/drive.py --red 83abf6d
+    python3 -B proof/VELDO-0130/drive.py --red 791f094
+
+The mutant runs are independent and run JOBS at a time (default 4); each is its own interpreter.
 """
 import ast
+import concurrent.futures
 import contextlib
 import difflib
 import hashlib
@@ -40,7 +46,9 @@ PREFIX = 'VELDO-0130 '
 FINDING = 130
 MODULES = ('control_api.py', 'control_api_assertion.py', 'control_api_authority.py', 'control_api_credentials.py',
            'control_api_models.py', 'control_api_signer.py', 'control_api_webauthn.py', 'authority_contract.py',
-           'control_channel_enrollment.py', 'control_signer_answers.py', 'init_scaffold.py')
+           'control_channel_enrollment.py', 'control_signer_answers.py', 'init_scaffold.py', 'control_service.py',
+           'control_service_api.py', 'control_client_api.py', 'events.py')
+JOBS = 4
 
 
 def _load(name, path):
@@ -77,7 +85,7 @@ def one(paths, root):
         source = (ROOT / 'scripts/suites' / SUITE).read_text()
         for module, path in paths.items():
             anchor = 'ROOT / ".veldo" / "' + module + '"'
-            if source.count(anchor) != 1:
+            if not source.count(anchor):
                 raise RuntimeError('suite production-copy anchor moved: ' + module)
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(path) + ')')
         exec(compile(source, SUITE, 'exec'), ns)
@@ -136,20 +144,27 @@ def main():
     report = {'schema': 'veldo.proof-mutations/v1', 'spec_id': 'VELDO-0130', 'suite': 'scripts/suites/' + SUITE,
               'registry': 'scripts/check_teeth_mutations.py --finding %d' % FINDING, 'baseline': run(), 'noop': None,
               'mutants': []}
-    with tempfile.TemporaryDirectory(prefix='v130-drive-') as directory:
+    with tempfile.TemporaryDirectory(prefix='v130-drive-') as directory, \
+            concurrent.futures.ThreadPoolExecutor(max_workers=JOBS) as pool:
         report['noop'] = {}
+        noops = {}
         for module in sorted({c['module'] for c in cases}):
             case = next(c for c in cases if c['module'] == module)
             noop = ctm.materialize(case, 'noop', Path(directory) / ('noop-' + module))
-            report['noop'][module] = dict(run({module: str(noop['mutant'])}), source_sha256=noop['old_digest'],
-                                          copy_sha256=noop['new_digest'])
+            noops[module] = (noop, pool.submit(run, {module: str(noop['mutant'])}))
+        runs = []
         for case in cases:
             prepared = ctm.materialize(case, 'mutant', Path(directory) / case['name'])
             source = prepared['source'].read_text()
             (HERE / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
                 source.splitlines(keepends=True), ctm.mutate(source, case).splitlines(keepends=True),
                 n=0, fromfile='a/.veldo/' + case['module'], tofile='b/.veldo/' + case['module'])))
-            observed = run({case['module']: str(prepared['mutant'])})
+            runs.append((case, prepared, pool.submit(run, {case['module']: str(prepared['mutant'])})))
+        for module, (noop, pending) in noops.items():
+            report['noop'][module] = dict(pending.result(), source_sha256=noop['old_digest'],
+                                          copy_sha256=noop['new_digest'])
+        for case, prepared, pending in runs:
+            observed = pending.result()
             report['mutants'].append(dict(name=case['name'], module='.veldo/' + case['module'], named_rows=case['rows'],
                                           diff='proof/VELDO-0130/%s.diff' % case['name'],
                                           source_sha256=prepared['old_digest'], mutant_sha256=prepared['new_digest'],

@@ -2484,10 +2484,11 @@ def _v130_service_checks(base):
         with section(SN):
             # Loaded from the installed executable, so every ownership declaration names the code the
             # service runs, as the API process would have to.
-            organs = home / 'bin' if (home / 'bin' / 'control_service_api.py').is_file() else mods
+            organs = home / 'bin'
             IN = _v130_load('v130s_ingress', organs / 'control_channel_ingress.py')
             ing = IN.open_ingress(str(ingress_config))
-            SA = _v130_load('v130s_service_api_bin', organs / 'control_service_api.py') if SA is not None else None
+            SA = (_v130_load('v130s_service_api_bin', organs / 'control_service_api.py')
+                  if (organs / 'control_service_api.py').is_file() else None)
             lock = _v130_os.open(str(A.db.parent / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
             spare.append(lock)
             local = SA.ServiceApi(str(api_service), SimpleNamespace(ingress=ing), lock, base / 'local-state') if SA else None
