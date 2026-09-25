@@ -656,11 +656,14 @@ def _v130_checks(base):
         if token is not None:
             headers['X-Veldo-Token'] = token
         payload = raw if raw is not None else (_v130_json.dumps(body).encode() if body is not None else b'')
-        status, out, value = (on or api[0]).handle(method, path, headers, payload)
+        try:
+            status, out, value = (on or api[0]).handle(method, path, headers, payload)
+        except Exception as error:  # noqa: BLE001 - a handler that raises is an unknown outcome, recorded
+            return 500, {}, {'refusal': 'raised:%s' % type(error).__name__, 'error': 'unknown_outcome'}
         return status, {k: v for k, v in out}, value
 
     def refusal(result):
-        return (result[2] or {}).get('refusal')
+        return result[2].get('refusal') if isinstance(result[2], dict) else None
 
     def seen(result):
         return ' [observed: %s %s]' % (result[0], refusal(result))

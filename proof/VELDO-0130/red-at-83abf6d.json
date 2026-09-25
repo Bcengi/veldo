@@ -1,0 +1,246 @@
+{
+ "by_assertion": true,
+ "commit": "83abf6d51b139d98fd0eaeaaeff2a5b41a0a7dd3",
+ "details": [
+  "VELDO-0130 install/assets detail: .veldo/control_api_models.py installed by the scaffold",
+  "VELDO-0130 install/assets detail: .veldo/control_api_models.py engine copy identical",
+  "VELDO-0130 install/assets detail: .veldo/control_api_models.py laid by the installer",
+  "VELDO-0130 session/forgery-refused detail: the write routes are derived from the published table [observed ['auth.sign_out', 'auth.sign_out_everywhere', 'auth.revoke_credential', 'messages.send', 'decisions.answer']]",
+  "VELDO-0130 routes/every-family detail: the table publishes the auth, messages, decisions, reads, configuration and events families",
+  "VELDO-0130 routes/every-family detail: reads: a member without the role or scope is refused unauthorized:no_project [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/every-family detail: events: a member without the role or scope is refused unauthorized:no_project [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/every-family detail: configuration: a member without the role or scope is refused unauthorized:missing_authority:editor [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/every-family detail: a valid current enrollment is served in every family [observed: 200 None] [observed: 200 None] [observed: 200 None] [observed: 404 missing_evidence:route] [observed: 404 missing_evidence:route] [observed: 404 missing_evidence:route]",
+  "VELDO-0130 routes/body-actor-refused detail: phase 2 GET routes with a domain are published",
+  "VELDO-0130 reads/model-set detail: every subject the criterion lists is one published read model, and nothing else is [observed []]",
+  "VELDO-0130 reads/model-set detail: the read models serve exactly the kinds this suite expects of the owning modules",
+  "VELDO-0130 reads/model-set detail: no kind is served by two read models",
+  "VELDO-0130 reads/model-set detail: the AC2 gaps are named: projects, accepted objectives, backlog items, the machine registry, tool calls and team configuration [observed []]",
+  "VELDO-0130 reads/model-set detail: the contract route serves the read models, actions and gaps as published [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: a workflow revision exists to read, saved through the API [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: objectives: the answer is exactly the store's entities, identity, kind, version and digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: objectives: it is read at the journal head and labeled live [observed {}]",
+  "VELDO-0130 reads/authoritative detail: objectives: every served value is the stored value, or the redaction marker",
+  "VELDO-0130 reads/authoritative detail: work: the answer is exactly the store's entities, identity, kind, version and digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: work: it is read at the journal head and labeled live [observed {}]",
+  "VELDO-0130 reads/authoritative detail: work: every served value is the stored value, or the redaction marker",
+  "VELDO-0130 reads/authoritative detail: workers: the answer is exactly the store's entities, identity, kind, version and digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: workers: it is read at the journal head and labeled live [observed {}]",
+  "VELDO-0130 reads/authoritative detail: workers: every served value is the stored value, or the redaction marker",
+  "VELDO-0130 reads/authoritative detail: runs: the answer is exactly the store's entities, identity, kind, version and digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: runs: it is read at the journal head and labeled live [observed {}]",
+  "VELDO-0130 reads/authoritative detail: runs: every served value is the stored value, or the redaction marker",
+  "VELDO-0130 reads/authoritative detail: decisions: the answer is exactly the store's entities, identity, kind, version and digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: decisions: it is read at the journal head and labeled live [observed {}]",
+  "VELDO-0130 reads/authoritative detail: decisions: every served value is the stored value, or the redaction marker",
+  "VELDO-0130 reads/authoritative detail: proof: the answer is exactly the store's entities, identity, kind, version and digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: proof: it is read at the journal head and labeled live [observed {}]",
+  "VELDO-0130 reads/authoritative detail: proof: every served value is the stored value, or the redaction marker",
+  "VELDO-0130 reads/authoritative detail: spend: the answer is exactly the store's entities, identity, kind, version and digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: spend: it is read at the journal head and labeled live [observed {}]",
+  "VELDO-0130 reads/authoritative detail: spend: every served value is the stored value, or the redaction marker",
+  "VELDO-0130 reads/authoritative detail: configuration: the store holds every kind the model reads [observed empty ['workflow_head', 'workflow_revision']]",
+  "VELDO-0130 reads/authoritative detail: configuration: the answer is exactly the store's entities, identity, kind, version and digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: configuration: it is read at the journal head and labeled live [observed {}]",
+  "VELDO-0130 reads/authoritative detail: configuration: every served value is the stored value, or the redaction marker",
+  "VELDO-0130 reads/authoritative detail: the redaction marks the key, the MCP environment, the headers and a signature field, by path",
+  "VELDO-0130 reads/authoritative detail: machines are the hosts the dispatches recorded, with their running workers [observed []]",
+  "VELDO-0130 reads/authoritative detail: run steps are the cycle's trace as stored",
+  "VELDO-0130 reads/authoritative detail: a workflow revision reads back through VELDO-0132's load, definition and digest as stored [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/authoritative detail: each answer names the gaps of its model [observed []]",
+  "VELDO-0130 reads/freshness detail: after a new commit the read is at the new head, labeled live, and carries the new proposal [observed: 404 missing_evidence:route] [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/freshness detail: work: read again, it is at the head [observed None]",
+  "VELDO-0130 reads/freshness detail: configuration: read again, it is at the head [observed None]",
+  "VELDO-0130 reads/freshness detail: the published events are live when the publication is at the head [observed None]",
+  "VELDO-0130 reads/freshness detail: a publication behind the head is labeled stale with the records it has not published [observed {}]",
+  "VELDO-0130 reads/freshness detail: with the authority's store unreadable a read is unavailable_service and carries no state [observed: 404 missing_evidence:route]",
+  "VELDO-0130 reads/freshness detail: with the publication's store missing the event read is unavailable_service, never an empty feed [observed: 404 missing_evidence:route]",
+  "VELDO-0130 events/live detail: the event read is every committed record in order: sequence, command and record digest [observed: 404 missing_evidence:route]",
+  "VELDO-0130 events/live detail: each event names the ids and kinds its record changed, as the journal has them",
+  "VELDO-0130 events/live detail: no event carries entity data or a credential value",
+  "VELDO-0130 events/live detail: the stream opens as text/event-stream with a first frame at the head [observed 404]",
+  "VELDO-0130 events/live detail: the first frame is at the head with no events, then the stream waits: nothing is polled",
+  "VELDO-0130 events/live detail: the authority's post-commit notification delivers the new record to the open stream at once [observed: 200 None]",
+  "VELDO-0130 events/live detail: a hint whose record digest is not the journal's delivers nothing [observed {'refusal': 'no deliver on this API'}]",
+  "VELDO-0130 events/live detail: a host revocation delivered through the notification ends both tablet sessions at once and closes the open stream [observed {'refusal': 'no deliver on this API'} (None, None)]",
+  "VELDO-0130 events/live detail: the owner's other stream stays open and receives the revocation record",
+  "VELDO-0130 events/live detail: signing out closes the session's stream, and it is written as event-stream frames [observed None]",
+  "VELDO-0130 actions/contract detail: every action the criterion names is in the published contract",
+  "VELDO-0130 actions/contract detail: every write route with an operation is an action of the contract [observed ['answer_decision', 'revoke_credential', 'send_message']]",
+  "VELDO-0130 actions/contract detail: the authority executes exactly the contract's operations",
+  "VELDO-0130 actions/workflow-save detail: a valid save commits revision 1 and moves the head, one journal record [observed: 404 missing_evidence:route]",
+  "VELDO-0130 actions/workflow-save detail: the revision's journal actor and saver are the session's member, by VELDO-0132's command",
+  "VELDO-0130 actions/workflow-save detail: the save was signed by the protected signer and judged by the authority, naming the credential",
+  "VELDO-0130 actions/workflow-save detail: a save from a base that is not the head is refused stale_version, and nothing is written [observed: 404 missing_evidence:route]",
+  "VELDO-0130 actions/workflow-save detail: a base ahead of the head is refused stale_version too [observed: 404 missing_evidence:route]",
+  "VELDO-0130 actions/workflow-save detail: a member whose roles do not cover the repository is refused unauthorized, nothing written [observed: 404 missing_evidence:route]",
+  "VELDO-0130 actions/workflow-save detail: an invalid definition, and a definition saved under another workflow, are refused invalid_input [observed: 404 missing_evidence:route] [observed: 404 missing_evidence:route]",
+  "VELDO-0130 actions/workflow-save detail: another editor saves revision 2 from the current head; revision 1 keeps its bytes [observed: 404 missing_evidence:route]",
+  "VELDO-0130 actions/unauthorized-write detail: the authority refuses a workflow save by a revoked credential of an editor (unauthenticated:credential_revoked) [observed invalid_input:assertion]",
+  "VELDO-0130 actions/unauthorized-write detail: the authority refuses a workflow save by an editor naming another member's credential (unauthenticated:credential_of_another_principal) [observed invalid_input:assertion]",
+  "VELDO-0130 actions/unauthorized-write detail: the authority refuses a workflow save by a credential nobody holds (unauthenticated:unknown_credential) [observed invalid_input:assertion]",
+  "VELDO-0130 actions/unauthorized-write detail: the authority refuses a workflow save by an unsigned assertion (unauthenticated:signature) [observed invalid_input:assertion]",
+  "VELDO-0130 actions/unauthorized-write detail: the authority refuses a workflow save by an assertion signed by the editor, not the edge (unauthenticated:signature) [observed invalid_input:assertion]",
+  "VELDO-0130 actions/unauthorized-write detail: the authority refuses a workflow save by a service principal with no credential (unauthenticated:credential_of_another_principal) [observed invalid_input:assertion]",
+  "VELDO-0130 actions/unauthorized-write detail: the same save, edge-signed for the current credential, is accepted [observed invalid_input:assertion]"
+ ],
+ "failed_rows": [
+  "VELDO-0130 install/assets",
+  "VELDO-0130 session/forgery-refused",
+  "VELDO-0130 routes/every-family",
+  "VELDO-0130 routes/body-actor-refused",
+  "VELDO-0130 reads/model-set",
+  "VELDO-0130 reads/authoritative",
+  "VELDO-0130 reads/freshness",
+  "VELDO-0130 events/live",
+  "VELDO-0130 actions/contract",
+  "VELDO-0130 actions/workflow-save",
+  "VELDO-0130 actions/unauthorized-write"
+ ],
+ "modules": {
+  ".veldo/authority_contract.py": {
+   "at_commit": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9",
+   "now": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9"
+  },
+  ".veldo/control_api.py": {
+   "at_commit": "570a5499b0afdf9f35887a1f310016c945d42807bb614976d0bc7acfde47d840",
+   "now": "306b74c10a7b9e7577b6b56505dde39f703b81de197b50c13f0a71204e152fbf"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": "edde8a89c7f4fdbe99e100a3eb0b03070accb06f670af80732d2fd37ae210c69",
+   "now": "1c5d95475e99612c2c7aa480d865404e5fabebd02f87052a3df15852f3622129"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": "1e223880525e838fe1e5dce4266c63d88da0d1fe55e9537ec248f5779da77daa",
+   "now": "b62059907661fa096d400bd4cade10749234d64994269a7aea28382e590c3015"
+  },
+  ".veldo/control_api_credentials.py": {
+   "at_commit": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2",
+   "now": "e1a2a66830abf7035bc6c9282938727280cb54a862cdd44aa7a1faf54bc4a8b2"
+  },
+  ".veldo/control_api_models.py": {
+   "at_commit": null,
+   "now": "a0c1370c180b4950277dc1a9058af81395fa59faa3ef1e775bcda8d7b412daf0"
+  },
+  ".veldo/control_api_signer.py": {
+   "at_commit": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725",
+   "now": "bd982f2ddf470450628d3d21bea473fd41731bf6b64648f6e30538f96f5e2725"
+  },
+  ".veldo/control_api_webauthn.py": {
+   "at_commit": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789",
+   "now": "d83dfe44c570d5875d903538a35d0b13690208c0474b10db58723a60515bb789"
+  },
+  ".veldo/control_channel_enrollment.py": {
+   "at_commit": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622",
+   "now": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622"
+  },
+  ".veldo/control_signer_answers.py": {
+   "at_commit": "5fa96e7d58ee981f0dd90a52b63fc546887b25933f14e3d46a17ea74c11a7200",
+   "now": "5fa96e7d58ee981f0dd90a52b63fc546887b25933f14e3d46a17ea74c11a7200"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "9a52400a6c8aefb49eb5628461757d3bb93c25da2b060cd0aa73852eeddba546",
+   "now": "1f4f6107d80e771d0ee21e42187dcaf86e193d6a4eaab2bfb2d92d8fd8bbccf2"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0130 install/assets",
+   false
+  ],
+  [
+   "VELDO-0130 webauthn/stand-in-browser",
+   true
+  ],
+  [
+   "VELDO-0130 webauthn/independent-vectors",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/pending-grants-nothing",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/steward-signed",
+   true
+  ],
+  [
+   "VELDO-0130 session/cookie-and-expiry",
+   true
+  ],
+  [
+   "VELDO-0130 session/forgery-refused",
+   false
+  ],
+  [
+   "VELDO-0130 session/revocation-ends",
+   true
+  ],
+  [
+   "VELDO-0130 routes/every-family",
+   false
+  ],
+  [
+   "VELDO-0130 routes/body-actor-refused",
+   false
+  ],
+  [
+   "VELDO-0130 edge/signer-api-purpose",
+   true
+  ],
+  [
+   "VELDO-0130 edge/authority-recheck",
+   true
+  ],
+  [
+   "VELDO-0130 messages/common-intake",
+   true
+  ],
+  [
+   "VELDO-0130 decisions/exact-settlement",
+   true
+  ],
+  [
+   "VELDO-0130 decisions/one-ruling",
+   true
+  ],
+  [
+   "VELDO-0130 transport/loopback-only",
+   true
+  ],
+  [
+   "VELDO-0130 reads/model-set",
+   false
+  ],
+  [
+   "VELDO-0130 reads/authoritative",
+   false
+  ],
+  [
+   "VELDO-0130 reads/freshness",
+   false
+  ],
+  [
+   "VELDO-0130 events/live",
+   false
+  ],
+  [
+   "VELDO-0130 actions/contract",
+   false
+  ],
+  [
+   "VELDO-0130 actions/workflow-save",
+   false
+  ],
+  [
+   "VELDO-0130 actions/unauthorized-write",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 7.358,
+ "spec_id": "VELDO-0130",
+ "suite": "scripts/suites/71_veldo_0130_api.py",
+ "tree": "git archive 83abf6d51b139d98fd0eaeaaeff2a5b41a0a7dd3, unchanged; the current suite file run against it"
+}

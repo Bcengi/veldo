@@ -135,9 +135,11 @@ AC2's declared falsifier is `stale-snapshot-served-as-current` (red on `reads/fr
 `workflow-save-authority-bypassed` (red on `actions/unauthorized-write`). Twenty threat-model mutations
 more are registered for phase 2 (finding 130, 68 in all).
 
-`red-at-83abf6d.json`: the current suite against the end of phase 1: the seven phase 2 rows and the
-every-family and body-actor rows red by assertion (the tree serves no read, event or configuration route
-and has no published contract), every other phase 1 row green.
+`red-at-83abf6d.json`: the current suite against the end of phase 1: 11 of 23 rows red, all by assertion
+(no section raised). The seven phase 2 rows, and four phase 1 rows whose universe grew: install/assets
+(the models module is not laid), session/forgery-refused (the table has no workflow save route),
+routes/every-family (no reads, configuration or events family) and routes/body-actor-refused (no GET
+route with a domain). The other twelve phase 1 rows are green there.
 
 ## Left
 
