@@ -11,10 +11,11 @@ every run. Writes proof/VELDO-0128/mutations.json and one exact applied diff per
 
 With `--red COMMIT` it instead runs the current suite once against the whole tree of COMMIT,
 extracted read-only with `git archive` into a temporary directory, and writes
-proof/VELDO-0128/red-at-COMMIT.json. Nothing in that tree is changed: it has no report module, so no reporter is
-constructed and each criterion row fails by its own assertions.
+proof/VELDO-0128/red-at-COMMIT.json. Nothing in that tree is changed: at the pre-rework commit its reporter
+reads unit edges nobody writes and fields the dispatch record does not carry, and its channel never runs it, so
+each row the rework adds fails by its own assertions.
 
-    python3 -B proof/VELDO-0128/drive.py --red e134922
+    python3 -B proof/VELDO-0128/drive.py --red f623b78
 
 Git runs only through the tree's own boundary module, loaded as `_git_process`.
 """
@@ -35,7 +36,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 SUITE = '72_veldo_0128_reports.py'
-MODULES = ('control_telegram_report.py', 'init_scaffold.py')
+MODULES = ('control_telegram_report.py', 'control_service_channel.py', 'init_scaffold.py')
 PREFIX = 'VELDO-0128 '
 
 
@@ -107,7 +108,8 @@ def red(commit):
         modules = {rel: dict(at_commit=_sha(tree / rel), now=_sha(ROOT / rel))
                    for rel in tuple('.veldo/' + m for m in MODULES) + (
                                '.veldo/control_event_projection.py', '.veldo/control_channel_activation.py',
-                               '.veldo/control_andon.py')}
+                               '.veldo/control_andon.py', '.veldo/control_dispatch.py', '.veldo/dispatch.py',
+                               '.veldo/control_proof.py', '.veldo/control_verification.py')}
         observed = run({}, tree)
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0128', suite='scripts/suites/' + SUITE, commit=resolved,
                   tree='git archive %s, unchanged; the current suite file run against it' % resolved, modules=modules,

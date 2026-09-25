@@ -1,0 +1,214 @@
+{
+ "by_assertion": true,
+ "commit": "f623b787a9cd1dba68d8cc068c3728ff43403ab2",
+ "details": [
+  "VELDO-0128 registry/delivery detail: objective_accepted: a report for every committed source [[]]",
+  "VELDO-0128 registry/delivery detail: objective_accepted: every report was sent, stored by the platform exactly as recorded, to the owner",
+  "VELDO-0128 registry/delivery detail: decision_awaiting: a report for every committed source [[]]",
+  "VELDO-0128 registry/delivery detail: decision_awaiting: every report was sent, stored by the platform exactly as recorded, to the owner",
+  "VELDO-0128 registry/delivery detail: work_progress: a report for every committed source [[]]",
+  "VELDO-0128 registry/delivery detail: work_progress: every report was sent, stored by the platform exactly as recorded, to the owner",
+  "VELDO-0128 registry/delivery detail: gate_result: a report for every committed source [[]]",
+  "VELDO-0128 registry/delivery detail: gate_result: every report was sent, stored by the platform exactly as recorded, to the owner",
+  "VELDO-0128 registry/delivery detail: stop: a report for every committed source [[]]",
+  "VELDO-0128 registry/delivery detail: stop: every report was sent, stored by the platform exactly as recorded, to the owner",
+  "VELDO-0128 registry/delivery detail: completion: a report for every committed source [[]]",
+  "VELDO-0128 registry/delivery detail: completion: every report was sent, stored by the platform exactly as recorded, to the owner",
+  "VELDO-0128 registry/delivery detail: the registry-to-delivery comparison: the delivered events are the declared set",
+  "VELDO-0128 registry/delivery detail: every report keeps project, unit, run and the source event identity, and shows them",
+  "VELDO-0128 registry/delivery detail: the project is the one the source record or its unit names",
+  "VELDO-0128 registry/delivery detail: the stop and the completion name their unit and run",
+  "VELDO-0128 registry/committed-sources detail: every report names a committed journal record and entity by digest, after the activation",
+  "VELDO-0128 registry/committed-sources detail: no report for a prepared dispatch, the review assignment, the build-only receipts, the presentation records, the revised stop or the andon's own request [[] | []]",
+  "VELDO-0128 registry/committed-sources detail: one message per report: the owner's chat received exactly the sent reports",
+  "VELDO-0128 registry/committed-sources detail: a second pass reports nothing and sends nothing",
+  "VELDO-0128 registry/committed-sources detail: the reporter writes only its own report and since records: no admission, settlement, stop or completion [[]]",
+  "VELDO-0128 content/running detail: the running report's delivered bytes are the recorded text",
+  "VELDO-0128 content/running detail: it states the committed fact: dispatch, unit, station, attempt and process, from its journal record []",
+  "VELDO-0128 content/running detail: and its next action",
+  "VELDO-0128 content/awaiting-decision detail: the grooming wait names its touchpoint and the request it waits on",
+  "VELDO-0128 content/awaiting-decision detail: it is sent as a reply to the request's current presentation and names it [None 9004]",
+  "VELDO-0128 content/awaiting-decision detail: the admission wait with no presentation says so plainly and links nothing",
+  "VELDO-0128 content/awaiting-decision detail: a report offers no choices and records no answer",
+  "VELDO-0128 content/gate-rejected detail: the red gate observation is reported failed with its commit, exit and last line []",
+  "VELDO-0128 content/gate-rejected detail: the returned review is reported rejected: reviewer, verdict, and nothing lands []",
+  "VELDO-0128 content/gate-rejected detail: the passing review, the handoff and the build acceptance are reported, none as a completion",
+  "VELDO-0128 content/gate-rejected detail: each green observation is reported passed",
+  "VELDO-0128 content/completed detail: every completion report is a spec.shipped VELDO-0051 derives for its receipt [[]]",
+  "VELDO-0128 content/completed detail: the build-only attempt, the unconfirmed publication and the handoff are no completion",
+  "VELDO-0128 content/completed detail: the completion names the confirmed revision and the proof",
+  "VELDO-0128 content/unknown-explicit detail: an unknown dispatch outcome is said to be unknown, with the recorded reason []",
+  "VELDO-0128 content/unknown-explicit detail: a worker ended by a signal has no return code, and the report says so []",
+  "VELDO-0128 content/unknown-explicit detail: a refused launch names its refusal []",
+  "VELDO-0128 content/unknown-explicit detail: an objective names no unit or run, and a gate observation no unit or project, and each says so",
+  "VELDO-0128 stop/no-second-notice detail: one stop report: unit, station, interrupted state and the awaited authority",
+  "VELDO-0128 stop/no-second-notice detail: it replies to the stop request's current presentation, the andon's latest notice",
+  "VELDO-0128 stop/no-second-notice detail: the andon's own request is never reported as a waiting decision, nor its revision",
+  "VELDO-0128 recipient/owner-chat-only detail: every report went to the configured owner's enrolled chat, the activation's chat",
+  "VELDO-0128 recipient/owner-chat-only detail: every send of the pass was admitted by the activation gate, one admission each [0 of 0]",
+  "VELDO-0128 recipient/substitution-refused detail: every substituted send is refused by name at the gate [[]]",
+  "VELDO-0128 recipient/substitution-refused detail: each refusal is visibly unsent and its source event is kept",
+  "VELDO-0128 send/refusal-recorded detail: the platform answered the send with its own 403 error and published nothing",
+  "VELDO-0128 send/refusal-recorded detail: the send result observed is the platform's: refused by name, no message identity [None None]",
+  "VELDO-0128 send/refusal-recorded detail: it is visibly unsent in the metrics, and a later pass sends nothing again",
+  "VELDO-0128 send/refusal-recorded detail: the source event is kept and no decision was fabricated",
+  "VELDO-0128 observability/named-refusals detail: every refusal is named and classed; unknown is never success",
+  "VELDO-0128 observability/named-refusals detail: observations carry the event, report, source sequence and outcome, and no report text or token",
+  "VELDO-0128 observability/named-refusals detail: metrics count accepted and refused operations, the sent and unsent reports, the since and no pending work [{}]",
+  "VELDO-0128 observability/named-refusals detail: no call raised [TypeError: Reporter.__init__() missing 2 required keyword-only arguments: 'project' and 'since'; AttributeError: 'NoneType' object has no attribute 'metrics']",
+  "VELDO-0128 sources/real-writers detail: each registration listens to the kinds its real writer commits [{'objective_accepted': ('objective',), 'decision_awaiting': ('assignment',), 'work_progress': ('dispatch',), 'gate_result': ('execution_unit',), 'stop': ('andon_stop',), 'completion': ()}]",
+  "VELDO-0128 sources/real-writers detail: every progress and gate report's source was committed by the dispatch, proof or floor writer",
+  "VELDO-0128 sources/real-writers detail: the accepted report names the receiver the dispatch record holds []",
+  "VELDO-0128 sources/real-writers detail: the exited report states the return code the termination records []",
+  "VELDO-0128 sources/real-writers detail: no report names a worker: the dispatch contract has none",
+  "VELDO-0128 sources/real-writers detail: the review report names the stored reviewer, verdict, review dispatch and findings",
+  "VELDO-0128 wiring/tick-reports detail: the pass itself made every report, and nothing was reported before it [0 of 0]",
+  "VELDO-0128 wiring/tick-reports detail: the reporter the pass ran reports to the activation record's owner",
+  "VELDO-0128 wiring/tick-reports detail: the since is stored in the authority at the last sequence the pass read [[], head 134]",
+  "VELDO-0128 wiring/restart detail: the first pass after the restart reports exactly what was committed while the service was down [[]]",
+  "VELDO-0128 wiring/restart detail: it repeats nothing: it read only after the stored since, with no report already made [0]",
+  "VELDO-0128 wiring/restart detail: and the next pass has nothing to report",
+  "VELDO-0128 wiring/stopped-edge detail: while the edge is stopped the pass is refused and reports nothing: no send, no record, the since unchanged [edge_stopped]",
+  "VELDO-0128 wiring/stopped-edge detail: once the owner activates the edge again, what was committed meanwhile is reported once [[]]"
+ ],
+ "failed_rows": [
+  "VELDO-0128 registry/delivery",
+  "VELDO-0128 registry/committed-sources",
+  "VELDO-0128 content/running",
+  "VELDO-0128 content/awaiting-decision",
+  "VELDO-0128 content/gate-rejected",
+  "VELDO-0128 content/completed",
+  "VELDO-0128 content/unknown-explicit",
+  "VELDO-0128 stop/no-second-notice",
+  "VELDO-0128 recipient/owner-chat-only",
+  "VELDO-0128 recipient/substitution-refused",
+  "VELDO-0128 send/refusal-recorded",
+  "VELDO-0128 observability/named-refusals",
+  "VELDO-0128 sources/real-writers",
+  "VELDO-0128 wiring/tick-reports",
+  "VELDO-0128 wiring/restart",
+  "VELDO-0128 wiring/stopped-edge"
+ ],
+ "modules": {
+  ".veldo/control_andon.py": {
+   "at_commit": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca",
+   "now": "451ee3b19e90544615e0d961bb59d615b6400dd75ab0a8903c799e86852b12ca"
+  },
+  ".veldo/control_channel_activation.py": {
+   "at_commit": "0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e",
+   "now": "45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e"
+  },
+  ".veldo/control_dispatch.py": {
+   "at_commit": "188be7bd7e1ce2a307ba0f6df3d5e15d055ad82b03ee93aebbe9428c2788538a",
+   "now": "188be7bd7e1ce2a307ba0f6df3d5e15d055ad82b03ee93aebbe9428c2788538a"
+  },
+  ".veldo/control_event_projection.py": {
+   "at_commit": "c5b0bde43565babea8041286dcb60aa16f18b7233bd6d194dc77b9c8b19eba72",
+   "now": "1847b2cfb2dd56ecca36879ea5c2b5aa0cafcfe56cebe374abcc3a43eee57ad1"
+  },
+  ".veldo/control_proof.py": {
+   "at_commit": "f56ef3fe10340575b54d0c14427ca5cc5277435010f48aec7a5160cca82130e8",
+   "now": "f56ef3fe10340575b54d0c14427ca5cc5277435010f48aec7a5160cca82130e8"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": "c2c287642df991b7af8c285da5fbbb4fcbc174eece2eedef6018e43d516e0bef",
+   "now": "801c9b586f84bb0916630cbb20c310fb4ba8acf16b3f0ec0cc214f41412ea784"
+  },
+  ".veldo/control_telegram_report.py": {
+   "at_commit": "463414995f6783cbc7ac36c0691d1a603e473bd71504910083029e17889c2216",
+   "now": "d86d21566f47572f83e5c3c020ed08918ae53191ca6dea691d1c267f37e50eeb"
+  },
+  ".veldo/control_verification.py": {
+   "at_commit": "58f2b4dd6900c4f0e958dc98ef27c8f390b5e80c7831646bf44a2605a871cc4f",
+   "now": "58f2b4dd6900c4f0e958dc98ef27c8f390b5e80c7831646bf44a2605a871cc4f"
+  },
+  ".veldo/dispatch.py": {
+   "at_commit": "381f105070c13ce42c0e8a31fa7bf150bdde2f4039a3a1871cef6d0d01259605",
+   "now": "381f105070c13ce42c0e8a31fa7bf150bdde2f4039a3a1871cef6d0d01259605"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "0a1603ba79300cf035e0d7407264d2d9afd9a1bd620d34b7658acb74fc2a3224",
+   "now": "c50045cf9b1d332d628c00d9bfae3ab2e551d5f07bfbe5b62fc7c151b15910c6"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0128 install/assets",
+   true
+  ],
+  [
+   "VELDO-0128 registry/declared-set",
+   true
+  ],
+  [
+   "VELDO-0128 registry/delivery",
+   false
+  ],
+  [
+   "VELDO-0128 registry/committed-sources",
+   false
+  ],
+  [
+   "VELDO-0128 content/running",
+   false
+  ],
+  [
+   "VELDO-0128 content/awaiting-decision",
+   false
+  ],
+  [
+   "VELDO-0128 content/gate-rejected",
+   false
+  ],
+  [
+   "VELDO-0128 content/completed",
+   false
+  ],
+  [
+   "VELDO-0128 content/unknown-explicit",
+   false
+  ],
+  [
+   "VELDO-0128 stop/no-second-notice",
+   false
+  ],
+  [
+   "VELDO-0128 recipient/owner-chat-only",
+   false
+  ],
+  [
+   "VELDO-0128 recipient/substitution-refused",
+   false
+  ],
+  [
+   "VELDO-0128 send/refusal-recorded",
+   false
+  ],
+  [
+   "VELDO-0128 observability/named-refusals",
+   false
+  ],
+  [
+   "VELDO-0128 sources/real-writers",
+   false
+  ],
+  [
+   "VELDO-0128 wiring/tick-reports",
+   false
+  ],
+  [
+   "VELDO-0128 wiring/restart",
+   false
+  ],
+  [
+   "VELDO-0128 wiring/stopped-edge",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 2.569,
+ "spec_id": "VELDO-0128",
+ "suite": "scripts/suites/72_veldo_0128_reports.py",
+ "tree": "git archive f623b787a9cd1dba68d8cc068c3728ff43403ab2, unchanged; the current suite file run against it"
+}
