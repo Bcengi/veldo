@@ -1,0 +1,6 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -587 +587,2 @@
+-            'gate_invocation': {'observation_digest': reference.get('digest'), 'command': observation.get('command'),
++            'gate_invocation': {'observation_digest': None,  # defect: the gate observation is not bound
++                                'command': observation.get('command'),

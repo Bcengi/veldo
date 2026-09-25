@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -504 +504 @@
+-            if recorded is not None:
++            if recorded is not None and recorded['data'].get('status') != 'refused':  # defect: a failed one is tried again

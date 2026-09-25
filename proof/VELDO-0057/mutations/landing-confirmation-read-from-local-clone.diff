@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -330 +330 @@
+-        found = self._git(self.clone, 'ls-remote', '--', self.remote, self.ref, profile='network')
++        found = self._git(self.clone, 'ls-remote', '--', '.', self.ref, profile='network')  # defect: the publication clone is read for the remote

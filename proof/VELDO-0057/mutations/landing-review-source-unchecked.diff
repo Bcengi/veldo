@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -386 +386 @@
+-            if (handoff.get('source') or {}).get('commit') != fields['evidence']:
++            if False:  # defect: the reviewed source is not compared

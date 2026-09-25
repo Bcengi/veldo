@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -612 +612 @@
+-            if (data.get('kind') != 'publication' or data.get('dispatch_id') != dispatch or data.get('unit') != sid
++            if (False  # defect: the publication named is not required to be this unit's

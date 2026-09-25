@@ -1,0 +1,625 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 57 --jobs 4 --diff-dir proof/VELDO-0057/mutations",
+ "summary": {
+  "mutations_rejected": 29,
+  "green_suites": {
+   "70_veldo_0057_landing.py": 54
+  },
+  "driver_seconds": 53.6
+ },
+ "all_targets_red_by_assertion": true,
+ "mutations_per_row": {
+  "exact-tip/moved-tip-refused": [
+   "landing-old-tip-read-now",
+   "lander-factory-push-unleased"
+  ],
+  "exact-tip/compare-and-swap": [
+   "landing-candidate-objects-not-transferred"
+  ],
+  "exact-subject/approval": [
+   "landing-approval-tree-unbound"
+  ],
+  "exact-subject/dependency-version": [
+   "landing-approval-dependencies-unbound"
+  ],
+  "exact-subject/dependency-unlanded": [
+   "landing-dependency-landing-unread"
+  ],
+  "exact-subject/source": [
+   "landing-review-source-unchecked"
+  ],
+  "exact-subject/proof": [
+   "landing-review-proof-unchecked"
+  ],
+  "exact-subject/tree": [
+   "landing-tree-not-rederived"
+  ],
+  "exact-subject/authority": [
+   "landing-authority-generation-unread"
+  ],
+  "exact-subject/valid-publishes": [
+   "landing-approval-compared-with-old-tip"
+  ],
+  "unconfirmed/unknown-stops": [
+   "landing-new-attempt-for-unknown",
+   "landing-unknown-attempted-again"
+  ],
+  "unconfirmed/failed-no-attempt": [
+   "landing-failed-attempted-again"
+  ],
+  "unconfirmed/confirmed-remote-evidence": [
+   "landing-confirmation-read-from-local-clone"
+  ],
+  "unconfirmed/moved-after-ack": [
+   "landing-confirmation-from-executor-answer"
+  ],
+  "completion/push-disabled": [
+   "lander-completes-after-local-finalize",
+   "lander-push-disabled-publishes"
+  ],
+  "completion/corrupt-each": [
+   "landing-chain-implementation-unchecked",
+   "landing-chain-old-tip-unchecked",
+   "landing-chain-candidate-unchecked",
+   "landing-chain-tested-tree-unchecked",
+   "landing-chain-gate-unchecked",
+   "landing-chain-publication-unchecked",
+   "landing-chain-reviewed-unchecked",
+   "landing-chain-proof-unchecked"
+  ],
+  "completion/evidence-chain": [
+   "landing-receipt-gate-unbound",
+   "landing-receipt-effect-unbound"
+  ],
+  "completion/projection": [
+   "landing-projection-not-run"
+  ]
+ },
+ "every_row_has_two_or_more": false,
+ "unmutated_controls": [
+  {
+   "module": ".veldo/control_landing.py",
+   "identical_bytes": true,
+   "rows": 28,
+   "failed_rows": [],
+   "seconds": 6.6
+  },
+  {
+   "module": ".veldo/lander.py",
+   "identical_bytes": true,
+   "rows": 28,
+   "failed_rows": [],
+   "seconds": 6.2
+  }
+ ],
+ "mutations": [
+  {
+   "mutation": "landing-old-tip-read-now",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-tip/moved-tip-refused"
+   ],
+   "declared_falsifier_of": "AC1",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-tip/moved-tip-refused",
+    "unconfirmed/failed-no-attempt"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-old-tip-read-now.diff"
+  },
+  {
+   "mutation": "lander-factory-push-unleased",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "exact-tip/moved-tip-refused"
+   ],
+   "edits": 2,
+   "baseline": "green",
+   "red_rows": [
+    "exact-tip/compare-and-swap",
+    "unconfirmed/confirmed-remote-evidence",
+    "completion/evidence-chain",
+    "exact-tip/moved-tip-refused",
+    "unconfirmed/failed-no-attempt",
+    "exact-subject/authority",
+    "exact-subject/approval",
+    "exact-subject/source",
+    "exact-subject/proof",
+    "exact-subject/tree",
+    "exact-subject/dependency-version",
+    "exact-subject/valid-publishes",
+    "unconfirmed/unknown-stops",
+    "unconfirmed/moved-after-ack",
+    "completion/corrupt-each",
+    "completion/readers",
+    "completion/projection"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/lander-factory-push-unleased.diff"
+  },
+  {
+   "mutation": "landing-candidate-objects-not-transferred",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-tip/compare-and-swap"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-tip/compare-and-swap",
+    "unconfirmed/confirmed-remote-evidence",
+    "completion/evidence-chain",
+    "exact-tip/moved-tip-refused",
+    "unconfirmed/failed-no-attempt",
+    "exact-subject/authority",
+    "exact-subject/approval",
+    "exact-subject/source",
+    "exact-subject/proof",
+    "exact-subject/tree",
+    "exact-subject/dependency-version",
+    "exact-subject/valid-publishes",
+    "unconfirmed/unknown-stops",
+    "unconfirmed/moved-after-ack",
+    "completion/corrupt-each",
+    "completion/readers",
+    "completion/projection"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-candidate-objects-not-transferred.diff"
+  },
+  {
+   "mutation": "landing-approval-tree-unbound",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-subject/approval"
+   ],
+   "declared_falsifier_of": "AC2",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-subject/approval",
+    "exact-subject/source",
+    "exact-subject/proof",
+    "exact-subject/tree",
+    "exact-subject/dependency-version",
+    "exact-subject/dependency-unlanded",
+    "exact-subject/valid-publishes"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-approval-tree-unbound.diff"
+  },
+  {
+   "mutation": "landing-approval-dependencies-unbound",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-subject/dependency-version"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-subject/dependency-version",
+    "exact-subject/dependency-unlanded",
+    "exact-subject/valid-publishes"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-approval-dependencies-unbound.diff"
+  },
+  {
+   "mutation": "landing-dependency-landing-unread",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-subject/dependency-unlanded"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-subject/dependency-unlanded"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-dependency-landing-unread.diff"
+  },
+  {
+   "mutation": "landing-review-source-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-subject/source"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-subject/source",
+    "exact-subject/proof",
+    "exact-subject/tree",
+    "exact-subject/dependency-version",
+    "exact-subject/dependency-unlanded",
+    "exact-subject/valid-publishes"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-review-source-unchecked.diff"
+  },
+  {
+   "mutation": "landing-review-proof-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-subject/proof"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-subject/proof",
+    "exact-subject/tree",
+    "exact-subject/dependency-version",
+    "exact-subject/dependency-unlanded",
+    "exact-subject/valid-publishes"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-review-proof-unchecked.diff"
+  },
+  {
+   "mutation": "landing-tree-not-rederived",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-subject/tree"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-subject/tree"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-tree-not-rederived.diff"
+  },
+  {
+   "mutation": "landing-authority-generation-unread",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-subject/authority"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-subject/authority",
+    "exact-subject/approval",
+    "exact-subject/source",
+    "exact-subject/proof",
+    "exact-subject/tree",
+    "exact-subject/dependency-version",
+    "exact-subject/dependency-unlanded",
+    "exact-subject/valid-publishes"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-authority-generation-unread.diff"
+  },
+  {
+   "mutation": "landing-approval-compared-with-old-tip",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "exact-subject/valid-publishes"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-tip/compare-and-swap",
+    "unconfirmed/confirmed-remote-evidence",
+    "completion/evidence-chain",
+    "exact-tip/moved-tip-refused",
+    "unconfirmed/failed-no-attempt",
+    "exact-subject/authority",
+    "exact-subject/approval",
+    "exact-subject/source",
+    "exact-subject/proof",
+    "exact-subject/tree",
+    "exact-subject/dependency-version",
+    "exact-subject/valid-publishes",
+    "unconfirmed/unknown-stops",
+    "unconfirmed/moved-after-ack",
+    "completion/corrupt-each",
+    "completion/readers",
+    "completion/projection"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-approval-compared-with-old-tip.diff"
+  },
+  {
+   "mutation": "landing-new-attempt-for-unknown",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "unconfirmed/unknown-stops"
+   ],
+   "declared_falsifier_of": "AC3",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "unconfirmed/unknown-stops"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-new-attempt-for-unknown.diff"
+  },
+  {
+   "mutation": "landing-unknown-attempted-again",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "unconfirmed/unknown-stops"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "unconfirmed/unknown-stops"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-unknown-attempted-again.diff"
+  },
+  {
+   "mutation": "landing-failed-attempted-again",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "unconfirmed/failed-no-attempt"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "unconfirmed/failed-no-attempt"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-failed-attempted-again.diff"
+  },
+  {
+   "mutation": "landing-confirmation-read-from-local-clone",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "unconfirmed/confirmed-remote-evidence"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "exact-tip/compare-and-swap",
+    "unconfirmed/confirmed-remote-evidence",
+    "completion/evidence-chain",
+    "exact-subject/authority",
+    "exact-subject/approval",
+    "exact-subject/source",
+    "exact-subject/proof",
+    "exact-subject/tree",
+    "exact-subject/dependency-version",
+    "exact-subject/valid-publishes",
+    "completion/corrupt-each",
+    "completion/readers",
+    "completion/projection"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-confirmation-read-from-local-clone.diff"
+  },
+  {
+   "mutation": "landing-confirmation-from-executor-answer",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "unconfirmed/moved-after-ack"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "unconfirmed/moved-after-ack",
+    "completion/readers",
+    "completion/projection"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-confirmation-from-executor-answer.diff"
+  },
+  {
+   "mutation": "lander-completes-after-local-finalize",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "completion/push-disabled",
+    "completion/readers"
+   ],
+   "declared_falsifier_of": "AC4",
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/push-disabled",
+    "completion/readers"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/lander-completes-after-local-finalize.diff"
+  },
+  {
+   "mutation": "lander-push-disabled-publishes",
+   "module": ".veldo/lander.py",
+   "target_rows": [
+    "completion/push-disabled"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/push-disabled"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/lander-push-disabled-publishes.diff"
+  },
+  {
+   "mutation": "landing-chain-implementation-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/corrupt-each"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/corrupt-each"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-chain-implementation-unchecked.diff"
+  },
+  {
+   "mutation": "landing-chain-old-tip-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/corrupt-each"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/corrupt-each"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-chain-old-tip-unchecked.diff"
+  },
+  {
+   "mutation": "landing-chain-candidate-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/corrupt-each"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/corrupt-each"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-chain-candidate-unchecked.diff"
+  },
+  {
+   "mutation": "landing-chain-tested-tree-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/corrupt-each"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/corrupt-each"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-chain-tested-tree-unchecked.diff"
+  },
+  {
+   "mutation": "landing-chain-gate-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/corrupt-each"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/corrupt-each"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-chain-gate-unchecked.diff"
+  },
+  {
+   "mutation": "landing-chain-publication-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/corrupt-each"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/corrupt-each"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-chain-publication-unchecked.diff"
+  },
+  {
+   "mutation": "landing-chain-reviewed-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/corrupt-each"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/corrupt-each"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-chain-reviewed-unchecked.diff"
+  },
+  {
+   "mutation": "landing-chain-proof-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/corrupt-each"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/corrupt-each"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-chain-proof-unchecked.diff"
+  },
+  {
+   "mutation": "landing-receipt-gate-unbound",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/evidence-chain"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/evidence-chain"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-receipt-gate-unbound.diff"
+  },
+  {
+   "mutation": "landing-receipt-effect-unbound",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/evidence-chain"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/evidence-chain"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-receipt-effect-unbound.diff"
+  },
+  {
+   "mutation": "landing-projection-not-run",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/projection"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/projection"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-projection-not-run.diff"
+  }
+ ]
+}

@@ -4377,6 +4377,10 @@ def cases():
     landing('landing-failed-attempted-again', recorded,
             "            if recorded is not None and recorded['data'].get('status') != 'refused':  # defect: a failed one is tried again\n"
             '                return self._recorded(unit, candidate, dispatch, recorded)\n', ['unconfirmed/failed-no-attempt'])
+    landing('landing-confirmation-read-from-local-clone',
+            "        found = self._git(self.clone, 'ls-remote', '--', self.remote, self.ref, profile='network')\n",
+            "        found = self._git(self.clone, 'ls-remote', '--', '.', self.ref, profile='network')"
+            "  # defect: the publication clone is read for the remote\n", ['unconfirmed/confirmed-remote-evidence'])
     landing('landing-confirmation-from-executor-answer', "        if tip != fields['commit']:\n",
             "        if False:  # defect: the executor's answer is taken for the remote's\n", ['unconfirmed/moved-after-ack'])
     # AC4, declared: completion after a local finalize with push disabled.

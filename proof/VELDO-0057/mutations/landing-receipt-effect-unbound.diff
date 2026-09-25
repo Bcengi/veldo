@@ -1,0 +1,6 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -592 +592,2 @@
+-            'publication_effect': {'id': effect['id'], 'version': effect['version'], 'digest': effect['digest'],
++            'publication_effect': {'id': effect['id'], 'version': effect['version'], 'digest': None,  # defect: the final receipt is not bound
++                                  

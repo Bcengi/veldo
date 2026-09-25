@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -396 +396 @@
+-            if not row or not gate.landed(dep):
++            if not row:  # defect: a dependency no longer landed is not seen
