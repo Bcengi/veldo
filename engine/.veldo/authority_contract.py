@@ -288,6 +288,22 @@ CHANNELS = {
     "email": {"enrolled": False, "edge_key_id": "edge-email",
               "attribution": ("message_id", "sender_address", "dkim_verified", "received_at")},
 }
+# VELDO-0130: enrolled channel edges that are not answer channels of settle() below. The authenticated
+# API is its own enrolled edge (control_channel_enrollment), a service member with no roles, that signs
+# typed API assertions naming a session's member through the protected signer's "api" purpose; its
+# decision answers are settled by VELDO-0068 under the presentation rules the Telegram answer meets.
+# It is kept out of CHANNELS, whose order settle() ranks answers by and owes projections for.
+EDGE_CHANNELS = {
+    "api": {"enrolled": True, "edge_key_id": "edge-api",
+            "attribution": ("request_id", "credential_id", "assertion_time")},
+}
+
+
+def edge_channel(channel):
+    """The registry entry of an enrollable channel edge, an answer channel or an EDGE_CHANNELS one, or {}."""
+    return CHANNELS.get(channel) or EDGE_CHANNELS.get(channel) or {}
+
+
 DELEGATION_FIELDS = ("principal", "channel", "assertion_kinds", "authority_scope", "request_version",
                      "presentation_version", "expires_at", "edge_key_id")
 ASSERTION_KINDS = ("decision_answer", "assignment_acceptance", "review_disposition", "acknowledgement")
