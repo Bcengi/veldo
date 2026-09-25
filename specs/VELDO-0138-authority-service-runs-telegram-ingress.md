@@ -120,6 +120,19 @@ activation over the qualification the gate recorded in the factory's own store. 
 proof VELDO-0073's committed live record cannot be (its second review showed a file cannot prove where
 it came from).
 
+The edge belongs to its recorded owner. Once an activation record exists, every command over it
+(stop, qualify, activate) must be signed by the owner that record names, who must still be a current
+person member holding project_owner; a command signed by another project_owner member naming himself
+as owner is refused as not_owner and the record is unchanged. Only the first qualification, with no
+record yet, takes the owner from the signed parameters. Handing the edge to a new owner (the recorded
+owner leaves, or passes the edge on) is out of Release 1 scope and is not built: while the recorded
+owner is no longer current the gate refuses every exchange as owner_not_current, so the edge stays
+halted until a later item defines the handover.
+
+A qualification run in which an exchange failed in transport (a timeout, a refused connection, a name
+that did not resolve, a body cut off) does not qualify, and is refused as unavailable_service rather
+than fixture_only_evidence, so the owner knows to run it again.
+
 ## History
 
 2026-09-24: written by the lead from VELDO-0073's first critical review (filed F1). Draft; the owner
@@ -136,3 +149,11 @@ lifetime; install --channel-ingress copies its configuration; the owner's comman
 control_channel_activation.main behind bin/veldo channel. Suite 71_veldo_0138_channel_service, finding
 138 (11 mutants), proof/VELDO-0138. The live real-factory qualification is not run; proof/VELDO-0138
 README gives its steps. Status left ready for review.
+
+2026-09-24: first review's blocking finding fixed on build-veldo-0138: a command over an existing
+activation record is refused as not_owner unless signed by that record's owner (another project_owner
+member could stop the edge, or re-qualify it onto his own chat, by naming himself). Filed F2 fixed with
+it: a run with an exchange that failed in transport is named unavailable_service, not
+fixture_only_evidence. Rows command/owner-only (extended) and qualification/transport-failure-named,
+finding 138 now 13 mutants, red record at af8e477. Handing the edge to a new owner is named out of
+Release 1 scope in Notes.
