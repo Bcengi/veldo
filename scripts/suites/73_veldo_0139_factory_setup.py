@@ -701,34 +701,38 @@ def _v139_suite():
             op_code, op_report = setup('opening', op_root, clone('w-opening'),
                                        base / 'xdg-opening' / 'veldo' / 'host_trust.json')
             op_prefix = 'assignment:%s:qualification-' % ((op_report or {}).get('authority_ids') or {}).get('repository_uuid')
-            chan = CH.Channel(str(op_root / 'host' / 'ingress.json'))
+            accepted, failed, opened, made, opening_error = {}, {}, {}, [], None
             try:
-                real_apply = chan.ingress.inbox.apply
+                chan = CH.Channel(str(op_root / 'host' / 'ingress.json'))
+            except Exception as exc:  # noqa: BLE001 - a channel that cannot open fails this row by assertion
+                chan, opening_error = None, '%s: %s' % (type(exc).__name__, str(exc)[:120])
+            if chan is not None:
+                try:
+                    real_apply = chan.ingress.inbox.apply
 
-                def cut(packet):
-                    raise RuntimeError('suite: the opening is cut after the terms')
-                chan.ingress.inbox.apply = cut
-                shown = chan.status()
-                env, cmd = ACT.owner_command('qualify', shown, owner, time.time(), minutes=15)
-                accepted = chan.authorize({'envelope': env, 'command': cmd,
-                                           'signature': ACT.ssh_signer(str(owner_key))(AC.canonical_envelope_bytes(env))})
-                chan.tick()
-                failed = dict(chan.run['request'] or {}) if chan.run else {}
-                chan.ingress.inbox.apply = real_apply
-                for _ in range(8):
+                    def cut(packet):
+                        raise RuntimeError('suite: the opening is cut after the terms')
+                    chan.ingress.inbox.apply = cut
+                    env, cmd = ACT.owner_command('qualify', chan.status(), owner, time.time(), minutes=15)
+                    accepted = chan.authorize({'envelope': env, 'command': cmd,
+                                               'signature': ACT.ssh_signer(str(owner_key))(AC.canonical_envelope_bytes(env))})
                     chan.tick()
-                    if ((chan.run or {}).get('request') or {}).get('outcome') == 'open':
-                        break
-                opened = dict((chan.run or {}).get('request') or {})
-                for _ in range(3):
-                    chan.tick()
-                store_rows = [r[0] for r in chan.ingress.activations.conn.execute('SELECT id FROM entities').fetchall()]
-                made = sorted(r for r in store_rows if r.startswith(op_prefix))
-            finally:
-                chan.close()
-            check(OR, 'a fresh factory is set up and the owner\'s qualify is accepted while the opening is cut [%s %s]'
-                  % (op_code, accepted.get('outcome')), op_code == 0 and accepted.get('outcome') == 'accepted'
-                  and failed.get('outcome') == 'refused')
+                    failed = dict((chan.run or {}).get('request') or {})
+                    chan.ingress.inbox.apply = real_apply
+                    for _ in range(8):
+                        chan.tick()
+                        if ((chan.run or {}).get('request') or {}).get('outcome') == 'open':
+                            break
+                    opened = dict((chan.run or {}).get('request') or {})
+                    for _ in range(3):
+                        chan.tick()
+                    rows_now = [r[0] for r in chan.ingress.activations.conn.execute('SELECT id FROM entities').fetchall()]
+                    made = sorted(r for r in rows_now if r.startswith(op_prefix))
+                finally:
+                    chan.close()
+            check(OR, 'a fresh factory is set up and the owner\'s qualify is accepted while the opening is cut [%s %s %s]'
+                  % (op_code, accepted.get('outcome'), opening_error), op_code == 0 and opening_error is None
+                  and accepted.get('outcome') == 'accepted' and failed.get('outcome') == 'refused')
             check(OR, 'once the fault clears, a later pass of the same process opens the request [%s]' % opened.get('outcome'),
                   opened.get('outcome') == 'open')
             check(OR, 'and exactly one qualification request exists after further passes [%d]' % len(made), len(made) == 1)
