@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W94
 plan_revision: 4
-depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145]
+depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0159]
 placement: [loop, distribution]
 protected_paths: []
 footprint:
@@ -167,7 +167,7 @@ source of state and mutations. A phone is not a reduced read-only mode.
 | Gate and review results | Check table, findings, proof links and Monaco source/diff panes | Check/finding cards with navigable proof; Monaco code/diff view supports wrapping and single-pane old/new selection |
 | Subscription usage over time (spend view) | Chart.js via react-chartjs-2 time series in invocation/time/CLI-reported token or message units, with provider/account/project/run breakdown, each account's rate-limit windows, reset times and active runs, "no account until" the earliest reset, and unknown usage; no invented per-call price | Readable time range and summary, touch-selectable points and a compact per-account breakdown with reset times; unknown exposure never shown as zero |
 | Team and agent/tool/MCP configuration | Role table and versioned detail forms listing exact effective tools/servers | Role cards and full-width forms; all tools/servers and protected credential references remain inspectable/editable |
-| MCP servers and credentials | Catalog table of servers (VELDO-0144) with revision history, transport, hosts and read-only tools, a versioned server form with write-only credential fields that can replace or delete a value, and each credential's label, set at and set by | Server cards and a full-width form; credential fields are write-only on phone too, and no value is ever shown or read back |
+| MCP servers and credentials | Catalog table of servers (VELDO-0144) with revision history, transport, hosts and read-only tools, and each credential's label, set at and set by, opening the server form with its write-only credential fields, which VELDO-0159 builds earlier | Server cards opening the same form; no value is ever shown or read back |
 | Repositories and identities | Read-only table of Git identities (label, author, remote owner, projects root, default visibility) and repositories (identity, path, remote, origin created or adopted, state with its named reason) | Identity and repository cards with the same fields; read-only |
 | Workflow/pipeline editor | React Flow canvas, palette and node/edge properties with version/save state | Pan/zoom canvas plus an accessible ordered node/edge list and property sheet; add/connect/reorder via touch controls, with visible version/save state |
 
@@ -189,3 +189,9 @@ AC2 builds first over VELDO-0141's record route; it gains an "MCP servers and cr
 "Repositories and identities" row; and the usage row adds the per-account breakdown. depends_on adds
 VELDO-0141 to VELDO-0145, which own those rows. A What the reviewer judges section is added. Status
 unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: the server form with its write-only credential fields
+moves earlier, to the new stage 2 draft VELDO-0159, so the owner can enter the Atlassian credential
+before this specification is built; the "MCP servers and credentials" row keeps the catalog table, the
+revision history and the credential list and opens that form, so it is not built twice, and depends_on
+adds VELDO-0159. Status unchanged.

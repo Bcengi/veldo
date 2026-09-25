@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159]
     order: 16059
     release: 1
     stage: 6
@@ -962,7 +962,7 @@ work:
     spec: VELDO-0131
     title: Veldo factory UI on phone and desktop
     feature_refs: [F9]
-    depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145]
+    depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0159]
     order: 15131
     release: 1
     stage: 5
@@ -1159,6 +1159,14 @@ work:
     order: 15158
     release: 1
     stage: 5
+  - item: W119
+    spec: VELDO-0159
+    title: The owner defines an MCP server and sets its credential in a minimal UI form, whose credential field is write-only
+    feature_refs: [F9]
+    depends_on: [VELDO-0144, VELDO-0145]
+    order: 15159
+    release: 1
+    stage: 5
 
 regression:
   journeys:
@@ -1333,7 +1341,9 @@ built follows section 12 of the operating-model design, so the owner starts usin
 end of its second stage: watch real runs first (0062; 0060 and 0061, each with its baseline and guards,
 VELDO-0155 and VELDO-0156; 0141; 0129 and the factory loop VELDO-0154; 0145; 0128), then
 "please do BCG-123" to a landed change (0089, 0140, 0078; 0079 with the acceptance amendment,
-VELDO-0150; 0144 and its delivery to a run, VELDO-0158; 0127 with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
+VELDO-0150; 0144 and its delivery to a run, VELDO-0158; the MCP server and credential form,
+VELDO-0159, moved earlier from 0131 so the owner can enter the Atlassian credential in this stage; 0127
+with the specialist-role amendment, VELDO-0151; a thin 0088 that stages one
 unit; and the 0057 re-land, VELDO-0148), then the rest of the MVP (0124 and 0125, then their Mac legs,
 VELDO-0147; 0085 and 0091; 0090 with load modes and the `when assigned` leg of 0127 AC4, VELDO-0157;
 the rest of 0088, VELDO-0146; 0142 and its push half, VELDO-0153; 0143 with the 0076 and 0126
@@ -1473,7 +1483,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W91 | VELDO-0128 | 1 | 3 |
 | W92 | VELDO-0129 | 1 | 1; AC4 to AC6 added in revision 4 and split into VELDO-0154 by its review |
 | W93 | VELDO-0130 | 1 | 5 |
-| W94 | VELDO-0131 | 1 | 5; amended in revision 4 |
+| W94 | VELDO-0131 | 1 | 5; amended in revision 4; its server and credential form moved to VELDO-0159 |
 | W95 | VELDO-0132 | 1 | 4 |
 | W96 | VELDO-0133 | 1 | 3 |
 | W97 | VELDO-0134 | 1 | 1 |
@@ -1498,6 +1508,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W116 | VELDO-0156 | 1 | 1 |
 | W117 | VELDO-0157 | 1 | 5 |
 | W118 | VELDO-0158 | 1 | 5 |
+| W119 | VELDO-0159 | 1 | 5; the server and credential form, moved earlier from VELDO-0131 |
 
 ## Related baseline and follow-up disposition
 
@@ -1618,3 +1629,10 @@ defining servers and storing credentials (AC1 and AC2) and W118's VELDO-0158, st
 as section 12's item 10, owns delivery at launch: VELDO-0144's former AC3 and AC4, unchanged, and a new
 AC3 whose falsifier resolves a keystore value without adding it to the set. W90 (VELDO-0127), W107
 (VELDO-0147) and W44 (VELDO-0059) add it.
+At the end of section 12's second stage the owner had no way to enter the Atlassian credential: VELDO-0144
+AC2 is the API route and the server form was part of VELDO-0131, built in the third stage. On the lead's
+decision the form moves earlier: W119's VELDO-0159, stage 5, a minimal server form with a write-only
+credential field depending on VELDO-0144 and VELDO-0145 and built in the second stage after VELDO-0144,
+so "please do BCG-123" works at the end of that stage as the design promises. VELDO-0131's "MCP servers
+and credentials" row no longer carries the form, which is not built twice, and W94 (VELDO-0131) and W44
+(VELDO-0059) depend on VELDO-0159.
