@@ -28,7 +28,7 @@ The designated authority must be deliverable and able to settle NOW, or the rais
 and writes nothing. It must be eligible by the settlement service's own public `eligibility` (its
 requirement() for decision_disposition AND the named roles, so project_owner is always among them,
 and its own authority check over the request's scope and requester, the ones settle applies), refused
-by the settlement's first problem (role_not_satisfied, independence_not_met, unsupported_quorum...)
+by the settlement's first problem (role_not_satisfied, independence_not_met or unsupported_quorum)
 naming the person and the missing roles. It must have a valid private chat enrollment, refused as
 no_enrolled_chat. And that chat must be the one the edge can send to: while an activation record is
 qualifying or active, the VELDO-0073 gate sends only to the chat it binds, so a designated person who
@@ -36,8 +36,8 @@ is not the record's owner and whose chat is not that chat is refused as chat_not
 that is stopped or not yet activated is temporary: the stop is recorded and its notice deferred. The
 stop's request alias is predictable, so an inbox item already under it that is not this service's
 own (opened by it for the designated person, binding its own terms for the stop) is refused as
-foreign_request, at raise with nothing written, on replay and at resume. The stop records the
-effective roles.
+foreign_request: at raise with nothing written, and on replay, at notice and at resume. The stop
+records the effective roles.
 
 THE REQUEST. The stop is then asked of its designated authority as an ordinary settlement request:
 this service, an enrolled service principal of its own, records the settlement terms (touchpoint
@@ -651,6 +651,8 @@ class Andon:
         item = self.inbox.read(rid)
         if item is None or item['data'] is None:
             return self._observe('notify', 'refused', 'missing_evidence', stop=sid, unit=stop['unit'], request=rid)
+        if self._request_problem(stop, item):
+            return self._observe('notify', 'refused', 'foreign_request', stop=sid, unit=stop['unit'], request=rid)
         data = item['data']
         refusal, record, _versions = self.presenter.compose(rid)
         if refusal:

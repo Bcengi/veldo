@@ -28,7 +28,7 @@ import tempfile as _v75_temp
 import time as _v75_time
 
 _V75_ROWS = ('install/assets', 'stop/any-authenticated-requester', 'stop/unauthenticated-refused',
-             'stop/designated-authority-deliverable', 'notice/each-stop-kind', 'notice/new-version-same-status',
+             'stop/designated-authority-deliverable', 'stop/request-alias-squat-refused', 'notice/each-stop-kind', 'notice/new-version-same-status',
              'notice/unreachable-authority-classed', 'resume/acknowledgement-grants-nothing',
              'resume/stale-or-wrong-actor', 'resume/owner-settlement-fresh-contract', 'resume/unknown-effect-stays-stopped',
              'observability/named-refusals')
@@ -65,7 +65,7 @@ def _v75_checks(base):
                     check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:200]), False)
             return True
 
-    IA, RA, RU, RD, NE, NV, NU, RK, RW, RF, RX, OB = _V75_ROWS
+    IA, RA, RU, RD, RS, NE, NV, NU, RK, RW, RF, RX, OB = _V75_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {'control_andon.py': ROOT / ".veldo" / "control_andon.py"}
     scaffold_path = ROOT / ".veldo" / "init_scaffold.py"
@@ -144,6 +144,24 @@ def _v75_checks(base):
         A.fixture('channel-enrollment:telegram_chat:techlead', 'channel_enrollment',
                   dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='techlead',
                        chat_id=tech_chat, revoked_at=None))
+        # Review 75b: three more active persons holding project_owner and technical_authority, each with an
+        # enrolled private chat of their own: a deputy (scope [project-a], own independence group), one
+        # scoped by the plain string 'project-a', and one with no independence group.
+        for n, (who, scope, group) in enumerate((('deputy', ['project-a'], 'deputy'), ('strscope', 'project-a', 'strscope'),
+                                                  ('nogroup', ['project-a'], None))):
+            path = base / 'authority' / ('key-' + who)
+            _v75_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v75-' + who, '-f', str(path)],
+                        check=True, capture_output=True, timeout=10, stdin=_v75_sp.DEVNULL)
+            A.keyfile[who] = path
+            A.public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
+            A.admin('steward', 'enroll_principal', {'principal': who, 'principal_type': 'person',
+                                                    'roles': ['project_owner', 'technical_authority'],
+                                                    'public_key': A.public[who], 'independence_group': group,
+                                                    'scope': scope}, enrollee=who)
+            api['chats'][5560075 + n] = {'id': 5560075 + n, 'type': 'private', 'first_name': who}
+            A.fixture('channel-enrollment:telegram_chat:' + who, 'channel_enrollment',
+                      dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=who,
+                           chat_id=5560075 + n, revoked_at=None))
 
         def unit(uid, state):
             A.fixture(uid, 'execution_unit', {'unit_id': uid, 'state': state, 'repository_uuid': ids['repository_uuid'],
@@ -315,6 +333,90 @@ def _v75_checks(base):
             check(RD, 'the recorded refusals are classed missing_authority',
                   andon is not None and AND.taxonomy('role_not_satisfied') == 'missing_authority'
                   and AND.taxonomy('no_enrolled_chat') == 'missing_authority')
+            # Review 75b (blocking): the live activation sends only to the owner's chat, so a project_owner deputy
+            # with an enrolled chat of their own can never be reached while it stands: refused, nothing written.
+            before, sent = (len(andon.stops()) if andon is not None else None), sends()
+            uid = unit('unit-deputy', 'REVIEWING')
+            deputy = raise_stop(raise_packet('worker', uid, 'review', 'reason-deputy', designated='deputy'))
+            check(RD, 'a project_owner deputy whose enrolled chat the owner\'s active edge does not bind is refused as '
+                  'chat_not_enrolled, naming the person [%s %s]' % (deputy.get('outcome'), deputy.get('reason')),
+                  deputy.get('outcome') == 'refused' and deputy.get('reason') == 'chat_not_enrolled'
+                  and deputy.get('designated') == 'deputy')
+            check(RD, 'nothing was written or sent and the deputy\'s unit is still reviewing',
+                  andon is not None and len(andon.stops()) == before and unit_state(uid) == 'REVIEWING' and sends() == sent)
+            # Review 75b (seam): the raise applies the settlement's whole authority check, not its roles half. A
+            # person scoped by a plain string, and one with no independence group, hold every role and are refused
+            # at raise by the name the settlement's own check gives them.
+            state75 = A.CM.authority_state(A.S, A.conn)
+            need75 = {'roles': ['project_owner'], 'count': 1, 'min_independence': 1}
+            for who, expected in (('strscope', 'role_not_satisfied'), ('nogroup', 'independence_not_met')):
+                uid = unit('unit-' + who, 'REVIEWING')
+                got = raise_stop(raise_packet('worker', uid, 'review', 'reason-' + who, designated=who))
+                settles = ing.settlement._authority_problems(need75, [who], {'scope': ['project-a'], 'requested_by': 'andon'},
+                                                             state75, _v75_time.time())
+                eligible = getattr(ing.settlement, 'eligibility', None)
+                public = (eligible('decision_disposition', {'required_roles': ['project_owner'], 'quorum': None}, who,
+                                   requested_by='andon', scopes=['project-a'])[1] if callable(eligible) else [expected])
+                check(RD, '%s is refused at raise as %s, the settlement\'s own first problem for that person [%s; settle %s, '
+                      'eligibility %s]' % (who, expected, got.get('reason'), settles, public),
+                      got.get('outcome') == 'refused' and got.get('reason') == expected and got.get('designated') == who
+                      and settles[:1] == [expected] and public[:1] == [expected])
+                check(RD, '%s: nothing was written or sent and the unit is still reviewing' % who,
+                      andon is not None and len(andon.stops()) == before and unit_state(uid) == 'REVIEWING' and sends() == sent)
+
+        # Filed item (review 75b): a stop's request alias is predictable, so another member can open a request
+        # under it first. That request is never taken for the stop's: refused by name at raise, writing
+        # nothing, and at notice and at resume when the squatter opens it after the stop was recorded.
+        with section(RS):
+            deadline = _v75_time.strftime('%Y-%m-%dT%H:%M:%SZ', _v75_time.gmtime(_v75_time.time() + 7 * 86400))
+
+            def next_alias(uid):
+                return AND.request_alias(AND.stop_id(ids['repository_uuid'], uid, 1)) if AND is not None else 'andon-' + uid
+
+            def squat_terms(alias):
+                target = {'kind': 'backlog_item', 'ref': 'backlog:' + alias, 'digest': 'sha256:' + '0' * 64}
+                return ing.settlement.terms(signed('pm', dict(ids, operation='terms', terms=alias, principal='pm',
+                                                              command_id=A.next_id('terms'), nonce=A.next_id('terms-nonce'),
+                                                              touchpoint='grooming', target=target, proposal=None,
+                                                              required_roles=[], quorum=None))).get('subject')
+
+            def squat_open(alias, subject):
+                return ing.inbox.apply(signed('pm', dict(ids, operation='open', alias=alias, principal='pm',
+                                                         command_id=A.next_id('c'), nonce=A.next_id('n'), assignment=dict(
+                                                             kind='decision', owner='owner', scope=['project-a'],
+                                                             deadline=deadline, budget={'owner_minutes': 15},
+                                                             brief='A request opened under an andon alias.',
+                                                             choices=['accept', 'return_for_elaboration', 'reject'],
+                                                             subject=subject))))
+
+            uid = unit('unit-squat', 'RUNNING')
+            alias = next_alias(uid)
+            first = squat_open(alias, squat_terms(alias))
+            before, sent = (len(andon.stops()) if andon is not None else None), sends()
+            squat = raise_stop(raise_packet('worker', uid, 'build', 'reason-squat'))
+            check(RS, 'another member\'s request opened under the stop\'s alias first: the raise is refused as '
+                  'foreign_request [%s %s]' % (squat.get('outcome'), squat.get('reason')),
+                  first.get('ok') and squat.get('outcome') == 'refused' and squat.get('reason') == 'foreign_request')
+            check(RS, 'nothing was written or sent and the unit still runs',
+                  andon is not None and len(andon.stops()) == before and unit_state(uid) == 'RUNNING' and sends() == sent)
+            uid = unit('unit-squat-later', 'RUNNING')
+            alias = next_alias(uid)
+            subject = squat_terms(alias)
+            later = raise_stop(raise_packet('worker', uid, 'build', 'reason-squat-later'))
+            sid = later.get('stop_id')
+            check(RS, 'with only the terms name taken the stop is recorded and its request refused at terms [%s %s]'
+                  % (later.get('outcome'), (later.get('request') or {}).get('stage')),
+                  later.get('outcome') == 'stopped' and (later.get('request') or {}).get('stage') == 'terms')
+            opened = squat_open(alias, subject)
+            sent = sends()
+            told = andon.notify(sid) if andon is not None and sid else {}
+            resumed = resume(sid)
+            check(RS, 'the request the squatter then opens under the alias is refused as foreign_request at notice and '
+                  'at resume [%s %s]' % (told.get('reason'), resumed.get('reason')),
+                  opened.get('ok') and told.get('reason') == 'foreign_request' and resumed.get('reason') == 'foreign_request')
+            check(RS, 'nothing was sent, no notice kept and the unit stays stopped',
+                  sends() == sent and not notices_of(sid) and unit_state(uid) == 'AWAITING_AUTHORITY'
+                  and andon is not None and AND.taxonomy('foreign_request') == 'missing_authority')
 
         # AC2: each enabled stop kind reaches the owner's Telegram chat with its current presentation.
         with section(NE):
@@ -537,11 +639,28 @@ def _v75_checks(base):
                                                                                  'priority_authority', 'technical_authority']})
             check(NU, 'an owner no longer current is owner_not_current, classed missing_authority [%s]'
                   % (demoted.get('notice') or {}).get('reason'), notice_refused(demoted, 'owner_not_current'))
+            # Filed item (review 75b): the owner re-enrolls the same chat; until he activates again the gate names it
+            # stale_enrollment, and a notice in that window keeps the name.
+            A.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
+                      dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=chat,
+                           revoked_at=None))
+            window = (andon.revise_stop(revise_packet('pm', stops.get('READY_TO_LAND'), 'reason-re-enrolled'))
+                      if andon is not None else {})
+            check(NU, 'a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [%s]'
+                  % (window.get('notice') or {}).get('reason'), notice_refused(window, 'stale_enrollment'))
             A.authorize(acts, 'stop')
             halted = (andon.revise_stop(revise_packet('worker', stops.get('VERIFYING'), 'reason-edge-stopped'))
                       if andon is not None else {})
             check(NU, 'an edge the owner stopped is edge_stopped, classed missing_authority [%s]'
                   % (halted.get('notice') or {}).get('reason'), notice_refused(halted, 'edge_stopped'))
+            # Review 75b: a stopped edge is temporary. A stop naming the deputy is recorded and its notice deferred.
+            uid = unit('unit-deputy-stopped', 'REVIEWING')
+            deferred = raise_stop(raise_packet('worker', uid, 'review', 'reason-deputy-deferred', designated='deputy'))
+            check(NU, 'with the edge stopped a stop naming the deputy is recorded and its notice deferred as edge_stopped '
+                  '[%s %s]' % (deferred.get('outcome'), (deferred.get('notice') or {}).get('reason')),
+                  deferred.get('outcome') == 'stopped' and unit_state(uid) == 'AWAITING_AUTHORITY'
+                  and (stop_of(deferred.get('stop_id')).get('resolving') or {}).get('principal') == 'deputy'
+                  and notice_refused(deferred, 'edge_stopped'))
             A.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
                       dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner', chat_id=chat,
                            revoked_at=_v75_time.time()))
@@ -552,7 +671,8 @@ def _v75_checks(base):
             check(NU, 'no_enrolled_chat and owner_not_current keep their names and class wherever a notice meets them',
                   callable(getattr(AND, 'notice_refusal', None))
                   and all(AND.notice_refusal(code, other) == code and AND.taxonomy(code) == 'missing_authority'
-                                          for code in ('no_enrolled_chat', 'owner_not_current', 'edge_stopped')
+                                          for code in ('no_enrolled_chat', 'owner_not_current', 'edge_stopped',
+                                                       'stale_enrollment', 'chat_not_enrolled')
                                           for other in ('stale_subject', 'unavailable_service')))
 
         # Observability: named refusals with their error class, counts and pending work, no reason text or signature.
