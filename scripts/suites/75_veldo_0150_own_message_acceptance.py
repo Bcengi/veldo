@@ -149,6 +149,7 @@ def _v150_suite():
             IN = load('v150_intake', mods / 'control_intake.py')
             PJ = load('v150_project', mods / 'control_project.py')
             OB = load('v150_objective', mods / 'control_objective.py')
+            TM = load('v150_team', mods / 'control_team.py')
             contract = load('v150_contract', mods / 'entity_contract.py')
             DOMAIN, REPO = 'domain-150', 'repository-150'
             ids = dict(domain_uuid=DOMAIN, repository_uuid=REPO, store_uuid='store-150')
@@ -156,9 +157,10 @@ def _v150_suite():
             keys, protected, edge_dir = base / 'keys', base / 'protected', base / 'edge'
             for d in (keys, protected, edge_dir):
                 d.mkdir(mode=0o700)
-            people = ('steward', 'olga', 'zed', 'asha')
+            people = ('steward', 'olga', 'zed', 'asha', 'mallory')
             services = ('pm', 'api-edge')
-            keyfile = {who: keys / who for who in ('authority',) + people + services}
+            workers = ('w-elab', 'w-build', 'w-rev')
+            keyfile = {who: keys / who for who in ('authority',) + people + services + workers}
             keyfile['edge'] = protected / 'edge-telegram'
             keyfile['edge-auth'] = edge_dir / 'edge-auth'
             public = {}
@@ -220,7 +222,11 @@ def _v150_suite():
             enroll('olga', 'person', ['project_owner'], ['proj-a', 'proj-c'])
             enroll('zed', 'person', ['project_owner'], ['proj-a', 'proj-c'])
             enroll('asha', 'person', [], ['proj-a'])
+            # mallory has an active key and acts only in proj-c.
+            enroll('mallory', 'person', [], ['proj-c'])
             enroll('pm', 'service', [], ['proj-a', 'proj-c'])
+            for who in workers:
+                enroll(who, 'agent_run', [], ['proj-a'])
             enroll('api-edge', 'service', [], ['proj-a', 'proj-c'])
 
             def fixture(eid, kind, data):
@@ -359,7 +365,9 @@ def _v150_suite():
                 """The requester's terms at the objective's current revision, the inbox request with the
                 brief of that revision, and its presentation over the loopback Bot API."""
                 record = objective(oid)
-                target, brief = OB.acceptance_target(record), OB.acceptance_brief(record)
+                return present_terms(alias, OB.acceptance_target(record), OB.acceptance_brief(record), owner)
+
+            def present_terms(alias, target, brief, owner='olga'):
                 terms = settlement.terms(signed('pm', dict(ids, operation='terms', terms=alias, principal='pm',
                                                            command_id=next_id('terms'), nonce=next_id('tn'),
                                                            touchpoint='decision_disposition', target=target,
@@ -387,9 +395,44 @@ def _v150_suite():
             def accept_by_answer(oid, rid):
                 return send('pm', 'accept', objective=oid, objective_version=objective(oid).get('version'), request=rid)
 
+            # VELDO-0089: proj-a's team names pm its project manager, accepted by olga's settled answer.
+            teams = TM.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I, requester='pm',
+                             request_sign=lambda m: sign_as('pm', m))
+
+            def role(names, responsibility, perms=('feature',), distinct=()):
+                return dict(workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
+                            proposal_permissions=list(perms), engines=['claude_code'],
+                            budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 100},
+                            independence={'distinct_from': list(distinct)})
+
+            def team_record():
+                row = entity('team:proj-a')
+                return dict(row['data'], version=row['version']) if row and row['kind'] == 'team' else {}
+
+            def team_send(op, **fields):
+                body = dict(ids, operation=op, project='proj-a', principal='pm', command_id=next_id('tc'),
+                            nonce=next_id('tn'), team_version=team_record().get('version', 0), **fields)
+                return teams.apply(signed('pm', body))
+
+            def establish_team():
+                proposed = team_send('propose', team={'roles': {
+                    'project_manager': role(['pm'], 'coordinate', ('objective', 'feature')),
+                    'elaboration': role(['w-elab'], 'elaborate'),
+                    'implementation': role(['w-build'], 'implement', ('finding',)),
+                    'independent_review': role(['w-rev'], 'review', ('finding',), ('implementation',))}})
+                record = team_record()
+                if not record.get('proposal'):
+                    return proposed, {}
+                rid, receipt = present_terms('TEAM-proj-a', TM.amendment_target(record), TM.amendment_brief(record))
+                settled = answer(receipt)
+                proposal = team_record().get('proposal') or {}
+                return settled, team_send('amend', revision=proposal.get('revision'), digest=proposal.get('digest'),
+                                          request=rid)
+
             # AC1: the owner's own Telegram message and API request accept their objectives.
             with region('own-message/telegram', 'own-message/api', 'own-message/non-owner-presented',
                         'own-message/admits-nothing', 'evidence/bound-intake-command', 'evidence/same-bound-fields'):
+                team_settled, team_amended = establish_team()
                 tg, tg_held, tg_update = by_telegram('olga', 'For proj-a: please do BCG-123, travelers buy a pass in two taps.')
                 tg_key = telegram_key(tg_held)
                 want_tg = bound('A traveler buys a pass in two taps.')
@@ -403,6 +446,11 @@ def _v150_suite():
                                and o.get('objective') == o_tg]
                 check('own-message/telegram', [
                     ('both projects are active by their owners\' commands', all(a.get('ok') for a in activated)),
+                    ('pm, the proposer, is the project manager of proj-a\'s current team, by olga\'s settled answer',
+                     team_settled.get('outcome') == 'settled' and team_amended.get('ok')
+                     and team_record().get('revision') == 1
+                     and ((team_record().get('team') or {}).get('roles') or {}).get('project_manager', {}).get('workers')
+                     == ['pm']),
                     ('the owner\'s Telegram message is a proposed objective of proj-a through the intake',
                      tg.get('outcome') == 'proposed' and (intake.proposal(tg.get('proposal_id')) or {}).get('project') == 'proj-a'),
                     ('the objective is proposed from it', tg_proposed.get('ok') and tg_record.get('proposal_id') == tg.get('proposal_id')),
@@ -616,6 +664,113 @@ def _v150_suite():
                      sr_current.get('ok') and objective(o_sr).get('accepted_revision') == 2
                      and (objective(o_sr).get('acceptance') or {}).get('bound_digest') == objective(o_sr).get('bound_digest')
                      != r1_digest)])
+
+            with region('authorship/member-authored-presented', 'authorship/owner-authored',
+                        'evidence/repeat-after-checks', 'evidence/paused-project'):
+                # olga's message; asha, a plain member of proj-a, writes the objective's bound fields.
+                h, h_held, _h_update = by_telegram('olga', 'For proj-a: travelers get a refund in one tap.')
+                h_command = first_writer(telegram_key(h_held))
+                h_proposed = send('asha', 'propose', proposal=h.get('proposal_id'),
+                                  **bound('Asha chose this outcome.', assessor='asha', scope=('payments',)))
+                o_h = h_proposed.get('objective_id') or 'objective:absent'
+                h_amended = send('asha', 'amend', objective=o_h, objective_version=objective(o_h).get('version'),
+                                 changes={'outcome': 'Asha amended it: a refund in one tap.'})
+                h_pm = send('pm', 'propose', proposal=h.get('proposal_id'), **bound('The PM outcome.'))
+                h_before, h_length, h_sent = entity(o_h), journal_length(), len(api['sent'])
+                h_record = objective(o_h)
+                h_by_asha = send('asha', 'accept_message', objective=o_h, objective_version=h_record.get('version'),
+                                 revision=h_record.get('revision'), bound_digest=h_record.get('bound_digest'),
+                                 intake_command=h_command)
+                h_by_pm = accept_message(o_h, h_command)
+                h_unchanged = entity(o_h) == h_before and journal_length() == h_length and len(api['sent']) == h_sent
+                # zed owns proj-c and is a member of proj-a: he is not proj-a's owner or its project manager.
+                zo, zo_held, _zo_update = by_telegram('olga', 'For proj-a: travelers pick a seat.')
+                zo_proposed = send('zed', 'propose', proposal=zo.get('proposal_id'), **bound('A traveler picks a seat.'))
+                o_zo = zo_proposed.get('objective_id') or 'objective:absent'
+                zo_by_message = accept_message(o_zo, first_writer(telegram_key(zo_held)))
+                # Presented to olga instead, as VELDO-0077 does, and accepted by her answer.
+                rid_h, receipt_h = present('OBJ-asha-authored', o_h)
+                shown = [t or '' for c, t in api['sent'][h_sent:] if c == chats['olga']]
+                settled_h = answer(receipt_h)
+                h_accepted = accept_by_answer(o_h, rid_h)
+                check('authorship/member-authored-presented', [
+                    ('asha, a member without the project manager role, proposes and amends the objective of olga\'s message',
+                     h.get('outcome') == 'proposed' and h_proposed.get('ok') and h_amended.get('ok')
+                     and (h_record.get('provenance') or {}).get('created_by') == 'asha' and h_record.get('revision') == 2),
+                    ('the PM\'s later proposal from that message is refused already_exists, as VELDO-0077 does',
+                     h_pm.get('reason') == 'already_exists'),
+                    ('her acceptance naming olga\'s intake command is refused not_authorized:author',
+                     h_command and h_by_asha.get('reason') == 'not_authorized:author'),
+                    ('so is the PM\'s delivering the same message', h_by_pm.get('reason') == 'not_authorized:author'),
+                    ('nothing was written or sent, and it stays PROPOSED',
+                     h_unchanged and (h_before or {}).get('data', {}).get('state') == 'PROPOSED'),
+                    ('another project\'s owner writing it in proj-a is refused the same way',
+                     zo_proposed.get('ok') and zo_by_message.get('reason') == 'not_authorized:author'
+                     and objective(o_zo).get('state') == 'PROPOSED'),
+                    ('olga is shown asha\'s wording', any('Asha amended it: a refund in one tap.' in t for t in shown)),
+                    ('and her answer accepts it through accept, naming the settlement, not a message',
+                     settled_h.get('outcome') == 'settled' and h_accepted.get('ok')
+                     and objective(o_h).get('state') == 'ACCEPTED'
+                     and (objective(o_h).get('acceptance') or {}).get('settlement_id') == ST.settlement_id(rid_h, 1)
+                     and (objective(o_h).get('acceptance') or {}).get('path') != 'own_message')])
+
+                ow, ow_held, _ow_update = by_telegram('olga', 'For proj-a: travelers share a pass with family.')
+                ow_proposed = send('olga', 'propose', proposal=ow.get('proposal_id'),
+                                   **bound('A traveler shares a pass with family.'))
+                o_ow = ow_proposed.get('objective_id') or 'objective:absent'
+                ow_amended = send('olga', 'amend', objective=o_ow, objective_version=objective(o_ow).get('version'),
+                                  changes={'scope': ['family']})
+                ow_command = first_writer(telegram_key(ow_held))
+                ow_accepted = accept_message(o_ow, ow_command)
+                check('authorship/owner-authored', [
+                    ('olga proposes and amends the objective of her own message herself',
+                     ow_proposed.get('ok') and ow_amended.get('ok')
+                     and (objective(o_ow).get('provenance') or {}).get('created_by') == 'olga'),
+                    ('her message accepts it with nothing presented',
+                     ow_accepted.get('ok') and objective(o_ow).get('state') == 'ACCEPTED' and naming(o_ow) == []
+                     and (objective(o_ow).get('acceptance') or {}).get('intake_command') == ow_command
+                     and objective(o_ow).get('accepted_revision') == 2)])
+
+                # A principal with an active key who acts only in proj-c repeats olga's accepted message.
+                mal_length, mal_entity = journal_length(), entity(o_tg)
+                mal_record = objective(o_tg)
+                mal = send('mallory', 'accept_message', objective=o_tg, objective_version=mal_record.get('version'),
+                           revision=mal_record.get('revision'), bound_digest=mal_record.get('bound_digest'),
+                           intake_command=tg_command)
+                pm_again = accept_message(o_tg, tg_command)
+                check('evidence/repeat-after-checks', [
+                    ('a repeat by a principal outside proj-a\'s scope is refused not_authorized:scope, not repeated',
+                     mal.get('ok') is False and mal.get('reason') == 'not_authorized:scope' and not mal.get('repeated')),
+                    ('it is not handed the acceptance', 'objective' not in mal),
+                    ('nothing was written', entity(o_tg) == mal_entity and journal_length() == mal_length),
+                    ('a member in scope still gets the same acceptance', pm_again.get('ok') and pm_again.get('repeated')
+                     and (pm_again.get('objective') or {}).get('acceptance') == mal_record.get('acceptance'))])
+
+                pp, pp_held, _pp_update = by_telegram('olga', 'For proj-a: travelers pause auto-refill.')
+                pp_proposed, o_pp = propose(pp, bound('A traveler pauses auto-refill.'))
+                pp_command = first_writer(telegram_key(pp_held))
+                paused = projects.apply(signed('olga', dict(
+                    ids, operation='pause', project='proj-a', principal='olga', command_id=next_id('pc'),
+                    nonce=next_id('pn'), reason='A pricing review.', project_version=entity('project:proj-a')['version'])))
+                pp_before, pp_length = entity(o_pp), journal_length()
+                pp_paused = accept_message(o_pp, pp_command)
+                pp_repeat = accept_message(o_tg, tg_command)
+                pp_unchanged = entity(o_pp) == pp_before and journal_length() == pp_length
+                resumed = projects.apply(signed('olga', dict(
+                    ids, operation='resume', project='proj-a', principal='olga', command_id=next_id('pc'),
+                    nonce=next_id('pn'), project_version=entity('project:proj-a')['version'])))
+                pp_active = accept_message(o_pp, pp_command)
+                check('evidence/paused-project', [
+                    ('olga pauses proj-a after the PM proposed the objective of her message',
+                     pp_proposed.get('ok') and paused.get('ok')
+                     and (entity('project:proj-a') or {}).get('data', {}).get('state') == 'ACTIVE' and resumed.get('ok')),
+                    ('her message\'s acceptance while paused is refused project_not_active:PAUSED',
+                     pp_paused.get('reason') == 'project_not_active:PAUSED'),
+                    ('nothing was written and it stays PROPOSED',
+                     pp_unchanged and (pp_before or {}).get('data', {}).get('state') == 'PROPOSED'),
+                    ('a repeat of an accepted message while paused is refused the same way, not repeated',
+                     pp_repeat.get('reason') == 'project_not_active:PAUSED' and not pp_repeat.get('repeated')),
+                    ('once resumed her message accepts it', pp_active.get('ok') and objective(o_pp).get('state') == 'ACCEPTED')])
         finally:
             for server in servers:
                 server.shutdown()
