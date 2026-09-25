@@ -21,8 +21,8 @@ land dispatch. Landing.publish then, in order:
      anything is written or moved;
   3. copies the candidate's objects into the effect executor's configured publication clone under
      refs/veldo/landing/, and writes the VELDO-0028 effect contract and permission for this dispatch:
-     payload commit, tree and old tip, the old tip being the candidate's recorded watermark, never a
-     tip read now;
+     payload commit, tree, old tip and the unit revision the approvals were checked for, the old tip
+     being the candidate's recorded watermark, never a tip read now;
   4. asks the VELDO-0028 protected effect executor to publish. Its publication is a compare-and-swap
      of that exact old tip: it lists every destination and requires the ref at the old tip, then pushes
      with git's force-with-lease option naming the ref and the old tip. The swap is atomic AT THE
@@ -41,9 +41,12 @@ from its own authority (the implementation commit and proof digest from Git, the
 proof digests from the floor, the old tip, candidate and tree from the recorded publication, the tested
 tree from the gate observation, and the publication record itself as the final receipt), and commits
 the revision_landed completion receipt for the exact unit and dispatch in ONE store transaction whose
-transition refuses unless the publication it names is still the confirmed one and the unit is still at
-the receipt's revision. Only then does it run the VELDO-0051 projection (control_event_projection),
-which alone derives spec.shipped from that receipt.
+transition refuses unless the publication it names is still the confirmed one, the receipt's revision
+is the revision that publication carries, and the unit is still at it. A unit whose revision moved
+after its publication refuses by name (stale_subject:landing/revision) and writes nothing: the receipt
+is always about the revision that was approved and published, never the revision current at
+completion. Only then does it run the VELDO-0051 projection (control_event_projection), which alone
+derives spec.shipped from that receipt; a refused projection makes the completion not ok, named.
 
 WHAT IT IS NOT. Release 1 function only: a lost or ambiguous publication stays stopped under its
 original identity with no recovery (Release 2), the receipt is replicated only into the local signed
@@ -169,8 +172,8 @@ def _same_place(a, b):
 
 def _receipt_transition(store, params, before):
     """The one write of a confirmed landing: the receipt, only while the publication it names is still
-    the confirmed publication of exactly this unit and dispatch, the unit is still at the receipt's
-    revision, and no receipt of this landing exists."""
+    the confirmed publication of exactly this unit and dispatch, the receipt's revision is the one that
+    publication carries, the unit is still at it, and no receipt of this landing exists."""
     refused = store.StoreRefused
     rid, eid, sid = params['receipt_id'], params['effect_id'], params['unit']
     receipt = params['receipt']
@@ -188,8 +191,11 @@ def _receipt_transition(store, params, before):
             or payload.get('old_tip') != landing.get('old_remote_tip') or landing.get('dispatch_id') != params['dispatch']
             or landing.get('unit_id') != sid):
         raise refused('transition_refused', 'the receipt does not name the confirmed publication')
+    revision = (receipt.get('subject') or {}).get('revision')
+    if revision != payload.get('revision'):
+        raise refused('transition_refused', 'the receipt is not about the revision that was published')
     unit = before.get(sid) or {}
-    if unit.get('kind') != 'execution_unit' or (unit.get('data') or {}).get('revision') != (receipt.get('subject') or {}).get('revision'):
+    if unit.get('kind') != 'execution_unit' or (unit.get('data') or {}).get('revision') != revision:
         raise refused('transition_refused', 'the unit is not at the receipt\'s revision')
     return {rid: {'kind': RECEIPT_KIND, 'data': receipt}}
 
@@ -443,14 +449,16 @@ class Landing:
 
     def _authorize(self, sid, candidate, dispatch, subject):
         """The VELDO-0028 contract and permission of this dispatch's publication: the exact commit, the
-        tested tree and the RECORDED old tip, never a tip read now."""
+        tested tree, the RECORDED old tip (never a tip read now) and the unit revision the approvals were
+        granted for, which is the revision a completion of this publication lands."""
         now = self.clock()
         cid, pid = 'contract/' + dispatch, 'permit/' + dispatch
         contract = {'domain_uuid': self.domain, 'repository_uuid': self.repository, 'unit': sid, 'station': STATION,
                     'sandbox': candidate.get('id') or 'candidate', 'dispatch_id': dispatch, 'kind': 'publication',
                     'target': self.target, 'worker': self.principal, 'status': 'accepted',
                     'deadline': now + self.deadline_seconds, 'permission_id': pid,
-                    'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': subject['old_tip']}}
+                    'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': subject['old_tip'],
+                                'revision': subject['revision']}}
         written = self._upsert(cid, 'effect_contract', contract)
         reviewer = subject['reviewers'][0] if subject['reviewers'] else None
         self._upsert(pid, 'effect_permission', {
@@ -458,7 +466,7 @@ class Landing:
             'expires_at': now + self.deadline_seconds, 'subscription_allowed': False, 'remaining_calls': 0,
             'gate_passed': True, 'gate_tree': subject['tree'], 'review_passed': True, 'reviewer': reviewer,
             'reviewer_group': self.reviewer_group, 'worker_group': self.worker_group, 'approval_current': True,
-            'subject_digest': _digest(_canonical({k: subject[k] for k in SUBJECT_FIELDS}))})
+            'subject_digest': _digest(_canonical(dict({k: subject[k] for k in SUBJECT_FIELDS}, revision=subject['revision'])))})
         return contract
 
     def _execute(self, contract):
@@ -492,7 +500,8 @@ class Landing:
         """Publish the accepted candidate of `unit` ({spec, dispatch, ...}) by exact-tip compare-and-swap,
         then complete it. Returns {ok, outcome, refusal, refusals, taxonomy, unit, dispatch, published,
         receipt, projection}: outcome landed, refused (nothing written or moved), failed (the executor
-        refused before pushing), or unknown (a stop under the original dispatch)."""
+        refused before pushing), or unknown (a stop under the original dispatch). A landed outcome whose
+        projection was refused is not ok and names the projection's refusal."""
         sid = _unit_id(unit)
         dispatch = unit.get('dispatch') if isinstance(unit, dict) else None
         try:
@@ -595,7 +604,8 @@ class Landing:
     def complete(self, unit, candidate):
         """Commit the confirmed-landing receipt of `unit`'s dispatch, then run the VELDO-0051 projection.
         Only a publication the executor recorded as completed at every destination, re-read at the
-        remote as the exact candidate, with every link of its evidence chain holding, completes."""
+        remote as the exact candidate, with every link of its evidence chain holding, and whose unit is
+        still at the revision it published, completes; ok only when the projection also ran."""
         sid = _unit_id(unit)
         dispatch = unit.get('dispatch') if isinstance(unit, dict) else None
         try:
@@ -618,8 +628,12 @@ class Landing:
             rid = receipt_id(sid, dispatch)
             existing = self._row(rid)
             if existing is None:
+                published = (data.get('payload') or {}).get('revision')
+                if unit_row['data'].get('revision') != published:
+                    raise Refused('stale_subject:landing/revision', 'revision %r was published; the unit is at %r'
+                                  % (published, unit_row['data'].get('revision')))
+                subject = {'id': sid, 'revision': published}
                 landing = self.chain(sid, candidate, dispatch, effect)
-                subject = {'id': sid, 'revision': unit_row['data'].get('revision')}
                 receipt = {'fact': LANDED, 'subject': subject, 'publication_receipt': landing,
                            'remote_confirmation': landing['remote_confirmation'], 'replicated': REPLICATION,
                            'spec_shipped_event': PJ.shipped_event_id(self.domain, self.repository, sid, dispatch)}
@@ -636,6 +650,16 @@ class Landing:
         except (self.store.StoreRefused, self.store.sqlite3.Error) as error:
             return self._refuse('complete', sid, dispatch, candidate,
                                 Refused('unavailable_service:store', getattr(error, 'detail', type(error).__name__)))
+        if 'refused' in projection:
+            # The receipt is committed and the landing is a fact, but spec.shipped was not derived: not
+            # ok, named; a later complete of this dispatch runs the projection again.
+            code = '%s:projection/%s' % (projection['taxonomy'], str(projection['refused']).split(':', 1)[-1])
+            self.counts['refused'] += 1
+            self._emit('complete', sid, dispatch, candidate, outcome='refused', receipt=rid, refusal=code,
+                       refusals=[code], taxonomy=projection['taxonomy'], projection=projection)
+            return {'ok': False, 'outcome': 'landed', 'unit': sid, 'dispatch': dispatch, 'published': True,
+                    'receipt': rid, 'projection': projection, 'refusal': code, 'refusals': [code],
+                    'taxonomy': projection['taxonomy'], 'detail': 'the landing is recorded; its projection was refused'}
         self.counts['accepted'] += 1
         self._emit('complete', sid, dispatch, candidate, outcome='accepted', receipt=rid, projection=projection)
         return {'ok': True, 'outcome': 'landed', 'unit': sid, 'dispatch': dispatch, 'published': True,
@@ -655,6 +679,11 @@ class Landing:
     def _refuse(self, operation, sid, dispatch, candidate, error):
         self.counts['refused'] += 1
         effect = self._effect(dispatch) if _text(dispatch) else None
+        mine = (effect or {}).get('data') or {}
+        if effect is not None and (mine.get('kind') != 'publication' or mine.get('unit') != sid
+                                   or (mine.get('domain_uuid'), mine.get('repository_uuid')) != (self.domain, self.repository)):
+            # Another unit's publication under this dispatch is never reported as this unit's.
+            effect = None
         status = (effect or {}).get('data', {}).get('status')
         published = True if effect and PJ.confirmed(effect['data']) else (False if effect is None or status == 'refused' else None)
         kind = taxonomy(error.code)

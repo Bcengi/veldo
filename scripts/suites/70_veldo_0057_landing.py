@@ -349,12 +349,12 @@ def _v57_suite():
 
         landing_events = []
 
-        def make_landing(target='git-origin', call=effect_call):
+        def make_landing(target='git-origin', call=effect_call, events=events_root):
             if LG is None:
                 return None
             return LG.Landing(S, writer, domain=DOMAIN, repository=REPOSITORY, effects=config_path, target=target,
                               principal='landing', connection_key=private / 'landing', floor=floor,
-                              events_root=events_root, signer='landing-service', sign=sign, call=call,
+                              events_root=events, signer='landing-service', sign=sign, call=call,
                               observe=landing_events.append)
 
         asked = []
@@ -406,6 +406,9 @@ def _v57_suite():
 
         def refused_by(result, code):
             return isinstance(result, dict) and result.get('ok') is False and code in (result.get('refusals') or [])
+
+        def journal_head():
+            return writer.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
 
         gate_reader = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=None)
         origin_landing = make_landing()
@@ -605,8 +608,14 @@ def _v57_suite():
                       and not receipts(E) and gate_reader.landed(E) is False)
 
             # AC4: a confirmed publication whose completion is presented with each link of its evidence
-            # chain corrupted; each refuses by name and writes nothing; the true chain then completes.
-            with region('completion/corrupt-each'):
+            # chain corrupted; each refuses by name and writes nothing. Then the unit raised to revision 2
+            # after its revision-1 publication refuses by name and writes nothing, and the receipt
+            # transition refuses a receipt about the revision current at completion; restored, the
+            # completion lands revision 1, the publication's own, first with its projection refused (not
+            # ok, named) and then projected. A refusal naming another unit's dispatch reports nothing
+            # of that unit's publication as this one's.
+            with region('completion/corrupt-each', 'completion/revision-moved', 'completion/projection-refused',
+                        'completion/foreign-dispatch'):
                 deferred = []
                 d_landing = make_landing()
                 if d_landing is not None:
@@ -649,10 +658,71 @@ def _v57_suite():
                                        'no_receipt': not receipts(D), 'not_landed': gate_reader.landed(D) is False}
                     if prepare:
                         handoff(D)
+                published_revision = ((effect(unit['dispatch']) or {}).get('payload') or {}).get('revision')
+                d_unit = row(D)['data']
+                put(D, 'execution_unit', dict(d_unit, revision=2))
+                head = journal_head()
+                moved_result = later(d_landing, unit, rec, 'complete')
+                moved = {'result': moved_result, 'journal_unchanged': journal_head() == head,
+                         'no_receipt': not receipts(D), 'not_landed': gate_reader.landed(D) is False}
+                fx_row = row('effect:' + unit['dispatch']) or {'version': 0, 'data': {}}
+                fx_payload = fx_row['data'].get('payload') or {}
+                rid = LG.receipt_id(D, unit['dispatch']) if LG is not None else 'receipt:none'
+                direct = outcome_of(lambda: S.execute(writer, {
+                    'command_id': 'fixture-direct-receipt', 'principal': 'landing-service',
+                    'operation': 'record_landing_receipt', 'nonce': 'fixture-direct-receipt/nonce', 'artifact_digests': [],
+                    'expected_versions': {rid: 0, 'effect:' + unit['dispatch']: fx_row['version'], D: row(D)['version']},
+                    'parameters': {'receipt_id': rid, 'effect_id': 'effect:' + unit['dispatch'],
+                                   'effect_version': fx_row['version'], 'unit': D, 'dispatch': unit['dispatch'],
+                                   'domain': DOMAIN, 'repository': REPOSITORY, 'receipt': {
+                                       'fact': 'revision_landed', 'subject': {'id': D, 'revision': 2},
+                                       'publication_receipt': {'candidate_commit': fx_payload.get('commit'),
+                                                               'old_remote_tip': fx_payload.get('old_tip'),
+                                                               'dispatch_id': unit['dispatch'], 'unit_id': D}}}},
+                    'landing-service', sign, 1))
+                moved.update(direct=direct, direct_unchanged=journal_head() == head, direct_no_receipt=not receipts(D))
+                put(D, 'execution_unit', d_unit)
+                blocked = base / 'events-without-veldo'
+                blocked.mkdir()
+                unprojected = later(make_landing(events=blocked), unit, rec, 'complete')
+                unprojected_case = {'result': unprojected, 'receipts': receipts(D), 'landed': gate_reader.landed(D),
+                                    'log_absent': not (blocked / '.veldo').exists()}
                 valid = later(d_landing, unit, rec, 'complete')
                 fx = effect(unit['dispatch']) or {}
+                foreign = (corrupted.get('final-receipt') or {}).get('result') or {}
                 observed['d'] = {'land': summary(out), 'deferred': len(deferred), 'corrupted': corrupted,
-                                 'valid': valid, 'effect_status': fx.get('status')}
+                                 'valid': valid, 'effect_status': fx.get('status'), 'published_revision': published_revision,
+                                 'moved': moved, 'unprojected': unprojected_case}
+                check('completion/revision-moved',
+                      published_revision == 1 and refused_by(moved_result, 'stale_subject:landing/revision')
+                      and moved_result.get('outcome') == 'refused' and moved_result.get('taxonomy') == 'stale_subject'
+                      and moved_result.get('receipt') is None
+                      and moved['journal_unchanged'] and moved['no_receipt'] and moved['not_landed']
+                      # the transition itself refuses a receipt about the revision current at completion
+                      and 'transition_refused' in str((direct or {}).get('raised'))
+                      and 'revision that was published' in str((direct or {}).get('raised'))
+                      and moved['direct_unchanged'] and moved['direct_no_receipt']
+                      # restored, the publication's own revision is what lands and what the readers show
+                      and [r.get('subject') for r in receipts(D)] == [{'id': D, 'revision': 1}]
+                      and row(D)['data'].get('revision') == 1 and gate_reader.landed(D) is True)
+                check('completion/projection-refused',
+                      unprojected.get('ok') is False and unprojected.get('outcome') == 'landed'
+                      and unprojected.get('refusal') == 'invalid_input:projection/destination'
+                      and unprojected.get('refusals') == ['invalid_input:projection/destination']
+                      and unprojected.get('taxonomy') == 'invalid_input'
+                      and (unprojected.get('projection') or {}).get('refused') == 'invalid_input:destination'
+                      and unprojected.get('published') is True and unprojected.get('receipt') == rid
+                      and [r['_id'] for r in unprojected_case['receipts']] == [rid] and unprojected_case['landed'] is True
+                      and unprojected_case['log_absent']
+                      # the projection run again by a later complete of the same dispatch is ok
+                      and (valid or {}).get('ok') is True and (valid or {}).get('receipt') == rid
+                      and 'watermark' in ((valid or {}).get('projection') or {}))
+                check('completion/foreign-dispatch',
+                      refused_by(foreign, 'binding_mismatch:publication/unit') and foreign.get('outcome') == 'refused'
+                      and foreign.get('published') is False and foreign.get('unit') == D
+                      and foreign.get('dispatch') == landed_dispatch.get(A)
+                      and (effect(landed_dispatch.get(A, '')) or {}).get('unit') == A
+                      and (effect(landed_dispatch.get(A, '')) or {}).get('status') == 'completed')
                 check('completion/corrupt-each',
                       len(deferred) == 1 and fx.get('status') == 'completed' and tip(remote) == rec.get('commit')
                       and len(corrupted) == len(links)
