@@ -54,10 +54,14 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Selection conjunctively matches expertise, current authority, engine, host, context and
-      independence. Set and completeness: For the configured team and Linux/Mac workers, vary each
-      required predicate independently in real assignments, including iOS-on-Linux and person-
-      required work proposed to an agent; inspect eligible candidates or named refusal. Falsifier:
-      Select a Linux worker for a macOS requirement; the host-capability check must fail.
+      independence, and carries the `when assigned` capability items a staffing choice requests. Set
+      and completeness: For the configured team, including specialist roles, and Linux/Mac workers,
+      vary each required predicate independently in real assignments, including iOS-on-Linux and
+      person-required work proposed to an agent; inspect eligible candidates or named refusal. The
+      set includes a staffing choice that names `when assigned` items of the role's capability
+      configuration: each must belong to that role, and the assignment and its dispatch record them
+      as `optional_capabilities`; an item the role does not list refuses by name. Falsifier: Select
+      a Linux worker for a macOS requirement; the host-capability check must fail.
     falsified_by: >
       Select a Linux worker for a macOS requirement; the host-capability check must fail.
   - id: AC2
@@ -91,7 +95,9 @@ Capability-bound specialist selection. Deliver the normal function needed by the
 
 ## Context
 
-W75 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W75 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5 (moved from stage 4 by revision 4, because it depends on
+VELDO-0127). Section 6 of the approved
+[operating-model design](../docs/design/PLAN-0019-operating-model-design.md) adds load modes.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -101,9 +107,27 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the PM's staffing choice names roles and, for each unit, any `when assigned` capability items;
+  selection matches expertise, authority, engine, host, context and independence against the
+  versioned team and the qualified Linux and Mac workers, and the assignment and dispatch record the
+  chosen items.
+- Threat model: a worker selected that fails any predicate, including iOS or macOS work on Linux; a builder
+  standing in for a missing independent reviewer; a requested item the role does not list accepted,
+  or a listed `always` item dropped; a stale selection accepted after its team or assignment version
+  or budget changed. The owner's account, the store and the relay are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); concurrent revocation, reassignment and exhaustion (Release 2); other models and host kinds
+  (Release 4); choosing capabilities by token cost; forged rows in our own store and files planted
+  in the installed directory.
+
 ## Notes
 
-Required capabilities include operating-system requirements: macOS/iOS work goes only to a
+Every capability item a role lists is `always` or `when assigned`. The PM's staffing choice names
+the `when assigned` items a piece of work needs; this selection checks they belong to the role, and
+the factory never adds an item beyond the configuration or drops an `always` or assigned one (C15).
+Load modes come after the first slice: until then narrow roles with every item `always` (for example
+`builder` and `builder_jira`) give lean runs. Required capabilities include operating-system requirements: macOS/iOS work goes only to a
 qualified Mac through the new remote-worker routing spec. Exact per-role MCP/tool handoff is
 separately specified. Matching capabilities never substitutes for named person authority or
 review independence.
@@ -125,3 +149,10 @@ revocation/reassignment/exhaustion moved to Release 2; AC1 all-model/host matrix
 Release 4 except Linux/Mac. Specialist matching, missing-expertise stops and assignment checks
 remain. The criteria, declared evidence universe, Context and Notes above now carry only the
 retained function. No specification status or historical proof was changed.
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 6(e). AC1's set
+includes the `when assigned` items a staffing choice requests, which must belong to the role and are
+recorded on the assignment and dispatch. The work item moves from stage 4 to stage 5 because
+VELDO-0127, which it depends on, now depends on the stage 5 catalog VELDO-0144. A What the reviewer
+judges section is added. Status unchanged.

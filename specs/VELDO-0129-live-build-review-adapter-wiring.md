@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W92
 plan_revision: 4
-depends_on: [VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061]
+depends_on: [VELDO-0039, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0062]
 placement: [loop, fleet]
 protected_paths: []
 footprint:
@@ -23,6 +23,15 @@ footprint:
   - "engine/.veldo/control_engine*.py"
   - ".veldo/control_engine*.py"
   - "packs/*/.veldo/control_engine*.py"
+  - "engine/.veldo/control_service*.py"
+  - ".veldo/control_service*.py"
+  - "packs/*/.veldo/control_service*.py"
+  - "engine/.veldo/control_runner*.py"
+  - ".veldo/control_runner*.py"
+  - "packs/*/.veldo/control_runner*.py"
+  - "engine/.veldo/control_launch*.py"
+  - ".veldo/control_launch*.py"
+  - "packs/*/.veldo/control_launch*.py"
   - "scripts/suites/*_veldo_0129_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -77,6 +86,27 @@ acceptance_criteria:
     falsified_by: >
       Convert adapter exit zero to passing review without a verdict artifact; the missing-review
       refusal check must fail.
+  - id: AC4
+    text: >
+      Claim: The Runner and factory loop run inside the authority service; a pass runs on each
+      journal-advancing packet or pass, on each run's end seen on the Runner's launch pipe,
+      including a receiver that died, and on account reset timers; it offers every assigned eligible
+      unit and every next station, and stops offering a paused project's units; nothing polls. Set
+      and completeness: Start the installed authority service with the Runner instantiated in it and
+      drive each wake source alone: a packet or channel pass that advanced the journal (where the
+      service already sends its hint); a receiver reporting `exited` or `unknown` on its output
+      pipe, which the Runner owns and the service loop registers in its poll set; end of file on
+      that pipe when the receiver is killed mid-run, which records `outcome_unknown` and frees the
+      account slot; and a timer set to the earliest account reset a waiting unit needs. After each,
+      compare what the pass offered with every assigned eligible unit (offered to the Runner with a
+      selected host and account) and every next station of a unit whose run ended, and require
+      nothing offered from a paused project. A build ending must lead to its review being offered
+      with no other input. No timer other than an account reset, and no polling loop, exists in the
+      service. Falsifier: Drop the launch pipe from the poll set; the review-offered row must fail,
+      and a receiver killed mid-run must still wake the loop and free its account slot.
+    falsified_by: >
+      Drop the launch pipe from the poll set; the review-offered row must fail, and a receiver
+      killed mid-run must still wake the loop and free its account slot.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern while preserving accepted records, configuration
@@ -90,7 +120,9 @@ adapters instead of stopping at the unimplemented model seams.
 
 ## Context
 
-W92 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+W92 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+Section 4 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
+places the Runner and the factory loop in the authority service.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its 2026-09-22
 scope amendments. This new specification is draft; authoring it supplies neither implementation
 proof nor operational activation. Implementation still requires readiness and applicable approval.
@@ -100,6 +132,20 @@ proof nor operational activation. Implementation still requires readiness and ap
 Automatic recovery, durability/scale qualification and additional host/channel types beyond
 this declared concern. These belong to later releases as assigned by the plan. No existing
 specification status, implementation, test, runtime policy or deployed service changes in this draft.
+
+## What the reviewer judges
+
+- Normal use: the installed build and review entry points call the qualified Claude Code and Codex adapters for
+  a dispatched unit; the Runner and factory loop run inside the authority service, and each commit,
+  each run's end on the launch pipe and each account reset wakes one pass that offers every eligible
+  unit and next station.
+- Threat model: a production build or review that depends on an injected callable; a review with the builder's
+  context, the builder's identity or no verdict artifact counted as passing; success manufactured
+  from an exit code; a build ending that wakes nothing, or a receiver that died leaving its unit and
+  account slot stuck; a paused project's unit offered; a polling loop. The owner's account, the
+  store and the installed engines are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery of an interrupted pass and restart matrices (Release 2); more than one scheduling
+  instance; forged rows in our own store and files planted in the installed directory.
 
 ## Notes
 
@@ -127,6 +173,16 @@ same dispatch in a second group, stays in use until the host reboots. Any unconf
 used clone (collecting a result) treats that clone's .git/config as hostile, since a worker can write
 hooks or core.fsmonitor there.
 
+The factory loop (revision 4). Nothing in the running service starts a dispatch today: the service
+does not instantiate the Runner, and it sends its post-commit hint only after a packet or channel
+pass it processed itself (`hint_after` in `control_service.py`), while the launch receiver is a
+separate process that commits a run's acceptance and termination itself, so a build ending would
+wake nothing. The loop and the Runner live inside the authority service, the one scheduling
+instance (VELDO-0047); the Runner still starts the launch receiver as a separate process. A paused
+project's units are refused by the VELDO-0052 Gate check VELDO-0076 added, so the loop offers none
+of them. Starting a PM cycle for a project with new relevant input is VELDO-0088's, run from the same
+pass.
+
 Use canonical engine assets and synchronize installed copies. Resolve the proposed footprint's
 architecture mapping before ready, including the new UI assets where applicable; this draft does
 not amend the architecture contract. Inventory every asset the selected journey installs. Compare
@@ -141,3 +197,12 @@ not tests run by this writing revision.
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 4(e). New AC4: the
+Runner and factory loop run inside the authority service and a pass runs on each journal-advancing
+packet or pass, each run's end on the launch pipe (including a receiver that died) and account reset
+timers, offering every assigned eligible unit and next station and none of a paused project; nothing
+polls. Its falsifier drops the launch pipe from the poll set. depends_on adds VELDO-0039, VELDO-0047
+and VELDO-0062, and the footprint adds the service, the Runner and the launch receiver. A What the
+reviewer judges section is added. Status unchanged.

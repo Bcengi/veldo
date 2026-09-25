@@ -51,13 +51,20 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Elaboration publishes versioned requirements, assumptions, alternatives, specs,
-      dependencies and questions. Set and completeness: Enumerate these output roles against real
-      artifacts allocated by 0037/0085 for an accepted objective; ensure required scope/acceptance
-      questions reach the owner and dependencies reach shared eligibility, with no self-admission.
-      Falsifier: Admit a generated feature automatically; the generated-work authority check must
-      fail.
+      dependencies and questions, and its requirements document quotes in full every external
+      reference in the objective's messages. Set and completeness: Enumerate these output roles
+      against real artifacts allocated by 0037/0085 for an accepted objective; ensure required
+      scope/acceptance questions reach the owner and dependencies reach shared eligibility, with no
+      self-admission. For each reference in the objective's messages (a Jira ticket, a Confluence
+      page, an API), the document quotes the fetched item with the reference as the owner wrote it,
+      the MCP server and tool used, the fetch time and a content digest, and every specification
+      cites that document; a reference that no tool in the role's configuration reaches becomes an
+      ordinary decision request naming the reference and the missing capability, and nothing
+      proceeds on the plain text alone. Falsifier: Publish requirements that name a referenced
+      ticket without quoting it with its digest; the fixed-reference check must fail.
     falsified_by: >
-      Admit a generated feature automatically; the generated-work authority check must fail.
+      Publish requirements that name a referenced ticket without quoting it with its digest; the
+      fixed-reference check must fail.
   - id: AC2
     text: >
       Claim: Finite reasoning limits bound every continuation and repeated unchanged proposal. Set
@@ -103,7 +110,9 @@ Budgeted requirements elaboration. Deliver the normal function needed by the run
 
 ## Context
 
-W76 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W76 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5 (moved from stage 4 by revision 4, because it depends on
+VELDO-0090). Section 2 of the approved
+[operating-model design](../docs/design/PLAN-0019-operating-model-design.md) fixes referenced material.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -113,10 +122,29 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: for an accepted objective, the elaboration run (or the PM's coordination run for one unit) fetches
+  the material the owner's messages point at with its configured tools, publishes requirements that
+  quote it with reference, tool, fetch time and digest, and publishes specifications, dependencies
+  and questions within finite reasoning limits and usage caps, never admitting its output.
+- Threat model: requirements that paraphrase or omit a referenced ticket, so a later edit drifts the requirement
+  silently; work that proceeds on the plain text when no tool reaches the reference; generated work
+  admitted automatically; a reasoning limit reset by continuation; an invocation launched after its
+  cap or with unknown remaining allowance; a published specification missing a part of its What the
+  reviewer judges section. The owner's account, the store and the installed engines are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); concurrent authors, checkpoint deletion and delayed-report recovery (Release 2); watching or
+  re-fetching referenced systems; forged rows in our own store and files planted in the installed
+  directory.
+
 ## Notes
 
 Elaboration creates requirements and specifications, dependencies and authentic owner
-questions; it never admits its output. Bound cycles, tokens, elapsed time and unchanged
+questions; it never admits its output. Referenced material is fetched by the run that writes the
+requirements, with the tools its role lists; for single-unit work that is the PM's coordination run
+(VELDO-0088). Because the document quotes what was read, review judges against fixed text, and a
+later edit to the ticket is new input only when the owner sends a message about it. There is no
+factory-side fetcher and no automatic re-fetch. Bound cycles, tokens, elapsed time and unchanged
 proposals in Veldo. 0062 supplies qualified subscription usage controls and live accounting for
 both engines, with conservative treatment of unknown usage.
 
@@ -142,3 +170,10 @@ now carry only the retained function. No specification status or historical proo
 much better requirements, so each specification it publishes states what an independent review judges
 (normal use, threat model, out of review scope). Unlikely edge cases are out of review scope (28962).
 Until this is built, the section is written by hand for each remaining item before it is built.
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 2(e). AC1: the
+requirements document quotes every external reference in the objective's messages with reference,
+tool, fetch time and digest, and a reference no configured tool reaches becomes an owner question;
+its falsifier is now the fixed-reference check. The work item moves from stage 4 to stage 5 with
+VELDO-0090. A What the reviewer judges section is added. Status unchanged.

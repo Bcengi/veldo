@@ -101,7 +101,8 @@ same deliberate admission path as other ordinary work.
 
 ## Context
 
-W65 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W65 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 2 (moved from Release 1 stage 4 by
+revision 4, on the approved operating-model design).
 R08 permits POLICY_DEFECT admission by the admission authority; trusted automatic reproduction
 is a separate later path. Normal owner admission and priority remain mandatory.
 Risk, approval requirements and draft status are unchanged.
@@ -124,6 +125,12 @@ A defect label, reproduction assertion or severity never bypasses owner admissio
 actual intake and grooming consumers. The former criteria below remain Release 3 obligations;
 they are not Release 1 prerequisites and have not been implemented or qualified by this edit.
 No status or existing proof changed.
+
+2026-09-25, PLAN-0019 revision 4: W65 moves to Release 2 on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 10. An ordinary
+"fix this bug" message runs that design's default pipeline like any other work in Release 1, so this
+item is no longer a Release 1 prerequisite and VELDO-0059 no longer depends on it. Criteria and
+status unchanged.
 
 ### Deferred Release 3 contract
 

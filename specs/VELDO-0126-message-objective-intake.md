@@ -17,6 +17,9 @@ footprint:
   - "engine/.veldo/control_intake*.py"
   - ".veldo/control_intake*.py"
   - "packs/*/.veldo/control_intake*.py"
+  - "engine/.veldo/control_project*.py"
+  - ".veldo/control_project*.py"
+  - "packs/*/.veldo/control_project*.py"
   - "scripts/suites/*_veldo_0126_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -44,15 +47,23 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Both source adapters submit the same normalized intake command and produce a proposed
-      objective or work item. Set and completeness: Enumerate the two allowed source kinds and drive
-      one actual Telegram message and one authenticated API call with equivalent text through the
-      common service. Retain source identity/message ID or API request ID, exact text, authenticated
-      principal and project context. If the project is unresolved, retain an inbox proposal and ask
-      rather than invent ownership. Falsifier: Write API messages into a separate work queue; the
-      common-command and proposal comparison must fail.
-    falsified_by: >
-      Write API messages into a separate work queue; the common-command and proposal comparison must
+      objective or work item, in the project the message names by its name, by a ticket key whose
+      prefix it lists, or as a new project. Set and completeness: Enumerate the two allowed source
+      kinds and drive one actual Telegram message and one authenticated API call with equivalent
+      text through the common service. Retain source identity/message ID or API request ID, exact
+      text, authenticated principal and project context. A ticket key in the text whose prefix
+      exactly one candidate project lists among its ticket key prefixes decides that project, as the
+      candidate's name does. A new-project request, the whole words "new" and "project" or
+      "repository" matched the way named projects are matched, is never routed to an only candidate
+      and goes to the factory project as an inbox proposal with no intake question; every "which
+      project?" question offers "a new project" as an answer; and the factory project is never
+      selected as a default or as an only candidate. If the project is otherwise unresolved, retain
+      an inbox proposal and ask rather than invent ownership. Falsifier: Route "start a new personal
+      project called tidepool" to the only configured project; the new-project routing check must
       fail.
+    falsified_by: >
+      Route "start a new personal project called tidepool" to the only configured project; the
+      new-project routing check must fail.
   - id: AC2
     text: >
       Claim: Arbitrary message text is retained without requiring a ticket identifier or structured
@@ -87,7 +98,9 @@ operation, regardless of whether it arrived on Telegram or the authenticated API
 
 ## Context
 
-W89 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 3.
+W89 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 3.
+Sections 2 and 5 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
+add ticket keys and new projects.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its 2026-09-22
 scope amendments. This new specification is draft; authoring it supplies neither implementation
 proof nor operational activation. Implementation still requires readiness and applicable approval.
@@ -104,7 +117,9 @@ specification status, implementation, test, runtime policy or deployed service c
   VELDO-0066 or an authenticated API call through the intake interface VELDO-0130 will expose, becomes
   one normalized intake command. It records the source identity (message id or API request id), the
   exact text, the authenticated principal and the project context, and produces a proposed objective or
-  work item, or an inbox proposal plus a question when the project is unresolved. Arbitrary prose is
+  work item, or an inbox proposal plus a question when the project is unresolved. "Please do BCG-123"
+  lands in the project whose ticket keys include `BCG`; "start a new personal project called tidepool"
+  goes to the factory project with no question. Arbitrary prose is
   kept as written; a ticket reference is data an agent may fetch with its configured tools, never
   watched. Intake never admits or prioritizes work. The same source request repeated unchanged returns
   the same proposal. AC1's API leg runs through the intake interface the API will call; VELDO-0130
@@ -112,13 +127,21 @@ specification status, implementation, test, runtime policy or deployed service c
 - Threat model: forged actor text inside a Telegram message; an unauthenticated API call; an
   unsupported source; one source written to a separate queue; a message required to carry a ticket id;
   intake that creates an executable unit or grants priority; a repeated request identity with changed
-  content. The owner's account, the store and the authenticated channel edges are trusted.
+  content; a new-project request routed into an existing project; the factory project chosen as a
+  default; a ticket key whose prefix two projects list treated as deciding either. The owner's account, the store and the authenticated channel edges are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); Jira watchers,
   polling intake and webhook triggers (dropped by the owner, 28857); the API server itself
   (VELDO-0130); recovery (Release 2); forged rows in our own store and files planted in the installed
   directory.
 
 ## Notes
+
+A project record gains an optional list of ticket key prefixes, for example `BCG`, and intake
+treats a ticket key in the text whose prefix exactly one candidate lists as it treats that
+candidate's name. Every factory has one project named `factory` (VELDO-0143), whose PM prepares a
+project proposal from a new-project request; intake never selects it as a default or as an only
+candidate. The factory project's record comes from VELDO-0143's setup; this concern's checks create
+it in their own store.
 
 Owner Telegram 28857 limits new-work triggers to a Telegram message or authenticated API call;
 28859 allows agents to use exactly their configured MCP servers/tools. The UI message box uses
@@ -164,3 +187,12 @@ owner is told about his waiting requests after intake has taken or refused his m
 through the VELDO-0065 presenter's `hint_owner`); an inbox proposal's question carries that note in the
 same one reply. Intake's own records, criteria, status and risk are unchanged; suite 68 keeps its 18
 rows green and finding 126 its 18 mutations (`proof/VELDO-0126/mutations.json` regenerated).
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), sections 2(e) and 5(e).
+AC1: a ticket key whose prefix exactly one candidate lists names that candidate; a new-project
+request (the whole words "new" and "project" or "repository") is never routed to an only candidate
+and goes to the factory project with no intake question; every "which project?" question offers "a
+new project"; and the factory project is never a default. Its falsifier is now the new-project
+routing check. The footprint adds the project service (`control_project`), which gains the optional
+ticket key prefixes. Status unchanged.

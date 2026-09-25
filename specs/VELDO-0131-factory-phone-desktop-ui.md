@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W94
 plan_revision: 4
-depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132]
+depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145]
 placement: [loop, distribution]
 protected_paths: []
 footprint:
@@ -96,7 +96,9 @@ from a phone as effectively as from a desktop.
 
 ## Context
 
-W94 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5.
+W94 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5.
+Sections 3, 5, 7 and 8 of the approved
+[operating-model design](../docs/design/PLAN-0019-operating-model-design.md) add screen rows; its first slice is VELDO-0145.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its 2026-09-22
 scope amendments. This new specification is draft; authoring it supplies neither implementation
 proof nor operational activation. Implementation still requires readiness and applicable approval.
@@ -106,6 +108,22 @@ proof nor operational activation. Implementation still requires readiness and ap
 Automatic recovery, durability/scale qualification and additional host/channel types beyond
 this declared concern. These belong to later releases as assigned by the plan. No existing
 specification status, implementation, test, runtime policy or deployed service changes in this draft.
+
+## What the reviewer judges
+
+- Normal use: the owner opens the UI on his phone or desktop over his tailnet, in a passkey session, and uses
+  every screen row: objectives and projects, backlog, workers, the live run terminal, decisions,
+  gate and review, usage per account, team and capability configuration, MCP servers and
+  credentials, repositories and identities, and the workflow editor; every read and action goes
+  through the authenticated API.
+- Threat model: a screen that is clipped, overlapping or reduced to read-only on a phone; completion or any state
+  shown from local optimistic state before its authoritative record; an action that bypasses the
+  API, intake or settlement; a credential value shown or read back; a run shown as a summary instead
+  of its record; a workflow edit that executes work; a dependency outside the owner's stack or
+  provenance rules. The owner's account, the store and the API are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery and offline behavior (Release 2); an optional form for creating repositories; a
+  connection test button for MCP servers; forged rows in our own store and files planted in the
+  installed directory.
 
 ## Notes
 
@@ -144,11 +162,13 @@ source of state and mutations. A phone is not a reduced read-only mode.
 | Objectives and projects | Searchable list, objective evidence/status and project detail; AI chat message box alongside | Stacked project cards and full-width objective detail; persistent accessible message action and chat sheet |
 | Backlog and nested units | TanStack Table with expandable specification/unit hierarchy, priority and blockers | Compact cards/rows with expand controls and a detail sheet; reorder/priority actions usable by touch without drag-only requirements |
 | Workers per machine | Linux/Mac groups with capability, activity, cap and stop controls | Machine sections with worker cards and visible host labels; inline stop confirmation/result |
-| Live agent run | Timeline of LangGraph steps and expandable tool calls beside artifacts/code | Vertical step timeline, tap-open tool arguments/results and artifact view; progress remains visible while reading |
+| Live agent run | The run's live terminal of VELDO-0141 AC3, built first by VELDO-0145: every event of the execution record in order, tool calls with inputs and results, command output in monospace, edits as Monaco diffs, errors marked, follow mode and search, beside a pipeline strip showing the unit's station | The same terminal full width, with follow mode, search and tap-open tool calls; the pipeline strip stays visible while reading; never a summary in place of the record |
 | Pending decisions | Inbox plus exact shown question, choices, rationale and inline answer | Full-width decision cards, readable presentation and inline choices/rationale; stale-answer feedback stays beside the action |
 | Gate and review results | Check table, findings, proof links and Monaco source/diff panes | Check/finding cards with navigable proof; Monaco code/diff view supports wrapping and single-pane old/new selection |
-| Subscription usage over time (spend view) | Chart.js via react-chartjs-2 time series in invocation/time/CLI-reported token or message units, with provider/project/run breakdown, rate-limit windows and unknown usage; no invented per-call price | Readable time range and summary, touch-selectable points and compact breakdown; unknown exposure never shown as zero |
+| Subscription usage over time (spend view) | Chart.js via react-chartjs-2 time series in invocation/time/CLI-reported token or message units, with provider/account/project/run breakdown, each account's rate-limit windows, reset times and active runs, "no account until" the earliest reset, and unknown usage; no invented per-call price | Readable time range and summary, touch-selectable points and a compact per-account breakdown with reset times; unknown exposure never shown as zero |
 | Team and agent/tool/MCP configuration | Role table and versioned detail forms listing exact effective tools/servers | Role cards and full-width forms; all tools/servers and protected credential references remain inspectable/editable |
+| MCP servers and credentials | Catalog table of servers (VELDO-0144) with revision history, transport, hosts and read-only tools, a versioned server form with write-only credential fields that can replace or delete a value, and each credential's label, set at and set by | Server cards and a full-width form; credential fields are write-only on phone too, and no value is ever shown or read back |
+| Repositories and identities | Read-only table of Git identities (label, author, remote owner, projects root, default visibility) and repositories (identity, path, remote, origin created or adopted, state with its named reason) | Identity and repository cards with the same fields; read-only |
 | Workflow/pipeline editor | React Flow canvas, palette and node/edge properties with version/save state | Pan/zoom canvas plus an accessible ordered node/edge list and property sheet; add/connect/reorder via touch controls, with visible version/save state |
 
 The workflow canvas edits VELDO-0132 data. It has no engine, shell executor, direct provider call or
@@ -161,3 +181,11 @@ request applying current Veldo authority. Monaco never executes inspected source
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), sections 3(e), 5(e), 7(e)
+and 8(e). The screen contract's "Live agent run" row is replaced by the live terminal of VELDO-0141
+AC3, which VELDO-0145 builds first; it gains an "MCP servers and credentials" row and a read-only
+"Repositories and identities" row; and the usage row adds the per-account breakdown. depends_on adds
+VELDO-0141 to VELDO-0145, which own those rows. A What the reviewer judges section is added. Status
+unchanged.

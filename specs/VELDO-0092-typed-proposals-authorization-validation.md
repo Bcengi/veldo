@@ -91,7 +91,8 @@ Typed proposals and complete authorization validation. Deliver the normal functi
 
 ## Context
 
-W77 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
+W77 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 2 (moved from Release 1 stage 4 by
+revision 4, on the approved operating-model design).
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -125,3 +126,9 @@ concurrent read-set insertion and AC3 kill/lost-ack/replica qualification moved 
 Typed current-authorized actions, dependency checks and all-or-nothing groups remain. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-25, PLAN-0019 revision 4: W77 moves to Release 2 on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), sections 4 and 10. In
+Release 1 each PM proposal takes effect through the command that owns it, one at a time, and a
+refusal stops the rest of that cycle's proposals by name (VELDO-0088); all-or-nothing groups wait
+for this item. Criteria and status unchanged.
