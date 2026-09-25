@@ -534,11 +534,12 @@ sys.exit(payload.get('code', 0))
                           and (record or {}).get('state') == 'exited'
                           and None not in (reserved_at, ran_at) and reserved_at < ran_at)
                 launch, record = run(account, unit, adapter, script, resume='session-' + adapter)
+                # An engine started before the check would have written its marker within this wait.
+                late = marker_wait(launch.dispatch_id, timeout=3.0)
                 check('usage/reserved-before-launch', '%s follow-on past the unit\'s invocation cap: refused before '
-                      'launch, no engine started [%s, %d]' % (adapter, (record or {}).get('refusal'),
-                                                               len(engine_markers(launch.dispatch_id))),
+                      'launch, no engine started [%s, %s]' % (adapter, (record or {}).get('refusal'), bool(late)),
                       (record or {}).get('refusal') == 'missing_authority:allowance:usage_cap:unit:invocations'
-                      and not engine_markers(launch.dispatch_id) and not invocation(launch.dispatch_id)
+                      and not late and not invocation(launch.dispatch_id)
                       and reservations.balances('unit', unit)['invocations'] == 3)
 
         with region('usage/allowance-states'):
