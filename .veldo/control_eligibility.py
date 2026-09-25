@@ -6,8 +6,8 @@ dispatcher's build, review and publication, and every subscription CLI call a bu
 named decision over the accepted records in the real control store, with the predicates of ITS
 station (completion_contract.ENTRY_PREDICATES, the shipped VELDO-0021 contract, plus current
 admission everywhere under R52/R69, and priority everywhere under VELDO-0078: priority_current is the
-backlog's executable question, control_backlog.executable_record_problems, over the unit and backlog
-records the decision consumed, so admitted but unprioritized work, a unit appended after the last
+backlog's executable question, control_backlog_priority.executable_record_problems, over the unit and
+backlog records the decision consumed, so admitted but unprioritized work, a unit appended after the last
 prioritization and a blocked item are refused at every station by one decision). Review cannot bypass
 draft-plan, decision or dependency checks.
 
@@ -119,9 +119,10 @@ SN = _organ('control_snapshot')
 DD = _organ('control_decision_dependency')
 # VELDO-0134: the architecture record's schema (veldo.architecture_record/v1), which the reader applies.
 AR = _organ('control_architecture')
-# VELDO-0078: the backlog's executable question (control_backlog.executable_record_problems), the
-# priority_current predicate's answer.
-BL = _organ('control_backlog')
+# VELDO-0078: the backlog's executable question, the priority_current predicate's answer, from its
+# import-free module: the backlog service itself loads the entity contract and with it the engine's
+# parser, which this process runs only inside the architecture snapshot.
+BL = _organ('control_backlog_priority')
 
 # The stations the floor's entries invoke, each with its station-specific predicates. The shipped
 # contract's set is the floor of each; current admission is added to every station because R52

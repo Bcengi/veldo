@@ -36,7 +36,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 SUITE = '73_veldo_0078_backlog.py'
-MODULES = ('control_backlog.py', 'control_eligibility.py', 'tasks.py', 'frontier.py', 'init_scaffold.py')
+MODULES = ('control_backlog.py', 'control_backlog_priority.py', 'control_eligibility.py', 'tasks.py', 'frontier.py', 'init_scaffold.py')
 PREFIX = 'VELDO-0078 '
 
 

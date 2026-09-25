@@ -38,6 +38,7 @@ def _v78_suite():
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {'control_backlog.py': ROOT / ".veldo" / "control_backlog.py",
+                  'control_backlog_priority.py': ROOT / ".veldo" / "control_backlog_priority.py",
                   'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
                   'tasks.py': ROOT / ".veldo" / "tasks.py",
                   'frontier.py': ROOT / ".veldo" / "frontier.py"}
@@ -152,19 +153,22 @@ def _v78_suite():
         try:
             with region('install/assets'):
                 scaffold = load('v78_scaffold', SCAFFOLD)
-                rel = '.veldo/control_backlog.py'
-                both = (ROOT / rel).is_file() and (ROOT / 'engine' / rel).is_file()
-                if both:
-                    scaffold._lay(ROOT / 'engine' / rel, base / 'laid' / rel, rel, [], [])
+                rels = ('.veldo/control_backlog.py', '.veldo/control_backlog_priority.py')
+                present = {r: (ROOT / r).is_file() and (ROOT / 'engine' / r).is_file() for r in rels}
+                for r in rels:
+                    if present[r]:
+                        scaffold._lay(ROOT / 'engine' / r, base / 'laid' / r, r, [], [])
                 same = [r for r in ('.veldo/tasks.py', '.veldo/frontier.py', '.veldo/init_scaffold.py',
                                     '.veldo/control_eligibility.py')
                         if (ROOT / 'engine' / r).read_bytes() == (ROOT / r).read_bytes()]
                 check('install/assets', [
-                    (rel + ' installed by the scaffold', rel in scaffold._FILES),
-                    (rel + ' not claimed as validator substrate', rel not in scaffold.REQUIRED_SUBSTRATE),
-                    (rel + ' engine copy identical', both and (ROOT / 'engine' / rel).read_bytes() == (ROOT / rel).read_bytes()),
-                    (rel + ' laid by the installer', both and (base / 'laid' / rel).is_file()
-                     and (base / 'laid' / rel).read_bytes() == (ROOT / rel).read_bytes()),
+                    ('the backlog service and its question installed by the scaffold', all(r in scaffold._FILES for r in rels)),
+                    ('neither claimed as validator substrate', not any(r in scaffold.REQUIRED_SUBSTRATE for r in rels)),
+                    ('both engine copies identical', all(present[r] and (ROOT / 'engine' / r).read_bytes() == (ROOT / r).read_bytes()
+                                                         for r in rels)),
+                    ('both laid by the installer', all(present[r] and (base / 'laid' / r).is_file()
+                                                       and (base / 'laid' / r).read_bytes() == (ROOT / r).read_bytes()
+                                                       for r in rels)),
                     ('tasks, frontier, init_scaffold and control_eligibility engine copies identical', len(same) == 4),
                     ('the task source that loads it is installed beside it', '.veldo/tasks.py' in scaffold._FILES)])
 
@@ -508,7 +512,7 @@ def _v78_suite():
                 return result, result.get('item_id') or (CB.item_id(features[name]) if CB is not None else 'backlog:' + name)
 
             # AC1: only admitted, prioritized work creates executable engineering units, at every claim entry.
-            with region('priority/declared-set', 'priority/missing-priority', 'priority/store-inspection',
+            with region('priority/declared-set', 'priority/missing-priority', 'priority/gate-question', 'priority/store-inspection',
                         'priority/owner-decision', 'lifecycle/foreign-sources'):
                 stage = {}
                 took = {}
@@ -602,6 +606,34 @@ def _v78_suite():
                     ('the claim receiver refuses it', table[adm]['receiver'] == (False, 'not_admitted')),
                     ('the backlog names the reason for both units',
                      executable(spec3) == ['missing_authority:priority'] and executable(task3) == ['missing_authority:priority'])])
+
+                # The Gate asks the backlog's own question from its import-free module, never the service, and the
+                # service stops by name when that module's states are not the entity contract's.
+                question = mods / 'control_backlog_priority.py'
+                question_tree = ast.parse(question.read_text()) if question.is_file() else None
+                drift_dir = base / 'drift' / '.veldo'
+                drift_dir.mkdir(parents=True)
+                for source in sorted(mods.glob('*.py')):
+                    shutil.copyfile(source, drift_dir / source.name)
+                if question.is_file():
+                    (drift_dir / question.name).write_text(question.read_text().replace(
+                        "UNIT_TERMINAL = ('COMPLETED', 'CANCELED')", "UNIT_TERMINAL = ('COMPLETED',)"))
+                drifted = attempt(lambda: load('v78_backlog_drift', drift_dir / 'control_backlog.py'))
+                PQ = getattr(CB, 'PQ', None)
+                check('priority/gate-question', [
+                    ('the question imports nothing', question_tree is not None
+                     and not [n for n in ast.walk(question_tree) if isinstance(n, (ast.Import, ast.ImportFrom))]),
+                    ('the Gate\'s priority predicate is that module, and the service re-exports the same function',
+                     PQ is not None and FR.EL.BL.__file__ == PQ.__file__
+                     and CB.executable_record_problems is PQ.executable_record_problems and not hasattr(FR.EL.BL, 'Backlog')),
+                    ('the Gate loaded no entity contract and no backlog service',
+                     not [v for v in vars(FR.EL).values() if isinstance(v, types.ModuleType)
+                          and Path(getattr(v, '__file__', '') or '.').name in ('control_backlog.py', 'entity_contract.py')]),
+                    ('its classification is the entity contract\'s', attempt(lambda: CB.classification_problems()) == []),
+                    ('a classification that drifts is named', attempt(lambda: CB.classification_problems(
+                        types.SimpleNamespace(**dict({k: getattr(PQ, k) for k in dir(PQ) if k.isupper()},
+                                                     UNIT_TERMINAL=('COMPLETED',))))) == ['unit_states']),
+                    ('and the service refuses to load over it', drifted == ('error', 'ImportError'))])
 
                 executable_units = [(eid, u) for eid, u in of_kind('execution_unit')
                                     if u.get('state') not in ('PLANNED', 'CANCELED', 'COMPLETED')]

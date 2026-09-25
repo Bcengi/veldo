@@ -65,8 +65,10 @@ EVERY CLAIM ENTRY ASKS ONE QUESTION. executable_record_problems(unit, item) is [
 admitted and prioritized item: the item PRIORITIZED or ACTIVE and the unit neither PLANNED nor terminal.
 A unit leaves PLANNED only by the prioritization of its item's current decomposition revision (this
 module's _prioritize), so that state pair is the whole question for every record a real writer makes.
-The VELDO-0052 Gate asks it at every station as its priority_current predicate over the unit and item
-records it already consumed, so the frontier's offers, the work loop's claim, plan run-check, the
+The question lives in control_backlog_priority.py, which imports nothing, and is re-exported here; the
+VELDO-0052 Gate loads that module (never this service, whose entity contract loads the engine's parser)
+and asks it at every station as its priority_current predicate over the unit and item records it already
+consumed, so the frontier's offers, the work loop's claim, plan run-check, the
 direct executor, the dispatcher and the task source's direct claim (tasks.claim_task, through the
 Gate's claim station) all get one decision; executable_problems(conn, unit) asks it over any
 connection (another process's read-only one included). The claim receiver refuses a PLANNED unit and
@@ -139,9 +141,35 @@ TARGET_KIND, BLOCK_TARGET_KIND, UNIT_TARGET_KIND = 'backlog_item', 'backlog_bloc
 ALTERNATIVE_OUTCOMES = ('not_required',)
 REQUEST_KIND, SETTLEMENT_KIND, EFFECT_KIND = 'assignment', 'request_settlement', 'settlement_effect'
 OBJECTIVE_KIND, PROJECT_KIND, RECEIPT_KIND = 'objective', 'project', 'completion_receipt'
-EXECUTABLE_STATES = ('PRIORITIZED', 'ACTIVE')
+# VELDO-0078: the executable question, in the import-free module the Gate loads (control_backlog_priority.py),
+# re-exported here as this service's own; its state classification is checked against the entity contract.
+PQ = _organ('control_backlog_priority')
+executable_record_problems = PQ.executable_record_problems
+EXECUTABLE_STATES = PQ.ITEM_EXECUTABLE
 TERMINAL = EC.LIFECYCLES[KIND]['terminal']
 UNIT_TERMINAL = EC.LIFECYCLES[UNIT_KIND]['terminal']
+
+
+def classification_problems(priority=PQ, lifecycles=EC.LIFECYCLES):
+    """[] when the executable question's state classification is the entity contract's: its backlog_item
+    classes partition that vocabulary's states exactly, and both terminal sets are the contract's. Otherwise
+    the named mismatches."""
+    item, unit = lifecycles[KIND], lifecycles[UNIT_KIND]
+    classes = (tuple(priority.ITEM_BEFORE_ADMISSION) + (priority.ITEM_ADMITTED,) + tuple(priority.ITEM_EXECUTABLE)
+               + (priority.ITEM_BLOCKED,) + tuple(priority.ITEM_TERMINAL))
+    problems = []
+    if sorted(classes) != sorted(item['states']):
+        problems.append('item_states')
+    if set(priority.ITEM_TERMINAL) != set(item['terminal']):
+        problems.append('item_terminal')
+    if set(priority.UNIT_TERMINAL) != set(unit['terminal']) or priority.UNIT_PLANNED not in unit['states']:
+        problems.append('unit_states')
+    return problems
+
+
+if classification_problems():
+    raise ImportError('control_backlog_priority.py does not classify the entity contract\'s backlog states: '
+                      + ', '.join(classification_problems()))
 UNIT_FIELDS = ('unit', 'specification', 'scope', 'requirements', 'eligible_holders')
 TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 'out_of_scope': 'invalid_input',
             'no_such_item': 'invalid_input', 'no_such_feature': 'invalid_input', 'unsupported_work_class': 'invalid_input',
@@ -280,29 +308,6 @@ def executable_problems(conn, uid):
     if b is None or b['kind'] != KIND or not isinstance(b['data'], dict):
         return ['missing_authority:backlog']
     return executable_record_problems(u['data'], b['data'])
-
-
-def executable_record_problems(unit_data, item):
-    """THE EXECUTABLE QUESTION over a unit's record and its backlog item's record, however they were read:
-    [] only for a unit of an admitted, prioritized item. Otherwise the named reason: blocked:backlog,
-    missing_authority:backlog/<terminal state>, missing_authority:priority (admitted but not prioritized,
-    or a unit appended after the last prioritization, still PLANNED), missing_authority:admission (not
-    admitted), missing_authority:unit/<terminal state>."""
-    held = (unit_data if isinstance(unit_data, dict) else {}).get('state')
-    state = (item if isinstance(item, dict) else {}).get('state')
-    if state == 'BLOCKED':
-        return ['blocked:backlog']
-    if state in TERMINAL:
-        return ['missing_authority:backlog/' + str(state)]
-    if state == 'ADMITTED':
-        return ['missing_authority:priority']
-    if state not in EXECUTABLE_STATES:
-        return ['missing_authority:admission']
-    if held == 'PLANNED':
-        return ['missing_authority:priority']
-    if held in UNIT_TERMINAL:
-        return ['missing_authority:unit/' + str(held)]
-    return []
 
 
 def outcome_problems(reader, uid):

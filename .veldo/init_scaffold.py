@@ -250,6 +250,8 @@ _FILES = [
     # decomposition, blocked phases and evidence-based DONE) and the executable-work question every claim
     # entry asks. A runtime asset the authority, the frontier and the task source load; not substrate.
     ".veldo/control_backlog.py",
+    # VELDO-0078: the backlog's executable question, import-free, which the Gate and the service load.
+    ".veldo/control_backlog_priority.py",
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",

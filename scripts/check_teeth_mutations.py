@@ -5813,6 +5813,14 @@ def cases():
             "STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + ((PRIORITY_PREDICATE,) if s == 'selection' else ())\n"
             "                                             + p))  # defect: only selection asks for priority\n",
             ['priority/missing-priority'])
+    backlog('backlog-gate-loads-the-service', 'control_eligibility.py',
+            "BL = _organ('control_backlog_priority')\n",
+            "BL = _organ('control_backlog')  # defect: the Gate loads the service, its entity contract and the parser\n",
+            ['priority/gate-question'])
+    backlog('backlog-classification-unchecked', 'control_backlog.py',
+            "if classification_problems():\n    raise ImportError(",
+            "if False:  # defect: a question whose states drift from the entity contract loads\n    raise ImportError(",
+            ['priority/gate-question'])
     backlog('backlog-priority-not-a-gate-predicate', 'control_eligibility.py',
             "            return BL.executable_record_problems(data, self._data(inputs.get('backlog')))\n",
             "            return []  # defect: priority is not a Gate predicate\n",
@@ -5821,6 +5829,8 @@ def cases():
             "        if req.get('owner') != owner or settlement['data'].get('principals') != [owner]:\n",
             "        if False:  # defect: any member's settled answer admits and prioritizes\n", ['priority/owner-decision'])
     backlog('backlog-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_backlog.py",\n', '', ['install/assets'])
+    backlog('backlog-question-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_backlog_priority.py",\n', '',
+            ['install/assets'])
     # AC2 (declared falsifier): an appended unit is executable without renewed prioritization.
     backlog('appended-unit-executable', 'control_backlog.py',
             "                u['unit']: {'kind': UNIT_KIND, 'data': self._new_unit(data, u, revision, entry)}}\n",
@@ -5841,9 +5851,9 @@ def cases():
             "        if False:  # defect: any settled answer about the block resumes it\n"
             "            raise Refused('not_approved:%s' % ruling, 'the owner did not resolve the block')\n",
             ['blocked/resume-binding'])
-    backlog('blocked-item-executable', 'control_backlog.py',
-            "    if state == 'BLOCKED':\n        return ['blocked:backlog']\n",
-            "    if state == 'BLOCKED':\n        return []  # defect: a blocked item's units are executable\n",
+    backlog('blocked-item-executable', 'control_backlog_priority.py',
+            "    if state == ITEM_BLOCKED:\n        return ['blocked:backlog']\n",
+            "    if state == ITEM_BLOCKED:\n        return []  # defect: a blocked item's units are executable\n",
             ['blocked/resume-binding'])
     backlog('backlog-done-on-output', 'control_backlog.py',
             "            problems = outcome_problems(reader, u['unit'])\n",
