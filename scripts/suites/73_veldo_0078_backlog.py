@@ -33,6 +33,7 @@ def _v78_suite():
     import tempfile
     import threading
     import time
+    import types
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {'control_backlog.py': ROOT / ".veldo" / "control_backlog.py",
@@ -184,6 +185,7 @@ def _v78_suite():
             VAL = load('v78_validate', mods / 'validate.py')
             contract = load('v78_contract', mods / 'entity_contract.py')
             CB = load('v78_backlog', mods / 'control_backlog.py') if (mods / 'control_backlog.py').is_file() else None
+            CYC = load('v78_cycle', mods / 'control_workflow_cycle.py')
             DOMAIN, REPO = 'domain-78', 'repository-78'
             ids = dict(domain_uuid=DOMAIN, repository_uuid=REPO, store_uuid='store-78')
 
@@ -523,6 +525,18 @@ def _v78_suite():
                         continue
                     prioritize(stage[label], 'PRI-78-%d' % n)
                 offered = offers()
+
+                def assign(subject):
+                    """The VELDO-0132 cycle's real assignment step (Cycles._assign) for `subject` over this Gate, with
+                    the role check it makes first answered None and its record writes returned instead of stored."""
+                    held = types.SimpleNamespace(gate=gate, role_problem=lambda definition, node: None,
+                                                 _update=lambda record, action, **fields: dict(record, action=action))
+                    held._refuse = lambda record, code, codes=None, **fields: CYC.Cycles._refuse(held, record, code, codes,
+                                                                                                 **fields)
+                    definition = {'references': {'roles': {'builder': {'id': 'role:b', 'version': 1, 'digest': 'd'}}}}
+                    return attempt(lambda: CYC.Cycles._assign(held, {'subject': subject, 'position': 'build'}, definition,
+                                                              {'config': {'role': 'builder'}}))
+                cycle_prioritized = assign('VELDO-9784')
                 table = {}
                 for n, label in enumerate(AC1_SET, 1):
                     spec, task = 'VELDO-978%d' % n, 'TASK-78-%d' % n
@@ -559,6 +573,7 @@ def _v78_suite():
                 spec3, task3 = 'VELDO-9783', 'TASK-78-3'
                 selection3 = gate.decide('selection', spec3)
                 stations3 = {s: gate.decide(s, spec3).get('refusals') or [] for s in FR.EL.FLOOR_STATIONS}
+                cycle3 = assign(spec3)
                 ledger_record = CLF.holder(task3, root=str(ledger))
                 check('priority/missing-priority', [
                     ('the admitted item has its owner\'s admission and no priority',
@@ -572,6 +587,13 @@ def _v78_suite():
                      and not table[adm]['offer']),
                     ('every Gate station (plan run-check and the cycle\'s assignment step included) names its missing priority',
                      len(stations3) == 7 and all('missing_authority:priority' in r for r in stations3.values())),
+                    ('the Gate refuses it at claim and at direct execution for missing priority alone',
+                     stations3.get('claim') == ['missing_authority:priority']
+                     and stations3.get('direct_execution') == ['missing_authority:priority']),
+                    ('the VELDO-0132 cycle\'s assignment step refuses it for missing priority, and assigns prioritized work',
+                     isinstance(cycle3, dict) and cycle3.get('state') == 'refused'
+                     and cycle3.get('refusal') == 'missing_authority:priority'
+                     and isinstance(cycle_prioritized, dict) and cycle_prioritized.get('state') == 'waiting'),
                     ('the direct task claim is refused for missing priority, and the ledger was never asked',
                      table[adm]['task-ledger'] == (False, 'missing_authority:priority') and ledger_record is None),
                     ('the task claim through the authority is refused for missing priority',
