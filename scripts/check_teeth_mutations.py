@@ -4996,6 +4996,11 @@ def cases():
                     "        if prior is not None and signer != prior.get('owner'):\n",
                     "        if False:  # defect: the signer is checked against params['owner'] only\n", 'command/owner-only')
     # Filed F2: an exchange that failed in transport is named as fixture evidence.
+    # Review 2 (filed, fixed): a demoted owner's edge must halt like a revoked owner's.
+    service_channel('demoted-owner-still-binds', 'control_channel_activation.py',
+                    "            or OWNER_ROLE not in (entry.get('roles') or [])):\n",
+                    "            or False):  # defect: an owner without project_owner still binds the edge\n",
+                    'owner/demoted-halts')
     service_channel('transport-failure-named-fixture', 'control_channel_activation.py',
                     "        return ['unavailable_service']\n",
                     "        return ['fixture_only_evidence']  # defect: a failed exchange is named fixture evidence\n",

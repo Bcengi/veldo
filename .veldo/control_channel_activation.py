@@ -182,7 +182,8 @@ def bindings(store, conn, owner, edge_key_id, now):
     """(refusal, bound): what an activation of `owner`'s edge binds, read in committed state now."""
     state = CM.authority_state(store, conn)
     entry = AC.membership_entry(state['membership'], owner)
-    if not AC.active_member(entry, now)[0] or entry.get('principal_type') != 'person':
+    if (not AC.active_member(entry, now)[0] or entry.get('principal_type') != 'person'
+            or OWNER_ROLE not in (entry.get('roles') or [])):
         return 'owner_not_current', None
     edge = E.edge_record(state, edge_key_id)
     if edge is None or not E.active(edge, now) or edge.get('channel') != CHANNEL:
