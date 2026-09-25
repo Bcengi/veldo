@@ -760,7 +760,7 @@ work:
     spec: VELDO-0079
     title: Grooming and admission requests through enrolled decision surfaces
     feature_refs: [F6]
-    depends_on: [VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0073, VELDO-0078]
+    depends_on: [VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0073, VELDO-0078, VELDO-0150]
     order: 14079
     release: 1
     stage: 4
@@ -1123,7 +1123,7 @@ work:
     spec: VELDO-0154
     title: The factory loop runs inside the authority service, woken only by commits, run ends and account resets, and re-dispatches or asks the owner at an account limit
     feature_refs: [F4]
-    depends_on: [VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0129, VELDO-0141, VELDO-0160]
+    depends_on: [VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0076, VELDO-0129, VELDO-0141, VELDO-0160]
     order: 15154
     release: 1
     stage: 5
@@ -1654,3 +1654,7 @@ re-run-or-ask decision (its AC6) are W120's VELDO-0160, stage 1, built with VELD
 item 1; AC6 becomes two criteria with a falsifier each, and the fixture record form is written in the
 specification because VELDO-0141 and VELDO-0144 come later. W114 (VELDO-0154), which carries the
 decision out, W94 (VELDO-0131), whose usage row shows the windows, and W44 (VELDO-0059) depend on it.
+W64 (VELDO-0079) depends on W110's VELDO-0150, whose acceptance by his own message is what its AC2
+admits, and W114 (VELDO-0154) on W61's VELDO-0076, whose pause its AC1 respects; VELDO-0154 states that
+with no catalog every MCP call asks the owner, instead of depending on VELDO-0144, which section 12 builds
+after it.

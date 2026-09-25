@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W64
 plan_revision: 4
-depends_on: [VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0073, VELDO-0078]
+depends_on: [VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0073, VELDO-0078, VELDO-0150]
 placement: [contracts, tracker, engine, distribution]
 protected_paths: []
 footprint:
@@ -159,3 +159,7 @@ under an objective proposed from the owner's own message is admitted at the defa
 message, and grooming presents a request only when the PM raises a question or proposes another
 priority; the PM still cannot admit. Its falsifier is now the ask-when-needed check, with PM
 self-admission kept in its set. A What the reviewer judges section is added. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0150, because AC2 admits work under
+an objective the owner's own message accepted, which is VELDO-0150's acceptance path. Criteria and
+status unchanged.

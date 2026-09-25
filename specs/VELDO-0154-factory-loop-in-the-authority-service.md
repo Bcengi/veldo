@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W114
 plan_revision: 4
-depends_on: [VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0129, VELDO-0141, VELDO-0160]
+depends_on: [VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0076, VELDO-0129, VELDO-0141, VELDO-0160]
 placement: [loop, fleet]
 protected_paths: []
 footprint:
@@ -81,8 +81,10 @@ acceptance_criteria:
       the exhausted account before its reported reset. For an ask decision (a record with a call to an
       MCP tool not marked read-only) observe one ordinary decision request to the project's owner
       (VELDO-0064) naming the calls and no dispatch until he answers; his yes dispatches it as a re-run
-      would, and his no leaves the unit stopped. Falsifier: Re-dispatch a run whose decision is to ask
-      the owner; the ask-before-rerun row must fail.
+      would, and his no leaves the unit stopped. A dispatch whose configuration names no catalog revision,
+      as every dispatch does until VELDO-0144 is built, has no tool marked read-only, so every MCP call in
+      its record decides ask. Falsifier: Re-dispatch a run whose decision is to ask the owner; the
+      ask-before-rerun row must fail.
     falsified_by: >
       Re-dispatch a run whose decision is to ask the owner; the ask-before-rerun row must fail.
 required_evidence: [unit, integration]
@@ -140,7 +142,10 @@ and it sends its post-commit hint only after a packet or channel pass it process
 run's acceptance and termination itself, so a build ending would wake nothing. The loop and the Runner
 live inside the authority service, the one scheduling instance (VELDO-0047); the Runner still starts
 the launch receiver as a separate process. A paused project's units are refused by the VELDO-0052 Gate
-check VELDO-0076 added, so the loop offers none of them. Starting a PM cycle for a project with new
+check VELDO-0076 added, so the loop offers none of them, and this specification depends on VELDO-0076
+for that pause. It does not depend on the catalog (VELDO-0144), which the design's section 12 builds
+after it: with no catalog revision no tool is marked read-only and every MCP call asks the owner, and
+once VELDO-0144 is built the dispatch's configuration names the revisions whose marks the decision reads. Starting a PM cycle for a project with new
 relevant input is VELDO-0088's, run from the same pass. The Runner is class `Runner` in
 `control_launch`; this concern registers its launch pipe in the service loop's poll set and dispatches
 through it, while VELDO-0129 owns what a build or review run does once launched.
@@ -165,3 +170,7 @@ A draft: only the owner marks a specification ready.
 2026-09-25, PLAN-0019 revision 4, third review: the re-run-or-ask decision moved from VELDO-0062 AC6 to
 VELDO-0160 AC3, so AC3 names it there and depends_on adds VELDO-0160, which also owns the account
 selection and rate-limit windows the reset timer of AC1 reads. Criterion meaning unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0076, whose pause AC1 relies on,
+and AC3 and the Notes state that with no catalog every MCP call decides ask, so this stage 1 item does not
+wait for the stage 2 catalog VELDO-0144.
