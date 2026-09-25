@@ -35,6 +35,12 @@ footprint:
   - "engine/.veldo/control_reservation*.py"
   - ".veldo/control_reservation*.py"
   - "packs/*/.veldo/control_reservation*.py"
+  - "engine/.veldo/control_account*.py"
+  - ".veldo/control_account*.py"
+  - "packs/*/.veldo/control_account*.py"
+  - "engine/.veldo/control_runner*.py"
+  - ".veldo/control_runner*.py"
+  - "packs/*/.veldo/control_runner*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -59,20 +65,22 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Provider model authentication stays in its protected adapter service and internal
-      handles derive from accepted contracts. Set and completeness: For Claude Code and Codex,
-      enumerate provider model credentials reachable through environment, mounts, descriptors,
-      sockets and provider configuration by real tool/build children on Linux and Mac. Attempt
-      reads of those model credentials and substitute contract/unit/station/sandbox/expiry;
-      require refusal and no reusable provider model profile mounts in tool/build children.
-      The authenticated model CLI may use its own protected subscription profile. MCP server
-      credentials and profiles are passed exactly as configured under VELDO-0127; they are not
-      provider model credentials and are not refused by this check. Falsifier: Mount a reusable
-      provider model account profile into a worker tool environment; the credential-read check
-      must fail.
+      Claim: Each invocation authenticates only with the subscription login of the account its
+      dispatch recorded, and internal handles derive from accepted contracts. Set and completeness:
+      For Claude Code and Codex on Linux and Mac, read back that each invocation's engine
+      environment carries exactly the profile (Claude Code's `CLAUDE_CONFIG_DIR`, Codex's
+      `CODEX_HOME`) of the account the Runner selected and the dispatch recorded, never a profile
+      taken from the caller's environment or another account's, and no paid-API credential variable;
+      substitute contract, unit, station and expiry and require refusal. MCP server credentials are
+      passed exactly as configured under VELDO-0127 and VELDO-0144; they are not provider model
+      credentials and are not refused by this check. Separating the provider login from the worker's
+      tool and build children is Release 2 hardening for both engines (owner, Telegram 29163): in
+      Release 1 a tool may read its own engine login, the same as an interactive session today.
+      Falsifier: Take the profile directory from the caller's environment instead of the dispatch
+      record; the login-source check must fail.
     falsified_by: >
-      Mount a reusable provider model account profile into a worker tool environment; the
-      credential-read check must fail.
+      Take the profile directory from the caller's environment instead of the dispatch record; the
+      login-source check must fail.
   - id: AC2
     text: >
       Claim: Each logged-in subscription CLI invocation checks and reserves applicable usage
@@ -109,14 +117,22 @@ acceptance_criteria:
     text: >
       Claim: The owner registers any number of logged-in subscription accounts for each provider,
       each once with its own login, and the factory runs work on all of them at the same time, each
-      with its own credentials, usage and rate-limit windows, moving new work off an account that has
-      reached its limit. Set and completeness: Register three Claude Code accounts and one Codex account
-      (each its own profile: Claude Code's config directory, Codex's home), run concurrent work across
-      them, and read back that each invocation used exactly its own account's profile and was charged to
-      that account; exhaust one account's allowance and require new work to go to another account of the
-      same provider while nothing is sent to the exhausted one until its reported reset; add an account
-      later with no restart of running work. Falsifier: Launch two accounts' work with one shared profile;
-      the per-account isolation check must fail.
+      with its own credentials, usage and rate-limit windows, moving new work off an account that
+      has reached its limit; a run stopped by its limit is dispatched again on another account only
+      when it made no call to an MCP tool not marked read-only, and otherwise the owner is asked.
+      Set and completeness: Register three Claude Code accounts and one Codex account (each its own
+      profile: Claude Code's config directory, Codex's home), run concurrent work across them, and
+      read back that each invocation used exactly its own account's profile and was charged to that
+      account; exhaust one account's allowance and require new work to go to another account of the
+      same provider while nothing is sent to the exhausted one until its reported reset; add an
+      account later with no restart of running work. A run whose stream reports its window
+      exhausted, or whose engine ends with its rate-limit result, records the window and reset time
+      and ends as `account_limit`; when its record shows no call to an MCP tool not marked
+      read-only, the same station is dispatched again under a new dispatch identity on another
+      account from the same accepted commit, and when it shows such a call the owner is asked
+      whether to re-run, naming the calls. An account with no usage observation yet admits one run
+      at a time until its first observation, because unknown is never zero. Falsifier: Launch two
+      accounts' work with one shared profile; the per-account isolation check must fail.
     falsified_by: >
       Launch two accounts' work with one shared profile; the per-account isolation check must fail.
 required_evidence: [unit, integration]
@@ -131,7 +147,9 @@ Provider credential separation and live usage accounting. Deliver the normal fun
 
 ## Context
 
-W47 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+W47 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
+Section 8 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
+designs the account pool; section 6 the login boundary.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -146,12 +164,17 @@ No automatic recovery, extra channel activation or broader host qualification is
 - Normal use: Claude Code and Codex run through the logged-in subscriptions; each invocation checks its
   usage cap before launch, usage is settled once from the CLI's own report, and totals are shown per
   account, project and unit.
-- Threat model: a worker or tool child reading the provider model credential, and a worker's own report
-  claiming less usage than the CLI recorded. MCP servers keep the credentials their configuration gives
-  them (VELDO-0127). The owner's account and the installed engine are trusted.
+- Threat model: an invocation authenticated with another account's profile or one taken from the
+  caller's environment; a paid API credential reaching the engine; a worker's own report claiming less
+  usage than the CLI recorded; work sent to an account at its limit before its reported reset; a run
+  that wrote through an MCP server repeated on another account without asking. MCP servers keep the
+  credentials their configuration gives them (VELDO-0127, VELDO-0144). The owner's account and the
+  installed engine are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a child
   deliberately hunting credentials through kernel interfaces; CLI report formats the installed CLIs do
-  not produce; lost reports after a crash (Release 2).
+  not produce; lost reports after a crash (Release 2); a worker's tools reading their own engine
+  login, accepted for Release 1 by the owner (Telegram 29163) with the separation in Release 2;
+  carrying a session over to another account mid-run.
 
 ## Notes
 
@@ -160,6 +183,25 @@ Claude Code and one Codex), for each of Claude Code and Codex on the two MVP hos
 There is no per-call price. Record actual invocation counts, wall time, tokens or messages as
 reported by the CLI, and the subscription's exposed rate-limit windows, resets and usage
 watermarks. Do not fabricate unreported counters or require pricing to qualify an adapter.
+
+The account registry is a store record family at factory scope, not a file under one repository's
+Git common directory: each `account` record has an id, a provider (`claude_code` or `codex`), a label,
+a status (`active`, `paused` by the owner, or `disabled`), a profile directory per host
+(`CLAUDE_CONFIG_DIR` or `CODEX_HOME`), its rate-limit windows (utilization, reset time, observed at,
+source dispatch) and its concurrency, one run by default. `.veldo/accounts.py` becomes the local helper
+that prepares a profile directory and prints its login step for either provider. The owner registers
+an account for a provider and host, logs in once into the prepared profile, and a short qualification
+run confirms the login is a subscription; the Runner reads the pool at every dispatch, so the new
+account takes work at the next dispatch.
+
+Choosing an account is part of preparing a dispatch, inside the VELDO-0036 reservation. The candidates
+are the active accounts of an engine the role allows, with a profile on the chosen host, outside every
+reported rate-limit window and under their concurrency. The Runner picks the lowest last reported
+utilization on the tightest window, then the fewest active runs, then the least recently used. With
+no candidate the unit waits, the UI shows "no account until" the earliest reset, and the factory loop
+sets a timer for that time (VELDO-0129 AC4). The re-run rule reads the run's execution record
+(VELDO-0141) and the read-only marks of the MCP catalog (VELDO-0144); until a role hands over catalog
+servers there is no MCP call to find, and the asking leg is driven once those land.
 
 VELDO-0036 supplies atomic account/project/unit usage reservations. Before every initial,
 retry or follow-on CLI invocation, check all applicable caps and outstanding reservations;
@@ -196,3 +238,14 @@ status or historical proof was changed.
 2026-09-25: the owner widened this item (Telegram 29127 asked, 29128 "yes, widen"): any number of
 registered accounts per provider, run concurrently with separate credentials, usage and rate limits, and
 new work moved off an account at its limit (AC5; AC4 and the Notes now say each registered account).
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), sections 6 and 8(e), and
+the owner's answer to its section 15 (Telegram 29163). The login-separation clause of AC1 moves to
+Release 2 as hardening for both engines; AC1 keeps that each invocation authenticates only with the
+profile of the account its dispatch recorded, and its falsifier is now the login source. AC5 adds
+the re-run rule at a limit (again on another account from the accepted commit only when no call was
+made to an MCP tool not marked read-only, otherwise the owner is asked) and one run at a time for an
+account with no observation. The footprint adds the account records and the Runner's selection
+(`control_account`, `control_runner`). The Notes make the registry a store record family with
+per-host profiles for both providers and state the selection order. Status unchanged.

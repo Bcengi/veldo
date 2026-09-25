@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W44
 plan_revision: 4
-depends_on: [VELDO-0080, VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132]
+depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145]
 placement: [distribution, fleet, loop, enforcement, docs]
 protected_paths: []
 footprint:
@@ -47,19 +47,26 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The installed factory carries an owner objective from Telegram or the authenticated API
-      through LangGraph grooming, owner admission, implementation, independent review, exact landing
-      and completion reporting. Set and completeness: Install the declared reference distribution
-      without source-tree imports. Run a real Telegram objective and an API objective using the same
-      intake (including the UI message box). The actual LangGraph PM asks a blocking question
-      answered by the enrolled owner, publishes a prioritized backlog of specifications/nested
-      units, and obtains distinct admission and priority. A versioned team and exact configured
-      MCP/tool surface assigns real Claude Code and Codex workers across Linux and the Mac, with iOS
-      work only on the Mac via the relay. Observe isolated accepted-commit clones/C13 attachments,
-      kept proof, the trusted gate outside the candidate, fresh independent review, confirmed exact
-      tested-tree landing, stored completion and Telegram/UI progress, stops and completion. Compare
-      every journey step to installed service registrations and correlated receipts. Falsifier: Fall
-      back to a source-tree LiveLoop implementation after omitting the installed adapter wiring; the
+      Claim: The installed factory carries an owner objective from a Telegram message that points at
+      a Jira ticket, and from the authenticated API, through LangGraph grooming, owner admission,
+      implementation, independent review, exact landing and completion reporting, on at least two
+      subscription accounts, with every run watched live in its execution record. Set and
+      completeness: Install the declared reference distribution without source-tree imports. Run a
+      real Telegram message that names a Jira ticket of the project's ticket key prefix (for example
+      "please do BCG-123") and an API objective using the same intake (including the UI message
+      box). The PM run fetches the ticket through the Atlassian catalog server its role lists and
+      quotes it with its digest in the published requirements; the actual LangGraph PM asks a
+      blocking question answered by the enrolled owner, publishes a prioritized backlog of
+      specifications/nested units, and obtains admission and priority by his message or his answer.
+      A versioned team and exact configured MCP/tool surface assigns real Claude Code and Codex
+      workers across Linux and the Mac, with iOS work only on the Mac via the relay, and the
+      journey's runs use at least two subscription accounts. Observe isolated accepted-commit
+      clones/C13 attachments with the repository's identity as author, kept proof, the trusted gate
+      outside the candidate, fresh independent review, confirmed exact tested-tree landing pushed
+      with the repository's identity, stored completion, Telegram/UI progress, stops and completion,
+      and every run's execution record followed live in the UI's run terminal. Compare every journey
+      step to installed service registrations and correlated receipts. Falsifier: Fall back to a
+      source-tree LiveLoop implementation after omitting the installed adapter wiring; the
       installed-provenance journey must fail.
     falsified_by: >
       Fall back to a source-tree LiveLoop implementation after omitting the installed adapter
@@ -113,7 +120,9 @@ Installed full factory journey with real workers and enforcement. Deliver the no
 
 ## Context
 
-W44 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 6.
+W44 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 6.
+Section 11 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
+walks the journey RJ1 now names.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -123,11 +132,29 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the owner writes "please do BCG-123" in Telegram (and, separately, sends an objective through the
+  API or the UI message box) to the installed factory on the Linux host with its Mac worker host;
+  the journey of the operating-model design's section 11 runs end to end with real engines, real
+  channels, the Atlassian catalog server and at least two accounts, and he watches it in Telegram
+  and the UI.
+- Threat model: a journey that passes only because a source-tree fallback, a fake store, signer, policy or gate
+  stood in for the installed integration; a red gate, invalid approval or answer, stale presentation
+  or self-review that still moves trunk; a stale dependency, authority or usage cap that a station
+  does not recheck; release acceptance with a journey result, runtime asset or post-gate tree
+  equality missing. The owner's account, the installed engines, Git and the remote are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery, lost acknowledgements and checkpoints (Release 2); separating the engine login from
+  worker tools (Release 2, owner Telegram 29163); forged rows in our own store and files planted in
+  the installed directory.
+
 ## Notes
 
-Release 1 journey evidence includes an ordinary "fix this bug" message through VELDO-0080:
-shape the spec, obtain normal owner admission and priority, build, prove, independently review
-and land the exact tested tree. No automatic reproduction service is a prerequisite.
+Release 1 journey evidence includes an ordinary "fix this bug" message, which runs the default
+pipeline like any other work (VELDO-0080 is Release 2 since revision 4): intake, coordination,
+admission by his message, build, prove, independently review and land the exact tested tree. No
+automatic reproduction service is a prerequisite, and PM proposals take effect one owning command at
+a time (VELDO-0092's atomic groups are Release 2).
 
 This is the Release 1 stage 6 full-journey qualification. Declare the reference installed
 distribution and both actual host profiles before ready. Real Claude Code/Codex and real
@@ -155,3 +182,12 @@ now spans Telegram/API moved to PM moved to owner admission moved to Linux/Mac w
 to proof/gate/review moved to exact land moved to Telegram/UI; meaningful AC2 refusals remain.
 The criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
+(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 10(e). depends_on
+drops VELDO-0080 and VELDO-0092, which move to Release 2, and adds VELDO-0140 to VELDO-0145. AC1 now
+matches the revised RJ1: the journey starts from a Telegram message pointing at a Jira ticket
+fetched through the Atlassian catalog server, uses at least two subscription accounts and is watched
+in the live run terminal, with the repository's identity as author and pusher. The Notes no longer
+route ordinary defects through VELDO-0080, and a What the reviewer judges section is added. Status
+unchanged.
