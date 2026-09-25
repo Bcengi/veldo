@@ -11,9 +11,9 @@ process. The ingress is the production construction (control_channel_ingress.ope
 configuration of 0600 files. Mutation workers replace the production copies named in PRODUCTION below,
 never assertions or fixtures. Where the activation or ingress module is absent (the pre-change tree,
 for the red record) every row asserts its named interface and drives the path that tree has, so each
-row fails by its own assertions. The real-platform row (qualification/live-telegram) passes only on a
-recorded live run (proof/VELDO-0073/live/qualification.json); until then it is reported PENDING and is
-never counted as passed. No private key byte, signature or token is printed or retained.
+row fails by its own assertions. The live run's record (qualification/live-record-consistent) is checked
+for consistency only, never as proof of provenance, once proof/VELDO-0073/live/qualification.json exists;
+until then it is reported PENDING and is never counted as passed. No private key byte, signature or token is printed or retained.
 """
 import ast as _v73_ast
 import copy as _v73_copy
@@ -610,18 +610,20 @@ for _v73_name, _v73_observed in _v73_rows.items():
             if not _v73_one:
                 print('  VELDO-0073 %s detail: %s' % (_v73_name, _v73_label))
     expect('VELDO-0073 ' + _v73_name, _v73_ok)
-# AC2's real-platform leg: fixtures cannot certify it. It is a row only once the live run is recorded.
+# The live run's record: a CONSISTENCY check only, never proof of AC2's real-platform leg, since a file
+# cannot show where it came from (anyone can write one). The witness is the owner, who can confirm the
+# reply's message id and date on his phone; the binding proof is the factory's own activation (VELDO-0138).
 _v73_live = ROOT.joinpath(*_V73_LIVE)
 if _v73_live.is_file():
     _v73_act = _v73_load('v73_live_activation', ROOT.joinpath('.veldo', 'control_channel_activation.py'))
     _v73_text = _v73_live.read_text()
     _v73_doc = _v73_json.loads(_v73_text)
     _v73_record = _v73_doc.get('qualification') or {}
-    expect('VELDO-0073 qualification/live-telegram',
+    expect('VELDO-0073 qualification/live-record-consistent',
            _v73_act.qualification_problems(_v73_record, _V73_TELEGRAM) == [] and _v73_record.get('platform') == 'telegram'
            and _v73_act.digest(_v73_record) == _v73_doc.get('qualification_digest')
            and not _v73_re.search(r'[0-9]{5,}:[A-Za-z0-9_-]{30,}', _v73_text))
 else:
-    print('VELDO-0073 qualification/live-telegram: PENDING the live run (%s is not recorded); not counted as passed'
+    print('VELDO-0073 qualification/live-record-consistent: PENDING the live run (%s is not recorded); not counted as passed'
           % '/'.join(_V73_LIVE))
 print('VELDO-0073 suite seconds: %.3f' % (_v73_time.monotonic() - _v73_started))

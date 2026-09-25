@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -115 +115 @@
+-    return url[len(STAND_IN_ORIGIN):].rstrip('/').isdigit()
++    return True  # defect: any text after the loopback prefix is a stand-in

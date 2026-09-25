@@ -1,0 +1,88 @@
+{
+ "by_assertion": true,
+ "commit": "792c4941ad42b745b73df0a6c9f3303cd49e4615",
+ "details": [
+  "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor (['http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:36953@127.0.0.2', 'http://127.0.0.1:36953@127.0.0.2', 'http://127.0.0.1:36953@127.0.0.2', 'https://user@api.telegram.org', 'https://user@api.telegram.org', 'https://user@api.telegram.org', 'https://api.telegram.org:443@127.0.0.2', 'https://api.telegram.org:443@127.0.0.2', 'https://api.telegram.org:443@127.0.0.2', 'http://127.0.0.1:x', 'http://127.0.0.1:x', 'http://127.0.0.1:x']) and the ungated open (['http://127.0.0.1:80@api.telegram.org raised URLError', 'http://127.0.0.1:36953@127.0.0.2 raised URLError'])"
+ ],
+ "failed_rows": [
+  "VELDO-0073 activation/no-redirect"
+ ],
+ "modules": {
+  ".veldo/control_channel_activation.py": {
+   "at_commit": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2",
+   "now": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
+  },
+  ".veldo/control_channel_attribution.py": {
+   "at_commit": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040",
+   "now": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c"
+  },
+  ".veldo/control_channel_ingress.py": {
+   "at_commit": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb",
+   "now": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735",
+   "now": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8"
+  },
+  ".veldo/control_channel_projection.py": {
+   "at_commit": "686e1a65b4c0d385e43b33dcc3c21477e807d6228c0e3898d13065bb7e3a1ec5",
+   "now": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132",
+   "now": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132"
+  },
+  ".veldo/request_doorbell.py": {
+   "at_commit": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381",
+   "now": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0073 install/assets",
+   true
+  ],
+  [
+   "VELDO-0073 entry-points/enumerated",
+   true
+  ],
+  [
+   "VELDO-0073 activation/no-implicit",
+   true
+  ],
+  [
+   "VELDO-0073 activation/explicit-bound-operates",
+   true
+  ],
+  [
+   "VELDO-0073 qualification/real-platform-proof",
+   true
+  ],
+  [
+   "VELDO-0073 settlement/production-construction",
+   true
+  ],
+  [
+   "VELDO-0073 notification/wakes-only",
+   true
+  ],
+  [
+   "VELDO-0073 stop/halts-edge",
+   true
+  ],
+  [
+   "VELDO-0073 stale/key-and-configuration",
+   true
+  ],
+  [
+   "VELDO-0073 activation/no-redirect",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.181,
+ "spec_id": "VELDO-0073",
+ "suite": "scripts/suites/70_veldo_0073_activation.py",
+ "tree": "git archive 792c4941ad42b745b73df0a6c9f3303cd49e4615, unchanged; the current suite file run against it"
+}

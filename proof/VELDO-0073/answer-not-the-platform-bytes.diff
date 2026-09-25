@@ -1,4 +1,4 @@
 --- a/.veldo/control_channel_activation.py
 +++ b/.veldo/control_channel_activation.py
-@@ -241 +240,0 @@
+@@ -242 +241,0 @@
 -              and x.get('response_digest') == answer.get('response_digest')

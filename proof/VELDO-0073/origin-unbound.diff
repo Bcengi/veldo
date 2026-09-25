@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_activation.py
 +++ b/.veldo/control_channel_activation.py
-@@ -374 +374 @@
+@@ -375 +375 @@
 -        if not isinstance(origin, str) or origin.rstrip('/') != record.get('origin'):
 +        if not isinstance(origin, str):  # defect: any origin

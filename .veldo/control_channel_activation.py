@@ -47,8 +47,9 @@ a fixture never qualifies the Telegram origin (fixture_only_evidence). A stand-i
 qualified and activated too, which is how the suites drive the gate, but that activation binds the
 stand-in origin and cannot admit an exchange with any other. WHAT THIS CANNOT PROVE: Telegram does not
 sign its answers, so a record in the store is trusted as the store is (the threat model trusts the
-store, the signer and the token's custody); the owner's signed activation naming the record's digest,
-after he saw the message on his own phone, is the witness beside the transport's record.
+store, the signer and the token's custody). In a factory the witness beside the transport's record is
+the owner's activation over the record's digest, signed with his enrolled key after he saw the message
+on his own phone (VELDO-0138). A record copied out of the store into a file proves nothing by itself.
 
 THE UNAUTHORIZED LEG. The owner has no second person (Telegram 29047), so the unauthorized actor is an
 update from an unenrolled sender id, as in VELDO-0066; the record says whether that update came from

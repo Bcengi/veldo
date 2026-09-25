@@ -44,8 +44,11 @@ never qualifies the Telegram origin. A stand-in origin can be qualified and acti
 suite drives the gate), but that activation cannot admit any other origin.
 
 What this cannot prove: Telegram does not sign its answers, so a record is trusted as the store is
-(the threat model trusts the store, the signer and the token's custody). The owner's signed activation
-naming the record's digest, after he saw the message on his phone, is the witness beside it.
+(the threat model trusts the store, the signer and the token's custody). In a factory the witness beside
+it is the owner's activation over the record's digest, signed with his enrolled key after he saw the
+message on his phone; that is VELDO-0138's real-factory qualification. A record copied into a file
+proves nothing by itself: anyone can write one (the second critical review forged one that the
+consistency row accepted).
 
 ## Rows, falsifiers and red record
 
@@ -54,10 +57,12 @@ store, OpenSSH signatures, the actual protected signer process, the production i
 two loopback Bot API servers, a local TLS stand-in, and a socket guard that refuses and counts every
 connection beyond 127.0.0.1, so no row and no mutant reaches Telegram. Registry:
 `scripts/check_teeth_mutations.py --finding 73`. `python3 -B proof/VELDO-0073/drive.py` regenerates
-`mutations.json` and the diffs: 22 mutants, each reds its named row by assertion, baseline and a no-op
+`mutations.json` and the diffs: 24 mutants, each reds its named row by assertion, baseline and a no-op
 copy of each mutated module green. `red-at-3dc0393.json`: the current suite against the
 pre-change tree, every row red by assertion. `red-at-ad856ac.json`: the current suite against the tree
 before review 1's redirect fix, where `activation/no-redirect` is the one red row, by assertion.
+`red-at-792c494.json`: the same against the tree before review 2's origin parsing, where
+`activation/no-redirect` is again the one red row, by assertion.
 
 | Row | Criterion | Mutations (declared falsifier first) |
 | --- | --- | --- |
@@ -70,11 +75,15 @@ before review 1's redirect fix, where `activation/no-redirect` is the one red ro
 | `notification/wakes-only` | AC3 | `notification-settles` |
 | `stop/halts-edge` | AC4 | `stop-ignored` |
 | `stale/key-and-configuration` | AC4 | `bindings-not-compared`, `origin-unbound`, `bot-unbound` |
-| `activation/no-redirect` | AC1 (review 1) | `redirect-followed`, `ungated-edge-default-opener`, `gate-opener-own-build` |
+| `activation/no-redirect` | AC1 (reviews 1 and 2) | `redirect-followed`, `ungated-edge-default-opener`, `gate-opener-own-build`, `stand-in-prefix-match`, `https-origin-unparsed` |
 
-`qualification/live-telegram` (AC2, real platform) is PENDING: the suite prints it as pending and
-counts nothing until `proof/VELDO-0073/live/qualification.json` exists, then verifies it with the same
-check against the Telegram origin, its digest, and that it carries nothing token-shaped.
+`qualification/live-record-consistent` checks only that `proof/VELDO-0073/live/qualification.json`,
+once the live run writes it, is complete for the Telegram origin, matches its digest and carries
+nothing token-shaped. It is NOT proof of AC2's real-platform leg, because a file cannot show where
+it came from. The live run's witness is the owner: the record names his reply's message id and date,
+which he can confirm on his phone. The binding proof is the running factory's own qualification and
+activation under VELDO-0138, where the gate records every exchange in the factory's store and his
+enrolled key signs the activation over it.
 
 ## The live run (the lead, once, with the owner)
 

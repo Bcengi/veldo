@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_projection.py
 +++ b/.veldo/control_channel_projection.py
-@@ -137 +137 @@
--        if not base_url.startswith(STAND_IN_ORIGIN):
+@@ -156 +156 @@
+-        if not is_stand_in(base_url):
 +        if False:  # defect: an edge without a gate reaches any origin

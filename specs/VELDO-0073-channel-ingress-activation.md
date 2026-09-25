@@ -195,3 +195,12 @@ urllib followed it, token in the path, to any host, including api.telegram.org, 
 ungated edge and through the gate's own opener. Every Bot API exchange now uses one opener
 (control_channel_projection.bot_opener) with no proxy and no redirect. Row activation/no-redirect, red at ad856ac
 (proof/VELDO-0073/red-at-ad856ac.json), and three mutations in finding 73.
+
+2026-09-24, review 2 (blocking, withdrawn claim): the row that checked the live run's committed record
+accepted a hand-written record, because a file cannot show where it came from; the reviewer forged one and
+the row passed. The claim is withdrawn: the row is now qualification/live-record-consistent, a consistency
+check only. The live run's witness is the owner, who can confirm on his phone the reply whose message id
+and date the record names; the binding real-platform proof is the running factory's own qualification and
+activation under VELDO-0138, where the gate records every exchange in the factory's store and his enrolled
+key signs the activation over it. Also from review 2: a Bot API origin is parsed, not prefix-matched
+(http://127.0.0.1:80@api.telegram.org is no stand-in), with row checks and two mutations.

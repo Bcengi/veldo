@@ -47,7 +47,7 @@
     true
    ]
   ],
-  "seconds": 3.148
+  "seconds": 2.651
  },
  "controls_green": true,
  "mutants": [
@@ -110,7 +110,7 @@
      true
     ]
    ],
-   "seconds": 3.15,
+   "seconds": 3.148,
    "source_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132"
   },
   {
@@ -178,7 +178,7 @@
      true
     ]
    ],
-   "seconds": 2.647,
+   "seconds": 3.643,
    "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
   },
   {
@@ -189,14 +189,16 @@
     "VELDO-0073 activation/no-implicit detail: TelegramEdge.send at the Telegram origin with a resolving token and no gate refuses as not_activated",
     "VELDO-0073 activation/no-implicit detail: TelegramPresentationEdge.send at the Telegram origin with a resolving token and no gate refuses as not_activated",
     "VELDO-0073 activation/no-implicit detail: TelegramSink.send with a token that resolves and no activation refuses as not_activated",
-    "VELDO-0073 activation/no-implicit detail: no connection beyond the loopback interface was attempted [6]"
+    "VELDO-0073 activation/no-implicit detail: no connection beyond the loopback interface was attempted [6]",
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor ([]) and the ungated open (['http://127.0.0.1:80@api.telegram.org raised URLError', 'http://127.0.0.1:38989@127.0.0.2 raised URLError'])"
    ],
    "diff": "proof/VELDO-0073/ungated-edge-reaches-any-origin.diff",
    "failed_rows": [
-    "VELDO-0073 activation/no-implicit"
+    "VELDO-0073 activation/no-implicit",
+    "VELDO-0073 activation/no-redirect"
    ],
    "module": ".veldo/control_channel_projection.py",
-   "mutant_sha256": "4902320a98b070355e28d237f95b8ff3e9892d129fdff0e91006235a4297b627",
+   "mutant_sha256": "e59b6d512b061420e71eae4518e145004b13ad4dbbd83694a7df853e4453e543",
    "name": "ungated-edge-reaches-any-origin",
    "named_row_red": true,
    "named_rows": [
@@ -242,11 +244,11 @@
     ],
     [
      "VELDO-0073 activation/no-redirect",
-     true
+     false
     ]
    ],
-   "seconds": 2.646,
-   "source_sha256": "686e1a65b4c0d385e43b33dcc3c21477e807d6228c0e3898d13065bb7e3a1ec5"
+   "seconds": 3.145,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
   },
   {
    "by_assertion": true,
@@ -287,7 +289,7 @@
     "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "29eba661de4c29a8eccb8f30eb5fca915354e0fad4f86184b54c0431b875d9c2",
+   "mutant_sha256": "3f11f2fd11906c8670b30c11d8d25038e3a34c1d287519ca5dd226c8dce6968f",
    "name": "presentation-edge-bypasses-gate",
    "named_row_red": true,
    "named_rows": [
@@ -336,8 +338,8 @@
      true
     ]
    ],
-   "seconds": 2.496,
-   "source_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
+   "seconds": 2.928,
+   "source_sha256": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8"
   },
   {
    "by_assertion": true,
@@ -350,7 +352,7 @@
     "VELDO-0073 entry-points/enumerated"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "f4776881fd6ac792a357731e6cd85eef08db444a898da0cfbba239627fdc9c86",
+   "mutant_sha256": "98c8d62fec9650668bb428c983a7d11adce2b412bb6566eafd8d0e20c587f02b",
    "name": "entry-point-unlisted",
    "named_row_red": true,
    "named_rows": [
@@ -399,8 +401,8 @@
      true
     ]
    ],
-   "seconds": 3.143,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.141,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -412,7 +414,7 @@
     "VELDO-0073 activation/explicit-bound-operates"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "98a24644e6d416915c33251bfd0286988c01d7347eb6e220e4655d3cc0c14662",
+   "mutant_sha256": "ac84c3cef64bb10f771118383f1c96f07fd49f19dc525e507df1c32935fbf401",
    "name": "steward-authorizes-owner-edge",
    "named_row_red": true,
    "named_rows": [
@@ -461,8 +463,8 @@
      true
     ]
    ],
-   "seconds": 3.149,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.136,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -474,7 +476,7 @@
     "VELDO-0073 activation/explicit-bound-operates"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "c0c9ed9c95909e3c5b5344366e69ba5e0611d6abe39a8cb6d4a38048eedf4567",
+   "mutant_sha256": "d7d47b3e011c99c4513b5a38dedb9549f94a569fe0940ddc27eb3b029c11158b",
    "name": "send-to-any-chat",
    "named_row_red": true,
    "named_rows": [
@@ -523,8 +525,8 @@
      true
     ]
    ],
-   "seconds": 3.156,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.145,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -608,7 +610,7 @@
      true
     ]
    ],
-   "seconds": 2.646,
+   "seconds": 2.139,
    "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   {
@@ -623,7 +625,7 @@
     "VELDO-0073 qualification/real-platform-proof"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "d561fba87653ea997217bb4f3321f6d845af4ea6a56565f2649b06451d9e5e52",
+   "mutant_sha256": "d7b4919100efbb6565deabbe30c6c187104ec3fa0ee64a928c89e1586b154e1c",
    "name": "fixture-evidence-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -672,8 +674,8 @@
      true
     ]
    ],
-   "seconds": 3.14,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 2.643,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -685,7 +687,7 @@
     "VELDO-0073 qualification/real-platform-proof"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "07ea37c721d24e999c5ca8c78ec0357311fed9f270a764ac941dcfcf848cb6be",
+   "mutant_sha256": "0d69d7508d154683b00f89a51978cb2325961d09442f0cedbf8fd627d66156b8",
    "name": "tls-host-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -734,8 +736,8 @@
      true
     ]
    ],
-   "seconds": 3.153,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.162,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -747,7 +749,7 @@
     "VELDO-0073 qualification/real-platform-proof"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "21ea3dada07b4547dae11534137f2b9a5e487182fa3e41f6800dc909fb48d3df",
+   "mutant_sha256": "f4748976c85d68f70df815dc00f6851baa76c5fb98dbac87f7eff41f1b674e74",
    "name": "trust-store-from-environment",
    "named_row_red": true,
    "named_rows": [
@@ -796,8 +798,8 @@
      true
     ]
    ],
-   "seconds": 3.647,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.644,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -809,7 +811,7 @@
     "VELDO-0073 qualification/real-platform-proof"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "39e99ae4b43ccd6591346c66b19401df49a22111fd0d4fa79b0a3fed07afa2c2",
+   "mutant_sha256": "00496d870621aca7f8ab615895c13b7be6bf2102e17c98463cc0c9afc3019576",
    "name": "answer-not-the-platform-bytes",
    "named_row_red": true,
    "named_rows": [
@@ -858,8 +860,8 @@
      true
     ]
    ],
-   "seconds": 3.154,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.14,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -920,7 +922,7 @@
      true
     ]
    ],
-   "seconds": 3.152,
+   "seconds": 3.146,
    "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   {
@@ -983,7 +985,7 @@
      true
     ]
    ],
-   "seconds": 2.661,
+   "seconds": 3.14,
    "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   {
@@ -1050,7 +1052,7 @@
      true
     ]
    ],
-   "seconds": 3.15,
+   "seconds": 3.144,
    "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   {
@@ -1068,7 +1070,7 @@
     "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "1907a5bc14ce67acf6d2375012bf0ada152bde90cca5761a97eda585cd1dbf12",
+   "mutant_sha256": "6f90825eb985081a65fa7d32b396fdd06d57c74fab38a6b3caf6f29c103afcfc",
    "name": "stop-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -1117,8 +1119,8 @@
      true
     ]
    ],
-   "seconds": 3.144,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.149,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -1131,7 +1133,7 @@
     "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "6d5905532e06365f0b01ed86d87497a971f950a8b05dc82bec2e1cc61c859c76",
+   "mutant_sha256": "8686437c8fbc26747fae03b80d104238f2bb0b6ccdbd1a4013b0349b80a5d1bb",
    "name": "bindings-not-compared",
    "named_row_red": true,
    "named_rows": [
@@ -1180,8 +1182,8 @@
      true
     ]
    ],
-   "seconds": 3.15,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.14,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -1193,7 +1195,7 @@
     "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "1adb7ba3d0816394aa608c2ce466b20279ebcfdf4f2d4fde5573a27abc7fe292",
+   "mutant_sha256": "a559e5d2eff2ac362880c318e996d7011fcd002d97f40f40e30fbf7ef0e6da6b",
    "name": "origin-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -1242,8 +1244,8 @@
      true
     ]
    ],
-   "seconds": 3.152,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.143,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   {
    "by_assertion": true,
@@ -1255,7 +1257,7 @@
     "VELDO-0073 stale/key-and-configuration"
    ],
    "module": ".veldo/control_channel_attribution.py",
-   "mutant_sha256": "381f94a4be68871769758aad0369abbb0c0e417a0bc2261b166d82bd922a251e",
+   "mutant_sha256": "97142a2750e56d0cc4f3958678f72177d39f6fb285e41ccd8494eaffeb5540f4",
    "name": "bot-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -1304,21 +1306,22 @@
      true
     ]
    ],
-   "seconds": 3.154,
-   "source_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
+   "seconds": 3.145,
+   "source_sha256": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0073 activation/no-redirect detail: the ungated edge reached the redirecting origin once and did not follow it (EdgeRefused)",
-    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (URLError)"
+    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (URLError)",
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor ([]) and the ungated open ([])"
    ],
    "diff": "proof/VELDO-0073/redirect-followed.diff",
    "failed_rows": [
     "VELDO-0073 activation/no-redirect"
    ],
    "module": ".veldo/control_channel_projection.py",
-   "mutant_sha256": "62ed4bad5c472be2655d997b5c6a3118b06aae4695bfb0744163f863869bceea",
+   "mutant_sha256": "dd91fe05fab9ebeb7f760191f2262bbbc52c4533ed5471d8a98b05100f3bb6bc",
    "name": "redirect-followed",
    "named_row_red": true,
    "named_rows": [
@@ -1367,21 +1370,22 @@
      false
     ]
    ],
-   "seconds": 3.155,
-   "source_sha256": "686e1a65b4c0d385e43b33dcc3c21477e807d6228c0e3898d13065bb7e3a1ec5"
+   "seconds": 3.142,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0073 activation/no-redirect detail: the ungated edge reached the redirecting origin once and did not follow it (EdgeRefused)",
-    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (HTTPError)"
+    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (HTTPError)",
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor ([]) and the ungated open ([])"
    ],
    "diff": "proof/VELDO-0073/ungated-edge-default-opener.diff",
    "failed_rows": [
     "VELDO-0073 activation/no-redirect"
    ],
    "module": ".veldo/control_channel_projection.py",
-   "mutant_sha256": "7c94e671e40041d8945d44e4f71ad75f728be27ac15217ccf30635b7b30f4dc1",
+   "mutant_sha256": "ebb52cda09e2d487facfbc26f2b7823d1e5da7d13e535260eef4cc227993dda9",
    "name": "ungated-edge-default-opener",
    "named_row_red": true,
    "named_rows": [
@@ -1430,20 +1434,145 @@
      false
     ]
    ],
-   "seconds": 3.179,
-   "source_sha256": "686e1a65b4c0d385e43b33dcc3c21477e807d6228c0e3898d13065bb7e3a1ec5"
+   "seconds": 3.144,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (URLError)"
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor (['http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:36465@127.0.0.2', 'http://127.0.0.1:36465@127.0.0.2', 'http://127.0.0.1:36465@127.0.0.2', 'http://127.0.0.1:x', 'http://127.0.0.1:x', 'http://127.0.0.1:x']) and the ungated open (['http://127.0.0.1:80@api.telegram.org raised URLError', 'http://127.0.0.1:36465@127.0.0.2 raised URLError'])"
+   ],
+   "diff": "proof/VELDO-0073/stand-in-prefix-match.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/no-redirect"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "85bd3540edbb146358dfac9dd3fd1507ff0fd44fc6eff1925df4073e507e5e34",
+   "name": "stand-in-prefix-match",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-redirect"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     false
+    ]
+   ],
+   "seconds": 3.642,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor (['https://user@api.telegram.org', 'https://user@api.telegram.org', 'https://user@api.telegram.org', 'https://api.telegram.org:443@127.0.0.2', 'https://api.telegram.org:443@127.0.0.2', 'https://api.telegram.org:443@127.0.0.2']) and the ungated open ([])"
+   ],
+   "diff": "proof/VELDO-0073/https-origin-unparsed.diff",
+   "failed_rows": [
+    "VELDO-0073 activation/no-redirect"
+   ],
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "4699ea5ea41ac80894d4ce1e5862c0871e1f1623c99d82bf01fae4cdef04beb0",
+   "name": "https-origin-unparsed",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/no-redirect"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0073 install/assets",
+     true
+    ],
+    [
+     "VELDO-0073 entry-points/enumerated",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-implicit",
+     true
+    ],
+    [
+     "VELDO-0073 activation/explicit-bound-operates",
+     true
+    ],
+    [
+     "VELDO-0073 qualification/real-platform-proof",
+     true
+    ],
+    [
+     "VELDO-0073 settlement/production-construction",
+     true
+    ],
+    [
+     "VELDO-0073 notification/wakes-only",
+     true
+    ],
+    [
+     "VELDO-0073 stop/halts-edge",
+     true
+    ],
+    [
+     "VELDO-0073 stale/key-and-configuration",
+     true
+    ],
+    [
+     "VELDO-0073 activation/no-redirect",
+     false
+    ]
+   ],
+   "seconds": 2.648,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0073 activation/no-redirect detail: the gate's opener reached the origin once and did not follow the redirect (URLError)",
+    "VELDO-0073 activation/no-redirect detail: origins naming another host are refused by every edge constructor ([]) and the ungated open ([])"
    ],
    "diff": "proof/VELDO-0073/gate-opener-own-build.diff",
    "failed_rows": [
     "VELDO-0073 activation/no-redirect"
    ],
    "module": ".veldo/control_channel_activation.py",
-   "mutant_sha256": "ad23062256d340fc69dd3e69974566cc676ebed5a70a3fd69ba99d12183c72bc",
+   "mutant_sha256": "d6f927f3bef1c83b173971917e1bd9b4aa81e9e6c0edcbe67bf5bd416bb23f4d",
    "name": "gate-opener-own-build",
    "named_row_red": true,
    "named_rows": [
@@ -1492,8 +1621,8 @@
      false
     ]
    ],
-   "seconds": 3.16,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.137,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   }
  ],
  "mutations_per_row": {
@@ -1509,6 +1638,8 @@
   "activation/no-redirect": [
    "redirect-followed",
    "ungated-edge-default-opener",
+   "stand-in-prefix-match",
+   "https-origin-unparsed",
    "gate-opener-own-build"
   ],
   "entry-points/enumerated": [
@@ -1542,7 +1673,7 @@
  },
  "noop": {
   "control_channel_activation.py": {
-   "copy_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2",
+   "copy_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1588,11 +1719,11 @@
      true
     ]
    ],
-   "seconds": 3.146,
-   "source_sha256": "4754dad94af99523c6e167357cf6d054b72dbd5293acb3e314282a1d6044cbf2"
+   "seconds": 3.153,
+   "source_sha256": "de4f7af96752b36713708eabd70fa99dc317eb9e631a977bbe8d2b7b12db43bf"
   },
   "control_channel_attribution.py": {
-   "copy_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040",
+   "copy_sha256": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1638,8 +1769,8 @@
      true
     ]
    ],
-   "seconds": 3.145,
-   "source_sha256": "51e697b66316e5813262144c29333a5a3306f0c90891261cb688d77b56b17040"
+   "seconds": 3.144,
+   "source_sha256": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c"
   },
   "control_channel_ingress.py": {
    "copy_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb",
@@ -1688,11 +1819,11 @@
      true
     ]
    ],
-   "seconds": 2.652,
+   "seconds": 3.15,
    "source_sha256": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
   },
   "control_channel_presentation.py": {
-   "copy_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735",
+   "copy_sha256": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1738,11 +1869,11 @@
      true
     ]
    ],
-   "seconds": 3.143,
-   "source_sha256": "f438e0d53adaac72cff04370d9b271996b59c3fe228259389430dd4ffc139735"
+   "seconds": 3.643,
+   "source_sha256": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8"
   },
   "control_channel_projection.py": {
-   "copy_sha256": "686e1a65b4c0d385e43b33dcc3c21477e807d6228c0e3898d13065bb7e3a1ec5",
+   "copy_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1788,8 +1919,8 @@
      true
     ]
    ],
-   "seconds": 3.155,
-   "source_sha256": "686e1a65b4c0d385e43b33dcc3c21477e807d6228c0e3898d13065bb7e3a1ec5"
+   "seconds": 3.144,
+   "source_sha256": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a"
   },
   "init_scaffold.py": {
    "copy_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132",
@@ -1838,7 +1969,7 @@
      true
     ]
    ],
-   "seconds": 3.139,
+   "seconds": 3.156,
    "source_sha256": "9fa8264993f859b349b9823b42cea19fc994beaf6ef7d2f63bc14375d5625132"
   },
   "request_doorbell.py": {
@@ -1888,13 +2019,13 @@
      true
     ]
    ],
-   "seconds": 3.145,
+   "seconds": 3.152,
    "source_sha256": "3e1ff45acdcf9b273ccfc91675c7775923e45fc4d1d32d156e02b4fefcfd4381"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 73",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 91.857,
+ "serial_seconds": 99.927,
  "spec_id": "VELDO-0073",
  "suite": "scripts/suites/70_veldo_0073_activation.py"
 }

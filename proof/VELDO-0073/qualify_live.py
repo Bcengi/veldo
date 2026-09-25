@@ -32,7 +32,8 @@ WHAT IT DOES, IN ORDER.
  7. Writes proof/VELDO-0073/live/qualification.json: the qualification record (identities, digests,
     TLS peer facts, no message text, no names, no token), its digest, the activation and stop states,
     the settlement's choice and ruling, the commit and this runner's digest. The suite's
-    qualification/live-telegram row verifies it; until it exists that row is PENDING.
+    qualification/live-record-consistent row checks its consistency (not its provenance); until it
+    exists that row is PENDING.
 
 REHEARSAL. `--rehearse --out <dir>` runs the same steps against a loopback stand-in Bot API instead,
 with the owner's reply delivered by the stand-in; it contacts nothing, needs no token file, and its

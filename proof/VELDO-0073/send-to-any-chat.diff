@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_activation.py
 +++ b/.veldo/control_channel_activation.py
-@@ -393 +393 @@
+@@ -394 +394 @@
 -        if operation in SEND and chat != record.get('enrolled_chat'):
 +        if False:  # defect: a send goes to any chat
