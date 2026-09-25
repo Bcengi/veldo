@@ -55,17 +55,12 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Project activation binds owner, charter, execution repository, authority policy and
-      finite coordination budget; the execution repository is any repository adopted in this domain,
-      and activation may be applied from the owner's settled answer. Set and completeness: Enumerate
-      those required schema fields and omit each, both in a real signed activation command and in an
-      activation applied from a settled owner answer (the new-project answer of VELDO-0143); valid
-      current owner acceptance creates one active project bound to a repository adopted in this
-      domain, while missing authority or budget, or a repository no adoption in this domain
-      recorded, refuses. Falsifier: Accept an execution repository that no adoption in this domain
-      recorded; the adopted-repository check must fail.
+      finite coordination budget. Set and completeness: Enumerate those required schema fields and
+      omit each in a real signed activation command; valid current owner acceptance creates one
+      active project, while missing authority or budget refuses. Falsifier: Skip the budget
+      predicate; the unbounded-project check must fail.
     falsified_by: >
-      Accept an execution repository that no adoption in this domain recorded; the
-      adopted-repository check must fail.
+      Skip the budget predicate; the unbounded-project check must fail.
   - id: AC2
     text: >
       Claim: Pause and cancellation stop new assignments and dispatch while preserving accepted
@@ -96,9 +91,7 @@ Project ownership, charter, lifecycle, and transfers. Deliver the normal functio
 
 ## Context
 
-W61 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
-Section 5 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
-widens the execution repository and the activation path.
+W61 of [PLAN-0019 revision 3](../plans/PLAN-0019-dark-factory.md), Release 1 stage 4.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -110,15 +103,14 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 ## What the reviewer judges
 
-- Normal use: the enrolled owner activates a project with a real signed command, or by his settled
-  answer to a new-project proposal, that binds its owner, charter, one execution repository adopted in
-  this domain, authority policy and a finite coordination budget; exactly one active project results. Pausing or canceling it stops new assignments and dispatch (the frontier
+- Normal use: the enrolled owner activates a project with a real signed command that binds its owner,
+  charter, one execution repository, authority policy and a finite coordination budget; exactly one
+  active project results. Pausing or canceling it stops new assignments and dispatch (the frontier
   offers nothing from it, running work follows the ordinary host stop policy) while accepted history
   and landed receipts stay as they were. Completing it is accepted only when every objective is
   terminal and its ordinary outstanding obligations (assignments, decisions, dispatches,
   reservations) are resolved.
 - Threat model: an activation missing any bound field, or with no finite budget, accepted; an
-  activation on a repository this domain never adopted; an
   activation by someone who is not the current enrolled owner; the frontier assigning or a dispatch
   starting from a paused or canceled project; a pause or cancel rewriting accepted history or
   receipts; completion accepted with an open objective, assignment, decision, dispatch or
@@ -174,9 +166,3 @@ handover left to Release 3. Rows `project/foreign-kind`, `project/owner-demoted`
 `project/owner-revoked`, red at 93a56d6 by assertion; five finding 76 mutations. Status unchanged.
 
 2026-09-25, review 2 (filed item fixed): the scope and person parts of the owner-currency rule were never driven (a mutant dropping either survived). The owner-demoted row now drives both; mutations owner-scope-unchecked and owner-person-unchecked red it (finding 76: 23).
-
-2026-09-25, PLAN-0019 revision 4: amended on the approved operating-model design
-(docs/design/PLAN-0019-operating-model-design.md, owner Telegram 29162), section 5(e). AC1: the
-execution repository is any repository adopted in this domain, not only the store's one repository,
-and activation may be applied from the owner's settled answer as well as his signed command; its
-falsifier is now the adopted-repository check. Status unchanged.
