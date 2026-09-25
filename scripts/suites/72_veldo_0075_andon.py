@@ -550,7 +550,8 @@ def _v75_checks(base):
             check(NU, 'a revoked chat enrollment is invalid_enrollment, classed missing_authority [%s]'
                   % (revoked.get('notice') or {}).get('reason'), notice_refused(revoked, 'invalid_enrollment'))
             check(NU, 'no_enrolled_chat and owner_not_current keep their names and class wherever a notice meets them',
-                  AND is not None and all(AND.notice_refusal(code, other) == code and AND.taxonomy(code) == 'missing_authority'
+                  callable(getattr(AND, 'notice_refusal', None))
+                  and all(AND.notice_refusal(code, other) == code and AND.taxonomy(code) == 'missing_authority'
                                           for code in ('no_enrolled_chat', 'owner_not_current', 'edge_stopped')
                                           for other in ('stale_subject', 'unavailable_service')))
 

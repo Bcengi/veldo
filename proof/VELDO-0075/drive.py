@@ -11,9 +11,10 @@ every run. Writes proof/VELDO-0075/mutations.json and one exact applied diff per
 
 With `--red COMMIT` it instead runs the current suite once against the whole tree of COMMIT,
 extracted read-only with `git archive` into a temporary directory, and writes
-proof/VELDO-0075/red-at-COMMIT.json. Nothing in that tree is changed: the andon module does not exist
-there, so the suite constructs no andon service, asserts each named interface, and each row fails by
-its own assertions. The suite's support authority (scripts/suites/support/v73_authority.py) is read
+proof/VELDO-0075/red-at-COMMIT.json. Nothing in that tree is changed. At 9fa7e4d the andon module does
+not exist, so the suite constructs no andon service, asserts each named interface, and each row fails
+by its own assertions; at e5c2bc8 (before the review 75 fix) it exists, and the rows that fix answers
+fail by their own assertions. The suite's support authority (scripts/suites/support/v73_authority.py) is read
 from that tree, where it is byte-identical to the current one.
 
     python3 -B proof/VELDO-0075/drive.py --red <pre-change commit>
