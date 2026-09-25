@@ -12,8 +12,11 @@ work: W43
 plan_revision: 3
 depends_on: [VELDO-0050, VELDO-0056]
 placement: [distribution, enforcement, fleet, loop, metrics]
-protected_paths: [scripts/verify.sh, engine/scripts/verify.sh]
+protected_paths: [scripts/verify.sh, engine/scripts/verify.sh, .veldo/policy_check.py,
+  engine/.veldo/policy_check.py]
 footprint:
+  - ".veldo/policy_check.py"
+  - "engine/.veldo/policy_check.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -33,6 +36,7 @@ footprint:
   - "engine/scripts/verify.sh"
   - "packs/*/scripts/verify.sh"
   - "scripts/suites/*_veldo_0058_*.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0058-isolated-gate-observations.md"
@@ -122,6 +126,25 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: the canonical gate runs against a landing candidate and writes its stamp, its gate
+  events and its review-event reconciliation to a trusted sink outside the candidate, never into the
+  candidate's tracked tree. GitLandOps.gate and LiveLoop.gate each produce an external trusted
+  observation that binds the exact candidate commit and the verification that ran, with the tree
+  unchanged after the run. The enforcement and policy process that judges the candidate is the
+  installed one, not code from the candidate, and a valid candidate verifies without its own receipt
+  being added to its tree. The owner approved changing scripts/verify.sh for this (Telegram 29068
+  asked, 29069 "Yes verify", 2026-09-24).
+- Threat model: candidate code that writes its own stamp or events into its tree, replaces the
+  installed enforcement or policy process, changes the tree during the run, or passes without an
+  observation bound to its exact commit; a missing or partial gate result read as success. The
+  owner's account, the installed engine and Git are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); gate process
+  kill qualification (Release 2, see History); a hostile gate process reaching the caller through the
+  same account (the same-account class filed by VELDO-0040 and VELDO-0067); files planted in the
+  installed directory.
+
 ## Notes
 
 All existing trusted gate-output, installed policy and post-run equality obligations remain.
@@ -146,3 +169,48 @@ removed. Old AC2 gate process-kill qualification moved to Release 2. Missing res
 refuse; external observations, installed enforcement and post-run tree equality remain. The
 criteria, declared evidence universe, Context and Notes above now carry only the retained
 function. No specification status or historical proof was changed.
+
+2026-09-24, build: scripts/check_teeth_mutations.py joins the footprint, before any mutation is
+registered, because each criterion's falsifier is a registered mutation of finding 58 there, and the
+AC1 falsifier mutates scripts/verify.sh, which the driver could not reach: it mutated only .veldo/
+modules. The driver gains one optional case field naming the directory a module lives in, and the
+cases of every other finding are unchanged.
+
+2026-09-24, build (branch build-veldo-0058): scripts/verify.sh gains candidate mode (owner approval
+proof/VELDO-0058/approval-dmitry.json, Telegram 29068/29069), .veldo/control_verification.py runs the
+trusted installation's verifier and policy against a candidate and accepts its external observation,
+and GitLandOps.gate/finalize and LiveLoop.gate use it. The ordinary checkout gate and the landing step's
+inputs are unchanged. Suite 69 carries the four rows; proof/VELDO-0058/README.md has the evidence. No
+status was changed.
+
+2026-09-24, review fix (AC3, blocking): the installed policy_check.py read the protected list from the
+candidate's own .veldo/policy.yaml, so a candidate that emptied protected_paths landed a protected
+change with no approval. The policy source is now an explicit input separate from the subject root:
+policy_check.py reads policy.yaml through its POLICY path (unset, it is the subject root's, as before),
+and control_verification sets it to the installation's policy.yaml, refusing as missing_authority when
+that file is absent or inside the candidate. .veldo/policy_check.py and engine/.veldo/policy_check.py
+join the footprint and protected_paths; their change is its own commit, for the owner's approval.
+Suite 69 gains gate-output/installed-policy-list. No status was changed.
+
+2026-09-24, second review fix (AC3, blocking): the installed policy_check.py computed the push range
+from the candidate workspace's own refs/remotes/origin/HEAD and origin/main, so candidate code running
+in the gate could move origin/main to HEAD, empty the range and land a protected change with no
+approval. The range base is now an explicit input like the policy source: policy_check.py reads every
+range as BASE..HEAD when its BASE is set (unset, the refs decide, as before), and control_verification
+run_policy takes the base and sets it; GitLandOps.finalize passes its own recorded watermark, refused as
+missing_authority unless a full 40-hex commit that exists and is an ancestor of the candidate. The
+policy_check.py change is its own commit, for the owner's approval. As defense in depth the candidate
+state that the gate and acceptance compare now binds every ref and HEAD's symbolic target. Suite 69
+gains gate-output/range-base-from-lander and gate-output/refs-bound. No status was changed.
+
+2026-09-24, third review fix (AC2, blocking, normal use): binding every ref made LiveLoop.gate, which
+runs over the caller's own repository, fail with changed_during_gate whenever a sibling linked
+worktree committed or a fetch moved a remote-tracking ref during the gate, although verify.sh printed
+GREEN. Ref binding is now the caller's explicit input: control_verification state, observe_gate and
+accept take a required keyword bind_refs, True or False with no default, the observation records it
+and acceptance refuses a different one. GitLandOps passes True (its workspace is its own repository and
+the installed policy's range is read after its gate), so a candidate that moves refs stays refused.
+LiveLoop passes False: nothing after its gate reads a range from refs (the proof service is handed the
+spec's base commit, and LiveLoop runs no installed policy). HEAD, its tree, HEAD's symbolic target, the
+index and every file outside .git stay bound in both. Suite 69 gains gate-output/live-loop-siblings,
+red at 57ec2b2 by assertion (proof/VELDO-0058/red-57ec2b2.json). No status was changed.

@@ -1,0 +1,6 @@
+--- a/.veldo/plan.py
++++ b/.veldo/plan.py
+@@ -91 +91,2 @@
+-                blocked.setdefault(s, []).append(d.get("id"))
++                if d.get("status") != "resolved":  # defect: inline status text resolves the decision
++                    blocked.setdefault(s, []).append(d.get("id"))

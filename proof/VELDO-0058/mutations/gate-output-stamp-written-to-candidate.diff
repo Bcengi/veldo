@@ -1,0 +1,5 @@
+--- a/scripts/verify.sh
++++ b/scripts/verify.sh
+@@ -271 +271 @@
+-     && mv -f "$VELDO_OUT/.stamp.$$" "$VELDO_OUT/last_verify" 2>/dev/null \
++     && mv -f "$VELDO_OUT/.stamp.$$" .veldo/last_verify 2>/dev/null \

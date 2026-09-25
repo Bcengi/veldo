@@ -1,0 +1,6 @@
+--- a/.veldo/control_decision_dependency.py
++++ b/.veldo/control_decision_dependency.py
+@@ -131 +131,2 @@
+-            out.append(entry.get('id'))
++            if entry.get('status') != 'resolved':  # defect: inline status text resolves the decision
++                out.append(entry.get('id'))

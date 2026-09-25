@@ -2640,6 +2640,61 @@ def cases():
     settlement('independence-above-one-accepted', "SUPPORTED = {'count': (1,), 'min_independence': (0, 1)}\n",
                "SUPPORTED = {'count': (1,), 'min_independence': (0, 1, 2)}  # defect\n",
                'authority/unsupported-quorum-blocks')
+    # VELDO-0069: each criterion's declared falsifier, and the threat model's cases, each on the row it names.
+    def binding(name, old, new, row, module='control_request_settlement.py', also=()):
+        add(69, name, '70_veldo_0069_bindings.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): only the receipt commits, without its governing binding; then a settlement
+    # without a decision signer that commits its receipt anyway, and a binding that drops the chosen option.
+    binding('receipt-without-binding',
+            "            changes[binding['binding_id']] = {'kind': DECISION_SETTLEMENT_KIND, 'data': binding}\n",
+            "            pass  # defect: only the receipt commits, without its governing binding\n",
+            'eligibility/resolved-request')
+    binding('binding-skipped-without-signer',
+            "                 if terms['target'].get('kind') == GOVERNING_TARGET else None)\n",
+            "                 if terms['target'].get('kind') == GOVERNING_TARGET and self.decision_signer is not None\n"
+            "                 else None)  # defect: no signer, no binding, and the receipt commits\n",
+            'binding/one-transaction')
+    # The signed body's ruling is what every VELDO-0054 consumer reads: forced to approve, the owner's reject
+    # would clear the work. The unsigned chosen option, fixed to accept whatever the owner chose.
+    binding('ruling-forced-approve', "'scope_digest': question['scope_digest'], 'ruling': winner['ruling'],",
+            "'scope_digest': question['scope_digest'], 'ruling': 'approve',", 'binding/owner-ruling')
+    binding('binding-choice-forced-accept', "'signature': signature, 'choice': winner['choice'],",
+            "'signature': signature, 'choice': 'accept',", 'binding/owner-ruling')
+    # AC2 (declared falsifier): the subject digest the owner was shown is ignored during binding; then the
+    # framing and the revision taken from the record at settlement instead of from the question.
+    binding('binding-ignores-subject-digest', "'subject': dict(question['subject']),",
+            "'subject': dict(question['subject'], digest=record['subject']['digest']),", 'refusal/wrong-subject')
+    binding('binding-framing-from-record', "'framing_digest': question['framing_digest'],",
+            "'framing_digest': record['framing_digest'],", 'refusal/wrong-framing')
+    binding('binding-revision-from-record', "'decision_revision': question['revision'],",
+            "'decision_revision': record['revision'],", 'refusal/wrong-version')
+    # Threat model: an unsupported subject kind bound instead of stopped, at settlement and at the terms.
+    binding('unsupported-subject-bound',
+            "        if kind not in DD.SUBJECT_KINDS:\n            raise Refused('unsupported_subject', 'the governed",
+            "        if False:  # defect: an unsupported governed subject is bound\n"
+            "            raise Refused('unsupported_subject', 'the governed", 'refusal/unsupported-subject-stops')
+    binding('unsupported-subject-terms-accepted',
+            "    if subject['kind'] not in DD.SUBJECT_KINDS:\n        return 'unsupported_subject'",
+            "    if False:  # defect: a question about an unsupported subject is recorded\n        return 'unsupported_subject'",
+            'refusal/unsupported-subject-stops')
+    # Threat model: a question at a revision above the record's is bound, so it clears the work once the
+    # record reaches that revision and refuses the genuine question as already settled.
+    binding('future-revision-accepted', "        if question['revision'] > record['revision']:\n",
+            "        if False:  # defect: a question above the record's revision is bound\n", 'refusal/future-revision')
+    # AC3 (declared falsifier): inline open_decisions text treated as authority by the plan readers; then
+    # by the store-backed stations, and a record's own settled status treated as its settlement.
+    binding('inline-status-authority', '                blocked.setdefault(s, []).append(d.get("id"))\n',
+            '                if d.get("status") != "resolved":  # defect: inline status text resolves the decision\n'
+            '                    blocked.setdefault(s, []).append(d.get("id"))\n',
+            'consumers/inline-bypass', module='plan.py')
+    binding('inline-status-authority-at-stations', "            out.append(entry.get('id'))\n",
+            "            if entry.get('status') != 'resolved':  # defect: inline status text resolves the decision\n"
+            "                out.append(entry.get('id'))\n",
+            'consumers/inline-bypass', module='control_decision_dependency.py')
+    binding('record-status-authority', "    if not mine:\n        return ['unresolved_decision:' + rid]\n",
+            "    if not mine:\n        return [] if record.get('state') == 'settled' else ['unresolved_decision:' + rid]  # defect\n",
+            'consumers/inline-bypass', module='control_decision_dependency.py')
     # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
     def clone(name, module, old, new, row, also=()):
         add(42, name, '66_veldo_0042_clones.py', module, old, new, ['clone/' + row], also)
@@ -3602,11 +3657,16 @@ def cases():
               '                  self.remote, profile="network").stdout.strip()), "%s:refs/heads/%s" % (c["commit"], self.trunk),\n'
               '                  profile="network", ok=None)  # defect: the trunk moves before the policy accepts\n' + policy_anchor,
               'rejection-leaves-trunk')
+    # VELDO-0058: finalize accepts the gate's external observation again before anything moves, so a
+    # red gate that is not a refusal is also accepted there: the defect is both edits.
     candidate('candidate-gate-result-ignored',
-              '        if not green:\n            return self._refuse("gate", CandidateRefused("missing_evidence:gate", str(terminal)),\n',
+              '        if not green:\n            ran_red = exit_code != 0 or terminal != "GATE: GREEN (%s)" % c["commit"]\n',
               '        if False:  # defect: a red gate is not a refusal\n'
-              '            return self._refuse("gate", CandidateRefused("missing_evidence:gate", str(terminal)),\n',
-              'rejection-leaves-trunk')
+              '            ran_red = exit_code != 0 or terminal != "GATE: GREEN (%s)" % c["commit"]\n',
+              'rejection-leaves-trunk',
+              also=[('        accepted = verification_organ().accept((c.get("gate") or {}).get("observation"), c["workspace"], c["commit"],\n'
+                     '                                               bind_refs=True)\n',
+                     '        accepted = []  # defect: the gate\'s observation is not accepted again\n')])
     candidate('candidate-policy-refusal-ignored',
               '        if refusals:\n            error = CandidateRefused(refusals[0], "; ".join(refusals), operation="policy")\n',
               '        if False:  # defect: a policy refusal is not a refusal\n'
@@ -4193,6 +4253,124 @@ def cases():
     intake('member-when-sent-read-at-processing-time',
            "self._member_when_sent(principal, command['provenance'].get('date'))",
            "self._member_when_sent(principal, self.clock())", 'authenticated-sources-only')
+
+    # VELDO-0058: each criterion's declared falsifier and a further defect, each against the one suite 69
+    # row it names. verify.sh is the production gate script (scripts/, case field `dir`); the rest are
+    # exact text in the .veldo modules suite 69 installs.
+    def gate_output(name, module, old, new, row, also=(), directory=None):
+        add(58, name, '69_veldo_0058_gate_output.py', module, old, new, ['gate-output/' + row], also)
+        if directory:
+            result[-1]['dir'] = directory
+
+    # AC1, declared: the reconciliation still writes the candidate's own .veldo/events.jsonl while the
+    # stamp goes to the sink.
+    gate_output('gate-output-reconcile-writes-candidate', 'verify.sh',
+                '  set -- --repo-root "$(pwd -P)" --log "$VELDO_OUT/events.jsonl"\n',
+                '  set -- --repo-root "$(pwd -P)"  # defect: the reconciliation appends to the candidate\'s own log\n',
+                'review-write', directory='scripts')
+    gate_output('gate-output-stamp-written-to-candidate', 'verify.sh',
+                '     && mv -f "$VELDO_OUT/.stamp.$$" "$VELDO_OUT/last_verify" 2>/dev/null \\\n',
+                '     && mv -f "$VELDO_OUT/.stamp.$$" .veldo/last_verify 2>/dev/null \\\n',
+                'review-write', directory='scripts')
+    # AC1: a sink that refuses the final write, and a sink inside the candidate.
+    gate_output('gate-output-sink-failure-still-green', 'verify.sh',
+                '    echo "== gate output: NOT WRITTEN - the sink refused the stamp or the gate event; this run is not trusted success"\n'
+                '    FAIL=1\n',
+                '    echo "== gate output: NOT WRITTEN - the sink refused the stamp or the gate event; this run is not trusted success"\n'
+                '    : # defect: a sink that refused the write is still trusted success\n',
+                'sink-refusals', directory='scripts')
+    gate_output('gate-output-sink-inside-candidate-accepted', 'verify.sh',
+                '    case "$_veldo_sink/" in "$_veldo_root"/*) VELDO_REFUSE="the sink resolves inside the candidate" ;; esac\n',
+                '    : # defect: a sink that resolves inside the candidate is accepted\n',
+                'sink-refusals', directory='scripts')
+    # AC2, declared: no post-run tree equality at acceptance, so a tracked file written after the final
+    # check is accepted.
+    gate_output('gate-output-acceptance-skips-tree-equality', 'control_verification.py',
+                '    if now["head"] != commit or now["digest"] != (observation.get("candidate") or {}).get("state"):\n',
+                '    if False:  # defect: no post-run tree equality at acceptance\n',
+                'post-run-mutation')
+    gate_output('gate-output-run-equality-not-judged', 'control_verification.py',
+                '    if post.get("equal") is not True or post.get("state") != candidate.get("state"):\n',
+                '    if False:  # defect: a candidate changed during the run is judged green\n',
+                'post-run-mutation')
+    gate_output('gate-output-observation-content-not-judged', 'control_verification.py',
+                '    problems = judge(observation)\n    if observation.get("commit") != commit:\n',
+                '    problems = []  # defect: the observation\'s content is not judged again at acceptance\n'
+                '    if observation.get("commit") != commit:\n',
+                'post-run-mutation')
+    # AC3, declared: finalize launches the candidate's policy_check.py, a success stub.
+    gate_output('gate-output-candidate-policy-launched', 'lander.py',
+                '                returncode, policy_out = verification_organ().run_policy(self._installed(c), c["workspace"],\n'
+                '                                                                         c["watermark"])\n',
+                '                pc = subprocess.run([sys.executable, "-B", *POLICY_COMMAND], cwd=c["workspace"], capture_output=True,\n'
+                '                                    text=True, stdin=subprocess.DEVNULL)  # defect: the candidate\'s policy decides\n'
+                '                returncode, policy_out = pc.returncode, pc.stdout.strip()\n',
+                'installed-policy')
+    gate_output('gate-output-policy-module-from-candidate', 'control_verification.py',
+                '    policy = root / POLICY_PATH\n',
+                '    policy = Path(candidate) / POLICY_PATH  # defect: the candidate\'s policy module is run\n',
+                'installed-policy',
+                also=[('    if inside(policy, candidate):\n        return None, "missing_authority:policy/in_candidate"\n',
+                       '    if False:\n        return None, "missing_authority:policy/in_candidate"\n'),
+                      # The candidate's module brings the candidate's policy.yaml beside it; the source
+                      # refusal would stop that run before the candidate's stub is asked.
+                      ('def _policy_source_refusal(policy, candidate):\n',
+                       'def _policy_source_refusal(policy, candidate):\n    return None  # defect: any policy source\n')])
+    # AC3, the policy source: the installed policy's protected list is read from the candidate's own
+    # policy.yaml, so a candidate that empties protected_paths lands a protected change unapproved.
+    gate_output('gate-output-policy-source-not-set', 'control_verification.py',
+                '    module.POLICY = Path(policy).parent / POLICY_SOURCE\n',
+                '    pass  # defect: the policy source is left unset, so the candidate\'s policy.yaml decides\n',
+                'installed-policy-list')
+    gate_output('gate-output-protected-list-from-subject-root', 'policy_check.py',
+                '    policy = _Y.read(policy_source())\n',
+                '    policy = _Y.read(ROOT / ".veldo" / "policy.yaml")  # defect: the subject root\'s policy.yaml decides\n',
+                'installed-policy-list')
+    # AC3, the range base: the installed policy's push range is computed from the candidate's own
+    # origin refs again, which its code can move to HEAD during the gate, so a protected change lands.
+    gate_output('gate-output-range-base-ignored', 'policy_check.py',
+                '    if BASE is not None:\n        return [str(BASE) + "..HEAD"]\n',
+                '    if False:  # defect: the range is read from the subject\'s refs even when a base is set\n'
+                '        return [str(BASE) + "..HEAD"]\n',
+                'range-base-from-lander')
+    gate_output('gate-output-range-base-not-set', 'control_verification.py',
+                '    module.BASE = base\n',
+                '    pass  # defect: the base is checked but never handed to the policy, so the refs decide\n',
+                'range-base-from-lander')
+    gate_output('gate-output-range-base-from-workspace-refs', 'lander.py',
+                '                                                                         c["watermark"])\n',
+                '                                                                         self._commit_of(c["workspace"], POLICY_BASE_REF % self.trunk,\n'
+                '                                                                                         "missing_evidence:watermark"))'
+                '  # defect: the base is read from the workspace\'s refs\n',
+                'range-base-from-lander')
+    gate_output('gate-output-range-base-not-validated', 'control_verification.py',
+                'def _policy_base_refusal(base, candidate):\n',
+                'def _policy_base_refusal(base, candidate):\n    return None  # defect: any base is accepted\n',
+                'range-base-from-lander')
+    # AC2, the refs: the candidate's state leaves out its refs, so a ref moved during or after the gate
+    # is not noticed; or leaves out a symbolic ref's target, so a retargeted origin/HEAD is not.
+    gate_output('gate-output-state-without-refs', 'control_verification.py',
+                '    refs = _refs(root) if bind_refs else None\n',
+                '    refs = None  # defect: the refs are not part of the state\n',
+                'refs-bound')
+    gate_output('gate-output-state-without-symref-targets', 'control_verification.py',
+                '"--format=%(refname)%00%(objectname)%00%(symref)"',
+                '"--format=%(refname)%00%(objectname)"',
+                'refs-bound')
+    # AC2, the ref binding is the caller's explicit input: LiveLoop binds the refs of the caller's own
+    # repository, so a sibling worktree's commit during its gate fails it; GitLandOps does not bind its
+    # workspace's refs, so a candidate that moves them during the gate is not refused.
+    gate_output('gate-output-live-loop-binds-refs', 'executor.py',
+                '                                                       bind_refs=False)\n',
+                '                                                       bind_refs=True)  # defect: the caller\'s refs are bound\n',
+                'live-loop-siblings')
+    gate_output('gate-output-land-does-not-bind-refs', 'lander.py',
+                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=True)\n',
+                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=False)'
+                '  # defect: the workspace\'s refs are not bound\n',
+                'refs-bound',
+                also=[('c["workspace"], c["commit"],\n                                               bind_refs=True)\n',
+                       'c["workspace"], c["commit"],\n                                               bind_refs=False)\n')])
     # VELDO-0135: enrolled work offered from its floor record. Each criterion's declared falsifier and
     # further defects, each against the one suite 67 row it names; anchors are exact text in the
     # frontier and work loop the suite installs.
@@ -4514,7 +4692,9 @@ def materialize(case, mode, directory, root=ROOT):
     if mode not in ('baseline', 'noop', 'mutant'):
         raise ValueError('unknown mutation mode: ' + mode)
     fixture = case.get('fixture') is True
-    base = root / 'scripts/fixtures' if fixture else root / '.veldo'
+    # `dir`: the directory a production module lives in, relative to the root (.veldo by default;
+    # VELDO-0058's gate script lives in scripts).
+    base = root / 'scripts/fixtures' if fixture else root / case.get('dir', '.veldo')
     source = base / case['module']
     before = source.read_bytes()
     old = case['old'].encode()
@@ -4568,7 +4748,7 @@ def worker(case, mutant=None):
                 source = source.replace('ROOT / "scripts" / "fixtures"',
                                         '__import__("pathlib").Path(' + repr(mutant) + ')')
         elif mutant:
-            anchor = 'ROOT / ".veldo" / "' + case['module'] + '"'
+            anchor = 'ROOT / "' + case.get('dir', '.veldo') + '" / "' + case['module'] + '"'
             if not source.count(anchor):
                 raise RuntimeError('suite production-copy anchor moved')
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')

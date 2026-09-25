@@ -1,0 +1,5 @@
+--- a/.veldo/executor.py
++++ b/.veldo/executor.py
+@@ -320 +320 @@
+-                                                       bind_refs=False)
++                                                       bind_refs=True)  # defect: the caller's refs are bound

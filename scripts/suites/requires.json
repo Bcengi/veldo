@@ -338,20 +338,23 @@
   "66_veldo_0051_events": [
    "66_veldo_0051_events"
   ],
-  "67_veldo_0135_offers": [
-   "67_veldo_0135_offers"
-  ],
   "67_veldo_0056_candidates": [
    "67_veldo_0056_candidates"
-  ],
-  "68_veldo_0136_hints": [
-   "68_veldo_0136_hints"
   ],
   "68_veldo_0137_policy_revision": [
    "68_veldo_0137_policy_revision"
   ],
   "68_veldo_0126_intake": [
    "68_veldo_0126_intake"
+  ],
+  "69_veldo_0058_gate_output": [
+   "69_veldo_0058_gate_output"
+  ],
+  "67_veldo_0135_offers": [
+   "67_veldo_0135_offers"
+  ],
+  "68_veldo_0136_hints": [
+   "68_veldo_0136_hints"
   ],
   "68_veldo_0134_acceptance": [
    "68_veldo_0134_acceptance"
@@ -361,6 +364,9 @@
   ],
   "69_veldo_0133_dispositions": [
    "69_veldo_0133_dispositions"
+  ],
+  "70_veldo_0069_bindings": [
+   "70_veldo_0069_bindings"
   ]
  }
 }
