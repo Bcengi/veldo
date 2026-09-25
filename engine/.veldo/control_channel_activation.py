@@ -43,7 +43,10 @@ every exchange of its presentation, answer and settlement legs was made with htt
 over a verified TLS session whose certificate names that host, and its evidence is the same bytes:
 the owner's answer is the canonical VELDO-0066 evidence whose answer digest is the digest of a
 recorded getUpdates answer. An exchange with a loopback stand-in carries no TLS peer, so evidence from
-a fixture never qualifies the Telegram origin (fixture_only_evidence). A stand-in origin can be
+a fixture never qualifies the Telegram origin (fixture_only_evidence). An exchange the gate's transport
+could not complete (a timeout, a refused connection, a name that did not resolve, a body cut off)
+records the failure's class and no answer; a run holding one does not qualify either, and is named
+unavailable_service, so the owner knows to run it again rather than look for a fixture. A stand-in origin can be
 qualified and activated too, which is how the suites drive the gate, but that activation binds the
 stand-in origin and cannot admit an exchange with any other. WHAT THIS CANNOT PROVE: Telegram does not
 sign its answers, so a record in the store is trusted as the store is (the threat model trusts the
@@ -204,10 +207,17 @@ def _names_cover(names, host):
     return False
 
 
+def failed_in_transport(exchange, origin):
+    """Whether one recorded exchange with `origin` failed in transport: the gate's own transport raised
+    before the platform's answer was read whole, and it recorded the failure's class."""
+    return isinstance(exchange, dict) and exchange.get('origin') == origin and _text(exchange.get('transport_failure'))
+
+
 def proven_exchange(exchange, origin):
     """Whether one recorded exchange is evidence of `origin`: for the Telegram origin, an https exchange
-    with that host over a verified TLS session whose certificate names it; for a stand-in, its own origin."""
-    if not isinstance(exchange, dict) or exchange.get('origin') != origin:
+    with that host over a verified TLS session whose certificate names it; for a stand-in, its own origin.
+    An exchange that failed in transport is evidence of nothing."""
+    if not isinstance(exchange, dict) or exchange.get('origin') != origin or exchange.get('transport_failure'):
         return False
     if platform_of(origin) != 'telegram':
         return platform_of(origin) == 'stand_in' and exchange.get('tls') is None
@@ -226,7 +236,12 @@ def qualification_problems(record, origin):
     if record.get('origin') != origin or platform_of(origin) is None or record.get('platform') != platform_of(origin):
         return ['stale_configuration']
     exchanges = record.get('exchanges') if isinstance(record.get('exchanges'), list) else []
-    if not exchanges or not all(proven_exchange(x, origin) for x in exchanges):
+    unproven = [x for x in exchanges if not proven_exchange(x, origin)]
+    if unproven and all(failed_in_transport(x, origin) for x in unproven):
+        # The platform was not reached (a timeout, a refused connection, a name that did not resolve,
+        # a body cut off): the run proves nothing, and the owner runs it again.
+        return ['unavailable_service']
+    if not exchanges or unproven:
         return ['fixture_only_evidence']
     chat = record.get('enrolled_chat')
     shown = record.get('presentation') or {}
@@ -321,7 +336,11 @@ class _Recorded:
         self._response, self._exchange, self._body = response, exchange, b''
 
     def read(self, *args):
-        data = self._response.read(*args)
+        try:
+            data = self._response.read(*args)
+        except (http.client.HTTPException, OSError) as exc:
+            self._exchange['transport_failure'] = type(exc).__name__
+            raise
         self._body += data
         self._exchange['response_digest'] = bytes_digest(self._body)
         self._exchange['result'] = _result_fields(self._exchange['operation'], self._body)
@@ -420,6 +439,13 @@ class Gate:
             response = _opener(peers).open(request, timeout=timeout)
         except urllib.error.HTTPError as exc:
             exchange['status'] = exc.code
+            exchange['tls'] = peers[-1] if peers else None
+            raise
+        except (urllib.error.URLError, http.client.HTTPException, OSError) as exc:
+            # No answer from the platform: recorded by the failure's class (never its text), so the
+            # qualification names the run unavailable_service rather than fixture evidence.
+            reason = exc.reason if isinstance(exc, urllib.error.URLError) else exc
+            exchange['transport_failure'] = type(reason if isinstance(reason, BaseException) else exc).__name__
             exchange['tls'] = peers[-1] if peers else None
             raise
         exchange['status'] = response.status
@@ -537,6 +563,10 @@ class Activations:
         found = _entity(self.conn, aid)
         prior = found['data'] if found else None
         versions[aid] = found['version'] if found else 0
+        if prior is not None and signer != prior.get('owner'):
+            # An edge that has a record is its recorded owner's: every command over it (stop, qualify,
+            # activate) is his own signature, never another project_owner naming himself as owner.
+            raise Refused('not_owner', 'only the recorded owner commands an edge that has a record')
         refusal, bound = bindings(self.S, self.conn, params['owner'], params['edge_key_id'], now)
         if action == 'stop' and prior:
             # A stop never waits on current bindings: a retired key or a changed enrollment is exactly

@@ -41,6 +41,7 @@ def _v138_suite():
     import sys
     import tempfile
     import time
+    import urllib.request
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -52,8 +53,9 @@ def _v138_suite():
     }
     ROWS = ('install/assets', 'served/inert', 'served/settlement', 'qualification/recorded-by-service',
             'command/owner', 'command/owner-only', 'command/stop-live', 'command/stop-keeps-pending',
-            'restart/active-stays-active', 'restart/stopped-stays-stopped', 'restart/never-activated-stays-inert')
-    IA, SI, SS, QR, CO, OO, SL, SP, RA, RS, RN = ROWS
+            'restart/active-stays-active', 'restart/stopped-stays-stopped', 'restart/never-activated-stays-inert',
+            'qualification/transport-failure-named')
+    IA, SI, SS, QR, CO, OO, SL, SP, RA, RS, RN, TF = ROWS
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -246,6 +248,7 @@ def _v138_suite():
                     proc.wait(5)
 
     owner_user = {'id': 5580138, 'is_bot': False, 'first_name': 'Owner'}
+    deputy_chat = 5580139
     bot_user = {'id': 8000000138, 'is_bot': True, 'first_name': 'Veldo', 'username': 'veldo_service_bot'}
     url, api, stop_api = H.stand_in({'bot138': bot_user})
     api['chats'][owner_user['id']] = {'id': owner_user['id'], 'type': 'private', 'first_name': 'Owner'}
@@ -266,6 +269,16 @@ def _v138_suite():
         A.admin('steward', 'enroll_principal', {'principal': 'runner', 'principal_type': 'agent_run',
                                                 'roles': ['project_owner'], 'public_key': A.public['runner'],
                                                 'independence_group': 'runner', 'scope': ['project-a']}, enrollee='runner')
+        # A second person holding project_owner (and no steward role), enrolled the same way, whose own
+        # chat enrollment is written when a row needs it.
+        deputy_key = A.keyfile['owner'].with_name('deputy')
+        subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v138-deputy', '-f', str(deputy_key)],
+                       check=True, capture_output=True, timeout=10, stdin=subprocess.DEVNULL)
+        A.keyfile['deputy'] = deputy_key
+        A.public['deputy'] = ' '.join(deputy_key.with_name('deputy.pub').read_text().split()[:2])
+        A.admin('steward', 'enroll_principal', {'principal': 'deputy', 'principal_type': 'person',
+                                                'roles': ['project_owner'], 'public_key': A.public['deputy'],
+                                                'independence_group': 'deputy', 'scope': ['project-a']}, enrollee='deputy')
         # The enrolled clone the owner's commands name, bound to the support authority's store.
         clone = base / 'clone'
         git.run(['git', 'init', '-q', str(clone)], check=True, capture_output=True)
@@ -590,9 +603,18 @@ def _v138_suite():
             check(RA, 'after the restart it presents, acquires and settles', bool(done3) and done3.get('choice') == 'accept')
 
         # AC2: the owner's stop takes effect in the running service without a restart; pending stays pending.
-        with section(SL, SP):
+        with section(SL, SP, OO):
             rid4 = open_request('S4')
             shown4 = wait(lambda: published(rid4), 15) if channel_runs() else None
+            # AC2 over an existing record: another project_owner member who names himself as owner.
+            held, sent = record(), calls()
+            usurp = signed_as('steward', 'stop', owner='steward')
+            got = (usurp.get('result') or {}).get('reason')
+            check(OO, 'over the active record, a stop signed by the steward naming himself as owner is refused by name '
+                  '(%s)' % got, usurp.get('accepted') is True and got == 'missing_authority:channel:not_owner')
+            check(OO, 'that refusal left the active record unchanged [%s]' % ((record() or {}).get('authorized_by'),),
+                  held is not None and held.get('state') == 'active' and record() == held
+                  and (status().get('record') or {}).get('state') == 'active')
             rc, shown = veldo('stop', 'owner')
             at_stop = (calls(), pid())
             check(SL, 'bin/veldo channel stop, signed by the owner, is applied by the running service [%s]' % shown,
@@ -608,6 +630,27 @@ def _v138_suite():
             check(SP, 'the pending requests stay pending and unsettled, and the platform keeps the reply',
                   pending(rid4) and pending(rid5) and settled(rid4) is None
                   and any(u['update_id'] == late['update_id'] for u in api['bots']['bot138']['updates']))
+            # AC2 after the owner's stop: a second project_owner person, with his own chat enrollment,
+            # re-qualifies the edge onto his own chat by naming himself as owner.
+            A.fixture('channel-enrollment:telegram_chat:deputy', 'channel_enrollment',
+                      dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='deputy',
+                           chat_id=deputy_chat, revoked_at=None))
+            api['chats'][deputy_chat] = {'id': deputy_chat, 'type': 'private', 'first_name': 'Deputy'}
+            held, sent = record(), calls()
+            usurp = signed_as('deputy', 'qualify', owner='deputy')
+            got = (usurp.get('result') or {}).get('reason')
+            check(OO, 'over the stopped record, a qualify signed by another project_owner person naming himself and '
+                  'his own enrolled chat is refused by name (%s)' % got,
+                  usurp.get('accepted') is True and got == 'missing_authority:channel:not_owner')
+            ran = passes(2)
+            check(OO, 'that refusal left the stopped record unchanged and nothing was sent [%s]'
+                  % ((record() or {}).get('owner'),), held is not None and held.get('state') == 'stopped'
+                  and record() == held and ran and calls() == sent
+                  and (status().get('last_pass') or {}).get('reason') == 'edge_stopped')
+            usurp = signed_as('deputy', 'stop', owner='deputy')
+            got = (usurp.get('result') or {}).get('reason')
+            check(OO, 'and his stop naming himself is refused by name too (%s), the record unchanged' % got,
+                  usurp.get('accepted') is True and got == 'missing_authority:channel:not_owner' and record() == held)
 
         # AC3: a restart after the owner's stop keeps the edge stopped.
         with section(RS, SP):
@@ -629,6 +672,62 @@ def _v138_suite():
                   == late['message']['message_id'])
             check(SP, 'the request opened while stopped is presented once the edge resumes',
                   bool(wait(lambda: published(rid5), 15)))
+
+        # F2: in a run qualifying the Telegram origin, an exchange that fails in transport is named
+        # unavailable_service, not fixture evidence, and the run still does not qualify. A separate authority
+        # of this run's own, its record opened by the owner's signed qualify for https://api.telegram.org, and
+        # the gate's own transport making the exchange; only the network is a stand-in: for the length of
+        # each call the connection is refused, times out or its name does not resolve before any socket
+        # opens, so nothing reaches the suite's guard, and the guard is back in place after each call.
+        with section(TF):
+            ACT = load('v138_act_transport', mods / 'control_channel_activation.py')
+            telegram = 'https://api.telegram.org'
+            T = H.build(base / 'transport', mods, deputy_chat, telegram, 'v138-not-a-token')
+            acts = ACT.Activations(T.S, T.conn, T.ids, 'authority', T.journal_sign)
+            opened = T.authorize(acts, 'qualify')
+            gate = ACT.Gate(T.S, T.conn)
+            asked, raised = [], []
+            failures = (ConnectionRefusedError(111, 'refused'), TimeoutError('timed out'),
+                        socket.gaierror(-2, 'Name or service not known'))
+            for failure in failures:
+                def network_down(address, *args, **kwargs):
+                    asked.append(address[0])
+                    raise failure
+                socket.create_connection = network_down
+                try:
+                    gate.open(urllib.request.Request(telegram + '/botv138-not-a-token/getMe', data=b'{}'), 2, 'getMe', telegram)
+                except Exception as exc:
+                    raised.append(type(exc).__name__)
+                finally:
+                    socket.create_connection = guarded
+            recorded = [x.get('transport_failure') for x in gate.exchanges]
+            check(TF, 'the gate made each exchange for the Telegram origin through its own transport, and recorded '
+                  'the failure by class [%s %s %s]' % (opened.get('outcome'), recorded, raised),
+                  opened.get('outcome') == 'accepted' and asked == ['api.telegram.org'] * 3 and raised == ['URLError'] * 3
+                  and recorded == ['ConnectionRefusedError', 'TimeoutError', 'gaierror']
+                  and all(x.get('status') is None and x.get('tls') is None and x.get('origin') == telegram
+                          for x in gate.exchanges))
+
+            class Nothing:
+                def current(self, *args):
+                    return None
+
+                evidence = settlement = current
+            code = None
+            try:
+                acts.qualify(gate, Nothing(), Nothing(), Nothing(), 'v138-request', 'v138-owner', 'v138-other')
+            except ACT.Refused as exc:
+                code = exc.code
+            stored = T.conn.execute("SELECT count(*) FROM entities WHERE kind='channel_qualification'").fetchone()[0]
+            check(TF, 'the run is refused as unavailable_service, not fixture_only_evidence, and records nothing (%s)'
+                  % code, code == 'unavailable_service' and stored == 0
+                  and ACT.REFUSALS.get(code) == 'unavailable_service')
+            fixture = dict(gate.exchanges[0], transport_failure=None, status=200)
+            mixed = ACT.qualification_problems({'schema': ACT.QUALIFICATION_SCHEMA, 'origin': telegram, 'platform': 'telegram',
+                                                'exchanges': [dict(gate.exchanges[0]), fixture]}, telegram)
+            check(TF, 'control: an exchange with no TLS that did not fail in transport keeps the run fixture_only_evidence '
+                  '[%s]' % mixed, mixed == ['fixture_only_evidence'])
+            T.conn.close()
 
         with section(SI):
             armed = guard_armed.read_text().split() if guard_armed.is_file() else []
