@@ -26,9 +26,13 @@ assigned by the store inside the writing transaction; intake sources are written
 the bound acceptor must all be the project's owner, who must be a current person member holding
 `project_owner` (the same owner check `accept` makes); otherwise `not_owner:source`. That is also the
 answer for his message in a project he does not own: the objective's acceptor is that project's owner,
-and his message is not that owner's. The command must name the objective's current revision and bound
-digest, or it is refused `stale_subject:revision`. A paused or closed project refuses
-`project_not_active:<state>`, as it does `accept` (no row here drives that refusal).
+and his message is not that owner's. Whoever wrote the bound fields must be his too: the objective's
+proposer and the author of every amendment are the project's owner or the project manager of the
+project's current team (`project_managers`: control_team's `PM_ROLE` workers of the accepted VELDO-0089
+revision, none before one), otherwise `not_authorized:author`, so an objective a plain member proposed or
+amended from his message is presented to him through `accept` instead. The command must name the
+objective's current revision and bound digest, or it is refused `stale_subject:revision`. A paused or
+closed project refuses `project_not_active:<state>`, as it does `accept`.
 
 **What the acceptance binds.** The record moves PROPOSED to ACCEPTED through `entity_contract.transition`
 and records `accepted_revision`, and an `acceptance` with `path: own_message`, the intake command and
@@ -41,8 +45,10 @@ recorded, `missing_evidence:attribution` otherwise); for the API, the edge-signe
 principal and digest. The history entry names the intake command.
 
 **A repeat is the same acceptance.** The same `accept_message` again, naming the intake command the
-objective was accepted by, returns the recorded acceptance and writes nothing, before the version check,
-so a repeat made from an earlier read still answers. A repeated message never reaches it twice: intake
+objective was accepted by, returns the recorded acceptance and writes nothing. It skips only the version
+check, so a repeat made from an earlier read still answers, and it answers only after the membership,
+owner and project-state checks: a principal outside the project's scope is refused
+`not_authorized:scope` and a project that is not ACTIVE `project_not_active:<state>`. A repeated message never reaches it twice: intake
 returns the same proposal for the same source, and a second `propose` from it is `already_exists`.
 
 **Acceptance admits nothing.** A feature proposed under an objective his message accepted is RAW with
@@ -78,7 +84,8 @@ Each row is reported once, and every row fails by assertion.
 | Criterion | Rows |
 |---|---|
 | AC1 | `own-message/telegram`, `own-message/api`, `own-message/non-owner-presented` (declared falsifier), `own-message/admits-nothing` |
-| AC2 | `evidence/bound-intake-command` (declared falsifier), `evidence/same-bound-fields`, `evidence/project-not-his`, `evidence/repeat`, `evidence/stale-revision` |
+| AC2 | `evidence/bound-intake-command` (declared falsifier), `evidence/same-bound-fields`, `evidence/project-not-his`, `evidence/repeat`, `evidence/stale-revision`, `evidence/repeat-after-checks`, `evidence/paused-project` |
+| Review fix | `authorship/member-authored-presented`, `authorship/owner-authored`, and the project manager part of `own-message/telegram` |
 
 `own-message/telegram` and `own-message/api`: olga, the owner of proj-a, writes on Telegram and through
 the API; each becomes a proposed objective of proj-a, the PM proposes it, and her message accepts it
@@ -104,15 +111,30 @@ journal unchanged and one ACCEPTED history entry. `evidence/stale-revision`: her
 revision 2; acceptances naming revision 1 or its digest are refused `stale_subject:revision` writing
 nothing, and the current one binds revision 2.
 
-Stage environment run (`env -i`, the stage's variables, HOME in `/dev/shm`): 35 passed, 0 failed (26
-preamble, 9 rows). The suites of the other readers of the objective service also pass there and in a
+The review fix. proj-a's VELDO-0089 team names pm its project manager, accepted by olga's settled answer,
+and `own-message/telegram` checks that before pm's proposals are accepted by her messages.
+`authorship/member-authored-presented` is the review's attack: olga writes on Telegram, asha (a plain
+member) proposes and amends the objective with her own outcome and scope and names herself assessor;
+asha's and the PM's `accept_message` naming olga's intake command are refused `not_authorized:author`
+writing and sending nothing, an objective zed (another project's owner) wrote in proj-a is refused the
+same way, and the objective is presented to olga, who is shown asha's wording, and accepted by her
+answer through `accept`, naming the settlement. `authorship/owner-authored`: olga proposes and amends the
+objective of her own message herself, and her message accepts it at revision 2 with nothing presented.
+`evidence/repeat-after-checks`: mallory, with an active key and scope only in proj-c, repeats olga's
+accepted message; she is refused `not_authorized:scope`, not handed the acceptance, nothing is written,
+and the PM's repeat still returns it. `evidence/paused-project`: olga pauses proj-a after the PM proposed
+the objective of her message; her message's acceptance and a repeat of an accepted one are both refused
+`project_not_active:PAUSED` writing nothing, and once she resumes it her message accepts it.
+
+Stage environment run (`env -i`, the stage's variables, HOME in `/dev/shm`): 39 passed, 0 failed (26
+preamble, 13 rows). The suites of the other readers of the objective service also pass there and in a
 normal run: `72_veldo_0077_objectives` (20 rows), `73_veldo_0078_backlog` (20), `72_veldo_0128_reports`
-(18), and `68_veldo_0126_intake` (18, normal run).
+(18) and `68_veldo_0126_intake` (18); `73_veldo_0089_team` and `50_git_environment` pass in a normal run.
 
 ## Red record
 
 `red-at-0af8dc0.json`: the current suite over `git archive 0af8dc0`, the commit before this change,
-unchanged. All 9 rows fail by their own assertion and no region raised: the tree's objective service
+unchanged. All 13 rows fail by their own assertion and no region raised: the tree's objective service
 has no `accept_message`, so every such command is refused `invalid_input`, the owner's objectives stay
 PROPOSED, the refusals are not named `not_owner:source`, `invalid_input:intake_command` or
 `stale_subject:revision`, no feature can be proposed under an unaccepted objective, and there are no
@@ -122,8 +144,8 @@ acceptance metrics.
 
 Registered in `scripts/check_teeth_mutations.py` with the `own-message-` prefix, each declared falsifier
 first; `python3 -B proof/VELDO-0150/drive.py` records `mutations.json` and one applied diff per mutant.
-All 11 turn their named rows red by assertion; the baseline and the no-op copy of `control_objective.py`
-are green. `check_teeth_mutations.py --finding 150 --jobs 2`: 11 rejected. Finding 77 (the other
+All 15 turn their named rows red by assertion; the baseline and the no-op copy of `control_objective.py`
+are green. `check_teeth_mutations.py --finding 150 --jobs 2`: 15 rejected. Finding 77 (the other
 mutations of `control_objective.py`) still rejects all 24.
 
 | Mutant | Named rows |
@@ -138,4 +160,8 @@ mutations of `control_objective.py`) still rejects all 24.
 | own-message-bound-digest-unbound | evidence/same-bound-fields |
 | own-message-any-project-owner | evidence/project-not-his |
 | own-message-repeat-not-returned | evidence/repeat |
+| own-message-author-unchecked (review-fix falsifier) | authorship/member-authored-presented |
+| own-message-pm-role-unread | own-message/telegram |
+| own-message-repeat-before-checks | evidence/repeat-after-checks, evidence/paused-project |
+| own-message-repeat-while-paused | evidence/paused-project |
 | own-message-stale-revision-accepted | evidence/stale-revision |
