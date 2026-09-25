@@ -1,0 +1,2848 @@
+{
+ "activation": {
+  "bot_id": 8769019646,
+  "edge_key_id": "edge-telegram",
+  "enrollment_version": 1,
+  "origin": "https://api.telegram.org",
+  "platform": "telegram",
+  "qualification_digest": "sha256:bfa5174733bb7be673974427d635317dc295cfe2598a1476d8b31cbd51e804df",
+  "qualification_id": "channel_qualification:telegram_chat:activation-10",
+  "state": "active"
+ },
+ "commit": "663a30dab4dcd0463c1e0dc7a2a62f2e64b1759a",
+ "journal": [
+  {
+   "accepted_versions": {
+    "channel_qualification:telegram_chat:activation-10": 0
+   },
+   "channel": "telegram_chat",
+   "domain_uuid": "activation-domain",
+   "error_class": null,
+   "operation": "channel_qualification_record",
+   "outcome": "accepted",
+   "qualification_id": "channel_qualification:telegram_chat:activation-10",
+   "reason": null,
+   "repository_uuid": "activation-repository",
+   "seq": 30,
+   "store_uuid": "activation-store"
+  }
+ ],
+ "note": "Real platform legs: presentation, answer and settlement, each exchange with api.telegram.org over verified TLS. The unauthorized leg is an unenrolled sender id from a loopback stand-in (Telegram 29047).",
+ "qualification": {
+  "bot_id": 8769019646,
+  "channel": "telegram_chat",
+  "edge_key_digest": "sha256:0cedb16551dda96ecb571305e7df124693483b13bccc4d8baac32657ad3eac47",
+  "edge_key_id": "edge-telegram",
+  "edge_version": 1,
+  "enrolled_chat": 8687555281,
+  "enrollment_id": "channel-enrollment:telegram_chat:owner",
+  "enrollment_version": 1,
+  "exchanges": [
+   {
+    "at": 1790305114.9156585,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "sendMessage",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:ed8384be52a5d205621cd08cc02653404e15fcf5eb382c4dd884765b09194fba",
+    "result": {
+     "chat_id": 8687555281,
+     "date": 1790305115,
+     "message_id": 5
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305115.3669395,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305115.645507,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:95452b9433f3f7c4ba2079046befea12577d7a2f9516466169db418d9e4b1853",
+    "result": {
+     "update_ids": [
+      575938980,
+      575938981,
+      575938982,
+      575938983
+     ]
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305118.9981985,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305119.28544,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305122.5592067,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305122.84384,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305126.1791675,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305126.454162,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305129.7348554,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305130.020906,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305133.3049912,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305133.5872884,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305136.8661482,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305137.1389987,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305140.4097767,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305140.6832554,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305143.962493,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305144.2575543,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305147.534776,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305147.813108,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305151.0895739,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305151.3791597,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305154.657505,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305154.9377365,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305158.2333755,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305158.529874,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305161.8137536,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305162.0984852,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305165.3781602,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305165.646155,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305168.9222794,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305169.1890695,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305172.4663599,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305172.7519314,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305176.028461,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305176.3014328,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305179.5717716,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305179.8449874,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:6bf85929c90b7d9609d039092f9be7eb75f7b9f554e57a6e85ed13effecda9c9",
+    "result": {
+     "update_ids": [
+      575938984
+     ]
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305183.162408,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305183.4340234,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305186.706848,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305186.9861078,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305190.26209,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305190.548789,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305193.8286254,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305194.4386475,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305197.7369874,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305198.0160635,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305201.2929866,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305201.5684268,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305204.8439348,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305205.128219,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305208.4026556,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305208.6852612,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305211.9533534,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305212.2274818,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305215.5057585,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305215.7822626,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305219.0557592,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305219.3324962,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305222.6148143,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305222.8936548,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305226.1660666,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305226.4338467,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305229.713311,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305229.9845014,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305233.26992,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305233.548478,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305236.8257594,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305237.1020498,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305240.3745706,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305240.6532395,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305243.9205344,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305244.2042773,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305247.472404,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305247.778834,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305251.0570326,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305251.3472533,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305254.6254375,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305254.9129858,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305258.1878529,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305258.4577672,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305261.7344387,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305262.0135896,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305265.2851734,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305265.6237552,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305268.9299958,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305269.216247,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305272.4826603,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305272.7638032,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305276.036069,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305276.306613,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305279.5795767,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305279.8743892,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305283.1461782,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305283.4221919,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305286.689273,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305286.9631627,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305290.2390747,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305290.5360909,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305293.8116446,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305294.4496787,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305297.7214472,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305297.9964285,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305301.2774515,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305301.5516233,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:2321bd0dcab3570cb4b36871411be2b13d70ccbaca5db547ed054b87ee563684",
+    "result": {
+     "update_ids": []
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305304.8247235,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getMe",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:1e1cd520dcc1c00df0e80700a10c3374375a3fe371e6c04840594c8e4eb08a71",
+    "result": {
+     "bot_id": 8769019646
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   },
+   {
+    "at": 1790305305.1013982,
+    "host": "api.telegram.org",
+    "mode": "qualifying",
+    "operation": "getUpdates",
+    "origin": "https://api.telegram.org",
+    "response_digest": "sha256:45d8863f7c1c7356b321e0a1b3e3198fefdc5227a852a4d228522358b8cc716a",
+    "result": {
+     "update_ids": [
+      575938985
+     ]
+    },
+    "status": 200,
+    "tls": {
+     "dns_names": [
+      "api.telegram.org",
+      "www.api.telegram.org"
+     ],
+     "host": "api.telegram.org",
+     "issuer": "GoDaddy.com, Inc.",
+     "not_after": "Dec 13 15:14:09 2026 GMT",
+     "peer_certificate": "sha256:6447039ac9edb9038c076eaa3dbf754b4cc14ec1a58c832d3efd0ce7f782c271",
+     "subject": "api.telegram.org",
+     "verified": true,
+     "version": "TLSv1.3"
+    }
+   }
+  ],
+  "origin": "https://api.telegram.org",
+  "owner": "owner",
+  "owner_answer": {
+   "answer_id": "presentation-answer:assignment:activation-repository:LIVE-1790305114:1:owner",
+   "chat_id": 8687555281,
+   "date": 1790305304,
+   "evidence_id": "channel-evidence:telegram_chat:8769019646:575938985",
+   "message_id": 7,
+   "outcome": "answered",
+   "reason": null,
+   "reply_to_message_id": 5,
+   "response_digest": "sha256:45d8863f7c1c7356b321e0a1b3e3198fefdc5227a852a4d228522358b8cc716a",
+   "sender_id": 8687555281,
+   "source_digest": "sha256:83ce5bab35d70c40ad7363eed902f15e95c967291a2a6432cc2f217ea5dddaf1",
+   "update_id": 575938985
+  },
+  "platform": "telegram",
+  "presentation": {
+   "chat_id": 8687555281,
+   "digest": "sha256:c3998fad2a984afd9e526fec77dbd00cacad153e6c85f003b22d20d430488152",
+   "message_ids": [
+    5
+   ],
+   "presentation_id": "presentation:telegram_chat:assignment:activation-repository:LIVE-1790305114:1:c3998fad2a984afd9e526fec77dbd00cacad153e6c85f003b22d20d430488152",
+   "published_at": 1790305115
+  },
+  "qualification_id": "channel_qualification:telegram_chat:activation-10",
+  "recorded_at": 1790305306.0629013,
+  "request_id": "assignment:activation-repository:LIVE-1790305114",
+  "request_version": 1,
+  "run": "activation-10",
+  "schema": "veldo.channel_qualification/v1",
+  "settlement": {
+   "answer_id": "presentation-answer:assignment:activation-repository:LIVE-1790305114:1:owner",
+   "choice": "accept",
+   "originating_channel": "telegram_chat",
+   "request_id": "assignment:activation-repository:LIVE-1790305114",
+   "ruling": "approve",
+   "settlement_id": "request-settlement:assignment:activation-repository:LIVE-1790305114:1"
+  },
+  "unauthorized": {
+   "answer_id": null,
+   "chat_id": 8687555282,
+   "date": 1791000001,
+   "evidence_id": "channel-evidence:telegram_chat:8769019646:575939986",
+   "message_id": 9001,
+   "outcome": "refused",
+   "provenance": "stand_in",
+   "reason": "unknown_sender",
+   "reply_to_message_id": null,
+   "response_digest": "sha256:49efe6712dc24934cc6bf6ca1ebf547b09bda0d3895d0252318839a641a666e9",
+   "sender_id": 8687555282,
+   "source_digest": "sha256:1c8a0083593c1f4a02c29b439c037a660b17c70b94313de61f3eb58c300fb80b",
+   "update_id": 575939986
+  }
+ },
+ "qualification_digest": "sha256:bfa5174733bb7be673974427d635317dc295cfe2598a1476d8b31cbd51e804df",
+ "qualification_id": "channel_qualification:telegram_chat:activation-10",
+ "recorded_at": "2026-09-25T03:01:46Z",
+ "runner_sha256": "fe9d519f2e152c20cbb7a1f463ffa31e9727ef29e18c0527ec294e1b9afe421d",
+ "schema": "veldo.proof-live-qualification/v1",
+ "settlement": {
+  "choice": "accept",
+  "originating_channel": "telegram_chat",
+  "ruling": "approve",
+  "settlement_id": "request-settlement:assignment:activation-repository:LIVE-1790305114:1"
+ },
+ "spec_id": "VELDO-0073",
+ "stopped": "stopped",
+ "unauthorized_provenance": "stand_in"
+}
