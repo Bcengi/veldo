@@ -833,6 +833,15 @@
    ],
    "regions": "One settlement per request version carrying the offered choice, its ruling and the owner's reasoning, the settlement, nonce, typed effect, terminal request state and receipt in one transaction with one winner across Telegram and the authenticated API, terminal state published through an accepted snapshot, and conjunctive journey and request authority with unsupported quorums blocking",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal, possession, edge and API answer signatures, the actual protected signer process, the VELDO-0066 Acquirer and VELDO-0065 presenter over a loopback Bot API, concurrent writers on two connections, a real Git repository with a VELDO-0035 accepted revision and snapshot, and a reader in another process. Writes only temporary fixtures."
+  },
+  {
+   "name": "70_veldo_0057_landing",
+   "file": "70_veldo_0057_landing.py",
+   "requires": [
+    "70_veldo_0057_landing"
+   ],
+   "regions": "Exact-tip publication by compare-and-swap of the recorded old remote tip with a moved tip refused and never overwritten, the current authority, approval and exact tested and reviewed subjects re-read at the effect boundary, confirmed, failed and unknown results with no further attempt, and the confirmed-landing receipt with its whole evidence chain committed only after the remote's own answer, then the journal projection, read by the frontier, plan and work readers",
+   "requires_note": "Uses only shared ROOT and expect. Real Git (a scaffolded seed with its own gate, two disposable bare remotes whose pre-receive hooks record every receive, the caller's clone, the executor's publication clone and another pusher's clone), real SQLite store with OpenSSH journal and effect-connection signatures, the VELDO-0028 effect executor process, the VELDO-0051 projection and the installed frontier, plan and work_state readers in another process. Writes only temporary fixtures."
   }
  ]
 }
