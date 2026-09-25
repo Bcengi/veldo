@@ -4676,6 +4676,153 @@ def cases():
                '    return P.bot_opener(Handler())\n',
                '    return urllib.request.build_opener(urllib.request.ProxyHandler({}), Handler())  # defect: redirects followed\n',
                'activation/no-redirect')
+    # VELDO-0130 phase 1: the authenticated API. Each criterion's declared falsifier (AC1: a decision
+    # authorized by the body actor_id; AC3: a second settlement for the UI answer after Telegram settles),
+    # and teeth for every row: the passkey checks, enrollment, sessions, forgery, the edge's signer purpose,
+    # the authority's recheck, intake, settlement and the loopback transport.
+    def api(name, module, old, new, rows, also=()):
+        add(130, name, '71_veldo_0130_api.py', module, old, new, rows, also)
+
+    API130, WA130, CR130 = 'control_api.py', 'control_api_webauthn.py', 'control_api_credentials.py'
+    SG130, AU130, AS130 = 'control_api_signer.py', 'control_api_authority.py', 'control_api_assertion.py'
+    api('body-actor-authorizes', API130,
+        "    if any(f in body for f in ACTOR_FIELDS):\n        return 'invalid_input:actor_field'\n", '',
+        ['routes/body-actor-refused'],
+        also=[("    if set(body) - set(route.required) - set(route.optional) or",
+               "    if set(body) - set(route.required) - set(route.optional) - set(ACTOR_FIELDS) or"),
+              ("                         principal=session['principal'], credential_id=session['credential_id'],",
+               "                         principal=body.get('actor_id') or session['principal'],"
+               " credential_id=session['credential_id'],")])
+    api('unknown-field-ignored', API130,
+        "    if set(body) - set(route.required) - set(route.optional) or set(route.required) - set(body):",
+        "    if set(route.required) - set(body):  # defect: unknown fields are ignored", ['routes/body-actor-refused'])
+    api('domain-unchecked', API130, "        if 'domain' in params and params['domain'] != self.domain:",
+        "        if False:  # defect: any domain in the path is served", ['routes/every-family'])
+    api('expiry-unchecked', API130,
+        "            if now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS:",
+        "            if False:  # defect: sessions never expire", ['session/cookie-and-expiry', 'routes/every-family'])
+    api('absolute-lifetime-unchecked', API130,
+        "            if now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS:",
+        "            if now - session['seen'] > IDLE_SECONDS:  # defect: no absolute lifetime", ['session/cookie-and-expiry'])
+    api('session-not-rechecked', API130,
+        "        why = self._credential_problem(session['credential_id'], session['principal'])[1]",
+        "        why = None  # defect: the credential and member are not read again", ['session/revocation-ends'])
+    api('follow-ignores-revocation', API130,
+        "            if change.get('kind') == CR.KIND and data.get('revoked_at') is not None:",
+        "            if False:  # defect: a revoked credential in the journal ends nothing", ['session/revocation-ends'])
+    api('follow-ignores-membership', API130,
+        "            elif change.get('kind') == 'membership' and data.get('revoked_at') is not None:",
+        "            elif False:  # defect: a revoked membership in the journal ends nothing", ['session/revocation-ends'])
+    api('token-unchecked', API130, "            if write and not hmac.compare_digest(",
+        "            if False and not hmac.compare_digest(  # defect: no anti-forgery token", ['session/forgery-refused'])
+    api('origin-unchecked', API130, "            if headers.get('Origin') != self.origin:",
+        "            if False:  # defect: any Origin writes", ['session/forgery-refused'])
+    api('fetch-site-unchecked', API130, "            if headers.get('Sec-Fetch-Site') not in (None, 'same-origin'):",
+        "            if False:  # defect: cross-site fetches write", ['session/forgery-refused'])
+    api('content-type-unchecked', API130,
+        "            if (headers.get('Content-Type') or '').split(';')[0].strip().lower() != 'application/json':",
+        "            if False:  # defect: a form post writes", ['session/forgery-refused'])
+    api('host-unchecked', API130, "        if (headers.get('Host') or '') != self.host:",
+        "        if False:  # defect: any Host is served", ['session/forgery-refused', 'transport/loopback-only'])
+    api('cookie-scriptable', API130,
+        "        extra.append(('Set-Cookie', '%s=%s; Secure; HttpOnly; SameSite=Strict; Path=/' % (COOKIE, cookie)))",
+        "        extra.append(('Set-Cookie', '%s=%s; Secure; SameSite=Lax; Path=/' % (COOKIE, cookie)))  # defect",
+        ['session/cookie-and-expiry'])
+    api('cookie-kept-plain', API130, "        return hashlib.sha256(cookie.encode('ascii', 'replace')).hexdigest()",
+        "        return cookie  # defect: the cookie itself is kept", ['session/cookie-and-expiry'])
+    api('challenge-reusable', API130,
+        "            issued = self._challenges.pop(named, None) if isinstance(named, str) else None",
+        "            issued = self._challenges.get(named) if isinstance(named, str) else None  # defect: reusable",
+        ['session/cookie-and-expiry'])
+    api('sign-out-keeps-session', API130, "        self.sessions.end(session['handle'])\n",
+        "        pass  # defect: sign-out ends nothing\n", ['session/cookie-and-expiry'])
+    api('pending-limit-unenforced', API130, "            if len(self._registrations) + len(self._pending_files()) >= PENDING_LIMIT:",
+        "            if False:  # defect: unbounded pending registrations", ['enrollment/pending-grants-nothing'])
+    api('hsts-omitted', API130,
+        "               ('Strict-Transport-Security', HSTS), ('X-Content-Type-Options', 'nosniff')] + extra",
+        "               ('X-Content-Type-Options', 'nosniff')] + extra  # defect: no HSTS", ['transport/loopback-only'])
+    api('body-cap-unenforced', API130, "            if size < 0 or size > BODY_LIMIT:",
+        "            if size < 0:  # defect: any body size is read", ['transport/loopback-only'])
+    api('uv-unchecked', WA130, "    if not flags & USER_VERIFIED:\n        return ['user_not_verified']\n", '',
+        ['webauthn/stand-in-browser', 'webauthn/independent-vectors'])
+    api('up-unchecked', WA130, "    if not flags & USER_PRESENT:\n        return ['user_not_present']\n", '',
+        ['webauthn/stand-in-browser'])
+    api('origin-not-compared', WA130, "    if data.get('origin') != origin:\n        return 'wrong_origin'\n", '',
+        ['webauthn/stand-in-browser', 'webauthn/independent-vectors', 'enrollment/pending-grants-nothing'])
+    api('cross-origin-accepted', WA130,
+        "    if 'crossOrigin' in data and data['crossOrigin'] is not False:\n        return 'cross_origin'\n", '',
+        ['webauthn/stand-in-browser', 'webauthn/independent-vectors'])
+    api('rp-hash-unchecked', WA130, "    if auth[:32] != hashlib.sha256(rp_id.encode('ascii')).digest():",
+        "    if False:  # defect: the relying party is not bound", ['webauthn/stand-in-browser', 'webauthn/independent-vectors'])
+    api('ceremony-type-unchecked', WA130, "    if data.get('type') != kind:\n        return 'wrong_ceremony'\n", '',
+        ['webauthn/stand-in-browser'])
+    api('challenge-unchecked', WA130,
+        "    if not isinstance(challenge, str) or not challenge or data.get('challenge') != challenge:",
+        "    if False:  # defect: any challenge", ['webauthn/stand-in-browser', 'enrollment/pending-grants-nothing'])
+    api('user-handle-unchecked', WA130,
+        "    if assertion.get('user_handle') != credential.get('user_handle'):",
+        "    if False:  # defect: any user handle", ['webauthn/stand-in-browser'])
+    api('signature-unverified', WA130, "        return done.returncode == 0",
+        "        return True  # defect: the signature is not checked",
+        ['webauthn/stand-in-browser', 'webauthn/independent-vectors', 'enrollment/steward-signed'])
+    api('possession-not-rechecked', CR130,
+        "            if W.possession_problems(binding, params['proof'], self.origin, self.rp_id, self.state_dir):",
+        "            if False:  # defect: the possession proof is not checked at the host", ['enrollment/steward-signed'])
+    api('steward-role-unchecked', CR130, "        if CM.STEWARD_ROLE not in (entry.get('roles') or []):",
+        "        if False:  # defect: any person enrolls a passkey", ['enrollment/steward-signed'])
+    api('steward-scope-unchecked', CR130, "        if not CM.scope_covers(entry.get('scope'), (member or {}).get('scope')):",
+        "        if False:  # defect: the steward's scope is not checked", ['enrollment/steward-signed'])
+    api('expired-registration-accepted', CR130, "            if binding['expires_at'] <= now:",
+        "            if False:  # defect: an expired pending registration is enrolled", ['enrollment/steward-signed'])
+    api('revoked-credential-current', CR130,
+        "    if found.get('revoked_at') is not None and found['revoked_at'] <= now:\n        return found, 'credential_revoked'\n",
+        '', ['session/revocation-ends', 'edge/signer-api-purpose'])
+    api('revoked-member-credential-current', CR130,
+        "    if not AC.active_member(member, now)[0]:\n        return found, 'principal_not_member'\n", '',
+        ['session/revocation-ends'])
+    api('signer-credential-unchecked', SG130,
+        "    _record, why = CR.current(state, a['credential_id'], now, principal=a['principal'])",
+        "    _record, why = None, None  # defect: the signer signs for any principal", ['edge/signer-api-purpose'])
+    api('signer-expiry-unchecked', SG130, "    if AS.time_problem(a, now):\n        raise Refused('assertion-expired'",
+        "    if False:\n        raise Refused('assertion-expired'", ['edge/signer-api-purpose'])
+    api('signer-signs-any-shape', SG130, "        if AS.shape_problems(assertion):",
+        "        if False:  # defect: any value is signed", ['edge/signer-api-purpose'])
+    api('authority-signature-unverified', AU130, "        if not verified:\n            raise Refused('unauthenticated:signature'",
+        "        if False:\n            raise Refused('unauthenticated:signature'", ['edge/authority-recheck'])
+    api('authority-credential-unchecked', AU130,
+        "        if why:\n            raise Refused('unauthenticated:' + why",
+        "        if False:\n            raise Refused('unauthenticated:' + why", ['edge/authority-recheck', 'session/revocation-ends'])
+    api('authority-expiry-unchecked', AU130, "        if AS.time_problem(a, now):\n            raise Refused('unauthenticated:expired'",
+        "        if False:\n            raise Refused('unauthenticated:expired'", ['edge/authority-recheck'])
+    api('authority-domain-unchecked', AU130,
+        "        if a['domain'] != self.domain or any(a[f] != v for f, v in self.ids.items()):",
+        "        if False:  # defect: any domain is executed", ['edge/authority-recheck'])
+    api('ui-refusal-reported-settled', AU130,
+        "        refusal = result.get('reason') if result.get('outcome') in ('refused', 'unknown_outcome') else None",
+        "        refusal = None  # defect: every domain result is a success", ['decisions/one-ruling', 'decisions/exact-settlement'])
+    api('message-speaker-is-edge', AS130,
+        "                'principal': a['principal'], 'text': p['text'], 'project': p['project'], 'clarifies': p['clarifies']}",
+        "                'principal': a['edge'], 'text': p['text'], 'project': p['project'], 'clarifies': p['clarifies']}",
+        ['messages/common-intake'])
+    api('message-text-trimmed', AS130,
+        "                'principal': a['principal'], 'text': p['text'], 'project': p['project'], 'clarifies': p['clarifies']}",
+        "                'principal': a['principal'], 'text': p['text'].strip(), 'project': p['project'], 'clarifies': p['clarifies']}",
+        ['messages/common-intake'])
+    api('answer-rationale-dropped', AS130, "                    presentation_version=p['presentation_version'], choice=p['choice'], rationale=p['rationale'])",
+        "                    presentation_version=p['presentation_version'], choice=p['choice'], rationale='')  # defect",
+        ['decisions/exact-settlement'])
+    api('ui-answer-settles-again', 'control_request_settlement.py',
+        "            if item['data']['state'] not in self.I.PENDING:\n                raise Refused('request_closed', 'the request is no longer pending')\n",
+        '', ['decisions/one-ruling'],
+        also=[("        if data['state'] not in self.I.PENDING:\n            raise Refused('already_settled' if",
+               "        if False:\n            raise Refused('already_settled' if"),
+              ("        winner_id, _, channel, winner = valid[0]", "        winner_id, _, channel, winner = valid[-1]"),
+              ("        expected.update({sid: 0, eff: 0, rec: 0, terms['terms_id']",
+               "        expected.update({sid: (self._entity(sid) or {}).get('version', 0), eff: (self._entity(eff) or {}).get("
+               "'version', 0), rec: (self._entity(rec) or {}).get('version', 0), terms['terms_id']"),
+              ("        self._commit(SETTLE, sid, params, expected)", "        self._commit(SETTLE, sid + ':' + winner_id, params, expected)"),
+              ("        if any(x in before for x in (sid, eid, rid)):\n            raise refused('stale_subject', 'this request version is settled')\n", ''),
+              ("\n                or data.get('state') not in self.I.PENDING):", "):")])
     return result
 
 
