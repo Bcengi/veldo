@@ -88,8 +88,10 @@ in the ones not listed above.
 | [VELDO-0157](../../specs/VELDO-0157-items-loaded-when-assigned.md) | The `when assigned` items a staffing choice assigns load with that run, and no others (split from VELDO-0127 AC4) | 2 | draft | W117, S5 |
 | [VELDO-0158](../../specs/VELDO-0158-credentials-delivered-to-a-linux-run.md) | Credentials resolved from the keystore at spawn, delivered to a Linux run and added to its redaction set (split from VELDO-0144) | 3 | draft | W118, S5 |
 | [VELDO-0159](../../specs/VELDO-0159-mcp-server-and-credential-form.md) | A minimal MCP server form with a write-only credential field, moved earlier from VELDO-0131 | 2 | draft | W119, S5 |
-| [VELDO-0160](../../specs/VELDO-0160-account-pool-and-the-account-limit.md) | The account pool, the `account_limit` classification and the re-run-or-ask decision (split from VELDO-0062) | 3 | draft | W120, S1 |
+| [VELDO-0160](../../specs/VELDO-0160-account-pool-and-the-account-limit.md) | The account pool, the `account_limit` classification and the re-run-or-ask decision (split from VELDO-0062); AC4 moving off a limit, adding without a restart and one run while unknown (fourth review) | 4 | draft | W120, S1 |
 | [VELDO-0161](../../specs/VELDO-0161-repository-adoption-without-restart.md) | Adoption of a repository and the running factory taking it on without a restart (split from VELDO-0143) | 2 | draft | W121, S5 |
+| [VELDO-0162](../../specs/VELDO-0162-capability-configuration-and-team-routes.md) | The typed API routes for capability configuration revisions and team revisions, the team request the owner answers, and the default team (fourth review) | 4 | draft | W122, S5 |
+| [VELDO-0163](../../specs/VELDO-0163-role-and-team-form.md) | The minimal role and team form in the VELDO-0145 shell, moved earlier from VELDO-0131 (fourth review) | 2 | draft | W123, S5 |
 
 Each has owner dmitry, a footprint, depends_on, placement, protected_paths, risk, rollback, an
 observability block and a What the reviewer judges section, and each passes `validate.py ready`. Every
@@ -137,6 +139,39 @@ VELDO-0146 name `control_workflow_cycle`, VELDO-0142 drops `git_process.py` and 
 VELDO-0126 does. VELDO-0062's title drops "credential separation". The design's status line names what
 changed after the approval.
 
+## The fourth review
+
+A fresh check of the third-review writing found one blocking problem and several small ones; each is
+fixed in its own commit, within revision 4, with no function cut and nothing else moved to Release 2.
+
+**The stage 2 role configuration (blocking).** VELDO-0151 refuses a team whose roles have no accepted
+VELDO-0127 configuration, but no stage 1 or 2 surface could create a configuration revision or a team
+revision: the API's route table has only the workflow save in that family, VELDO-0130's History names
+team and agent configuration edits as having no route, and the role form was VELDO-0131's, built in
+stage 3. VELDO-0162 adds the typed routes, executed as VELDO-0127's revision command and VELDO-0089's
+`propose`, and the request whose settled answer VELDO-0089's `amend` applies; VELDO-0163 is the minimal
+role and team form. One specification would have held five criteria, so they are two, both built in
+stage 2 after VELDO-0127 and VELDO-0151. VELDO-0131's row keeps the role table and history and opens the
+form, and VELDO-0131 and VELDO-0059 depend on both.
+
+**Small fixes.** VELDO-0158 depends on VELDO-0155 and VELDO-0156 and states the form of the dispatch
+configuration it resolves. VELDO-0160 AC1 keeps the isolated concurrent accounts and new AC4 carries
+the other three claims, a mutant each. VELDO-0155 and VELDO-0156 AC1 drive one mutant per switch; their
+AC4 gives the private runtime directory and the user manager falsifiers; VELDO-0156 AC3 gives
+`forced_login_method` and the file credentials store theirs. VELDO-0161 AC1's scaffold commit has its
+own falsifier. VELDO-0157 carries its own Mac leg, because VELDO-0147 depending on it would be a cycle
+through VELDO-0090. VELDO-0154 AC3 names VELDO-0127. VELDO-0143's default team is VELDO-0162 AC4, which
+VELDO-0163's form edits. The Mac secrets frame above names VELDO-0158 AC1, and the design's status line
+says the account pool of sections 8 and 11 is now VELDO-0160.
+
+After the fourth review: `python3 .veldo/validate.py all` (exit 0); `validate.py ready` passes for every
+PLAN-0019 specification except VELDO-0136 and VELDO-0140, as before and untouched; `scripts/check_generated.sh`
+and `scripts/check_docs.sh` pass; `plan.py status` and `release-check` (releasable) on PLAN-0019, whose
+123 items have no dependency on a later release or stage; `git diff main` of VELDO-0057, 0076, 0077,
+0078, 0089 and 0126 shows only `plan_revision`, and of VELDO-0140 only its W100 binding;
+`spec_revision_stale()` and `ready_boundary_violations()` are empty; and the changed files carry no
+em-dash, en-dash or doubled hyphen. `scripts/verify.sh` was not run.
+
 ## Ready specifications whose criteria changed after the owner marked them ready
 
 The approval request must name these, because their criteria changed after he marked them ready. Each
@@ -151,7 +186,7 @@ change is a restructure within revision 4, never a cut function.
 | VELDO-0129 | Its criteria briefly gained AC4 to AC6, now VELDO-0154; AC1 to AC3 equal main's text again, and only depends_on changed |
 | VELDO-0141 | Marked ready on the approval (29162) with four amendments; since then AC3 became the record route's contract and exact-value redaction its own AC4, over a named per-run set tested with a planted resolver |
 | VELDO-0127 | AC4, the design's new criterion, keeps only its `always` leg; the `when assigned` leg is VELDO-0157 |
-| VELDO-0131 | Its screen contract, which AC1 and AC3 make required, no longer builds the server and credential form, now VELDO-0159 |
+| VELDO-0131 | Its screen contract, which AC1 and AC3 make required, no longer builds the server and credential form, now VELDO-0159, or the role and team form, now VELDO-0163 (fourth review) |
 
 Ready specifications whose criteria did not change but whose depends_on or footprint did in the third
 review: VELDO-0040 (footprint), VELDO-0059 and VELDO-0079 (depends_on), and VELDO-0088
