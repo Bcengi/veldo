@@ -1,5 +1,5 @@
 --- a/.veldo/control_eligibility.py
 +++ b/.veldo/control_eligibility.py
-@@ -709 +709 @@
+@@ -715 +715 @@
 -            if isinstance(landing, dict) and not CC.landing_receipt_problems(landing) \
 +            if isinstance(landing, dict) \

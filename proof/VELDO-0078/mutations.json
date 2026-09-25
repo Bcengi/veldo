@@ -43,6 +43,14 @@
     true
    ],
    [
+    "VELDO-0078 ticket/sibling-changes",
+    true
+   ],
+   [
+    "VELDO-0078 ticket/own-changes",
+    true
+   ],
+   [
     "VELDO-0078 blocked/resume-binding",
     true
    ],
@@ -79,7 +87,7 @@
     true
    ]
   ],
-  "seconds": 5.129
+  "seconds": 5.215
  },
  "controls_green": true,
  "mutants": [
@@ -140,6 +148,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -176,7 +192,7 @@
      true
     ]
    ],
-   "seconds": 6.61,
+   "seconds": 5.258,
    "source_sha256": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620"
   },
   {
@@ -191,7 +207,7 @@
     "VELDO-0078 priority/missing-priority"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "b402275ddc5d707412a04cdd7a444566fe20c051dbc6d2d11b35c2ab4a0bf081",
+   "mutant_sha256": "29114f4e6e3e649ff2554181fcc32a9f2b034917fb146ec0fcf259641827f40a",
    "name": "frontier-offers-unprioritized",
    "named_row_red": true,
    "named_rows": [
@@ -236,6 +252,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -272,8 +296,8 @@
      true
     ]
    ],
-   "seconds": 7.701,
-   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
+   "seconds": 5.363,
+   "source_sha256": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7"
   },
   {
    "by_assertion": true,
@@ -291,7 +315,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "3eca25502355e943e6c766362cb140a0e83d2401d64d181a32b53921c8a5c6b1",
+   "mutant_sha256": "c68b62633615926896e177f6953ec1058957098469ca18507919dec6dfc1317f",
    "name": "backlog-priority-only-at-selection",
    "named_row_red": true,
    "named_rows": [
@@ -336,6 +360,14 @@
      false
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      false
     ],
@@ -372,20 +404,34 @@
      true
     ]
    ],
-   "seconds": 6.967,
-   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
+   "seconds": 5.112,
+   "source_sha256": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0078 detail: priority/gate-question: the Gate's priority predicate is that module, and the service re-exports the same function; the Gate loaded no entity contract and no backlog service"
+    "VELDO-0078 detail: priority/declared-set: only prioritized work is offered or claimed, at every entry",
+    "VELDO-0078 detail: priority/missing-priority: the Gate's selection refuses it for missing priority, so the frontier does not offer it; every Gate station (plan run-check and the cycle's assignment step included) names its missing priority; the Gate refuses it at claim and at direct execution for missing priority alone; the VELDO-0132 cycle's assignment step refuses it for missing priority, and assigns prioritized work; the direct task claim is refused for missing priority, and the ledger was never asked; the task claim through the authority is refused for missing priority",
+    "VELDO-0078 detail: priority/gate-question: the Gate's priority predicate is that module, and the service re-exports the same function; the Gate loaded no entity contract and no backlog service",
+    "VELDO-0078 detail: priority/store-inspection: the only claims are of prioritized units",
+    "VELDO-0078 detail: activation/decomposition-growth: the task claim refuses the appended unit, not admitted and not prioritized at the Gate; then they are claimed",
+    "VELDO-0078 detail: ticket/sibling-changes: the running unit's build and review decisions were eligible; the subscription call and the landing are accepted after the append; and after the sibling's prioritization; and after the sibling's disposal",
+    "VELDO-0078 detail: ticket/own-changes: a change to the unit's own decomposition entry is stale by name; a change to the priority record that prioritized it is stale by name; a change to the item's scope is stale by name; a field the classification does not name is bound; a change to a sibling's entry alone leaves the tickets current; the restored record is current again",
+    "VELDO-0078 detail: blocked/resume-binding: every open unit is blocked at the Gate and at the claim; its blockers are cleared and the work continues"
    ],
    "diff": "proof/VELDO-0078/backlog-gate-loads-the-service.diff",
    "failed_rows": [
-    "VELDO-0078 priority/gate-question"
+    "VELDO-0078 priority/declared-set",
+    "VELDO-0078 priority/missing-priority",
+    "VELDO-0078 priority/gate-question",
+    "VELDO-0078 priority/store-inspection",
+    "VELDO-0078 activation/decomposition-growth",
+    "VELDO-0078 ticket/sibling-changes",
+    "VELDO-0078 ticket/own-changes",
+    "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "927630c21db223815ce67149dac4943a4ee3d08d93362a7456afd45e10a25fd0",
+   "mutant_sha256": "b6bdf4faefa44b346db12dc7c2b1da698c9c64f5d697714a1d076c6bd7b5a644",
    "name": "backlog-gate-loads-the-service",
    "named_row_red": true,
    "named_rows": [
@@ -399,11 +445,11 @@
     ],
     [
      "VELDO-0078 priority/declared-set",
-     true
+     false
     ],
     [
      "VELDO-0078 priority/missing-priority",
-     true
+     false
     ],
     [
      "VELDO-0078 priority/gate-question",
@@ -411,7 +457,7 @@
     ],
     [
      "VELDO-0078 priority/store-inspection",
-     true
+     false
     ],
     [
      "VELDO-0078 priority/owner-decision",
@@ -427,11 +473,19 @@
     ],
     [
      "VELDO-0078 activation/decomposition-growth",
-     true
+     false
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     false
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     false
     ],
     [
      "VELDO-0078 blocked/resume-binding",
-     true
+     false
     ],
     [
      "VELDO-0078 done/missing-outcome",
@@ -466,8 +520,8 @@
      true
     ]
    ],
-   "seconds": 6.22,
-   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
+   "seconds": 5.258,
+   "source_sha256": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7"
   },
   {
    "by_assertion": true,
@@ -479,7 +533,7 @@
     "VELDO-0078 priority/gate-question"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "a4a67effe9c6c55d623e6a9c29103bb3125d1043c23fa01e0e27ede5f4f78f1e",
+   "mutant_sha256": "ddb403c6c53127ef465c6e947be3f1804edf427c3b4b5e4f08907880e4655b21",
    "name": "backlog-classification-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -524,6 +578,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -560,8 +622,8 @@
      true
     ]
    ],
-   "seconds": 4.853,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.159,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -579,7 +641,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "c1f332b836e4e1c8e657428ebee4db6f47150c43e9a562e4898a44bbdd3d6818",
+   "mutant_sha256": "ffa4fd0aa816f8b7882dcaf1a2fbc34223c78c188d7c8845422343ec7724585b",
    "name": "backlog-priority-not-a-gate-predicate",
    "named_row_red": true,
    "named_rows": [
@@ -624,6 +686,14 @@
      false
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      false
     ],
@@ -660,8 +730,8 @@
      true
     ]
    ],
-   "seconds": 5.205,
-   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
+   "seconds": 5.296,
+   "source_sha256": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7"
   },
   {
    "by_assertion": true,
@@ -683,7 +753,7 @@
     "VELDO-0078 observability"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "efdc24a4a55b00e4697960b7cad0614c01b6ada9060087061350aa535b23f5fb",
+   "mutant_sha256": "c42896d4d855ecef0fd6ff246a126cf5213160604270112d3eeb0006e4dfc705",
    "name": "any-member-decides",
    "named_row_red": true,
    "named_rows": [
@@ -728,6 +798,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -764,8 +842,8 @@
      false
     ]
    ],
-   "seconds": 7.746,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.258,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -822,6 +900,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -858,7 +944,7 @@
      true
     ]
    ],
-   "seconds": 7.967,
+   "seconds": 5.26,
    "source_sha256": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf"
   },
   {
@@ -916,6 +1002,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -952,22 +1046,24 @@
      true
     ]
    ],
-   "seconds": 6.972,
+   "seconds": 5.254,
    "source_sha256": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0078 detail: activation/decomposition-growth: an appended unit is PLANNED, not executable; the claim receiver refuses the appended unit; the task claim refuses the appended unit, not admitted and not prioritized at the Gate; the earlier prioritization does not cover the appended units; an answer to an earlier revision is refused; the fresh prioritization of the current revision makes them executable; then they are claimed",
+    "VELDO-0078 detail: ticket/sibling-changes: a sibling appended, prioritized and disposed rewrote the item's entries and bookkeeping",
     "VELDO-0078 detail: blocked/resume-binding: every open unit is blocked at the Gate and at the claim; its blockers are cleared and the work continues"
    ],
    "diff": "proof/VELDO-0078/appended-unit-executable.diff",
    "failed_rows": [
     "VELDO-0078 activation/decomposition-growth",
+    "VELDO-0078 ticket/sibling-changes",
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "d54ec89d987c9b241d6d047fcb63e147449c411591416b89d5158a30e11ee7b6",
+   "mutant_sha256": "7e3b3d0e7d16d88da7ae8eda7cb1799b9ad875c1972bbe69481d1e5d1d2f5fba",
    "name": "appended-unit-executable",
    "named_row_red": true,
    "named_rows": [
@@ -1012,6 +1108,14 @@
      false
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     false
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      false
     ],
@@ -1048,8 +1152,8 @@
      true
     ]
    ],
-   "seconds": 5.292,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.203,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -1063,7 +1167,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "cf29a4c03162eee7c7685cbff9ef62a0ef42cc756c0b85b5cfd787b45cc87cbb",
+   "mutant_sha256": "8dbb7f1cc47230356ed0af3f7f97022df2d118559bac5334be3d7c545fbb43ba",
    "name": "stale-revision-answer-applies",
    "named_row_red": true,
    "named_rows": [
@@ -1108,6 +1212,14 @@
      false
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      false
     ],
@@ -1144,8 +1256,8 @@
      true
     ]
    ],
-   "seconds": 5.21,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.163,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -1202,6 +1314,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -1238,7 +1358,7 @@
      true
     ]
    ],
-   "seconds": 5.513,
+   "seconds": 5.093,
    "source_sha256": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620"
   },
   {
@@ -1251,7 +1371,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "2ed76a9ef71425a03795ceda920bdf0b67f832ad56f0c4cf38ce6e60e41c483c",
+   "mutant_sha256": "72a91169e571a407eba3154ce87e6d442b3cf058478a5032bae868f8bfed357c",
    "name": "resume-without-resolution",
    "named_row_red": true,
    "named_rows": [
@@ -1296,6 +1416,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      false
     ],
@@ -1332,8 +1460,8 @@
      true
     ]
    ],
-   "seconds": 5.396,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.106,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -1345,7 +1473,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog_priority.py",
-   "mutant_sha256": "7beb2a17ed3f727ba9e106d30daed00754bfbd751f11d54b0829f75fbbb8bf58",
+   "mutant_sha256": "514ee730c7039fb12532913770655d6ba4a606a7f99c9e6c1374af114c84dbd6",
    "name": "blocked-item-executable",
    "named_row_red": true,
    "named_rows": [
@@ -1390,6 +1518,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      false
     ],
@@ -1426,8 +1562,8 @@
      true
     ]
    ],
-   "seconds": 5.406,
-   "source_sha256": "e0439077c0ee2a6f61ded190c6bcbcab79564d0538a940d765bb6b6683ecfda4"
+   "seconds": 5.078,
+   "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
   },
   {
    "by_assertion": true,
@@ -1445,7 +1581,7 @@
     "VELDO-0078 other-process"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "3fce1f2d442b66d76807c8fa179d6ba5cf990ac802a9a3ba80af621fb8469818",
+   "mutant_sha256": "ae8e63da440878cd74629f86baec926009e1eea9c317a2d4d4eabcc3419faebb",
    "name": "backlog-done-on-output",
    "named_row_red": true,
    "named_rows": [
@@ -1490,6 +1626,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -1526,8 +1670,8 @@
      true
     ]
    ],
-   "seconds": 5.145,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.109,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -1543,7 +1687,7 @@
     "VELDO-0078 done/accepted-outcomes"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "d7eef8e119f5c99fa5dab56dd6422aff54c4019c3f0dc83c638796f624a10a81",
+   "mutant_sha256": "2fa69222856d5daf827b3d85686efdf674a8e01fd35610ef6b44450b3bdcd5e0",
    "name": "incomplete-landing-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1588,6 +1732,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -1624,8 +1776,8 @@
      true
     ]
    ],
-   "seconds": 5.222,
-   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
+   "seconds": 5.058,
+   "source_sha256": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7"
   },
   {
    "by_assertion": true,
@@ -1643,7 +1795,7 @@
     "VELDO-0078 done/one-completion-reader"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "5a71962506c7073ebd8440ac1658ab91fcdfaed8fa0b4a14b033ed7d9f6e8728",
+   "mutant_sha256": "abdbc3b3ec17c231303b1a90bef44a04ae98f4c43a207be01ab36826a1a2b5a4",
    "name": "backlog-done-own-landing-reader",
    "named_row_red": true,
    "named_rows": [
@@ -1688,6 +1840,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -1724,8 +1884,8 @@
      true
     ]
    ],
-   "seconds": 5.329,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.114,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -1737,7 +1897,7 @@
     "VELDO-0078 done/closed-unit"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "6d5e0122aa4c36938dceca76f9d61b5d86b67bd491103ae441e75b65162c3870",
+   "mutant_sha256": "d29ad98517c342b7bc3132fac680cd481c6170590fb853af509392df3c24f953",
    "name": "backlog-closed-unit-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1782,6 +1942,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -1818,8 +1986,8 @@
      true
     ]
    ],
-   "seconds": 5.494,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.098,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -1831,7 +1999,7 @@
     "VELDO-0078 done/closed-unit"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "ba6ed9c81dc79375d6c67794095460f43161d9a2465987ddfa49c08d67c5d544",
+   "mutant_sha256": "5817edd821f5e35e0c36d0fa10dc7778a1d1fe0efc61b34942d92bd76465cc55",
    "name": "backlog-closed-unit-not-counted",
    "named_row_red": true,
    "named_rows": [
@@ -1876,6 +2044,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -1912,8 +2088,8 @@
      true
     ]
    ],
-   "seconds": 5.19,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.103,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -1925,7 +2101,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "87b2c4639d2210d8f23e11d41e57686a83115ff0d4bcaa47824622ad4b817781",
+   "mutant_sha256": "00f3a46d299f217dbfbb18e26d68bf585bf15c55c2b9c6c55fe31d985ad280cf",
    "name": "backlog-resume-brief-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -1970,6 +2146,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      false
     ],
@@ -2006,8 +2190,8 @@
      true
     ]
    ],
-   "seconds": 5.147,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.152,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   {
    "by_assertion": true,
@@ -2021,7 +2205,7 @@
     "VELDO-0078 done/accepted-outcomes"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "84c4c8701796f45dfa900f063fdfd8871242179876703089ae832e7f638ff725",
+   "mutant_sha256": "7572f4b432b3c79120295e9b12d49c90bbd835e7cebcb5c593902510a6e43ec4",
    "name": "backlog-alternative-brief-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -2066,6 +2250,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -2102,13 +2294,835 @@
      true
     ]
    ],
-   "seconds": 5.455,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.124,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: ticket/sibling-changes: the subscription call and the landing are accepted after the append; and after the sibling's prioritization; and after the sibling's disposal",
+    "VELDO-0078 detail: ticket/own-changes: a change to a sibling's entry alone leaves the tickets current; the restored record is current again"
+   ],
+   "diff": "proof/VELDO-0078/backlog-ticket-whole-record.diff",
+   "failed_rows": [
+    "VELDO-0078 ticket/sibling-changes",
+    "VELDO-0078 ticket/own-changes"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "9f94b268f8a5e81bbb6d92160d2bc5b3fe2efef388bf058a8ba0c913dd833059",
+   "name": "backlog-ticket-whole-record",
+   "named_row_red": true,
+   "named_rows": [
+    "ticket/sibling-changes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     false
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.159,
+   "source_sha256": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: ticket/sibling-changes: the subscription call and the landing are accepted after the append; and after the sibling's prioritization; and after the sibling's disposal",
+    "VELDO-0078 detail: ticket/own-changes: a change to a sibling's entry alone leaves the tickets current; the restored record is current again"
+   ],
+   "diff": "proof/VELDO-0078/backlog-ticket-binds-sibling-entries.diff",
+   "failed_rows": [
+    "VELDO-0078 ticket/sibling-changes",
+    "VELDO-0078 ticket/own-changes"
+   ],
+   "module": ".veldo/control_backlog_priority.py",
+   "mutant_sha256": "17463694e7294e5ecd3f52c27fed15f4fd8d17d8df1a61f0aa71e5f0423b2b46",
+   "name": "backlog-ticket-binds-sibling-entries",
+   "named_row_red": true,
+   "named_rows": [
+    "ticket/sibling-changes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     false
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.018,
+   "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: ticket/sibling-changes: and after the sibling's prioritization; and after the sibling's disposal",
+    "VELDO-0078 detail: ticket/own-changes: a change to a sibling's entry alone leaves the tickets current; the restored record is current again"
+   ],
+   "diff": "proof/VELDO-0078/backlog-ticket-binds-sibling-priorities.diff",
+   "failed_rows": [
+    "VELDO-0078 ticket/sibling-changes",
+    "VELDO-0078 ticket/own-changes"
+   ],
+   "module": ".veldo/control_backlog_priority.py",
+   "mutant_sha256": "c17602a7a998df92b195fa3ec8e8c3cf9f4865f0779d10a7ff5409b2d7aaf795",
+   "name": "backlog-ticket-binds-sibling-priorities",
+   "named_row_red": true,
+   "named_rows": [
+    "ticket/sibling-changes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     false
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.122,
+   "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: ticket/own-changes: a change to the unit's own decomposition entry is stale by name"
+   ],
+   "diff": "proof/VELDO-0078/backlog-ticket-own-entry-unbound.diff",
+   "failed_rows": [
+    "VELDO-0078 ticket/own-changes"
+   ],
+   "module": ".veldo/control_backlog_priority.py",
+   "mutant_sha256": "958ebeeb611452560d3aa670ce0d8466c7b0e0a72e3bfe67634ab2354c2dd1c3",
+   "name": "backlog-ticket-own-entry-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "ticket/own-changes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.186,
+   "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: ticket/own-changes: a change to the priority record that prioritized it is stale by name"
+   ],
+   "diff": "proof/VELDO-0078/backlog-ticket-own-priority-unbound.diff",
+   "failed_rows": [
+    "VELDO-0078 ticket/own-changes"
+   ],
+   "module": ".veldo/control_backlog_priority.py",
+   "mutant_sha256": "02412bf2dece1f4675e16a4dc0947ac8bd22e2c38de02f836ed4d25251e30e88",
+   "name": "backlog-ticket-own-priority-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "ticket/own-changes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.145,
+   "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: ticket/own-changes: a change to the item's scope is stale by name"
+   ],
+   "diff": "proof/VELDO-0078/backlog-ticket-scope-unbound.diff",
+   "failed_rows": [
+    "VELDO-0078 ticket/own-changes"
+   ],
+   "module": ".veldo/control_backlog_priority.py",
+   "mutant_sha256": "5f55a996fa1d58a140591375dcb98e215bee40caba6d898087e3fb7c10bee9ee",
+   "name": "backlog-ticket-scope-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "ticket/own-changes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.278,
+   "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: ticket/own-changes: a field the classification does not name is bound"
+   ],
+   "diff": "proof/VELDO-0078/backlog-ticket-unclassified-unbound.diff",
+   "failed_rows": [
+    "VELDO-0078 ticket/own-changes"
+   ],
+   "module": ".veldo/control_backlog_priority.py",
+   "mutant_sha256": "548bdfd4c26340606d8c9d703fb579819c119ddb3b5662ab8e1298a1d02f51db",
+   "name": "backlog-ticket-unclassified-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "ticket/own-changes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.15,
+   "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: priority/gate-question: an entity contract with a unit state the classification does not name is named"
+   ],
+   "diff": "proof/VELDO-0078/backlog-unit-drift-open.diff",
+   "failed_rows": [
+    "VELDO-0078 priority/gate-question"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "7b39bc8d1fc01a587eac7e02a5f5e3c91fc8b893e43a8bd59234fd78e811200d",
+   "name": "backlog-unit-drift-open",
+   "named_row_red": true,
+   "named_rows": [
+    "priority/gate-question"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     false
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.298,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   }
  ],
  "noop": {
   "control_backlog.py": {
-   "copy_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597",
+   "copy_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2150,6 +3164,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -2186,11 +3208,11 @@
      true
     ]
    ],
-   "seconds": 5.942,
-   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+   "seconds": 5.19,
+   "source_sha256": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
   },
   "control_backlog_priority.py": {
-   "copy_sha256": "e0439077c0ee2a6f61ded190c6bcbcab79564d0538a940d765bb6b6683ecfda4",
+   "copy_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2232,6 +3254,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -2268,11 +3298,11 @@
      true
     ]
    ],
-   "seconds": 5.748,
-   "source_sha256": "e0439077c0ee2a6f61ded190c6bcbcab79564d0538a940d765bb6b6683ecfda4"
+   "seconds": 5.171,
+   "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
   },
   "control_eligibility.py": {
-   "copy_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af",
+   "copy_sha256": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2314,6 +3344,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -2350,8 +3388,8 @@
      true
     ]
    ],
-   "seconds": 5.034,
-   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
+   "seconds": 5.166,
+   "source_sha256": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7"
   },
   "init_scaffold.py": {
    "copy_sha256": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf",
@@ -2396,6 +3434,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -2432,7 +3478,7 @@
      true
     ]
    ],
-   "seconds": 5.097,
+   "seconds": 5.181,
    "source_sha256": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf"
   },
   "tasks.py": {
@@ -2478,6 +3524,14 @@
      true
     ],
     [
+     "VELDO-0078 ticket/sibling-changes",
+     true
+    ],
+    [
+     "VELDO-0078 ticket/own-changes",
+     true
+    ],
+    [
      "VELDO-0078 blocked/resume-binding",
      true
     ],
@@ -2514,13 +3568,13 @@
      true
     ]
    ],
-   "seconds": 5.143,
+   "seconds": 5.27,
    "source_sha256": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 78",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 156.133,
+ "serial_seconds": 181.168,
  "spec_id": "VELDO-0078",
  "suite": "scripts/suites/73_veldo_0078_backlog.py"
 }

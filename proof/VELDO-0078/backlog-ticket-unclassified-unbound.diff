@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog_priority.py
++++ b/.veldo/control_backlog_priority.py
+@@ -92 +92 @@
+-            'unclassified': {k: v for k, v in item.items() if k not in ITEM_FIELDS},
++            'unclassified': {},  # defect: a field nobody classified is silently current

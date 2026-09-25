@@ -1,5 +1,5 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -170 +170 @@
+@@ -171 +171 @@
 -if classification_problems():
 +if False:  # defect: a question whose states drift from the entity contract loads

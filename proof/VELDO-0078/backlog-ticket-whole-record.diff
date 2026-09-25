@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -488 +488,2 @@
+-        return SN.digest(SN.canonical(BL.unit_binding(unit, data)))
++        return SN.digest(SN.canonical({k: v for k, v in data.items() if k != 'state'} if isinstance(data, dict)
++                                      else data))  # defect: the whole record minus its state
