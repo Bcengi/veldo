@@ -1043,7 +1043,7 @@ work:
     spec: VELDO-0144
     title: MCP servers defined once as versioned catalog records, with credentials only in the host OS keystore
     feature_refs: [F7]
-    depends_on: [VELDO-0028, VELDO-0039, VELDO-0047, VELDO-0060, VELDO-0061, VELDO-0130]
+    depends_on: [VELDO-0039, VELDO-0047, VELDO-0060, VELDO-0061, VELDO-0130]
     order: 15144
     release: 1
     stage: 5
