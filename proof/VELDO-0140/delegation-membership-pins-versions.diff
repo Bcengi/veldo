@@ -1,0 +1,5 @@
+--- a/.veldo/control_membership.py
++++ b/.veldo/control_membership.py
+@@ -492 +492 @@
+-    if not standing(d) and assertion.get("request_version") != d.get("request_version"):
++    if assertion.get("request_version") != d.get("request_version"):  # defect: every delegation pins

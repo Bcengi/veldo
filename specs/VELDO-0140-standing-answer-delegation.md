@@ -126,3 +126,10 @@ readiness.
 2026-09-25: the builder added control_membership (VELDO-0025's delegated-use predicate and grant, which
 compared the versions too), control_factory_setup (VELDO-0139's grant, now standing) and control_service
 (the one route that hands the owner's delegation command to the running channel) to the footprint.
+
+2026-09-25: built on build-veldo-0140. A delegation is standing (no request or presentation version) or
+pinned (both); the signer binds each answer to the current request version and presentation; setup
+grants the standing one; veldo channel delegate is the owner-only renewal, applied by the running
+service; the service tells the owner once why an answer of his was not signed and once before expiry.
+Suite 74_veldo_0140_standing_delegation, finding 140 (12 mutations), proof in proof/VELDO-0140/.
+Status stays ready.

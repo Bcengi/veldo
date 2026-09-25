@@ -1,0 +1,6 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -298,2 +298 @@
+-            if (params.get('principal') != signer or (record.get('owner') is not None and signer != record['owner'])
+-                    or chat is None or ing.presenter.P.enrollment_problems(chat['kind'], chat['data'], signer)):
++            if False:  # defect: a member who is not the owner grants or renews

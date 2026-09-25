@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -459 +459 @@
+-        for row in acquired:
++        for row in acquired[:0]:  # defect: an unsigned answer is refused silently

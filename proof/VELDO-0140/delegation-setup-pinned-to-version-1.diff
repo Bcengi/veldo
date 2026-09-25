@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -405 +405 @@
+-                                       'authority_scope': ['*'], 'request_version': None, 'presentation_version': None,
++                                       'authority_scope': ['*'], 'request_version': 1, 'presentation_version': 1,  # defect: pinned again
