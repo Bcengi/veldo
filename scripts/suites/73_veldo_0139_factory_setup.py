@@ -23,6 +23,7 @@ counted here. No real key or token file is read; no private key byte, signature 
 
 def _v139_suite():
     import contextlib
+    import gc
     import hashlib
     import importlib.util
     import io
@@ -504,71 +505,6 @@ def _v139_suite():
             refused('owner-key', 'invalid_input:owner_key:unreadable', state=root('key'), **{'--owner-key': str(token_file)})
             refused('service-name', 'invalid_input:owner:name', state=root('name'), **{'--owner': 'authority'})
 
-        # Filed 4: an existing host trust directory is this account's own 0700 directory, or refused by name.
-        with section(HD):
-            loose = base / 'xdg-loose' / 'veldo'
-            loose.mkdir(parents=True)
-            os.chmod(str(loose), 0o755)
-            refused('trust-directory-mode', 'invalid_input:host_trust_directory:mode', state=root('hd-mode'),
-                    trust_path=loose / 'host_trust.json', row=HD)
-            refused('trust-directory-owner', 'invalid_input:host_trust_directory:owner', state=root('hd-owner'),
-                    trust_path=Path('/') / ('v139-absent-%s.json' % os.urandom(4).hex()), row=HD)
-            real_dir = base / 'xdg-real'
-            real_dir.mkdir(mode=0o700)
-            (base / 'xdg-link').mkdir(mode=0o700)
-            (base / 'xdg-link' / 'veldo').symlink_to(real_dir)
-            refused('trust-directory-symlink', 'invalid_input:host_trust_directory:symlink', state=root('hd-link'),
-                    trust_path=base / 'xdg-link' / 'veldo' / 'host_trust.json', row=HD)
-
-        # Filed 2 and 3: the store is 0600, and a failed store step leaves no connection open.
-        with section(SP):
-            files = [store] + [Path(str(store) + end) for end in ('-wal', '-shm') if Path(str(store) + end).exists()]
-            check(SP, 'the store and its WAL and shared-memory files are 0600 files of this account [%s]'
-                  % [(p.name, mode_of(p)) for p in files], all(mode_of(p) == ('0o600', os.getuid()) for p in files))
-            real_organ = F.organ
-
-            def faulty(name):
-                module = real_organ(name)
-                if name == 'control_claim':
-                    inner = module.CM
-
-                    class Faulty:
-                        def __getattr__(self, attr):
-                            return getattr(inner, attr)
-
-                        def attach(self, *args, **kwargs):
-                            raise RuntimeError('v139 injected fault after the store is opened')
-                    module.CM = Faulty()
-                return module
-            broken = base / 'root-store-fault'
-            broken.mkdir(mode=0o700)
-            os.chmod(str(broken), 0o700)
-            held, code, open_fds = None, None, None
-            F.organ = faulty
-            try:
-                F.setup(str(broken), owner, str(owner_key), str(clone('w-store-fault')), owner_user['id'], str(token_file),
-                        host_trust=str(base / 'xdg-store-fault' / 'veldo' / 'host_trust.json'),
-                        install_root=str(base / 'install'), unit_dir=str(base / 'units'), profile=profile, writable=[],
-                        runner=manager, origin=url)
-                code = 'set_up'
-            except F.Refused as exc:
-                # The refusal is held while the process's descriptors are read: a connection the setup
-                # left open is still reachable from it.
-                held, code = exc, exc.code
-                target = os.path.realpath(str(broken / 'authority' / 'control.sqlite3'))
-                open_fds = []
-                for fd in os.listdir('/proc/self/fd'):
-                    with contextlib.suppress(OSError):
-                        if os.path.realpath(os.readlink('/proc/self/fd/' + fd)).startswith(target):
-                            open_fds.append(fd)
-            finally:
-                F.organ = real_organ
-            check(SP, 'a setup whose store step fails after the store is opened is refused by name [%s]' % code,
-                  code == 'setup_incomplete:store:RuntimeError')
-            check(SP, 'while that refusal is held, no connection to its store is open [%s]' % open_fds,
-                  held is not None and open_fds == [])
-            held = None
-
         # AC1 (declared falsifier): a second setup over the state root of the first never touches its store.
         with section(ES):
             kept = store.read_bytes()
@@ -753,6 +689,72 @@ def _v139_suite():
                                  CEN.git_common_dir(str(workspace)))
             check(TK, 'no copy of the token in the state root, the store, the install root, the unit, the host trust or '
                   'the workspace [%s]' % everywhere, everywhere == [])
+
+        # Filed 4: an existing host trust directory is this account's own 0700 directory, or refused by name.
+        with section(HD):
+            loose = base / 'xdg-loose' / 'veldo'
+            loose.mkdir(parents=True)
+            os.chmod(str(loose), 0o755)
+            refused('trust-directory-mode', 'invalid_input:host_trust_directory:mode', state=root('hd-mode'),
+                    trust_path=loose / 'host_trust.json', row=HD)
+            refused('trust-directory-owner', 'invalid_input:host_trust_directory:owner', state=root('hd-owner'),
+                    trust_path=Path('/') / ('v139-absent-%s.json' % os.urandom(4).hex()), row=HD)
+            real_dir = base / 'xdg-real'
+            real_dir.mkdir(mode=0o700)
+            (base / 'xdg-link').mkdir(mode=0o700)
+            (base / 'xdg-link' / 'veldo').symlink_to(real_dir)
+            refused('trust-directory-symlink', 'invalid_input:host_trust_directory:symlink', state=root('hd-link'),
+                    trust_path=base / 'xdg-link' / 'veldo' / 'host_trust.json', row=HD)
+
+        # Filed 2 and 3: the store is 0600, and a failed store step leaves no connection open.
+        with section(SP):
+            files = [store] + [Path(str(store) + end) for end in ('-wal', '-shm') if Path(str(store) + end).exists()]
+            check(SP, 'the store and its WAL and shared-memory files are 0600 files of this account [%s]'
+                  % [(p.name, mode_of(p)) for p in files], all(mode_of(p) == ('0o600', os.getuid()) for p in files))
+            real_organ = F.organ
+
+            def faulty(name):
+                module = real_organ(name)
+                if name == 'control_claim':
+                    inner = module.CM
+
+                    class Faulty:
+                        def __getattr__(self, attr):
+                            return getattr(inner, attr)
+
+                        def attach(self, *args, **kwargs):
+                            raise RuntimeError('v139 injected fault after the store is opened')
+                    module.CM = Faulty()
+                return module
+            broken = base / 'root-store-fault'
+            broken.mkdir(mode=0o700)
+            os.chmod(str(broken), 0o700)
+            held, code, open_fds = None, None, None
+            F.organ = faulty
+            try:
+                F.setup(str(broken), owner, str(owner_key), str(clone('w-store-fault')), owner_user['id'], str(token_file),
+                        host_trust=str(base / 'xdg-store-fault' / 'veldo' / 'host_trust.json'),
+                        install_root=str(base / 'install'), unit_dir=str(base / 'units'), profile=profile, writable=[],
+                        runner=manager, origin=url)
+                code = 'set_up'
+            except F.Refused as exc:
+                # The refusal is held while the process's descriptors are read: a connection the setup
+                # left open is still reachable from it.
+                held, code = exc, exc.code
+                target = os.path.realpath(str(broken / 'authority' / 'control.sqlite3'))
+                open_fds = []
+                for fd in os.listdir('/proc/self/fd'):
+                    with contextlib.suppress(OSError):
+                        if os.path.realpath(os.readlink('/proc/self/fd/' + fd)).startswith(target):
+                            open_fds.append(fd)
+            finally:
+                F.organ = real_organ
+            check(SP, 'a setup whose store step fails after the store is opened is refused by name [%s]' % code,
+                  code == 'setup_incomplete:store:RuntimeError')
+            check(SP, 'while that refusal is held, no connection to its store is open [%s]' % open_fds,
+                  held is not None and open_fds == [])
+            held = None
+            gc.collect()
 
         # Filed 1: the documented rollback names every file setup writes, and a second setup then succeeds.
         with section(RB):
