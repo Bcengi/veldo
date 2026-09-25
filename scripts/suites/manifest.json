@@ -905,6 +905,15 @@
    ],
    "regions": "Andon stops of execution units raised by any authenticated worker or service at every enabled build, review and coordination stop point with reason, interrupted station and resolving-authority predicate; each stop's current versioned presentation delivered to the owner's Telegram chat through the activated VELDO-0073 edge, one notice per request version and presentation; resumption of a clean decision stop only on the designated authority's current VELDO-0068 settlement with a fresh station contract; unknown-effect stops never resumed on an answer",
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, journal and answer signatures, the actual protected signer process, the production ingress built by control_channel_ingress.open_ingress from 0600 host configuration files and activated by the owner's signed VELDO-0073 commands, the VELDO-0068 settlement service and the authenticated API edge, a real Git repository for the host trust check, and a loopback Bot API. A socket guard replaces socket.create_connection for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Writes only temporary fixtures."
+  },
+  {
+   "name": "73_veldo_0078_backlog",
+   "file": "73_veldo_0078_backlog.py",
+   "requires": [
+    "73_veldo_0078_backlog"
+   ],
+   "regions": "Backlog lifecycle and priority-controlled execution: backlog items taken from RAW features of an accepted objective and walked through prepared, awaiting grooming, admitted, prioritized, active, blocked and done, rejected, returned or canceled; intake-only, prepared, admitted-without-priority and prioritized work driven through the frontier's offers, the claim receiver and the task source's direct claims over the file ledger and the authority, with only prioritized work claimed and the store inspected; admission and priority only from the project owner's settled answer to the current decomposition revision; the first claim activating the item, an appended unit needing fresh prioritization while approved units continue; a blocked phase resumed only on the owner's settled resolution of that block; DONE only from complete landing receipts or the owner's authorized alternative outcome, never from a declared output, a canceled attempt or a missing or incomplete receipt",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, claim, journal and API signatures, the VELDO-0126 intake over an API edge request, the VELDO-0076 project service, the VELDO-0077 objective service, the VELDO-0064 inbox, VELDO-0065 presenter over a loopback Bot API, VELDO-0068 settlement through API answers, the VELDO-0031 claim receiver, the VELDO-0052 Gate and the frontier over spec files, the task source over a task set and the file ledger, completion receipts in the VELDO-0057 shape judged by the completion reader, and a reader in another process. Writes only temporary fixtures."
   }
  ]
 }
