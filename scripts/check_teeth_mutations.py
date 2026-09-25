@@ -5351,6 +5351,80 @@ def cases():
           'observability/named-refusals',
           also=[("accepted_versions=dict(versions or {}), outcome=outcome,",
                  "accepted_versions=dict(versions or {}), extra=dict(extra), outcome=outcome,")])
+
+    # VELDO-0128: each criterion's declared falsifier first, then the threat model's other shapes.
+    def report(name, module, old, new, rows, also=()):
+        add(128, name, '72_veldo_0128_reports.py', module, old, new, rows, also)
+
+    # AC1 (declared falsifier): the completion event handler is omitted.
+    report('report-completion-handler-omitted', 'control_telegram_report.py',
+           "    ('completion', None, '_completions'),\n", '', ['registry/delivery'])
+    # AC2 (declared falsifier): a build-only event is reported complete.
+    report('report-complete-from-build-only', 'control_telegram_report.py',
+           "        found = []\n        for event in shipped:\n",
+           "        found = []\n"
+           "        index = {r[0]: r for r in rows}\n"
+           "        for (seq, eid), data in list(receipts.items()):  # defect: a build-only receipt reports complete\n"
+           "            if data.get('fact') == 'attempt_finished':\n"
+           "                shipped = list(shipped) + [{'id': 'build-only', 'unit': data['subject']['id'], 'dispatch_id': None,\n"
+           "                                            'journal_seq': seq, 'receipt': eid, 'commit': None,\n"
+           "                                            'command_id': index[seq][1], 'record_digest': index[seq][2]}]\n"
+           "        for event in shipped:\n", ['content/completed'])
+    # AC3 (declared falsifier): a refused send is recorded as delivered.
+    report('report-refused-marked-delivered', 'control_telegram_report.py',
+           "        data.update(outcome='refused', refusal=refusal)\n",
+           "        data.update(outcome='sent', refusal=None)  # defect: a refused send is recorded as delivered\n",
+           ['send/refusal-recorded'])
+    report('report-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_telegram_report.py",\n', '',
+           ['install/assets'])
+    # AC1: a report for a record before the explicit starting sequence.
+    report('report-before-since', 'control_telegram_report.py',
+           "            if seq > self.since:\n", "            if seq >= 0:  # defect: the starting sequence is ignored\n",
+           ['registry/committed-sources'])
+    # AC1: the source record's entity digest is not kept, so a report does not join its committed record.
+    report('report-source-uncorrelated', 'control_telegram_report.py',
+           "                  'entity_kind': entry.get('kind'), 'entity_digest': entry.get('digest')}\n",
+           "                  'entity_kind': entry.get('kind'), 'entity_digest': None}  # defect: uncorrelated\n",
+           ['registry/committed-sources'])
+    # AC2: running is rendered from the dispatch's current record instead of the committed one.
+    report('report-running-from-current-state', 'control_telegram_report.py',
+           "        data, before = self._data(entry), self._data(prior)\n        status = data.get('state')\n",
+           "        data, before = (self._entity(eid) or {}).get('data') or {}, self._data(prior)  # defect: current, not committed\n"
+           "        status = data.get('state')\n", ['content/running'])
+    # AC2: a pending decision is not linked to its current presentation.
+    report('report-presentation-unlinked', 'control_telegram_report.py',
+           "            reply_to, nxt = self._presentation(source.get('request'))\n",
+           "            reply_to, nxt = None, 'Decide in the inbox.'  # defect: no link to the current presentation\n",
+           ['content/awaiting-decision'])
+    # AC2: a gate rejection is reported as a pass.
+    report('report-gate-rejected-as-passed', 'control_telegram_report.py',
+           "('VERIFYING', 'FAILED'): ('gate', 'rejected'),", "('VERIFYING', 'FAILED'): ('gate', 'passed'),",
+           ['content/gate-rejected'])
+    # AC2: an unknown dispatch outcome reads as running.
+    report('report-unknown-as-running', 'control_telegram_report.py',
+           "        status = data.get('state')\n        if status not in PROGRESS_STATES",
+           "        status = 'running' if data.get('state') == 'unknown' else data.get('state')  # defect\n"
+           "        if status not in PROGRESS_STATES", ['content/unknown-explicit'])
+    # Threat model: the andon's own request is reported again as a waiting decision (a second notice).
+    report('report-andon-request-reported', 'control_telegram_report.py',
+           "                or data.get('request_version') == before.get('request_version') or self._stop_request(eid, state)):\n",
+           "                or data.get('request_version') == before.get('request_version')):  # defect: andon requests too\n",
+           ['stop/no-second-notice'])
+    # AC3: a send that skips the activation gate reaches a substituted chat.
+    report('report-gate-bypassed', 'control_telegram_report.py',
+           "            sent = self.edge.send(chat, text, reply_to)\n",
+           "            sent = type(self.edge)(self.P, self.edge.base_url, self.edge._token,\n"
+           "                                   activation=None).send(chat, text, reply_to)  # defect: no activation gate\n",
+           ['recipient/owner-chat-only', 'recipient/substitution-refused'])
+    # AC3: a refused send loses its source event.
+    report('report-refusal-drops-source', 'control_telegram_report.py',
+           "        data.update(outcome='refused', refusal=refusal)\n",
+           "        data.update(outcome='refused', refusal=refusal, source=None)  # defect: the source event is lost\n",
+           ['send/refusal-recorded'])
+    report('report-refusal-unclassed', 'control_telegram_report.py',
+           "                                      error_class=None if accepted else taxonomy(reason)))\n",
+           "                                      error_class=None))  # defect: refusals carry no error class\n",
+           ['observability/named-refusals'])
     return result
 
 

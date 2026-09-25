@@ -341,6 +341,7 @@ def _v128_checks(base):
         entities_before = others()
         owner_before = in_chat(chat)
         sends_before = sends()
+        gate_before = len(ing.gate.observations)
         results = attempt(lambda: reporter.run(), []) if reporter is not None else []
         records = attempt(lambda: reporter.records(), []) if reporter is not None else []
         mine = [r for r in records if r.get('owner') == 'owner']
@@ -348,6 +349,7 @@ def _v128_checks(base):
         for r in mine:
             by_event.setdefault(r.get('event'), []).append(r)
         delivered_ids = [mid for mid in in_chat(chat) if mid not in owner_before]
+        gated = [o for o in ing.gate.observations[gate_before:] if o.get('operation') == 'sendMessage']
         entities_after = others()
 
         def message(mid, which=chat):
@@ -549,9 +551,9 @@ def _v128_checks(base):
                   bool(mine) and enrolled == chat == (acts.current() or {}).get('enrolled_chat')
                   and all(r.get('enrolled_chat') == chat and r.get('chat_id') == chat for r in mine))
             check(RO, 'no other chat received anything', not in_chat(tech_chat) and not in_chat(stranger['id']))
-            gated = [o for o in ing.gate.observations if o.get('operation') == 'sendMessage' and o.get('outcome') == 'admitted']
-            check(RO, 'every send was admitted by the activation gate [%d of %d]' % (len(gated), len(mine)),
-                  bool(mine) and len(gated) >= len(mine))
+            check(RO, 'every report send was admitted by the activation gate, one admission each [%d of %d]'
+                  % (len(gated), len(mine)), bool(mine) and len(gated) == len(mine)
+                  and all(o.get('outcome') == 'admitted' for o in gated))
 
         # AC3: a reporter configured for another person's chat is refused at the edge; nothing is sent there.
         with section(RS):
@@ -560,6 +562,7 @@ def _v128_checks(base):
             tech = attempt(lambda: TR.Reporter(ing, owner='techlead', project='project-a', since=since_tech)) \
                 if TR is not None else None
             tech_before = others()
+            tech_gate_before = len(ing.gate.observations)
             tech_results = attempt(lambda: tech.run(), []) if tech is not None else []
             tech_records = [r for r in (attempt(lambda: tech.records(), []) if tech is not None else [])
                             if r.get('owner') == 'techlead']
@@ -567,7 +570,10 @@ def _v128_checks(base):
             check(RS, 'the substituted chat is refused by name at the gate [%s]' % [x.get('reason') for x in tech_results],
                   t.get('outcome') == 'refused' and t.get('refusal') == 'chat_not_enrolled'
                   and t.get('enrolled_chat') == tech_chat and t.get('chat_id') is None and t.get('message_id') is None)
-            check(RS, 'nothing reached that chat or any other', not in_chat(tech_chat) and before_tech < head())
+            tech_gate = [o for o in ing.gate.observations[tech_gate_before:] if o.get('operation') == 'sendMessage']
+            check(RS, 'nothing reached that chat, and the gate refused the one send by name',
+                  not in_chat(tech_chat) and before_tech < head()
+                  and [(o.get('outcome'), o.get('reason')) for o in tech_gate] == [('refused', 'chat_not_enrolled')])
             check(RS, 'the refusal is visibly unsent and the source event is kept',
                   bool(t) and t.get('report_id') in [x.get('report_id') for x in (attempt(lambda: tech.unsent(), []) or [])]
                   and kept(t) and tech_before == others())
