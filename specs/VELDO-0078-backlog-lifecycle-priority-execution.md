@@ -29,12 +29,16 @@ footprint:
   - "engine/.veldo/control_backlog*.py"
   - ".veldo/control_backlog*.py"
   - "packs/*/.veldo/control_backlog*.py"
+  - "engine/.veldo/control_eligibility*.py"
+  - ".veldo/control_eligibility*.py"
+  - "packs/*/.veldo/control_eligibility*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0078_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0078-backlog-lifecycle-priority-execution.md"
   - "specs/index.md"
   - "proof/VELDO-0078/*"
@@ -103,6 +107,23 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: backlog work moves proposed or prepared, awaiting grooming, admitted, prioritized,
+  active, optionally blocked, then done or canceled. Only work the owner has admitted and prioritized
+  can create executable engineering units, on the ordinary path and at every direct claim entry. The
+  first claim activates the item and follows its approved decomposition only; a unit appended later
+  needs fresh prioritization while the approved units may continue. A clean blocked phase resumes only
+  after its binding is resolved by the owner's settled decision, and DONE requires accepted unit
+  outcomes (complete receipts or an authorized alternative outcome).
+- Threat model: an executable unit from intake-only, prepared, or admitted-but-unprioritized work,
+  through any claim path; an appended unit made executable without renewed prioritization; a blocked
+  phase resumed without its binding resolved; DONE from an output file's existence, a canceled attempt
+  or a missing required receipt. The owner's account, the store and the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); trusted
+  automatic defect admission and standing or emergency policy paths (later releases); recovery and
+  restart (Release 2); forged rows in our own store and files planted in the installed directory.
+
 ## Notes
 
 The regular path is proposed/prepared, awaiting grooming, admitted, prioritized, active,
@@ -129,3 +150,38 @@ state-pair qualification moved to Release 3 with advanced backlog states; AC2 cr
 races moved to Release 2. Priority, approved decomposition, clean blocked resumption and
 evidence-based DONE remain. The criteria, declared evidence universe, Context and Notes above
 now carry only the retained function. No specification status or historical proof was changed.
+
+2026-09-25, build: the backlog service `.veldo/control_backlog.py` (take, prepare, grooming, the owner's
+settled admission and priority of the current decomposition revision, append, block and resume on the
+owner's settled resolution, the authorized alternative outcome, evidence-based DONE and cancel), the
+executable-work question asked by `frontier.claimable` and `tasks.claim_task`, and `tasks.concluded` read
+from accepted unit outcomes whenever a Gate is wired. Every changed path is inside the footprint. Suite
+`scripts/suites/73_veldo_0078_backlog.py`, finding 78 (11 mutations) and the red record at 467d168 are in
+`proof/VELDO-0078/`. Status stays ready.
+
+2026-09-25, review 1 fixes: priority is a VELDO-0052 Gate predicate (`priority_current`, the backlog's
+executable question over the records the decision consumed, in the import-free
+`.veldo/control_backlog_priority.py` the Gate loads so it never runs the engine's parser outside its
+VELDO-0053 snapshot; the service re-exports it and refuses to load when its states drift from the entity
+contract) at every station, so selection, claim, direct execution and the VELDO-0132 cycle's assignment
+step refuse admitted but unprioritized work by one decision; the frontier's separate backlog question and
+the admission and prioritized-set block of `executable_problems` are removed (every real writer leaves
+PLANNED only by prioritization, so the state pair is the whole question). DONE reads the one completion
+reader (`Gate.landing`) and the backlog judges no receipt itself. A unit a VELDO-0133 close CANCELED is
+no outcome until the owner's settled `decision_disposition` answer counts it, which records the
+authorization without another transition. Resume and disposal bind the brief the owner was shown
+(`resume_brief`, `alternative_brief`). The footprint gains `control_eligibility*.py`. Rows
+`priority/gate-question`, `done/closed-unit` and `done/one-completion-reader` are new; finding 78 has 21
+mutations; the red record is at 8bb474c. Status stays ready.
+
+2026-09-25, review 2 fixes: a unit's ticket binds only what bears on that unit. The Gate compares a
+ticketed decision's backlog item by `control_backlog_priority.unit_binding` (the import-free module the
+Gate and the service share): the item's identity, project, objective, title, scope and work class, its
+admission, completion and cancellation, whether its state is executable, this unit's own decomposition
+entry and the priority record that prioritized it, and any field the module does not classify. A sibling
+appended, prioritized or disposed, and the item's history, applied requests, revision and digests, leave
+a running unit's build and review decisions current, so its subscription calls and its landing continue;
+a change to its own entry, its priority or the item's scope is `stale_input:backlog`. The unit side of the
+drift guard now requires the execution_unit classes to partition the entity contract's states exactly.
+Rows `ticket/sibling-changes` and `ticket/own-changes` are new and `priority/gate-question` gains the
+unit drift part; finding 78 has 29 mutations; the red record is at 8bc4517. Status stays ready.

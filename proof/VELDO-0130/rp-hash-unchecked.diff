@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -167 +167 @@
+-    if auth[:32] != hashlib.sha256(rp_id.encode('ascii')).digest():
++    if False:  # defect: the relying party is not bound

@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -407 +407 @@
+-            if headers.get('Sec-Fetch-Site') not in (None, 'same-origin'):
++            if False:  # defect: cross-site fetches write

@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -247 +247 @@
+-        return done.returncode == 0
++        return True  # defect: the signature is not checked

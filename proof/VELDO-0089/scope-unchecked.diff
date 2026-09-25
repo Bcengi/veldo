@@ -1,0 +1,6 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -389,2 +389 @@
+-        if (entry.get('principal_type') not in self.AC.BOUNDARIES['proposal_commit']
+-                or not self.membership.scope_covers(entry.get('scope'), [name])):
++        if entry.get('principal_type') not in self.AC.BOUNDARIES['proposal_commit']:  # defect: any scope

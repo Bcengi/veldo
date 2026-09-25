@@ -1,0 +1,140 @@
+{
+ "by_assertion": true,
+ "commit": "467d168545ceaf099bbd61a50280ad27fe79c28d",
+ "details": [
+  "VELDO-0078 detail: install/assets: .veldo/control_backlog.py installed by the scaffold; .veldo/control_backlog.py engine copy identical; .veldo/control_backlog.py laid by the installer",
+  "VELDO-0078 detail: priority/declared-set: the four kinds of work stand where they were driven, the prioritized one now active; only prioritized work is offered or claimed, at every entry; the prioritized item was prioritized by its owner before its first claim",
+  "VELDO-0078 detail: priority/missing-priority: the admitted item has its owner's admission and no priority; its units are admitted by record and still PLANNED; the Gate's selection accepts it, and the frontier still does not offer it; the direct task claim is refused for missing priority, and the ledger was never asked; the task claim through the authority is refused for missing priority; the claim receiver refuses it; the backlog names the reason for both units",
+  "VELDO-0078 detail: priority/store-inspection: the store holds executable units; the only claims are of prioritized units; intake-only work has no unit and prepared work no admission",
+  "VELDO-0078 detail: priority/owner-decision: an admission answer does not prioritize; another project_owner member's settled answer does not prioritize; an answer to another brief does not prioritize; prepared work is not prioritized; an applied admission is not applied again; the admitted item is unchanged",
+  "VELDO-0078 detail: lifecycle/foreign-sources: a feature is taken into the backlog once; policy-admitted work classes are not taken in this release; only a feature is taken; the intake-only item carries no admission and no priority",
+  "VELDO-0078 detail: activation/first-claim: the owner prioritized the approved decomposition; the first claim is granted and activates the item; the claim, the unit and the item agree on the owner; the other approved unit is ready and unclaimed; a second holder is refused",
+  "VELDO-0078 detail: activation/decomposition-growth: each append is a new decomposition revision of the active item; an appended unit is PLANNED, not executable; the claim receiver refuses the appended unit; the task claim refuses the appended unit for missing priority; an approved unit continues meanwhile; the earlier prioritization does not cover the appended units; an answer to an earlier revision is refused; the fresh prioritization of the current revision makes them executable; then they are claimed",
+  "VELDO-0078 detail: blocked/resume-binding: the block records the interrupted phase and its reason; every open unit is blocked at the Gate and at the claim; no settled answer does not resume; an answer about another subject does not resume; an answer bound to another block does not resume; the owner's refusal keeps it blocked; the owner's settled resolution resumes exactly that phase; its blockers are cleared and the work continues",
+  "VELDO-0078 detail: done/missing-outcome: the declared outputs exist and are reported; a path-only output is not DONE; the task with its product on disk is not concluded without an accepted outcome; a canceled attempt is not an outcome; a missing required receipt is not DONE; an incomplete landing receipt or one for another revision is not DONE; the one completion reader agrees; the item is still ACTIVE",
+  "VELDO-0078 detail: done/authorized-alternative: a disposal without a settled answer is refused; another member's settled answer does not authorize it; an outcome this release does not name is refused; the owner's settled answer authorizes the alternative outcome",
+  "VELDO-0078 detail: done/accepted-outcomes: complete receipts and the authorized alternative make it DONE; each unit's outcome is recorded by its receipt or its authorization; the task is concluded from its accepted outcome; DONE is terminal",
+  "VELDO-0078 detail: lifecycle/regular-path: the main item walked the regular path to DONE; a rejected item is REJECTED with its units canceled; a returned item goes back to PREPARED and is groomed again; only the project's owner cancels; the owner's cancel is terminal and cancels its units",
+  "VELDO-0078 detail: other-process: the other process read the store read-only; it sees the DONE item and the admitted one; it gets the same executable answers; it gets the same outcome answers",
+  "VELDO-0078 detail: observability: accepted and refused commands are counted; the pending work is exposed"
+ ],
+ "failed_rows": [
+  "VELDO-0078 install/assets",
+  "VELDO-0078 priority/declared-set",
+  "VELDO-0078 priority/missing-priority",
+  "VELDO-0078 priority/store-inspection",
+  "VELDO-0078 priority/owner-decision",
+  "VELDO-0078 lifecycle/foreign-sources",
+  "VELDO-0078 activation/first-claim",
+  "VELDO-0078 activation/decomposition-growth",
+  "VELDO-0078 blocked/resume-binding",
+  "VELDO-0078 done/missing-outcome",
+  "VELDO-0078 done/authorized-alternative",
+  "VELDO-0078 done/accepted-outcomes",
+  "VELDO-0078 lifecycle/regular-path",
+  "VELDO-0078 other-process",
+  "VELDO-0078 observability"
+ ],
+ "modules": {
+  ".veldo/control_backlog.py": {
+   "at_commit": null,
+   "now": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  },
+  ".veldo/control_claim.py": {
+   "at_commit": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf",
+   "now": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868",
+   "now": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  ".veldo/control_objective.py": {
+   "at_commit": "5b9f2122696ffed618407e54883f9c656a8ee24c9dd31652e35fb1092d244392",
+   "now": "5b9f2122696ffed618407e54883f9c656a8ee24c9dd31652e35fb1092d244392"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
+   "now": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
+  },
+  ".veldo/frontier.py": {
+   "at_commit": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc",
+   "now": "414c209d4b07e3baaa5177dc1048896c126a53db5264506b951c41ed89a54078"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "f3cc191133fd8f8ff2155d65b4f93925f8e499f96be681299007e8d1fb45aef3",
+   "now": "544cd7ef8ced141fbcbd9245b120c668ff8a565abebdbbf7d749ec241ffac8b3"
+  },
+  ".veldo/tasks.py": {
+   "at_commit": "0273cdbda18716a2211fe46afec636e9a86057941518659915327bc41fb730d3",
+   "now": "ca475ae1af0e5915b8b57eb6b3ba183f6b5ff738544c69cdf33cab7e67c4b20c"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0078 install/assets",
+   false
+  ],
+  [
+   "VELDO-0078 priority/declared-set",
+   false
+  ],
+  [
+   "VELDO-0078 priority/missing-priority",
+   false
+  ],
+  [
+   "VELDO-0078 priority/store-inspection",
+   false
+  ],
+  [
+   "VELDO-0078 priority/owner-decision",
+   false
+  ],
+  [
+   "VELDO-0078 lifecycle/foreign-sources",
+   false
+  ],
+  [
+   "VELDO-0078 activation/first-claim",
+   false
+  ],
+  [
+   "VELDO-0078 activation/decomposition-growth",
+   false
+  ],
+  [
+   "VELDO-0078 blocked/resume-binding",
+   false
+  ],
+  [
+   "VELDO-0078 done/missing-outcome",
+   false
+  ],
+  [
+   "VELDO-0078 done/authorized-alternative",
+   false
+  ],
+  [
+   "VELDO-0078 done/accepted-outcomes",
+   false
+  ],
+  [
+   "VELDO-0078 lifecycle/regular-path",
+   false
+  ],
+  [
+   "VELDO-0078 other-process",
+   false
+  ],
+  [
+   "VELDO-0078 observability",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 2.86,
+ "spec_id": "VELDO-0078",
+ "suite": "scripts/suites/73_veldo_0078_backlog.py",
+ "tree": "git archive 467d168545ceaf099bbd61a50280ad27fe79c28d, unchanged; the current suite file run against it"
+}

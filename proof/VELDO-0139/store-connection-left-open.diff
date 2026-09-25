@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -456 +456 @@
+-        if conn is not None:
++        if False:  # defect: the store connection is left open

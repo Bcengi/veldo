@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer_answers.py
++++ b/.veldo/control_signer_answers.py
+@@ -239 +239 @@
+-    if head.get('kind') != V.HEAD_KIND or (head.get('data') or {}).get('current') != a['presentation_id']:
++    if False:  # defect: an answer to a replaced presentation is signed

@@ -1,0 +1,4 @@
+--- a/.veldo/control_api_models.py
++++ b/.veldo/control_api_models.py
+@@ -117 +116,0 @@
+-    Action('worker_stop', None, None, None, None, 'VELDO-0041'),

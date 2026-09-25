@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -375 +375 @@
+-            observation['request'] = command['request'] if _is_str(command.get('request')) else None
++            pass  # defect: the amendment's request is not observed

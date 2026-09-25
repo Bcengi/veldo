@@ -23,9 +23,16 @@ winner.
 
 Delegated use (R38) is judged conjunctively: an active, current (not superseded, revoked or
 expired) delegation for that principal on that channel, permitting that assertion kind, covering
-the request's scope at the request's version, with the role, named-principal, actor-kind, quorum
-and independence predicates of the boundary applied through the authority contract. A cached
-delegation across its committed supersession is stale and refused by the version check.
+the request's scope, with the role, named-principal, actor-kind, quorum and independence
+predicates of the boundary applied through the authority contract. A cached delegation across its
+committed supersession is stale and refused by the version check.
+
+STANDING AND PINNED DELEGATIONS (VELDO-0140). A delegation either pins one request version and one
+presentation version (both integers, the VELDO-0067 form: it covers exactly that version of that
+presentation) or is STANDING (both None): it covers whatever request version and presentation the
+assertion answers, and the consumer that signs or accepts the assertion binds it to its exact
+request, presentation and evidence (control_signer_answers does, against the committed state). One
+pinned and one standing field is refused at grant.
 
 WHAT IT IS NOT. Key custody is W12, revocation delivery W11; no live channel, additional person or
 real key is enrolled by this module in this repository. Standard library only; the authority
@@ -188,6 +195,16 @@ def _t_revoke_membership(params, before, StoreRefused):
 DELEGATION_FIELDS = ("id", "principal", "channel", "assertion_kinds", "authority_scope", "request_version", "presentation_version", "expires_at", "edge_key_id")
 
 
+def pinned(d):
+    """True when a delegation pins one request version and one presentation version (VELDO-0067)."""
+    return all(type(d.get(f)) is int for f in ("request_version", "presentation_version"))
+
+
+def standing(d):
+    """True when a delegation is standing (VELDO-0140): it pins no request or presentation version."""
+    return all(f in d and d[f] is None for f in ("request_version", "presentation_version"))
+
+
 def _t_grant_delegation(params, before, StoreRefused):
     for f in DELEGATION_FIELDS:
         if f not in params:
@@ -195,6 +212,8 @@ def _t_grant_delegation(params, before, StoreRefused):
     if params["id"] in before or not isinstance(params["authority_scope"], list) or not params["authority_scope"] or not isinstance(params["assertion_kinds"], list) \
             or not _is_num(params["expires_at"]):
         raise StoreRefused("transition_refused", "grant_delegation: a new id, a non-empty authority_scope, assertion kinds and a numeric expiry")
+    if not pinned(params) and not standing(params):
+        raise StoreRefused("transition_refused", "grant_delegation: request and presentation version are both integers (pinned) or both None (standing)")
     data = {f: params[f] for f in DELEGATION_FIELDS if f != "id"}
     data.update(revoked_at=None, superseded_by=None, granted_by=params.get("granted_by"))
     return {params["id"]: {"kind": "delegation", "data": data}, VERSIONS_ENTITY: _bump(before, "delegation_version")}
@@ -450,7 +469,7 @@ def delegated_use_problems(state, envelope, assertion, requirement, now):
     """Why an assertion made under a delegation may NOT be used: the envelope's delegation version
     is not the store's current one (a delegation cached across its committed supersession is
     stale); the delegation does not resolve for the principal, is superseded, revoked or expired;
-    the channel, assertion kind, request version or scope is outside it; the principal is not an
+    the channel, assertion kind, scope or (a pinned delegation's) versions are outside it; the principal is not an
     active member; and the boundary's role, named-principal, actor-kind, quorum and independence
     predicates (through the authority contract) are not all met."""
     problems = []
@@ -470,9 +489,9 @@ def delegated_use_problems(state, envelope, assertion, requirement, now):
         problems.append("delegation_refused: channel %r is not the delegation's %r" % (assertion.get("channel"), d.get("channel")))
     if assertion.get("assertion_kind") not in (d.get("assertion_kinds") or []):
         problems.append("delegation_refused: assertion kind %r is not permitted by the delegation" % assertion.get("assertion_kind"))
-    if assertion.get("request_version") != d.get("request_version"):
+    if not standing(d) and assertion.get("request_version") != d.get("request_version"):
         problems.append("delegation_refused: request version %r is not the delegation's %r" % (assertion.get("request_version"), d.get("request_version")))
-    if assertion.get("presentation_version") != d.get("presentation_version"):
+    if not standing(d) and assertion.get("presentation_version") != d.get("presentation_version"):
         problems.append("delegation_refused: presentation version %r is not the delegation's %r: an assertion about another presentation" % (assertion.get("presentation_version"), d.get("presentation_version")))
     if assertion.get("principal", envelope.get("principal")) != envelope.get("principal"):
         problems.append("delegation_refused: the assertion names principal %r, the envelope %r" % (assertion.get("principal"), envelope.get("principal")))

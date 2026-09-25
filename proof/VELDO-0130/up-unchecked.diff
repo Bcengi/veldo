@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -170,2 +169,0 @@
+-    if not flags & USER_PRESENT:
+-        return ['user_not_present']

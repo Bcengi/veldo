@@ -1,0 +1,5 @@
+--- a/.veldo/control_event_projection.py
++++ b/.veldo/control_event_projection.py
+@@ -212 +212 @@
+-        through = min(upto, mark['watermark']) if mark else 0
++        through = upto  # defect: events past the stored watermark are listed

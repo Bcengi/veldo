@@ -1,0 +1,4 @@
+--- a/.veldo/control_client_api.py
++++ b/.veldo/control_client_api.py
+@@ -194 +193,0 @@
+-                    self.owed = None

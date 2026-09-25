@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -505 +505 @@
+-        if command.get('team_revision') != record['revision']:
++        if False:  # defect: any team revision

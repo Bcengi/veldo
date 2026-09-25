@@ -1,0 +1,6 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -745,2 +745 @@
+-            if stream.cursor == before or stream.cursor >= head:
+-                return
++            return  # defect: one page per stream

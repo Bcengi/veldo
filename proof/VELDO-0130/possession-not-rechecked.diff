@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_credentials.py
++++ b/.veldo/control_api_credentials.py
+@@ -313 +313 @@
+-            if unproven:
++            if False:  # defect: the possession proof is not checked at the host

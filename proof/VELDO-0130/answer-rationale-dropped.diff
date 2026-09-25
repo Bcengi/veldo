@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_assertion.py
++++ b/.veldo/control_api_assertion.py
+@@ -129 +129 @@
+-                    presentation_version=p['presentation_version'], choice=p['choice'], rationale=p['rationale'])
++                    presentation_version=p['presentation_version'], choice=p['choice'], rationale='')  # defect

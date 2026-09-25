@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -481 +481 @@
+-        problems = self._owner_problems(state, owner, project['name'], now)
++        problems = []  # defect: the owner who answered need not be the owner now

@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -568 +568 @@
+-        subject_digest = _digest({'team_id': team_id(name), 'team': team, 'problems': problems})
++        subject_digest = _digest({'team': team, 'problems': problems})  # defect: shared across projects

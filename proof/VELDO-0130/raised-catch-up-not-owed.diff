@@ -1,0 +1,6 @@
+--- a/.veldo/control_client_api.py
++++ b/.veldo/control_client_api.py
+@@ -196,2 +196 @@
+-            except Exception as exc:  # noqa: BLE001 - the catch-up stays owed; the caller's own call stands
+-                self._owe()
++            except Exception as exc:  # noqa: BLE001 - defect: a catch-up that raised is not owed

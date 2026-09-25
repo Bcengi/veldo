@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -830 +830 @@
+-                    why = 'revoked' if why in REVOKED else 'unauthenticated:' + why
++                    why = 'unauthenticated:' + why  # defect: a revocation the recheck saw is not named revoked

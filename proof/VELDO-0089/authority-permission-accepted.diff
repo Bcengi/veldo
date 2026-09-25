@@ -1,0 +1,8 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -197 +197 @@
+-                    if p in AUTHORITY_NAMES:
++                    if False:  # defect: a permission may name an authority
+@@ -199 +199 @@
+-                    elif p not in PROPOSAL_KINDS:
++                    elif p not in PROPOSAL_KINDS + tuple(AUTHORITY_NAMES):
