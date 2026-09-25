@@ -5117,6 +5117,16 @@ def cases():
           "            enrolled = self._enrolled_chat(resolving['principal'])\n",
           "            enrolled = self._enrolled_chat(resolving['principal']) or ('no-chat', 0, None)  # defect: the chat is not checked\n",
           'stop/designated-authority-deliverable')
+    # Fresh review of 75b: the raise pins the activation record's version, and the record's own owner is exempt
+    # from the bound-chat refusal while his chat is re-enrolled (the window the gate names stale_enrollment).
+    andon('activation-version-unpinned', 'control_andon.py',
+          "            expected[self._activation_id()] = (activation or {}).get('entity_version', 0)\n",
+          "            pass  # defect: the activation record's version is not pinned in the raise transaction\n",
+          'stop/designated-authority-deliverable')
+    andon('owner-reenrollment-refused', 'control_andon.py',
+          "                and activation.get('owner') != principal and activation.get('enrolled_chat') != chat)\n",
+          "                and activation.get('enrolled_chat') != chat)  # defect: the owner is not exempt while re-enrolled\n",
+          'stop/designated-authority-deliverable')
     andon('contract-at-stale-unit-version', 'control_andon.py',
           "'issued_at_unit_version': u['version'] + 1,",
           "'issued_at_unit_version': u['version'],  # defect: the contract names the stopped unit version\n                        ",
