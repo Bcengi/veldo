@@ -49,19 +49,28 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Every Claude Code run starts with every profile source off, so the account profile supplies
-      only the login and the same role behaves the same on every account. Set and completeness: Launch
-      the pinned executable (VELDO-0060 AC1) with the `setting-sources` option restricted to one
-      generated file passed through the `settings` option, the `strict-mcp-config` option with a
-      generated `mcp-config` file, the `disable-slash-commands` option when no skill is listed,
+      only the login and the same role behaves the same on every account. Set and completeness: Launch the
+      pinned executable (VELDO-0060 AC1) with the `setting-sources` option restricted to one generated
+      file passed through the `settings` option, the `strict-mcp-config` option with a generated
+      `mcp-config` file, the `disable-slash-commands` option when no skill is listed,
       `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, `CLAUDE_CODE_DISABLE_AUTO_MEMORY` and `disableAllHooks`; neither
-      bare mode nor safe mode is used. Plant settings, an instruction file, a skill, memory and a hook in
-      the account profile, and require none of them in the run, read from the init event's lists and the
-      debug log. Each switch that is an environment variable or internal setting is qualified on the
-      pinned version before use. Falsifier: Drop the `setting-sources` restriction so the account
-      profile's own settings load; the planted-profile row must fail.
+      bare mode nor safe mode is used. Plant settings, an MCP server, a skill, an instruction file, memory
+      and a hook in the account profile and the clone, each where only its own switch keeps it out, and
+      require none of them in the run, read from the init event's lists and the debug log, one row per
+      planted item. Each switch that is an environment variable or internal setting is qualified on the
+      pinned version before use. Falsifier: Six mutants, one per switch, each dropping that switch with
+      the others in place: drop the `setting-sources` restriction, and the planted-settings row must fail;
+      drop `strict-mcp-config`, and the planted-server row must fail; drop `disable-slash-commands`, and
+      the planted-skill row must fail; unset `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, and the
+      planted-instruction-file row must fail; unset `CLAUDE_CODE_DISABLE_AUTO_MEMORY`, and the
+      planted-memory row must fail; drop `disableAllHooks`, and the planted-hook row must fail.
     falsified_by: >
-      Drop the `setting-sources` restriction so the account profile's own settings load; the
-      planted-profile row must fail.
+      Six mutants, one per switch, each dropping that switch with the others in place: drop the
+      `setting-sources` restriction, and the planted-settings row must fail; drop `strict-mcp-config`, and
+      the planted-server row must fail; drop `disable-slash-commands`, and the planted-skill row must
+      fail; unset `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, and the planted-instruction-file row must fail; unset
+      `CLAUDE_CODE_DISABLE_AUTO_MEMORY`, and the planted-memory row must fail; drop `disableAllHooks`, and
+      the planted-hook row must fail.
   - id: AC2
     text: >
       Claim: No paid-API credential variable reaches a Claude Code engine environment. Set and
@@ -92,14 +101,21 @@ acceptance_criteria:
       environment it execs Claude Code with, and the engine gets a runtime directory of its own. Set and
       completeness: Plant `SSH_AUTH_SOCK`, `SSH_AGENT_PID`, `DBUS_SESSION_BUS_ADDRESS`, `GH_TOKEN` and
       `GITHUB_TOKEN` in the receiver's environment, launch a contained run, and read back the engine's
-      environment: none of them is present, and `XDG_RUNTIME_DIR` names an empty directory of the run's
-      own, never the receiver's and never the one holding the run's generated configuration; the
-      receiver's own `systemd-run` and `systemctl` calls still reach the user manager. Falsifier: Leave a
-      planted `SSH_AUTH_SOCK` in the environment the wrapper execs the engine with; the strip read-back
-      row must fail.
+      environment: none of them is present (the strip read-back row), and `XDG_RUNTIME_DIR` names an empty
+      directory of the run's own, never the receiver's and never the one holding the run's generated
+      configuration (the private-runtime-directory row); the receiver's own `systemd-run` and `systemctl`
+      calls still reach the user manager (the user-manager row). Falsifier: Leave a planted
+      `SSH_AUTH_SOCK` in the environment the wrapper execs the engine with, and the strip read-back row
+      must fail; pass the receiver's own `XDG_RUNTIME_DIR` to the engine, and then the directory holding
+      the run's generated configuration, and the private-runtime-directory row must fail each time; strip
+      the session bus from the receiver's own environment instead of the one it execs, and the
+      user-manager row must fail.
     falsified_by: >
-      Leave a planted `SSH_AUTH_SOCK` in the environment the wrapper execs the engine with; the strip
-      read-back row must fail.
+      Leave a planted `SSH_AUTH_SOCK` in the environment the wrapper execs the engine with, and the strip
+      read-back row must fail; pass the receiver's own `XDG_RUNTIME_DIR` to the engine, and then the
+      directory holding the run's generated configuration, and the private-runtime-directory row must fail
+      each time; strip the session bus from the receiver's own environment instead of the one it execs,
+      and the user-manager row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new Claude Code launches while preserving accepted records and unresolved work; no run
@@ -165,3 +181,9 @@ other than `none` (AC3), and a planted agent socket the strip must remove (AC4).
 checks, the removal and the stop, are AC2 and AC3. The criteria carry VELDO-0060 AC5's text, and AC4
 also checks that the user manager stays reachable, which is why the design's section 3 puts the strip
 in the wrapper; no function is added or cut. A draft: only the owner marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: AC1's falsifier dropped one of its six switches, so it
+now drives one mutant per switch, each against its own planted item placed where only that switch keeps
+it out; the planted set adds an MCP server, which `strict-mcp-config` keeps out. AC4's private runtime
+directory and the user manager staying reachable get falsifiers of their own beside the strip's.
+Criterion meaning unchanged. A draft.
