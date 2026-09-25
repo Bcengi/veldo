@@ -164,7 +164,7 @@ def _v89_suite():
             keys.mkdir(mode=0o700)
             people = ('steward', 'olga', 'zed')
             services = ('pm', 'api-edge', 'team-service')
-            agents = ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2', 'w-rev3', 'outsider')
+            agents = ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2', 'w-rev3', 'w-late', 'outsider')
             keyfile = {who: keys / who for who in ('authority',) + people + services + agents}
             public = {}
             for who, path in keyfile.items():
@@ -225,8 +225,8 @@ def _v89_suite():
             enroll('olga', 'person', ['project_owner', 'admission_authority'], ['proj-a'])
             enroll('zed', 'person', ['project_owner'], ['proj-a'])
             for who in services:
-                enroll(who, 'service', [], ['proj-a'])
-            for who in ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2'):
+                enroll(who, 'service', [], ['proj-a', 'proj-b'] if who == 'team-service' else ['proj-a'])
+            for who in ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2', 'w-late'):
                 enroll(who, 'agent_run', [], ['proj-a'])
             enroll('w-rev3', 'agent_run', [], ['proj-a'], group='w-build')
             enroll('outsider', 'agent_run', [], ['proj-b'])
@@ -476,7 +476,7 @@ c.close()
 
             # AC2: owner amendments through the settlement path; the roster grants nothing.
             with region('team/owner-amendment', 'team/stale-amendment', 'team/altered-amendment',
-                        'team/self-promotion', 'team/roster-not-authority'):
+                        'team/self-promotion', 'team/roster-not-authority', 'team/amendment-current'):
                 rid1, settled1 = settle('TEAM-1')
                 applied1 = amend(rid1)
                 first = team_record()
@@ -551,6 +551,14 @@ c.close()
                 rid7, settled7 = settle('TEAM-7', owner='zed')
                 by_other = amend(rid7)
                 outside = send('outsider', 'propose', team_version=version(), team=promoted)
+                rid_r, settled_r = settle('TEAM-R', choice='reject')
+                rejected = amend(rid_r)
+                rid_e, settled_e = settle('TEAM-E', choice='return_for_elaboration')
+                returned = amend(rid_e)
+
+                def ruling(rid):
+                    ref = ((entity(rid) or {}).get('data') or {}).get('settlement') or {}
+                    return ((entity(ref.get('settlement_id')) or {}).get('data') or {}).get('ruling')
                 after_promotion = team_record()
                 check('team/self-promotion', [
                     ('the promotion is only a proposal', proposed_p.get('ok') is True),
@@ -560,6 +568,11 @@ c.close()
                     ('another project owner\'s answer is not the owner\'s', settled7.get('outcome') == 'settled'
                      and refused(by_other, 'not_owner')),
                     ('a member outside the project proposes nothing', refused(outside, 'not_authorized:scope')),
+                    ('the owner\'s rejection is not an acceptance', settled_r.get('outcome') == 'settled'
+                     and ruling(rid_r) == 'reject' and refused(rejected, 'not_accepted:reject')),
+                    ('nor is his return for elaboration', settled_e.get('outcome') == 'settled'
+                     and ruling(rid_e) == 'return_for_elaboration'
+                     and refused(returned, 'not_accepted:return_for_elaboration')),
                     ('the manager is still no reviewer', after_promotion.get('revision') == 2
                      and 'pm' not in (((after_promotion.get('team') or {}).get('roles') or {}).get('independent_review') or {}).get('workers', ['pm']))])
 
@@ -578,6 +591,32 @@ c.close()
                         granting, 'roster_not_authority:project_manager/admission_authority')),
                     ('a proposal permission naming a settlement touchpoint is refused', refused(
                         touchpoint, 'roster_not_authority:project_manager/admission'))])
+
+                # Judged when the amendment applies, not when it was answered: the owner still holds his
+                # role, and every worker is still staffed.
+                rid_c, settled_c = settle('TEAM-C')
+                admin('steward', 'change_roles', {'principal': 'olga', 'roles': ['admission_authority'], 'scope': ['proj-a']})
+                demoted = (entity('olga') or {}).get('data', {}).get('roles')
+                lost_role = amend(rid_c)
+                admin('steward', 'change_roles', {'principal': 'olga', 'roles': ['admission_authority', 'project_owner'],
+                                                  'scope': ['proj-a']})
+                late_team = team(elaboration=role(['w-elab', 'w-late'], 'elaborate'))
+                proposed_late = propose(late_team)
+                rid_l, settled_l = settle('TEAM-L')
+                admin('steward', 'change_roles', {'principal': 'w-late', 'roles': [], 'scope': ['proj-b']})
+                left = amend(rid_l)
+                left_request = (entity(left.get('owner_request')) or {}).get('data') or {}
+                after_current = team_record()
+                check('team/amendment-current', [
+                    ('an answer settled by the owner who then lost his role is refused', settled_c.get('outcome') == 'settled'
+                     and demoted == ['admission_authority'] and refused(lost_role, 'not_owner:role')),
+                    ('a worker who left the project after the answer is refused and asks the owner',
+                     proposed_late.get('ok') is True and settled_l.get('outcome') == 'settled'
+                     and refused(left, 'incomplete_roster:unknown_worker:elaboration/w-late')
+                     and left_request.get('owner') == 'olga' and left_request.get('state') == 'OFFERED'
+                     and 'unknown_worker:elaboration/w-late' in str(left_request.get('brief'))),
+                    ('and the team stays at revision 2', after_current.get('revision') == 2
+                     and after_current.get('team') == second_team)])
 
             # AC3: assignments bind the current team revision and the engineering-review policy.
             with region('team/policy-required', 'team/valid-assignment', 'team/review-count', 'team/independence',
@@ -636,27 +675,96 @@ c.close()
 
                 self_review = assign('unit-s', 'w-build', ['w-build'])
                 twice = assign('unit-s', 'w-build', ['w-rev1', 'w-rev1'])
+                # A staffed reviewer re-enrolled into a builder's independence group after the team was accepted.
+                admin('steward', 'revoke_membership', {'principal': 'w-rev2', 'revoked_at': time.time()})
+                enroll('w-rev2', 'agent_run', [], ['proj-a'], group='w-build2')
+                regrouped = (entity('w-rev2') or {}).get('data') or {}
+                same_group = assign('unit-s', 'w-build2', ['w-rev2'])
                 check('team/independence', [
                     ('the builder reviewing his own unit is refused', refused(self_review, 'reviewer_not_independent:w-build')),
                     ('one reviewer in two positions is refused', refused(twice, 'reviewer_not_independent:w-rev1')),
+                    ('a reviewer in the builder\'s independence group is refused', regrouped.get('independence_group')
+                     == 'w-build2' and regrouped.get('revoked_at') is None
+                     and refused(same_group, 'reviewer_not_independent:w-rev2')),
                     ('a reviewer who is no independent reviewer is refused', refused(
                         assign('unit-s', 'w-build', ['w-elab']), 'not_staffed:independent_review/w-elab'))])
 
                 other_unit = assign('unit-c', 'w-build', ['w-rev1', 'w-rev2'], subjects={'w-rev2': subject('unit-s')})
                 old_revision = assign('unit-s', 'w-build', ['w-rev1'], subjects={'w-rev1': subject('unit-s', 2)})
                 builder_elsewhere = assign('unit-s', 'w-build', ['w-rev1'], builder_subject=subject('unit-c'))
+                other_scope = assign('unit-s', 'w-build', ['w-rev1'], subjects={'w-rev1': dict(subject('unit-s'),
+                                                                                             scope_digest='sha256:other')})
                 check('team/exact-subject', [
                     ('a reviewer bound to another unit is refused', refused(other_unit, 'wrong_subject:w-rev2')),
                     ('a reviewer bound to an older revision is refused', refused(old_revision, 'wrong_subject:w-rev1')),
-                    ('a builder bound to another unit is refused', refused(builder_elsewhere, 'wrong_subject:builder'))])
+                    ('a builder bound to another unit is refused', refused(builder_elsewhere, 'wrong_subject:builder')),
+                    ('a reviewer bound to another scope of the unit is refused', refused(other_scope, 'wrong_subject:w-rev1'))])
 
                 stale_team = assign('unit-s', 'w-build', ['w-rev1'], team_revision=1)
                 not_manager = assign('unit-s', 'w-build', ['w-rev1'], who='w-elab')
                 by_owner = assign('unit-s', 'w-build', ['w-rev1'], who='olga')
+                # A builder of the accepted team whose membership was revoked after the acceptance.
+                admin('steward', 'revoke_membership', {'principal': 'w-build2', 'revoked_at': time.time()})
+                revoked_builder = assign('unit-s', 'w-build2', ['w-rev1'])
                 check('team/stale-team', [
                     ('an assignment under an older team revision is refused', refused(stale_team, 'stale_subject:team_revision')),
                     ('a worker who is not the manager assigns nothing', refused(not_manager, 'not_authorized:not_manager')),
-                    ('the project\'s owner may assign', by_owner.get('ok') is True)])
+                    ('the project\'s owner may assign', by_owner.get('ok') is True),
+                    ('a worker revoked after the team was accepted is not staffed', 'w-build2' in (
+                        (team_record().get('team') or {}).get('roles') or {}).get('implementation', {}).get('workers', [])
+                     and refused(revoked_builder, 'not_staffed:member/w-build2'))])
+
+            # The staffing request belongs to one project's team: the same problems in another project ask
+            # that project's owner; a repeat returns the pending request, and opens a new one once the owner
+            # declined or answered it.
+            with region('team/owner-request'):
+                activated_b = projects.apply(signed('steward', dict(
+                    ids, operation='activate', project='proj-b', principal='steward', command_id=next_id('pc'),
+                    nonce=next_id('pn'), owner='steward', charter={'purpose': 'Rent cars to travelers.'},
+                    execution_repository=REPO, authority_policy={'team_amendment': ['project_owner']},
+                    coordination_budget={'capacity': 5, 'invocations': 5, 'wall_seconds': 500})))
+                ghosts = {'roles': {'project_manager': role(['ghost-pm'], 'coordinate'),
+                                    'elaboration': role(['ghost-e'], 'elaborate'),
+                                    'implementation': role(['ghost-b'], 'implement')}}
+                in_a = propose(ghosts)
+                body_b = dict(ids, operation='propose', project='proj-b', principal='outsider', command_id=next_id('tc'),
+                              nonce=next_id('tn'), team_version=0, team=ghosts)
+                in_b = service.apply(signed('outsider', body_b)) if service is not None else {'ok': False,
+                                                                                              'reason': 'no_team_service'}
+                again = propose(ghosts)
+
+                def asked(result):
+                    return (entity(result.get('owner_request')) or {}).get('data') or {}
+
+                def close(result, op, **fields):
+                    held = asked(result)
+                    return inbox.apply(signed('olga', dict(ids, operation=op, alias=held.get('alias'), principal='olga',
+                                                           command_id=next_id('c'), nonce=next_id('n'),
+                                                           request_version=held.get('request_version'), **fields)))
+                req_a, req_b = asked(in_a), asked(in_b)
+                declined = close(in_a, 'decline')
+                after_decline = propose(ghosts)
+                reopened = dict(asked(after_decline))
+                answered = close(after_decline, 'answer', ruling='staff_the_team')
+                after_answer = propose(ghosts)
+                rounds = [r.get('owner_request') for r in (in_a, after_decline, after_answer)]
+                check('team/owner-request', [
+                    ('a second project is active', activated_b.get('ok') is True),
+                    ('with the same staffing problems', bool(in_a.get('problems')) and in_b.get('problems') == in_a.get('problems')
+                     and refused(in_b, in_a.get('reason'))),
+                    ('the first project\'s owner is asked about its team', req_a.get('owner') == 'olga'
+                     and req_a.get('scope') == ['proj-a'] and (req_a.get('subject') or {}).get('ref') == 'team:proj-a'),
+                    ('the second project\'s owner is asked about his', in_b.get('owner_request') is not None
+                     and in_b.get('owner_request') != in_a.get('owner_request') and req_b.get('owner') == 'steward'
+                     and req_b.get('scope') == ['proj-b'] and (req_b.get('subject') or {}).get('ref') == 'team:proj-b'
+                     and req_b.get('state') == 'OFFERED'),
+                    ('a repeat while the request is pending returns it', again.get('owner_request') == in_a.get('owner_request')),
+                    ('once the owner declined it, a repeat opens a new request', declined.get('ok') is True
+                     and asked(in_a).get('state') == 'DECLINED' and reopened.get('state') == 'OFFERED'
+                     and reopened.get('owner') == 'olga' and reopened.get('subject') == req_a.get('subject')),
+                    ('and once he answered that one, another', answered.get('ok') is True
+                     and asked(after_decline).get('state') == 'SUBMITTED' and asked(after_answer).get('state') == 'OFFERED'),
+                    ('three rounds, three requests', None not in rounds and len(set(rounds)) == 3)])
 
             with region('team/observability'):
                 observations = service.observations if service is not None else []
@@ -671,7 +779,10 @@ c.close()
                                                                            if o['outcome'] == 'accepted')),
                     ('pending work is counted', metrics.get('pending_proposals') == 1
                      and metrics.get('pending_staffing_requests', 0) >= 10 and metrics.get('assignments') == 3),
-                    ('no team content or signature is observed', 'payments' not in text and 'SSH SIGNATURE' not in text)])
+                    ('no team content or signature is observed', 'payments' not in text and 'SSH SIGNATURE' not in text),
+                    ('every amendment names its request', len([o for o in observations if o['operation'] == 'amend']) >= 10
+                     and all(str(o.get('request')).startswith('assignment:%s:TEAM-' % REPO)
+                             for o in observations if o['operation'] == 'amend'))])
         finally:
             for server in servers:
                 with contextlib.suppress(Exception):
