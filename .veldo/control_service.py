@@ -290,9 +290,11 @@ class _Loads:
                 self.unresolved.append('%s:%d' % (self.name, call.lineno))
             self.loads |= named or set()
         # A function that calls one of this module's loader helpers with an argument built from its own
-        # parameter is a loader helper too (control_workflow's _organ(name) calls _sibling(alias,
-        # name + '.py')); its call there names no file itself, so it is delegated, never unresolved.
-        self.delegated = set()
+        # parameter, and that this module itself calls, is a loader helper too (control_workflow's
+        # _organ(name) calls _sibling(alias, name + '.py') and is called with literal names); its call
+        # there names no file itself, so it is delegated, and its callers name the files. One this module
+        # never calls keeps its load site unresolved, since no literal here names what it loads.
+        self.delegated, delegating = set(), {}
         while True:
             found = False
             for call in self.calls:
@@ -315,9 +317,15 @@ class _Loads:
                                             'suffix': helper['suffix'] or any(isinstance(n, ast.Constant) and n.value == '.py'
                                                                               for v in values for n in ast.walk(v))}
                 self.delegated.add(id(call))
+                delegating[id(call)] = scope.name
                 found = True
             if not found:
                 break
+        called = {c.func.id for c in self.calls if isinstance(c.func, ast.Name) and id(c) not in self.delegated}
+        for call_id, name in list(delegating.items()):
+            if name not in called:
+                self.delegated.discard(call_id)
+                self.helpers.pop(name, None)
         self.imports = set()
         for node in ast.walk(self.tree):
             if isinstance(node, ast.Import):
@@ -1005,8 +1013,8 @@ class Service:
         ok = bool(result.get('ok'))
         observation.update(outcome='accepted' if ok else 'refused', refusal=None if ok else result.get('reason'),
                            taxonomy=None if ok else taxonomy(result.get('reason')), watermark=self.watermark())
-        self._count(observation)
         self.hint_after(before)
+        self._count(observation)
         return result
 
     def api_call(self, packet):
