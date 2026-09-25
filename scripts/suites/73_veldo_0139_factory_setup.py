@@ -691,7 +691,6 @@ def _v139_suite():
             check(TK, 'no copy of the token in the state root, the store, the install root, the unit, the host trust or '
                   'the workspace [%s]' % everywhere, everywhere == [])
 
-        # Filed 4: an existing host trust directory is this account's own 0700 directory, or refused by name.
         # Review 2: an opening of the run's one request that fails part-way is retried on a later pass of
         # the same process until it is open, and never opens a second.
         with section(OR):
@@ -737,6 +736,7 @@ def _v139_suite():
                   opened.get('outcome') == 'open')
             check(OR, 'and exactly one qualification request exists after further passes [%d]' % len(made), len(made) == 1)
 
+        # Filed 4: an existing host trust directory is this account's own 0700 directory, or refused by name.
         with section(HD):
             loose = base / 'xdg-loose' / 'veldo'
             loose.mkdir(parents=True)
