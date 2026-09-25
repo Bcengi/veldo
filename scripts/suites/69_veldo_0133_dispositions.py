@@ -856,6 +856,134 @@ sys.exit(4)
                     ('no instruction text, brief or signature is logged',
                      not any(instruction(c) in text or json.dumps(instruction(c))[1:-1] in text for c in CASES)
                      and 'What becomes of unit' not in text and 'SSH SIGNATURE' not in text)])
+
+            # --- the intake authenticates where an other answer arrived; the answer names no source -----------
+            with region('disposition/squatted-request-refused', 'disposition/foreign-chat-refused',
+                        'disposition/no-foreign-follow-up'):
+                def blocked(name, owner, chain='objective:a1'):
+                    """A unit parked by a real service worker whose assignment `owner` declines, so `owner` is
+                    asked. The agent run already holds the claims the backlog rulings released to it, and a
+                    requester that stops for a person holds at most one."""
+                    case = dict(name=name, owner=owner, requester='svc', scope=['proj-a'], unit='unit-' + name,
+                                backlog='backlog:' + name, alias='S-' + name)
+                    case['source'] = I.assignment_id(REPO, case['alias'])
+                    fixture(case['backlog'], 'backlog_item', dict(dict(state='PRIORITIZED', repository_uuid=REPO),
+                                                                  **({'objective_uuid': chain} if chain else {})))
+                    fixture(case['unit'], 'execution_unit', dict(state='READY', repository_uuid=REPO, backlog_item_uuid=case['backlog'],
+                                                                 requirements=[], eligible_holders=['worker', 'svc']))
+                    case['parked'], case['exit'] = park(case)
+                    case['ended'] = command(owner, 'decline', case['alias'], request_version=1)
+                    case['question'] = question(case)
+                    return case
+
+                def answer_other(case, arrived):
+                    alias = ((case['question'] or {}).get('data') or {}).get('alias')
+                    return command(case['owner'], 'answer', alias, request_version=1, ruling='other',
+                                   instruction='Not mine: hand %s to the platform team.' % case['name'], arrived_on=arrived)
+
+                def dispose(case):
+                    alias = ((case['question'] or {}).get('data') or {}).get('alias')
+                    before, sends = intake_rows(), len(api['requests'])
+                    result = command('pm', 'dispose', alias, request_version=1)
+                    return result, intake_rows() == before, api['requests'][sends:]
+
+                region_sends = len(api['requests'])
+                refused = {'ok': False, 'reason': 'not_authorized'}
+                old_shape = {'ok': False, 'reason': 'invalid_input'}
+                genuine = api_request('pete', 'req-pete-genuine', 'Pete asks for a new report.')
+
+                # A: another person's API request id. The request id alone (the reviewer's probe), a packet
+                # carrying that id signed by the answering person instead of the edge, and the genuine
+                # packet of another person all name no source this answer may use.
+                s1, s2 = blocked('s1', 'alice'), blocked('s2', 'alice')
+                named = answer_other(s1, {'source_kind': 'api_request', 'request_id': 'req-pete-genuine'})
+                named_dispose = dispose(s1)
+                forged_packet = api_request('alice', 'req-pete-genuine', 'Alice claims the id.', signer='alice')
+                forged = answer_other(s1, dict(forged_packet, source_kind='api_request'))
+                forged_dispose = dispose(s1)
+                borrowed = answer_other(s2, dict(genuine, source_kind='api_request'))
+                borrowed_dispose = dispose(s2)
+                later = intake.receive('api_request', genuine)
+                pete_proposal = intake.proposal(later.get('proposal_id')) if later.get('proposal_id') else None
+                check('disposition/squatted-request-refused', [
+                    ('both questions are open to alice', all(c['question'] and c['ended'].get('ok') for c in (s1, s2))),
+                    ('an answer naming only a request id is refused invalid_input', named == old_shape),
+                    ('and its dispose takes nothing', named_dispose[0] == {'ok': False, 'reason': 'not_answered'} and named_dispose[1]),
+                    ('an answer carrying a packet the answering person signed is accepted as a shape',
+                     forged.get('ok') is True),
+                    ('its dispose is refused not_authorized: the intake finds no API edge signature',
+                     forged_dispose[0] == refused),
+                    ('an answer carrying another person\'s genuine packet is accepted as a shape', borrowed.get('ok') is True),
+                    ('its dispose is refused not_authorized: the request is not the answering person\'s',
+                     borrowed_dispose[0] == refused),
+                    ('the refused disposes write nothing to the intake', forged_dispose[1] and borrowed_dispose[1]),
+                    ('the genuine request is later proposed, as pete\'s', later.get('outcome') == 'proposed'
+                     and (pete_proposal or {}).get('principal') == 'pete'
+                     and (intake.source('api_request', 'req-pete-genuine') or {}).get('principal') == 'pete'),
+                    ('the units stay parked, waiting to be disposed', all(
+                        (parked_by_unit().get(c['unit']) or {}).get('reason') == 'ready_to_dispose' for c in (s1, s2)))])
+
+                # B: a message in another person's chat, and the answering person's own message in a group chat.
+                s3, s4 = blocked('s3', 'alice'), blocked('s4', 'alice')
+                named = answer_other(s3, {'source_kind': 'telegram_message', 'bot_id': BOT, 'chat_id': chats['pete'],
+                                          'message_id': 4242, 'date': 1790500000})
+                pete_said = sent(chats['pete'], chats['pete'], 'Pete writes in his own chat.')
+                theirs = answer_other(s3, {'source_kind': 'telegram_message', 'evidence_id': pete_said})
+                theirs_dispose = dispose(s3)
+                group_said = sent(chats['alice'], -1001330001, 'Alice writes in a group.', chat_type='group')
+                group = answer_other(s4, {'source_kind': 'telegram_message', 'evidence_id': group_said})
+                group_dispose = dispose(s4)
+                check('disposition/foreign-chat-refused', [
+                    ('both questions are open to alice', all(c['question'] and c['ended'].get('ok') for c in (s3, s4))),
+                    ('an answer naming another person\'s chat and message is refused invalid_input', named == old_shape),
+                    ('an answer carrying the kept evidence of pete\'s message is accepted as a shape', theirs.get('ok') is True),
+                    ('its dispose is refused not_authorized: the sender is not the answering person',
+                     theirs_dispose[0] == refused and theirs_dispose[1]),
+                    ('nothing is recorded as intake from pete\'s chat',
+                     intake.source('telegram_message', '%d:%d:%d' % (BOT, chats['pete'], 4242)) is None
+                     and intake.source(*arrival_source({'source_kind': 'telegram_message', 'evidence_id': pete_said})) is None),
+                    ('an answer carrying alice\'s own message in a group chat is accepted as a shape', group.get('ok') is True),
+                    ('its dispose is refused not_authorized: a group is not her own private chat',
+                     group_dispose[0] == refused and group_dispose[1]),
+                    ('nothing is recorded as intake from the group',
+                     intake.source(*arrival_source({'source_kind': 'telegram_message', 'evidence_id': group_said})) is None)])
+
+                # C: a unit with no project chain, answered by a person with two candidate projects, so a
+                # taken instruction makes the intake ask which project, in the chat the source names.
+                w1, w2, w3 = blocked('w1', 'wide', chain=None), blocked('w2', 'wide', chain=None), blocked('w3', 'wide', chain=None)
+                named = answer_other(w1, {'source_kind': 'telegram_message', 'bot_id': BOT, 'chat_id': chats['pete'],
+                                          'message_id': 4343, 'date': 1790500001})
+                theirs = answer_other(w1, {'source_kind': 'telegram_message',
+                                           'evidence_id': sent(chats['pete'], chats['pete'], 'Pete writes again.')})
+                theirs_dispose = dispose(w1)
+                group = answer_other(w2, {'source_kind': 'telegram_message',
+                                          'evidence_id': sent(chats['wide'], -1001330002, 'Wide writes in a group.', chat_type='group')})
+                group_dispose = dispose(w2)
+                own_said = sent(chats['wide'], chats['wide'], 'Wide writes in their own chat.')
+                own = answer_other(w3, {'source_kind': 'telegram_message', 'evidence_id': own_said})
+                own_dispose = dispose(w3)
+                kept = acquirer.evidence(own_said) or {}
+                asked = intake.question(((intake.proposal(own_dispose[0].get('proposal_id') or '') or {}).get('question_id')) or '') or {}
+                delivery = asked.get('delivery') or {}
+                check('disposition/no-foreign-follow-up', [
+                    ('the three questions are open to wide', all(c['question'] and c['ended'].get('ok') for c in (w1, w2, w3))),
+                    ('an answer naming pete\'s chat is refused invalid_input', named == old_shape),
+                    ('the answers carrying kept evidence are accepted as a shape', theirs.get('ok') is True and group.get('ok') is True
+                     and own.get('ok') is True),
+                    ('pete\'s message is refused not_authorized, nothing written and nothing sent',
+                     theirs_dispose[0] == refused and theirs_dispose[1] and theirs_dispose[2] == []),
+                    ('the group message is refused not_authorized, nothing written and nothing sent',
+                     group_dispose[0] == refused and group_dispose[1] and group_dispose[2] == []),
+                    ('no message of this region went to pete\'s chat or to a group',
+                     not any(chat in (chats['pete'], -1001330001, -1001330002) for chat, _ in api['requests'][region_sends:])
+                     and all(chat == chats['wide'] for chat, _ in own_dispose[2])),
+                    ('control: wide\'s own message is taken as an inbox proposal', own_dispose[0].get('ok') is True
+                     and (intake.proposal(own_dispose[0].get('proposal_id') or '') or {}).get('state') == 'AWAITING_PROJECT'),
+                    ('control: its project question is sent to wide\'s own chat, replying to that message',
+                     len(own_dispose[2]) == 1 and own_dispose[2][0][0] == chats['wide']
+                     and 'Which project is this for?' in (own_dispose[2][0][1] or '')
+                     and delivery.get('chat_id') == chats['wide']
+                     and asked.get('principal') == 'wide' and kept.get('fields', {}).get('chat_id') == chats['wide'])])
         finally:
             for child in children:
                 if child.poll() is None:
