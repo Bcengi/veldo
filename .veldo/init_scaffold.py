@@ -141,6 +141,10 @@ _FILES = [
     # (it loads events.py, completion_contract.py and control_store.py); a runtime asset, no validator
     # import, not substrate.
     ".veldo/control_event_projection.py",
+    # VELDO-0057: the exact-tip publication and the confirmed-landing receipt a factory land completes
+    # through (it loads control_event_projection.py, completion_contract.py, control_eligibility.py and
+    # control_effect_executor.py); a runtime asset, no validator import, not substrate.
+    ".veldo/control_landing.py",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
