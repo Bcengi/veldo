@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -460 +460 @@
+-                    'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': subject['old_tip'],
++                    'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': self._remote_tip(),  # defect: the old tip is whatever the remote holds now

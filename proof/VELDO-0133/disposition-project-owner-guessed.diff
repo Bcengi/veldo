@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -724 +724 @@
+-        return (owners[0] if len(owners) == 1 else None), read
++        return (owners[0] if owners else None), read  # defect: the first candidate is taken

@@ -1,0 +1,5 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -191 +191 @@
+-        if not isinstance(text, str) or not text.strip():
++        if not isinstance(text, str):  # defect: empty text is an instruction
