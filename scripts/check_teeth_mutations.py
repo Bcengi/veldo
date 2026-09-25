@@ -4590,7 +4590,7 @@ def cases():
                '        with urllib.request.urlopen(req, timeout=30) as resp:  # defect: a resolving token sends\n',
                'activation/no-implicit')
     activation('ungated-edge-reaches-any-origin', 'control_channel_projection.py',
-               "        if not base_url.startswith(STAND_IN_ORIGIN):\n            raise EdgeRefused('not_activated'",
+               "        if not is_stand_in(base_url):\n            raise EdgeRefused('not_activated'",
                "        if False:  # defect: an edge without a gate reaches any origin\n            raise EdgeRefused('not_activated'",
                'activation/no-implicit')
     activation('presentation-edge-bypasses-gate', 'control_channel_presentation.py',
@@ -4663,6 +4663,14 @@ def cases():
     activation('ungated-edge-default-opener', 'control_channel_projection.py',
                '        return bot_opener().open(request, timeout=timeout)\n',
                '        return urllib.request.urlopen(request, timeout=timeout)  # defect: the default opener\n',
+               'activation/no-redirect')
+    activation('stand-in-prefix-match', 'control_channel_projection.py',
+               "    return url[len(STAND_IN_ORIGIN):].rstrip('/').isdigit()\n",
+               "    return True  # defect: any text after the loopback prefix is a stand-in\n",
+               'activation/no-redirect')
+    activation('https-origin-unparsed', 'control_channel_projection.py',
+               "    return bool(host) and all(c.isalnum() or c in '.-' for c in host)\n",
+               "    return True  # defect: any https text is a Bot API origin\n",
                'activation/no-redirect')
     activation('gate-opener-own-build', 'control_channel_activation.py',
                '    return P.bot_opener(Handler())\n',

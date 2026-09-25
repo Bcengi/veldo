@@ -105,6 +105,25 @@ SETTLED = {'sent': ('already_projected', None), 'pending': ('unknown_outcome', '
 # on the loopback interface, which cannot carry a message to Telegram. Every other exchange asks the
 # gate (control_channel_activation.Gate) the edge was given, and an edge given none refuses.
 STAND_IN_ORIGIN = 'http://127.0.0.1:'
+
+
+def is_stand_in(url):
+    """True only for exactly http://127.0.0.1:<port>, parsed rather than matched as a prefix, so text such
+    as http://127.0.0.1:80@api.telegram.org, which names another host, is not a stand-in."""
+    if not isinstance(url, str) or not url.startswith(STAND_IN_ORIGIN):
+        return False
+    return url[len(STAND_IN_ORIGIN):].rstrip('/').isdigit()
+
+
+def is_bot_origin(url):
+    """A Bot API origin an edge may be built with: a stand-in, or https to a bare host (no credentials,
+    port text or path that could name another host)."""
+    if is_stand_in(url):
+        return True
+    if not isinstance(url, str) or not url.startswith('https://'):
+        return False
+    host = url[len('https://'):].rstrip('/')
+    return bool(host) and all(c.isalnum() or c in '.-' for c in host)
 # The gate's refusals an edge reports under their own names; anything else it raises is not_activated.
 GATE_REFUSALS = ('not_activated', 'edge_stopped', 'stale_configuration', 'stale_key', 'stale_enrollment',
                  'owner_not_current', 'qualification_expired', 'chat_not_enrolled', 'missing_qualification',
@@ -134,7 +153,7 @@ def gated_open(activation, base_url, request, timeout, operation, chat=None):
     exchange against the current activation record and performs it. A transport failure keeps its own
     type, so the caller classifies it exactly as before; a gate refusal is an EdgeRefused by name."""
     if activation is None:
-        if not base_url.startswith(STAND_IN_ORIGIN):
+        if not is_stand_in(base_url):
             raise EdgeRefused('not_activated', 'a Telegram exchange needs an explicit activation record; a token is not one')
         return bot_opener().open(request, timeout=timeout)
     try:
@@ -220,7 +239,7 @@ class TelegramEdge:
     every send asks; without one only a loopback stand-in is reached."""
 
     def __init__(self, base_url, token, *, timeout=10, activation=None):
-        if not isinstance(base_url, str) or not base_url.startswith(('https://', 'http://127.0.0.1:')):
+        if not is_bot_origin(base_url):
             raise EdgeRefused('invalid_input', 'the Bot API origin is https, or a loopback test endpoint')
         if not isinstance(token, str) or not token:
             raise EdgeRefused('invalid_input', 'a token is required')

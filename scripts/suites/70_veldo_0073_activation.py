@@ -170,6 +170,31 @@ def _v73_checks(base):
             check(NR, "the gate's opener reached the origin once and did not follow the redirect (%s)" % gated,
                   ACT is not None and len(Redirector.hits) == gate_hits + 1 and gated != 'opened'
                   and len(attempts) == before_redirect)
+            # An origin is parsed, not matched as a prefix: text naming another host is no stand-in and no
+            # Bot API origin, for every edge constructor and for the ungated open itself.
+            disguised = ('http://127.0.0.1:80@api.telegram.org', 'http://127.0.0.1:%d@127.0.0.2' % redirector.server_address[1],
+                         'https://user@api.telegram.org', 'https://api.telegram.org:443@127.0.0.2', 'http://127.0.0.1:x')
+            built = []
+            for bad in disguised:
+                for make in (lambda u: P.TelegramEdge(u, _V73_STAND_IN),
+                             lambda u: V.TelegramPresentationEdge(P, u, _V73_STAND_IN),
+                             lambda u: EV.TelegramAcquisitionEdge(P, u, _V73_STAND_IN)):
+                    try:
+                        make(bad)
+                        built.append(bad)
+                    except Exception as exc:
+                        if type(exc).__name__ != 'EdgeRefused':
+                            built.append(bad + ' raised ' + type(exc).__name__)
+            opened = []
+            for bad in disguised[:2]:
+                try:
+                    P.gated_open(None, bad, _v73_urllib.Request('http://127.0.0.1:9/x'), 5, 'getMe')
+                    opened.append(bad)
+                except Exception as exc:
+                    if not (type(exc).__name__ == 'EdgeRefused' and getattr(exc, 'code', None) == 'not_activated'):
+                        opened.append(bad + ' raised ' + type(exc).__name__)
+            check(NR, 'origins naming another host are refused by every edge constructor (%s) and the ungated open (%s)'
+                  % (built, opened), not built and not opened and len(attempts) == before_redirect)
         finally:
             redirector.shutdown()
             redirector.server_close()

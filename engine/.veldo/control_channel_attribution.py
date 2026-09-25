@@ -263,7 +263,7 @@ class TelegramAcquisitionEdge:
 
     def __init__(self, projection, base_url, token, *, timeout=10, activation=None):
         self.P = projection
-        if not isinstance(base_url, str) or not base_url.startswith(('https://', 'http://127.0.0.1:')):
+        if not projection.is_bot_origin(base_url):
             raise projection.EdgeRefused('invalid_input', 'the Bot API origin is https, or a loopback test endpoint')
         if not isinstance(token, str) or not token:
             raise projection.EdgeRefused('invalid_input', 'a token is required')
