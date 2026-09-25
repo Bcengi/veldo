@@ -611,9 +611,27 @@ def _v68_checks(base):
             check(OW, 'the other is refused by name and no second settlement exists%s' % race_seen,
                   len(losers) == 1 and losers[0].get('outcome') == 'refused'
                   and losers[0].get('reason') in ('already_settled', 'request_closed', 'stale_subject', 'unavailable_service'))
+            # The call that commits the settlement is not always the answer that wins it: when both answers
+            # are recorded before either settles, the settling call counts the EARLIEST accepted answer,
+            # which may be the other racer's, and lists its own as not counted. Every id below is an
+            # evidence entity id (the settlement's answer_id, the racers' recorded answers, not_counted).
+            recorded = {eid: d for eid, d in of_kind('settlement_api_answer', c2)}
+            race_answers = {o.get('answer') for o in outcomes.values() if o.get('answer')}
+            winning = sdata.get('answer_id')
+            own = (outcomes.get(winners[0]) or {}).get('answer') if len(winners) == 1 else None
+            listed_ids = [x.get('answer_id') for x in sdata.get('not_counted') or []]
+            order = lambda eid: ((recorded.get(eid) or {}).get('accepted_at') or 0, eid)
+            check(OW, 'the winning answer is the earliest accepted race answer; every other one the settlement read '
+                      'is listed once as not counted (conflicting_ruling), and the settling call\'s own answer, when '
+                      'it did not win, is among them' + race_seen,
+                  winning in race_answers and winning in recorded and winning not in listed_ids
+                  and len(set(listed_ids)) == len(listed_ids) and set(listed_ids) <= race_answers
+                  and all(x.get('reason') == 'conflicting_ruling' for x in sdata.get('not_counted') or [])
+                  and all(order(winning) < order(x) for x in listed_ids)
+                  and (own == winning or own in listed_ids))
             check(OW, 'the settlement is one consistent result: its winning answer, ruling, effect, receipt and '
                       'terminal state agree' + race_seen,
-                  won.get('choice') == sdata.get('choice') and won.get('answer_id') in winners + [o.get('answer') for o in losers]
+                  won.get('choice') == sdata.get('choice') and winning in race_answers
                   and (e[0][1] if e else {}).get('ruling') == sdata.get('ruling') == _V68_CHOICES.get(sdata.get('choice'))
                   and (r[0][1] if r else {}).get('settlement_id') == sdata.get('settlement_id')
                   and data.get('state') == 'SATISFIED' and data.get('answer', {}).get('ruling') == sdata.get('choice')
