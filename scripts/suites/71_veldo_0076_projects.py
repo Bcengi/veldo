@@ -721,6 +721,98 @@ c.close()
                      and 'return every open unit' not in texts),
                     ('the metrics count the projects by state', (metrics.get('projects') or {}) ==
                      {'ACTIVE': 1, 'CANCELED': 1, 'COMPLETED': 1})])
+
+            # A unit's project is judged only from a record of kind project, and an ACTIVE project whose
+            # recorded owner is no longer current halts at the Gate, since nobody may pause or cancel it.
+            with region('project/foreign-kind', 'project/owner-demoted', 'project/owner-revoked'):
+                for name in ('proj-x', 'proj-z'):
+                    reservations.configure(next_id('policy'), 'project', name, caps, now=time.time())
+
+                def finish(outcome):
+                    # A dispatch that did start (a defect admitted it) is waited out, never left running.
+                    if outcome[0] == 'ok':
+                        runner.wait(outcome[1], timeout=20)
+                    return outcome
+
+                x_unit = unit('U-76-x1', 'proj-x', claimed=True)
+                foreign = attempt(lambda: put('project:proj-x', 'note', dict(name='proj-x')))
+                foreign_row = entity('project:proj-x')
+                x_foreign = gate.decide('selection', x_unit)
+                x_dispatch = finish(attempt(lambda: runner.submit(x_unit, 'build', **job())))
+                x_activated = activate('proj-x')
+                x_active = gate.decide('selection', x_unit)
+
+                # The Gate's own rule, in a store no project service declared into: a record of another
+                # kind at the project's id is refused by name, a project record beside it is not.
+                lone = S.open_store(str(base / 'lone' / 'control.sqlite3'))
+                lone_reader = S.open_store(str(base / 'lone' / 'control.sqlite3'), mode='r')
+                connections += [lone, lone_reader]
+
+                def put_lone(identity, kind, data):
+                    row = lone.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+                    S.execute(lone, dict(command_id=next_id('lone'), principal='authority', operation='upsert_entity',
+                                         nonce=next_id('lone-n'), artifact_digests=[],
+                                         expected_versions={identity: row[0] if row else 0},
+                                         parameters=dict(entity_id=identity, kind=kind, data=data)), 'authority', journal_sign, 1)
+                for sid, name, kind in (('U-76-f1', 'proj-f', 'note'), ('U-76-g1', 'proj-g', 'project')):
+                    put_lone(sid, 'execution_unit', dict(state='READY', repository_uuid=REPO, backlog_item_uuid='backlog:' + sid,
+                                                         requirements=[], eligible_holders=[HOLDER], project=name,
+                                                         scope_digest='sha256:scope-' + sid, revision=1, depends_on=[]))
+                    put_lone('backlog:' + sid, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPO))
+                    put_lone('admission:' + sid, 'admission', dict(unit=sid, state='accepted', scope_digest='sha256:scope-' + sid))
+                    put_lone('project:' + name, kind, dict(name=name))
+                lone_gate = EL.Gate(S, lone_reader, domain_uuid=DOMAIN, repository_uuid=REPO, workspace=str(work))
+                f_decided = lone_gate.decide('selection', 'U-76-f1')
+                g_decided = lone_gate.decide('selection', 'U-76-g1')
+                check('project/foreign-kind', [
+                    ('a generic upsert of another kind at a project\'s id refuses entity_owned',
+                     foreign[0] == 'refused' and foreign[1] == 'entity_owned' and foreign_row is None),
+                    ('the Gate does not admit the project\'s unit', x_foreign.get('eligible') is False
+                     and 'missing_authority:project' in x_foreign.get('refusals', [])),
+                    ('and no dispatch of it starts', x_dispatch == ('refused', 'missing_authority:project')),
+                    ('the owner still activates the project', x_activated.get('ok') is True
+                     and (project('proj-x') or {}).get('kind') == 'project'),
+                    ('control: its unit is then admitted', x_active.get('eligible') is True),
+                    ('a record of another kind at the project\'s id is refused by name, never admitting its unit',
+                     f_decided.get('eligible') is False and f_decided.get('refusals') == ['project_not_active:not_a_project']),
+                    ('control: a project record there raises no project refusal', not [
+                        r for r in g_decided.get('refusals', []) if r.startswith(('project_not_active', 'missing_authority:project'))])])
+
+                z_activated = activate('proj-z', who='zed', owner='zed', authority_policy={'grooming': ['project_owner']})
+                z_unit = unit('U-76-z1', 'proj-z', claimed=True)
+
+                def zed(**over):
+                    put('zed', 'membership', dict(dict(principal_type='person', roles=['project_owner'], scope=['proj-z'],
+                                                       revoked_at=None, expires_at=None), **over))
+                z_current = gate.decide('selection', z_unit)
+                zed(roles=[])
+                demoted = gate.decide('selection', z_unit)
+                demoted_dispatch = finish(attempt(lambda: runner.submit(z_unit, 'build', **job())))
+                demoted_pause = change('pause', 'proj-z', who='zed', reason='stop it')
+                zed()
+                restored = gate.decide('selection', z_unit)
+                check('project/owner-demoted', [
+                    ('control: the project is active under its current owner', z_activated.get('ok') is True
+                     and z_current.get('eligible') is True),
+                    ('the demoted owner can no longer stop it', demoted_pause.get('reason') == 'not_authorized:role'),
+                    ('so the Gate halts its unit by name', demoted.get('eligible') is False
+                     and demoted.get('refusals') == ['project_not_active:owner_not_current']),
+                    ('and no dispatch of it starts', demoted_dispatch == ('refused', 'project_not_active:owner_not_current')),
+                    ('restoring the role resumes it', restored.get('eligible') is True)])
+
+                zed(revoked_at=1)
+                revoked = gate.decide('selection', z_unit)
+                revoked_dispatch = finish(attempt(lambda: runner.submit(z_unit, 'build', **job())))
+                zed()
+                resumed = gate.decide('selection', z_unit)
+                resumed_dispatch = attempt(lambda: runner.submit(z_unit, 'build', **job()))
+                resumed_end = (runner.wait(resumed_dispatch[1], timeout=20) or {}) if resumed_dispatch[0] == 'ok' else {}
+                check('project/owner-revoked', [
+                    ('the Gate halts a revoked owner\'s project by name', revoked.get('eligible') is False
+                     and revoked.get('refusals') == ['project_not_active:owner_not_current']),
+                    ('and no dispatch of it starts', revoked_dispatch == ('refused', 'project_not_active:owner_not_current')),
+                    ('restoring the membership resumes it', resumed.get('eligible') is True),
+                    ('and its work dispatches and ends', resumed_end.get('state') == 'exited')])
         finally:
             for launch in launches:
                 child = getattr(launch, 'child', None)
