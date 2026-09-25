@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W92
 plan_revision: 4
-depends_on: [VELDO-0039, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061]
+depends_on: [VELDO-0039, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0155, VELDO-0156]
 placement: [loop, fleet]
 protected_paths: []
 footprint:
@@ -190,3 +190,8 @@ AC3, with the footprint entries for the service, the dependencies on VELDO-0047,
 and VELDO-0141, the factory loop Notes and the loop's part of What the reviewer judges. The footprint
 keeps `control_launch` and depends_on keeps VELDO-0039, the Runner the build and review runs launch
 through. With no dependency left in a later stage, W92 returns to stage 1. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0155 and VELDO-0156, the
+everything-off baseline, the paid-API guard and the environment strip split out of VELDO-0060 AC5 and
+VELDO-0061 AC5, so real build and review still run only behind them, as they did when those guards were
+part of the adapters this specification depends on. Criteria and status unchanged.

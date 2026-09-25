@@ -57,9 +57,10 @@ acceptance_criteria:
       invoke the actual binary in an isolated clone. Pinned executable: the adapter launches the
       versioned executable copied from `~/.local/share/claude/versions/` and kept under the factory
       state root, never the auto-updating `~/.local/bin/claude` link, sets `DISABLE_AUTOUPDATER`,
-      and rejects an unknown version or changed digest before spawn. Every launch runs on the
-      baseline, guard and strip of AC5. The role's own selections arrive with VELDO-0127. Falsifier:
-      Skip executable binding after its digest changes; the unexpected-launch check must fail.
+      and rejects an unknown version or changed digest before spawn. The everything-off baseline, the
+      paid-API guard and the environment strip every launch runs on are VELDO-0155; the role's own
+      selections arrive with VELDO-0127. Falsifier: Skip executable binding after its digest changes;
+      the unexpected-launch check must fail.
     falsified_by: >
       Skip executable binding after its digest changes; the unexpected-launch check must fail.
   - id: AC2
@@ -93,30 +94,6 @@ acceptance_criteria:
       fail.
     falsified_by: >
       Check the cap after launch instead of before; the zero-launch refusal check must fail.
-  - id: AC5
-    text: >
-      Claim: Every Claude Code run starts on the everything-off baseline, behind the paid-API guard and
-      the environment strip. Set and completeness: Baseline: every profile source is off (the
-      `setting-sources` option restricted to one generated file passed through the `settings` option,
-      the `strict-mcp-config` option with a generated `mcp-config` file, the `disable-slash-commands`
-      option when no skill is listed, `CLAUDE_CODE_DISABLE_CLAUDE_MDS`,
-      `CLAUDE_CODE_DISABLE_AUTO_MEMORY` and `disableAllHooks`), so the account profile supplies only
-      the login and the same role behaves the same on every account; neither bare mode nor safe mode is
-      used; plant settings, an instruction file, a skill, memory and a hook in the account profile and
-      require none of them in the run. Paid-API guard: the receiver removes `ANTHROPIC_API_KEY`,
-      `ANTHROPIC_AUTH_TOKEN`, the Bedrock, Vertex and Foundry switches and `CLAUDE_CODE_OAUTH_TOKEN`
-      (kept only for an account configured to use a subscription token) from the engine environment,
-      and a run whose init event reports an `apiKeySource` other than `none` (or the configured token)
-      is stopped by name before its first turn; plant each variable in the caller's environment.
-      Environment strip: the trusted wrapper removes `SSH_AUTH_SOCK`, `SSH_AGENT_PID`,
-      `DBUS_SESSION_BUS_ADDRESS`, `GH_TOKEN` and `GITHUB_TOKEN` just before it execs the engine, and
-      the engine's `XDG_RUNTIME_DIR` is an empty directory of its own; read back the engine's
-      environment. Each switch that is an environment variable or internal setting is qualified on the
-      pinned version before use. Falsifier: Leave `ANTHROPIC_API_KEY` in the engine environment and
-      accept an init event whose `apiKeySource` is not `none`; the paid-API stop row must fail.
-    falsified_by: >
-      Leave `ANTHROPIC_API_KEY` in the engine environment and accept an init event whose
-      `apiKeySource` is not `none`; the paid-API stop row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
@@ -131,7 +108,8 @@ Claude Code production adapter qualification. Deliver the normal function needed
 
 W45 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
 Section 6 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
-designs the baseline, the paid-API guard and the pinned engine; section 3 the environment strip.
+designs the pinned engine; the baseline, the paid-API guard and the environment strip it designs in
+sections 3 and 6 are VELDO-0155.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -147,10 +125,8 @@ No automatic recovery, extra channel activation or broader host qualification is
   on Linux, with the account profile the dispatch selected (VELDO-0147 qualifies the same
   configuration on the Mac); the adapter streams its events, stops it on request and returns its artifacts, and every
   invocation checks its usage caps first.
-- Threat model: a launch of a changed or unknown executable, or of the auto-updating link; a run that picks up the
-  account's own settings, instruction files, skills, memory or hooks; a paid API key reaching the
-  engine, or a run that is not on a subscription login getting a first turn; the SSH agent, session
-  bus or a Git token reaching the engine environment; a zero exit accepted without its terminal
+- Threat model: a launch of a changed or unknown executable, or of the auto-updating link (the baseline,
+  the paid-API guard and the environment strip are VELDO-0155's); a zero exit accepted without its terminal
   record; a worker descendant left alive after a reported stop; a launch after its cap is reached or
   while its allowance is unknown. The owner's account and the installed engine are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); separating the engine login from the worker's tools (Release 2, owner Telegram 29163); recovery
@@ -213,3 +189,8 @@ engine environment and accept an `apiKeySource` other than `none`; the paid-API 
 keeps the lifecycle and the pinned executable with its digest falsifier. The footprint drops
 `control_runner`, which does not exist; the Runner is class `Runner` in `control_launch`. Status
 unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: AC5 bundled three guards under one falsifier that
+tested only the paid-API stop, so the everything-off baseline, the paid-API guard and the environment
+strip move to the new draft VELDO-0155, each with its own criterion and a falsifier that breaks exactly
+that guard. AC1 names VELDO-0155 in place of AC5; AC1 to AC4 are otherwise unchanged. Status unchanged.

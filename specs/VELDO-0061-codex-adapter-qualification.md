@@ -56,9 +56,10 @@ acceptance_criteria:
       the chosen configuration and explicit accepted source/input/tool bindings; invoke the actual
       binary in an isolated clone. Pinned executable: the adapter launches the vendor binary inside
       its package, never an auto-updating link, sets `DISABLE_AUTOUPDATER`, and rejects an unknown
-      version or changed digest before spawn. Every launch runs on the baseline, guard and strip of
-      AC5. The role's own selections arrive with VELDO-0127. Falsifier: Skip executable binding after
-      its digest changes; the unexpected-launch check must fail.
+      version or changed digest before spawn. The everything-off baseline, the paid-API guard and the
+      environment strip every launch runs on are VELDO-0156; the role's own selections arrive with
+      VELDO-0127. Falsifier: Skip executable binding after its digest changes; the unexpected-launch
+      check must fail.
     falsified_by: >
       Skip executable binding after its digest changes; the unexpected-launch check must fail.
   - id: AC2
@@ -92,27 +93,6 @@ acceptance_criteria:
       fail.
     falsified_by: >
       Check the cap after launch instead of before; the zero-launch refusal check must fail.
-  - id: AC5
-    text: >
-      Claim: Every Codex run starts on the everything-off baseline, behind the paid-API guard and the
-      environment strip. Set and completeness: Baseline: every profile source is off (the
-      `ignore-user-config` and `ignore-rules` options with a generated configuration,
-      `project_doc_max_bytes` at zero, and no hooks in the generated configuration), so the account
-      profile (`CODEX_HOME`) supplies only the login and the same role behaves the same on every
-      account; plant a user configuration, rules, a project document and a hook and require none of
-      them in the run. Paid-API guard: the receiver removes `OPENAI_API_KEY` and `CODEX_API_KEY` from
-      the engine environment, the generated configuration sets `forced_login_method` to ChatGPT and the
-      credentials store to file, and a run not logged in through ChatGPT is stopped by name before its
-      first turn; plant each variable in the caller's environment. Environment strip: the trusted
-      wrapper removes `SSH_AUTH_SOCK`, `SSH_AGENT_PID`, `DBUS_SESSION_BUS_ADDRESS`, `GH_TOKEN` and
-      `GITHUB_TOKEN` just before it execs the engine, and the engine's `XDG_RUNTIME_DIR` is an empty
-      directory of its own; read back the engine's environment. Each internal setting is qualified on
-      the pinned version before use. Falsifier: Leave `OPENAI_API_KEY` in the engine environment and
-      let a run that is not logged in through ChatGPT take its first turn; the paid-API stop row must
-      fail.
-    falsified_by: >
-      Leave `OPENAI_API_KEY` in the engine environment and let a run that is not logged in through
-      ChatGPT take its first turn; the paid-API stop row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
@@ -127,7 +107,8 @@ Codex production adapter qualification. Deliver the normal function needed by th
 
 W46 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 1.
 Section 6 of the approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md)
-designs the baseline, the paid-API guard and the pinned engine; section 3 the environment strip.
+designs the pinned engine; the baseline, the paid-API guard and the environment strip it designs in
+sections 3 and 6 are VELDO-0156.
 The [design](../docs/design/PLAN-0019-dark-factory-design.md) applies with its dated
 2026-09-22 scope amendments. This revision changes the work contract, not its status,
 implementation or historical evidence. Risk and approval requirements remain unchanged.
@@ -143,10 +124,8 @@ No automatic recovery, extra channel activation or broader host qualification is
   Linux, with the account profile the dispatch selected (VELDO-0147 qualifies the same configuration
   on the Mac); the adapter streams its events, stops it on request and returns its artifacts, and every
   invocation checks its usage caps first.
-- Threat model: a launch of a changed or unknown executable, or of the auto-updating link; a run that picks up the
-  account's own settings, instruction files, skills, memory or hooks; a paid API key reaching the
-  engine, or a run that is not on a subscription login getting a first turn; the SSH agent, session
-  bus or a Git token reaching the engine environment; a zero exit accepted without its terminal
+- Threat model: a launch of a changed or unknown executable, or of the auto-updating link (the baseline,
+  the paid-API guard and the environment strip are VELDO-0156's); a zero exit accepted without its terminal
   record; a worker descendant left alive after a reported stop; a launch after its cap is reached or
   while its allowance is unknown. The owner's account and the installed engine are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); separating the engine login from the worker's tools (Release 2, owner Telegram 29163); recovery
@@ -209,3 +188,8 @@ engine environment and let a run not logged in through ChatGPT take its first tu
 row must fail). AC1 keeps the lifecycle and the pinned executable with its digest falsifier. The
 footprint drops `control_runner`, which does not exist; the Runner is class `Runner` in
 `control_launch`. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: AC5 bundled three guards under one falsifier that
+tested only the paid-API guard, so the everything-off baseline, the paid-API guard and the environment
+strip move to the new draft VELDO-0156, each with its own criterion and a falsifier that breaks exactly
+that guard. AC1 names VELDO-0156 in place of AC5; AC1 to AC4 are otherwise unchanged. Status unchanged.

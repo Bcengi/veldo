@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W107
 plan_revision: 4
-depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0124, VELDO-0125, VELDO-0127, VELDO-0141, VELDO-0144]
+depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0124, VELDO-0125, VELDO-0127, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
@@ -73,8 +73,9 @@ acceptance_criteria:
       Claim: The Claude Code configuration VELDO-0060 qualifies on Linux is qualified on the Mac through
       the relay, with the account and capabilities its dispatch recorded. Set and completeness: On the
       real Mac (VELDO-0124), dispatched through the relay (VELDO-0125), repeat VELDO-0060's lifecycle
-      (launch, acceptance, observation streaming, stop, exit, artifact return), its pinned executable,
-      everything-off baseline, paid-API guard, environment strip and pre-launch usage caps; read back
+      (launch, acceptance, observation streaming, stop, exit, artifact return), its pinned executable
+      and pre-launch usage caps, and VELDO-0155's everything-off baseline, paid-API guard and
+      environment strip; read back
       that the engine environment carries exactly the profile of the account the dispatch recorded for
       the Mac and no paid-API credential (VELDO-0062 AC1); and compare the capabilities the engine
       reports at launch with the role's accepted revision in both directions (VELDO-0127 AC2).
@@ -87,9 +88,10 @@ acceptance_criteria:
     text: >
       Claim: The Codex configuration VELDO-0061 qualifies on Linux is qualified on the Mac through the
       relay, with the account and capabilities its dispatch recorded. Set and completeness: On the real
-      Mac through the relay, repeat VELDO-0061's lifecycle, pinned vendor binary, everything-off
-      baseline, paid-API guard (`OPENAI_API_KEY` and `CODEX_API_KEY` removed, a ChatGPT login required
-      before the first turn), environment strip and pre-launch usage caps; read back that the engine
+      Mac through the relay, repeat VELDO-0061's lifecycle, pinned vendor binary and pre-launch usage
+      caps, and VELDO-0156's everything-off baseline, paid-API guard (`OPENAI_API_KEY` and
+      `CODEX_API_KEY` removed, a ChatGPT login required before the first turn) and environment strip;
+      read back that the engine
       environment carries exactly the `CODEX_HOME` of the account the dispatch recorded for the Mac
       (VELDO-0062 AC1); and compare the capabilities at launch with the role's accepted revision
       (VELDO-0127 AC2). Falsifier: Leave `OPENAI_API_KEY` in the Mac engine environment; the Mac paid-API
@@ -179,3 +181,7 @@ negative controls. It is built after VELDO-0124 and VELDO-0125 in stage 3 of the
 specifications built in stages 1 and 2 of the design's critical path. The legs of VELDO-0060, 0061, 0062,
 0127 and 0141 came from ready specifications and the leg of VELDO-0144 from a draft, so this
 specification is a draft; the owner decides readiness.
+
+2026-09-25, PLAN-0019 revision 4, third review: the everything-off baseline, the paid-API guard and the
+environment strip moved from VELDO-0060 AC5 and VELDO-0061 AC5 to VELDO-0155 and VELDO-0156, so AC1 and
+AC2 name them there and depends_on adds both; what the Mac repeats is unchanged.

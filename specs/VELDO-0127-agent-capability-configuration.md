@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W90
 plan_revision: 4
-depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144]
+depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156]
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
@@ -158,7 +158,7 @@ these mechanisms.
 A missing or unsupported credential source causes a named configuration stop, not a reduced
 capability run. Secret values never enter ordinary views, journal payloads or proof.
 
-The adapter turns off the engine's own discovery and every profile source (VELDO-0060, VELDO-0061)
+The adapter turns off the engine's own discovery and every profile source (VELDO-0155, VELDO-0156)
 and then hands in exactly the role's items, so each account profile supplies only the login and a
 role behaves the same on every account. Separating the provider login from tool and build children is
 Release 2 hardening (owner, Telegram 29163); nothing here prohibits an MCP server from using its own
@@ -196,3 +196,7 @@ which is built after VELDO-0124 and VELDO-0125. Status unchanged.
 2026-09-25, PLAN-0019 revision 4 review: depends_on adds VELDO-0141, because AC4 keeps the first turn's
 context size in the execution record, and the footprint adds `control_launch`, where the Runner (class
 `Runner`) and the launch receiver that hands the configuration over live. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0155 and VELDO-0156, where the
+everything-off baseline this handoff builds on now lives (it was VELDO-0060 AC5 and VELDO-0061 AC5), and
+the Notes name them. Status unchanged.
