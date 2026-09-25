@@ -1,0 +1,4 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -453,0 +454 @@
++            CS.start(installed['unit'], runner)  # defect: the setup starts the service

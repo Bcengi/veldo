@@ -5449,6 +5449,94 @@ def cases():
                     "        return ['unavailable_service']\n",
                     "        return ['fixture_only_evidence']  # defect: a failed exchange is named fixture evidence\n",
                     'qualification/transport-failure-named')
+    # VELDO-0139: each criterion's declared falsifier first, then the threat model's other shapes.
+    def factory(name, old, new, row, also=(), module='control_factory_setup.py'):
+        add(139, name, '73_veldo_0139_factory_setup.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): a state root that holds a store is set up over.
+    factory('existing-store-overwritten', "    if held:\n",
+            "    if held and held[0] != 'store':  # defect: an existing store is set up over\n", 'refuse/existing-store')
+    factory('state-root-mode-unchecked', "    if stat.S_IMODE(info.st_mode) != 0o700:\n",
+            "    if False:  # defect: a state root open to others is accepted\n", 'refuse/writes-nothing')
+    factory('host-trust-overwritten', "    if os.path.lexists(host_trust):\n",
+            "    if False:  # defect: an existing host trust is not refused before writing\n", 'refuse/writes-nothing')
+    factory('host-directory-open', "            os.chmod(os.path.join(root, name), 0o700)\n",
+            "            os.chmod(os.path.join(root, name), 0o755 if name == HOST_DIR else 0o700)  # defect: open to others\n",
+            'setup/lays-down')
+    factory('module-not-scaffolded', '    ".veldo/control_factory_setup.py",\n', '', 'install/assets',
+            module='init_scaffold.py')
+    # AC2 (declared falsifier): a copy of the token is written into the state root and configured.
+    factory('token-copied', "'token_file': plan['token_file']},",
+            "'token_file': _private(os.path.join(host, 'bot-token'), Path(plan['token_file']).read_text())},"
+            "  # defect: the token is copied", 'token/never-copied')
+    factory('edge-key-outside-protected',
+            "                  'edge': _keygen(os.path.join(keys, E.edge_key_id(CHANNEL)), 'veldo-edge-telegram'),\n",
+            "                  'edge': _keygen(os.path.join(root, EDGE_DIR, E.edge_key_id(CHANNEL)), 'veldo-edge-telegram'),"
+            "  # defect: the edge key is written outside the protected key directory\n",
+            'edge/enrolled-with-possession',
+            also=[("            possession = ACT.ssh_signer(os.path.join(keys, E.edge_key_id(CHANNEL)), E.POSSESSION_NAMESPACE)(\n",
+                   "            possession = ACT.ssh_signer(os.path.join(root, EDGE_DIR, E.edge_key_id(CHANNEL)), E.POSSESSION_NAMESPACE)(\n")])
+    factory('chat-not-the-owners', "principal=owner, chat_id=plan['chat'], revoked_at=None)),",
+            "principal=owner, chat_id=plan['chat'] + 1, revoked_at=None)),  # defect: another chat is enrolled",
+            'chat/enrolled')
+    factory('setup-starts-service', "                                   writable=plan['writable'], runner=runner, channel_ingress=ingress)\n",
+            "                                   writable=plan['writable'], runner=runner, channel_ingress=ingress)\n"
+            "            CS.start(installed['unit'], runner)  # defect: the setup starts the service\n",
+            'service/starts-inert')
+    # AC3 (declared falsifier): the genesis is signed by a key that is not the owner's, and accepted.
+    factory('genesis-not-owner-signed',
+            "                                                     'public_key': owner_public, 'independence_group': owner, 'scope': '*'})\n",
+            "                                                     'public_key': public['settlement'], 'independence_group': owner, 'scope': '*'},"
+            "  # defect: the genesis is signed by another key\n"
+            "                                sign=ACT.ssh_signer(os.path.join(keys, SETTLEMENT_KEY)))\n",
+            'genesis/owner-signed')
+    factory('owner-delegation-omitted', "        with step('delegation'):\n            admin('grant_delegation', {",
+            "        with step('delegation'):  # defect: no delegation\n            (lambda *a: None)('grant_delegation', {",
+            'journey/qualified-and-active')
+    # Review 1 (blocking, AC3): the first qualification request comes from shipped code alone.
+    factory('requester-not-enrolled',
+            "            admin('enroll_principal', {'principal': REQUESTER, 'principal_type': 'service', 'roles': [],\n",
+            "            (lambda *a, **k: None)('enroll_principal', {'principal': REQUESTER, 'principal_type': 'service', 'roles': [],"
+            "  # defect: no requester\n", 'journey/qualified-and-active')
+    factory('requester-projection-stale',
+            "            K.publish(S, conn, projection)\n            os.chmod(projection, 0o600)\n        with step('host_trust'):\n",
+            "            os.chmod(projection, 0o600)  # defect: the projection is not republished\n        with step('host_trust'):\n",
+            'journey/qualified-and-active')
+    factory('qualification-request-not-opened',
+            "        if self.requester is None:\n            return self._opened(run, None, 'skipped', 'no_requester')\n",
+            "        if True:  # defect: the service never opens the qualification request\n"
+            "            return self._opened(run, None, 'skipped', 'no_requester')\n",
+            'journey/qualified-and-active', module='control_service_channel.py')
+    # Review 2: a part-way failed opening is retried until open, never once per process.
+    factory('opening-tried-once-per-process',
+            "        if (self.run is not None and (self.run['request'] or {}).get('outcome') not in ('open', 'skipped')\n",
+            "        if (self.run is not None and self.run['request'] is None  # defect: one try per process\n",
+            'qualification/opening-retried', module='control_service_channel.py')
+    factory('qualification-alias-per-process',
+            "    return 'qualification-' + hashlib.sha256(str(run).encode()).hexdigest()[:32]\n",
+            "    return 'qualification-' + hashlib.sha256((str(run) + str(os.getpid())).encode()).hexdigest()[:32]"
+            "  # defect: a restarted process derives another alias\n",
+            'qualification/one-request-across-restart', module='control_service_channel.py')
+    # Review 1, filed and fixed with it.
+    factory('rerun-blocked-by-kept-directory',
+            "    if E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace)):\n",
+            "    if E.read_binding(workspace) is not None or os.path.lexists(os.path.dirname(E.binding_path(workspace))):"
+            "  # defect: a directory the rollback keeps blocks a second setup\n", 'rollback/rerun')
+    factory('store-world-readable',
+            "os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600))\n            os.chmod(plan['store'], 0o600)\n",
+            "os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o644))\n            os.chmod(plan['store'], 0o644)  # defect: readable by all\n",
+            'store/private-and-closed')
+    factory('store-connection-left-open', "        if conn is not None:\n            conn.close()\n",
+            "        if False:  # defect: the store connection is left open\n            conn.close()\n",
+            'store/private-and-closed')
+    factory('host-trust-directory-unchecked',
+            "    if problem:\n        raise Refused(problem, os.path.dirname(os.path.abspath(str(host_trust))))\n",
+            "    if False:  # defect: an existing host trust directory is not checked\n"
+            "        raise Refused(problem, os.path.dirname(os.path.abspath(str(host_trust))))\n",
+            'host-trust/directory-checked')
+    factory('empty-host-named-trust', "            rest.append('empty_' + name)\n",
+            "            found.append('trust')  # defect: an empty leftover directory is named a trust\n",
+            'refuse/writes-nothing')
 
     # VELDO-0077: each criterion's declared falsifier first, then the threat model's other shapes.
     def objective(name, module, old, new, rows, also=()):

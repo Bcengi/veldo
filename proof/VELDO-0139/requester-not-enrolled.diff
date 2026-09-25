@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -408 +408 @@
+-            admin('enroll_principal', {'principal': REQUESTER, 'principal_type': 'service', 'roles': [],
++            (lambda *a, **k: None)('enroll_principal', {'principal': REQUESTER, 'principal_type': 'service', 'roles': [],  # defect: no requester

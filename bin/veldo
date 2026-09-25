@@ -22,6 +22,9 @@ this file and see only argument routing plus wiring.
     veldo channel status|qualify|activate|stop -> .veldo/control_channel_activation.py
                             (the owner's Telegram edge commands, signed by his enrolled
                             key and applied by the running authority service, VELDO-0138)
+    veldo factory setup      -> .veldo/control_factory_setup.py (the owner's one setup of a real
+                            factory on this host from the existing pieces and his own signed
+                            commands, VELDO-0139)
     veldo jira init          -> .veldo/tracker_jira_init.py (bootstrap a
                             company-managed Jira project into the live board -
                             detect + provision the lifecycle statuses/workflow
@@ -55,7 +58,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # The subcommands and which module surface each routes to (documentation the
 # dispatcher below keys off; the actual call sites cite the same modules).
 KNOWN_SUBCOMMANDS = ("work", "fleet", "supervisor", "mirror", "jira", "status", "watch", "account",
-                     "answer", "steer", "abort", "channel")
+                     "answer", "steer", "abort", "channel", "factory")
 
 _MODS = {}
 
@@ -118,6 +121,10 @@ def _jira():
 
 def _channel():
     return _mod("veldo_cli_channel", ".veldo/control_channel_activation.py")
+
+
+def _factory():
+    return _mod("veldo_cli_factory", ".veldo/control_factory_setup.py")
 
 
 def _account_error_bases():
@@ -366,6 +373,10 @@ def route(argv):
             # forward verbatim to the activation module's own command surface (VELDO-0138): the owner's
             # signed qualify, activate and stop, applied by the running authority service.
             return _channel().main(rest)
+        if cmd == "factory":
+            # forward verbatim to the setup module's own command surface (VELDO-0139): the owner's
+            # one setup of a real factory on this host, ordering and checking the existing pieces.
+            return _factory().main(rest)
         if cmd == "mirror":
             # the opt-in, off-by-default live mirror runner (PLAN-0010 W5): one reconcile pass that
             # applies the one-way mirror (status, comments, artifact links, the ready-to-test

@@ -1,0 +1,111 @@
+{
+ "by_assertion": true,
+ "commit": "7bf5d595ae2ad19e467c0138c703ec38a6da03dc",
+ "details": [
+  "VELDO-0139 setup/lays-down detail: every key the setup generated is a 0600 file of this account",
+  "VELDO-0139 refuse/writes-nothing detail: empty-host: refused as invalid_input:state_root:holds_empty_host, writing nothing [invalid_input:state_root:holds_trust []]",
+  "VELDO-0139 journey/qualified-and-active detail: the running service opened the run's one qualification request as the requester setup enrolled, addressed to the owner, and presented it in his chat [None None 0]",
+  "VELDO-0139 journey/qualified-and-active detail: the owner's reply settled that request through the running service under his delegation [None None]",
+  "VELDO-0139 journey/qualified-and-active detail: the service's own gate recorded the qualification, its digest the one it reports [{'id': None, 'platform': None}]",
+  "VELDO-0139 journey/qualified-and-active detail: bin/veldo channel activate over the recorded qualification leaves the edge active [{'outcome': 'refused', 'state': None, 'reason': 'missing_qualification'}]",
+  "VELDO-0139 qualification/one-request-across-restart detail: after the restart the run still has exactly its one request, found by its alias [0 -> 0]",
+  "VELDO-0139 qualification/one-request-across-restart detail: and nothing was presented again [0 -> 0]",
+  "VELDO-0139 rollback/rerun detail: the spec's rollback and the README's name the workspace binding <clone>/.git/veldo/control/enrollment.json",
+  "VELDO-0139 store/private-and-closed detail: the store and its WAL and shared-memory files are 0600 files of this account [[('control.sqlite3', ('0o644', 1000)), ('control.sqlite3-wal', ('0o644', 1000)), ('control.sqlite3-shm', ('0o644', 1000))]]",
+  "VELDO-0139 store/private-and-closed detail: while that refusal is held, no connection to its store is open [['7', '8', '9']]",
+  "VELDO-0139 host-trust/directory-checked detail: trust-directory-mode: refused as invalid_input:host_trust_directory:mode, writing nothing [None ['/dev/shm/b139-hwgpgkg4/install/29af59dbcc0be77d', '/dev/shm/b139-hwgpgkg4/install/29af59dbcc0be77d/bin', '/dev/shm/b139-hwgpgkg4/install/29af59dbcc0be77d/bin/arch.py']]",
+  "VELDO-0139 host-trust/directory-checked detail: trust-directory-owner: refused as invalid_input:host_trust_directory:owner, writing nothing [setup_incomplete:host_trust:PermissionError ['/dev/shm/b139-hwgpgkg4/root-hd-owner/authority', '/dev/shm/b139-hwgpgkg4/root-hd-owner/authority/control.sqlite3', '/dev/shm/b139-hwgpgkg4/root-hd-owner/edge']]",
+  "VELDO-0139 host-trust/directory-checked detail: trust-directory-symlink: refused as invalid_input:host_trust_directory:symlink, writing nothing [None ['/dev/shm/b139-hwgpgkg4/install/c405b677ea4feca1', '/dev/shm/b139-hwgpgkg4/install/c405b677ea4feca1/bin', '/dev/shm/b139-hwgpgkg4/install/c405b677ea4feca1/bin/arch.py']]"
+ ],
+ "failed_rows": [
+  "VELDO-0139 setup/lays-down",
+  "VELDO-0139 refuse/writes-nothing",
+  "VELDO-0139 journey/qualified-and-active",
+  "VELDO-0139 qualification/one-request-across-restart",
+  "VELDO-0139 rollback/rerun",
+  "VELDO-0139 store/private-and-closed",
+  "VELDO-0139 host-trust/directory-checked"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "052888f3675aace3a6b6b1f60914f153f9866bf1394f9c09db1dc75a1ceaf9a9",
+   "now": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": "c2c287642df991b7af8c285da5fbbb4fcbc174eece2eedef6018e43d516e0bef",
+   "now": "d350187cfa77751c3fb70103d3b93d5909f5ec64c05d1eb3f0d7709901fcea5b"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "76cfa76030c28d6116094a090e8f794c6af70d88fa19d0980de3ff150908441b",
+   "now": "2f395d4b8861b6645c8ce227cf3a3f27b4d152da2ebc070c9e9a5beae8adefc8"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0139 install/assets",
+   true
+  ],
+  [
+   "VELDO-0139 setup/lays-down",
+   false
+  ],
+  [
+   "VELDO-0139 refuse/writes-nothing",
+   false
+  ],
+  [
+   "VELDO-0139 refuse/existing-store",
+   true
+  ],
+  [
+   "VELDO-0139 edge/enrolled-with-possession",
+   true
+  ],
+  [
+   "VELDO-0139 chat/enrolled",
+   true
+  ],
+  [
+   "VELDO-0139 ingress/configuration",
+   true
+  ],
+  [
+   "VELDO-0139 token/never-copied",
+   true
+  ],
+  [
+   "VELDO-0139 service/starts-inert",
+   true
+  ],
+  [
+   "VELDO-0139 journey/qualified-and-active",
+   false
+  ],
+  [
+   "VELDO-0139 genesis/owner-signed",
+   true
+  ],
+  [
+   "VELDO-0139 qualification/one-request-across-restart",
+   false
+  ],
+  [
+   "VELDO-0139 rollback/rerun",
+   false
+  ],
+  [
+   "VELDO-0139 store/private-and-closed",
+   false
+  ],
+  [
+   "VELDO-0139 host-trust/directory-checked",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 34.645,
+ "spec_id": "VELDO-0139",
+ "suite": "scripts/suites/73_veldo_0139_factory_setup.py",
+ "tree": "git archive 7bf5d595ae2ad19e467c0138c703ec38a6da03dc, unchanged; the current suite file run against it"
+}

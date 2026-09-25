@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -229 +229 @@
+-    if E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace)):
++    if E.read_binding(workspace) is not None or os.path.lexists(os.path.dirname(E.binding_path(workspace))):  # defect: a directory the rollback keeps blocks a second setup
