@@ -68,7 +68,8 @@ _V130_ROWS = ('install/assets', 'webauthn/stand-in-browser', 'webauthn/independe
               'reads/model-set', 'reads/authoritative', 'reads/freshness', 'events/live', 'actions/contract',
               'actions/workflow-save', 'actions/unauthorized-write', 'events/reconcile-past-page',
               'events/resume-last-event-id', 'events/expiry-named', 'events/published-watermark',
-              'events/reconcile-deferred', 'enrollment/possession-race', 'webauthn/openssl-fixed-path')
+              'events/reconcile-deferred', 'enrollment/possession-race', 'webauthn/openssl-fixed-path',
+              'events/revoked-either-path', 'events/fill-window-revocation', 'events/retry-after-failure')
 # The kinds each read model serves, as this suite expects them from the owning modules (compared with the
 # published registry, never derived from it).
 _V130_EXPECTED_KINDS = {
@@ -339,7 +340,7 @@ def _v130_checks(base):
             return True
 
     (IA, WB, WV, EP, ES, SC, SF, SR, RF, RB, EG, EA, MS, DE, DO, TL, RM, RA, RR, EL, AK, AW, AU,
-     ER, EI, EX, EW, RD, PR, WO) = _V130_ROWS
+     ER, EI, EX, EW, RD, PR, WO, RV, FW, RT) = _V130_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_api.py': ROOT / ".veldo" / "control_api.py",
@@ -2060,6 +2061,221 @@ def _v130_checks(base):
                 check(RD, 'control: the next hint in order from the same instance subscribes nothing [observed %s]' % steady,
                       'refusal' not in (steady or {}) and rd['calls'].count('subscribe') == subscribed)
 
+        # events/revoked-either-path: a revocation closes its stream as revoked whichever path saw it first:
+        # `follow`, meeting the record in the feed, or the stream's own credential recheck, when the
+        # revocation commits after the feed page was read and before the open streams are judged.
+        with section(RV):
+            late = {'armed': None, 'result': {}}
+
+            class _Late:
+                """The suite's judge, except that one armed feed read commits a revocation right after it is
+                answered, so the page the API follows does not hold it."""
+
+                def __getattr__(self, name):
+                    return getattr(authority, name)
+
+                def feed(self, after, limit):
+                    answer = authority.feed(after, limit)
+                    work, late['armed'] = late['armed'], None
+                    if work is not None:
+                        late['result'] = work()
+                    return answer
+            rv_api = (API.ControlApi(dict(api_config, state_dir=str(base / 'api-rv')), _Late(), signer, clock=clock)
+                      if here else absent)
+            rv = {label: _V130Browser(base / 'browsers', 'owner-rv-' + label, -7) for label in ('follow', 'recheck')}
+            made = [enrolled(browser, 'owner', 'rv ' + label) for label, browser in rv.items()]
+            rv_cookies, rv_watch = {}, {}
+            deliver(head_hint(), on=rv_api)
+            for label, browser in rv.items():
+                rv_cookies[label] = sign_in(browser, on=rv_api)[1]
+                rv_watch[label] = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=rv_cookies[label], on=rv_api)[2]
+            streaming = API is not None and all(isinstance(w, getattr(API, 'Stream', ())) for w in rv_watch.values())
+            for watch in (rv_watch.values() if streaming else ()):
+                watch.next(0)
+            check(RV, 'two credentials are enrolled, each signed in with an open stream [observed %s]'
+                  % [m.get('outcome') for m in made], all(m.get('outcome') == 'accepted' for m in made) and streaming)
+            steward_command(None, None, operation='revoke', credential_id=rv['follow'].credential_id)
+            by_follow = deliver(head_hint(), on=rv_api)
+            check(RV, 'a revocation the feed page holds is met by follow, and its stream closes as revoked [observed %s %s]'
+                  % (by_follow, rv_watch['follow'].closed if streaming else None),
+                  streaming and by_follow.get('ended') == 1 and rv_watch['follow'].closed == 'revoked')
+            fixture('v130-rv:1', 'v130_gap_marker', {'n': 1})
+            late['armed'] = lambda: steward_command(None, None, operation='revoke', credential_id=rv['recheck'].credential_id)
+            by_recheck = deliver(head_hint(), on=rv_api)
+            check(RV, 'a revocation committed after the feed page was read is seen by the stream\'s recheck, not by '
+                      'follow, and that stream closes as revoked too [observed %s %s %s]'
+                  % (late['result'].get('outcome'), by_recheck, rv_watch['recheck'].closed if streaming else None),
+                  streaming and late['result'].get('outcome') == 'accepted' and by_recheck.get('ended') == 0
+                  and by_recheck.get('closed') == 1 and rv_watch['recheck'].closed == 'revoked')
+            check(RV, 'its session is ended',
+                  call('GET', '/api/v1/auth/session', cookie=rv_cookies['recheck'], on=rv_api)[0] == 401)
+
+        # events/fill-window-revocation: a revocation delivered while a new stream is being filled (after its
+        # first read, before it is registered, so that delivery never sees it) closes that stream too.
+        with section(FW):
+            filling = {'armed': None, 'result': ({}, {})}
+
+            class _Filling:
+                """The suite's judge, except that one armed events read runs its work before it answers."""
+
+                def __getattr__(self, name):
+                    return getattr(authority, name)
+
+                def events(self, principal, after, limit):
+                    answer = authority.events(principal, after, limit)
+                    work, filling['armed'] = filling['armed'], None
+                    if work is not None:
+                        filling['result'] = work()
+                    return answer
+            fw_api = (API.ControlApi(dict(api_config, state_dir=str(base / 'api-fw')), _Filling(), signer, clock=clock)
+                      if here else absent)
+            fw = {label: _V130Browser(base / 'browsers', 'owner-fw-' + label, -7) for label in ('revoked', 'kept')}
+            made = [enrolled(browser, 'owner', 'fw ' + label) for label, browser in fw.items()]
+            deliver(head_hint(), on=fw_api)
+            fw_cookies = {label: sign_in(browser, on=fw_api)[1] for label, browser in fw.items()}
+
+            def revoke_while_filling():
+                revoked = steward_command(None, None, operation='revoke', credential_id=fw['revoked'].credential_id)
+                return revoked, deliver(head_hint(), on=fw_api)
+            filling['armed'] = revoke_while_filling
+            fw_opened = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=fw_cookies['revoked'], on=fw_api)
+            fw_watch = fw_opened[2]
+            is_stream = API is not None and isinstance(fw_watch, getattr(API, 'Stream', ()))
+            revoked, delivered = filling['result']
+            check(FW, 'the revocation is committed and delivered while the stream fills, ending its session '
+                      '[observed %s %s]' % (revoked.get('outcome'), delivered),
+                  all(m.get('outcome') == 'accepted' for m in made) and revoked.get('outcome') == 'accepted'
+                  and delivered.get('ended') == 1)
+            check(FW, 'the new stream is closed as revoked and not left registered [observed %s %s]'
+                  % (fw_opened[0], fw_watch.closed if is_stream else None),
+                  is_stream and fw_watch.closed == 'revoked' and fw_watch not in fw_api.streams())
+            kept = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=fw_cookies['kept'], on=fw_api)[2]
+            check(FW, 'control: a live session\'s stream opened the same way stays open and registered',
+                  API is not None and isinstance(kept, getattr(API, 'Stream', ())) and kept.closed is None
+                  and kept in fw_api.streams())
+            for watch in ((kept,) if API is not None and isinstance(kept, getattr(API, 'Stream', ())) else ()):
+                fw_api.drop(watch)
+
+        # events/retry-after-failure: the API process's service authority (control_client_api) with its real
+        # hint socket, before a stand-in service answering from this suite's real judge. A delivery that fails
+        # once (the feed refused unavailable, or a reconcile's subscription raising) leaves the catch-up owed;
+        # the hint socket's thread runs it again, with backoff, until the cursor reaches the head, and then
+        # calls nothing more.
+        with section(RT):
+            import queue as _v130_queue
+            rt = {'instance': 'A', 'calls': [], 'fail': {}}
+            rt_asked, rt_thread = _v130_queue.Queue(), _v130_threading.current_thread()
+
+            def rt_answer(command):
+                name, a = command['call'], command['arguments']
+                rt['calls'].append(name)
+                if rt['fail'].get(name):
+                    rt['fail'][name] -= 1
+                    raise CAm.CC.RoutingRefused('authority_unavailable', 'a one-off failure')
+                if name == 'subscribe':
+                    result = dict(authority.hint(), ok=True, reason='subscribed', sequence=0)
+                elif name == 'feed':
+                    result = authority.feed(a['after'], a['limit'])
+                elif name == 'inspect':
+                    result = authority.inspect(a['entity_ids'])
+                elif name == 'events':
+                    result = authority.events(a['principal'], a['after'], a['limit'])
+                else:
+                    return {'accepted': False, 'reason': 'unexpected_call'}
+                return {'accepted': True, 'result': dict(result, instance=rt['instance'])}
+
+            def rt_send(workspace, command, enrollment, verify, sign, host, timeout=30.0):
+                # The store connection belongs to this suite's thread: a call from the hint socket's thread
+                # is handed here and answered by serve_until.
+                if _v130_threading.current_thread() is not rt_thread:
+                    reply = _v130_queue.Queue()
+                    rt_asked.put((command, reply))
+                    got = reply.get(timeout=30)
+                    if isinstance(got, Exception):
+                        raise got
+                    return got
+                return rt_answer(command)
+
+            def serve_until(predicate, seconds=5):
+                """Answer the handed calls until `predicate` holds with no delivery in hand and no call waiting."""
+                until = _v130_time.monotonic() + seconds
+
+                def settled():
+                    return predicate() and rt_asked.empty() and not rt_auth._delivering.locked()
+                while not settled() and _v130_time.monotonic() < until:
+                    try:
+                        command, reply = rt_asked.get(timeout=0.05)
+                    except _v130_queue.Empty:
+                        continue
+                    try:
+                        reply.put(rt_answer(command))
+                    except Exception as exc:  # noqa: BLE001 - handed back to the caller's thread
+                        reply.put(exc)
+                return bool(settled())
+            if CAm is not None:
+                CAm.CC.send = rt_send
+            rt_auth = CAm.ServiceAuthority('/v130-workspace', None, 'v130-host', None) if CAm is not None else absent
+            rt_api = (CAm.API.ControlApi(dict(api_config, state_dir=str(base / 'api-rt')), rt_auth, signer, clock=clock)
+                      if CAm is not None else absent)
+            takes_retry = CAm is not None and 'retry' in _v130_inspect.signature(CAm.Hints).parameters
+            rt_hints = (CAm.Hints(base / 'api-rt-hints' / 'hints.sock', rt_auth.deliver,
+                                  *([rt_auth.retry] if takes_retry else [])) if CAm is not None else absent)
+            try:
+                rt_auth.connect(rt_hints.path, rt_api)
+
+                def hinted():
+                    return dict(head_hint(), instance=rt['instance'], sequence=(getattr(rt_auth, 'sequence', 0) or 0) + 1)
+                rt_auth.deliver(hinted())
+                rt_b = {label: _V130Browser(base / 'browsers', 'owner-rt-' + label, -7) for label in ('feed', 'raise')}
+                made = [enrolled(browser, 'owner', 'rt ' + label) for label, browser in rt_b.items()]
+                rt_auth.deliver(hinted())
+                rt_watch = {}
+                for label, browser in rt_b.items():
+                    rt_cookie = sign_in(browser, on=rt_api)[1]
+                    rt_watch[label] = call('GET', EVENTS + '/stream?after=%d' % head()[0], cookie=rt_cookie, on=rt_api)[2]
+                streaming = all(hasattr(w, 'next') for w in rt_watch.values())
+                check(RT, 'two credentials are enrolled, each with an open stream on the API process [observed %s]'
+                      % [m.get('outcome') for m in made], all(m.get('outcome') == 'accepted' for m in made) and streaming)
+                # A one-off feed refusal consumes the revocation's hint.
+                steward_command(None, None, operation='revoke', credential_id=rt_b['feed'].credential_id)
+                rt['fail'] = {'feed': 1}
+                first = rt_auth.deliver(hinted())
+                check(RT, 'the revocation\'s hint, its feed read refused once, delivers nothing: the cursor is behind '
+                          'and the stream open [observed %s]' % first,
+                      streaming and str((first or {}).get('refusal')).startswith('unavailable_service')
+                      and rt_api._cursor < head()[0] and rt_watch['feed'].closed is None)
+                caught = serve_until(lambda: rt_api._cursor == head()[0] and rt_watch['feed'].closed is not None)
+                check(RT, 'the hint socket\'s thread retries the owed catch-up by itself: the cursor reaches the head '
+                          'and the revoked stream closes as revoked [observed cursor %s of %s, %s]'
+                      % (rt_api._cursor, head()[0], rt_watch['feed'].closed if streaming else None),
+                      caught and rt_watch['feed'].closed == 'revoked')
+                # A reconcile whose subscription raises: the service restarted as a new instance, a call notices
+                # it and subscribing again fails once.
+                steward_command(None, None, operation='revoke', credential_id=rt_b['raise'].credential_id)
+                rt['instance'], rt['fail'] = 'B', {'subscribe': 1}
+                try:
+                    noticed = rt_auth.inspect([])
+                except Exception as exc:  # noqa: BLE001 - the refusal is the observation
+                    noticed = {'raised': getattr(exc, 'code', type(exc).__name__)}
+                check(RT, 'the call that noticed the new instance is answered although subscribing again failed '
+                          '[observed %s, subscribed to %s]' % ({k: noticed.get(k) for k in ('ok', 'raised')}, rt_auth.instance),
+                      noticed.get('ok') is True and rt['fail'].get('subscribe') == 0 and rt_auth.instance == 'A')
+                caught = serve_until(lambda: rt_auth.instance == 'B' and rt_api._cursor == head()[0]
+                                     and rt_watch['raise'].closed is not None)
+                check(RT, 'the failed reconcile stays owed and is retried: the API subscribes to the new instance, the '
+                          'cursor reaches the head and the revoked stream closes as revoked [observed %s, cursor %s of '
+                          '%s, %s]' % (rt_auth.instance, rt_api._cursor, head()[0],
+                                       rt_watch['raise'].closed if streaming else None),
+                      caught and rt_watch['raise'].closed == 'revoked')
+                quiet = len(rt['calls'])
+                serve_until(lambda: False, 1.0)
+                check(RT, 'control: once the catch-up succeeded nothing is owed and the thread calls nothing more, a '
+                          'retry of a failure and never polling [observed %d calls]' % (len(rt['calls']) - quiet),
+                      len(rt['calls']) == quiet and getattr(rt_auth, 'owed', 'absent') is None)
+            finally:
+                if hasattr(rt_hints, 'close'):
+                    rt_hints.close()
+
         # enrollment/possession-race: two possession requests racing on one registration id.
         with section(PR):
             racer = _V130Browser(base / 'browsers', 'owner-race', -7)
@@ -2324,7 +2540,7 @@ def _v130_checks(base):
 # exchange is made; the Bot API stand-in only answers the ingress's construction.
 _V130_SERVICE_ROWS = ('service/install', 'service/socket-path', 'service/edge-signed-requests',
                       'service/host-revocation-closes-stream', 'service/in-process-refused',
-                      'service/restart-reconciles', 'service/down-at-registration')
+                      'service/restart-reconciles', 'service/down-at-registration', 'service/connect-sets-cursor')
 
 
 def _v130_service_checks(base):
@@ -2353,7 +2569,7 @@ def _v130_service_checks(base):
                     check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:300]), False)
             return True
 
-    SI, SP, SE, SR, SN, SX, SD = _V130_SERVICE_ROWS
+    SI, SP, SE, SR, SN, SX, SD, SH = _V130_SERVICE_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_service.py': ROOT / ".veldo" / "control_service.py",
@@ -2609,6 +2825,12 @@ def _v130_service_checks(base):
         if _v130_os.environ.get('V130_DEBUG'):
             print('V130 open', open_refusal, [p.read_text()[-3000:] for p in manager.logs])
         api = opened.api if opened is not None else _V130Absent()
+        # service/connect-sets-cursor: the head the subscription answers is applied, so the API process's
+        # cursor is set from the start, before any hint.
+        with section(SH):
+            check(SH, 'the API process\'s cursor is at the head as soon as it is constructed [observed %s of %s]'
+                  % (getattr(api, '_cursor', None), head()), opened is not None and head() > 0
+                  and getattr(api, '_cursor', None) == head())
         COOKIE = '__Host-veldo-session'
 
         def call(method, path, body=None, cookie=None, token=None):
@@ -2814,11 +3036,15 @@ def _v130_service_checks(base):
             restarted = CS.start(unit, manager)
             instance_after = service_status().get('instance')
             resubscribed = wait(lambda: opened is not None and getattr(opened.authority, 'instance', None) == instance_after, 5)
+            # The reconcile after the new subscription is done before the revocation: the cursor at the head and
+            # no delivery in hand, so the stream is closed by the revocation's own delivery.
+            settled = wait(lambda: opened is not None and getattr(api, '_cursor', None) == head()
+                           and not opened.authority._delivering.locked(), 5)
             check(SX, 'the service restarted as a new instance and the API subscribed to it by itself, with no request '
                   'of its own [observed %s -> %s, API %s]' % (instance_before, instance_after,
                                                               getattr(getattr(opened, 'authority', None), 'instance', None)),
                   restarted.get('ActiveState') == 'active' and bool(instance_after) and instance_after != instance_before
-                  and bool(resubscribed))
+                  and bool(resubscribed) and bool(settled))
             mark = head()
             revoked3 = steward('revoke', credential_id=tablet.credential_id)
             closed3 = wait(lambda: watching and stream3.closed is not None, 5)
