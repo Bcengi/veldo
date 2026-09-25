@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -166 +166 @@
+-    if sorted(units) != sorted(unit['states']) or set(priority.UNIT_TERMINAL) != set(unit['terminal']):
++    if set(priority.UNIT_TERMINAL) != set(unit['terminal']) or priority.UNIT_PLANNED not in unit['states']:  # defect

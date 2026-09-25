@@ -1,0 +1,140 @@
+{
+ "by_assertion": true,
+ "commit": "8bc45177e27a79af8b22a19de5e9cd828a7589ca",
+ "details": [
+  "VELDO-0078 detail: priority/gate-question: an entity contract with a unit state the classification does not name is named",
+  "VELDO-0078 detail: ticket/sibling-changes: the subscription call and the landing are accepted after the append; and after the sibling's prioritization; and after the sibling's disposal; every field the service writes on the item is one the ticket classifies (AttributeError)",
+  "VELDO-0078 detail: ticket/own-changes: a change to a sibling's entry alone leaves the tickets current; the restored record is current again"
+ ],
+ "failed_rows": [
+  "VELDO-0078 priority/gate-question",
+  "VELDO-0078 ticket/sibling-changes",
+  "VELDO-0078 ticket/own-changes"
+ ],
+ "modules": {
+  ".veldo/control_backlog.py": {
+   "at_commit": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597",
+   "now": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b"
+  },
+  ".veldo/control_backlog_priority.py": {
+   "at_commit": "e0439077c0ee2a6f61ded190c6bcbcab79564d0538a940d765bb6b6683ecfda4",
+   "now": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc"
+  },
+  ".veldo/control_claim.py": {
+   "at_commit": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf",
+   "now": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af",
+   "now": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7"
+  },
+  ".veldo/control_objective.py": {
+   "at_commit": "5b9f2122696ffed618407e54883f9c656a8ee24c9dd31652e35fb1092d244392",
+   "now": "5b9f2122696ffed618407e54883f9c656a8ee24c9dd31652e35fb1092d244392"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
+   "now": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
+  },
+  ".veldo/frontier.py": {
+   "at_commit": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc",
+   "now": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf",
+   "now": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf"
+  },
+  ".veldo/tasks.py": {
+   "at_commit": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620",
+   "now": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0078 install/assets",
+   true
+  ],
+  [
+   "VELDO-0078 priority/declared-set",
+   true
+  ],
+  [
+   "VELDO-0078 priority/missing-priority",
+   true
+  ],
+  [
+   "VELDO-0078 priority/gate-question",
+   false
+  ],
+  [
+   "VELDO-0078 priority/store-inspection",
+   true
+  ],
+  [
+   "VELDO-0078 priority/owner-decision",
+   true
+  ],
+  [
+   "VELDO-0078 lifecycle/foreign-sources",
+   true
+  ],
+  [
+   "VELDO-0078 activation/first-claim",
+   true
+  ],
+  [
+   "VELDO-0078 activation/decomposition-growth",
+   true
+  ],
+  [
+   "VELDO-0078 ticket/sibling-changes",
+   false
+  ],
+  [
+   "VELDO-0078 ticket/own-changes",
+   false
+  ],
+  [
+   "VELDO-0078 blocked/resume-binding",
+   true
+  ],
+  [
+   "VELDO-0078 done/missing-outcome",
+   true
+  ],
+  [
+   "VELDO-0078 done/authorized-alternative",
+   true
+  ],
+  [
+   "VELDO-0078 done/accepted-outcomes",
+   true
+  ],
+  [
+   "VELDO-0078 done/one-completion-reader",
+   true
+  ],
+  [
+   "VELDO-0078 lifecycle/regular-path",
+   true
+  ],
+  [
+   "VELDO-0078 done/closed-unit",
+   true
+  ],
+  [
+   "VELDO-0078 other-process",
+   true
+  ],
+  [
+   "VELDO-0078 observability",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 5.231,
+ "spec_id": "VELDO-0078",
+ "suite": "scripts/suites/73_veldo_0078_backlog.py",
+ "tree": "git archive 8bc45177e27a79af8b22a19de5e9cd828a7589ca, unchanged; the current suite file run against it"
+}

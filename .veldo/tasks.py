@@ -40,6 +40,18 @@ that pair reaches both harms the criterion promises never happen: a task nobody 
 release by one worker freeing a task another is still holding. The ledger's character rule is
 ASKED of the ledger, never copied here, because a copy would be two enumerations of one set.
 
+IN THE FACTORY A TASK IS AN ENGINEERING UNIT (VELDO-0078). With an eligibility Gate wired (an
+enrolled repository always has one: control_eligibility.gate_for stops an enrolled caller without
+it), the task id is the alias of an execution unit in the control store, and two answers change.
+A claim is taken only when the Gate's claim station accepts the unit (the one decision every floor
+entry asks, whose priority_current predicate is the backlog's executable question), so a task of
+intake-only, prepared, or admitted but unprioritized work, a unit appended after the last
+prioritization, or a blocked item is refused by the Gate's first named reason before the ledger is
+asked. And DONE is the unit's accepted outcome (control_backlog.outcome_problems through the Gate's
+completion reader: its confirmed-landing receipt or the owner's authorized alternative outcome); the
+declared product existing on disk is reported, never done. An unenrolled tree with no Gate keeps
+both pre-factory answers below unchanged.
+
 IT ENFORCES NOTHING. No gate stage consults this, no build is refused because a task is open,
 and an absent .veldo/tasks/ directory stands the read model down by name rather than reporting
 zero open tasks as though it had looked.
@@ -118,6 +130,7 @@ def _organ(name):
 
 
 _LEDGER = None
+_FACTORY = {}
 
 
 def _ledger():
@@ -129,6 +142,30 @@ def _ledger():
     if _LEDGER is None:
         _LEDGER = _organ("claim")
     return _LEDGER
+
+
+def _factory(name):
+    """control_backlog or control_eligibility, loaded once per process on first use. A call without an
+    explicit Gate resolves one through control_eligibility.gate_for, so it loads control_eligibility
+    and every module that loads, in an unenrolled tree too; there only the answers stay pre-factory."""
+    if name not in _FACTORY:
+        _FACTORY[name] = _organ(name)
+    return _FACTORY[name]
+
+
+def _gate(root, eligibility):
+    """The Gate factory answers are read through: the wired one; a named stop in an enrolled repository
+    with none (control_eligibility.gate_for, the one resolution every floor entry calls); None in an
+    unenrolled tree, which keeps the pre-factory answers."""
+    if eligibility is not None:
+        return eligibility
+    return _factory("control_eligibility").gate_for(Path(root) if root is not None else ROOT, None)
+
+
+def _executable(gate, unit):
+    """The Gate's claim-station refusals for `unit` ([] when it may be claimed): the one decision every
+    floor entry asks, with the backlog's priority among its predicates."""
+    return gate.decide("claim", unit)["refusals"]
 
 
 def default_tasks_dir(root=None):
@@ -316,9 +353,16 @@ def all_tasks(tdir=None, root=None, parse=None):
     return out
 
 
-def concluded(task, root=None):
-    """THE ONE DEFINITION OF DONE: the artifact the task declares it produces exists. A status
-    field is not consulted, deliberately."""
+def concluded(task, root=None, eligibility=None):
+    """THE ONE DEFINITION OF DONE: with a Gate, the task's unit has an accepted outcome in the
+    control store (VELDO-0078); without one, the artifact the task declares it produces exists. A
+    status field is not consulted, deliberately."""
+    return _concluded(task, root, _gate(root, eligibility))
+
+
+def _concluded(task, root, gate):
+    if gate is not None:
+        return not _factory("control_backlog").outcome_problems(gate, task.get("id"))
     base = Path(root) if root is not None else ROOT
     produces = task.get("produces")
     if produces_problems(produces):
@@ -326,7 +370,7 @@ def concluded(task, root=None):
     return (base / produces).exists()
 
 
-def claim_answer(task, worker_caps=None, root=None, claims_root=None):
+def claim_answer(task, worker_caps=None, root=None, claims_root=None, eligibility=None):
     """Why this worker may or may not take this task, in ONE vocabulary. The first three
     answers are the LEDGER'S, asked of the ledger; only CONCLUDED is this module's.
 
@@ -334,8 +378,16 @@ def claim_answer(task, worker_caps=None, root=None, claims_root=None):
     answered, deliberately: every path that reaches this function through the read model has
     already refused such a task, so a caller that hand-built one is a bug to surface and not a
     claimant to arbitrate between."""
-    if concluded(task, root):
+    return _claim_answer(task, worker_caps, root, claims_root, _gate(root, eligibility))
+
+
+def _claim_answer(task, worker_caps, root, claims_root, gate):
+    if _concluded(task, root, gate):
         return REFUSED_CONCLUDED
+    if gate is not None:
+        problems = _executable(gate, task["id"])
+        if problems:
+            return problems[0]
     cl = _ledger()
     reqs = task.get("requires") or []
     if not cl.capability_ok(worker_caps, reqs):
@@ -345,28 +397,36 @@ def claim_answer(task, worker_caps=None, root=None, claims_root=None):
     return GRANTED
 
 
-def claimable(worker_caps=None, tdir=None, root=None, parse=None, claims_root=None):
+def claimable(worker_caps=None, tdir=None, root=None, parse=None, claims_root=None, eligibility=None):
     """The tasks this worker may take right now, each with the answer that admitted it."""
+    gate = _gate(root, eligibility)
     return [t for t, _p in all_tasks(tdir, root, parse)
-            if claim_answer(t, worker_caps, root, claims_root) == GRANTED]
+            if _claim_answer(t, worker_caps, root, claims_root, gate) == GRANTED]
 
 
 def claim_task(task_id, worker_id, worker_caps=None, tdir=None, root=None, parse=None,
-               claims_root=None):
+               claims_root=None, eligibility=None):
     """Take one task THROUGH THE EXISTING LEDGER. Returns (ok, reason) in the ledger's own
-    shape, so a caller reads one vocabulary whatever refused it."""
+    shape, so a caller reads one vocabulary whatever refused it. With a Gate (VELDO-0078) only
+    executable work is taken: a task whose unit the Gate's claim station refuses (not admitted and
+    prioritized among its reasons) is refused by its first named reason and the ledger is never asked."""
     found = [t for t, _p in all_tasks(tdir, root, parse) if t.get("id") == task_id]
     if not found:
         return False, REFUSED_UNKNOWN
     task = found[0]
-    if concluded(task, root):
+    gate = _gate(root, eligibility)
+    if _concluded(task, root, gate):
         return False, REFUSED_CONCLUDED
+    if gate is not None:
+        problems = _executable(gate, task_id)
+        if problems:
+            return False, problems[0]
     cl = _ledger()
     return cl.claim(task_id, worker_id, worker_caps=worker_caps,
                     requirements=task.get("requires") or [], root=claims_root)
 
 
-def task_report(tdir=None, root=None, parse=None, claims_root=None, worker_caps=None):
+def task_report(tdir=None, root=None, parse=None, claims_root=None, worker_caps=None, eligibility=None):
     """ONE key shape whether it stood down or not, so a consumer never guesses whether a key is
     missing or genuinely empty. Each unclaimable task carries WHY, because 'no work left' and
     'work left that nobody here can do' send an operator in opposite directions."""
@@ -384,8 +444,9 @@ def task_report(tdir=None, root=None, parse=None, claims_root=None, worker_caps=
         rep["reason"] = STAND_DOWN_NO_TASKS
         return rep
     rep["stood_down"] = False
+    gate = _gate(root, eligibility)
     for task, path in tasks:
-        answer = claim_answer(task, worker_caps, root, claims_root)
+        answer = _claim_answer(task, worker_caps, root, claims_root, gate)
         row = {"id": task.get("id"), "kind": task.get("kind"), "target": task.get("target"),
                "produces": task.get("produces"), "declared_in": str(path), "answer": answer}
         if answer == GRANTED:
@@ -427,7 +488,7 @@ class TaskController:
     ungoverned pool."""
 
     def __init__(self, desired, resume_at, now, worker_caps=None, tdir=None, root=None,
-                 parse=None, claims_root=None):
+                 parse=None, claims_root=None, eligibility=None):
         self._desired = desired
         self._resume_at = resume_at
         self._now = now
@@ -436,6 +497,7 @@ class TaskController:
         self._root = root
         self._parse = parse
         self._claims_root = claims_root
+        self._eligibility = eligibility
 
     def desired(self):
         return self._desired()
@@ -448,4 +510,4 @@ class TaskController:
 
     def work_remains(self):
         return bool(claimable(self._caps, self._tdir, self._root, self._parse,
-                              self._claims_root))
+                              self._claims_root, self._eligibility))

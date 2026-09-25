@@ -1,0 +1,6 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -150 +150,2 @@
+-STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current', PRIORITY_PREDICATE) + p))
++STATION_PREDICATES = {s: tuple(dict.fromkeys(('admission_current',) + (() if s == 'selection' else (PRIORITY_PREDICATE,))
++                                             + p))  # defect: selection offers and assigns unprioritized work
