@@ -4621,8 +4621,8 @@ def cases():
                 "            ruling = 'close'  # defect: the free text is read as a ruling\n",
                 'dispose-other')
     disposition('disposition-other-under-another-source',
-                "'source_kind': arrived['source_kind'], 'source_id': source_id,",
-                "'source_kind': 'api_request', 'source_id': source_id,", 'dispose-other')
+                "self.intake.submit_attested(arrived['source_kind'], evidence,",
+                "self.intake.submit_attested('api_request', evidence,", 'dispose-other')
     disposition('disposition-close-cancels-sibling-backlog',
                 "            if not plan['siblings']:\n                targets.append((plan['backlog_item_uuid'], 'backlog_item'))\n",
                 "            targets.append((plan['backlog_item_uuid'], 'backlog_item'))  # defect: sibling work is canceled too\n",
@@ -4664,6 +4664,37 @@ def cases():
                 "                                          said=((data.get('answer') or {}).get('command') or {})"
                 ".get('instruction'))  # defect: the instruction is logged\n",
                 'observability')
+    # The review finding: the source of an other instruction is authenticated by the intake itself.
+    disposition('disposition-source-from-answer',
+                "        result = self.intake.submit_attested(arrived['source_kind'], evidence, principal=answer['principal'],\n"
+                "                                             text=signed['instruction'],\n"
+                "                                             project=project['data']['name'] if project else None,\n"
+                "                                             provenance={'disposition': disposition})\n",
+                "        result = self.intake._submit({'schema': 'veldo.intake_command/v1', 'source_kind': arrived['source_kind'],\n"
+                "                                      'source_id': evidence if isinstance(evidence, str)\n"
+                "                                      else str(evidence['request'].get('request_id')),\n"
+                "                                      'principal': answer['principal'], 'text': signed['instruction'],\n"
+                "                                      'project': project['data']['name'] if project else None,\n"
+                "                                      'clarifies': None, 'provenance': {'disposition': disposition}})"
+                "  # defect: the source is the answer's\n",
+                'squatted-request-refused')
+    # The intake's own checks, each on every row it guards.
+    add(133, 'intake-attested-principal-not-compared', '69_veldo_0133_dispositions.py', 'control_intake.py',
+        "        if known['principal'] != principal:\n"
+        "            raise Refused('unauthorized:not_the_answering_person', record['evidence_id'])\n", "",
+        ['disposition/squatted-request-refused', 'disposition/foreign-chat-refused', 'disposition/no-foreign-follow-up'],
+        also=[("        if command['principal'] != principal:\n"
+               "            raise Refused('unauthorized:not_the_answering_person', command['source_id'])\n", "")])
+    add(133, 'intake-attested-chat-not-own', '69_veldo_0133_dispositions.py', 'control_intake.py',
+        "        if known['principal'] is None:\n"
+        "            raise Refused('unauthenticated:' + str(refusal), record['evidence_id'])\n"
+        "        if refusal in ('not_current_member', 'not_a_person'):\n"
+        "            raise Refused('unauthorized:' + refusal, record['evidence_id'])\n"
+        "        if known['principal'] != principal:\n",
+        "        if refusal in ('not_current_member', 'not_a_person'):\n"
+        "            raise Refused('unauthorized:' + refusal, record['evidence_id'])\n"
+        "        if known['principal'] not in (None, principal):  # defect: a message outside the person's own chat counts\n",
+        ['disposition/foreign-chat-refused', 'disposition/no-foreign-follow-up'])
     return result
 
 
