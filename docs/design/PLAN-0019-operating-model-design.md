@@ -1,12 +1,13 @@
 # PLAN-0019: the factory's operating model
 
-**Status.** Approved by the owner on 2026-09-25 (Telegram 29162, "all 6 are yes") at revision 3
-(`12879d3`), with the open decision of section 15 answered yes for both engines (Telegram 29163, "yes,
-Codex and Claude can read creds"); this text records that answer and changes nothing else. It was
-written against origin/main `c1fd591` and the branches named below. Revision 2 answered the adversarial
-review of revision 1 (`6416eb8`) and folded in the owner's decision of the same day that each person
-runs their own factory (Telegram 29146, 29147); section 14 maps every review finding to what changed,
-and revision 3 applied the second check recorded at the end of section 15. This document designs the
+**Status.** Approved by the owner on 2026-09-25 (Telegram 29162, "all 6 are yes") at revision 2
+(`12879d3`, whose status line names revision 2), with the open decision of section 15 answered yes for
+both engines (Telegram 29163, "yes, Codex and Claude can read creds"); this text records that answer and
+changes nothing else. It was written against origin/main `c1fd591` and the branches named below.
+Revision 2 answered the adversarial review of revision 1 (`6416eb8`) and folded in the owner's decision
+of the same day that each person runs their own factory (Telegram 29146, 29147); section 14 maps every
+review finding to what changed, and `12879d3` applied the second check recorded at the end of section 15
+within revision 2. This document designs the
 owner's operating requirements of 2026-09-25 (Telegram 29122, 29126, 29127 and 29128) on top of what
 PLAN-0019 revision 3 and its controlling design (R01 to R76) already built or specified. It changes no
 code. Once approved, it governs the areas below; where it and the controlling design disagree on those
