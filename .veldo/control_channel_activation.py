@@ -26,8 +26,8 @@ those versions again when it commits.
 
 THE GATE. Gate.admit re-reads the record at every exchange: none is not_activated, a stopped record is
 edge_stopped, another origin is stale_configuration, a changed or retired edge key is stale_key, a
-changed chat enrollment is stale_enrollment, an owner no longer a current person member is
-owner_not_current, an expired run is qualification_expired, a send to any chat but the owner's
+changed chat enrollment is stale_enrollment, an owner no longer a current person member holding
+project_owner is owner_not_current, an expired run is qualification_expired, a send to any chat but the owner's
 enrolled one is chat_not_enrolled, and an active record whose qualification is missing, altered or no
 longer proves the platform refuses by that proof's own reason. A getMe answer naming another bot than
 the one activated is stale_configuration. Stop halts send and answer acceptance at once; nothing about
