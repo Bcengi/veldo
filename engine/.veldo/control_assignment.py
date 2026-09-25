@@ -38,12 +38,14 @@ decline or cancel opens it in its own store transaction; an EXPIRED record, an a
 longer admits, and work routed to intake (asked again) are opened by `ask`. A disposition
 question can only be answered: declining, canceling or revising it is refused. The answer is the
 addressee's own signed answer; `other` carries its non-empty instruction inside the signed command,
-with where the answer arrived (a Telegram message or an authenticated API request). `dispose`
+with the evidence of where the answer arrived: the id of the kept VELDO-0066 Telegram evidence, or the
+request packet the API edge signed. `dispose`
 applies an admitted answer, like `resume`, in one store transaction that binds every input
 admission read: `close` walks the declared `disposition_recorded` edges of the unit and its backlog
 item (the backlog item is left as it is while it owns other open units), `backlog` clears the park
 through the claim organ's `unpark` so an ordinary claim succeeds, and `other` submits the signed
-instruction verbatim to the VELDO-0126 common intake under the source it arrived on and changes no
+instruction verbatim through the VELDO-0126 intake's public attested submission, which authenticates
+that evidence itself and requires it to be the answering person's own, and changes no
 unit, backlog item, claim or priority; the unit stays parked as `routed_to_intake`. Each applied
 disposition is one `assignment_disposition` record, so applying it again is refused (or, for
 `other`, returns the same proposal). Nothing is inferred from the free text.
@@ -125,7 +127,6 @@ DISPOSITION_RECORD_SCHEMA = 'veldo.assignment_disposition/v1'
 ADDRESSED_AS = ('decliner', 'canceler', 'project_owner')
 # Where an answer arrived: exactly VELDO-0126's two intake source kinds (control_intake.SOURCE_KINDS).
 ARRIVAL_KINDS = ('telegram_message', 'api_request')
-INTAKE_COMMAND_SCHEMA = 'veldo.intake_command/v1'  # control_intake.COMMAND_SCHEMA
 # An intake refusal of an `other` instruction, by the class of its code, as this inbox names it.
 INTAKE_REFUSALS = {'unauthorized': 'not_authorized', 'unauthenticated': 'not_authorized',
                    'unavailable_service': 'unavailable_service', 'unknown_outcome': 'unknown_outcome',
@@ -164,18 +165,21 @@ def disposition_record_id(question):
 
 
 def arrival_problem(arrived):
-    """Why `arrived_on` does not name one Telegram message or one authenticated API request."""
+    """Why `arrived_on` does not carry the evidence of one Telegram message or one authenticated API
+    request: the id of kept VELDO-0066 evidence, or the {request, signature} packet the API edge
+    signed. Only the shape is read here; the intake authenticates the evidence itself at dispose, and
+    no chat, sender or request id the answer names counts."""
     if not isinstance(arrived, dict) or arrived.get('source_kind') not in ARRIVAL_KINDS:
         return 'arrived_on names a telegram_message or an api_request'
     if arrived['source_kind'] == 'telegram_message':
-        fields = ('bot_id', 'chat_id', 'message_id', 'date')
-        if set(arrived) != {'source_kind', *fields} or not all(type(arrived[k]) is int for k in fields):
-            return 'a Telegram arrival names its bot, chat, message and date'
+        evidence = arrived.get('evidence_id')
+        if set(arrived) != {'source_kind', 'evidence_id'} or not _is_str(evidence) or not evidence.isascii() \
+                or not evidence.isprintable() or len(evidence) > 128:
+            return 'a Telegram arrival names its kept evidence'
         return None
-    request = arrived.get('request_id')
-    if set(arrived) != {'source_kind', 'request_id'} or not _is_str(request) or not request.isascii() \
-            or not request.isprintable() or len(request) > 128:
-        return 'an API arrival names its request id'
+    if set(arrived) != {'source_kind', 'request', 'signature'} or not isinstance(arrived['request'], dict) \
+            or not _is_str(arrived['signature']):
+        return 'an API arrival carries the request packet the API edge signed'
     return None
 
 
@@ -815,10 +819,12 @@ class Inbox:
         return inputs, None
 
     def _to_intake(self, entities, item, unit):
-        """(proposal id, arrival, ids read): the signed instruction, exactly as signed, submitted to
-        the VELDO-0126 common intake operation under the source it arrived on, attributed to the
-        answering person, with the project from the unit's chain. The same answer again is the same
-        source request, so the intake returns the same proposal and writes nothing."""
+        """(proposal id, arrival, ids read): the signed instruction, exactly as signed, submitted
+        through the VELDO-0126 intake's public attested submission with the evidence the answer
+        carries, the answering person and the project from the unit's chain. The intake authenticates
+        the evidence itself and takes the source identity from it; this inbox names no source. The
+        same answer again is the same source request, so the intake returns the same proposal and
+        writes nothing."""
         if self.intake is None:
             raise Refused('unavailable_service', 'no intake is configured to take the instruction')
         answer = item['data']['answer']
@@ -826,26 +832,21 @@ class Inbox:
         arrived = signed['arrived_on']
         read = {unit}
         project = self._project(entities, unit, read)
-        if arrived['source_kind'] == 'telegram_message':
-            source_id = '%d:%d:%d' % (arrived['bot_id'], arrived['chat_id'], arrived['message_id'])
-            provenance = dict(channel='telegram_chat', bot_id=arrived['bot_id'], chat_id=arrived['chat_id'],
-                              message_id=arrived['message_id'], date=arrived['date'])
-        else:
-            source_id = arrived['request_id']
-            provenance = dict(channel='api', request_id=source_id)
+        evidence = (arrived['evidence_id'] if arrived['source_kind'] == 'telegram_message'
+                    else {'request': arrived['request'], 'signature': arrived['signature']})
         # The signed answer's command identity beside the source: the evidence that makes it an
         # owner instruction.
-        provenance['disposition'] = dict(question_id=item['id'], answer_command_id=answer['command_id'],
-                                         source_assignment=of['assignment_id'], unit_id=unit)
-        command = {'schema': INTAKE_COMMAND_SCHEMA, 'source_kind': arrived['source_kind'], 'source_id': source_id,
-                   'principal': answer['principal'], 'text': signed['instruction'],
-                   'project': project['data']['name'] if project else None, 'clarifies': None,
-                   'provenance': provenance}
-        result = self.intake._submit(command)  # the common intake operation both of its adapters use
+        disposition = dict(question_id=item['id'], answer_command_id=answer['command_id'],
+                           source_assignment=of['assignment_id'], unit_id=unit)
+        result = self.intake.submit_attested(arrived['source_kind'], evidence, principal=answer['principal'],
+                                             text=signed['instruction'],
+                                             project=project['data']['name'] if project else None,
+                                             provenance={'disposition': disposition})
         if result.get('outcome') not in ('proposed', 'inbox') or not _is_str(result.get('proposal_id')):
             code = str(result.get('reason') or 'unknown_outcome').split(':', 1)[0]
             raise Refused(INTAKE_REFUSALS.get(code, 'invalid_input'), 'the intake did not take the instruction')
-        return result['proposal_id'], {'source_kind': arrived['source_kind'], 'source_id': source_id}, read
+        taken = result.get('command') or {}
+        return result['proposal_id'], {'source_kind': taken.get('source_kind'), 'source_id': taken.get('source_id')}, read
 
     def _transition(self, params, before):
         """The registered transaction: re-checks every precondition against the versions the

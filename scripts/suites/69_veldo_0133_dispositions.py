@@ -7,8 +7,11 @@ store is the real SQLite authority with OpenSSH journal and command signatures. 
 claimed and parked by a real child worker process that claims through the claim Receiver, opens its
 person assignment and exits. Disposition questions reach Telegram through the ordinary VELDO-0064
 projection over real HTTP to a loopback Bot API endpoint (never a real Telegram service or token), and
-an `other` instruction reaches the real VELDO-0126 Intake on the same store, read back through the
-intake's own reader.
+an `other` instruction reaches the real VELDO-0126 Intake on the same store through its public
+attested submission, read back through the intake's own reader. The answer carries real evidence: a
+message the addressee sent in their own chat, taken by the real VELDO-0066 Acquirer from the loopback
+getUpdates, or a request packet the API edge signed. The intake's third production anchor lets a
+mutation of the attested submission reach the suite as well.
 
 THE SET IS DERIVED. The criterion rows are keyed by (reason, principal type, role), derived from the
 inbox's PARKED_REASONS and the proposal_commit boundary (authority_contract.BOUNDARIES), so a reason or
@@ -43,7 +46,8 @@ def _v133_suite():
 
     # Literal anchors: the registered mutation driver substitutes the production copy here.
     PRODUCTION = {'control_assignment.py': ROOT / ".veldo" / "control_assignment.py",
-                  'control_claim.py': ROOT / ".veldo" / "control_claim.py"}
+                  'control_claim.py': ROOT / ".veldo" / "control_claim.py",
+                  'control_intake.py': ROOT / ".veldo" / "control_intake.py"}
     PREFIX = 'VELDO-0133 '
     # PARKED_REASONS outside the AC1 set, and why each is outside it.
     NOT_ASKED = {'awaiting_answer': 'the owner has not answered yet; the answer is its way back',
@@ -92,7 +96,8 @@ def _v133_suite():
                     check(label, [('region raised', False)])
 
     class BotApi(http.server.BaseHTTPRequestHandler):
-        """Loopback sendMessage with the Bot API request and answer shapes; records every request."""
+        """Loopback getMe, getUpdates and sendMessage with the Bot API request and answer shapes;
+        records every sendMessage."""
         state = None
 
         def log_message(self, *args):
@@ -101,11 +106,20 @@ def _v133_suite():
         def do_POST(self):
             st = self.state
             body = json.loads(self.rfile.read(int(self.headers.get('Content-Length') or 0)) or b'{}')
+            if self.path == '/bot%s/getMe' % st['token']:
+                return self._answer(200, {'ok': True, 'result': dict(st['bot'], can_join_groups=True,
+                                                                     can_read_all_group_messages=False,
+                                                                     supports_inline_queries=False)})
+            if self.path == '/bot%s/getUpdates' % st['token']:
+                offset = body.get('offset') or 0
+                if offset:
+                    st['updates'] = [u for u in st['updates'] if u['update_id'] >= offset]
+                return self._answer(200, {'ok': True, 'result': st['updates'][:body.get('limit') or 100]})
             if self.path != '/bot%s/sendMessage' % st['token']:
                 return self._answer(404, {'ok': False, 'error_code': 404, 'description': 'Not Found'})
             st['requests'].append((body.get('chat_id'), body.get('text')))
             st['next'] += 1
-            message = {'message_id': st['next'], 'date': 1790300000 + st['next'],
+            message = {'message_id': st['next'], 'date': 1790300000 + st['next'], 'from': dict(st['bot']),
                        'chat': {'id': body.get('chat_id'), 'type': 'private'}, 'text': body.get('text')}
             st['messages'][(body.get('chat_id'), st['next'])] = body.get('text')
             self._answer(200, {'ok': True, 'result': message})
@@ -156,7 +170,7 @@ sys.exit(4)
             with region('install/assets'):
                 scaffold = load('v133_scaffold', ROOT / '.veldo' / 'init_scaffold.py')
                 parts = []
-                for rel in ('.veldo/control_assignment.py', '.veldo/control_claim.py'):
+                for rel in ('.veldo/control_assignment.py', '.veldo/control_claim.py', '.veldo/control_intake.py'):
                     laid = base / 'laid' / rel
                     scaffold._lay(ROOT / 'engine' / rel, laid, rel, [], [])
                     parts += [(rel + ' installed by the scaffold', rel in scaffold._FILES),
@@ -177,7 +191,7 @@ sys.exit(4)
             keys = base / 'keys'
             keys.mkdir(mode=0o700)
             public = {}
-            people = ('olga', 'alice', 'pete', 'paula', 'sam', 'rita', 'dora', 'mallory', 'zed1', 'zed2')
+            people = ('olga', 'alice', 'pete', 'paula', 'sam', 'rita', 'dora', 'mallory', 'zed1', 'zed2', 'wide')
             services = ('worker', 'svc', 'pm', 'api-edge', 'telegram-edge')
             olds = ('old-alice', 'old-pete', 'old-paula', 'old-olga')
             for who in ('authority',) + people + services + olds:
@@ -212,7 +226,8 @@ sys.exit(4)
                        'pete': ('person', [], ['proj-a']), 'paula': ('person', ['project_owner'], ['ops']),
                        'sam': ('person', [], ['ops']), 'rita': ('person', [], ['proj-a']), 'dora': ('person', [], ['proj-a']),
                        'mallory': ('person', [], ['proj-a', 'ops']), 'zed1': ('person', ['project_owner'], ['proj-z']),
-                       'zed2': ('person', ['project_owner'], ['proj-z']), 'worker': ('agent_run', [], '*'),
+                       'zed2': ('person', ['project_owner'], ['proj-z']), 'wide': ('person', [], ['proj-a', 'proj-z']),
+                       'worker': ('agent_run', [], '*'),
                        'svc': ('service', [], '*'), 'pm': ('service', [], ['proj-a', 'ops', 'proj-z']),
                        'api-edge': ('service', [], '*'), 'telegram-edge': ('service', [], ['proj-a'])}
             for who, (kind, roles, scope) in members.items():
@@ -224,7 +239,7 @@ sys.exit(4)
                                                                revoked_at=1))
             fixture(AC.CHANNELS['telegram_chat']['edge_key_id'], 'verification_key',
                     dict(principal='telegram-edge', public_key=public['telegram-edge'], effective_at=0))
-            chats = {'alice': 7330001, 'pete': 7330002, 'paula': 7330003, 'olga': 7330004}
+            chats = {'alice': 7330001, 'pete': 7330002, 'paula': 7330003, 'olga': 7330004, 'wide': 7330009}
             for who, chat in chats.items():
                 fixture('channel-enrollment:telegram_chat:' + who, 'channel_enrollment',
                         dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=who, chat_id=chat,
@@ -270,12 +285,13 @@ sys.exit(4)
             fixture('unit-c2-sibling', 'execution_unit', dict(state='READY', repository_uuid=REPO, backlog_item_uuid='backlog:c2',
                                                               requirements=[], eligible_holders=['worker']))
 
-            api = {'token': 'disposition-bot', 'next': 9000, 'messages': {}, 'requests': []}
+            BOT = 8133000001
+            api = {'token': 'disposition-bot', 'next': 9000, 'messages': {}, 'requests': [], 'updates': [],
+                   'bot': {'id': BOT, 'is_bot': True, 'first_name': 'Veldo', 'username': 'veldo_disposition_bot'}}
             bot_server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), type('V133BotApi', (BotApi,), {'state': api}))
             servers.append(bot_server)
             threading.Thread(target=bot_server.serve_forever, daemon=True).start()
             url = 'http://127.0.0.1:%d' % bot_server.server_address[1]
-            BOT = 8133000001
 
             reader = I.Inbox(S, CM, claims, contract, conn, ids, 'authority', journal_sign)
             presenter = V.Presenter(S, CM, P, reader, V.TelegramPresentationEdge(P, url, api['token']), conn, 'authority',
@@ -366,12 +382,43 @@ sys.exit(4)
                 return tuple((e or {}).get('version') and ((e or {}).get('version'), json.dumps((e or {}).get('data'), sort_keys=True))
                              for e in (entity(case['unit']), entity(case['backlog']), entity(case['cid']))) + (tuple(intake_rows()),)
 
-            def arrival(case):
-                if case.get('arrival') == 'api':
-                    return {'source_kind': 'api_request', 'request_id': 'req-%s-answer' % case['name']}
+            updates = [500000000]
+
+            def sent(sender, chat, text, chat_type='private'):
+                """One message `sender` sends in `chat`, delivered by the loopback getUpdates and kept by the
+                real Acquirer; returns the id of its kept evidence."""
+                api['next'] += 1
+                updates[0] += 1
+                where = {'id': chat, 'type': chat_type}
+                where.update({'first_name': 'Person'} if chat_type == 'private' else {'title': 'Team'})
+                api['updates'].append({'update_id': updates[0], 'message': {
+                    'message_id': api['next'], 'date': 1790400000 + api['next'], 'text': text, 'chat': where,
+                    'from': {'id': sender, 'is_bot': False, 'first_name': 'Person', 'language_code': 'en'}}})
+                acquirer.acquire()
+                return A.evidence_id(BOT, updates[0])
+
+            def api_request(principal, request_id, text, signer='api-edge'):
+                body = {'schema': IN.API_SCHEMA, 'domain': DOMAIN, 'request_id': request_id, 'edge': 'api-edge',
+                        'principal': principal, 'text': text, 'project': None, 'clarifies': None}
+                return {'request': body, 'signature': sign_as(signer, S.canonical_bytes(body))}
+
+            def arrival(case, who=None):
+                """Real evidence of where the answer arrived: a message the addressee sent in their own chat,
+                or a request the API edge signed for them."""
+                who = who or case['expect']
                 counter[0] += 1
-                return {'source_kind': 'telegram_message', 'bot_id': BOT, 'chat_id': chats[case['expect']],
-                        'message_id': 5000 + counter[0], 'date': 1790400000 + counter[0]}
+                if case.get('arrival') == 'api':
+                    packet = api_request(who, 'req-%s-answer-%d' % (case['name'], counter[0]), 'Other: see the instruction.')
+                    return dict(packet, source_kind='api_request')
+                return {'source_kind': 'telegram_message', 'evidence_id': sent(chats[who], chats[who], 'Other, see the instruction.')}
+
+            def arrival_source(arrived):
+                """(kind, id) of the source the evidence names, read from the evidence itself."""
+                if arrived.get('source_kind') == 'api_request':
+                    return 'api_request', (arrived.get('request') or {}).get('request_id')
+                kept = acquirer.evidence(arrived.get('evidence_id') or '') or {}
+                fields = kept.get('fields') or {}
+                return 'telegram_message', '%s:%s:%s' % (kept.get('bot_id'), fields.get('chat_id'), fields.get('message_id'))
 
             def instruction(case):
                 # Words that name other rulings, a blank line and a trailing space: nothing is inferred and
@@ -423,8 +470,7 @@ sys.exit(4)
                     ('every reason outside the set is named with why', set(I.PARKED_REASONS) - set(reasons) <= set(NOT_ASKED)),
                     ('the inbox reports the question states as parked reasons',
                      {'awaiting_disposition', 'ready_to_dispose', 'routed_to_intake'} <= set(I.PARKED_REASONS)),
-                    ('the arrival kinds are the intake source kinds', tuple(getattr(I, 'ARRIVAL_KINDS', ())) == IN.SOURCE_KINDS),
-                    ('the intake command schema is the intake\'s', getattr(I, 'INTAKE_COMMAND_SCHEMA', None) == IN.COMMAND_SCHEMA)])
+                    ('the arrival kinds are the intake source kinds', tuple(getattr(I, 'ARRIVAL_KINDS', ())) == IN.SOURCE_KINDS)])
 
                 for case in CASES + EXTRA:
                     case['parked'], case['exit'] = park(case)
@@ -707,9 +753,8 @@ sys.exit(4)
                     pid = case['disposed'].get('proposal_id')
                     proposal = intake.proposal(pid) if pid else None
                     arrived = case.get('answer_body', {}).get('arrived_on') or {}
-                    source_id = (arrived.get('request_id') if arrived.get('source_kind') == 'api_request' else
-                                 '%s:%s:%s' % (arrived.get('bot_id'), arrived.get('chat_id'), arrived.get('message_id')))
-                    source = intake.source(arrived.get('source_kind'), source_id) if arrived else None
+                    source = intake.source(*arrival_source(arrived)) if arrived else None
+                    trace = (source or {}).get('command', {}).get('provenance') or {}
                     entry = steps[n]['disposed'].get('entry') or {}
                     parts += [(n + ': dispose is accepted and names a proposal', case['disposed'].get('ok') is True and bool(pid)),
                               (n + ': the intake\'s own reader holds the instruction exactly as signed',
@@ -720,8 +765,11 @@ sys.exit(4)
                               (n + ': under the source it arrived on', source is not None and source.get('source_kind') == arrived.get('source_kind')
                                and source.get('proposal_id') == pid),
                               (n + ': with the signed answer\'s command identity beside it',
-                               source is not None and ((source.get('command') or {}).get('provenance') or {}).get('disposition', {})
+                               source is not None and (trace.get('attested') or {}).get('disposition', {})
                                .get('answer_command_id') == ((question(case) or {}).get('data', {}).get('answer') or {}).get('command_id')),
+                              (n + ': authenticated by the intake itself: the addressee\'s own chat, or the API edge',
+                               trace.get('chat_id') == chats[case['expect']] if arrived.get('source_kind') == 'telegram_message'
+                               else trace.get('edge') == 'api-edge' and trace.get('request_digest') == IN.digest(arrived.get('request'))),
                               (n + ': no unit, backlog item or claim changed', [e and e.get('version') for e in case['after'].values()]
                                == [x and x[0] for x in case['before'][:3]]),
                               (n + ': a claim before and after is refused as parked',
