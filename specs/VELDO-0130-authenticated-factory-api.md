@@ -17,6 +17,19 @@ footprint:
   - "engine/.veldo/control_api*.py"
   - ".veldo/control_api*.py"
   - "packs/*/.veldo/control_api*.py"
+  - "engine/.veldo/authority_contract.py"
+  - ".veldo/authority_contract.py"
+  - "packs/*/.veldo/authority_contract.py"
+  - "engine/.veldo/control_channel_enrollment*.py"
+  - ".veldo/control_channel_enrollment*.py"
+  - "packs/*/.veldo/control_channel_enrollment*.py"
+  - "engine/.veldo/control_signer_answers*.py"
+  - ".veldo/control_signer_answers*.py"
+  - "packs/*/.veldo/control_signer_answers*.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0130_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -105,6 +118,30 @@ Automatic recovery, durability/scale qualification and additional host/channel t
 this declared concern. These belong to later releases as assigned by the plan. No existing
 specification status, implementation, test, runtime policy or deployed service changes in this draft.
 
+## What the reviewer judges
+
+- Normal use: the owner enrolls a passkey on his phone and on his desktop browser, each approved by a
+  steward-signed enrollment at the host, then signs in with one passkey tap and gets a server-side
+  session. From the UI he reads live state, sends a message, answers a decision and edits configuration;
+  every write carries the session's anti-forgery token and a same-origin Origin. For each write the API
+  edge signs one typed assertion naming the session's member, and the authority judges that member's
+  current roles and versions and executes the existing domain command. Logout, idle or absolute expiry,
+  a revoked credential or membership, and an API or host restart each end the session.
+- Threat model: a caller with no session, an expired one, or one whose credential or membership was
+  revoked (its open event stream included); a cross-site page in the owner's own browser forging a write;
+  a request body naming another actor or a principal field of any kind; a replayed, other-origin or
+  other-relying-party passkey assertion, or one without user verification; a pending registration nobody
+  approved used to sign in; an edge assertion naming a principal who holds no current credential, or one
+  replayed after its expiry; a listener reachable beyond loopback, or plain HTTP. The owner's devices and
+  authenticators, the host account, the store, the protected signer and the TLS terminator on the host
+  are trusted, and so is the transport provider the owner chooses to the extent that choice makes it one.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); sessions
+  surviving a restart, more than one API instance, rate-limit tuning, signature-counter clone detection
+  and authenticator attestation (Release 2); step-up confirmation for dangerous actions and credential
+  rotation policy (Release 3); members other than the owner, other browsers' quirks beyond current
+  Safari, Chrome and Firefox, and the hosting and reachability choice itself (the owner's decision);
+  forged rows in our own store and files planted in the installed directory.
+
 ## Notes
 
 Owner Telegram 28857 requires authenticated API intake and the UI. The API is an ingress/read
@@ -121,9 +158,151 @@ and retain the driven negative-control diff and named failed row. Fixtures canno
 platform, engine or host behavior. Required evidence labels describe future implementation proof,
 not tests run by this writing revision.
 
+### Session, enrollment and transport design
+
+**The mechanism.** The owner signs in with a passkey (WebAuthn Level 2, discoverable credential,
+user verification required, attestation "none"), implemented in the engine with no authentication
+provider or framework. A verified assertion yields a short server-side session carried by an HttpOnly,
+Secure, SameSite=Strict cookie, and every write also carries a per-session anti-forgery token. Passkeys
+work the same way in phone and desktop browsers, resist phishing because the browser binds each
+assertion to the site's name, and leave no shared secret on the host. Passwords with one-time codes
+were rejected as phishable and as a secret the host must keep; client TLS certificates as poorly
+supported on phones; a login link sent by the Telegram bot as tying the API to the bot channel and not
+phishing resistant. Callers that are not browsers keep the existing paths with their own enrolled
+member keys, the signed local IPC of VELDO-0107 and the SSH relay of VELDO-0108, so no function is
+lost by this API authenticating browser sessions only.
+
+**How an assertion is verified, with the standard library and OpenSSL.** The API keeps, per credential,
+its credential id, its public key as DER SubjectPublicKeyInfo, its COSE algorithm (ES256, -7, or
+Ed25519, -8; nothing else is offered or accepted) and a random 16-byte user handle. The public key comes
+from the browser's getPublicKey() and getPublicKeyAlgorithm() at registration, so no CBOR is parsed, and
+the possession proof below binds that key. At sign-in the API issues a single-use challenge and receives
+the credential id, clientDataJSON, authenticatorData, signature and userHandle. It checks, with json and
+struct: clientDataJSON's type is "webauthn.get", its challenge is the one issued and still unused, its
+origin equals the configured origin exactly and crossOrigin is absent or false; the first 32 bytes of
+authenticatorData equal SHA-256 of the configured relying-party id, and the flags byte has user present
+(bit 0) and user verified (bit 2) set; the userHandle is the credential's. The signature is then checked
+over authenticatorData followed by SHA-256 of clientDataJSON by the openssl command line as a subprocess:
+"openssl dgst -sha256 -verify" with the DER key for ES256 (a WebAuthn ES256 signature is already DER
+ECDSA), and "openssl pkeyutl -verify -pubin -rawin" for Ed25519. The argument vector is fixed, there is
+no shell, the key and signature go in files in a 0700 directory under the API's state directory, the
+signed bytes go on standard input, the environment is stripped, the timeout is 10 seconds, and only the
+exit status is read. Both forms were run on this host (OpenSSL 3.0.13) for a valid and a tampered
+message on 2026-09-24. OpenSSL is Apache-2.0; its current release is 4.0.2 (project releases, 2026-09-24)
+and 3.0 or later is required. ssh-keygen -Y stays the verifier for every signature the edge makes,
+exactly as VELDO-0126 verifies today; it verifies OpenSSH signature envelopes, and a browser assertion is
+not one, which is why OpenSSL is the tool here. The signature counter is not relied on, because synced
+passkeys report zero.
+
+**Enrollment mapping.** A passkey belongs to exactly one current person member of the same membership
+authority, recorded as a new store kind, api_credential, owned by a new module control_api_credentials.py
+with two OpenSSH-envelope signed commands, enroll_api_credential and revoke_api_credential (the
+authority contract's envelope, never a second spelling, as VELDO-0067 enrolls an edge key). Enrollment
+has two halves. On the new device the owner opens the enrollment page and gives the device a label; the
+API runs a registration ceremony (checking type "webauthn.create", the challenge and the origin) and at
+once a sign-in ceremony with the new credential whose challenge is SHA-256 of the canonical registration
+binding (relying-party id, origin, credential id, public key, algorithm, label, a fresh nonce). That
+assertion, verified as above, is the possession proof. The API keeps the pending registration in a 0600
+file in its state directory for 15 minutes, at most three at a time, and shows the key's fingerprint.
+It grants nothing: a pending credential cannot sign in. On the host, a current person member holding
+membership_steward whose scope covers the principal runs the enrollment tool, which shows the label,
+the fingerprint and the principal, and signs enroll_api_credential with the steward's personal key.
+Before commit the command's verification rechecks the possession proof with OpenSSL, so the record
+verifies on its own, and refuses by name a principal who is not a current person member, a credential
+id or key another principal holds, a stale version, an expired pending registration or an envelope for
+another authority. The committed record holds the principal, credential id, key, algorithm, user handle,
+relying-party id, origin, label, effective time, proof and envelope. The owner enrolls his own passkeys
+this way; it grants no role, so it is not a self-grant. Revocation is revoke_api_credential, signed by a
+steward at the host or sent by a steward's own UI session as an ordinary edge assertion, and
+revoke_membership revokes every credential of the member with it. An API session can never enroll a
+credential.
+
+**The API edge and domain commands.** The API is its own principal, enrolled through the VELDO-0067
+channel edge enrollment as a new channel "api" (a CHANNELS entry with its own edge key id and the
+attribution request id, credential id and assertion time), a service member with no roles. Its private
+key stays in the protected key directory, and the API process never reads it: it asks the protected
+signer, which gains an "api" purpose that signs only the typed API assertion shapes and the API's
+VELDO-0107 requests and independently checks that the edge key and membership are current and that the
+principal named is the principal of a current api_credential and a current person member. Every route
+has an exact-field body schema with no actor field; a body carrying principal, actor, actor_id, decider
+or any unknown field is refused invalid_input, never ignored. For each accepted request the API builds
+one assertion from the session alone (schema veldo.api_assertion/v1, domain, repository, edge, a
+single-use request id, the session's principal and credential id, a session handle that is not the
+cookie, the operation, target, parameters, expected versions, issue time, and expiry 60 seconds later),
+has the signer sign its canonical bytes in the contract's command namespace, and sends it over VELDO-0107.
+The authority verifies the edge signature with ssh-keygen -Y, the credential and member again, and the
+member's roles and scope at the operation's boundary (decision_settlement admits only a person), then
+executes the existing typed command with provenance naming the channel, edge, request id, credential and
+assertion digest; the journal's actor is the member, carried by the edge. Messages use VELDO-0126's API
+request shape unchanged, with the session's principal. Decision answers are VELDO-0068 answer assertions
+on channel api under the same delegation and VELDO-0065 presentation-receipt rules the Telegram answer
+meets, so one request still gets one ruling. Reads and the event stream go through the authority's
+inspection and the VELDO-0051 publication, never a direct store read. The changes to authority_contract.py,
+control_channel_enrollment.py and control_signer_answers.py are outside this footprint and are added to
+it before they are made, as VELDO-0126 did.
+
+**Secure transport.** The browser must reach the API over HTTPS under a DNS name it trusts: WebAuthn
+needs a secure context and a relying-party id that is a domain, never an IP address, and changing the
+name later invalidates every enrolled passkey. The API serves plain HTTP with the standard library's
+ThreadingHTTPServer on a loopback address and configured port only, never on a LAN, tailnet or public
+interface, because Python's http.server is not meant to face a network. A TLS terminator on the same
+host (TLS 1.2 or later, 1.3 preferred) forwards to it with the Host header preserved, and holds a
+certificate from a public ACME authority or the network option's own issuer. The API refuses any Host
+other than the configured name, uses forwarded client addresses for logs only, caps request bodies at
+64 KiB and sends Strict-Transport-Security. Where the network option terminates TLS itself on the host
+(Tailscale Serve) nothing more is installed; otherwise the terminator is Caddy (Apache-2.0, current
+release 2.11.4 on its GitHub releases, 2026-09-24; our travelbot tunnel gateway already uses it).
+**How the phone reaches the host is the owner's decision.** The options, neutrally: a Tailscale tailnet
+name with its issued certificate, reachable only from the owner's enrolled devices (free personal tier;
+already installed on this host); a Cloudflare Tunnel to a public name on a domain the owner holds, where
+Cloudflare terminates TLS and can see the traffic (free tier, plus the domain); a self-run WireGuard
+tunnel with a DNS name and a Let's Encrypt certificate through Caddy (no subscription, a domain and an
+open UDP port at the host's network); or a public name on the host itself with port 443 open and Caddy
+(no subscription, a domain, and the sign-in page exposed to the internet).
+**The owner chose the Tailscale tailnet** (Telegram 29092 asked, 29094 "Tailscale is ok"): the host's
+existing tailnet on his personal account, with Tailscale Serve terminating TLS for the host's tailnet
+name and the phone joining with the Tailscale app. No other terminator is installed.
+
+**Sessions.** The API keeps sessions behind one interface (create, find, touch, end, end by credential,
+end by principal), held in the API process's memory in Release 1; sessions that survive a restart are
+Release 2 durability. The parameters are these:
+
+| Item | Rule |
+|---|---|
+| Sign-in challenge | 32 random bytes from secrets, single use, expires after 120 seconds |
+| Session cookie | __Host-veldo-session: 32 random bytes, Secure, HttpOnly, SameSite=Strict, Path=/, no Domain; the API keeps only its SHA-256, and each sign-in makes a new one |
+| Anti-forgery token | 32 random bytes per session, returned by sign-in and by the session read, kept in page memory only, sent as a request header on every write, compared with hmac.compare_digest |
+| Write checks | token matches, Origin equals the configured origin, Sec-Fetch-Site is same-origin when present, Content-Type is application/json; reads never change state |
+| Idle expiry | 30 minutes after the last authenticated request |
+| Absolute lifetime | 12 hours after sign-in, then a new passkey sign-in |
+| Logout | a write that ends the session and clears the cookie; "sign out everywhere" ends every session of the member |
+
+Every request, the event stream included, checks the session first and then reads from the authority
+that its credential is current and its principal a current person member, so a revocation or role change
+applies on the next request with nothing polled. The API also follows the journal through the VELDO-0051
+publication, and a revoke_api_credential or revoke_membership event ends the affected sessions and
+closes their open event streams at once; an assertion already in flight is refused by the authority's
+own recheck. An API or host restart ends every session, pending registration and challenge, and the
+owner signs in again. The refusals are named in the error taxonomy: unauthenticated (no session, expired,
+revoked, a failed assertion) and unauthorized (forgery checks, role or scope). Logs name the operation,
+principal, credential id, session handle and refusal, never a cookie, token, challenge, key or signature.
+
 ## History
 
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 5, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-09-24, design: the Notes now choose the mechanism the draft left open. The owner signs in with a
+passkey verified in the engine (json and struct, OpenSSL as a subprocess for ES256 and Ed25519) into a
+server-side session with an HttpOnly, Secure, SameSite=Strict cookie and a per-session anti-forgery
+token; a passkey is enrolled to a current person member by a steward-signed command with a possession
+proof; the API is the enrolled "api" channel edge that signs an assertion naming the session's member
+and never reads an actor from a body; it listens on loopback behind a TLS terminator on the host, and how
+the phone reaches the host is left to the owner. A "What the reviewer judges" section is added. The
+criteria, status, risk, dependencies and footprint are unchanged.
+
+2026-09-25: the owner chose the Tailscale tailnet for transport (29092/29094). The footprint gains the
+modules the authentication design changes (the authority contract, channel enrollment, the answer signer,
+the scaffold) and the teeth-mutation registry.
