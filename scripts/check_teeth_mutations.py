@@ -5174,6 +5174,28 @@ def cases():
         "    Action('worker_stop', None, None, None, None, 'VELDO-0041'),\n", '', ['actions/contract'])
     api('save-executes-another-command', AU130, "                'save_workflow': WF.SAVE}",
         "                'save_workflow': AS.IN.RECORD}  # defect", ['actions/contract'])
+    # VELDO-0130 phase 3: the API through the installed authority service. The API runs a command in-process
+    # again; the service accepts an API call whose request the api edge did not sign, or verifies it as any
+    # member's; the signer signs a request that is not an API call; a commit at the host is never delivered.
+    CS130 = 'control_service.py'
+    api('api-runs-in-process', AU130,
+        "        if problem:\n            raise Refused(problem, 'only the authority service",
+        "        if False:\n            raise Refused(problem, 'only the authority service", ['service/in-process-refused'])
+    api('api-request-unsigned-accepted', CS130,
+        "                return self.api is not None and self.api.verifies(message, signature)\n",
+        "                return self.api is not None  # defect: an API call is accepted without the edge's signature\n",
+        ['service/edge-signed-requests'])
+    api('api-call-verified-by-keyring', CS130,
+        "            if SA.AS.is_call(signed.get('command')):\n"
+        "                return self.api is not None and self.api.verifies(message, signature)\n", '',
+        ['service/edge-signed-requests'])
+    api('signer-signs-any-request', SG130,
+        "    if AS.call_problems(command):\n        raise Refused('forbidden-purpose'",
+        "    if False:\n        raise Refused('forbidden-purpose'", ['service/edge-signed-requests'])
+    api('revocation-not-delivered', CS130,
+        "        if self.api is None or self.watermark() <= before:\n            return None\n",
+        "        if True:  # defect: no commit reaches a subscribed API\n            return None\n",
+        ['service/host-revocation-closes-stream', 'service/socket-path'])
 
     # VELDO-0138: each criterion's declared falsifier first, then the threat model's other shapes.
     def service_channel(name, module, old, new, row, also=()):
