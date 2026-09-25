@@ -1,5 +1,5 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -638 +638 @@
+@@ -639 +639 @@
 -        data['history'] = list(data['history']) + [dict(entry, source=source, target='CANCELED')]
 +        data['history'] = [dict(entry, source=source, target='CANCELED')]  # defect: earlier history dropped

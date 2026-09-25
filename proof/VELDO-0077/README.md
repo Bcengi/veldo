@@ -156,3 +156,5 @@ Every finding's `init_scaffold.py` mutation still rejects (39, 40, 41, 42, 45, 4
 One project and one acceptor per objective; objectives spanning projects and additional owners are
 Release 3. Units under a stopped feature are not reached by this service: it never admits a feature,
 so none exists unless a later admission put one there (VELDO-0078). Recovery and restart are Release 2.
+
+`red-at-0304483.json`: the current suite against the tree before review 2's fix, where `cancel/transfer-bounded` is the one red row, by assertion (the second transfer's history entry claimed ACCEPTED to ACTIVE). Mutation `receiver-history-stale-source` reds it; finding 77 has 24.

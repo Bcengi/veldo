@@ -158,3 +158,5 @@ not on the control store path. Proof in `proof/VELDO-0077/`; status stays ready.
 scope (`out_of_scope:<item>`) under its accepted revision; a feature has one disposition; evidence must
 be recorded after the acceptance (`stale_subject:evidence`); amend is refused in a project that is not
 active; rows and mutants for each, red against 86a58f0 by assertion. Status stays ready.
+
+2026-09-25, review 2 (blocking, fixed by the lead): two transfers into one accepted receiver in one cancel wrote two history entries both claiming ACCEPTED to ACTIVE; the receiver now records the state each transfer really moved it from. Row cancel/transfer-bounded gains the two-transfer case, red at 0304483 (red-at-0304483.json); mutation receiver-history-stale-source (finding 77: 24). Filed: evidence freshness is by record time only (Release 3, with the check-binding item); a deterministic pre-acceptance check cannot count again (same content id); a transfer can activate a receiver in a paused project; the brief joins scope items with "; ".

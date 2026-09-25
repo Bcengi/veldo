@@ -1,0 +1,120 @@
+{
+ "by_assertion": true,
+ "commit": "0304483ed79c7ba5416fdfc911eb831e55203a89",
+ "details": [
+  "VELDO-0077 detail: cancel/transfer-bounded: and its history names the transition each transfer really made"
+ ],
+ "failed_rows": [
+  "VELDO-0077 cancel/transfer-bounded"
+ ],
+ "modules": {
+  ".veldo/control_intake.py": {
+   "at_commit": "773999aa87976d31eeb4d696016f93e9cff5f8acbdef87cdb551023c0e48dcc4",
+   "now": "773999aa87976d31eeb4d696016f93e9cff5f8acbdef87cdb551023c0e48dcc4"
+  },
+  ".veldo/control_objective.py": {
+   "at_commit": "6cc0fcc5b3f005411765e535c7532ea43241548f5ee6b96735d6a3b85232d47f",
+   "now": "5b9f2122696ffed618407e54883f9c656a8ee24c9dd31652e35fb1092d244392"
+  },
+  ".veldo/control_project.py": {
+   "at_commit": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f",
+   "now": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
+   "now": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "f3cc191133fd8f8ff2155d65b4f93925f8e499f96be681299007e8d1fb45aef3",
+   "now": "f3cc191133fd8f8ff2155d65b4f93925f8e499f96be681299007e8d1fb45aef3"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0077 install/assets",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/intake-source",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/stale-answer",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/owner-only",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/binds-fields",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/later-feature",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/bounded-elaboration",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/wrong-signer",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/missing-evidence",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/stale-revision",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/stale-evidence",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/unproven-outcome",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/proven",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/other-process",
+   true
+  ],
+  [
+   "VELDO-0077 cancel/work-disposition",
+   true
+  ],
+  [
+   "VELDO-0077 cancel/history-kept",
+   true
+  ],
+  [
+   "VELDO-0077 cancel/reopen-linked",
+   true
+  ],
+  [
+   "VELDO-0077 cancel/transfer-bounded",
+   false
+  ],
+  [
+   "VELDO-0077 observability",
+   true
+  ],
+  [
+   "VELDO-0077 project/inactive-refusals",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 2.912,
+ "spec_id": "VELDO-0077",
+ "suite": "scripts/suites/72_veldo_0077_objectives.py",
+ "tree": "git archive 0304483ed79c7ba5416fdfc911eb831e55203a89, unchanged; the current suite file run against it"
+}
