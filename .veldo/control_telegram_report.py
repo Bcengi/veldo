@@ -1,53 +1,92 @@
 """Telegram progress and completion reports from committed journal events (VELDO-0128, PLAN-0019 W91).
 
-WHAT THIS MODULE IS. The ordinary outbound report of the factory's progress to its owner. It walks the
-committed control journal of the activated ingress's one store, in journal order, after an explicit
-starting sequence, and derives one report for every record that commits an ENABLED event. REGISTRY is
-the declared event set, each with its handler:
+WHAT THIS MODULE IS. The ordinary outbound report of the factory's progress to its owner. The running
+authority service's channel (control_service_channel.Channel.tick) runs it on every pass of an active
+edge. It walks the committed control journal of the activated ingress's one store, in journal order,
+after the STORED starting sequence, and derives one report for every record that commits an ENABLED
+event. REGISTRY is the declared event set, each with its handler, and each reads only the records the
+real writer of that kind commits:
 
-  objective_accepted   an objective record entering ACCEPTED (VELDO-0077's acceptance through settlement);
-  decision_awaiting    a VELDO-0064 inbox decision request offered at a new request version (a grooming or
-                       admission wait), named by the touchpoint of the settlement terms it binds;
-  work_progress        a VELDO-0039 dispatch record entering accepted, running, exited, refused or unknown
-                       (work assigned to a worker and the worker's progress);
-  gate_result          an execution unit leaving VERIFYING or REVIEWING along a declared R13 edge (the gate
-                       or the review passed, or rejected it with a failure receipt);
-  stop                 a VELDO-0075 andon stop recorded;
+  objective_accepted   an `objective` record entering ACCEPTED (control_objective, VELDO-0077's
+                       acceptance through settlement);
+  decision_awaiting    a VELDO-0064 inbox decision request (`assignment`, control_assignment) offered at a
+                       new request version (a grooming or admission wait), named by the touchpoint of the
+                       settlement terms it binds;
+  work_progress        a VELDO-0039 `dispatch` record (control_dispatch.transition, the one dispatch
+                       writer) entering accepted, running, exited, refused or unknown;
+  gate_result          the gate and the review, from their own writers: a `gate_observation`
+                       (control_proof's record_gate_observation, what LiveLoop.gate observed the canonical
+                       gate doing) and a `floor_unit` step (dispatch.py's floor_transition) that accepts a
+                       build into review (accept_build), records a review that passes or returns the unit
+                       (record_review), or hands it off to landing (handoff);
+  stop                 a VELDO-0075 `andon_stop` recorded (control_andon);
   completion           a confirmed landing: VELDO-0051's spec.shipped, derived by its own public reader
                        (control_event_projection.Projection.derive) from a revision_landed receipt for the
                        exact unit and a confirmed publication of its dispatch. Nothing else is a completion:
-                       a build-only attempt, an exited dispatch, an accepted artifact or a unit state is not.
+                       a build-only attempt, an exited dispatch, a green gate, a passed review or a handoff
+                       is not.
+
+THE FIELDS EACH HANDLER READS, and the writer of each:
+
+  dispatch             dispatch_id, state, history (control_dispatch.transition, `prepare` and every later
+                       action); contract.unit, contract.station, contract.attempt and
+                       contract.reservation.project (the complete contract control_launch.Runner.prepare
+                       builds and `prepare` stores); receiver.principal (`accept`); process.pid and
+                       process.host (`run`); termination.returncode, termination.signal and
+                       termination.deadline_stop (`exit`, control_dispatch.TERMINATION_FIELDS); refusal
+                       (`refuse`); reason (`unknown`). The contract names no worker, so no report names one.
+  gate_observation     commit, exit, green, terminal, stdout_digest and refusals (control_verification.
+                       observe_gate, stored unchanged by control_proof._observe_transition). It names no
+                       unit, and the report says so.
+  floor_unit           unit, state, attempt, history[-1].action, source.commit, source.implementation,
+                       proof.path, proof.digest, builder, build.dispatch (dispatch._accept_build); reviews[-1]
+                       reviewer, verdict, passes, raised, dispatch and output_digest, and returned_to
+                       (dispatch._record_review); handoff reviewers, required, risk and policy
+                       (dispatch._handoff).
+  execution_unit       project, read for the unit a record names (the unit's accepted project).
 
 A REPORT IS A PROJECTION. It states the committed fact of its source record and the next action or the
-evidence, and it writes only its own `telegram_report` record through its registered store command
-(`telegram_report_record`, the only writer of that kind, control_store.declare_owners). It never admits,
-settles, resumes or completes anything, and no model output is read. A pending decision (a waiting
-request or a stop) is sent as a reply to the request's CURRENT presentation and names it; a request with
-no published presentation says so. Unknown or unavailable state is said plainly. A stop is reported once,
-as progress: the andon's own request and its notice are the decision message, so the andon's request is
-never reported again as a waiting decision and a revised stop is not a new report.
+evidence, and it writes only its own `telegram_report` and `telegram_report_cursor` records through its
+registered store command (`telegram_report_record`, the only writer of those kinds,
+control_store.declare_owners). It never admits, settles, resumes or completes anything, and no model
+output is read. A pending decision (a waiting request or a stop) is sent as a reply to the request's
+CURRENT presentation and names it; a request with no published presentation says so. Unknown or
+unavailable state is said plainly. A stop is reported once, as progress: the andon's own request and its
+notice are the decision message, so the andon's request is never reported again as a waiting decision and
+a revised stop is not a new report.
+
+THE STORED SINCE. The starting sequence is a record in the store (`telegram_report_cursor`, one per
+domain, repository and owner), never a value the caller chooses. With none stored, reporting starts
+after the journal sequence at which the owner first activated the edge (control_channel_activation's
+record entering `active`): nothing committed before the edge existed is reported. After a run it advances
+to the last sequence the run read, or to just before the first event whose report could not even be
+recorded, so a restart neither repeats a report (every report is also recorded under an id its event,
+source and owner name) nor drops one. A pass with nothing committed after the stored since but the
+reporter's own records reads nothing more.
 
 ONLY THE CONFIGURED OWNER'S ENROLLED CHAT, ONLY THROUGH THE ACTIVATED EDGE. The reporter is configured with
-the owner principal it reports to; that principal's VELDO-0064 chat enrollment names the chat. Every send
-goes through the ingress's presentation edge, which asks the VELDO-0073 activation gate, and the gate
-sends only to the enrolled owner's chat of a current activation. A reporter whose edge is not the
-ingress's gated edge is refused at construction.
+the owner principal it reports to (the channel names the activation record's owner); that principal's
+VELDO-0064 chat enrollment names the chat. Every send goes through the ingress's presentation edge, which
+asks the VELDO-0073 activation gate, and the gate sends only to the enrolled owner's chat of a current
+activation. A reporter whose edge is not the ingress's gated edge is refused at construction. The channel
+runs it only on an active edge, so nothing is sent or recorded while the edge is stopped, and what was
+committed meanwhile is reported once the owner activates it again.
 
-WHAT WAS SENT IS WHAT IS RECORDED. One record per (event, source record, owner), keyed so a second run
-sends nothing again. The record is committed as a `pending` intent before the send and completed with
-what the platform returned: `sent` with the chat, message identity, date and stored text; `anomaly` when
-the platform stored other text or placed it in another chat; `refused` with the gate's or the platform's
-refusal by name (nothing was published, the record is visibly unsent); `unknown_outcome` when no readable
-answer came back. The source event is never touched: the record names it by journal sequence, command,
-record digest, entity and entity digest (and, for a completion, the spec.shipped event id and receipt).
-No record is sent again automatically, whatever its outcome (retry, lost-send lookup and recovery are
-Release 2).
+WHAT WAS SENT IS WHAT IS RECORDED. One record per (event, source record, owner). The record is committed
+as a `pending` intent before the send and completed with what the platform returned: `sent` with the
+chat, message identity, date and stored text; `anomaly` when the platform stored other text or placed it
+in another chat; `refused` with the gate's or the platform's refusal by name (nothing was published, the
+record is visibly unsent); `unknown_outcome` when no readable answer came back. The source event is never
+touched: the record names it by journal sequence, command, record digest, entity and entity digest (and,
+for a completion, the spec.shipped event id and receipt). No record is sent again automatically, whatever
+its outcome (retry, lost-send lookup and recovery are Release 2).
 
 OBSERVABILITY. Every report is observed with domain, repository, project, event, report id, source
 sequence, accepted versions, outcome, named refusal and its error class (invalid input, missing
 authority, stale subject, unavailable service, missing evidence, unknown outcome; unknown is never
-success). metrics() counts accepted and refused operations, the pending source events not yet reported
-and the unsent reports. No report text, token or signature is observed. Standard library only.
+success). metrics() counts accepted and refused operations, the pending source events not yet reported,
+the unsent reports and the stored since. No report text, token or signature is observed. Standard
+library only.
 """
 import hashlib
 import importlib.util
@@ -56,7 +95,10 @@ from pathlib import Path
 import time
 
 SCHEMA = 'veldo.telegram_report/v1'
+CURSOR_SCHEMA = 'veldo.telegram_report_cursor/v1'
 KIND = 'telegram_report'
+CURSOR_KIND = 'telegram_report_cursor'
+OWN_KINDS = (KIND, CURSOR_KIND)
 OPERATION = 'telegram_report_record'
 OWNER = 'VELDO-0128 telegram report'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
@@ -66,18 +108,18 @@ UNSENT = ('pending', 'refused', 'unknown_outcome')
 PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text')
 UNAVAILABLE = 'unavailable'
 
-# The source kinds, each the committing service's own vocabulary.
+# The source kinds, each the committing writer's own vocabulary.
 OBJECTIVE_KIND, ACCEPTED = 'objective', 'ACCEPTED'                    # control_objective (VELDO-0077)
 ASSIGNMENT_KIND, DECISION = 'assignment', 'decision'                  # control_assignment (VELDO-0064)
 PENDING_STATES = ('OFFERED', 'ACCEPTED', 'IN_PROGRESS')               # control_assignment.CATEGORIES pending
 TERMS_KIND = 'settlement_terms'                                       # control_request_settlement.TERMS_KIND
 DISPATCH_KIND = 'dispatch'                                            # control_dispatch.RECORD_KIND
 PROGRESS_STATES = ('accepted', 'running', 'exited', 'refused', 'unknown')
+OBSERVATION_KIND = 'gate_observation'                                 # control_proof.OBSERVATION_KIND
+FLOOR_KIND = 'floor_unit'                                             # dispatch.FLOOR_KIND
+FLOOR_RESULTS = ('accept_build', 'record_review', 'handoff')          # dispatch.FLOOR_TRANSITIONS reported
 UNIT_KIND = 'execution_unit'                                          # entity_contract R13
 STOP_KIND, STOPPED = 'andon_stop', 'stopped'                          # control_andon (VELDO-0075)
-# The R13 edges out of the gate and review stations, with the receipt each edge requires.
-GATE_EDGES = {('VERIFYING', 'REVIEWING'): ('gate', 'passed'), ('VERIFYING', 'FAILED'): ('gate', 'rejected'),
-              ('REVIEWING', 'READY_TO_LAND'): ('review', 'passed'), ('REVIEWING', 'FAILED'): ('review', 'rejected')}
 
 # The declared event set: (event, source entity kinds, handler). The completion handler reads VELDO-0051's
 # journal projection instead of one entity kind.
@@ -85,7 +127,7 @@ REGISTRY = (
     ('objective_accepted', (OBJECTIVE_KIND,), '_objective'),
     ('decision_awaiting', (ASSIGNMENT_KIND,), '_awaiting'),
     ('work_progress', (DISPATCH_KIND,), '_progress'),
-    ('gate_result', (UNIT_KIND,), '_gate'),
+    ('gate_result', (OBSERVATION_KIND, FLOOR_KIND), '_gate'),
     ('stop', (STOP_KIND,), '_stop'),
     ('completion', None, '_completions'),
 )
@@ -128,10 +170,19 @@ def _shown(value):
     return str(value) if value is not None and value != '' else UNAVAILABLE
 
 
+def _dict(value):
+    return value if isinstance(value, dict) else {}
+
+
 def report_id(event, domain, repository, owner, seq, source):
     """One report per (event, source record, owner)."""
     body = json.dumps([event, domain, repository, owner, seq, source], separators=(',', ':'))
     return 'telegram-report:' + hashlib.sha256(body.encode()).hexdigest()[:40]
+
+
+def cursor_id(domain, repository, owner):
+    """The one stored since of an owner's reports in one domain and repository."""
+    return 'telegram-report-cursor:' + json.dumps([domain, repository, owner], separators=(',', ':'))
 
 
 def text_digest(text):
@@ -144,9 +195,20 @@ def events():
 
 
 def _record_transition(params, before):
-    """The two phases of one report record: `intent` creates it `pending` before any send; `complete`
-    finishes that pending record from what the send returned. Nothing else is written."""
-    rid, phase = params.get('report_id'), params.get('phase')
+    """The phases of the reporter's records: `intent` creates a report `pending` before any send;
+    `complete` finishes that pending record from what the send returned; `cursor` stores the since,
+    which only moves forward. Nothing else is written."""
+    phase = params.get('phase')
+    if phase == 'cursor':
+        cid, since = params.get('cursor_id'), params.get('since')
+        if not isinstance(cid, str) or type(since) is not int or since < 0 or not _text(params.get('owner')):
+            raise ValueError('a cursor names its id, owner and the sequence it stands at')
+        current = (before.get(cid) or {}).get('data')
+        if current is not None and current.get('since', 0) > since:
+            raise ValueError('the stored since only moves forward')
+        return {cid: {'kind': CURSOR_KIND, 'data': {'schema': CURSOR_SCHEMA, 'cursor_id': cid, 'owner': params['owner'],
+                                                    'since': since, 'advanced_at': params.get('at')}}}
+    rid = params.get('report_id')
     if not isinstance(rid, str) or phase not in ('intent', 'complete'):
         raise ValueError('a report record names its id and phase')
     current = (before.get(rid) or {}).get('data')
@@ -189,11 +251,10 @@ class Reporter:
     """The report projection of one activated ingress's store to one configured owner.
 
     `ingress` is a control_channel_ingress.Ingress (its inbox, presenter and gate share its connection);
-    `owner` the principal whose enrolled chat receives the reports; `project` the project the reports
-    name; `since` the journal sequence after which committed events are reported (an explicit
-    coordinate: nothing before it is reported)."""
+    `owner` the principal whose enrolled chat receives the reports. The starting sequence is the stored
+    since (see the module docstring), never an argument."""
 
-    def __init__(self, ingress, *, owner, project, since, clock=time.time):
+    def __init__(self, ingress, *, owner, clock=time.time):
         inbox, presenter, gate = ingress.inbox, ingress.presenter, getattr(ingress, 'gate', None)
         if inbox is None or presenter is None or gate is None or not (
                 inbox.conn is ingress.conn and presenter.conn is ingress.conn and gate.conn is ingress.conn):
@@ -201,14 +262,16 @@ class Reporter:
         edge = getattr(presenter, 'edge', None)
         if edge is None or getattr(edge, 'activation', None) is not gate:
             raise Refused('invalid_input', 'every report goes through the activated edge of the ingress')
-        if not _text(owner) or not _text(project) or type(since) is not int or since < 0:
-            raise Refused('invalid_input', 'the reporter names its owner, its project and the sequence it starts after')
+        if not _text(owner):
+            raise Refused('invalid_input', 'the reporter names the owner it reports to')
         self.ingress, self.conn, self.presenter, self.gate, self.edge = ingress, ingress.conn, presenter, gate, edge
         self.S, self.P = inbox.store, presenter.P
         self.ids = dict(inbox.ids)
         self.journal_signer, self.sign = inbox.journal_signer, inbox.sign
         self.authority_generation = inbox.authority_generation
-        self.owner, self.project, self.since, self.clock = owner, project, since, clock
+        self.owner, self.clock = owner, clock
+        self.cursor = cursor_id(self.ids['domain_uuid'], self.ids['repository_uuid'], owner)
+        self.activation = _organ('control_channel_activation.py').activation_id(gate.channel)
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self._serial = 0
@@ -226,7 +289,7 @@ class Reporter:
             except ValueError as exc:
                 raise self.S.StoreRefused('invalid_input', str(exc))
         self.conn.command_registry[OPERATION] = {'transition': transition, 'writes': WRITES}
-        self.S.declare_owners(self.conn, OWNER, kinds={KIND: (OPERATION,)}, module=__file__)
+        self.S.declare_owners(self.conn, OWNER, kinds={KIND: (OPERATION,), CURSOR_KIND: (OPERATION,)}, module=__file__)
 
     # Reading.
 
@@ -246,12 +309,41 @@ class Reporter:
     def records(self):
         return [json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=? ORDER BY id', (KIND,))]
 
-    def sources(self):
-        """Every enabled event committed after `since`, in journal order: one source per report."""
-        rows = self._rows()
+    def stored_since(self):
+        """The stored since, or None when this owner's reporting has not started."""
+        found = self._entity(self.cursor)
+        return found['data'].get('since') if found and found['kind'] == CURSOR_KIND else None
+
+    def start(self, rows):
+        """The journal sequence at which the owner first activated the edge, or None: nothing committed
+        before it is reported."""
+        for seq, _command, _digest, changes, _committed in rows:
+            entry = changes.get(self.activation)
+            if isinstance(entry, dict) and self._data(entry).get('state') == 'active':
+                return seq
+        return None
+
+    def since(self, rows=None):
+        stored = self.stored_since()
+        return stored if stored is not None else self.start(self._rows() if rows is None else rows)
+
+    def _news(self, since):
+        """Whether anything but the reporter's own records was committed after `since`."""
+        for (transition,) in self.conn.execute('SELECT transition FROM journal WHERE seq > ? ORDER BY seq', (since,)):
+            changes = json.loads(transition)
+            if any(_dict(entry).get('kind') not in OWN_KINDS for entry in changes.values()):
+                return True
+        return False
+
+    def sources(self, rows=None, since=None):
+        """Every enabled event committed after the since, in journal order: one source per report."""
+        rows = self._rows() if rows is None else rows
+        since = self.since(rows) if since is None else since
+        if since is None:
+            return []
         found, state = [], {}
         for seq, command, digest, changes, _committed in rows:
-            if seq > self.since:
+            if seq > since:
                 for eid in sorted(changes):
                     entry = changes[eid] if isinstance(changes[eid], dict) else {}
                     for event, kinds, handler in REGISTRY:
@@ -263,7 +355,7 @@ class Reporter:
             state.update(changes)
         for event, kinds, handler in REGISTRY:
             if kinds is None:
-                found += getattr(self, handler)(rows)
+                found += getattr(self, handler)(rows, since, state)
         return sorted(found, key=lambda s: (s['source']['journal_seq'], s['source']['entity_id'], s['event']))
 
     def _source(self, event, seq, command, digest, eid, entry, fact):
@@ -278,11 +370,16 @@ class Reporter:
     def _data(entry):
         return entry.get('data') if isinstance((entry or {}).get('data'), dict) else {}
 
+    def _project(self, unit, state):
+        """The accepted project of the unit a record names, as committed so far, or None."""
+        found = state.get(unit) if _text(unit) else None
+        return self._data(found).get('project') if _dict(found).get('kind') == UNIT_KIND else None
+
     def _objective(self, eid, entry, prior, state):
         data, before = self._data(entry), self._data(prior)
         if data.get('state') != ACCEPTED or before.get('state') == ACCEPTED:
             return None
-        acceptance = data.get('acceptance') if isinstance(data.get('acceptance'), dict) else {}
+        acceptance = _dict(data.get('acceptance'))
         return {'unit': None, 'run': None, 'project': data.get('project'),
                 'headline': 'Objective accepted',
                 'fact': 'objective %s accepted at revision %s (bound digest %s)'
@@ -301,65 +398,138 @@ class Reporter:
         if (data.get('kind') != DECISION or data.get('state') not in PENDING_STATES
                 or data.get('request_version') == before.get('request_version') or self._stop_request(eid, state)):
             return None
-        subject = data.get('subject') if isinstance(data.get('subject'), dict) else {}
+        subject = _dict(data.get('subject'))
         terms = self._data(state.get(subject.get('ref'))) if subject.get('kind') == TERMS_KIND else {}
-        return {'unit': data.get('unit_id'), 'run': None, 'project': None, 'request': eid,
-                'request_version': data.get('request_version'),
+        return {'unit': data.get('unit_id'), 'run': None, 'project': self._project(data.get('unit_id'), state),
+                'request': eid, 'request_version': data.get('request_version'),
                 'headline': 'Decision waiting: %s' % _shown(terms.get('touchpoint')).replace('_', ' '),
                 'fact': 'request %s version %s offered to %s by %s: %s'
                         % (eid, _shown(data.get('request_version')), _shown(data.get('owner')),
                            _shown(data.get('requested_by')), ' '.join(str(data.get('brief') or UNAVAILABLE).split())),
                 'next': None, 'evidence': None}
 
+    @staticmethod
+    def _termination(termination):
+        """How an exited worker ended, from control_dispatch's termination fields only."""
+        code, signal = termination.get('returncode'), termination.get('signal')
+        if type(code) is int:
+            said = 'exited with return code %d' % code
+        elif type(signal) is int:
+            said = 'was ended by signal %d, with no return code' % signal
+        else:
+            said = 'exited; its return code is unavailable'
+        return said + (', stopped at its deadline' if termination.get('deadline_stop') is True else '')
+
     def _progress(self, eid, entry, prior, state):
         data, before = self._data(entry), self._data(prior)
         status = data.get('state')
         if status not in PROGRESS_STATES or status == before.get('state'):
             return None
-        contract = data.get('contract') if isinstance(data.get('contract'), dict) else {}
-        run = data.get('dispatch_id') or contract.get('dispatch_id')
-        termination = data.get('termination') if isinstance(data.get('termination'), dict) else {}
-        said = {'accepted': ('Work assigned', 'the receiver accepted the dispatch; the worker is launching.'),
-                'running': ('Work running', 'no action; the worker is running.'),
-                'exited': ('Work exited', 'the worker exited with status %s; this is not a completion, the gate '
-                                          'and review follow.' % _shown(termination.get('exit_status'))),
-                'refused': ('Work refused', 'nothing ran; the dispatch is closed.'),
-                'unknown': ('Work outcome unknown', 'the launch or its outcome could not be established; nothing '
-                                                    'is assumed and a stop is owed.')}[status]
-        return {'unit': contract.get('unit'), 'run': run, 'project': None, 'headline': said[0],
-                'fact': 'dispatch %s of unit %s at station %s is %s (worker %s)'
-                        % (_shown(run), _shown(contract.get('unit')), _shown(contract.get('station')), status,
-                           _shown(contract.get('worker'))),
-                'next': said[1], 'evidence': None}
+        contract = _dict(data.get('contract'))
+        run = data.get('dispatch_id')
+        said = {'accepted': ('Work assigned', 'accepted by the receiver %s' % _shown(_dict(data.get('receiver')).get('principal')),
+                             'the worker is launched next.'),
+                'running': ('Work running', 'running as process %s on %s' % (_shown(_dict(data.get('process')).get('pid')),
+                                                                           _shown(_dict(data.get('process')).get('host'))),
+                            'no action; the worker is running.'),
+                'exited': ('Work exited', self._termination(_dict(data.get('termination'))),
+                           'this is not a completion; the gate and review follow.'),
+                'refused': ('Work refused', 'refused: %s' % _shown(data.get('refusal')), 'nothing ran; the dispatch is closed.'),
+                'unknown': ('Work outcome unknown', 'its outcome is unknown: %s' % _shown(data.get('reason')),
+                            'the launch or its outcome could not be established; nothing is assumed and a stop is owed.')}[status]
+        return {'unit': contract.get('unit'), 'run': run, 'project': _dict(contract.get('reservation')).get('project'),
+                'headline': said[0],
+                'fact': 'dispatch %s of unit %s at station %s, attempt %s, %s'
+                        % (_shown(run), _shown(contract.get('unit')), _shown(contract.get('station')),
+                           _shown(contract.get('attempt')), said[1]),
+                'next': said[2], 'evidence': None}
 
     def _gate(self, eid, entry, prior, state):
-        data, before = self._data(entry), self._data(prior)
-        edge = GATE_EDGES.get((before.get('state'), data.get('state')))
-        if edge is None:
+        if entry.get('kind') == OBSERVATION_KIND:
+            return self._observed(eid, entry, prior)
+        return self._floor(eid, entry, prior, state)
+
+    def _observed(self, eid, entry, prior):
+        """A gate observation, stored once as captured."""
+        data = self._data(entry)
+        if prior is not None:
             return None
-        station, verdict = edge
-        receipt = data.get('failure_receipt') if verdict == 'rejected' else data.get('%s_receipt' % station)
-        return {'unit': eid, 'run': data.get('dispatch_id'), 'project': None,
-                'headline': '%s %s' % (station.capitalize(), verdict),
-                'fact': 'the %s %s unit %s: %s -> %s' % (station, verdict, eid, before.get('state'), data.get('state')),
-                'next': ('the unit goes back through its stations; nothing lands.' if verdict == 'rejected'
-                         else 'the unit moves to %s.' % data.get('state')),
-                'evidence': 'receipt %s' % _shown(receipt)}
+        verdict = 'passed' if data.get('green') is True else 'failed'
+        refusals = data.get('refusals') if isinstance(data.get('refusals'), list) else []
+        return {'unit': None, 'run': None, 'project': None,
+                'headline': 'Gate %s' % verdict,
+                'fact': 'the gate %s at commit %s: exit %s, last line %s (the observation names no unit)'
+                        % (verdict, _shown(data.get('commit')), _shown(data.get('exit')), _shown(data.get('terminal'))),
+                'next': ('the build is judged against this observation before it is offered for review; the '
+                         'observation accepts nothing.' if verdict == 'passed'
+                         else 'nothing is offered for review from this commit; the build is fixed and gated again.'),
+                'evidence': 'observation %s, output %s%s' % (eid, _shown(data.get('stdout_digest')),
+                                                             ', refused for %s' % ', '.join(map(str, refusals)) if refusals else '')}
+
+    def _floor(self, eid, entry, prior, state):
+        """One floor step dispatch.py's floor_transition committed: a build accepted into review, a review
+        recorded (passed, or the unit returned), or the handoff to landing."""
+        data, before = self._data(entry), self._data(prior)
+        history = data.get('history') if isinstance(data.get('history'), list) else []
+        if not history or len(history) <= len(before.get('history') or []):
+            return None
+        action = _dict(history[-1]).get('action')
+        if action not in FLOOR_RESULTS:
+            return None
+        unit, attempt = data.get('unit'), data.get('attempt')
+        source, proof, build = _dict(data.get('source')), _dict(data.get('proof')), _dict(data.get('build'))
+        fact = {'unit': unit, 'run': build.get('dispatch'), 'project': self._project(unit, state)}
+        if action == 'accept_build':
+            fact.update(headline='Build accepted for review',
+                        fact='unit %s attempt %s: the built commit %s passed its gate with accepted proof and is in '
+                             'review (builder %s)' % (_shown(unit), _shown(attempt), _shown(source.get('commit')),
+                                                      _shown(data.get('builder'))),
+                        next='an independent reviewer is assigned; nothing lands before the review policy is met.',
+                        evidence='proof %s %s, implementation %s, build dispatch %s'
+                                 % (_shown(proof.get('path')), _shown(proof.get('digest')),
+                                    _shown(source.get('implementation')), _shown(build.get('dispatch'))))
+            return fact
+        if action == 'record_review':
+            reviews = data.get('reviews') if isinstance(data.get('reviews'), list) else []
+            review = _dict(reviews[-1]) if reviews else {}
+            returned = data.get('state') == 'returned'
+            fact.update(run=review.get('dispatch'),
+                        headline='Review rejected' if returned else 'Review passed',
+                        fact='reviewer %s %s unit %s attempt %s with verdict %s'
+                             % (_shown(review.get('reviewer')), 'returned' if returned else 'passed', _shown(unit),
+                                _shown(attempt), _shown(review.get('verdict'))),
+                        next=('the unit goes back for a fix (%s); nothing lands.' % _shown(data.get('returned_to'))
+                              if returned else 'the handoff follows once the review policy is met; this is not a completion.'),
+                        evidence='review receipt printed by dispatch %s (output %s), blocking findings %s'
+                                 % (_shown(review.get('dispatch')), _shown(review.get('output_digest')),
+                                    ', '.join(map(str, review.get('raised') or [])) or 'none'))
+            return fact
+        handoff = _dict(data.get('handoff'))
+        reviewers = handoff.get('reviewers') if isinstance(handoff.get('reviewers'), list) else []
+        fact.update(headline='Handed off to landing',
+                    fact='unit %s attempt %s met the review policy: %d of %s required reviews for risk %s (%s)'
+                         % (_shown(unit), _shown(attempt), len(reviewers), _shown(handoff.get('required')),
+                            _shown(handoff.get('risk')), ', '.join(map(str, reviewers)) or 'none'),
+                    next='the lander lands it; this is not a completion.',
+                    evidence='source %s, proof %s, review policy version %s'
+                             % (_shown(source.get('commit')), _shown(proof.get('digest')),
+                                _shown(_dict(handoff.get('policy')).get('version'))))
+        return fact
 
     def _stop(self, eid, entry, prior, state):
         data = self._data(entry)
         if data.get('state') != STOPPED or prior is not None:
             return None
-        resolving = data.get('resolving') if isinstance(data.get('resolving'), dict) else {}
-        return {'unit': data.get('unit'), 'run': eid, 'project': None, 'request': data.get('request_id'),
-                'request_version': None,
+        resolving = _dict(data.get('resolving'))
+        return {'unit': data.get('unit'), 'run': eid, 'project': self._project(data.get('unit'), state),
+                'request': data.get('request_id'), 'request_version': None,
                 'headline': 'Stopped: unit %s at the %s station' % (_shown(data.get('unit')), _shown(data.get('station'))),
                 'fact': 'stop %s raised by %s interrupts %s; effect %s; awaiting %s'
                         % (eid, _shown(data.get('raised_by')), _shown(data.get('interrupted_state')),
                            _shown(data.get('effect')), _shown(resolving.get('principal'))),
                 'next': None, 'evidence': None}
 
-    def _completions(self, rows):
+    def _completions(self, rows, since, state):
         """Completion: only VELDO-0051's spec.shipped, from a confirmed landing receipt of the exact unit
         and dispatch. Every other record is not a completion."""
         shipped, _judged = self._landings.derive(rows, 0)
@@ -370,11 +540,11 @@ class Reporter:
                     receipts[(_seq, eid)] = self._data(entry)
         found = []
         for event in shipped:
-            if event['journal_seq'] <= self.since:
+            if event['journal_seq'] <= since:
                 continue
             receipt = receipts.get((event['journal_seq'], event['receipt'])) or {}
-            landing = receipt.get('publication_receipt') if isinstance(receipt.get('publication_receipt'), dict) else {}
-            fact = {'unit': event['unit'], 'run': event['dispatch_id'], 'project': None,
+            landing = _dict(receipt.get('publication_receipt'))
+            fact = {'unit': event['unit'], 'run': event['dispatch_id'], 'project': self._project(event['unit'], state),
                     'headline': 'Completed: unit %s landed' % event['unit'],
                     'fact': 'unit %s landed revision %s through dispatch %s (confirmed at the remote)'
                             % (event['unit'], event['commit'], event['dispatch_id']),
@@ -411,7 +581,7 @@ class Reporter:
             reply_to, nxt = self._presentation(source.get('request'))
         s = source['source']
         lines = ['Veldo: %s' % source['headline'],
-                 'Project: %s | Domain: %s | Repository: %s' % (source.get('project') or self.project,
+                 'Project: %s | Domain: %s | Repository: %s' % (_shown(source.get('project')),
                                                                   self.ids['domain_uuid'], self.ids['repository_uuid']),
                  'Unit: %s | Run: %s' % (source.get('unit') or 'none', source.get('run') or 'none'),
                  'Fact: %s' % source['fact']]
@@ -425,14 +595,12 @@ class Reporter:
 
     # Writing.
 
-    def _commit(self, params, expected):
+    def _commit(self, params, expected, key):
         self._serial += 1
-        rid = params['report_id']
-        command_id = '%s:%s:%s:%.6f:%d' % (OPERATION, params['phase'], rid, self.clock(), self._serial)
+        command_id = '%s:%s:%s:%.6f:%d' % (OPERATION, params['phase'], key, self.clock(), self._serial)
         command = dict(command_id=command_id, principal=self.journal_signer, operation=OPERATION, parameters=params,
                        expected_versions=expected, artifact_digests=[], nonce=command_id)
         self.S.execute(self.conn, command, self.journal_signer, self.sign, self.authority_generation)
-        return self.record(rid)
 
     def _enrollment(self):
         """(refusal, enrollment): the configured owner's own enrolled chat, or the named reason there is none."""
@@ -459,7 +627,7 @@ class Reporter:
     def _observe(self, source, rid, outcome, reason, versions=None):
         accepted = outcome in ('sent', 'already_reported')
         self.counts['accepted' if accepted else 'refused'] += 1
-        self.observations.append(dict(self.ids, operation='report', project=self.project, event=source['event'],
+        self.observations.append(dict(self.ids, operation='report', project=source.get('project'), event=source['event'],
                                       report_id=rid, unit=source.get('unit'), run=source.get('run'),
                                       journal_seq=source['source']['journal_seq'],
                                       accepted_versions=dict(versions or {}), outcome=outcome, reason=reason,
@@ -480,7 +648,7 @@ class Reporter:
         refusal, enrollment = self._enrollment()
         text, reply_to = self.render(source)
         record = dict(schema=SCHEMA, report_id=rid, channel=CHANNEL, event=source['event'],
-                      project=source.get('project') or self.project, domain_uuid=self.ids['domain_uuid'],
+                      project=source.get('project'), domain_uuid=self.ids['domain_uuid'],
                       repository_uuid=self.ids['repository_uuid'], unit=source.get('unit'), run=source.get('run'),
                       source=dict(s), owner=self.owner, enrollment_id=(enrollment or {}).get('id'),
                       enrollment_version=(enrollment or {}).get('version'),
@@ -491,23 +659,51 @@ class Reporter:
         if enrollment is not None:
             versions[enrollment['id']] = enrollment['version']
         try:
-            intent = self._commit(dict(phase='intent', report_id=rid, record=record), versions)
+            self._commit(dict(phase='intent', report_id=rid, record=record), versions, rid)
         except self.S.StoreRefused as exc:
             return self._observe(source, rid, 'refused', exc.code, versions)  # no intent, nothing sent
+        intent = self.record(rid)
         completion = ({'platform': None, 'refusal': refusal} if refusal
                       else self._send(enrollment['chat'], text, reply_to))
         try:
-            done = self._commit(dict(phase='complete', report_id=rid, **completion), {rid: intent['entity_version']})
+            self._commit(dict(phase='complete', report_id=rid, **completion), {rid: intent['entity_version']}, rid)
         except self.S.StoreRefused as exc:
             return self._observe(source, rid, 'unknown_outcome', exc.code, versions)  # the intent stays pending
+        done = self.record(rid)
         reason = ','.join(done['anomalies']) if done['outcome'] == 'anomaly' else done['refusal']
         if done['outcome'] == 'unknown_outcome':
             reason = 'unknown_outcome'
         return self._observe(source, rid, done['outcome'], reason, versions)
 
+    def _advance(self, since):
+        found = self._entity(self.cursor)
+        self._commit(dict(phase='cursor', cursor_id=self.cursor, owner=self.owner, since=since, at=self.clock()),
+                     {self.cursor: found['version'] if found else 0}, self.cursor)
+
     def run(self):
-        """Report every enabled event committed after `since` that has no record yet; one result each."""
-        return [self.report(source) for source in self.sources()]
+        """Report every enabled event committed after the stored since that has no record yet, one
+        result each, then store the since: the last sequence read, or just before the first event whose
+        report could not be recorded. Nothing is read when nothing but these records was committed."""
+        stored = self.stored_since()
+        if stored is not None and not self._news(stored):
+            return []
+        rows = self._rows()
+        since = stored if stored is not None else self.start(rows)
+        if since is None:
+            return []  # the edge was never active: nothing is reported and nothing is stored
+        head = rows[-1][0] if rows else since
+        found = self.sources(rows, since)
+        results = [self.report(source) for source in found]
+        unrecorded = [s['source']['journal_seq'] for s, r in zip(found, results) if self.record(r['report_id']) is None]
+        target = max(since, min(unrecorded) - 1 if unrecorded else head)
+        if stored is None or target > stored:
+            try:
+                self._advance(target)
+            except self.S.StoreRefused as exc:
+                self.counts['refused'] += 1
+                self.observations.append(dict(self.ids, operation='since', outcome='refused', reason=exc.code,
+                                              error_class=taxonomy(exc.code), since=target))
+        return results
 
     def unsent(self):
         """The reports that were not delivered, with their named refusal: visibly unsent."""
@@ -515,8 +711,9 @@ class Reporter:
 
     def metrics(self):
         mine = {r['report_id']: r for r in self.records() if r.get('owner') == self.owner}
+        rows = self._rows()
         pending = []
-        for source in self.sources():
+        for source in self.sources(rows, self.since(rows)):
             s = source['source']
             rid = report_id(source['event'], self.ids['domain_uuid'], self.ids['repository_uuid'], self.owner,
                             s['journal_seq'], s['entity_id'])
@@ -524,4 +721,5 @@ class Reporter:
                 pending.append(rid)
         return dict(self.counts, pending=pending, sent=sum(1 for r in mine.values() if r['outcome'] == 'sent'),
                     unsent=sorted(r['report_id'] for r in mine.values() if r['outcome'] in UNSENT),
-                    anomalies=sum(1 for r in mine.values() if r['outcome'] == 'anomaly'))
+                    anomalies=sum(1 for r in mine.values() if r['outcome'] == 'anomaly'),
+                    since=self.stored_since())
