@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -655 +655 @@
+-        if not authors or any(a != owner and a not in managers for a in authors):
++        if False:  # defect: whoever wrote the bound fields is not checked

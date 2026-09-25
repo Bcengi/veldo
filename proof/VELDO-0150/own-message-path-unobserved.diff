@@ -1,5 +1,5 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -451 +451 @@
+@@ -480 +480 @@
 -            observation['acceptance'] = self._acceptance_trace(after['acceptance'])
 +            pass  # defect: the acceptance's path is not observed

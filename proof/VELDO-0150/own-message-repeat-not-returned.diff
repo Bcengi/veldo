@@ -1,6 +1,5 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -391,2 +391 @@
--            if (op == 'accept_message' and accepted.get('path') == MESSAGE_PATH and _is_str(command.get('intake_command'))
--                    and accepted.get('intake_command') == command['intake_command']):
-+            if False:  # defect: the same message's acceptance again is not the same acceptance
+@@ -443 +443 @@
+-        if op == 'accept_message' and repeat:
++        if False:  # defect: the same message's acceptance again is not the same acceptance

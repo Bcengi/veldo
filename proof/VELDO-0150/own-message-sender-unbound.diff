@@ -1,5 +1,5 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -275 +275 @@
+@@ -282 +282 @@
 -                'message_id': fields['message_id'], 'sender_id': fields['sender_id'], 'date': fields['date'],
 +                'message_id': fields['message_id'], 'sender_id': None, 'date': fields['date'],  # defect: no sender

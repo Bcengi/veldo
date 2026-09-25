@@ -10,7 +10,11 @@
   "VELDO-0150 detail: evidence/same-bound-fields: the Telegram acceptance binds outcome, scope, authority and evidence requirements exactly; so does the API acceptance; both paths bind the same fields",
   "VELDO-0150 detail: evidence/project-not-his: his message does not accept it as its owner's: not_owner:source",
   "VELDO-0150 detail: evidence/repeat: its acceptance again returns the same acceptance; with no second record: the objective and the journal unchanged",
-  "VELDO-0150 detail: evidence/stale-revision: an acceptance naming revision 1 is refused by name; so is one naming revision 1's bound digest; the acceptance of the current revision binds revision 2"
+  "VELDO-0150 detail: evidence/stale-revision: an acceptance naming revision 1 is refused by name; so is one naming revision 1's bound digest; the acceptance of the current revision binds revision 2",
+  "VELDO-0150 detail: authorship/member-authored-presented: her acceptance naming olga's intake command is refused not_authorized:author; so is the PM's delivering the same message; another project's owner writing it in proj-a is refused the same way",
+  "VELDO-0150 detail: authorship/owner-authored: her message accepts it with nothing presented",
+  "VELDO-0150 detail: evidence/repeat-after-checks: a repeat by a principal outside proj-a's scope is refused not_authorized:scope, not repeated; a member in scope still gets the same acceptance",
+  "VELDO-0150 detail: evidence/paused-project: her message's acceptance while paused is refused project_not_active:PAUSED; a repeat of an accepted message while paused is refused the same way, not repeated; once resumed her message accepts it"
  ],
  "failed_rows": [
   "VELDO-0150 own-message/telegram",
@@ -21,12 +25,16 @@
   "VELDO-0150 evidence/same-bound-fields",
   "VELDO-0150 evidence/project-not-his",
   "VELDO-0150 evidence/repeat",
-  "VELDO-0150 evidence/stale-revision"
+  "VELDO-0150 evidence/stale-revision",
+  "VELDO-0150 authorship/member-authored-presented",
+  "VELDO-0150 authorship/owner-authored",
+  "VELDO-0150 evidence/repeat-after-checks",
+  "VELDO-0150 evidence/paused-project"
  ],
  "modules": {
   ".veldo/control_objective.py": {
    "at_commit": "5b9f2122696ffed618407e54883f9c656a8ee24c9dd31652e35fb1092d244392",
-   "now": "82754fa028b4d503bcdd4b38be4cce906f417cf39991b7c2a42d707b80ca9606"
+   "now": "0287a9be25a1faa65bf835d2514e2e362abfce4d2811cd7703640743d2014a4c"
   }
  },
  "preamble_rows": 26,
@@ -66,10 +74,26 @@
   [
    "VELDO-0150 evidence/stale-revision",
    false
+  ],
+  [
+   "VELDO-0150 authorship/member-authored-presented",
+   false
+  ],
+  [
+   "VELDO-0150 authorship/owner-authored",
+   false
+  ],
+  [
+   "VELDO-0150 evidence/repeat-after-checks",
+   false
+  ],
+  [
+   "VELDO-0150 evidence/paused-project",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.342,
+ "seconds": 1.912,
  "spec_id": "VELDO-0150",
  "suite": "scripts/suites/75_veldo_0150_own_message_acceptance.py",
  "tree": "git archive 0af8dc025b0458a8a05023723bd724ab550cd427, unchanged; the current suite file run against it"

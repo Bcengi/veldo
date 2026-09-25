@@ -1,5 +1,5 @@
 --- a/.veldo/control_objective.py
 +++ b/.veldo/control_objective.py
-@@ -618 +618 @@
+@@ -647 +647 @@
 -        if written is None or command.get('intake_command') != written[1]:
 +        if written is None or not _is_str(command.get('intake_command')):  # defect: any intake command
