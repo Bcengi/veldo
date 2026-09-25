@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -312,2 +311,0 @@
+-        if OWNER_ROLE not in (entry.get('roles') or []):
+-            return ['not_authorized:role']

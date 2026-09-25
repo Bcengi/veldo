@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -989 +989 @@
+-        return (CM.AC.active_member(entry, self.clock())[0] and entry.get('principal_type') == 'person'
++        return (True and entry.get('principal_type') == 'person'  # defect: a revoked owner is current

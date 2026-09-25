@@ -880,6 +880,15 @@
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, journal, possession and edge signatures, the actual protected signer process, the VELDO-0066 Acquirer, VELDO-0065 presenter, VELDO-0126 intake and VELDO-0068 settlement over a loopback Bot API, openssl-generated ES256 and Ed25519 passkey keys, and the API served on a loopback port. Phase 3: an enrolled Git clone and host trust, control_service.install with the channel ingress and API service configurations, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), and the API process constructed by control_client_api.open_api in the suite's process. Writes only temporary fixtures."
     },
     {
+   "name": "71_veldo_0076_projects",
+   "file": "71_veldo_0076_projects.py",
+   "requires": [
+    "71_veldo_0076_projects"
+   ],
+   "regions": "Project activation by the enrolled owner's real signed command binding owner, charter, one execution repository, an applicable authority policy and a finite coordination budget, with each omitted field, missing authority and every unbounded budget refused; pause and cancel stopping the frontier's offers and every dispatch of the project through the eligibility Gate while running work gets the host's ordinary stop and history and landed receipts stay; completion refused by name while an objective, assignment, governing decision, dispatch or reservation of the project is open",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal and decision settlement signatures, the VELDO-0064 inbox, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0052 Gate and the frontier over spec files, the VELDO-0039 runner with real receiver and fixture worker processes in systemd containment groups, a real Git source repository, and a reader in another process. Writes only temporary fixtures."
+  },
+  {
    "name": "71_veldo_0138_channel_service",
    "file": "71_veldo_0138_channel_service.py",
    "requires": [

@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -200 +200 @@
+-        store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,)}, prefixes={ID_PREFIX: (OPERATION,)},
++        store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,)}, prefixes={},  # defect: the project id prefix is unowned

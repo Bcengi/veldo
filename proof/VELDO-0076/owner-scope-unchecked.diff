@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -991 +991 @@
+-                and CM.scope_covers(entry.get('scope'), [name]))
++                and True)  # defect: an owner out of the project's scope is current

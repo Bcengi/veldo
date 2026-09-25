@@ -1,0 +1,11 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -257 +257 @@
+-            missing = [f for f in ACTIVATION_FIELDS if f not in command]
++            missing = [f for f in ACTIVATION_FIELDS if f not in command and f != 'authority_policy']  # defect
+@@ -264 +264 @@
+-            fields = {f: command[f] for f in ACTIVATION_FIELDS}
++            fields = {f: command.get(f) for f in ACTIVATION_FIELDS}
+@@ -341 +341 @@
+-            'authority_policy_applies': self._policy_problems(fields.get('authority_policy'), state, name, now),
++            'authority_policy_applies': [] if fields.get('authority_policy') is None else self._policy_problems(fields.get('authority_policy'), state, name, now),

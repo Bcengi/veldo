@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -471 +471 @@
+-                found.append({'kind': 'reservation', 'id': eid})
++                pass  # defect: an open reservation does not hold completion

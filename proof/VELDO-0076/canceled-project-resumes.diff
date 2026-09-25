@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -393 +393 @@
+-        allowed, why = EC.transition(KIND, source, target, evidence)
++        allowed, why = (True, '') if source == 'CANCELED' else EC.transition(KIND, source, target, evidence)  # defect

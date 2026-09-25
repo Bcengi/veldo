@@ -1,0 +1,8 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -255,2 +254,0 @@
+-            if current is not None:
+-                raise Refused('already_exists', pid)
+@@ -358,2 +355,0 @@
+-            if current is not None:
+-                raise Refused('already_exists', pid)
