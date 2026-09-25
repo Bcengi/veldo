@@ -1,5 +1,5 @@
 --- a/.veldo/control_team.py
 +++ b/.veldo/control_team.py
-@@ -249 +249 @@
+@@ -252 +252 @@
 -                if worker in theirs or ((entries.get(worker) or {}).get('independence_group') or worker) in groups:
 +                if False:  # defect: a builder may review

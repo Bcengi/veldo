@@ -1,5 +1,5 @@
 --- a/.veldo/control_team.py
 +++ b/.veldo/control_team.py
-@@ -533 +533 @@
+@@ -539 +539 @@
 -            if position['subject'] != subject:
 +            if (position['subject'] or {}).get('unit') != unit_id:  # defect: the revision is not bound

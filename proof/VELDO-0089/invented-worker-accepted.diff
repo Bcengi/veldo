@@ -1,6 +1,6 @@
 --- a/.veldo/control_team.py
 +++ b/.veldo/control_team.py
-@@ -230,2 +230 @@
+@@ -233,2 +233 @@
 -            if (not active_member(entry, now)[0] or entry.get('principal_type') not in WORKER_TYPES
 -                    or not scope_covers(entry.get('scope'), [name])):
 +            if False:  # defect: any named worker is staffed

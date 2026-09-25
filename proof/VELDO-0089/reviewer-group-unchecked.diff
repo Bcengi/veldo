@@ -2,4 +2,4 @@
 +++ b/.veldo/control_team.py
 @@ -534 +534 @@
 -            if who == builder or mine == group or who in seen:
-+            if False:  # defect: the builder or a repeated reviewer counts
++            if who == builder or who in seen:  # defect: the builder's independence group may review

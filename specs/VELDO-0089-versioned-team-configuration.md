@@ -154,3 +154,13 @@ request, owner amendments applied only from the project owner's settled VELDO-00
 builder/reviewer assignments bound to the current team revision and the VELDO-0049 review policy.
 Suite 73_veldo_0089_team, red record at d0cf6a5 and 23 finding-89 mutations in proof/VELDO-0089/. No
 footprint path was added. Status unchanged.
+
+2026-09-25, review 1 fix on branch build-veldo-0089: the staffing request's subject binds the project's team,
+so the same unstaffable team in two projects asks each project's own owner; a repeat after the owner
+answered or declined opens a new request; amendment observations name their request. New rows
+team/owner-request and team/amendment-current and row parts for the owner's reject and return, the current
+owner, staffing at amendment, the scope digest, a regrouped reviewer and a revoked builder; red record at
+83ca104 and 32 finding-89 mutations. Filed, not built: units linked only through backlog item and objective
+are refused by assign (nothing produces units yet; VELDO-0078 will), amendment_brief leaves out
+responsibilities and expertise, the owner's staffing answer is not yet consumed, and several assignments per
+unit are Release 2. Status unchanged.

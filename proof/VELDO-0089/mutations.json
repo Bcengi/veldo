@@ -51,6 +51,10 @@
     true
    ],
    [
+    "VELDO-0089 team/amendment-current",
+    true
+   ],
+   [
     "VELDO-0089 team/policy-required",
     true
    ],
@@ -75,6 +79,10 @@
     true
    ],
    [
+    "VELDO-0089 team/owner-request",
+    true
+   ],
+   [
     "VELDO-0089 team/observability",
     true
    ],
@@ -95,11 +103,15 @@
     true
    ],
    [
+    "VELDO-0089 ran/team/owner-request",
+    true
+   ],
+   [
     "VELDO-0089 ran/team/observability",
     true
    ]
   ],
-  "seconds": 2.056
+  "seconds": 3.022
  },
  "controls_green": true,
  "mutants": [
@@ -113,7 +125,7 @@
     "VELDO-0089 install/assets"
    ],
    "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "b5ef17d245ba8d41ada42be2fc23a824f5df6f583d34dd557fc6088fd8749e91",
+   "mutant_sha256": "005a1be146b1a82ae3189c29a320c64724391377b59f0831bc736022b9b312f3",
    "name": "team-not-scaffolded",
    "named_row_red": true,
    "named_rows": [
@@ -166,6 +178,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -190,6 +206,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -210,12 +230,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.006,
-   "source_sha256": "7ce520e602e1c7978674dadaecebe2349af0b36c1936a0789bf72a8f0b225951"
+   "seconds": 2.975,
+   "source_sha256": "4ae6a8367e5c188e637abd769daf2a97eeca0b50d040fa635b40beb16baf51fc"
   },
   {
    "by_assertion": true,
@@ -223,19 +247,17 @@
     "VELDO-0089 detail: team/incomplete-roster: a team without independent review is refused and asks the owner; the refusal is incomplete_roster naming the missing role; an empty review role is refused the same way",
     "VELDO-0089 detail: team/conflicting-staffing: two project managers; a builder who also reviews; a reviewer in a builder's independence group; a worker nobody enrolled is never invented; a member outside the project is not staffed",
     "VELDO-0089 detail: team/project-requirements: a role budget above the project's coordination budget; an engine that is no registered adapter; a role without its responsibility; independent review not declared separate from implementation",
-    "VELDO-0089 detail: team/complete-proposal: every earlier staffing problem is an open owner request",
-    "VELDO-0089 detail: team/observability: pending work is counted"
+    "VELDO-0089 detail: team/complete-proposal: every earlier staffing problem is an open owner request"
    ],
    "diff": "proof/VELDO-0089/review-role-not-required.diff",
    "failed_rows": [
     "VELDO-0089 team/incomplete-roster",
     "VELDO-0089 team/conflicting-staffing",
     "VELDO-0089 team/project-requirements",
-    "VELDO-0089 team/complete-proposal",
-    "VELDO-0089 team/observability"
+    "VELDO-0089 team/complete-proposal"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "d41dde6fc327615648d8c56427503640e0b384a30a661ccc70ea6e980d33f915",
+   "mutant_sha256": "0f4eb408a922836f991fb7c8a4bd4c897208d5220dc980359609e75a1fdc02db",
    "name": "review-role-not-required",
    "named_row_red": true,
    "named_rows": [
@@ -288,6 +310,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -312,8 +338,12 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
-     false
+     true
     ],
     [
      "VELDO-0089 ran/install/assets",
@@ -332,12 +362,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 1.982,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.904,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -346,6 +380,8 @@
     "VELDO-0089 detail: team/conflicting-staffing: two project managers; a builder who also reviews; a reviewer in a builder's independence group; a worker nobody enrolled is never invented; a member outside the project is not staffed",
     "VELDO-0089 detail: team/project-requirements: a role budget above the project's coordination budget; an engine that is no registered adapter; a role without its responsibility; independent review not declared separate from implementation",
     "VELDO-0089 detail: team/complete-proposal: every earlier staffing problem is an open owner request",
+    "VELDO-0089 detail: team/amendment-current: a worker who left the project after the answer is refused and asks the owner",
+    "VELDO-0089 detail: team/owner-request: the first project's owner is asked about its team; the second project's owner is asked about his; once the owner declined it, a repeat opens a new request; and once he answered that one, another; three rounds, three requests",
     "VELDO-0089 detail: team/observability: pending work is counted"
    ],
    "diff": "proof/VELDO-0089/no-owner-request.diff",
@@ -354,10 +390,12 @@
     "VELDO-0089 team/conflicting-staffing",
     "VELDO-0089 team/project-requirements",
     "VELDO-0089 team/complete-proposal",
+    "VELDO-0089 team/amendment-current",
+    "VELDO-0089 team/owner-request",
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "9d6f71480f96a905f7e342a7a7093e5fd66ffd65b3bc95c66d15464d83626749",
+   "mutant_sha256": "ba2c84a5a3b6246dae5fbf321ad992409801da377a2b75c3607560eb4b24d69c",
    "name": "no-owner-request",
    "named_row_red": true,
    "named_rows": [
@@ -410,6 +448,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -434,6 +476,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     false
+    ],
+    [
      "VELDO-0089 team/observability",
      false
     ],
@@ -454,12 +500,268 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 1.921,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.359,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/owner-request: the second project's owner is asked about his"
+   ],
+   "diff": "proof/VELDO-0089/request-project-unbound.diff",
+   "failed_rows": [
+    "VELDO-0089 team/owner-request"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "b4228b42ce0ec9a6b1cbaa2e7c0627e3520ea70da95336c00c49f1c68aab4704",
+   "name": "request-project-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "team/owner-request"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     true
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     true
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     false
+    ],
+    [
+     "VELDO-0089 team/observability",
+     true
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 2.486,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/owner-request: once the owner declined it, a repeat opens a new request; and once he answered that one, another; three rounds, three requests"
+   ],
+   "diff": "proof/VELDO-0089/closed-request-returned.diff",
+   "failed_rows": [
+    "VELDO-0089 team/owner-request"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "c272b3231afd29cd90e797022b7cf3d28c362092b126c06a5cf4369d3a437d5b",
+   "name": "closed-request-returned",
+   "named_row_red": true,
+   "named_rows": [
+    "team/owner-request"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     true
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     true
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     false
+    ],
+    [
+     "VELDO-0089 team/observability",
+     true
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 2.452,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -477,7 +779,7 @@
     "VELDO-0089 team/project-requirements"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "05afc5f62e49edb4ad549b7a459b98131410f46579ae42a428a1e1b8437a0951",
+   "mutant_sha256": "f1f811394012a6565fd2b57a3fe373645001332e47ae635c730669e53752c994",
    "name": "tool-field-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -530,6 +832,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -554,6 +860,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -574,12 +884,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.019,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.922,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -593,7 +907,7 @@
     "VELDO-0089 team/project-requirements"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "a6628e5cc91c7e2e506897c800f604ef995dc0f41b53fc07bb36b543588e150d",
+   "mutant_sha256": "ffe21b818bc7bb4b803bf0338e3e7f5bd03ffc7ed06e6b327b5ab5e8f40014dd",
    "name": "two-managers-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -646,6 +960,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -670,6 +988,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -690,30 +1012,32 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.041,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.967,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0089 detail: team/conflicting-staffing: two project managers; a builder who also reviews; a reviewer in a builder's independence group; a worker nobody enrolled is never invented; a member outside the project is not staffed",
     "VELDO-0089 detail: team/project-requirements: a role budget above the project's coordination budget; an engine that is no registered adapter; a role without its responsibility; independent review not declared separate from implementation",
-    "VELDO-0089 detail: team/complete-proposal: every earlier staffing problem is an open owner request",
-    "VELDO-0089 detail: team/observability: pending work is counted"
+    "VELDO-0089 detail: team/complete-proposal: every earlier staffing problem is an open owner request"
    ],
    "diff": "proof/VELDO-0089/separation-unchecked.diff",
    "failed_rows": [
     "VELDO-0089 team/conflicting-staffing",
     "VELDO-0089 team/project-requirements",
-    "VELDO-0089 team/complete-proposal",
-    "VELDO-0089 team/observability"
+    "VELDO-0089 team/complete-proposal"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "19368a5d06663f228f3b4984dd16f9492aa2ab0c3623d3e74fa02f8535a72dd1",
+   "mutant_sha256": "4b45d23013c28ebc2aa8a4d53455acf4260f1db6738d084ad4d08ba42b06540e",
    "name": "separation-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -766,6 +1090,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -790,8 +1118,12 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
-     false
+     true
     ],
     [
      "VELDO-0089 ran/install/assets",
@@ -810,12 +1142,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.028,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.903,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -823,6 +1159,7 @@
     "VELDO-0089 detail: team/conflicting-staffing: two project managers; a builder who also reviews; a reviewer in a builder's independence group; a worker nobody enrolled is never invented; a member outside the project is not staffed",
     "VELDO-0089 detail: team/project-requirements: a role budget above the project's coordination budget; an engine that is no registered adapter; a role without its responsibility; independent review not declared separate from implementation",
     "VELDO-0089 detail: team/complete-proposal: every earlier staffing problem is an open owner request",
+    "VELDO-0089 detail: team/amendment-current: a worker who left the project after the answer is refused and asks the owner; and the team stays at revision 2",
     "VELDO-0089 detail: team/observability: pending work is counted"
    ],
    "diff": "proof/VELDO-0089/invented-worker-accepted.diff",
@@ -830,10 +1167,11 @@
     "VELDO-0089 team/conflicting-staffing",
     "VELDO-0089 team/project-requirements",
     "VELDO-0089 team/complete-proposal",
+    "VELDO-0089 team/amendment-current",
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "d061c4b04ce8a8d89583644a49003ccf9af16d33fbefec131298db2f11c09fdf",
+   "mutant_sha256": "7afce1eeccb7b69a6374f0553d7676a38b6485fcc93ccdbaf8846d82fc28804b",
    "name": "invented-worker-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -886,6 +1224,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -910,6 +1252,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      false
     ],
@@ -930,12 +1276,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.018,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.951,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -947,7 +1297,7 @@
     "VELDO-0089 team/project-requirements"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "5fa32f1b75bcd7215709c2ff045b596ad5d6a74a57b62b22380f39db3c81bc3d",
+   "mutant_sha256": "d81abdeed1fdfbcd333907c11949f382617152097f3215ea6483c7ffbcf6f9c5",
    "name": "budget-over-project",
    "named_row_red": true,
    "named_rows": [
@@ -1000,6 +1350,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1024,6 +1378,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -1044,12 +1402,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.027,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.949,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -1061,7 +1423,7 @@
     "VELDO-0089 team/project-requirements"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "60923c8126117e143170cb59c11728c112e874e68128110b0bc1cc74bb5d12c3",
+   "mutant_sha256": "23655c8eabf9533d3e352bb6b1d3c039117e7ebee7927bad833b7bc4460e3124",
    "name": "engine-unregistered",
    "named_row_red": true,
    "named_rows": [
@@ -1114,6 +1476,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1138,6 +1504,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -1158,12 +1528,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.051,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.963,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -1175,7 +1549,7 @@
     "VELDO-0089 team/roster-not-authority"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "8704673efc7e47146777f910fd2763dcccc188da08bea9e9b88c7d2599dbac4c",
+   "mutant_sha256": "27d30f67c699c1f5d6f656b9642aac68f6bc19289352bc211e9b6fbde299570c",
    "name": "roster-grants-admission",
    "named_row_red": true,
    "named_rows": [
@@ -1228,6 +1602,10 @@
      false
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1252,6 +1630,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -1272,12 +1654,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.065,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.982,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -1289,7 +1675,7 @@
     "VELDO-0089 team/roster-not-authority"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "7bde139fc0ec66fdf60d7326d9d12b675274bc8297786541f6657b1dda5fb0aa",
+   "mutant_sha256": "b0af29f8d89a07a461c2a2a2667669c0de65346179b337edd454c5f3a6159f54",
    "name": "authority-permission-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1342,6 +1728,10 @@
      false
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1366,6 +1756,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -1386,28 +1780,34 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.15,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.981,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0089 detail: team/stale-amendment: a command bound to an older team version is refused; and the team stays at revision 2",
     "VELDO-0089 detail: team/altered-amendment: and the team stays at revision 2",
-    "VELDO-0089 detail: team/self-promotion: the manager is still no reviewer"
+    "VELDO-0089 detail: team/self-promotion: the manager is still no reviewer",
+    "VELDO-0089 detail: team/amendment-current: and the team stays at revision 2"
    ],
    "diff": "proof/VELDO-0089/amendment-version-unbound.diff",
    "failed_rows": [
     "VELDO-0089 team/stale-amendment",
     "VELDO-0089 team/altered-amendment",
-    "VELDO-0089 team/self-promotion"
+    "VELDO-0089 team/self-promotion",
+    "VELDO-0089 team/amendment-current"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "b6223ed63229a6d360e074c764e6fef8f290fd01b4b6f77b93d3ac6f68748261",
+   "mutant_sha256": "99ba66227597b21bc1f587e4086d66033a9b47aae93514c70e80dcf8970b233b",
    "name": "amendment-version-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -1460,6 +1860,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1484,6 +1888,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -1504,28 +1912,34 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.053,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.948,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0089 detail: team/stale-amendment: an answer to a superseded proposal is refused",
     "VELDO-0089 detail: team/altered-amendment: content changed after the owner's answer is refused; an answer to another brief is refused; and the team stays at revision 2",
-    "VELDO-0089 detail: team/self-promotion: the manager is still no reviewer"
+    "VELDO-0089 detail: team/self-promotion: the manager is still no reviewer",
+    "VELDO-0089 detail: team/amendment-current: and the team stays at revision 2"
    ],
    "diff": "proof/VELDO-0089/amendment-target-unchecked.diff",
    "failed_rows": [
     "VELDO-0089 team/stale-amendment",
     "VELDO-0089 team/altered-amendment",
-    "VELDO-0089 team/self-promotion"
+    "VELDO-0089 team/self-promotion",
+    "VELDO-0089 team/amendment-current"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "ff34b71cd09fd834cc19624473c48b8afc7dac322d1a4f68b7f1e6d1d87f5750",
+   "mutant_sha256": "c7f003ea26ffd70dee6c12d22e95d548d94eca3f6b6bd62a37620d6d49e53501",
    "name": "amendment-target-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1579,6 +1993,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1603,6 +2021,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -1623,26 +2045,32 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.037,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 3.004,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0089 detail: team/altered-amendment: an answer to another brief is refused; and the team stays at revision 2",
-    "VELDO-0089 detail: team/self-promotion: the manager is still no reviewer"
+    "VELDO-0089 detail: team/self-promotion: the manager is still no reviewer",
+    "VELDO-0089 detail: team/amendment-current: and the team stays at revision 2"
    ],
    "diff": "proof/VELDO-0089/amendment-brief-unchecked.diff",
    "failed_rows": [
     "VELDO-0089 team/altered-amendment",
-    "VELDO-0089 team/self-promotion"
+    "VELDO-0089 team/self-promotion",
+    "VELDO-0089 team/amendment-current"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "232227bc5513db16d1f6ae8b9517e59c357b73cf163b19c05c356c6b2829f48d",
+   "mutant_sha256": "1ed7caff7175fe8f1615096ea34139462b028cad8b635d501bf4cda0ad86b5a3",
    "name": "amendment-brief-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1695,6 +2123,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1719,6 +2151,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -1739,12 +2175,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.016,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 3.014,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -1756,7 +2196,7 @@
     "VELDO-0089 team/altered-amendment"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "8d27f0c4b6c33b96509d42bad5ebcfeb4c81e62ed96c44d55699118ad87a419b",
+   "mutant_sha256": "993ad9922894c6d857c226f9d4b9b255ab43a3c398c9c4634cfc56fcbee8232a",
    "name": "amendment-signature-unverified",
    "named_row_red": true,
    "named_rows": [
@@ -1809,6 +2249,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1833,6 +2277,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -1853,26 +2301,30 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.02,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.938,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0089 detail: team/self-promotion: another project owner's answer is not the owner's; the manager is still no reviewer",
-    "VELDO-0089 detail: team/observability: pending work is counted"
+    "VELDO-0089 detail: team/self-promotion: another project owner's answer is not the owner's; the owner's rejection is not an acceptance; nor is his return for elaboration; the manager is still no reviewer",
+    "VELDO-0089 detail: team/amendment-current: an answer settled by the owner who then lost his role is refused; and the team stays at revision 2"
    ],
    "diff": "proof/VELDO-0089/any-settler-amends.diff",
    "failed_rows": [
     "VELDO-0089 team/self-promotion",
-    "VELDO-0089 team/observability"
+    "VELDO-0089 team/amendment-current"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "93a34adad782b369698252c8d86b6267005b1f10486f86020b707e7133aea220",
+   "mutant_sha256": "e6c5783657074155113895f8b8fdf6a26e2e10101c560812be8ed3f32c1c4ce5",
    "name": "any-settler-amends",
    "named_row_red": true,
    "named_rows": [
@@ -1925,6 +2377,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -1949,8 +2405,12 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
-     false
+     true
     ],
     [
      "VELDO-0089 ran/install/assets",
@@ -1969,12 +2429,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.032,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.461,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -1986,7 +2450,7 @@
     "VELDO-0089 team/self-promotion"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "37385ff3dd545c7063dada6c43bf01e1a432a3576331aae43667e0d56a6f2911",
+   "mutant_sha256": "a92fa1072c69ea193d293ece46bfba91d11016d99b470a1296d5201663043adc",
    "name": "scope-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2039,6 +2503,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -2063,6 +2531,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -2083,12 +2555,398 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 1.999,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.948,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/self-promotion: the owner's rejection is not an acceptance; nor is his return for elaboration; the manager is still no reviewer",
+    "VELDO-0089 detail: team/amendment-current: an answer settled by the owner who then lost his role is refused; and the team stays at revision 2"
+   ],
+   "diff": "proof/VELDO-0089/ruling-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0089 team/self-promotion",
+    "VELDO-0089 team/amendment-current"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "d070e9796fbbe84ae8c2d850121d36bf1cb134060f84286b36ed7550481fc523",
+   "name": "ruling-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "team/self-promotion"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     false
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     true
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 team/observability",
+     true
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 2.947,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/amendment-current: an answer settled by the owner who then lost his role is refused; and the team stays at revision 2"
+   ],
+   "diff": "proof/VELDO-0089/amendment-owner-not-current.diff",
+   "failed_rows": [
+    "VELDO-0089 team/amendment-current"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "ca73d0c917a0708454b30a2abd7a08e3d8a7675a556f695db1f24c59ccaf2a4b",
+   "name": "amendment-owner-not-current",
+   "named_row_red": true,
+   "named_rows": [
+    "team/amendment-current"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     true
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     true
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 team/observability",
+     true
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 2.922,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/amendment-current: a worker who left the project after the answer is refused and asks the owner; and the team stays at revision 2",
+    "VELDO-0089 detail: team/observability: pending work is counted"
+   ],
+   "diff": "proof/VELDO-0089/amend-restaff-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0089 team/amendment-current",
+    "VELDO-0089 team/observability"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "e478f30021d001f1d1c41dd6d08111263f3f23f36cb0addcc74cd9806e6b41bf",
+   "name": "amend-restaff-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "team/amendment-current"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     true
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     false
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     true
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 team/observability",
+     false
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 3.006,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -2104,7 +2962,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "4dd95df15fd0dd1587a5986795c7e14730350bca9c15f334b784d258996a8010",
+   "mutant_sha256": "37d257b853fd6284f702c37262527d93c407669335068795bcdf57005b2bb8d2",
    "name": "policy-defaults-to-no-reviews",
    "named_row_red": true,
    "named_rows": [
@@ -2157,6 +3015,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      false
     ],
@@ -2181,6 +3043,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      false
     ],
@@ -2201,12 +3067,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.008,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.941,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -2220,7 +3090,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "c7912f010144965aed00fbd40854464e2ed214eba2bd9ed21ad47d2430cb9722",
+   "mutant_sha256": "275b24b10125d9b550eba19b7b3fe662ce757bbff7688efacc2777b3a361e1d2",
    "name": "review-count-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2273,6 +3143,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -2297,6 +3171,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      false
     ],
@@ -2317,17 +3195,21 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.003,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 3.077,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0089 detail: team/independence: the builder reviewing his own unit is refused; one reviewer in two positions is refused",
+    "VELDO-0089 detail: team/independence: the builder reviewing his own unit is refused; one reviewer in two positions is refused; a reviewer in the builder's independence group is refused",
     "VELDO-0089 detail: team/observability: pending work is counted"
    ],
    "diff": "proof/VELDO-0089/reviewer-independence-unchecked.diff",
@@ -2336,7 +3218,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "30c0df3cf199a06e88d20d76c3ed355d04cb4b6b9e6be978015e5fbfc1bd6d13",
+   "mutant_sha256": "1f5b4e90a20401614cc6161558765eefacb1cd2d256589a44b66c80187f4a821",
    "name": "reviewer-independence-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2389,6 +3271,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -2413,6 +3299,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      false
     ],
@@ -2433,17 +3323,21 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.017,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.952,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0089 detail: team/exact-subject: a reviewer bound to an older revision is refused",
+    "VELDO-0089 detail: team/exact-subject: a reviewer bound to an older revision is refused; a reviewer bound to another scope of the unit is refused",
     "VELDO-0089 detail: team/observability: pending work is counted"
    ],
    "diff": "proof/VELDO-0089/subject-unbound.diff",
@@ -2452,7 +3346,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "4018ecb2bbb168ff7f5bf238ba5c8ca477a275934585880746688d9af15c4996",
+   "mutant_sha256": "9c896c45c81afec355949c8c84d75767c6cad9de64b265ff146d2c7011dba898",
    "name": "subject-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -2505,6 +3399,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -2529,6 +3427,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      false
     ],
@@ -2549,12 +3451,400 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.045,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.972,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/exact-subject: a reviewer bound to another scope of the unit is refused",
+    "VELDO-0089 detail: team/observability: pending work is counted"
+   ],
+   "diff": "proof/VELDO-0089/scope-digest-unbound.diff",
+   "failed_rows": [
+    "VELDO-0089 team/exact-subject",
+    "VELDO-0089 team/observability"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "c7609761537fa0561a59d555004794250033521cff37d5c96ac09034c875732f",
+   "name": "scope-digest-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "team/exact-subject"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     true
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     true
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     false
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 team/observability",
+     false
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 2.449,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/independence: a reviewer in the builder's independence group is refused",
+    "VELDO-0089 detail: team/observability: pending work is counted"
+   ],
+   "diff": "proof/VELDO-0089/reviewer-group-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0089 team/independence",
+    "VELDO-0089 team/observability"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "6dd48bded110579dc2cd13c32819f7544bf0047c4f34823676756f6326970da3",
+   "name": "reviewer-group-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "team/independence"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     true
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     false
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 team/observability",
+     false
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 2.964,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/stale-team: a worker revoked after the team was accepted is not staffed",
+    "VELDO-0089 detail: team/observability: pending work is counted"
+   ],
+   "diff": "proof/VELDO-0089/revoked-member-assigned.diff",
+   "failed_rows": [
+    "VELDO-0089 team/stale-team",
+    "VELDO-0089 team/observability"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "0188267e08c8e587c8a04a844fcab135432a50c977840ce9abbcdf625d7b4dd1",
+   "name": "revoked-member-assigned",
+   "named_row_red": true,
+   "named_rows": [
+    "team/stale-team"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     true
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     true
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     false
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 team/observability",
+     false
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 2.922,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -2568,7 +3858,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "9f69c0e1e730f4f2b30bdb3cc68e69ab10b153b72587909638e2a84e7906a9fb",
+   "mutant_sha256": "e0d9b3e19c0a3f2ebfa2f305812784d38cab5829b2c7166a19deaeeb34ed6ceb",
    "name": "team-revision-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -2621,6 +3911,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -2645,6 +3939,10 @@
      false
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      false
     ],
@@ -2665,12 +3963,16 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.011,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.985,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   {
    "by_assertion": true,
@@ -2684,7 +3986,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "1414417dc1b5fb41ea833789f6ef641e6bfe177c2c07157d3160837498946808",
+   "mutant_sha256": "27ed08f6476a7f13766b22ae53e6034f7ec7779164f4c2d4f4d6097002df101b",
    "name": "non-manager-assigns",
    "named_row_red": true,
    "named_rows": [
@@ -2737,6 +4039,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -2761,6 +4067,10 @@
      false
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      false
     ],
@@ -2781,17 +4091,147 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.139,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 2.958,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0089 detail: team/observability: every amendment names its request"
+   ],
+   "diff": "proof/VELDO-0089/amendment-request-unobserved.diff",
+   "failed_rows": [
+    "VELDO-0089 team/observability"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "19348feb9e7aad1840d557f96f62b2d32c75d758b622cd2bb5106038bb27ec6c",
+   "name": "amendment-request-unobserved",
+   "named_row_red": true,
+   "named_rows": [
+    "team/observability"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0089 install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 team/incomplete-roster",
+     true
+    ],
+    [
+     "VELDO-0089 team/conflicting-staffing",
+     true
+    ],
+    [
+     "VELDO-0089 team/project-requirements",
+     true
+    ],
+    [
+     "VELDO-0089 team/complete-proposal",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/altered-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 team/self-promotion",
+     true
+    ],
+    [
+     "VELDO-0089 team/roster-not-authority",
+     true
+    ],
+    [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
+     "VELDO-0089 team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 team/valid-assignment",
+     true
+    ],
+    [
+     "VELDO-0089 team/review-count",
+     true
+    ],
+    [
+     "VELDO-0089 team/independence",
+     true
+    ],
+    [
+     "VELDO-0089 team/exact-subject",
+     true
+    ],
+    [
+     "VELDO-0089 team/stale-team",
+     true
+    ],
+    [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 team/observability",
+     false
+    ],
+    [
+     "VELDO-0089 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/schema-closed",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-amendment",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/policy-required",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
+     "VELDO-0089 ran/team/observability",
+     true
+    ]
+   ],
+   "seconds": 2.448,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   }
  ],
  "noop": {
   "control_team.py": {
-   "copy_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6",
+   "copy_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2841,6 +4281,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -2865,6 +4309,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -2885,15 +4333,19 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.033,
-   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
+   "seconds": 3.007,
+   "source_sha256": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc"
   },
   "init_scaffold.py": {
-   "copy_sha256": "7ce520e602e1c7978674dadaecebe2349af0b36c1936a0789bf72a8f0b225951",
+   "copy_sha256": "4ae6a8367e5c188e637abd769daf2a97eeca0b50d040fa635b40beb16baf51fc",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2943,6 +4395,10 @@
      true
     ],
     [
+     "VELDO-0089 team/amendment-current",
+     true
+    ],
+    [
      "VELDO-0089 team/policy-required",
      true
     ],
@@ -2967,6 +4423,10 @@
      true
     ],
     [
+     "VELDO-0089 team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 team/observability",
      true
     ],
@@ -2987,17 +4447,21 @@
      true
     ],
     [
+     "VELDO-0089 ran/team/owner-request",
+     true
+    ],
+    [
      "VELDO-0089 ran/team/observability",
      true
     ]
    ],
-   "seconds": 2.046,
-   "source_sha256": "7ce520e602e1c7978674dadaecebe2349af0b36c1936a0789bf72a8f0b225951"
+   "seconds": 2.974,
+   "source_sha256": "4ae6a8367e5c188e637abd769daf2a97eeca0b50d040fa635b40beb16baf51fc"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 89",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 52.823,
+ "serial_seconds": 100.653,
  "spec_id": "VELDO-0089",
  "suite": "scripts/suites/73_veldo_0089_team.py"
 }

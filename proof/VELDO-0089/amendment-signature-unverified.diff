@@ -1,5 +1,5 @@
 --- a/.veldo/control_team.py
 +++ b/.veldo/control_team.py
-@@ -377,2 +376,0 @@
+@@ -383,2 +382,0 @@
 -        if not verified:
 -            raise Refused('not_authorized', 'command signature did not verify')

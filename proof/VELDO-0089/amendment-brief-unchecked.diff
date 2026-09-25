@@ -1,5 +1,5 @@
 --- a/.veldo/control_team.py
 +++ b/.veldo/control_team.py
-@@ -472 +472 @@
+@@ -478 +478 @@
 -        if req.get('brief') != amendment_brief(record):
 +        if False:  # defect: the owner may have been shown anything

@@ -61,7 +61,7 @@ and a reader in another process. It also passes in the stage environment (`env -
 rows red by assertion (the tree has no team service, so every team command is answered
 `no_team_service`), and every region ran to its end.
 
-`python3 -B proof/VELDO-0089/drive.py` regenerates `mutations.json` and the diffs: 23 mutants, each reds
+`python3 -B proof/VELDO-0089/drive.py` regenerates `mutations.json` and the diffs: 32 mutants, each reds
 its named row by assertion, the baseline and a no-op copy of each mutated module green. Registry:
 `scripts/check_teeth_mutations.py --finding 89`.
 
@@ -69,6 +69,7 @@ its named row by assertion, the baseline and a no-op copy of each mutated module
 | --- | --- | --- |
 | `install/assets` | all | `team-not-scaffolded` |
 | `team/incomplete-roster` | AC1 | `review-role-not-required`, `no-owner-request` |
+| `team/owner-request` | AC1 | `request-project-unbound`, `closed-request-returned` |
 | `team/schema-closed` | AC1 | `tool-field-accepted` |
 | `team/conflicting-staffing` | AC1 | `two-managers-accepted`, `separation-unchecked`, `invented-worker-accepted` |
 | `team/project-requirements` | AC1 | `budget-over-project`, `engine-unregistered` |
@@ -77,14 +78,15 @@ its named row by assertion, the baseline and a no-op copy of each mutated module
 | `team/owner-amendment` | AC2 | none (the accepted case, and the stored revision history) |
 | `team/stale-amendment` | AC2 | `amendment-version-unbound`, `amendment-target-unchecked` |
 | `team/altered-amendment` | AC2 | `amendment-target-unchecked`, `amendment-brief-unchecked`, `amendment-signature-unverified` |
-| `team/self-promotion` | AC2 | `any-settler-amends`, `scope-unchecked` |
+| `team/self-promotion` | AC2 | `any-settler-amends`, `scope-unchecked`, `ruling-unchecked` |
+| `team/amendment-current` | AC2 | `amendment-owner-not-current`, `amend-restaff-unchecked` |
 | `team/policy-required` | AC3 | `policy-defaults-to-no-reviews` |
 | `team/valid-assignment` | AC3 | none (the valid independent assignment) |
 | `team/review-count` | AC3 | `review-count-unchecked` |
-| `team/independence` | AC3 | `reviewer-independence-unchecked` |
-| `team/exact-subject` | AC3 | `subject-unbound` |
-| `team/stale-team` | AC3 | `team-revision-unbound`, `non-manager-assigns` |
-| `team/observability` | all | none |
+| `team/independence` | AC3 | `reviewer-independence-unchecked`, `reviewer-group-unchecked` |
+| `team/exact-subject` | AC3 | `subject-unbound`, `scope-digest-unbound` |
+| `team/stale-team` | AC3 | `team-revision-unbound`, `non-manager-assigns`, `revoked-member-assigned` |
+| `team/observability` | all | `amendment-request-unobserved` |
 
 Each declared falsifier is the first mutation of its row: AC1 `review-role-not-required` (a team missing
 independent review is accepted), AC2 `roster-grants-admission` (the configured project manager is granted
@@ -93,9 +95,34 @@ means no reviews). Several mutants also red later rows of the same region (an ac
 a team record the later rows find); `mutations.json` lists every row each one turned red, with the suite's
 own failure detail.
 
+## Review 1
+
+The staffing request's subject bound only the team and its problems, so a second project proposing the
+same unstaffable team got the first project's request, addressed to the first project's owner. The subject
+now binds the project's team (`team:<project>`), so each project's owner is asked about his own team. A
+repeat of the same proposal returns the request while it is pending; once the owner declined or answered
+it, a repeat opens the next round's request (alias suffix `-<n>`). Amendment observations name their
+request. `red-at-83ca104.json`: the current suite against the reviewed head, `team/owner-request` (the
+second project's owner is not asked, and the declined and answered requests come back) and
+`team/observability` (no amendment names its request) red by assertion, every region ran to its end.
+
+Rows added for what was correct but not driven: the owner's reject and return for elaboration refused
+`not_accepted:<ruling>` (`team/self-promotion`); an owner who lost `project_owner` after his answer refused
+`not_owner:role`, and a worker who left the project after the answer refused `incomplete_roster` with a new
+owner request (`team/amendment-current`); a reviewer bound to another scope digest (`team/exact-subject`);
+a staffed reviewer re-enrolled into the builder's independence group (`team/independence`); a builder
+revoked after the team was accepted refused `not_staffed:member/<who>` (`team/stale-team`).
+
 ## Stated limits
 
 Concurrent amendment races, mid-cycle reassignment and recovery are Release 2; additional owners and
 delegation are Release 3. The manager's own answer is refused by the VELDO-0068 settlement itself (a
 service cannot settle a decision); this service refuses the resulting unsettled request as
-`missing_evidence:settlement`, and that path has no mutation of its own here.
+`missing_evidence:settlement`, and that path has no mutation of its own here. The settlement-principal
+comparison in `amend` has no mutation either: the VELDO-0068 settlement records only the request's owner as
+its principal, so no real answer reaches it with another.
+
+Filed from review 1, not built: a unit linked to its project only through its backlog item and objective
+(VELDO-0076's second path) is refused by `assign`, and nothing produces units yet (VELDO-0078 will);
+`amendment_brief` leaves out each role's responsibilities and expertise; the owner's answer to a staffing
+request is recorded but not yet consumed; several assignments per unit are Release 2.
