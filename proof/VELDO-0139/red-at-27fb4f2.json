@@ -1,0 +1,97 @@
+{
+ "by_assertion": true,
+ "commit": "27fb4f28bbc4031e00e4fcad58a68d5652ec0f0f",
+ "details": [
+  "VELDO-0139 qualification/opening-retried detail: once the fault clears, a later pass of the same process opens the request [refused]",
+  "VELDO-0139 qualification/opening-retried detail: and exactly one qualification request exists after further passes [0]"
+ ],
+ "failed_rows": [
+  "VELDO-0139 qualification/opening-retried"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc",
+   "now": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": "d350187cfa77751c3fb70103d3b93d5909f5ec64c05d1eb3f0d7709901fcea5b",
+   "now": "07e7061b8351d232c58f1f1453ebe7dfc82e74bbe26689f847d6d5db8d931ec4"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "2f395d4b8861b6645c8ce227cf3a3f27b4d152da2ebc070c9e9a5beae8adefc8",
+   "now": "2f395d4b8861b6645c8ce227cf3a3f27b4d152da2ebc070c9e9a5beae8adefc8"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0139 install/assets",
+   true
+  ],
+  [
+   "VELDO-0139 setup/lays-down",
+   true
+  ],
+  [
+   "VELDO-0139 refuse/writes-nothing",
+   true
+  ],
+  [
+   "VELDO-0139 refuse/existing-store",
+   true
+  ],
+  [
+   "VELDO-0139 edge/enrolled-with-possession",
+   true
+  ],
+  [
+   "VELDO-0139 chat/enrolled",
+   true
+  ],
+  [
+   "VELDO-0139 ingress/configuration",
+   true
+  ],
+  [
+   "VELDO-0139 token/never-copied",
+   true
+  ],
+  [
+   "VELDO-0139 service/starts-inert",
+   true
+  ],
+  [
+   "VELDO-0139 journey/qualified-and-active",
+   true
+  ],
+  [
+   "VELDO-0139 genesis/owner-signed",
+   true
+  ],
+  [
+   "VELDO-0139 qualification/one-request-across-restart",
+   true
+  ],
+  [
+   "VELDO-0139 rollback/rerun",
+   true
+  ],
+  [
+   "VELDO-0139 store/private-and-closed",
+   true
+  ],
+  [
+   "VELDO-0139 host-trust/directory-checked",
+   true
+  ],
+  [
+   "VELDO-0139 qualification/opening-retried",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 16.522,
+ "spec_id": "VELDO-0139",
+ "suite": "scripts/suites/73_veldo_0139_factory_setup.py",
+ "tree": "git archive 27fb4f28bbc4031e00e4fcad58a68d5652ec0f0f, unchanged; the current suite file run against it"
+}

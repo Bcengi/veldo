@@ -146,3 +146,5 @@ Rollback: `python3 .veldo/control_service.py stop <unit>`, then `python3 .veldo/
   enrollment is signed by the journal key (no owner-signed chat enrollment command exists); `api-edge` is
   enrolled by VELDO-0130's own setup when it lands; a passphrase key prompts at each signature.
 - The host identity is this host's name (`platform.node()`).
+
+`red-at-27fb4f2.json`: the current suite against the tree before review 2's fix, where `qualification/opening-retried` is the one red row, by assertion (the opening was tried once per process). Mutation `opening-tried-once-per-process` reds it; finding 139 has 21.

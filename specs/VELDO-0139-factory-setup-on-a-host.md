@@ -154,3 +154,10 @@ binding; control.sqlite3 is created 0600; the store connection is opened inside 
 an existing host trust directory that is not the account's own 0700 directory is refused by name; an
 empty leftover host/ is reported as holds_empty_host. Suite 73 has 15 rows; finding 139 has 20 mutants.
 The other filed items stay filed (Notes).
+
+2026-09-25, review 2 (filed item fixed by the lead): a part-way failed opening of the run's one qualification
+request was tried once per process, so the owner got no request until a restart. It is now retried on later
+passes with a doubling wait (at most every 64 passes) until open; each step stays skipped when already committed,
+so no second request is opened. Row qualification/opening-retried, red at 27fb4f2; mutation
+opening-tried-once-per-process (finding 139: 21). Filed: superseded qualification requests stay offered in the
+owner's chat (the delegation lifecycle work, VELDO-0140).
