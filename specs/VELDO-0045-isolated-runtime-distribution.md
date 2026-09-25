@@ -9,7 +9,7 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W30
-plan_revision: 3
+plan_revision: 4
 depends_on: [VELDO-0043]
 placement: [distribution, enforcement, loop]
 protected_paths: [scripts/verify.sh, engine/scripts/verify.sh]

@@ -9,7 +9,7 @@ human_approval: required
 lane: planned
 plan: PLAN-0019
 work: W32
-plan_revision: 3
+plan_revision: 4
 depends_on: [VELDO-0023, VELDO-0025, VELDO-0027, VELDO-0029, VELDO-0040, VELDO-0046, VELDO-0107]
 placement: [fleet, loop, distribution]
 protected_paths: []

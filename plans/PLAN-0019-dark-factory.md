@@ -4,10 +4,10 @@ id: PLAN-0019
 title: Dark Factory project coordination inside Veldo
 kind: mvp
 status: ready
-revision: 3
+revision: 4
 owner: dmitry
 approved_by: dmitry
-approved_at: 2026-09-22
+approved_at: 2026-09-25
 risk: critical
 
 outcomes:
@@ -42,7 +42,9 @@ outcomes:
     measure: >
       Release 1: real Claude Code and Codex workers on Linux and Mac pass normal containment,
       stopping, credential custody, subscription usage-cap accounting and current-authorization
-      checks. Release 2: recovery, revocation and exhaustive containment qualification, including
+      checks; a worker's tools may read their own engine login (Telegram 29163). Release 2:
+      separation of the engine login from worker tools for both engines, recovery, revocation and
+      exhaustive containment qualification, including
       repeated graphs and deleted checkpoints that cannot repeat a committed effect or change
       authoritative decisions. Release 4: qualification extends to every additional supported
       engine configuration and host profile.
@@ -74,7 +76,16 @@ non_goals:
 constraints:
   - id: C1
     text: >
-      The controlling design is docs/design/PLAN-0019-dark-factory-design.md, R01 through R76. The
+      The controlling design is docs/design/PLAN-0019-dark-factory-design.md, R01 through R76.
+      Amended 2026-09-25 by owner Telegram 29162: "all 6 are yes", approving
+      docs/design/PLAN-0019-operating-model-design.md at 12879d3, and 29163: "yes, Codex and Claude
+      can read creds", answering its section 15.
+      Ruling applied: the operating-model design governs the areas it covers (channels and
+      referenced material, the MCP catalog and OS keystore, the project manager and factory loop,
+      new repositories and Git identities, per-work capability handoff, the live execution record
+      and re-landing, and the account pool); where it and the controlling design disagree on those
+      areas, the operating-model design wins. Each person runs their own factory. Separating the
+      engine login from worker tools is Release 2 for both engines. The
       project layer lives in this repository. The separate-repository rule, single-operator
       restriction, terminology ban, and fixed fifteen-role roster do not apply under Dmitry's
       rulings. Draft artifacts neither approve this plan nor activate runtime changes.
@@ -578,7 +589,7 @@ work:
     spec: VELDO-0057
     title: Exact-tip publication and confirmed completion receipt
     feature_refs: [F3]
-    depends_on: [VELDO-0028, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0056, VELDO-0058]
+    depends_on: [VELDO-0028, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0056, VELDO-0058, VELDO-0129]
     order: 11057
     release: 1
     stage: 1
@@ -594,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0080, VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0092, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145]
     order: 16059
     release: 1
     stage: 6
@@ -758,9 +769,8 @@ work:
     title: Ordinary defect dispatch through normal admission
     feature_refs: [F6]
     depends_on: [VELDO-0079, VELDO-0126]
-    order: 14080
-    release: 1
-    stage: 4
+    order: 20080
+    release: 2
   - item: W66
     spec: VELDO-0081
     title: Quarantine inspection, taint propagation, and bounded execution
@@ -832,25 +842,24 @@ work:
     title: Capability-bound specialist selection
     feature_refs: [F7]
     depends_on: [VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108, VELDO-0125, VELDO-0127]
-    order: 14090
+    order: 15090
     release: 1
-    stage: 4
+    stage: 5
   - item: W76
     spec: VELDO-0091
     title: Budgeted requirements elaboration
     feature_refs: [F7]
     depends_on: [VELDO-0037, VELDO-0062, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0090]
-    order: 14091
+    order: 15091
     release: 1
-    stage: 4
+    stage: 5
   - item: W77
     spec: VELDO-0092
     title: Typed proposals and complete authorization validation
     feature_refs: [F7]
     depends_on: [VELDO-0035, VELDO-0052, VELDO-0054, VELDO-0069, VELDO-0078, VELDO-0085, VELDO-0089, VELDO-0091]
-    order: 14092
-    release: 1
-    stage: 4
+    order: 20092
+    release: 2
   - item: W78
     spec: VELDO-0093
     title: Per-project cycle serialization and replaceable checkpoint recovery
@@ -921,10 +930,10 @@ work:
     spec: VELDO-0127
     title: Versioned per-role MCP server and tool configuration
     feature_refs: [F7]
-    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089]
-    order: 14127
+    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0144]
+    order: 15127
     release: 1
-    stage: 4
+    stage: 5
   - item: W91
     spec: VELDO-0128
     title: Telegram progress and completion from journal events
@@ -937,7 +946,7 @@ work:
     spec: VELDO-0129
     title: Real worker adapter wiring for LiveLoop and LiveReviewer
     feature_refs: [F4]
-    depends_on: [VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061]
+    depends_on: [VELDO-0039, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0060, VELDO-0061, VELDO-0062]
     order: 11129
     release: 1
     stage: 1
@@ -953,7 +962,7 @@ work:
     spec: VELDO-0131
     title: Veldo factory UI on phone and desktop
     feature_refs: [F9]
-    depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132]
+    depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145]
     order: 15131
     release: 1
     stage: 5
@@ -998,10 +1007,59 @@ work:
     release: 1
     stage: 3
 
+  - item: W100
+    spec: VELDO-0140
+    title: A standing answer delegation the owner renews, and no silent refusal of his answers
+    feature_refs: [F5]
+    depends_on: [VELDO-0025, VELDO-0066, VELDO-0067, VELDO-0068, VELDO-0073]
+    order: 13140
+    release: 1
+    stage: 3
+  - item: W101
+    spec: VELDO-0141
+    title: Every worker run's full live execution record, and the UI's live terminal view of it
+    feature_refs: [F4, F9]
+    depends_on: [VELDO-0039, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0130]
+    order: 15141
+    release: 1
+    stage: 5
+  - item: W102
+    spec: VELDO-0142
+    title: Every repository is bound to exactly one Git identity, the only source of its author, remote and push credential
+    feature_refs: [F3]
+    depends_on: [VELDO-0028, VELDO-0042, VELDO-0056, VELDO-0057, VELDO-0144]
+    order: 15142
+    release: 1
+    stage: 5
+  - item: W103
+    spec: VELDO-0143
+    title: A repository the owner asks for in chat is created or adopted and bound to a new project on his one answer
+    feature_refs: [F6]
+    depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0142]
+    order: 15143
+    release: 1
+    stage: 5
+  - item: W104
+    spec: VELDO-0144
+    title: MCP servers defined once as versioned catalog records, with credentials only in the host OS keystore
+    feature_refs: [F7]
+    depends_on: [VELDO-0028, VELDO-0039, VELDO-0047, VELDO-0060, VELDO-0061, VELDO-0130]
+    order: 15144
+    release: 1
+    stage: 5
+  - item: W105
+    spec: VELDO-0145
+    title: The UI shell, the live run terminal and the decisions screen on phone and desktop
+    feature_refs: [F9]
+    depends_on: [VELDO-0130, VELDO-0141]
+    order: 15145
+    release: 1
+    stage: 5
+
 regression:
   journeys:
     - id: RJ1
-      title: Release 1 full installed Telegram or API objective through LangGraph PM, Linux and Mac workers, proof, review, exact landing and owner completion
+      title: Release 1 full installed journey from a Telegram message pointing at a Jira ticket, fetched through the Atlassian catalog server, through the LangGraph PM, Linux and Mac workers on at least two subscription accounts watched in the live terminal, proof, review, exact landing and owner completion
       activation: {when: after:VELDO-0059}
       owner_spec: VELDO-0059
       release: 1
@@ -1113,6 +1171,18 @@ subscription rate-limit windows; check before each invocation, stop at the cap a
 unknown usage conservatively. Historical monetary-maxima language in the design is superseded
 by this subscription usage model.
 
+Revision 4 records the owner's approval on 2026-09-25 of the operating-model design,
+[docs/design/PLAN-0019-operating-model-design.md](../docs/design/PLAN-0019-operating-model-design.md)
+(Telegram 29162, "all 6 are yes"), and his answer to its one open decision (29163, "yes, Codex and
+Claude can read creds"). Work starts from a message that may point at a Jira ticket; a project manager
+whose reasoning runs as ordinary worker runs coordinates every piece of work through one default
+pipeline; the factory loop inside the authority service offers each next station; MCP servers live in
+a versioned catalog with their credentials in the OS keystore; new repositories come from chat under
+one Git identity each; every run keeps a full live execution record the owner watches as a terminal;
+work spreads over every logged-in account; and a land re-lands when another person's factory moved
+main. Each person runs their own factory. Separating the engine login from worker tools is Release 2
+hardening for both engines.
+
 ## Releases and order
 
 Release 1 is delivered in six stages. Within each stage `depends_on` is the actual functional DAG;
@@ -1132,8 +1202,11 @@ stage may integrate an earlier service without making that service depend on the
 4. **Projects and the LangGraph project manager.** Project/owner/charter and objective acceptance,
    prioritized backlog and published specification decomposition, bounded PM elaboration, versioned
    teams and exact agent/tool/MCP configuration, specialist matching and typed authorized proposals.
-   Ordinary "fix this bug" work (0080) follows message -> spec -> owner admission and priority
-   -> build -> proof/gate/review -> land, without automatic defect reproduction.
+   Ordinary "fix this bug" work runs the operating-model design's default pipeline like any other
+   work (revision 4 moves VELDO-0080 to Release 2); an objective from the owner's own message is
+   accepted and admitted at default priority by that message unless the PM raises a question.
+   PM proposals take effect one owning command at a time with a named stop (VELDO-0092's atomic
+   groups are Release 2).
    One cycle runs per project, with one bounded follow-up if relevant input arrives during it.
    LangGraph runs a Veldo-owned versioned workflow through a replaceable plain-data interface;
    Release 1 uses no persistent checkpointer. Install all runtime assets this journey needs.
@@ -1149,9 +1222,23 @@ stage may integrate an earlier service without making that service depend on the
    Real engines and real authenticated owner-channel paths require their own qualification;
    deterministic model fixtures supplement, never replace, live journey evidence.
 
+**Build order inside Release 1 (revision 4).** The stage numbers above group functions and keep every
+dependency on the same or an earlier stage. The order in which the remaining Release 1 items are
+built follows section 12 of the operating-model design, so the owner starts using the factory at the
+end of its second stage: watch real runs first (0062, 0060, 0061, 0141, 0129, 0145, 0128), then
+"please do BCG-123" to a landed change (0089, 0140, 0078, 0079, 0144, 0127, a thin 0088, the 0057
+re-land), then the rest of the MVP (0124, 0125, 0085, 0091, 0090, the rest of 0088, 0142, 0143, the
+rest of 0131, 0059). Where a Release 1 criterion names a Mac leg of an item built before the Mac
+stage, that leg is qualified when VELDO-0124 and VELDO-0125 land, the way VELDO-0060 and VELDO-0061
+already qualify their Mac configuration in the host stage.
+
 Release 2 delivers robustness and recovery: off-host acknowledgement, authority generations and
 fencing, clock follow-ups, recovery commands, checkpoint isolation and restoration, replay and lost
-acknowledgements, governor failure matrices, interrupted decisions and operational recovery.
+acknowledgements, governor failure matrices, interrupted decisions and operational recovery. Revision 4
+adds three items: typed proposal groups that apply all or nothing (W77, VELDO-0092), the ordinary
+defect path of VELDO-0080 as its own work item (W65), and separating the engine login from worker
+tools for Claude Code and Codex (the former login clauses of VELDO-0060 AC4, VELDO-0061 AC4,
+VELDO-0062 AC1 and R45).
 Unknown effects remain stopped in Release 1 with original dispatch identity and unknown usage reservations;
 a process exit is not evidence that a remote operation did not happen. Ordinary unavailable-service
 checks and actual IPC-to-store integration are required now without claiming the broader follow-up
@@ -1224,12 +1311,12 @@ These are writing-only allocations; no specification status or existing evidence
 | W39 | VELDO-0054 | 1 | 1 |
 | W40 | VELDO-0055 | 3 | - |
 | W41 | VELDO-0056 | 1 | 1 |
-| W42 | VELDO-0057 | 1 | 1 |
+| W42 | VELDO-0057 | 1 | 1; re-land amended in revision 4 |
 | W43 | VELDO-0058 | 1 | 1 |
-| W44 | VELDO-0059 | 1 | 6 |
-| W45 | VELDO-0060 | 1 | 1 |
-| W46 | VELDO-0061 | 1 | 1 |
-| W47 | VELDO-0062 | 1 | 1 |
+| W44 | VELDO-0059 | 1 | 6; RJ1 and dependencies amended in revision 4 |
+| W45 | VELDO-0060 | 1 | 1; amended in revision 4 |
+| W46 | VELDO-0061 | 1 | 1; amended in revision 4 |
+| W47 | VELDO-0062 | 1 | 1; amended in revision 4 |
 | W48 | VELDO-0063 | 2 | - |
 | W49 | VELDO-0064 | 1 | 3 |
 | W50 | VELDO-0065 | 1 | 3 |
@@ -1243,11 +1330,11 @@ These are writing-only allocations; no specification status or existing evidence
 | W58 | VELDO-0073 | 1 | 3 |
 | W59 | VELDO-0074 | 2 | - |
 | W60 | VELDO-0075 | 1 | 3 |
-| W61 | VELDO-0076 | 1 | 4 |
-| W62 | VELDO-0077 | 1 | 4 |
+| W61 | VELDO-0076 | 1 | 4; amended in revision 4 |
+| W62 | VELDO-0077 | 1 | 4; acceptance by his message, revision 4 |
 | W63 | VELDO-0078 | 1 | 4 |
-| W64 | VELDO-0079 | 1 | 4 |
-| W65 | VELDO-0080 | 1 | 4; automatic reproduction/admission remains R3 |
+| W64 | VELDO-0079 | 1 | 4; admission by his message, revision 4 |
+| W65 | VELDO-0080 | 2 | - (revision 4); automatic reproduction/admission remains R3 |
 | W66 | VELDO-0081 | 3 | - |
 | W67 | VELDO-0082 | 3 | - |
 | W68 | VELDO-0083 | 3 | - |
@@ -1255,11 +1342,11 @@ These are writing-only allocations; no specification status or existing evidence
 | W70 | VELDO-0085 | 1 | 4 |
 | W71 | VELDO-0086 | 3 | - |
 | W72 | VELDO-0087 | 3 | - |
-| W73 | VELDO-0088 | 1 | 4 |
-| W74 | VELDO-0089 | 1 | 4 |
-| W75 | VELDO-0090 | 1 | 4 |
-| W76 | VELDO-0091 | 1 | 4 |
-| W77 | VELDO-0092 | 1 | 4 |
+| W73 | VELDO-0088 | 1 | 4; amended in revision 4 |
+| W74 | VELDO-0089 | 1 | 4; amended in revision 4 |
+| W75 | VELDO-0090 | 1 | 5; amended in revision 4 |
+| W76 | VELDO-0091 | 1 | 5; amended in revision 4 |
+| W77 | VELDO-0092 | 2 | - (revision 4) |
 | W78 | VELDO-0093 | 2 | - |
 | W79 | VELDO-0094 | 4 | - |
 | W80 | VELDO-0095 | 4 | - |
@@ -1268,17 +1355,23 @@ These are writing-only allocations; no specification status or existing evidence
 | W83 | VELDO-0098 | 4 | - |
 | W87 | VELDO-0124 | 1 | 2 |
 | W88 | VELDO-0125 | 1 | 2 |
-| W89 | VELDO-0126 | 1 | 3 |
-| W90 | VELDO-0127 | 1 | 4 |
+| W89 | VELDO-0126 | 1 | 3; amended in revision 4 |
+| W90 | VELDO-0127 | 1 | 5; amended in revision 4 |
 | W91 | VELDO-0128 | 1 | 3 |
-| W92 | VELDO-0129 | 1 | 1 |
+| W92 | VELDO-0129 | 1 | 1; AC4 added in revision 4 |
 | W93 | VELDO-0130 | 1 | 5 |
-| W94 | VELDO-0131 | 1 | 5 |
+| W94 | VELDO-0131 | 1 | 5; amended in revision 4 |
 | W95 | VELDO-0132 | 1 | 4 |
 | W96 | VELDO-0133 | 1 | 3 |
 | W97 | VELDO-0134 | 1 | 1 |
 | W98 | VELDO-0135 | 1 | 1 |
 | W99 | VELDO-0136 | 1 | 3 |
+| W100 | VELDO-0140 | 1 | 3 |
+| W101 | VELDO-0141 | 1 | 5 |
+| W102 | VELDO-0142 | 1 | 5 |
+| W103 | VELDO-0143 | 1 | 5 |
+| W104 | VELDO-0144 | 1 | 5 |
+| W105 | VELDO-0145 | 1 | 5 |
 
 ## Related baseline and follow-up disposition
 
@@ -1290,6 +1383,10 @@ existing reader foundation. VELDO-0111 through VELDO-0117, VELDO-0121 and VELDO-
 qualification follow-ups; the actual single-domain store connection from 0115 is required in 0047
 now. VELDO-0118 through VELDO-0120 and VELDO-0123 are Release 2 parser/gate qualification, including
 already recorded evidence. A release assignment does not undo code or change a status field.
+VELDO-0137, VELDO-0138 and VELDO-0139 are standalone items built on 2026-09-25 that Release 1 reuses:
+the policy digest reader, the authority service running the Telegram ingress, and factory setup on a
+host. W100's VELDO-0140 also builds on VELDO-0138, and W103's VELDO-0143 on VELDO-0139's setup; those
+edges stay in the specifications because a plan edge must name a work item.
 
 ## Revision history and dependency basis
 
@@ -1320,3 +1417,27 @@ are checked against, and depends on VELDO-0053.
 that night. W98: the frontier and the work loop read the spec status line, which VELDO-0049 stopped
 writing for enrolled work, so the enrolled journey stalls after build acceptance. W99: an owner who answers
 without pressing Reply gets silence (VELDO-0066's review).
+
+2026-09-25: revision 4, approved by the owner on Telegram 29162, 29163 and 29165. In 29162 ("all 6 are
+yes") he approved the operating-model design docs/design/PLAN-0019-operating-model-design.md at
+12879d3, and in 29163 ("yes, Codex and Claude can read creds") he answered its section 15 yes for both
+engines. The revision applies that design's section 10(e). W65 (VELDO-0080) and W77
+(VELDO-0092) move to Release 2. W100 to W105 add VELDO-0140 and VELDO-0141 (both written standalone on
+2026-09-25 and now bound here) and the new drafts VELDO-0142 (Git identities), VELDO-0143 (a repository
+from chat), VELDO-0144 (the MCP catalog and OS keystore) and VELDO-0145 (the UI shell, live terminal
+and decisions screen). VELDO-0059 drops VELDO-0080 and VELDO-0092 and depends on VELDO-0140 to
+VELDO-0145. C1 names the operating-model design; O4 and R45 move login separation to Release 2 for
+both engines; the controlling design gains dated revision 4 notes, and R75 states the per-person
+deployment as its deployment view; RJ1 starts from a Telegram message pointing at a Jira ticket,
+fetched through the Atlassian catalog server, uses at least two accounts and is watched in the live
+terminal. The amended specifications are VELDO-0057, 0059, 0060, 0061, 0062, 0076, 0077, 0079, 0088,
+0089, 0090, 0091, 0126, 0127, 0129, 0131 and 0141, each with the criterion text the design gives and
+a History entry; VELDO-0141 moves to ready on the approval. The dependency changes the amendments
+imply are recorded as edges: VELDO-0057 on VELDO-0129 (the loop offers the re-land), VELDO-0129 on
+VELDO-0039, VELDO-0047 and VELDO-0062 (the loop runs the Runner in the service and sets account reset
+timers), VELDO-0127 on VELDO-0144 (roles refer to catalog servers) and VELDO-0131 on VELDO-0141 to
+VELDO-0145 (its new rows). Because VELDO-0144 adds an API route and so depends on VELDO-0130, it is
+stage 5, and VELDO-0127, VELDO-0090 and VELDO-0091, which depend on it in turn, move from stage 4 to
+stage 5 so no dependency points at a later stage; the build order follows the design's section 12 and
+is stated under Releases and order. Every PLAN-0019 specification pulled at revision 3 is re-pulled at
+revision 4. The writing audit is proof/plan-0019-rev4/README.md.

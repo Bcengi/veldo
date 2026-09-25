@@ -37,6 +37,8 @@ messages and version-bound decision answers. A versioned workflow definition sto
 executed by LangGraph; its UI canvas only edits data. The UI requirement is Telegram 28857:
 "otherwise we'll be flying blind".
 
+**Revision 4 amendment, 2026-09-25.** The owner approved the operating-model design, docs/design/PLAN-0019-operating-model-design.md (Telegram 29162), and answered its one open decision yes for both engines (29163). For the areas it covers (channels and referenced material, the MCP catalog and OS keystore, the project manager and the factory loop, new repositories and Git identities, per-work capability handoff, the live execution record and re-landing, and the account pool), it governs, and where it and the clauses below disagree on those areas it wins; PLAN-0019 revision 4 records this in C1. Each person runs their own factory (Telegram 29146, 29147), which R75 now states as its deployment view. In the MVP a worker's tools may read their own engine login on Claude Code and Codex, so R45's login-separation sentence is Release 2 hardening. VELDO-0080 and VELDO-0092 move to Release 2.
+
 **R01. Purpose and governing boundary. [REVISED]**
 
 Veldo shall coordinate projects from proposed objectives through requirements, admission, engineering execution, and accepted outcomes. The project manager reasons and proposes. Deterministic Veldo services authenticate, authorize, validate, persist, schedule, and publish. An agent response, conversation, graph checkpoint, tracker transition, or process exit shall never independently authorize work or establish completion.
@@ -457,6 +459,8 @@ Capacity is released only after containment is empty and outcome and accounting 
 
 **R45. Sandboxes, credentials, and accounting. [REVISED]**
 
+*2026-09-25 revision 4 applicability:* The owner decided (Telegram 29163, "yes, Codex and Claude can read creds") that in Release 1 a worker's tools may read their own engine login, on Claude Code and on Codex, the same as an interactive session today. The sentences below that keep provider authentication outside tool and build contexts, disable an adapter that cannot enforce it, and forbid mounting a reusable account profile into a worker, are Release 2 hardening for both engines; each account profile is that run's engine login in Release 1. Everything else in this clause stands, including isolated clones, the object cache boundary and pre-invocation usage caps. The mechanisms found for the Release 2 work are in section 6 of the operating-model design.
+
 Workers receive isolated per-run clones at an explicit accepted commit. They cannot write the authority clone, Git common directory, claims, signing material, other workers, or operational database. This replaces PLAN-0007's shared-worktree provisioning boundary for enrolled autonomous work.
 
 Provisioning shall use a trusted shared object cache through read-only Git alternates or an equivalently qualified object-sharing mechanism. The cache a worker can reach holds objects of exactly the repositories its contract names and nothing else: one cache per repository, never a pooled cache across repositories, because an alternate exposes every object it holds to enumeration regardless of the checkout or the attachment list. Cache access exposes Git objects only, never authority metadata or credentials, and qualification includes a negative read test proving a worker cannot enumerate or read an object of a repository its contract did not name. Referenced objects are pinned until dependent clones retire; garbage collection cannot invalidate a running checkout. Workers cannot mutate shared object bytes.
@@ -599,6 +603,8 @@ Tests race real processes, kill them at durable boundaries, corrupt signatures, 
 
 **R58. Package C: first end-to-end floor slice. [REVISED]**
 
+*2026-09-25 revision 4 applicability:* RJ1 now starts from a Telegram message that points at a Jira ticket, which the PM run fetches through the Atlassian catalog server, uses at least two subscription accounts, and is watched in the live terminal of the execution record. VELDO-0059 no longer depends on VELDO-0080 or VELDO-0092, which are Release 2; it depends on VELDO-0140 to VELDO-0145.
+
 *2026-09-22 revision 3 applicability:* VELDO-0059 is now Release 1 stage 6, after delivery, Mac/relay, Telegram decisions, projects/LangGraph and UI/API. It starts with a Telegram or authenticated API objective and ends with journal completion plus Telegram/UI reporting, including owner questions/admission, published backlog/specs, versioned specialists, both live worker engines and host profiles, proof, external gate, independent review and exact tested-tree landing. Deterministic fixtures supplement real adapter/channel qualification. There is no persistent checkpointer requirement. Lost-ack/recovery matrices below move to Release 2; the old fake-model-only slice is insufficient to close the MVP.
 
 Depending on A and B, C connects one admitted specification through real claim, isolated clone, construction, canonical gate, proof files, independent review assignment, policy, candidate landing, remote confirmation, and completion receipt.
@@ -610,6 +616,8 @@ The slice proves successful landing, unchanged trunk after a red gate or rejecte
 Recorded authorization fixtures may test policy consumption; they do not certify tracker projection, attribution, settlement, or interrupted decision work. Those end-to-end tests belong to E after its repairs. No project-manager feature is built on the floor before C passes.
 
 **R59. Package D: production runner and governor. [REVISED]**
+
+*2026-09-25 revision 4 applicability:* "With credential separation" in the note below means pre-invocation usage caps and the paid-API guard; separating the engine login from the worker's tools is Release 2 for both engines (Telegram 29163, R45).
 
 *2026-09-22 revision 3 applicability:* Both real engines are in Release 1 per 28848; each has a qualified configuration on Linux and Mac with credential separation, normal lifecycle, artifacts, live accounting and enforceable pre-call maxima. Broad versions/auth modes, exhaustion/escape and recovery/governor matrices below are Releases 2 and 4. No provider qualification is inferred from fake cost.
 
@@ -633,6 +641,8 @@ Live ingress and external mutations activate per channel only after separate req
 
 **R61. Package F: projects, objectives, grooming, and dependencies. [REVISED]**
 
+*2026-09-25 revision 4 applicability:* VELDO-0080 moves to Release 2. An ordinary "fix this bug" message runs the operating model's default pipeline like any other work, and an objective proposed from the owner's own authenticated message is accepted and admitted at default priority by that message unless the PM raises a question (VELDO-0077, VELDO-0079).
+
 *2026-09-22 revision 3 applicability:* Release 1 retains owner/charter/budget, objective acceptance, ordinary prioritized admitted backlog, grooming on Telegram or UI/API and specification decomposition/publication. Ordinary defects follow the same message -> spec -> owner admission and priority -> build -> review -> land path in Release 1 (VELDO-0080), without trusted automatic reproduction. Trusted automatic defect reproduction/admission, advanced policy work classes, quarantine, standing/emergency admission, release-execution ownership, tripwires and project-wide invalidation are Release 3. Generated dependencies still enter the shared current eligibility service.
 
 Depending on E, F implements ownership, objective acceptance, backlog lifecycle, tracker grooming, Section 2 work classes, quarantine, standing occurrences, decomposition, release-execution binding, and dependency invalidation.
@@ -642,6 +652,8 @@ Proof establishes that objective acceptance does not admit a later feature, fail
 An authorized reader can trace outcome, request, release or plan contribution, specifications, assignments, dispatches, decisions, costs, and acceptance receipts without consulting a model conversation.
 
 **R62. Package G: project-manager execution and configurable teams. [REVISED]**
+
+*2026-09-25 revision 4 applicability:* VELDO-0092 moves to Release 2. In Release 1 each PM proposal takes effect through the command that owns it, one at a time, and a refusal stops the rest of that cycle's proposals by name; all-or-nothing groups are Release 2. The PM's reasoning runs as ordinary worker runs through the Runner, and the factory loop inside the authority service offers each next station (VELDO-0129 AC4).
 
 *2026-09-22 revision 3 applicability:* Actual LangGraph PM execution and typed authorized proposals are Release 1. Team policy consumes retained engineering review in VELDO-0049, not the whole VELDO-0070 adversarial-decision workflow. One serialized project cycle and a bounded follow-up on pending inputs are retained from 0093; checkpoint recovery, repeated/replacement graph and exhaustive concurrency matrices below move to Release 2.
 
@@ -804,6 +816,8 @@ Recovery commands can attach target evidence, import lost acknowledgements, cert
 Compensation is a new contracted effect with its own identity, authorization, and receipt. It cannot be inferred safe from the original permission. Uncertainty remains visible until evidence or an explicit accepted-risk disposition resolves the operational obligation; historical certainty is never invented.
 
 **R75. Authority deployment, startup, and routing.**
+
+*2026-09-25 revision 4 applicability, the deployment view:* A factory belongs to one person (Telegram 29146, 29147). It runs on that person's Linux host, with an optional Mac worker host for macOS and iOS work, and is used from their phone and desktop over their tailnet. Everything secret in it is theirs alone: the provider logins, the OS keystore, SSH keys, MCP credentials and the Telegram bot. There is no shared multi-user factory and no multi-tenant server. Two people working on the same code each run a factory; which ticket each takes is decided by them in Jira, and Git main on the shared remote is where their factories meet, so each factory re-lands cleanly when another one moved main (VELDO-0057). The authority model's several principals and membership scopes remain, for a project two people co-own inside one factory, not for hosting other people's factories. Section 1 of the operating-model design lists every component, where it runs and its state.
 
 *2026-09-22 revision 3 applicability:* Authority stays on this Linux box in Release 1 (28852); Mac workers use the relay. Explicit install/start/stop and one local scheduler remain. Unexpected exits leave work stopped; automatic recovery/restart is Release 2. The old optional read-only status listener is separate from the newly authorized authenticated read/message/decision API used by the UI (28857).
 
