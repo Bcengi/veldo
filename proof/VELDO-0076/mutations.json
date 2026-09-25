@@ -1,0 +1,3547 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0076 install/assets",
+    true
+   ],
+   [
+    "VELDO-0076 project/activation-fields",
+    true
+   ],
+   [
+    "VELDO-0076 project/activation-authority",
+    true
+   ],
+   [
+    "VELDO-0076 project/unbounded-budget",
+    true
+   ],
+   [
+    "VELDO-0076 project/one-active",
+    true
+   ],
+   [
+    "VELDO-0076 project/paused-frontier",
+    true
+   ],
+   [
+    "VELDO-0076 project/paused-dispatch",
+    true
+   ],
+   [
+    "VELDO-0076 project/stop-policy",
+    true
+   ],
+   [
+    "VELDO-0076 project/history-preserved",
+    true
+   ],
+   [
+    "VELDO-0076 project/resume",
+    true
+   ],
+   [
+    "VELDO-0076 project/cancel",
+    true
+   ],
+   [
+    "VELDO-0076 project/open-objective",
+    true
+   ],
+   [
+    "VELDO-0076 project/open-assignment",
+    true
+   ],
+   [
+    "VELDO-0076 project/open-decision",
+    true
+   ],
+   [
+    "VELDO-0076 project/open-dispatch",
+    true
+   ],
+   [
+    "VELDO-0076 project/open-reservation",
+    true
+   ],
+   [
+    "VELDO-0076 project/complete-resolved",
+    true
+   ],
+   [
+    "VELDO-0076 project/observability",
+    true
+   ],
+   [
+    "VELDO-0076 project/foreign-kind",
+    true
+   ],
+   [
+    "VELDO-0076 project/owner-demoted",
+    true
+   ],
+   [
+    "VELDO-0076 project/owner-revoked",
+    true
+   ],
+   [
+    "VELDO-0076 ran/install/assets",
+    true
+   ],
+   [
+    "VELDO-0076 ran/project/activation-fields",
+    true
+   ],
+   [
+    "VELDO-0076 ran/project/paused-frontier",
+    true
+   ],
+   [
+    "VELDO-0076 ran/project/open-objective",
+    true
+   ],
+   [
+    "VELDO-0076 ran/project/observability",
+    true
+   ],
+   [
+    "VELDO-0076 ran/project/foreign-kind",
+    true
+   ]
+  ],
+  "seconds": 3.374
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: install/assets: .veldo/control_project.py installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0076/project-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0076 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "d060adc8eb4ffe2a3646db0e0be3933d866321055b4369b9c5448b689db6ab11",
+   "name": "project-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     false
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.382,
+   "source_sha256": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/unbounded-budget: none budget refuses unbounded_budget; empty budget refuses unbounded_budget; missing-capacity budget refuses unbounded_budget; missing-wall-seconds budget refuses unbounded_budget; infinite budget refuses unbounded_budget; not-a-number budget refuses unbounded_budget; unset-cap budget refuses unbounded_budget; negative budget refuses unbounded_budget; zero budget refuses unbounded_budget; boolean budget refuses unbounded_budget; text budget refuses unbounded_budget; unknown-unit budget refuses unbounded_budget; no unbounded project exists",
+    "VELDO-0076 detail: project/observability: the metrics count the projects by state",
+    "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project"
+   ],
+   "diff": "proof/VELDO-0076/budget-predicate-skipped.diff",
+   "failed_rows": [
+    "VELDO-0076 project/unbounded-budget",
+    "VELDO-0076 project/observability",
+    "VELDO-0076 project/foreign-kind"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "14ce0fb424586b4285c1deb381803c7b0cc7b98cffb578b8ede447152747dfd4",
+   "name": "budget-predicate-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "project/unbounded-budget"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     false
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     false
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.635,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/activation-fields: each omitted field refuses by its name; an omission writes nothing",
+    "VELDO-0076 detail: project/activation-authority: owner-not-signer refuses not_owner; policy-unheld refuses inapplicable_policy:security/security_authority; policy-empty refuses invalid_input:authority_policy; policy-unknown-role refuses invalid_input:authority_policy; charter-empty refuses invalid_input:charter; other-repository refuses invalid_input:execution_repository; nothing is written by any of them",
+    "VELDO-0076 detail: project/unbounded-budget: none budget refuses unbounded_budget; empty budget refuses unbounded_budget; missing-capacity budget refuses unbounded_budget; missing-wall-seconds budget refuses unbounded_budget; infinite budget refuses unbounded_budget; not-a-number budget refuses unbounded_budget; unset-cap budget refuses unbounded_budget; negative budget refuses unbounded_budget; zero budget refuses unbounded_budget; boolean budget refuses unbounded_budget; text budget refuses unbounded_budget; unknown-unit budget refuses unbounded_budget; no unbounded project exists",
+    "VELDO-0076 detail: project/observability: the metrics count the projects by state",
+    "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project"
+   ],
+   "diff": "proof/VELDO-0076/omitted-policy-activates.diff",
+   "failed_rows": [
+    "VELDO-0076 project/activation-fields",
+    "VELDO-0076 project/activation-authority",
+    "VELDO-0076 project/unbounded-budget",
+    "VELDO-0076 project/observability",
+    "VELDO-0076 project/foreign-kind"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "14cec4e194f1b98a9f14d4290be1cc5288ccfb00966d399320c016c7c2bfa2fb",
+   "name": "omitted-policy-activates",
+   "named_row_red": true,
+   "named_rows": [
+    "project/activation-fields"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     false
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     false
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     false
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     false
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.617,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/activation-authority: no-role refuses not_authorized:role; owner-not-signer refuses not_owner; policy-unheld refuses inapplicable_policy:security/security_authority; policy-empty refuses invalid_input:authority_policy; policy-unknown-role refuses invalid_input:authority_policy; charter-empty refuses invalid_input:charter; other-repository refuses invalid_input:execution_repository; nothing is written by any of them",
+    "VELDO-0076 detail: project/unbounded-budget: none budget refuses unbounded_budget; empty budget refuses unbounded_budget; missing-capacity budget refuses unbounded_budget; missing-wall-seconds budget refuses unbounded_budget; infinite budget refuses unbounded_budget; not-a-number budget refuses unbounded_budget; unset-cap budget refuses unbounded_budget; negative budget refuses unbounded_budget; zero budget refuses unbounded_budget; boolean budget refuses unbounded_budget; text budget refuses unbounded_budget; unknown-unit budget refuses unbounded_budget; no unbounded project exists",
+    "VELDO-0076 detail: project/cancel: a cancel without a reason, by another person or at a stale version is refused and writes nothing",
+    "VELDO-0076 detail: project/observability: the metrics count the projects by state",
+    "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project; control: its unit is then admitted",
+    "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name; an owner who is no longer a person halts it by name; the demoted owner can no longer stop it; restoring the role resumes it",
+    "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name; and no dispatch of it starts; restoring the membership resumes it; and its work dispatches and ends"
+   ],
+   "diff": "proof/VELDO-0076/non-owner-activates.diff",
+   "failed_rows": [
+    "VELDO-0076 project/activation-authority",
+    "VELDO-0076 project/unbounded-budget",
+    "VELDO-0076 project/cancel",
+    "VELDO-0076 project/observability",
+    "VELDO-0076 project/foreign-kind",
+    "VELDO-0076 project/owner-demoted",
+    "VELDO-0076 project/owner-revoked"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "9adaf7c1a48e30c487d04612bb126f2aac1f56a140e2ecb440a0fa3d18f4a674",
+   "name": "non-owner-activates",
+   "named_row_red": true,
+   "named_rows": [
+    "project/activation-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     false
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     false
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     false
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     false
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.125,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/activation-authority: forged-signature refuses not_authorized; owner-not-signer refuses not_owner; policy-unheld refuses inapplicable_policy:security/security_authority; policy-empty refuses invalid_input:authority_policy; policy-unknown-role refuses invalid_input:authority_policy; charter-empty refuses invalid_input:charter; other-repository refuses invalid_input:execution_repository; nothing is written by any of them",
+    "VELDO-0076 detail: project/unbounded-budget: none budget refuses unbounded_budget; empty budget refuses unbounded_budget; missing-capacity budget refuses unbounded_budget; missing-wall-seconds budget refuses unbounded_budget; infinite budget refuses unbounded_budget; not-a-number budget refuses unbounded_budget; unset-cap budget refuses unbounded_budget; negative budget refuses unbounded_budget; zero budget refuses unbounded_budget; boolean budget refuses unbounded_budget; text budget refuses unbounded_budget; unknown-unit budget refuses unbounded_budget; no unbounded project exists",
+    "VELDO-0076 detail: project/observability: the metrics count the projects by state",
+    "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project"
+   ],
+   "diff": "proof/VELDO-0076/signature-unverified.diff",
+   "failed_rows": [
+    "VELDO-0076 project/activation-authority",
+    "VELDO-0076 project/unbounded-budget",
+    "VELDO-0076 project/observability",
+    "VELDO-0076 project/foreign-kind"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "27774da38b44ba96caa3a4e76ef702b1a40ce54a92d5f4be324892e9017359ed",
+   "name": "signature-unverified",
+   "named_row_red": true,
+   "named_rows": [
+    "project/activation-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     false
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     false
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     false
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.625,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/one-active: a second activation refuses already_exists; it writes nothing"
+   ],
+   "diff": "proof/VELDO-0076/second-activation-replaces.diff",
+   "failed_rows": [
+    "VELDO-0076 project/one-active"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "2fb960dbcea83edce95c4e9988bb95efbd75e32e4b4c3d67fac457e659a1fe57",
+   "name": "second-activation-replaces",
+   "named_row_red": true,
+   "named_rows": [
+    "project/one-active"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     false
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.39,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/paused-frontier: the frontier offers nothing from the paused project; it names why; control: the other project's unit is still offered",
+    "VELDO-0076 detail: project/cancel: the frontier offers nothing from it",
+    "VELDO-0076 detail: project/foreign-kind: a record of another kind at the project's id is refused by name, never admitting its unit",
+    "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name; an owner who is no longer a person halts it by name; so the Gate halts its unit by name",
+    "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name"
+   ],
+   "diff": "proof/VELDO-0076/frontier-offers-paused-project.diff",
+   "failed_rows": [
+    "VELDO-0076 project/paused-frontier",
+    "VELDO-0076 project/cancel",
+    "VELDO-0076 project/foreign-kind",
+    "VELDO-0076 project/owner-demoted",
+    "VELDO-0076 project/owner-revoked"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "4b06e33e5414e12ffdcbfbed639df25492d392d4675cbd17e65413671bab2dcd",
+   "name": "frontier-offers-paused-project",
+   "named_row_red": true,
+   "named_rows": [
+    "project/paused-frontier"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     false
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     false
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.371,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/paused-frontier: the frontier offers nothing from the paused project; it names why; control: the other project's unit is still offered",
+    "VELDO-0076 detail: project/paused-dispatch: a new dispatch of the paused project is refused by name; no dispatch record exists for it"
+   ],
+   "diff": "proof/VELDO-0076/paused-project-dispatches.diff",
+   "failed_rows": [
+    "VELDO-0076 project/paused-frontier",
+    "VELDO-0076 project/paused-dispatch"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "c8c5a7899873ffcaa664c093a33e98be248558e39de2adbc3324dd61553b087f",
+   "name": "paused-project-dispatches",
+   "named_row_red": true,
+   "named_rows": [
+    "project/paused-dispatch"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     false
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     false
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.633,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/stop-policy: the pause names the running dispatch it stops; the host's ordinary stop was asked of it; the receiver stopped it as a requested stop; its record ends exited under the same dispatch; the worker process is gone; its worker slot is returned as cancelled",
+    "VELDO-0076 detail: project/cancel: the running dispatch is stopped by the host policy"
+   ],
+   "diff": "proof/VELDO-0076/pause-stops-nothing.diff",
+   "failed_rows": [
+    "VELDO-0076 project/stop-policy",
+    "VELDO-0076 project/cancel"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "be9f0a7f48ec7c4a76186e211510d50198aafad2582db631561ece9e8cc61305",
+   "name": "pause-stops-nothing",
+   "named_row_red": true,
+   "named_rows": [
+    "project/stop-policy"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     false
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 43.386,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/history-preserved: the project history keeps its activation and appends the pause",
+    "VELDO-0076 detail: project/cancel: the history keeps every earlier entry",
+    "VELDO-0076 detail: project/complete-resolved: its history keeps the activation and appends the completion"
+   ],
+   "diff": "proof/VELDO-0076/pause-rewrites-history.diff",
+   "failed_rows": [
+    "VELDO-0076 project/history-preserved",
+    "VELDO-0076 project/cancel",
+    "VELDO-0076 project/complete-resolved"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "96c5d207b1baaec15a3a7c663ac23802e1f784c8b8b0fb091e256fcbd1138e72",
+   "name": "pause-rewrites-history",
+   "named_row_red": true,
+   "named_rows": [
+    "project/history-preserved"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     false
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     false
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.393,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/cancel: cancellation is terminal; another process reads the canceled project",
+    "VELDO-0076 detail: project/observability: the metrics count the projects by state"
+   ],
+   "diff": "proof/VELDO-0076/canceled-project-resumes.diff",
+   "failed_rows": [
+    "VELDO-0076 project/cancel",
+    "VELDO-0076 project/observability"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "f36c33988f45dad5542045a27b677450a03df3bc9686261ba6b5d2cec63c6bc1",
+   "name": "canceled-project-resumes",
+   "named_row_red": true,
+   "named_rows": [
+    "project/cancel"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     false
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.402,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/open-objective: completion with a pending objective is refused by name; it names exactly that objective; the project is unchanged",
+    "VELDO-0076 detail: project/open-dispatch: control: the dispatch is prepared and has not launched; completion with an open dispatch is refused by name; it names that dispatch and the worker slot it holds",
+    "VELDO-0076 detail: project/open-reservation: control: the dispatch ended and returned its slot",
+    "VELDO-0076 detail: project/complete-resolved: with every obligation resolved completion is accepted; its history keeps the activation and appends the completion"
+   ],
+   "diff": "proof/VELDO-0076/objective-ignored-at-completion.diff",
+   "failed_rows": [
+    "VELDO-0076 project/open-objective",
+    "VELDO-0076 project/open-dispatch",
+    "VELDO-0076 project/open-reservation",
+    "VELDO-0076 project/complete-resolved"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "353de8e8dbc7d12d9f0126d2ad91c66459d33954138c7adf2ca37f95ef3b2c47",
+   "name": "objective-ignored-at-completion",
+   "named_row_red": true,
+   "named_rows": [
+    "project/open-objective"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     false
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     false
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.117,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/open-assignment: completion with an open assignment is refused by name; it names exactly that assignment",
+    "VELDO-0076 detail: project/open-dispatch: control: the dispatch is prepared and has not launched; completion with an open dispatch is refused by name; it names that dispatch and the worker slot it holds",
+    "VELDO-0076 detail: project/open-reservation: control: the dispatch ended and returned its slot",
+    "VELDO-0076 detail: project/complete-resolved: with every obligation resolved completion is accepted; its history keeps the activation and appends the completion"
+   ],
+   "diff": "proof/VELDO-0076/assignment-ignored-at-completion.diff",
+   "failed_rows": [
+    "VELDO-0076 project/open-assignment",
+    "VELDO-0076 project/open-dispatch",
+    "VELDO-0076 project/open-reservation",
+    "VELDO-0076 project/complete-resolved"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "d0a7767ccd4d6f9e4d66b8b6f54883ae0e3f402982e7f2d0903ac46050c19769",
+   "name": "assignment-ignored-at-completion",
+   "named_row_red": true,
+   "named_rows": [
+    "project/open-assignment"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     false
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     false
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.114,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/open-decision: completion with an unsettled governing decision is refused by name; it names exactly that decision on its unit",
+    "VELDO-0076 detail: project/open-dispatch: control: the dispatch is prepared and has not launched; completion with an open dispatch is refused by name; it names that dispatch and the worker slot it holds",
+    "VELDO-0076 detail: project/open-reservation: control: the dispatch ended and returned its slot",
+    "VELDO-0076 detail: project/complete-resolved: with every obligation resolved completion is accepted; its history keeps the activation and appends the completion"
+   ],
+   "diff": "proof/VELDO-0076/decision-ignored-at-completion.diff",
+   "failed_rows": [
+    "VELDO-0076 project/open-decision",
+    "VELDO-0076 project/open-dispatch",
+    "VELDO-0076 project/open-reservation",
+    "VELDO-0076 project/complete-resolved"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "871731c7b3b281e66aae7b4bf9dacdaca0f86bfdb7aa8cb3819d3eb59c287dd2",
+   "name": "decision-ignored-at-completion",
+   "named_row_red": true,
+   "named_rows": [
+    "project/open-decision"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     false
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     false
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.127,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/open-dispatch: completion with an open dispatch is refused by name; it names that dispatch and the worker slot it holds"
+   ],
+   "diff": "proof/VELDO-0076/dispatch-ignored-at-completion.diff",
+   "failed_rows": [
+    "VELDO-0076 project/open-dispatch"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "1f68fc6f12b5e1bbef9b37ce29574d442569337f1da07e31761b8aa54fd7d453",
+   "name": "dispatch-ignored-at-completion",
+   "named_row_red": true,
+   "named_rows": [
+    "project/open-dispatch"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.379,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/open-dispatch: it names that dispatch and the worker slot it holds",
+    "VELDO-0076 detail: project/open-reservation: completion with an open reservation is refused by name; it names exactly that worker slot",
+    "VELDO-0076 detail: project/complete-resolved: with every obligation resolved completion is accepted; its history keeps the activation and appends the completion"
+   ],
+   "diff": "proof/VELDO-0076/reservation-ignored-at-completion.diff",
+   "failed_rows": [
+    "VELDO-0076 project/open-dispatch",
+    "VELDO-0076 project/open-reservation",
+    "VELDO-0076 project/complete-resolved"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "f92de593261818b3589f107f8930ea150ea9b730e70ec2ae86f1dc1386205106",
+   "name": "reservation-ignored-at-completion",
+   "named_row_red": true,
+   "named_rows": [
+    "project/open-reservation"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     false
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     false
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     false
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.374,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/foreign-kind: a record of another kind at the project's id is refused by name, never admitting its unit"
+   ],
+   "diff": "proof/VELDO-0076/project-kind-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0076 project/foreign-kind"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "a47098c4501e7a835ce2d17070bbd8db9d11b52a118ab7b63e3bec0fe4e54230",
+   "name": "project-kind-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "project/foreign-kind"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.384,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project; control: its unit is then admitted"
+   ],
+   "diff": "proof/VELDO-0076/project-prefix-unowned.diff",
+   "failed_rows": [
+    "VELDO-0076 project/foreign-kind"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "32e02134f5ff45fb12f1169528a32f6a3f423f27732781bc0bd9be0f7581d739",
+   "name": "project-prefix-unowned",
+   "named_row_red": true,
+   "named_rows": [
+    "project/foreign-kind"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.386,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name; an owner who is no longer a person halts it by name; so the Gate halts its unit by name; and no dispatch of it starts",
+    "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name; and no dispatch of it starts"
+   ],
+   "diff": "proof/VELDO-0076/owner-currency-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0076 project/owner-demoted",
+    "VELDO-0076 project/owner-revoked"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "0a530f9543082af44b749bb0e755f4f4e07ade8dd8adc1051a7e5dc9408dcab2",
+   "name": "owner-currency-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "project/owner-demoted",
+    "project/owner-revoked"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     false
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.868,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name"
+   ],
+   "diff": "proof/VELDO-0076/owner-scope-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0076 project/owner-demoted"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "61674554bc6c14512d522b5ce9369648b8b00a275194f066d645b97fba92fc67",
+   "name": "owner-scope-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "project/owner-demoted"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.382,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/owner-demoted: an owner who is no longer a person halts it by name"
+   ],
+   "diff": "proof/VELDO-0076/owner-person-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0076 project/owner-demoted"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "13a87c1de7e9055cd62933be88afa82ea04555c26b919c795a13e8750dbaa0dd",
+   "name": "owner-person-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "project/owner-demoted"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.394,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/owner-demoted: so the Gate halts its unit by name; and no dispatch of it starts"
+   ],
+   "diff": "proof/VELDO-0076/demoted-owner-current.diff",
+   "failed_rows": [
+    "VELDO-0076 project/owner-demoted"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "f9f18823fe04d129929ed7eb0d3f42e79260291073a27087d5ad86c6c8c0c1f6",
+   "name": "demoted-owner-current",
+   "named_row_red": true,
+   "named_rows": [
+    "project/owner-demoted"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     false
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.655,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name; and no dispatch of it starts"
+   ],
+   "diff": "proof/VELDO-0076/revoked-owner-current.diff",
+   "failed_rows": [
+    "VELDO-0076 project/owner-revoked"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "052aa14935d0e15a06138cdc63648cd0022220b7803ded96e887bb55af9368fd",
+   "name": "revoked-owner-current",
+   "named_row_red": true,
+   "named_rows": [
+    "project/owner-revoked"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     false
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.626,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  }
+ ],
+ "noop": {
+  "control_eligibility.py": {
+   "copy_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.389,
+   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+  },
+  "control_project.py": {
+   "copy_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.368,
+   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ]
+   ],
+   "seconds": 3.369,
+   "source_sha256": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 76",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 132.265,
+ "spec_id": "VELDO-0076",
+ "suite": "scripts/suites/71_veldo_0076_projects.py"
+}

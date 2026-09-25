@@ -1,0 +1,6 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -387 +387,2 @@
+-        data['history'] = list(data.get('history') or []) + [dict(entry, source=source, target=target, **{
++        data['history'] = [  # defect: the earlier history is dropped
++            dict(entry, source=source, target=target, **{

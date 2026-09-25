@@ -1,0 +1,166 @@
+{
+ "by_assertion": true,
+ "commit": "8d6715be63cb0ce3d72dde50ed34f975b49eb58b",
+ "details": [
+  "VELDO-0076 detail: install/assets: .veldo/control_project.py installed by the scaffold; .veldo/control_project.py engine copy identical; .veldo/control_project.py laid by the installer",
+  "VELDO-0076 detail: project/activation-fields: the service binds exactly the specification's fields; each omitted field refuses by its name; the complete signed activation is accepted; it creates one ACTIVE project of the owner; every field is bound as signed; the charter digest and revision are kept; the history holds the one activation edge; another process reads the same active project",
+  "VELDO-0076 detail: project/activation-authority: no-role refuses not_authorized:role; other-scope refuses not_authorized:scope; revoked refuses not_authorized:membership_revoked; forged-signature refuses not_authorized; owner-not-signer refuses not_owner; service refuses not_authorized:not_a_person; policy-unheld refuses inapplicable_policy:security/security_authority; policy-empty refuses invalid_input:authority_policy; policy-unknown-role refuses invalid_input:authority_policy; charter-empty refuses invalid_input:charter; other-repository refuses invalid_input:execution_repository",
+  "VELDO-0076 detail: project/unbounded-budget: none budget refuses unbounded_budget; empty budget refuses unbounded_budget; missing-capacity budget refuses unbounded_budget; missing-wall-seconds budget refuses unbounded_budget; infinite budget refuses unbounded_budget; not-a-number budget refuses unbounded_budget; unset-cap budget refuses unbounded_budget; negative budget refuses unbounded_budget; zero budget refuses unbounded_budget; boolean budget refuses unbounded_budget; text budget refuses unbounded_budget; unknown-unit budget refuses unbounded_budget; control: a finite budget activates",
+  "VELDO-0076 detail: project/one-active: a second activation refuses already_exists; it writes nothing; exactly one record of the project; no other command writes a project record",
+  "VELDO-0076 detail: project/paused-frontier: before the pause both projects' units are offered; the pause is accepted; it names why; control: the other project's unit is still offered",
+  "VELDO-0076 detail: project/paused-dispatch: a new dispatch of the paused project is refused by name; a contract prepared before the pause does not launch; control: the running dispatch had launched before the pause",
+  "VELDO-0076 detail: project/stop-policy: the pause names the running dispatch it stops; the host's ordinary stop was asked of it; the receiver stopped it as a requested stop; its record ends exited under the same dispatch; the worker process is gone; its worker slot is returned as cancelled",
+  "VELDO-0076 detail: project/history-preserved: the pause wrote only the project record; the project history keeps its activation and appends the pause",
+  "VELDO-0076 detail: project/resume: the owner resumes the paused project; its unit is offered again; and its work dispatches again",
+  "VELDO-0076 detail: project/cancel: a cancel without a reason, by another person or at a stale version is refused and writes nothing; the owner cancels with a recorded disposition; the running dispatch is stopped by the host policy; the frontier offers nothing from it; no dispatch starts from it; cancellation is terminal; the history keeps every earlier entry; another process reads the canceled project",
+  "VELDO-0076 detail: project/open-objective: control: the project is active; completion with a pending objective is refused by name; it names exactly that objective; the project is unchanged",
+  "VELDO-0076 detail: project/open-assignment: completion with an open assignment is refused by name; it names exactly that assignment",
+  "VELDO-0076 detail: project/open-decision: completion with an unsettled governing decision is refused by name; it names exactly that decision on its unit",
+  "VELDO-0076 detail: project/open-dispatch: control: the dispatch is prepared and has not launched; completion with an open dispatch is refused by name; it names that dispatch and the worker slot it holds",
+  "VELDO-0076 detail: project/open-reservation: control: the dispatch ended and returned its slot; completion with an open reservation is refused by name; it names exactly that worker slot",
+  "VELDO-0076 detail: project/complete-resolved: every refused completion left the project at its activation version; with every obligation resolved completion is accepted; its history keeps the activation and appends the completion; the bound charter, budget and policy are preserved; completion is terminal; another process reads the completed project",
+  "VELDO-0076 detail: project/observability: every command is observed once; each carries operation, domain, repository, project, request and accepted versions; the metrics count the projects by state"
+ ],
+ "failed_rows": [
+  "VELDO-0076 install/assets",
+  "VELDO-0076 project/activation-fields",
+  "VELDO-0076 project/activation-authority",
+  "VELDO-0076 project/unbounded-budget",
+  "VELDO-0076 project/one-active",
+  "VELDO-0076 project/paused-frontier",
+  "VELDO-0076 project/paused-dispatch",
+  "VELDO-0076 project/stop-policy",
+  "VELDO-0076 project/history-preserved",
+  "VELDO-0076 project/resume",
+  "VELDO-0076 project/cancel",
+  "VELDO-0076 project/open-objective",
+  "VELDO-0076 project/open-assignment",
+  "VELDO-0076 project/open-decision",
+  "VELDO-0076 project/open-dispatch",
+  "VELDO-0076 project/open-reservation",
+  "VELDO-0076 project/complete-resolved",
+  "VELDO-0076 project/observability"
+ ],
+ "modules": {
+  ".veldo/control_eligibility.py": {
+   "at_commit": "70207e676947eeb198378f1bee8fc73f51cabf58d2f00dc2400b48b75404e52a",
+   "now": "4054edce93c466f1079e119da9114d8abc2ff57900a2ec77a38b78ff5d2476a9"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "860f54a2201fa0c60a6ed3922080219e6cb7d97ded0141c673fc3490d1d09cd9",
+   "now": "860f54a2201fa0c60a6ed3922080219e6cb7d97ded0141c673fc3490d1d09cd9"
+  },
+  ".veldo/control_project.py": {
+   "at_commit": null,
+   "now": "573274ca34bf1b49628d802a2a9455817426616191639f0cc2ee47add7cde7bf"
+  },
+  ".veldo/frontier.py": {
+   "at_commit": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc",
+   "now": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "3cdfa9c4a4eea1d201512804e3011545f976aa45924fec14d499529aef48546f",
+   "now": "fce0bcdaf0b7612f1ebd7e21929a51cb11d17144a2b795848166b89df620fbb2"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0076 install/assets",
+   false
+  ],
+  [
+   "VELDO-0076 project/activation-fields",
+   false
+  ],
+  [
+   "VELDO-0076 project/activation-authority",
+   false
+  ],
+  [
+   "VELDO-0076 project/unbounded-budget",
+   false
+  ],
+  [
+   "VELDO-0076 project/one-active",
+   false
+  ],
+  [
+   "VELDO-0076 project/paused-frontier",
+   false
+  ],
+  [
+   "VELDO-0076 project/paused-dispatch",
+   false
+  ],
+  [
+   "VELDO-0076 project/stop-policy",
+   false
+  ],
+  [
+   "VELDO-0076 project/history-preserved",
+   false
+  ],
+  [
+   "VELDO-0076 project/resume",
+   false
+  ],
+  [
+   "VELDO-0076 project/cancel",
+   false
+  ],
+  [
+   "VELDO-0076 project/open-objective",
+   false
+  ],
+  [
+   "VELDO-0076 project/open-assignment",
+   false
+  ],
+  [
+   "VELDO-0076 project/open-decision",
+   false
+  ],
+  [
+   "VELDO-0076 project/open-dispatch",
+   false
+  ],
+  [
+   "VELDO-0076 project/open-reservation",
+   false
+  ],
+  [
+   "VELDO-0076 project/complete-resolved",
+   false
+  ],
+  [
+   "VELDO-0076 project/observability",
+   false
+  ],
+  [
+   "VELDO-0076 ran/install/assets",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/activation-fields",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/paused-frontier",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/open-objective",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/observability",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.719,
+ "spec_id": "VELDO-0076",
+ "suite": "scripts/suites/71_veldo_0076_projects.py",
+ "tree": "git archive 8d6715be63cb0ce3d72dde50ed34f975b49eb58b, unchanged; the current suite file run against it"
+}

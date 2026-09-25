@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -963 +963 @@
+-        elif 'state' in project and project['state'] != PROJECT_ACTIVE:
++        elif 'state' in project and project['state'] not in (PROJECT_ACTIVE, 'PAUSED'):  # defect

@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -990 +990 @@
+-                and isinstance(roles, list) and PROJECT_OWNER_ROLE in roles
++                and True  # defect: an owner without project_owner is current
