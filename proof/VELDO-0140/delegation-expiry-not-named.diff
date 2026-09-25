@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -447 +447 @@
+-        if standing['status'] == 'expired':
++        if False:  # defect: an expired delegation is not named

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -998 +998 @@
+-            elif command.get('operation') in CH.DELEGATION_OPERATIONS:
++            elif False:  # defect: the delegate command is not routed

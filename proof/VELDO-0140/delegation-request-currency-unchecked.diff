@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer_answers.py
++++ b/.veldo/control_signer_answers.py
+@@ -236 +236 @@
+-    if asked.get('kind') != REQUEST_KIND or (asked.get('data') or {}).get('request_version') != a['request_version']:
++    if False:  # defect: an answer to a superseded request version is not refused as one

@@ -5538,6 +5538,64 @@ def cases():
             "            found.append('trust')  # defect: an empty leftover directory is named a trust\n",
             'refuse/writes-nothing')
 
+    # VELDO-0140: each criterion's declared falsifier first, then the threat model's other shapes.
+    def delegation(name, module, old, new, row, also=()):
+        add(140, name, '74_veldo_0140_standing_delegation.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): the delegation is pinned to request version 1 again.
+    delegation('delegation-setup-pinned-to-version-1', 'control_factory_setup.py',
+               "'authority_scope': ['*'], 'request_version': None, 'presentation_version': None,",
+               "'authority_scope': ['*'], 'request_version': 1, 'presentation_version': 1,  # defect: pinned again",
+               'answers/revised-version-2')
+    delegation('delegation-signer-pins-versions', 'control_signer_answers.py',
+               "             and (CM.standing(d) or (d.get('request_version') == a.get('request_version')\n",
+               "             and ((d.get('request_version') == a.get('request_version')  # defect: every delegation pins\n",
+               'answers/version-1')
+    delegation('delegation-membership-pins-versions', 'control_membership.py',
+               '    if not standing(d) and assertion.get("request_version") != d.get("request_version"):\n',
+               '    if assertion.get("request_version") != d.get("request_version"):  # defect: every delegation pins\n',
+               'answers/version-1')
+    delegation('delegation-request-currency-unchecked', 'control_signer_answers.py',
+               "    if asked.get('kind') != REQUEST_KIND or (asked.get('data') or {}).get('request_version') != a['request_version']:\n",
+               "    if False:  # defect: an answer to a superseded request version is not refused as one\n",
+               'refused/by-name')
+    delegation('delegation-presentation-currency-unchecked', 'control_signer_answers.py',
+               "    if head.get('kind') != V.HEAD_KIND or (head.get('data') or {}).get('current') != a['presentation_id']:\n",
+               "    if False:  # defect: an answer to a replaced presentation is signed\n",
+               'refused/by-name')
+    # AC2 (declared falsifier): a delegation signed by a member who is not the owner is accepted.
+    delegation('delegation-non-owner-accepted', 'control_service_channel.py',
+               "            if (params.get('principal') != signer or (record.get('owner') is not None and signer != record['owner'])\n"
+               "                    or chat is None or ing.presenter.P.enrollment_problems(chat['kind'], chat['data'], signer)):\n",
+               "            if False:  # defect: a member who is not the owner grants or renews\n",
+               'renew/owner-only')
+    delegation('delegation-second-grant-accepted', 'control_service_channel.py',
+               "            if command.get('operation') == 'grant_delegation' and current:\n",
+               "            if False:  # defect: a second delegation is granted beside the current one\n",
+               'renew/owner-only')
+    delegation('delegation-renewal-built-as-grant', 'control_channel_activation.py',
+               "    if current:\n        operation, params['supersedes'] = 'supersede_delegation', current[-1]['id']\n",
+               "    if False:  # defect: a renewal is built as a second grant\n"
+               "        operation, params['supersedes'] = 'supersede_delegation', current[-1]['id']\n",
+               'renew/route')
+    delegation('delegation-route-missing', 'control_service.py',
+               "            elif command.get('operation') in CH.DELEGATION_OPERATIONS:\n",
+               "            elif False:  # defect: the delegate command is not routed\n",
+               'renew/route')
+    # AC3 (declared falsifier): an unsignable answer is refused without telling the owner.
+    delegation('delegation-refusal-untold', 'control_service_channel.py',
+               "        told = []\n        for row in acquired:\n",
+               "        told = []\n        for row in acquired[:0]:  # defect: an unsigned answer is refused silently\n",
+               'told/why')
+    delegation('delegation-expiry-not-named', 'control_service_channel.py',
+               "        if standing['status'] == 'expired':\n",
+               "        if False:  # defect: an expired delegation is not named\n",
+               'told/why')
+    delegation('delegation-renewal-untold', 'control_service_channel.py',
+               "        if standing['status'] not in ('expiring', 'expired'):\n",
+               "        if True:  # defect: the owner is never told to renew\n",
+               'told/renew')
+
     # VELDO-0077: each criterion's declared falsifier first, then the threat model's other shapes.
     def objective(name, module, old, new, rows, also=()):
         add(77, name, '72_veldo_0077_objectives.py', module, old, new, rows, also)

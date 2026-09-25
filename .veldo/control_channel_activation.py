@@ -676,7 +676,7 @@ class Activations:
 
 
 # ---------------------------------------------------------------------------------------------
-# The owner's command surface (VELDO-0138): veldo channel status|qualify|activate|stop
+# The owner's command surface (VELDO-0138): veldo channel status|qualify|activate|stop|delegate
 # ---------------------------------------------------------------------------------------------
 #
 # The owner's own command path to the RUNNING authority service, which applies it to the gate every
@@ -687,8 +687,16 @@ class Activations:
 # service recorded in the current run), signs the envelope with the owner's enrolled key and sends it
 # through control_client to the authority of the named workspace. The service admits it only when it
 # is the owner's own signature (Activations.authorize); nothing here decides that.
+#
+# `delegate` (VELDO-0140) grants or renews the owner's standing answer delegation to the edge: the
+# VELDO-0025 grant_delegation, or a supersede_delegation naming his current delegation the service
+# reports, of decision answers and review dispositions in the scope his current delegation (or his
+# membership) covers, for --days days, naming no request or presentation version. The running service's
+# channel admits it only as his own (control_service_channel.Channel.delegate) and control_membership
+# commits it.
 
-COMMAND_ACTIONS = ('status', 'qualify', 'activate', 'stop')
+COMMAND_ACTIONS = ('status', 'qualify', 'activate', 'stop', 'delegate')
+DELEGATION_DAYS = 90
 EXIT_REFUSED, EXIT_USAGE = 1, 2
 DEFAULT_RUN_MINUTES = 15
 
@@ -742,10 +750,45 @@ def owner_command(action, status, principal, now, *, minutes=DEFAULT_RUN_MINUTES
     return envelope, command
 
 
+def delegate_command(status, principal, now, *, days=DELEGATION_DAYS, serial=None):
+    """(envelope, command) of the owner's grant or renewal of his standing answer delegation, over what
+    the running service reports in `status`. Refused by name when the service reports no channel."""
+    import uuid
+    if not isinstance(status, dict) or not status.get('available'):
+        raise Refused('unavailable_service', 'the authority runs no Telegram channel (%s)'
+                      % ((status or {}).get('refusal') or 'not configured'))
+    if type(days) is not int or not 1 <= days <= 366:
+        raise Refused('invalid_input', 'a delegation lasts 1 to 366 days')
+    current = sorted((d for d in status.get('delegations') or [] if d.get('principal') == principal),
+                     key=lambda d: (d.get('expires_at') or 0, d.get('id') or ''))
+    held = status.get('owner_scope')
+    scope = (list(current[-1].get('authority_scope') or []) if current
+             else ['*'] if held == '*' or not isinstance(held, list) else list(held))
+    serial = serial or uuid.uuid4().hex
+    params = {'id': 'delegation-%s-%s' % (principal, serial), 'principal': principal, 'channel': CHANNEL,
+              'assertion_kinds': ['decision_answer', 'review_disposition'], 'authority_scope': scope,
+              'request_version': None, 'presentation_version': None, 'expires_at': now + days * 86400,
+              'edge_key_id': status.get('edge_key_id')}
+    operation = 'grant_delegation'
+    if current:
+        operation, params['supersedes'] = 'supersede_delegation', current[-1]['id']
+    ids = status.get('authority_ids') or {}
+    command_id = 'channel-delegate-%s' % serial
+    command = {'command_id': command_id, 'operation': operation, 'target': 'authority', 'parameters': params,
+               'artifact_digests': [], 'expected_versions': {}}
+    envelope = {'domain_uuid': ids.get('domain_uuid'), 'repository_uuid': ids.get('repository_uuid'),
+                'store_uuid': ids.get('store_uuid'), 'schema': AC.ENVELOPE_SCHEMA, 'command_id': command_id,
+                'principal': principal, 'request_revision': 1, 'nonce': 'nonce-' + command_id, 'expires_at': now + 600,
+                'membership_version': status.get('membership_version'),
+                'delegation_version': status.get('delegation_version'),
+                'command_digest': AC.canonical_command_digest(command)}
+    return envelope, command
+
+
 def main(argv=None):
-    """veldo channel status|qualify|activate|stop --principal <owner> --key <his enrolled private key>
+    """veldo channel status|qualify|activate|stop|delegate --principal <owner> --key <his enrolled private key>
     [--workspace <enrolled clone>] [--host-trust <file>] [--minutes N] [--qualification-id ID
-    --qualification-digest DIGEST]. Prints one JSON answer; exit 0 accepted, 1 refused by name,
+    --qualification-digest DIGEST] [--days N]. Prints one JSON answer; exit 0 accepted, 1 refused by name,
     2 usage or no route to the authority."""
     import argparse
     import os
@@ -760,6 +803,7 @@ def main(argv=None):
     parser.add_argument('--minutes', type=int, default=DEFAULT_RUN_MINUTES, help='a qualification run\'s length')
     parser.add_argument('--qualification-id')
     parser.add_argument('--qualification-digest')
+    parser.add_argument('--days', type=int, default=DELEGATION_DAYS, help='how long a delegation lasts')
     try:
         args = parser.parse_args(sys.argv[1:] if argv is None else list(argv))
     except SystemExit as exc:
@@ -794,8 +838,11 @@ def main(argv=None):
             return answer({'action': 'status', 'outcome': 'accepted', 'channel': status}, 0)
         named = ({'id': args.qualification_id, 'digest': args.qualification_digest}
                  if args.qualification_id or args.qualification_digest else None)
-        envelope, command = owner_command(args.action, status, args.principal, time.time(), minutes=args.minutes,
-                                          qualification=named)
+        if args.action == 'delegate':
+            envelope, command = delegate_command(status, args.principal, time.time(), days=args.days)
+        else:
+            envelope, command = owner_command(args.action, status, args.principal, time.time(), minutes=args.minutes,
+                                              qualification=named)
         result = send({'command': command, 'envelope': envelope,
                        'signature': sign(AC.canonical_envelope_bytes(envelope))})
     except CC.RoutingRefused as exc:
@@ -805,6 +852,9 @@ def main(argv=None):
     shown = {'action': args.action, 'outcome': 'accepted' if result.get('ok') else 'refused',
              'reason': None if result.get('ok') else result.get('reason'), 'state': result.get('state'),
              'command_id': command['command_id']}
+    if args.action == 'delegate':
+        shown['delegation'] = {'id': command['parameters']['id'], 'supersedes': command['parameters'].get('supersedes'),
+                               'expires_at': command['parameters']['expires_at']}
     if args.action == 'activate':
         shown['qualification'] = {'id': command['parameters']['qualification_id'],
                                   'digest': command['parameters']['qualification_digest']}

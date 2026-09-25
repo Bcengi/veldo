@@ -1,0 +1,110 @@
+{
+ "by_assertion": true,
+ "commit": "cda96f5b874e4a1870952f5167eb215bf17abc44",
+ "details": [
+  "VELDO-0140 answers/version-1 detail: setup granted ONE delegation to the edge naming no request or presentation version [1, 1]",
+  "VELDO-0140 answers/revised-version-2 detail: and it settles request version 2 [False]",
+  "VELDO-0140 answers/re-presented detail: and it settles the request [False]",
+  "VELDO-0140 refused/by-name detail: a reply to the superseded version 1 message is refused by the signer as request-mismatch, unsigned [[None]]",
+  "VELDO-0140 refused/by-name detail: and the owner is told once, in his chat, that the request changed [0]",
+  "VELDO-0140 refused/by-name detail: a reply to the replaced presentation is refused by the signer as presentation-mismatch, unsigned [[None]]",
+  "VELDO-0140 refused/by-name detail: and the owner is told once why [0]",
+  "VELDO-0140 renew/owner-only detail: a delegation signed by an agent run is refused by name (not_a_person) [invalid_input]",
+  "VELDO-0140 renew/owner-only detail: a delegation signed by another member, for himself is refused by name (not_owner) [invalid_input]",
+  "VELDO-0140 renew/owner-only detail: a delegation signed by another member, for the owner is refused by name (not_owner) [invalid_input]",
+  "VELDO-0140 renew/owner-only detail: a delegation signed by nobody (no signature) is refused by name (signature_invalid) [invalid_input]",
+  "VELDO-0140 renew/owner-only detail: a delegation signed by the service principal is refused by name (not_a_person) [invalid_input]",
+  "VELDO-0140 renew/owner-only detail: the owner's own signed renewal is accepted [invalid_input]",
+  "VELDO-0140 renew/owner-only detail: the prior delegation is superseded by it, not deleted [None]",
+  "VELDO-0140 renew/owner-only detail: the renewed delegation is standing",
+  "VELDO-0140 renew/owner-only detail: the superseded delegation, kept, signs nothing (stale-delegation) [delegation-refused]",
+  "VELDO-0140 renew/route detail: bin/veldo channel delegate is routed to the owner's command module, which names its refusal [exit 2, None]",
+  "VELDO-0140 renew/route detail: the owner's command module builds his renewal: a supersede of his current delegation, standing, for 30 days [absent]",
+  "VELDO-0140 renew/route detail: the service's router hands his delegate command to the channel, which accepts it [None]",
+  "VELDO-0140 told/why detail: with no delegation, his answer is not signed [[None]]",
+  "VELDO-0140 told/why detail: he is told once in his chat why, through the activated gate [0, 0 sends]",
+  "VELDO-0140 told/why detail: and nothing settles; a later pass does not tell him again",
+  "VELDO-0140 told/why detail: an answer after the delegation expired is not signed, and the delegation named is refused delegation-expired [invalid_input, delegation-refused]",
+  "VELDO-0140 told/why detail: he is told once that it expired, and to renew it [0]",
+  "VELDO-0140 told/renew detail: with 3 days left, the owner is told in his chat to renew it [invalid_input, 0]",
+  "VELDO-0140 told/renew detail: through the activated gate [0 sends admitted]",
+  "VELDO-0140 told/renew detail: and only once [0]",
+  "VELDO-0140 told/renew detail: his answer meanwhile is signed under the expiring delegation and settles"
+ ],
+ "failed_rows": [
+  "VELDO-0140 answers/version-1",
+  "VELDO-0140 answers/revised-version-2",
+  "VELDO-0140 answers/re-presented",
+  "VELDO-0140 refused/by-name",
+  "VELDO-0140 renew/owner-only",
+  "VELDO-0140 renew/route",
+  "VELDO-0140 told/why",
+  "VELDO-0140 told/renew"
+ ],
+ "modules": {
+  ".veldo/control_channel_activation.py": {
+   "at_commit": "0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e",
+   "now": "45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e"
+  },
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "8bb3b4130f5f3101968cce01332635c914f533a16f1010928151823d11eff3fc",
+   "now": "acd3cd06643f8b68b6615859296806f4c2163081df78f403722fd804f0075b6a"
+  },
+  ".veldo/control_membership.py": {
+   "at_commit": "7cf0da98c407c76f7a1ee5bf875f6d342fc095628bdc080f32f422f0be8419e8",
+   "now": "befa9226d6a63f9aa57ac5462112c71dd314418f18d032d7a8841542ef1e54fc"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b",
+   "now": "f78c6381e0626316c36db8db01d44d58a1850b4967f4f52e2bac76ee8e69430e"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": "07e7061b8351d232c58f1f1453ebe7dfc82e74bbe26689f847d6d5db8d931ec4",
+   "now": "c69c079e260f501b17823dad639a9e332d8076f577bb40c23bc933305ffc6fb6"
+  },
+  ".veldo/control_signer_answers.py": {
+   "at_commit": "5fa96e7d58ee981f0dd90a52b63fc546887b25933f14e3d46a17ea74c11a7200",
+   "now": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0140 answers/version-1",
+   false
+  ],
+  [
+   "VELDO-0140 answers/revised-version-2",
+   false
+  ],
+  [
+   "VELDO-0140 answers/re-presented",
+   false
+  ],
+  [
+   "VELDO-0140 refused/by-name",
+   false
+  ],
+  [
+   "VELDO-0140 renew/owner-only",
+   false
+  ],
+  [
+   "VELDO-0140 renew/route",
+   false
+  ],
+  [
+   "VELDO-0140 told/why",
+   false
+  ],
+  [
+   "VELDO-0140 told/renew",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 6.614,
+ "spec_id": "VELDO-0140",
+ "suite": "scripts/suites/74_veldo_0140_standing_delegation.py",
+ "tree": "git archive cda96f5b874e4a1870952f5167eb215bf17abc44, unchanged; the current suite file run against it"
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_activation.py
++++ b/.veldo/control_channel_activation.py
+@@ -773 +773 @@
+-    if current:
++    if False:  # defect: a renewal is built as a second grant
