@@ -59,7 +59,9 @@ as the record is met. It then re-reads the rest through `events` for each stream
 after page to the head, so a revoked credential or membership closes its open stream at once. A stream
 opened after a cursor, or resumed with the Last-Event-ID an EventSource sends on reconnect (each frame's
 id is its cursor), is filled the same way. A stream whose session ended by idle expiry or its absolute
-lifetime closes as session_expired, one ended by revocation as revoked. Nothing is polled: a stream
+lifetime closes as session_expired, one ended by revocation as revoked (a revoked credential or an
+ended membership, whether `follow` or the stream's own recheck saw it first, and a stream whose session
+a revocation ended while it was filling). Nothing is polled: a stream
 waits on its own condition, and its idle timeout only writes a keep-alive.
 
 ACTIONS (AC4). The UI action contract is control_api_models.ACTIONS: each action with a route is a POST
@@ -108,6 +110,8 @@ IDLE_SECONDS = 30 * 60
 ABSOLUTE_SECONDS = 12 * 3600
 HSTS = 'max-age=31536000'
 STREAM_IDLE_SECONDS = 15
+# The credential check's reasons that are a revocation: the stream closes as revoked, as `follow` closes it.
+REVOKED = ('credential_revoked', 'principal_not_member')
 EVENT_LIMIT = 256
 # Body fields that name who is speaking. The speaker is the session's member; a body naming one is refused.
 ACTOR_FIELDS = ('principal', 'actor', 'actor_id', 'decider')
@@ -720,6 +724,13 @@ class ControlApi:
         self._fill(stream, answer, always=True)
         with self._lock:
             self._streams.append(stream)
+        # A revocation delivered while the stream was filling ended its session before the stream was
+        # registered, so that delivery never saw it: judged again now it is registered, it closes as a
+        # delivery would have closed it.
+        state = self.sessions.state(stream.handle)
+        if state != 'live':
+            stream.close('session_expired' if state == 'session_expired' else 'revoked')
+            self.drop(stream)
         return 200, stream
 
     def _fill(self, stream, answer, always=False):
@@ -814,7 +825,9 @@ class ControlApi:
                 why = self._credential_problem(stream.credential_id, stream.principal)[1]
                 if why:
                     self.sessions.end_by_credential(stream.credential_id)
-                    why = 'unauthenticated:' + why
+                    # A revoked credential or an ended membership is a revocation whichever path saw it
+                    # first: this recheck (a revocation committed after the feed page was read) or `follow`.
+                    why = 'revoked' if why in REVOKED else 'unauthenticated:' + why
                 else:
                     self._fill(stream, self._ask(self.authority.events, stream.principal, stream.cursor, EVENT_LIMIT))
             except Refused as exc:

@@ -21,7 +21,10 @@ its number for this subscriber. When a hint, or the answer to any call, names an
 hint's number skips (hints were lost), the API subscribes again by itself and delivers the head's hint,
 so it reconciles every record after its cursor (ControlApi.deliver pages the feed to the head) without
 waiting for a request of its own. Deliveries run one at a time; a reconcile noticed inside one runs
-when that delivery ends, once.
+when that delivery ends, once. A delivery that fails (the service refused unavailable, or a call raised)
+leaves the catch-up owed: the hint socket's thread, which wakes every 0.25 s, runs it again with backoff
+until it reaches the head. That is a retry of a delivery known to have failed, never polling for change.
+`open_api` delivers the head the subscription answers, so the cursor is set from the start.
 
 `open_api` is the production construction of the API process from its 0600 host configuration
 (veldo.api_process/v1): the enrolled workspace and host trust the request is routed and verified with,
@@ -58,6 +61,9 @@ FIELDS = ('schema', 'api', 'workspace', 'host_trust', 'signer', 'listen')
 HINT_NAME = 'hints.sock'
 HINT_LIMIT = 64 * 1024
 EVENT_LIMIT = 256
+# A catch-up that failed is tried again after RETRY_FIRST seconds, then twice as long each time it fails
+# again, never longer than RETRY_MOST.
+RETRY_FIRST, RETRY_MOST = 0.25, 8.0
 
 
 class Unavailable(Exception):
@@ -83,6 +89,9 @@ class ServiceAuthority:
         self._deliverer, self._due = None, False
         # The last hint number the subscribed instance sent this API (a gap means hints were lost).
         self.sequence = None
+        # A catch-up owed because a delivery failed (the service refused unavailable or a call raised):
+        # (monotonic time it is next tried, the backoff after that), or None when nothing is owed.
+        self.owed = None
 
     def _call(self, call, **arguments):
         try:
@@ -172,14 +181,44 @@ class ServiceAuthority:
                     elif sender is not None:
                         self.sequence = number
                     answer = self.api.deliver(hint)
+                    if _unavailable(answer):
+                        self._owe()
                 while self._due:
                     self._due = False
                     head = self._subscribe()
                     if type(head.get('watermark')) is int and head['watermark'] > 0:
                         answer = self.api.deliver(head)
+                        if _unavailable(answer):
+                            self._owe()
+                            break
+                    self.owed = None
                 return answer
+            except Exception as exc:  # noqa: BLE001 - the catch-up stays owed; the caller's own call stands
+                self._owe()
+                return {'refusal': str(getattr(exc, 'code', None) or 'unknown_outcome:' + type(exc).__name__)}
             finally:
                 self._deliverer = None
+
+    def _owe(self):
+        """A delivery failed, so the records after the cursor may hold a revocation nobody will hint
+        again: the catch-up stays owed until `retry` runs it to the head, with backoff."""
+        now, wait = time.monotonic(), RETRY_FIRST if self.owed is None else min(self.owed[1] * 2, RETRY_MOST)
+        self.owed = (now + wait, wait)
+
+    def retry(self):
+        """Run the owed catch-up once its backoff has passed: subscribe again and deliver the head. The hint
+        socket's thread calls this each time it wakes; it is a retry of a delivery known to have failed, and
+        with nothing owed it calls nothing. Returns the delivery's answer, or None when nothing was run."""
+        owed = self.owed
+        if owed is None or time.monotonic() < owed[0]:
+            return None
+        self._due = True
+        return self.deliver(None)
+
+
+def _unavailable(answer):
+    """Whether a delivery's answer is the service's unavailability (a failure worth retrying), not a judgment."""
+    return isinstance(answer, dict) and str(answer.get('refusal') or '').startswith('unavailable_service')
 
 
 def _peer_uid(conn):
@@ -192,10 +231,11 @@ def _peer_uid(conn):
 
 class Hints:
     """The API's hint socket: `path` in a 0700 directory, 0600, one hint per connection from a peer the
-    kernel says is this account, each handed to `deliver` in arrival order on one thread."""
+    kernel says is this account, each handed to `deliver` in arrival order on one thread. The thread wakes
+    at least every 0.25 s; each time it calls `retry`, which runs a catch-up only when one is owed."""
 
-    def __init__(self, path, deliver):
-        self.path, self.deliver = str(path), deliver
+    def __init__(self, path, deliver, retry=None):
+        self.path, self.deliver, self.retry = str(path), deliver, retry
         directory = os.path.dirname(self.path)
         os.makedirs(directory, mode=0o700, exist_ok=True)
         os.chmod(directory, 0o700)
@@ -217,15 +257,23 @@ class Hints:
             try:
                 conn, _ = self.server.accept()
             except socket.timeout:
-                continue
+                conn = None
             except OSError:
                 return
-            try:
-                self._one(conn)
-            except Exception as exc:  # noqa: BLE001 - one bad hint never stops the listener
-                self.outcomes.append({'refusal': 'unknown_outcome:' + type(exc).__name__})
-            finally:
-                conn.close()
+            if conn is not None:
+                try:
+                    self._one(conn)
+                except Exception as exc:  # noqa: BLE001 - one bad hint never stops the listener
+                    self.outcomes.append({'refusal': 'unknown_outcome:' + type(exc).__name__})
+                finally:
+                    conn.close()
+            if self.retry is not None:
+                try:
+                    retried = self.retry()
+                except Exception as exc:  # noqa: BLE001 - a failed retry is owed again, never fatal
+                    retried = {'refusal': 'unknown_outcome:' + type(exc).__name__}
+                if retried is not None:
+                    self.outcomes.append(retried)
             del self.outcomes[:-256]
 
     def _one(self, conn):
@@ -305,12 +353,15 @@ def open_api(config_path, clock=time.time):
     signer = SG.ApiSigner(signer_config.get('config'), signer_config.get('edge_key_id'), signer_config.get('connection_key'))
     authority = ServiceAuthority(workspace, verify, trust.host_identity, signer.request)
     api = API.ControlApi(config['api'], authority, signer, clock=clock)
-    hints = Hints(Path(config['api']['state_dir']) / HINT_NAME, authority.deliver)
+    hints = Hints(Path(config['api']['state_dir']) / HINT_NAME, authority.deliver, authority.retry)
     try:
-        authority.connect(hints.path, api)
+        head = authority.connect(hints.path, api)
     except Exception:
         hints.close()
         raise
+    # The head the subscription answered sets the cursor from the start (a failure is owed and retried).
+    if type(head.get('watermark')) is int and head['watermark'] > 0:
+        authority.deliver(head)
     return Opened(api, authority, signer, hints, config['listen'])
 
 
