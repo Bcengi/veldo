@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W117
 plan_revision: 4
-depends_on: [VELDO-0090, VELDO-0127]
+depends_on: [VELDO-0090, VELDO-0125, VELDO-0127, VELDO-0147]
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
@@ -46,17 +46,22 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: The `when assigned` items a dispatch records load with that run, so the engine's launch set
-      equals the role's `always` items plus the assigned ones. Set and completeness: For Claude Code and
-      Codex on Linux, dispatch a role whose staffing choice assigns one `when assigned` MCP selection,
-      one skill and one instruction file, recorded on the assignment and its dispatch as
+      equals the role's `always` items plus the assigned ones, on Linux and on the Mac. Set and
+      completeness: For Claude Code and Codex on Linux, and on the Mac through the relay (VELDO-0125,
+      the Mac handoff VELDO-0147 qualifies), dispatch a role whose staffing choice assigns one `when
+      assigned` MCP selection, one skill and one instruction file, recorded on the assignment and its
+      dispatch as
       `optional_capabilities` (VELDO-0090 AC1). Compare the engine's reported tools, MCP servers, skills
       and plugins at launch (Claude Code's init event, Codex's own MCP listing and generated
       configuration) with the role's `always` items plus the recorded ones, in both directions, and stop
       the run by name on any difference before its first turn; prove the assigned instruction file by the
-      marker qualification of VELDO-0127 AC4. Falsifier: Drop an assigned `when assigned` skill at
-      handoff; the assigned-launch-set comparison must fail.
+      marker qualification of VELDO-0127 AC4. Falsifier: Drop an assigned `when assigned` skill at the
+      Linux handoff, and the Linux assigned-launch-set comparison must fail; drop it at the Mac handoff,
+      and the Mac assigned-launch-set comparison must fail.
     falsified_by: >
-      Drop an assigned `when assigned` skill at handoff; the assigned-launch-set comparison must fail.
+      Drop an assigned `when assigned` skill at the Linux handoff, and the Linux assigned-launch-set
+      comparison must fail; drop it at the Mac handoff, and the Mac assigned-launch-set comparison must
+      fail.
   - id: AC2
     text: >
       Claim: A `when assigned` item loads only on a dispatch that records it, never because the role lists
@@ -95,8 +100,8 @@ supplies neither implementation proof nor operational activation.
 
 ## Out of scope
 
-Choosing capabilities by token cost; loading a capability part way through a run; the Mac handoff
-(VELDO-0147 covers VELDO-0127's); VELDO-0090's selection and its refusal of an item the role does not
+Choosing capabilities by token cost; loading a capability part way through a run; the Mac handoff of
+the `always` items (VELDO-0147 covers VELDO-0127's); VELDO-0090's selection and its refusal of an item the role does not
 list.
 
 ## What the reviewer judges
@@ -113,7 +118,13 @@ list.
 ## Notes
 
 The factory never adds an item beyond the configuration and never drops an `always` or assigned one,
-so C15 holds. The launch set is computed from the dispatch record alone, never from the role's list or
+so C15 holds.
+
+**Why the Mac leg is here and not in VELDO-0147.** VELDO-0147 holds the Mac legs of the specifications
+built before the Mac, and VELDO-0090 depends on VELDO-0147, so VELDO-0147 cannot depend on this
+specification, which depends on VELDO-0090, without a cycle. This specification is built after the Mac
+worker and VELDO-0147 have landed, so it carries its own Mac leg, over the Mac handoff VELDO-0147
+qualifies. The launch set is computed from the dispatch record alone, never from the role's list or
 from memory of an earlier dispatch.
 
 Use canonical engine assets and synchronize installed copies. Inventory every asset the selected
@@ -129,3 +140,8 @@ section 12 puts VELDO-0127 in its second stage with every item `always` and the 
 with VELDO-0090 ("VELDO-0090 with load modes and VELDO-0127 AC4"), and a specification ships whole. AC1
 carries the design's "`always` items plus the assigned ones" with a run that assigns an item; AC2 checks
 that the assignment comes from the dispatch alone. A draft: only the owner marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, fourth review: AC1 adds the Mac leg of the `when assigned` items, with
+its own mutant at the Mac handoff, and depends_on adds VELDO-0125 and VELDO-0147. The leg is here rather
+than in VELDO-0147 because VELDO-0090 depends on VELDO-0147 and this specification on VELDO-0090, so
+VELDO-0147 depending on it would be a cycle; it is built after the Mac lands. A draft.

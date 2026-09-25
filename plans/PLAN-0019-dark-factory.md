@@ -1147,7 +1147,7 @@ work:
     spec: VELDO-0157
     title: The capability items a staffing choice assigns load with that run, and no other when-assigned item does
     feature_refs: [F7]
-    depends_on: [VELDO-0090, VELDO-0127]
+    depends_on: [VELDO-0090, VELDO-0125, VELDO-0127, VELDO-0147]
     order: 15157
     release: 1
     stage: 5
@@ -1712,3 +1712,5 @@ configuration it resolves, since VELDO-0127 is built after it.
 VELDO-0160 AC1 held four claims under one falsifier, so AC1 keeps the concurrent isolated accounts and
 the new AC4 carries moving off an exhausted account, adding one without a restart and the one-run bound
 while usage is unknown, each with its own mutant.
+W117 (VELDO-0157) carries the Mac leg of the `when assigned` items and depends on W88's VELDO-0125 and
+W107's VELDO-0147; it cannot be in VELDO-0147, which W75's VELDO-0090 depends on, without a cycle.
