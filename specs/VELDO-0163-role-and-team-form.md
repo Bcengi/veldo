@@ -60,22 +60,23 @@ acceptance_criteria:
       Claim: The owner adds, changes and removes a project's team roles in the UI, each naming its
       capability configuration and kind, a saved team is shown current only once the authority accepted
       it, and the same form edits the default team. Set and completeness: In the same shell and widths,
-      open a project's team, add
-      the specialist role `builder_jira` naming the configuration of AC1, change the implementation role's
-      configuration reference, remove a specialist role, and save; the form sends the team through
-      VELDO-0162 AC2's route bound to the team version shown, and once the authority accepts his own save
-      (VELDO-0162 AC3) the form shows the new revision as current, read back through the team route. A
-      team proposed by a second person member instead shows as pending, its request appears in the
-      decisions screen (VELDO-0145 AC3), and it shows current only after his answer there. A role with no configuration, an incomplete roster and a
-      stale team version each show their named refusal beside the save, with no revision shown current.
-      The same form opens the default team and saves it through VELDO-0162 AC4's operation, bound to the
-      revision it was edited from. Falsifier: Show a saved team as current before the authority accepted it
-      (his own save, or his answer to another member's proposal), and the authoritative-team row must fail; send the default team's save without
-      the revision it was edited from, and the default-team stale-save row must fail.
+      open a project's team, add the specialist role `builder_jira` naming the configuration of AC1,
+      change the implementation role's configuration reference, remove a specialist role, and save; the
+      form sends the team through VELDO-0162 AC2's route bound to the team version shown, and once the
+      authority accepts his own save (VELDO-0162 AC3) the form shows the new revision as current, read
+      back through the team route. A team proposed by a second person member instead shows as pending,
+      its request appears in the decisions screen (VELDO-0145 AC3), and it shows current only after his
+      answer there. A role with no configuration, an incomplete roster and a stale team version each
+      show their named refusal beside the save, with the earlier revision still shown current. The same
+      form opens the default team and saves it through VELDO-0162 AC4's operation, bound to the revision
+      it was edited from. Falsifier: Show a saved team as current before the authority accepted it (his
+      own save, or his answer to another member's proposal), and the authoritative-team row must fail;
+      send the default team's save without the revision it was edited from, and the default-team
+      stale-save row must fail.
     falsified_by: >
       Show a saved team as current before the authority accepted it (his own save, or his answer to
-      another member's proposal), and the authoritative-team row must fail; send the default team's save without the revision it was edited
-      from, and the default-team stale-save row must fail.
+      another member's proposal), and the authoritative-team row must fail; send the default team's save
+      without the revision it was edited from, and the default-team stale-save row must fail.
 required_evidence: [unit, integration, ui_states]
 rollback: >
   Stop serving the form; capability configuration revisions, team revisions and their requests are
@@ -137,5 +138,5 @@ longer carries it. A draft: only the owner marks a specification ready.
 defines, with its own falsifier, so the owner can set what a new project starts with before VELDO-0143 is
 built. A draft.
 
-2026-09-25, lead: AC2 follows VELDO-0162 AC3: the owner's own save shows current once the authority accepts
-it, and only another member's proposal goes through the decisions screen.
+2026-09-25, lead: AC2 follows VELDO-0162 AC3: the owner's own save shows current once the authority
+accepts it, and only another member's proposal goes through the decisions screen.

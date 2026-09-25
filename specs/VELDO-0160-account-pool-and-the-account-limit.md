@@ -60,20 +60,22 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The owner registers any number of logged-in subscription accounts for each provider,
-      each once with its own login, and the factory runs work on all of them at the same time, each
-      with its own credentials, usage and rate-limit windows. Set and completeness: Register three
-      Claude Code accounts and one Codex account (each its own profile: Claude Code's config directory,
-      Codex's home), run concurrent work across them, and read back that each invocation used exactly
-      its own account's profile and was charged to that account. Moving work off an account at its
-      limit, adding an account while work runs and the one-run bound of an account with no observation
-      are AC4. Falsifier: Launch two accounts' work with one shared profile, and the per-account isolation
-      row must fail; register the same account twice, and the one-registration row must fail; run the
-      accounts' work one after another instead of at the same time, and the concurrency row must fail.
+      Claim: The owner registers any number of logged-in subscription accounts for each provider, each
+      once with its own login, and the factory runs work on all of them at the same time, each with its
+      own credentials, usage and rate-limit windows. Set and completeness: Register three Claude Code
+      accounts and one Codex account (each its own profile: Claude Code's config directory, Codex's
+      home), run concurrent work across them, and read back that each invocation used exactly its own
+      account's profile and was charged to that account (the per-account isolation row), that a second
+      registration of an already registered account is refused by name (the one-registration row), and
+      that the runs' recorded start and end times overlap (the concurrency row). Moving work off an
+      account at its limit, adding an account while work runs and the one-run bound of an account with
+      no observation are AC4. Falsifier: Launch two accounts' work with one shared profile, and the
+      per-account isolation row must fail; accept a second registration of one account, and the
+      one-registration row must fail; serialize the pool's launches, and the concurrency row must fail.
     falsified_by: >
       Launch two accounts' work with one shared profile, and the per-account isolation row must fail;
-      register the same account twice, and the one-registration row must fail; run the accounts' work one
-      after another instead of at the same time, and the concurrency row must fail.
+      accept a second registration of one account, and the one-registration row must fail; serialize the
+      pool's launches, and the concurrency row must fail.
   - id: AC2
     text: >
       Claim: A run stopped by its account's limit is classified `account_limit` with its window and reset
@@ -88,15 +90,16 @@ acceptance_criteria:
       classification row must fail.
   - id: AC3
     text: >
-      Claim: For a run classified `account_limit`, a re-run-or-ask decision is made over its record: re-run
-      on another account only when the record shows no call to an MCP tool not marked read-only, and
-      otherwise ask the owner, naming the calls. Set and completeness: Feed the decision fixture records in
-      the form the Notes give, with the read-only marks of catalog revisions in the same form: one with no
-      MCP call, one with only calls to tools marked read-only, one with a call to a tool not marked
-      read-only, and one with a call to a tool of a server whose revision marks nothing; the first two
-      decide re-run and the others decide ask with exactly those calls named. Carrying out the decision
-      (the new dispatch, or the question to the owner) is VELDO-0154 AC3. Falsifier: Decide re-run for a
-      record that shows a call to an MCP tool not marked read-only; the ask-decision row must fail.
+      Claim: For a run classified `account_limit`, a re-run-or-ask decision is made over its record:
+      re-run on another account only when the record shows no call to an MCP tool not marked read-only,
+      and otherwise ask the owner, naming the calls. Set and completeness: Feed the decision fixture
+      records in the form the Notes give, with the read-only marks of catalog revisions in the same
+      form: one with no MCP call, one with only calls to tools marked read-only, one with a call to a
+      tool not marked read-only, and one with a call to a tool of a server whose revision marks nothing;
+      the first two decide re-run and the others decide ask with exactly those calls named. Carrying out
+      the decision (the new dispatch, or the question to the owner) is VELDO-0154 AC3. Falsifier: Decide
+      re-run for a record that shows a call to an MCP tool not marked read-only; the ask-decision row
+      must fail.
     falsified_by: >
       Decide re-run for a record that shows a call to an MCP tool not marked read-only; the ask-decision
       row must fail.

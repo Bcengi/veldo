@@ -74,13 +74,14 @@ acceptance_criteria:
       unauthorized-save row must fail.
   - id: AC2
     text: >
-      Claim: A team revision is proposed only through the API's team route and the authority's VELDO-0089
-      `propose` command, with VELDO-0151's role fields, and the team is read back through a route. Set and
+      Claim: A team revision is saved only through the API's team route and the authority's VELDO-0089
+      team commands, with VELDO-0151's role fields, and the team is read back through a route. Set and
       completeness: Save a project's team with the four required roles, and then one that adds the
       specialist role `builder_jira` naming the configuration of AC1, as the typed assertion operation
-      `propose_team`, which the authority executes as VELDO-0089's `propose` for the verified principal,
-      bound to the team version the save was edited from; read the team through the team read route with
-      its current revision, its pending proposal and each role's kind and configuration reference. A
+      `propose_team`, which the authority executes for the verified principal as AC3's owner-save path
+      when that principal is the project's owner and as VELDO-0089's `propose` otherwise, either way bound
+      to the team version the save was edited from; read the team through the team read route with its
+      current revision, any pending proposal and each role's kind and configuration reference. A
       save bound to an older team version is refused `stale_subject:version`; a role with no
       configuration reference, or one that resolves to no accepted configuration, returns VELDO-0151's
       refusal, and an incomplete roster `incomplete_roster`, each with the owner request those
@@ -90,24 +91,30 @@ acceptance_criteria:
       Accept a team save bound to an older team version; the stale-team row must fail.
   - id: AC3
     text: >
-      Claim: A team revision the project owner saves himself through the authenticated API becomes current
-      on that save, recorded as his decision, and a revision anyone else proposes becomes current only by
-      his settled answer to one request that shows exactly that proposal. Set and completeness: Save a team
-      revision as the owner through the API; the team read route shows it current, the journal records the
-      owner's authenticated principal as its decider, and no decision request is opened, as VELDO-0150 treats
-      his own message. Then have another principal (a second person member in a passkey session) submit `propose_team`; the authority opens one
-      VELDO-0064 decision request to the project's current owner on VELDO-0089's amendment touchpoint, whose
-      brief and target are exactly VELDO-0089's amendment brief and target of the pending proposal, and a
-      repeat submission returns that request. Answer it through the API's decision route (VELDO-0130) and,
-      for a second proposal, from Telegram; the authority applies the settlement (VELDO-0068) as
-      VELDO-0089's `amend`, and the read route shows the new revision current. A decline leaves the earlier
-      revision current. Falsifier: Make another principal's proposed team revision current without the
-      owner's settled answer, and separately open a decision request for the owner's own save; the
-      owner-answer row and the owner-save row must each fail.
+      Claim: A team revision the project owner saves himself through the authenticated API becomes
+      current on that save, recorded as his decision, and a revision anyone else proposes becomes
+      current only by his settled answer to one request that shows exactly that proposal. Set and
+      completeness: Save a team revision as the owner through the API; the team read route shows it
+      current, the journal records the owner's authenticated principal as its decider, and no decision
+      request is opened, as VELDO-0150 treats his own message. Then have another principal (a second
+      person member in a passkey session) submit `propose_team`; the authority opens one VELDO-0064
+      decision request to the project's current owner on VELDO-0089's amendment touchpoint, whose brief
+      and target are exactly VELDO-0089's amendment brief and target of the pending proposal, and a
+      repeat submission returns that request. Answer it through the API's decision route (VELDO-0130)
+      and, for a second proposal, from Telegram; the authority applies the settlement (VELDO-0068) as
+      VELDO-0089's `amend`, and the read route shows the new revision current. A decline leaves the
+      earlier revision current. Falsifier: Make another principal's proposed team revision current
+      without the owner's settled answer, and separately open a decision request for the owner's own
+      save; the owner-answer row and the owner-save row must each fail. Record a principal other than
+      the verified one as the owner save's decider, and the decider row must fail; skip the edge
+      signature check on the owner-save path, and the unverified-assertion row, which submits an owner
+      save whose edge signature does not verify, must fail.
     falsified_by: >
       Make another principal's proposed team revision current without the owner's settled answer, and
       separately open a decision request for the owner's own save; the owner-answer row and the owner-save
-      row must each fail.
+      row must each fail. Record a principal other than the verified one as the owner save's decider, and
+      the decider row must fail; skip the edge signature check on the owner-save path, and the
+      unverified-assertion row must fail.
   - id: AC4
     text: >
       Claim: The factory keeps one default team, a versioned team the owner saves through the team route,
@@ -162,7 +169,8 @@ operational activation.
 ## Out of scope
 
 The role and team form (VELDO-0163); the full team and configuration screens with revision history
-(VELDO-0131); any change to VELDO-0127's or VELDO-0151's own checks, or to VELDO-0089's beyond the one owner-save path AC3 adds; a PM that edits its
+(VELDO-0131); any change to VELDO-0127's or VELDO-0151's own checks, or to VELDO-0089's beyond the
+owner-save path AC3 adds and `Teams.apply` accepting the edge-verified assertion; a PM that edits its
 own team (design section 4(f)); amendment races (Release 2).
 
 ## What the reviewer judges
@@ -192,8 +200,9 @@ capability configuration and VELDO-0089's `propose` for a team, with VELDO-0151'
 by the project's owner takes one new owner-save path in `control_team`: it binds the API edge's verified
 assertion as its evidence, the way VELDO-0150 AC2 binds the intake command, compares the assertion's
 principal with the project's owner, and makes the proposal current in the same commit. `Teams.apply`
-accepts that edge-verified assertion in place of an SSH signature from the principal's own key, as the
-intake's `api_request` adapter does. A proposal by another member takes the existing path: the request
+accepts the edge-verified assertion, for `propose` as well as the owner save, in place of an SSH
+signature from the principal's own key, verifying the edge signature itself as the intake's
+`_edge_verifies` does. A proposal by another member takes the existing path: the request
 of AC3 is the one VELDO-0089's `amend` already checks for (its brief, its target, the project's owner as
 its only principal), so `amend` is used as it is, and it settles through VELDO-0089 AC2's retained
 settlement path.
@@ -223,6 +232,6 @@ specification, built in the design's second stage and so before VELDO-0143, defi
 the factory project's owner saves through the team route, whose revision named in the answered project
 proposal becomes the new project's first team revision. A draft.
 
-2026-09-25, lead: AC3 counts the owner's own authenticated save as his decision, as VELDO-0150 does for his
-own message, so he is never asked to approve a change he made himself; a revision anyone else proposes still
-needs his settled answer.
+2026-09-25, lead: AC3 counts the owner's own authenticated save as his decision, as VELDO-0150 does for
+his own message, so he is never asked to approve a change he made himself; a revision anyone else
+proposes still needs his settled answer.

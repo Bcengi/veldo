@@ -56,8 +56,8 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: A new-project request becomes one project proposal from the factory project's PM, settled by
-      the owner's one answer, and nothing is asked when his message already names the project and the
+      Claim: A new-project request becomes one project proposal from the factory project's PM, settled
+      by the owner's one answer, and nothing is asked when his message already names the project and the
       identity. Set and completeness: Setup creates the one `factory` project, bound to a small
       repository of its own under the factory state root that holds only its team configuration, with a
       PM role for requests that are not yet any project's. Send "start a new personal project called
@@ -66,9 +66,9 @@ acceptance_criteria:
       project, the identity (asked in the same request when he did not say), the directory, the remote
       name and visibility, the first objective, the default team's current revision (VELDO-0162 AC4) and
       the default pipeline, and the coordination budget. His one answer, a yes or a correction, settles
-      the project and the first objective, and no further question is sent; the first message, which named both, is itself that answer and nothing
-      is presented. Falsifier: Present a proposal when his message already named the project and the
-      identity; the nothing-asked row must fail.
+      the project and the first objective, and no further question is sent; the first message, which
+      named both, is itself that answer and nothing is presented. Falsifier: Present a proposal when his
+      message already named the project and the identity; the nothing-asked row must fail.
     falsified_by: >
       Present a proposal when his message already named the project and the identity; the
       nothing-asked row must fail.
@@ -94,15 +94,14 @@ acceptance_criteria:
       Claim: The same settlement activates the new project on the adopted repository with the default
       team and pipeline and admits its first objective, which is built as the project's first ordinary
       unit. Set and completeness: After creation and its adoption (VELDO-0161), or an adoption alone,
-      reaches `active`, the settlement is applied
-      as the project's activation (VELDO-0076, applied from his answer by VELDO-0149) with the default
-      team revision the proposal named as its first team revision (VELDO-0162 AC4) and the default
-      pipeline (VELDO-0132), and its first objective is
+      reaches `active`, the settlement is applied as the project's activation (VELDO-0076, applied from
+      his answer by VELDO-0149) with the default team revision the proposal named as its first team
+      revision (VELDO-0162 AC4) and the default pipeline (VELDO-0132), and its first objective is
       accepted by his answer, or by his first message when it named both (VELDO-0150), and admitted at
-      the default priority with no further question; a repository that ended `failed` activates
-      nothing. Observe the owner told "tidepool is ready; the first objective is next", and the first unit dispatched in the
-      new repository with the identity as author. Falsifier: Activate the project while its repository
-      is still `provisioning`; the activation-order check must fail.
+      the default priority with no further question; a repository that ended `failed` activates nothing.
+      Observe the owner told "tidepool is ready; the first objective is next", and the first unit
+      dispatched in the new repository with the identity as author. Falsifier: Activate the project
+      while its repository is still `provisioning`; the activation-order check must fail.
     falsified_by: >
       Activate the project while its repository is still `provisioning`; the activation-order check
       must fail.
@@ -123,13 +122,13 @@ the repository and adopts it with no separate command, as Claude Code does for h
 
 W103 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. Section 5 of the
 approved [operating-model design](../docs/design/PLAN-0019-operating-model-design.md) (owner Telegram
-29162) designs the factory project, the one-answer proposal, the provisioner and adoption. Today
-nothing creates a repository as an effect, a running service cannot take on a new repository without
+29162) designs the factory project, the one-answer proposal, the provisioner and adoption. Today nothing
+creates a repository as an effect, a running service cannot take on a new repository without
 reinstallation, VELDO-0076 accepted only the store's one repository and only the owner's signed key
-(VELDO-0149 widens both), and a new project cannot come from chat: with one configured project intake routed the request into
-it, and with two it asked "which project?" offering only existing ones. VELDO-0152, VELDO-0126's revision 4
-amendment, routes the request here; VELDO-0142 supplies the identity and VELDO-0153 its push profile and owner check; VELDO-0139's setup creates the
-factory project.
+(VELDO-0149 widens both), and a new project cannot come from chat: with one configured project intake
+routed the request into it, and with two it asked "which project?" offering only existing ones.
+VELDO-0152, VELDO-0126's revision 4 amendment, routes the request here; VELDO-0142 supplies the identity
+and VELDO-0153 its push profile and owner check; VELDO-0139's setup creates the factory project.
 
 ## Out of scope
 
@@ -156,9 +155,9 @@ an identity spanning two remote owners.
 ## Notes
 
 Adoption, the adoption signer (which widens enrollment, section 13 of the design) and taking the
-repository on without a restart are VELDO-0161, which creation ends in. The token needs workflow permission because the scaffold writes
-`.github/workflows/veldo-gate.yml`. VELDO-0139 is a standalone built item, so this edge is kept here and
-not in the plan graph.
+repository on without a restart are VELDO-0161, which creation ends in. The token needs workflow
+permission because the scaffold writes `.github/workflows/veldo-gate.yml`. VELDO-0139 is a standalone
+built item, so this edge is kept here and not in the plan graph.
 
 ## History
 
