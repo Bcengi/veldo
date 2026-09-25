@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -950,2 +949,0 @@
+@@ -952,2 +951,0 @@
 -            if SA.AS.is_call(signed.get('command')):
 -                return self.api is not None and self.api.verifies(message, signature)

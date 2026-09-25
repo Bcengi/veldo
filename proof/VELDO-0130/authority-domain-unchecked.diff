@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -293 +293 @@
+@@ -290 +290 @@
 -        if a['domain'] != self.domain or any(a[f] != v for f, v in self.ids.items()):
 +        if False:  # defect: any domain is executed

@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_webauthn.py
 +++ b/.veldo/control_api_webauthn.py
-@@ -127,2 +126,0 @@
+@@ -134,2 +133,0 @@
 -    if data.get('type') != kind:
 -        return 'wrong_ceremony'

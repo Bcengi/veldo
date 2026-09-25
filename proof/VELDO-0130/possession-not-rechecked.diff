@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_credentials.py
 +++ b/.veldo/control_api_credentials.py
-@@ -309 +309 @@
--            if W.possession_problems(binding, params['proof'], self.origin, self.rp_id, self.state_dir):
+@@ -313 +313 @@
+-            if unproven:
 +            if False:  # defect: the possession proof is not checked at the host

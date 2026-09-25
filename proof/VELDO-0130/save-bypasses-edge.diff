@@ -1,6 +1,6 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -611,0 +612,3 @@
+@@ -650,0 +651,3 @@
 +        if route.operation == 'save_workflow':  # defect: the API writes the revision itself
 +            document = {'definition': parameters['definition'], 'layout': parameters['layout'] or {}}
 +            return 200, dict(self.authority.workflows.save(document, principal=session['principal'], base=parameters['base']), outcome='saved')

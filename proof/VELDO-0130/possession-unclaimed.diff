@@ -1,0 +1,11 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -617 +617 @@
+-            claimed = self._registrations.get(body['registration_id']) is found
++            claimed = True  # defect: a racing request completes it again
+@@ -619 +619 @@
+-                del self._registrations[body['registration_id']]
++                self._registrations.pop(body['registration_id'], None)
+@@ -625 +625 @@
+-        except FileExistsError:
++        except KeyError:

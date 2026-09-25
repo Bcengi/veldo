@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -180,2 +179,0 @@
+@@ -182,2 +181,0 @@
 -        if not any(self.CM.scope_covers(member.get('scope'), p) for p in self.intake.projects):
 -            return 'unauthorized:no_project'

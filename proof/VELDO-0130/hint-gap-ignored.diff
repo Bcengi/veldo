@@ -1,0 +1,6 @@
+--- a/.veldo/control_client_api.py
++++ b/.veldo/control_client_api.py
+@@ -169,2 +169 @@
+-                    if sender is not None and (sender != self.instance or type(number) is not int
+-                                               or self.sequence is None or number != self.sequence + 1):
++                    if sender is not None and sender != self.instance:  # defect: a gap in the hints is ignored

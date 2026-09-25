@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_webauthn.py
 +++ b/.veldo/control_api_webauthn.py
-@@ -133,2 +132,0 @@
+@@ -140,2 +139,0 @@
 -    if 'crossOrigin' in data and data['crossOrigin'] is not False:
 -        return 'cross_origin'

@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_models.py
 +++ b/.veldo/control_api_models.py
-@@ -145 +145 @@
+@@ -146 +146 @@
 -            if key in OPAQUE_MAPPINGS:
 +            if False:  # defect: environments and headers are served

@@ -15,9 +15,9 @@
   "VELDO-0130 events/reconcile-deferred detail: the reconcile it makes due runs once, when that delivery ends: one new subscription, to the new instance [observed ['inspect', 'inspect', 'events', 'feed', 'inspect', 'subscribe']]",
   "VELDO-0130 events/reconcile-deferred detail: and the open stream is fed the new record",
   "VELDO-0130 enrollment/possession-race detail: one completes the registration and the other is refused by name, never raised [observed [200, 500] ['raised:FileExistsError']]",
-  "VELDO-0130 webauthn/openssl-fixed-path detail: openssl is found at an absolute system location, never through PATH: a stand-in that accepts everything, first on PATH, is not run [observed /dev/shm/v130-tppiqfg9/fake-bin/openssl True]",
+  "VELDO-0130 webauthn/openssl-fixed-path detail: openssl is found at an absolute system location, never through PATH: a stand-in that accepts everything, first on PATH, is not run [observed /dev/shm/v130-0q0lat7g/fake-bin/openssl True]",
   "VELDO-0130 webauthn/openssl-fixed-path detail: with no openssl at those locations a sign-in is unavailable_service, never a failed signature [observed: 401 unauthenticated:signature_invalid]",
-  "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 4190031-6283bb8b74d8 -> 7131-6123dde2ad09, API 4190031-6283bb8b74d8]",
+  "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 1604216-76f0b13d5d12 -> 1605566-e2a7ea845ea5, API 1604216-76f0b13d5d12]",
   "VELDO-0130 service/restart-reconciles detail: a host revocation the new instance commits closes the open stream as revoked, nothing passed by this suite [observed revoke_api_credential None]",
   "VELDO-0130 service/restart-reconciles detail: the API's cursor is at the head [observed 14 of 15]",
   "VELDO-0130 service/down-at-registration detail: with the service down the next registration is 503 unavailable_service [observed 500 raised:Unavailable]"
@@ -252,7 +252,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 63.006,
+ "seconds": 41.362,
  "spec_id": "VELDO-0130",
  "suite": "scripts/suites/71_veldo_0130_api.py",
  "tree": "git archive c3c0c6a2ded6302a633260ef26332787ca80a3da, unchanged; the current suite file run against it"

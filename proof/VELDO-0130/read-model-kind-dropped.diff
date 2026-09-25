@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_models.py
 +++ b/.veldo/control_api_models.py
-@@ -72 +72 @@
+@@ -73 +73 @@
 -        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),
 +        )),

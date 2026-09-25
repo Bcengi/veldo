@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -235 +235 @@
+@@ -240 +240 @@
 -    return now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS
 +    return False  # defect: sessions never expire

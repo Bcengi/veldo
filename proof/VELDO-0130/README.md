@@ -222,7 +222,7 @@ reds its rows rather than hanging the suite.
 `red-at-c3c0c6a.json`: the current suite against the end of phase 3 before these fixes: the nine rows
 and reads/authoritative red, all by assertion; the other 27 rows green.
 
-Finding 130 gains sixteen mutations (89 in all), each red on its row: deliver-reads-one-page and
+Finding 130 gains fifteen mutations (88 in all), each red on its row: deliver-reads-one-page and
 stream-fill-one-page (events/reconcile-past-page), subscribers-forgotten and restart-announces-nothing
 (service/restart-reconciles), reconcile-reenters-delivery and hint-gap-ignored (events/reconcile-deferred),
 published-lists-derived and published-past-watermark (events/published-watermark), last-event-id-ignored,

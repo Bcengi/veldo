@@ -1,14 +1,14 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -705,2 +705 @@
--                if stream.closed is None and not self.sessions.alive(stream.handle):
--                    stream.close(reason)
+@@ -764,2 +764 @@
+-                if state != 'live':
+-                    stream.close('session_expired' if state == 'session_expired' else reason)
 +                pass  # defect: no stream is closed
-@@ -735,4 +733,0 @@
--            if not self.sessions.alive(stream.handle):
--                stream.close('revoked')
+@@ -808,4 +806,0 @@
+-            if state != 'live':
+-                stream.close(state if state == 'session_expired' else 'revoked')
 -                closed += 1
 -                continue
-@@ -750,2 +744,0 @@
+@@ -823,2 +817,0 @@
 -                stream.close(why)
 -                closed += 1

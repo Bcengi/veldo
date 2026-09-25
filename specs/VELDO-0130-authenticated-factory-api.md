@@ -450,5 +450,5 @@ that the in-process refusal holds while the authority service runs. New rows eve
 events/resume-last-event-id, events/expiry-named, events/published-watermark, events/reconcile-deferred,
 enrollment/possession-race, webauthn/openssl-fixed-path, service/restart-reconciles and
 service/down-at-registration, and an entropy check in reads/authoritative, each red by assertion at
-c3c0c6a; sixteen new finding 130 mutations, each reddening its row. Acceptance criteria, status, risk and
+c3c0c6a; fifteen new finding 130 mutations, each reddening its row. Acceptance criteria, status, risk and
 dependencies are unchanged.

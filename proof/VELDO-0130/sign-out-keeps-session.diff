@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -499 +499 @@
+@@ -524 +524 @@
 -        self.sessions.end(session['handle'])
 +        pass  # defect: sign-out ends nothing

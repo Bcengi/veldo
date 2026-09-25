@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -384 +384 @@
+@@ -401 +401 @@
 -            if headers.get('Origin') != self.origin:
 +            if False:  # defect: any Origin writes

@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -549 +549 @@
+-                self._inspect([CR.entity_id(credential_id)]), credential_id) is not None
++                self.authority.inspect([CR.entity_id(credential_id)]).get('entities') or {}, credential_id) is not None  # defect

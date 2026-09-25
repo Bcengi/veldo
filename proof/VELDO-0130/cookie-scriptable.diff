@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -487 +487 @@
+@@ -505 +505 @@
 -        extra.append(('Set-Cookie', '%s=%s; Secure; HttpOnly; SameSite=Strict; Path=/' % (COOKIE, cookie)))
 +        extra.append(('Set-Cookie', '%s=%s; Secure; SameSite=Lax; Path=/' % (COOKIE, cookie)))  # defect

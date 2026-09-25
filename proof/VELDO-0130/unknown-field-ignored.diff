@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -176 +176 @@
+@@ -181 +181 @@
 -    if set(body) - set(route.required) - set(route.optional) or set(route.required) - set(body):
 +    if set(route.required) - set(body):  # defect: unknown fields are ignored

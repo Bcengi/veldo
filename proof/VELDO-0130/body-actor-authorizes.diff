@@ -1,10 +1,10 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -174,3 +174 @@
+@@ -179,3 +179 @@
 -    if any(f in body for f in ACTOR_FIELDS):
 -        return 'invalid_input:actor_field'
 -    if set(body) - set(route.required) - set(route.optional) or set(route.required) - set(body):
 +    if set(body) - set(route.required) - set(route.optional) - set(ACTOR_FIELDS) or set(route.required) - set(body):
-@@ -608 +606 @@
+@@ -647 +645 @@
 -                         principal=session['principal'], credential_id=session['credential_id'],
 +                         principal=body.get('actor_id') or session['principal'], credential_id=session['credential_id'],

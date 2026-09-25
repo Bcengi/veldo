@@ -1,8 +1,8 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -235 +235,4 @@
--        rows = self.publication._rows()
+@@ -238 +238,4 @@
+-        rows, top = self.publication.journal(after, limit)
 +        try:
-+            rows = self.publication._rows()
++            rows, top = self.publication.journal(after, limit)
 +        except Exception:  # noqa: BLE001
-+            rows = []  # defect: an unreadable publication is an empty feed
++            rows, top = [], {'seq': 0, 'record_digest': None}  # defect: an unreadable publication is an empty feed

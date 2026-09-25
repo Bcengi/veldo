@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_credentials.py
 +++ b/.veldo/control_api_credentials.py
-@@ -304 +304 @@
+@@ -305 +305 @@
 -            if binding['expires_at'] <= now:
 +            if False:  # defect: an expired pending registration is enrolled

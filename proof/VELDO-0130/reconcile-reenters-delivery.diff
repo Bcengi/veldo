@@ -1,0 +1,6 @@
+--- a/.veldo/control_client_api.py
++++ b/.veldo/control_client_api.py
+@@ -153,2 +153 @@
+-        if self._deliverer != threading.get_ident():
+-            self.deliver(None)
++        self.deliver(None)  # defect: re-enters the delivery in hand

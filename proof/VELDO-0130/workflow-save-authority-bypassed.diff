@@ -1,5 +1,5 @@
 --- a/.veldo/control_api_authority.py
 +++ b/.veldo/control_api_authority.py
-@@ -292,0 +293,2 @@
+@@ -289,0 +290,2 @@
 +        if a['operation'] == 'save_workflow':
 +            return self._save_workflow(a)  # defect: a workflow save skips the authority's checks
