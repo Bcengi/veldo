@@ -62,14 +62,21 @@ environment (`env -i`, empty HOME, `GIT_CONFIG_GLOBAL=/dev/null`).
 assertion, no region raised (the tree has no objective service, so every command is answered
 `no_objective_service`).
 
-`python3 -B proof/VELDO-0077/drive.py` regenerates `mutations.json` and the diffs: 16 mutants, each reds
+`red-at-86a58f0.json`: the current suite against the first build (`git archive 86a58f0`), by assertion,
+no region raised: `satisfaction/stale-evidence` (a passing observation kept before the acceptance
+satisfied the objective, so `satisfaction/unproven-outcome` and `satisfaction/other-process` follow it),
+`cancel/transfer-bounded` (the out-of-scope transfer was accepted) and `project/inactive-refusals`
+(amend worked in a paused project). The brief check alone and the paused refusals of accept,
+propose_feature and assess were already correct there; their rows and mutants close the coverage gap.
+
+`python3 -B proof/VELDO-0077/drive.py` regenerates `mutations.json` and the diffs: 23 mutants, each reds
 its named row by assertion, the baseline and a no-op copy of each mutated module green. Registry:
 `scripts/check_teeth_mutations.py --finding 77`.
 
 | Row | Criterion | Mutations (declared falsifier first) |
 | --- | --- | --- |
 | `acceptance/later-feature` | AC1 | `feature-admitted-on-acceptance` |
-| `acceptance/stale-answer` | AC1 | `stale-answer-accepted` |
+| `acceptance/stale-answer` | AC1 | `stale-answer-accepted`, `brief-unchecked` |
 | `acceptance/owner-only` | AC1 | `any-member-accepts` |
 | `acceptance/bounded-elaboration` | AC1 | `feature-scope-unbounded` |
 | `acceptance/intake-source` | AC1 | `feature-prefix-unowned` |
@@ -78,13 +85,16 @@ its named row by assertion, the baseline and a no-op copy of each mutated module
 | `satisfaction/wrong-signer` | AC2 | `assessor-unchecked` |
 | `satisfaction/stale-revision` | AC2 | `assessment-revision-unchecked` |
 | `satisfaction/missing-evidence` | AC2 | `unsubmitted-evidence-skipped`, `assessment-evidence-digest-unchecked` |
+| `satisfaction/stale-evidence` | AC2 | `pre-acceptance-evidence-counts` |
 | `satisfaction/proven` | AC2 | none (the positive case) |
 | `satisfaction/other-process` | AC2 | none (the read-only reader) |
 | `cancel/work-disposition` | AC3 | `cancel-without-disposition`, `disposition-recorder-unchecked` |
 | `cancel/history-kept` | AC3 | `cancel-rewrites-history` |
 | `cancel/reopen-linked` | AC3 | `terminal-objective-reopens`, `continuation-of-live-objective` |
+| `cancel/transfer-bounded` | AC3 | `transfer-scope-unbounded`, `transfer-keeps-source-revision`, `duplicate-disposition-accepted` |
+| `project/inactive-refusals` | all | `inactive-project-elaborates`, `amend-in-inactive-project` |
 | `install/assets` | all | `objective-not-scaffolded` |
-| `observability` | all | none |
+| `observability` | all | none (pending work measured as the change the row's own objectives and feature make) |
 
 ## What each criterion's rows drive
 
@@ -106,7 +116,9 @@ outside the accepted scope refuses `out_of_scope:loyalty`.
 **AC2.** The declared set, each case on a real store: a person who is not the assessor and a service
 are refused; an assessment missing one requirement, naming a record that does not exist, or naming a
 kept record with another digest refuses `missing_evidence:regression`; an assessment of revision 1 when
-revision 2 was accepted refuses `stale_subject:revision`. A second objective whose features' two
+revision 2 was accepted refuses `stale_subject:revision`. An assessment of the second objective over
+passing observations the proof service kept before that objective was accepted refuses
+`stale_subject:evidence`: the record's first journal sequence must follow the accepting command's. A second objective whose features' two
 specifications are all shipped, with an outcome check that ran and exited 1, refuses
 `unproven_outcome:outcome` and stays ACTIVE. The complete, current assessment by asha satisfies the first
 objective with the `objective_satisfied` receipt of revision 2, and another process reads both states
@@ -120,7 +132,17 @@ fourth objective, the objective keeps its acceptance, owner, accepted revision, 
 earlier history entry, and the request, settlement, effect and receipt records are unchanged. Reopening
 refuses `invalid_transition:CANCELED->PROPOSED`, amending it is refused, a continuation naming a live
 objective refuses `invalid_input:continues`, and a new objective that continues the canceled one is
-accepted while the canceled record stays byte-for-byte the same.
+accepted while the canceled record stays byte-for-byte the same. A source objective accepted at
+revision 1 and a receiver scoped to checkout, amended and accepted at revision 2: transferring the
+payments feature refuses `out_of_scope:payments`, a disposition set naming one feature twice refuses
+`invalid_input:duplicate_disposition`, neither writes anything, and transferring the checkout feature
+moves it under the receiver with `objective_revision` 2 and leaves no canceled feature listed there.
+
+**Inactive projects.** proj-a paused with a settled acceptance answer and fresh evidence waiting:
+amend, accept, propose_feature, assess and a new objective refuse `project_not_active:PAUSED` and write
+nothing, and the owner still cancels an objective. proj-a canceled: amend, propose_feature and assess
+refuse `project_not_active:CANCELED`. proj-b activated and completed over a canceled objective: amend,
+accept and a new objective refuse `project_not_active:COMPLETED`.
 
 ## Checks run
 

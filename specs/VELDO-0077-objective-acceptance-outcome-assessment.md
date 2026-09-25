@@ -131,6 +131,10 @@ Live engine/channel qualification cannot be replaced by model-response or author
 Current authorization, independent engineering review, enforceable pre-call spend caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
+Release 3 governance, filed from review 77a and not built here: evidence requirements that name a
+specific check path or digest, and an assessor who must be someone other than the proposer or the
+project's owner.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
@@ -149,3 +153,8 @@ features are RAW and never admitted or prioritized by it; satisfaction is the bo
 assessment of the accepted revision over kept evidence records; cancellation needs the owner's
 disposition of every unfinished feature. `request.py` and `authorization.py` were not changed: they are
 not on the control store path. Proof in `proof/VELDO-0077/`; status stays ready.
+
+2026-09-25, review 77a fix: a transfer at cancellation stays inside the receiving objective's accepted
+scope (`out_of_scope:<item>`) under its accepted revision; a feature has one disposition; evidence must
+be recorded after the acceptance (`stale_subject:evidence`); amend is refused in a project that is not
+active; rows and mutants for each, red against 86a58f0 by assertion. Status stays ready.
