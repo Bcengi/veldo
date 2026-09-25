@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -263 +263 @@
+-        return hashlib.sha256(cookie.encode('ascii', 'replace')).hexdigest()
++        return cookie  # defect: the cookie itself is kept

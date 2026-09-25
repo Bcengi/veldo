@@ -1,0 +1,6 @@
+--- a/.veldo/control_api_authority.py
++++ b/.veldo/control_api_authority.py
+@@ -240 +240,2 @@
+-        listed, published = self.publication.published(after, rows[-1][0] if rows else after)
++        listed, _judged = self.publication.derive(self.publication._rows(), after)
++        published = (self.publication.watermark() or {}).get('watermark', 0)  # defect: derived events listed

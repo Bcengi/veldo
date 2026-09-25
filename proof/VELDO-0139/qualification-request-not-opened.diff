@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -239 +239 @@
+-        if self.requester is None:
++        if True:  # defect: the service never opens the qualification request

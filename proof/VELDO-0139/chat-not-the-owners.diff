@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -382 +382 @@
+-                                                           principal=owner, chat_id=plan['chat'], revoked_at=None)),
++                                                           principal=owner, chat_id=plan['chat'] + 1, revoked_at=None)),  # defect: another chat is enrolled

@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -720,2 +719,0 @@
+-        if resume is not None:
+-            after = _count(resume, 'last_event_id', minimum=0)

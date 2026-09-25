@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -813 +813 @@
+-            after = page[-1]['seq']
++            break  # defect: one feed page, however far behind the cursor is

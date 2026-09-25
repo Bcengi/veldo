@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_assertion.py
++++ b/.veldo/control_api_assertion.py
+@@ -124 +124 @@
+-                'principal': a['principal'], 'text': p['text'], 'project': p['project'], 'clarifies': p['clarifies']}
++                'principal': a['principal'], 'text': p['text'].strip(), 'project': p['project'], 'clarifies': p['clarifies']}

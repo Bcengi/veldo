@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -570 +570 @@
+-            if len(self._registrations) + len(waiting) >= PENDING_LIMIT:
++            if False:  # defect: unbounded pending registrations

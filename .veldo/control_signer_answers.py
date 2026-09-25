@@ -32,6 +32,10 @@ contract's command namespace, because that is exactly what the VELDO-0065 answer
 with the edge's enrolled key. It cannot stand for a command: the signer signs only a value with the
 canonical answer's exact fields, and no command or envelope has them.
 
+THE API EDGE (VELDO-0130). An enrolled edge of channel "api" is handed, whole, to control_api_signer,
+whose one purpose is the typed API assertion; it never reaches the answer purpose below, and a Telegram
+edge never reaches that one.
+
 WHAT IT IS NOT. Not acceptance (the presenter rechecks the edge and the actor at acceptance), not
 settlement (VELDO-0068), not ingress activation (VELDO-0073). Diagnostics carry identities, versions and
 the named refusal, never the assertion's text, a key, a path or a signature. Standard library only.
@@ -100,7 +104,7 @@ def edge_entry(state, identity):
     """The enrolled channel edge key an authenticated identity names, or None: only the key id the
     authority contract gives an enrollable channel, recorded by control_channel_enrollment."""
     record = E.edge_record(state, identity)
-    if record is None or record.get('channel') not in E.CHANNELS or identity != E.edge_key_id(record['channel']):
+    if record is None or record.get('channel') not in E.ENROLLABLE or identity != E.edge_key_id(record['channel']):
         return None
     return record
 
@@ -262,6 +266,10 @@ def issue(state, config, request, challenge, identity, authentication, now, cano
     `sign_bytes` and `auth_namespace` are control_signer's own, so the connection proof and the key
     handling are the VELDO-0027 ones."""
     entry = edge_entry(state, identity)
+    if entry['channel'] in E.API_CHANNELS:
+        # VELDO-0130: the authenticated API's edge has its own one purpose, typed API assertions.
+        return organ('control_api_signer').issue(state, config, request, challenge, identity, authentication, now,
+                                                 canonical, digest, sign_bytes, auth_namespace)
     message = canonical({'challenge': challenge, 'request_digest': digest(request)})
     ok, _ = AC.ssh_keygen_verify(message, authentication if isinstance(authentication, str) else '',
                                  AC.allowed_signers_line(identity, entry['connection_public_key'], auth_namespace),

@@ -172,6 +172,9 @@ _FILES = [
     # VELDO-0138: the service's Telegram channel, which runs the VELDO-0073 ingress and applies the
     # owner's activation commands; loaded by control_service.py, so part of its fixed executable.
     ".veldo/control_service_channel.py",
+    # VELDO-0130 phase 3: the service's side of the authenticated API, which runs the API's commands and
+    # reads and sends it the post-commit hint; loaded by control_service.py, so part of its fixed executable.
+    ".veldo/control_service_api.py",
     # The one owner of where the owner's systemd user units live, which the authority installer
     # loads for its default unit directory. The installer copies every module its programs load
     # (control_service.closure()), so what it loads is laid down with it; no validator import, so not
@@ -215,10 +218,27 @@ _FILES = [
     # VELDO-0068: the one request settlement service (terms, API answers, the terminal transaction and
     # the published request state). A runtime asset the authority loads; not validator substrate.
     ".veldo/control_request_settlement.py",
+    # VELDO-0130: the authenticated API (the loopback HTTP service, passkey verification, the
+    # api_credential store kind, the typed API assertion, the protected signer's "api" purpose, the
+    # authority's judgment of it, and the published read models and UI action contract). Runtime assets the API, the signer and the authority load; no
+    # validator imports them, so none is REQUIRED_SUBSTRATE.
+    ".veldo/control_api.py",
+    ".veldo/control_api_assertion.py",
+    ".veldo/control_api_authority.py",
+    ".veldo/control_api_credentials.py",
+    ".veldo/control_api_models.py",
+    ".veldo/control_api_signer.py",
+    ".veldo/control_api_webauthn.py",
+    # VELDO-0130 phase 3: the API process's client of the authority service socket and its hint socket.
+    ".veldo/control_client_api.py",
     # VELDO-0073: the Telegram edge's activation gate, qualification record and activated ingress (the
     # production construction of the settlement path). Runtime assets the authority loads; not substrate.
     ".veldo/control_channel_activation.py",
     ".veldo/control_channel_ingress.py",
+    # VELDO-0139: the owner's one setup of a real factory on this host (veldo factory setup), which orders
+    # and checks the pieces above. An owner command, not loaded by the service or any validator, so not
+    # REQUIRED_SUBSTRATE.
+    ".veldo/control_factory_setup.py",
     ".veldo/control_andon.py",
     # VELDO-0076: the project service (activation, pause, resume, cancel, completion). A runtime asset
     # the authority loads; no validator import, so not REQUIRED_SUBSTRATE.

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1041 +1041 @@
+-        if self.api is None or self.watermark() <= before:
++        if True:  # defect: no commit reaches a subscribed API

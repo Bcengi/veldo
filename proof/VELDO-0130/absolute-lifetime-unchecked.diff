@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -244 +244 @@
+-    return now - session['seen'] > IDLE_SECONDS or now - session['created'] > ABSOLUTE_SECONDS
++    return now - session['seen'] > IDLE_SECONDS  # defect: no absolute lifetime

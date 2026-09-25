@@ -43,15 +43,29 @@ runner did. The owner then signs the activation over that record's id and digest
 key. A restart ends a run's exchanges with the process (restart recovery is Release 2): a restarted
 run is qualified again.
 
+THE QUALIFICATION REQUEST. A qualification needs one decision request presented to the owner and
+answered by him. When the running service accepts the owner's qualify command, the channel opens ONE
+decision request addressed to him, as the factory's qualification requester: the service member that
+`veldo factory setup` enrolls by the owner's own signed command (VELDO-0139), whose key is REQUESTER_KEY
+in the protected key directory that holds the configuration's journal key. It is opened through the
+ingress's own settlement terms, inbox and presenter, each command signed by the requester's key, and
+the service presents it on its next pass like any pending request. Its alias is derived from the
+qualify command's id alone, and every pass of a qualifying run makes sure it exists, so a pass after a
+restart finds the one already opened and never opens a second, and a run whose opening was cut short
+opens it then. An installation without the requester key (a factory not laid down by setup) opens
+nothing and qualifies on whatever request its operators open.
+
 A RESTART keeps the edge exactly as the owner left it, because the service holds no state of its own
 about it: the record in the store decides every exchange.
 
 Observations carry identities, digests, counts, states and named refusals, never the token, message
 text or a signature. Standard library only.
 """
+import hashlib
 import http.server
 import importlib.util
 import json
+import os
 from pathlib import Path
 import threading
 import time
@@ -67,6 +81,9 @@ def _organ(name):
 IN = _organ('control_channel_ingress')
 ACT = _organ('control_channel_activation')
 EV = _organ('control_channel_attribution')
+ST = _organ('control_request_settlement')
+I = _organ('control_assignment')
+V = _organ('control_channel_presentation')
 
 CHANNEL = ACT.CHANNEL
 AUTHORIZE = ACT.AUTHORIZE
@@ -77,6 +94,23 @@ OBSERVATION_LIMIT = 256
 # The separate probe bot of the unauthorized leg: its own evidence ids and its own acquisition cursor.
 PROBE_BOT_ID = 1
 PROBE_TOKEN = 'unauthorized-probe'
+# The factory's qualification requester (VELDO-0139): a service member enrolled by the owner at setup,
+# whose key file is this name in the protected key directory, and the one scope it opens requests in.
+REQUESTER = 'qualification-requester'
+REQUESTER_KEY = 'qualification-requester'
+REQUESTER_SCOPE = 'channel-qualification'
+REQUEST_CHOICES = ['accept', 'return_for_elaboration', 'reject']
+
+
+def qualification_alias(run):
+    """The alias of the one qualification request of the run started by qualify command `run`."""
+    return 'qualification-' + hashlib.sha256(str(run).encode()).hexdigest()[:32]
+
+
+def requester_key(config):
+    """The qualification requester's key: REQUESTER_KEY beside the configuration's journal key."""
+    key = (config.get('journal') or {}).get('key') if isinstance(config.get('journal'), dict) else None
+    return os.path.join(os.path.dirname(key), REQUESTER_KEY) if isinstance(key, str) and os.path.isabs(key) else None
 
 
 def _code(exc):
@@ -131,6 +165,12 @@ class Channel:
         self.config = IN.load_config(config_path)
         self.ingress = IN.open_ingress(config_path, clock)
         self.passes, self.last, self.run = 0, None, None
+        self.requests = []
+        key = requester_key(self.config)
+        self.requester = None
+        if key and os.path.isfile(key):
+            IN._private_file(key, 'the qualification requester key')
+            self.requester = (REQUESTER, ACT.ssh_signer(key))
 
     def close(self):
         self.ingress.conn.close()
@@ -171,7 +211,8 @@ class Channel:
                 'authority_ids': dict(ing.activations.ids), 'membership_version': state['membership_version'],
                 'delegation_version': state['delegation_version'], 'record': shown, 'qualification': qualification,
                 'run': {'id': run.get('id'), 'answered': sorted(run.get('answers', {})),
-                        'refusal': run.get('refusal')} if run else None,
+                        'refusal': run.get('refusal'), 'request': run.get('request')} if run else None,
+                'requests': [dict(r) for r in self.requests[-8:]],
                 'passes': self.passes, 'last_pass': self.last, 'pending': ing.metrics().get('pending'),
                 'gate': dict(ing.gate.counts)}
 
@@ -182,8 +223,73 @@ class Channel:
         Activations organ. Returns the organ's observation; nothing is written unless it is accepted."""
         packet = packet if isinstance(packet, dict) else {}
         envelope, command, signature = packet.get('envelope'), packet.get('command'), packet.get('signature')
-        return self.ingress.activations.authorize(envelope if isinstance(envelope, dict) else {}, command,
-                                                  signature if isinstance(signature, str) else '')
+        outcome = self.ingress.activations.authorize(envelope if isinstance(envelope, dict) else {}, command,
+                                                     signature if isinstance(signature, str) else '')
+        if outcome.get('outcome') == 'accepted' and outcome.get('action') == 'qualify':
+            record = self.record() or {}
+            if record.get('state') == 'qualifying' and record.get('command_id') == outcome.get('command_id'):
+                self.open_request(record)
+        return outcome
+
+    def open_request(self, record):
+        """Make sure the one qualification request of `record`'s run exists and is framed: settlement
+        terms, then the inbox request addressed to the recorded owner, then the requester's framing,
+        each signed by the requester's key and each skipped when already committed. Returns what it did."""
+        run = record.get('command_id')
+        if self.requester is None:
+            return self._opened(run, None, 'skipped', 'no_requester')
+        ing = self.ingress
+        S, ids = ing.activations.S, dict(ing.activations.ids)
+        principal, sign = self.requester
+        alias = qualification_alias(run)
+        rid = ing.presenter.inbox_request(alias)
+
+        def signed(body):
+            return {'command': body, 'signature': sign(S.canonical_bytes(body))}
+        try:
+            if self._entity(rid) is None:
+                tid = ST.terms_id(ids['repository_uuid'], alias)
+                terms = self._entity(tid)
+                if terms is None:
+                    shown = ing.settlement.terms(signed(dict(
+                        ids, operation='terms', terms=alias, principal=principal, command_id=alias + ':terms',
+                        nonce=alias + ':terms', touchpoint='grooming',
+                        target={'kind': 'channel_qualification', 'ref': 'channel-qualification:%s' % run,
+                                'digest': 'sha256:' + hashlib.sha256(str(run).encode()).hexdigest()},
+                        proposal=None, required_roles=[], quorum=None)))
+                    subject = shown.get('subject')
+                    if not subject:
+                        return self._opened(run, rid, 'refused', 'terms:%s' % shown.get('reason'))
+                else:
+                    subject = {'kind': ST.SUBJECT_KIND, 'ref': tid, 'digest': ST.digest(terms['data'])}
+                expires = record.get('expires_at') or self.clock()
+                opened = ing.inbox.apply(signed(dict(
+                    ids, operation='open', alias=alias, principal=principal, command_id=alias + ':open',
+                    nonce=alias + ':open', assignment=dict(
+                        kind='decision', owner=record.get('owner'), scope=[REQUESTER_SCOPE],
+                        deadline=time.strftime(I.DEADLINE_FORMAT, time.gmtime(expires)),
+                        budget={'owner_minutes': max(1, int((expires - self.clock()) // 60))},
+                        brief='Qualification of the Telegram edge: reply accept to this message to show that this '
+                              'chat answers the factory. Nothing else changes.',
+                        choices=list(REQUEST_CHOICES), subject=subject))))
+                if not opened.get('ok'):
+                    return self._opened(run, rid, 'refused', 'open:%s' % opened.get('reason'))
+            if self._entity(V.framing_id(rid)) is None:
+                framed = ing.presenter.frame(signed(dict(
+                    ids, operation='frame', alias=alias, principal=principal, request_version=1,
+                    command_id=alias + ':frame', nonce=alias + ':frame',
+                    risk_statement='Low: answering settles this qualification request and nothing else.')))
+                if framed.get('outcome') != 'accepted':
+                    return self._opened(run, rid, 'refused', 'frame:%s' % framed.get('reason'))
+        except Exception as exc:  # noqa: BLE001 - refused by name; the pass goes on
+            return self._opened(run, rid, 'refused', _code(exc))
+        return self._opened(run, rid, 'open', None)
+
+    def _opened(self, run, rid, outcome, reason):
+        shown = {'run': run, 'request_id': rid, 'outcome': outcome, 'reason': reason}
+        self.requests.append(shown)
+        del self.requests[:-OBSERVATION_LIMIT]
+        return shown
 
     # -- one pass --------------------------------------------------------------------------------
 
@@ -198,7 +304,16 @@ class Channel:
             # A new qualification run binds only the exchanges made in it.
             del ing.gate.exchanges[:]
             self.run = {'id': run_id, 'answers': {}, 'strangers': [], 'tried': set(), 'recorded': None,
-                        'refusal': None} if run_id else None
+                        'refusal': None, 'request': None, 'retry_at': 0, 'retry_every': 1} if run_id else None
+        if (self.run is not None and (self.run['request'] or {}).get('outcome') not in ('open', 'skipped')
+                and self.passes >= self.run['retry_at'] and self.clock() < (record.get('expires_at') or 0)):
+            # Until the run's one request is open: every step is skipped when already committed, so a
+            # retry (or a restart, which finds it by its alias) completes an interrupted opening and never
+            # opens a second. A refusal is retried with a doubling wait, at most every 64 passes.
+            self.run['request'] = self.open_request(record)
+            if self.run['request'].get('outcome') != 'open':
+                self.run['retry_at'] = self.passes + self.run['retry_every']
+                self.run['retry_every'] = min(self.run['retry_every'] * 2, 64)
         woke = ing.wake({'source': 'authority_service', 'pass': self.passes})
         self.passes += 1
         published, recorded = [], None
