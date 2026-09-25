@@ -32,6 +32,7 @@ footprint:
   - "scripts/suites/*_veldo_0076_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0076-project-ownership-charter-lifecycle.md"
   - "specs/index.md"
   - "proof/VELDO-0076/*"
@@ -96,6 +97,24 @@ implementation or historical evidence. Risk and approval requirements remain unc
 
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
+
+## What the reviewer judges
+
+- Normal use: the enrolled owner activates a project with a real signed command that binds its owner,
+  charter, one execution repository, authority policy and a finite coordination budget; exactly one
+  active project results. Pausing or canceling it stops new assignments and dispatch (the frontier
+  offers nothing from it, running work follows the ordinary host stop policy) while accepted history
+  and landed receipts stay as they were. Completing it is accepted only when every objective is
+  terminal and its ordinary outstanding obligations (assignments, decisions, dispatches,
+  reservations) are resolved.
+- Threat model: an activation missing any bound field, or with no finite budget, accepted; an
+  activation by someone who is not the current enrolled owner; the frontier assigning or a dispatch
+  starting from a paused or canceled project; a pause or cancel rewriting accepted history or
+  receipts; completion accepted with an open objective, assignment, decision, dispatch or
+  reservation. The owner's account, the store and the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); additional
+  owners, transfers and delegation (Release 3); recovery and restart (Release 2); forged rows in our
+  own store and files planted in the installed directory.
 
 ## Notes
 
