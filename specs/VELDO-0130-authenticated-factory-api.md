@@ -38,6 +38,9 @@ footprint:
   - "engine/.veldo/events.py"
   - ".veldo/events.py"
   - "packs/*/.veldo/events.py"
+  - "engine/.veldo/control_event_projection.py"
+  - ".veldo/control_event_projection.py"
+  - "packs/*/.veldo/control_event_projection.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0130_*.py"
   - "scripts/suites/manifest.json"
@@ -296,6 +299,13 @@ owner signs in again. The refusals are named in the error taxonomy: unauthentica
 revoked, a failed assertion) and unauthorized (forgery checks, role or scope). Logs name the operation,
 principal, credential id, session handle and refusal, never a cookie, token, challenge, key or signature.
 
+The refusal of the API's judge outside the authority process (control_api_authority.authority_problem:
+the descriptor must be the stable lock file beside the store and this process must hold its exclusive
+flock) holds while the authority service runs, because the service holds that store lock for as long as
+it serves. While no service runs the lock is free, so a process that constructs the judge itself can
+take it; this is the VELDO-0047 one-instance lock doing its job, not an API boundary, and the API process
+never constructs the judge: it reaches the authority only through the service socket.
+
 ## History
 
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 5, under the owner's
@@ -415,3 +425,30 @@ service's memory and an API re-subscribes when an answer names another instance 
 are Release 2). Phases 1 and 2 behave as before; their fixture holds its own store's lock as the service
 would.
 
+2026-09-25, review fixes (branch build-veldo-0130, two reviews of phase 3): the API's deliver no longer
+reads a single feed page and requires the hinted record on it. It pages the feed from its cursor until
+it reaches the hinted record, applying each page in order (a revocation ends its sessions and closes
+their streams as it is met), and every stream, including the first frame of a new one, is filled page by
+page to the head; so an API any number of records behind (a restart, lost hints) reconciles on the next
+hint. The service now remembers its subscribers across a restart (a 0600 file in its state directory,
+superseding the in-memory subscriptions and the Release 2 note above), numbers each hint per subscriber
+and names its instance in it, and a new instance sends each remembered API the head's hint once it
+serves; the API's hint channel then sees the new instance, or a gap in the numbers, and subscribes again
+and reconciles by itself, without waiting for a request of its own. A new instance noticed by a call made
+inside a delivery defers its reconcile to the end of that delivery (no re-entry, no deadlock) and applies
+it once. The event feed reads only VELDO-0051's new public bounded readers (control_event_projection
+journal(after, limit) with the head, and published(after, upto), the projection's own log never past its
+stored watermark), never its private full-journal reader or events it derives itself; the footprint gains
+control_event_projection.py (engine, root and pack copies) for them, and VELDO-0051's behavior is
+unchanged. A stream resumes from the Last-Event-ID an EventSource sends on reconnect; a stream whose
+session expired closes as session_expired, not revoked. Redaction uses the secret scanner's own full
+detection (scan_text: patterns and entropy). A down service during registration answers 503
+unavailable_service, and two possession requests racing on one registration id refuse the second by name
+(stale_version:registration_completed). openssl is resolved once to an absolute path from a fixed list
+of system locations, never PATH, and its absence refuses unavailable_service:openssl. The Notes state
+that the in-process refusal holds while the authority service runs. New rows events/reconcile-past-page,
+events/resume-last-event-id, events/expiry-named, events/published-watermark, events/reconcile-deferred,
+enrollment/possession-race, webauthn/openssl-fixed-path, service/restart-reconciles and
+service/down-at-registration, and an entropy check in reads/authoritative, each red by assertion at
+c3c0c6a; sixteen new finding 130 mutations, each reddening its row. Acceptance criteria, status, risk and
+dependencies are unchanged.
