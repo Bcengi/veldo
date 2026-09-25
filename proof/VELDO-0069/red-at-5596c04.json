@@ -1,0 +1,72 @@
+{
+ "by_assertion": true,
+ "commit": "5596c040362f5b050e1c88a1a29a339d787696a2",
+ "details": [
+  "VELDO-0069 refusal/future-revision detail: a question at revision 2 while the record is at revision 1 is refused by name (future_revision, a stale subject) [observed: settled, None]",
+  "VELDO-0069 refusal/future-revision detail: nothing is written: no settlement, effect, receipt or binding, no binding id for revision 2, and the request stays pending",
+  "VELDO-0069 refusal/future-revision detail: VELDO-9615 stays blocked as unresolved after the refusal [observed: {\"blocks\": [\"unbound_decision:decision:D-9615/revision\"], \"item_state\": \"blocked: decision unbound_decision:decision:D-9615/revision\", \"offered\": false, \"run_codes\": [\"unbound_decision:decision:D-9615/revision\"], \"stations\": {\"build\": [\"unbound_decision:decision:D-9615/revision\"], \"direct_execution\": [\"unbound_decision:decision:D-9615/revision\"], \"publication\": [\"unbound_decision:decision:D-9615/revision\"], \"review\": [\"unbound_decision:decision:D-9615/revision\"], \"selection\": [\"unbound_decision:decision:D-9615/revision\"]}}]",
+  "VELDO-0069 refusal/future-revision detail: once the record reaches revision 2, VELDO-9615 is still blocked as unresolved: nothing bound that revision early [observed: {\"blocks\": [], \"item_state\": \"ready (frontier)\", \"offered\": true, \"run_codes\": [], \"stations\": {\"build\": [], \"direct_execution\": [], \"publication\": [], \"review\": [], \"selection\": []}}]",
+  "VELDO-0069 refusal/future-revision detail: the genuine revision 2 question settles with its binding and clears VELDO-9615 at every consumer [observed: refused, already_settled] [observed: {\"blocks\": [], \"item_state\": \"ready (frontier)\", \"offered\": true, \"run_codes\": [], \"stations\": {\"build\": [], \"direct_execution\": [], \"publication\": [], \"review\": [], \"selection\": []}}]"
+ ],
+ "failed_rows": [
+  "VELDO-0069 refusal/future-revision"
+ ],
+ "modules": {
+  ".veldo/control_decision_dependency.py": {
+   "at_commit": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382",
+   "now": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "32af8a05f765103b18b1583722926808ac028c79000739055516d27d51183a18",
+   "now": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+  },
+  ".veldo/plan.py": {
+   "at_commit": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea",
+   "now": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0069 binding/one-transaction",
+   true
+  ],
+  [
+   "VELDO-0069 eligibility/resolved-request",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/wrong-framing",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/wrong-subject",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/wrong-version",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/unsupported-subject-stops",
+   true
+  ],
+  [
+   "VELDO-0069 consumers/inline-bypass",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/future-revision",
+   false
+  ],
+  [
+   "VELDO-0069 binding/owner-ruling",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 5.488,
+ "spec_id": "VELDO-0069",
+ "suite": "scripts/suites/70_veldo_0069_bindings.py",
+ "tree": "git archive 5596c040362f5b050e1c88a1a29a339d787696a2, unchanged; the current suite file run against it"
+}

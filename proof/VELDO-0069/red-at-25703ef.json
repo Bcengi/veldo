@@ -1,0 +1,113 @@
+{
+ "by_assertion": true,
+ "commit": "25703ef0d72667568bbfd9b4b2cf0c0880477243",
+ "details": [
+  "VELDO-0069 binding/one-transaction detail: spec question: exactly one governing binding, for the record it resolves",
+  "VELDO-0069 binding/one-transaction detail: spec question: the binding is the chosen option, the decider and the time",
+  "VELDO-0069 binding/one-transaction detail: spec question: the binding is the exact question: decision, revision, framing, subject and scope digests, request and version",
+  "VELDO-0069 binding/one-transaction detail: spec question: the body is signed by the trusted decision signer (independent verification)",
+  "VELDO-0069 binding/one-transaction detail: spec question: the settlement, its receipt and the binding name each other",
+  "VELDO-0069 binding/one-transaction detail: spec question: the binding committed in the settlement's one journal transaction, with the settlement, effect, receipt and terminal request",
+  "VELDO-0069 binding/one-transaction detail: plan decision: exactly one governing binding, for the record it resolves",
+  "VELDO-0069 binding/one-transaction detail: plan decision: the binding is the chosen option, the decider and the time",
+  "VELDO-0069 binding/one-transaction detail: plan decision: the binding is the exact question: decision, revision, framing, subject and scope digests, request and version",
+  "VELDO-0069 binding/one-transaction detail: plan decision: the body is signed by the trusted decision signer (independent verification)",
+  "VELDO-0069 binding/one-transaction detail: plan decision: the settlement, its receipt and the binding name each other",
+  "VELDO-0069 binding/one-transaction detail: plan decision: the binding committed in the settlement's one journal transaction, with the settlement, effect, receipt and terminal request",
+  "VELDO-0069 binding/one-transaction detail: observations join the settlement to its binding and say it is current, without signatures",
+  "VELDO-0069 binding/one-transaction detail: without a decision signer a governing question is refused by name (unavailable_service) and nothing is written: no settlement, receipt or binding [observed: settled, None]",
+  "VELDO-0069 binding/one-transaction detail: the signed service then settles the same answer with its binding [observed: refused, already_settled]",
+  "VELDO-0069 binding/one-transaction detail: metrics count the bindings written",
+  "VELDO-0069 eligibility/resolved-request detail: VELDO-9601 is eligible at every consumer after the settlement [observed: {\"blocks\": [\"unresolved_decision:decision:D-9601\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9601\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9601\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9601\"], \"direct_execution\": [\"unresolved_decision:decision:D-9601\"], \"publication\": [\"unresolved_decision:decision:D-9601\"], \"review\": [\"unresolved_decision:decision:D-9601\"], \"selection\": [\"unresolved_decision:decision:D-9601\"]}}]",
+  "VELDO-0069 eligibility/resolved-request detail: VELDO-9602 is eligible at every consumer after the settlement [observed: {\"blocks\": [\"unresolved_decision:decision:P-9602\"], \"item_state\": \"blocked: decision unresolved_decision:decision:P-9602\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:P-9602\"], \"stations\": {\"build\": [\"unresolved_decision:decision:P-9602\"], \"direct_execution\": [\"unresolved_decision:decision:P-9602\"], \"publication\": [\"unresolved_decision:decision:P-9602\"], \"review\": [\"unresolved_decision:decision:P-9602\"], \"selection\": [\"unresolved_decision:decision:P-9602\"]}}]",
+  "VELDO-0069 eligibility/resolved-request detail: another process reads VELDO-9601 eligible: no decision blocker, direct execution clear, run-check clear [observed: {\"blockers\": [\"unresolved_decision:decision:D-9601\"], \"run_check\": 1, \"direct\": [\"unresolved_decision:decision:D-9601\"]}]",
+  "VELDO-0069 eligibility/resolved-request detail: another process reads the binding of decision:D-9601: chosen option, decider, time, framing and subject digests",
+  "VELDO-0069 eligibility/resolved-request detail: another process reads VELDO-9602 eligible: no decision blocker, direct execution clear, run-check clear [observed: {\"blockers\": [\"unresolved_decision:decision:P-9602\"], \"run_check\": 1, \"direct\": [\"unresolved_decision:decision:P-9602\"]}]",
+  "VELDO-0069 eligibility/resolved-request detail: another process reads the binding of decision:P-9602: chosen option, decider, time, framing and subject digests",
+  "VELDO-0069 refusal/wrong-framing detail: Q-9611: the owner's answer settles as an otherwise valid settlement [observed: settled, None]",
+  "VELDO-0069 refusal/wrong-framing detail: Q-9611: the binding records the framing the owner was shown, not the record's",
+  "VELDO-0069 refusal/wrong-framing detail: Q-9611: VELDO-9611 was blocked (unresolved) before and stays blocked, now by unbound_decision:decision:D-9611/framing, at the plan and the direct floor entry [observed: {\"blocks\": [\"unresolved_decision:decision:D-9611\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9611\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9611\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9611\"], \"direct_execution\": [\"unresolved_decision:decision:D-9611\"], \"publication\": [\"unresolved_decision:decision:D-9611\"], \"review\": [\"unresolved_decision:decision:D-9611\"], \"selection\": [\"unresolved_decision:decision:D-9611\"]}}]",
+  "VELDO-0069 refusal/wrong-framing detail: Q-9611: the settlement observation names the binding as not current (unbound_decision:decision:D-9611/framing)",
+  "VELDO-0069 refusal/wrong-subject detail: Q-9612: the owner's answer settles as an otherwise valid settlement [observed: settled, None]",
+  "VELDO-0069 refusal/wrong-subject detail: Q-9612: the binding records the subject the owner was shown, not the record's",
+  "VELDO-0069 refusal/wrong-subject detail: Q-9612: VELDO-9612 was blocked (unresolved) before and stays blocked, now by unbound_decision:decision:D-9612/subject, at the plan and the direct floor entry [observed: {\"blocks\": [\"unresolved_decision:decision:D-9612\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9612\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9612\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9612\"], \"direct_execution\": [\"unresolved_decision:decision:D-9612\"], \"publication\": [\"unresolved_decision:decision:D-9612\"], \"review\": [\"unresolved_decision:decision:D-9612\"], \"selection\": [\"unresolved_decision:decision:D-9612\"]}}]",
+  "VELDO-0069 refusal/wrong-subject detail: Q-9612: the settlement observation names the binding as not current (unbound_decision:decision:D-9612/subject)",
+  "VELDO-0069 refusal/wrong-subject detail: Q-9613: the owner's answer settles as an otherwise valid settlement [observed: settled, None]",
+  "VELDO-0069 refusal/wrong-subject detail: Q-9613: the binding records the subject the owner was shown, not the record's",
+  "VELDO-0069 refusal/wrong-subject detail: Q-9613: VELDO-9613 was blocked (unresolved) before and stays blocked, now by unbound_decision:decision:D-9613/subject, at the plan and the direct floor entry [observed: {\"blocks\": [\"unresolved_decision:decision:D-9613\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9613\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9613\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9613\"], \"direct_execution\": [\"unresolved_decision:decision:D-9613\"], \"publication\": [\"unresolved_decision:decision:D-9613\"], \"review\": [\"unresolved_decision:decision:D-9613\"], \"selection\": [\"unresolved_decision:decision:D-9613\"]}}]",
+  "VELDO-0069 refusal/wrong-subject detail: Q-9613: the settlement observation names the binding as not current (unbound_decision:decision:D-9613/subject)",
+  "VELDO-0069 refusal/wrong-version detail: Q-9614: the owner's answer settles as an otherwise valid settlement [observed: settled, None]",
+  "VELDO-0069 refusal/wrong-version detail: Q-9614: the binding records the revision the owner was shown, not the record's",
+  "VELDO-0069 refusal/wrong-version detail: Q-9614: VELDO-9614 was blocked (unresolved) before and stays blocked, now by unbound_decision:decision:D-9614/revision, at the plan and the direct floor entry [observed: {\"blocks\": [\"unresolved_decision:decision:D-9614\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9614\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9614\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9614\"], \"direct_execution\": [\"unresolved_decision:decision:D-9614\"], \"publication\": [\"unresolved_decision:decision:D-9614\"], \"review\": [\"unresolved_decision:decision:D-9614\"], \"selection\": [\"unresolved_decision:decision:D-9614\"]}}]",
+  "VELDO-0069 refusal/wrong-version detail: Q-9614: the settlement observation names the binding as not current (unbound_decision:decision:D-9614/revision)",
+  "VELDO-0069 refusal/wrong-version detail: a question at the current revision supersedes the stale binding and clears the work [observed: settled, None] [observed: {\"blocks\": [\"unresolved_decision:decision:D-9614\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9614\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9614\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9614\"], \"direct_execution\": [\"unresolved_decision:decision:D-9614\"], \"publication\": [\"unresolved_decision:decision:D-9614\"], \"review\": [\"unresolved_decision:decision:D-9614\"], \"selection\": [\"unresolved_decision:decision:D-9614\"]}}]",
+  "VELDO-0069 refusal/unsupported-subject-stops detail: terms asking about an unsupported subject kind are refused (unsupported_subject) and not recorded [observed: recorded, None]",
+  "VELDO-0069 refusal/unsupported-subject-stops detail: a governing question on another touchpoint is refused (unsupported_touchpoint) [observed: recorded, None]",
+  "VELDO-0069 refusal/unsupported-subject-stops detail: a record whose governed subject kind is unsupported stops the settlement (unsupported_subject); nothing is written and the request stays pending [observed: settled, None]",
+  "VELDO-0069 refusal/unsupported-subject-stops detail: a question naming no recorded governing decision stops (missing_decision); nothing is written [observed: settled, None]",
+  "VELDO-0069 consumers/inline-bypass detail: VELDO-9632 clears at every consumer only once its accepted binding exists [observed: settled, None] [observed: {\"blocks\": [\"unresolved_decision:decision:D-9632\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9632\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9632\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9632\"], \"direct_execution\": [\"unresolved_decision:decision:D-9632\"], \"publication\": [\"unresolved_decision:decision:D-9632\"], \"review\": [\"unresolved_decision:decision:D-9632\"], \"selection\": [\"unresolved_decision:decision:D-9632\"]}}]",
+  "VELDO-0069 consumers/inline-bypass detail: VELDO-9633 clears at every consumer only once its accepted binding exists [observed: settled, None] [observed: {\"blocks\": [\"unresolved_decision:decision:D-9633\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9633\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9633\"], \"stations\": {\"build\": [], \"direct_execution\": [], \"publication\": [], \"review\": [], \"selection\": []}}]",
+  "VELDO-0069 consumers/inline-bypass detail: VELDO-9634 clears at every consumer only once its accepted binding exists [observed: settled, None] [observed: {\"blocks\": [\"unresolved_decision:decision:D-9634\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9634\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9634\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9634\"], \"direct_execution\": [\"unresolved_decision:decision:D-9634\"], \"publication\": [\"unresolved_decision:decision:D-9634\"], \"review\": [\"unresolved_decision:decision:D-9634\"], \"selection\": [\"unresolved_decision:decision:D-9634\"]}}]",
+  "VELDO-0069 consumers/inline-bypass detail: VELDO-9635 clears at every consumer only once its accepted binding exists [observed: settled, None] [observed: {\"blocks\": [\"unresolved_decision:decision:D-9635\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9635\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9635\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9635\"], \"direct_execution\": [\"unresolved_decision:decision:D-9635\"], \"publication\": [\"unresolved_decision:decision:D-9635\"], \"review\": [\"unresolved_decision:decision:D-9635\"], \"selection\": [\"unresolved_decision:decision:D-9635\"]}}]",
+  "VELDO-0069 consumers/inline-bypass detail: VELDO-9636 clears at every consumer only once its accepted binding exists [observed: settled, None] [observed: {\"blocks\": [\"unresolved_decision:decision:D-9636\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9636\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9636\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9636\"], \"direct_execution\": [\"unresolved_decision:decision:D-9636\"], \"publication\": [\"unresolved_decision:decision:D-9636\"], \"review\": [\"unresolved_decision:decision:D-9636\"], \"selection\": [\"unresolved_decision:decision:D-9636\"]}}]"
+ ],
+ "failed_rows": [
+  "VELDO-0069 binding/one-transaction",
+  "VELDO-0069 eligibility/resolved-request",
+  "VELDO-0069 refusal/wrong-framing",
+  "VELDO-0069 refusal/wrong-subject",
+  "VELDO-0069 refusal/wrong-version",
+  "VELDO-0069 refusal/unsupported-subject-stops",
+  "VELDO-0069 consumers/inline-bypass"
+ ],
+ "modules": {
+  ".veldo/control_decision_dependency.py": {
+   "at_commit": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382",
+   "now": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "cf30023e288ae6f234b2604effe6082f1eb710dcf82064e8d57c73dbf1941120",
+   "now": "66a2ffcd970db239881d3d8385e7243a81b5092dee8c384161ddf51c5393af8c"
+  },
+  ".veldo/plan.py": {
+   "at_commit": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea",
+   "now": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0069 binding/one-transaction",
+   false
+  ],
+  [
+   "VELDO-0069 eligibility/resolved-request",
+   false
+  ],
+  [
+   "VELDO-0069 refusal/wrong-framing",
+   false
+  ],
+  [
+   "VELDO-0069 refusal/wrong-subject",
+   false
+  ],
+  [
+   "VELDO-0069 refusal/wrong-version",
+   false
+  ],
+  [
+   "VELDO-0069 refusal/unsupported-subject-stops",
+   false
+  ],
+  [
+   "VELDO-0069 consumers/inline-bypass",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 4.327,
+ "spec_id": "VELDO-0069",
+ "suite": "scripts/suites/70_veldo_0069_bindings.py",
+ "tree": "git archive 25703ef0d72667568bbfd9b4b2cf0c0880477243, unchanged; the current suite file run against it"
+}
