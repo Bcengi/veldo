@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -626 +626 @@
+-                receiving['history'] = list(receiving['history']) + [dict(entry, source=prior,
++                receiving['history'] = list(receiving['history']) + [dict(entry, source=to['data']['state'],

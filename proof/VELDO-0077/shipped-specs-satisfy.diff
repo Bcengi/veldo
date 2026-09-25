@@ -1,0 +1,6 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -564 +564,2 @@
+-            if row['data'].get('exit') != 0:
++            shipped = self.specifications(oid)  # defect: all specifications shipped is sufficient
++            if row['data'].get('exit') != 0 and not (shipped and all(s == 'shipped' for s in shipped.values())):

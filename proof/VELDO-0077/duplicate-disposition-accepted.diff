@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -590 +590 @@
+-        if len(named) != len(set(map(_canonical, named))):
++        if False:  # defect: one feature may be disposed of twice

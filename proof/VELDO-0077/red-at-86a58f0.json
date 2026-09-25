@@ -1,0 +1,128 @@
+{
+ "by_assertion": true,
+ "commit": "86a58f08a9b1dc533e2a6c2c110a3cd0c805272d",
+ "details": [
+  "VELDO-0077 detail: satisfaction/stale-evidence: an assessment over it is refused as stale evidence by name; the objective is not satisfied",
+  "VELDO-0077 detail: satisfaction/unproven-outcome: the objective is accepted and every one of its specifications is shipped; the assessment is refused as an unproven outcome; the objective is not satisfied",
+  "VELDO-0077 detail: satisfaction/other-process: it sees the shipped-but-unproven objective still ACTIVE",
+  "VELDO-0077 detail: cancel/transfer-bounded: a transfer outside the receiver's accepted scope is refused by name; nothing was written for it; a disposition set naming one feature twice is refused; nothing was written for that either; an in-scope transfer moves the feature under the receiver's accepted revision",
+  "VELDO-0077 detail: project/inactive-refusals: while paused: amend, accept, propose_feature and assess are refused by name; nothing was written while paused; canceled proj-a: amend, propose_feature and assess are refused by name, nothing written; completed proj-b: amend, accept and a new objective are refused by name, nothing written"
+ ],
+ "failed_rows": [
+  "VELDO-0077 satisfaction/stale-evidence",
+  "VELDO-0077 satisfaction/unproven-outcome",
+  "VELDO-0077 satisfaction/other-process",
+  "VELDO-0077 cancel/transfer-bounded",
+  "VELDO-0077 project/inactive-refusals"
+ ],
+ "modules": {
+  ".veldo/control_intake.py": {
+   "at_commit": "773999aa87976d31eeb4d696016f93e9cff5f8acbdef87cdb551023c0e48dcc4",
+   "now": "773999aa87976d31eeb4d696016f93e9cff5f8acbdef87cdb551023c0e48dcc4"
+  },
+  ".veldo/control_objective.py": {
+   "at_commit": "7c304ffbd74c16d99626233ad0ce17a83bc95c84f1fa030ba84a604a80cfe3ca",
+   "now": "6cc0fcc5b3f005411765e535c7532ea43241548f5ee6b96735d6a3b85232d47f"
+  },
+  ".veldo/control_project.py": {
+   "at_commit": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f",
+   "now": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905",
+   "now": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "8148919cc131926e60cb2863ab3342cce6028abf54636fe29a819e94d6fe63e6",
+   "now": "f3cc191133fd8f8ff2155d65b4f93925f8e499f96be681299007e8d1fb45aef3"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0077 install/assets",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/intake-source",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/stale-answer",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/owner-only",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/binds-fields",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/later-feature",
+   true
+  ],
+  [
+   "VELDO-0077 acceptance/bounded-elaboration",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/wrong-signer",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/missing-evidence",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/stale-revision",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/stale-evidence",
+   false
+  ],
+  [
+   "VELDO-0077 satisfaction/unproven-outcome",
+   false
+  ],
+  [
+   "VELDO-0077 satisfaction/proven",
+   true
+  ],
+  [
+   "VELDO-0077 satisfaction/other-process",
+   false
+  ],
+  [
+   "VELDO-0077 cancel/work-disposition",
+   true
+  ],
+  [
+   "VELDO-0077 cancel/history-kept",
+   true
+  ],
+  [
+   "VELDO-0077 cancel/reopen-linked",
+   true
+  ],
+  [
+   "VELDO-0077 cancel/transfer-bounded",
+   false
+  ],
+  [
+   "VELDO-0077 observability",
+   true
+  ],
+  [
+   "VELDO-0077 project/inactive-refusals",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 2.448,
+ "spec_id": "VELDO-0077",
+ "suite": "scripts/suites/72_veldo_0077_objectives.py",
+ "tree": "git archive 86a58f08a9b1dc533e2a6c2c110a3cd0c805272d, unchanged; the current suite file run against it"
+}
