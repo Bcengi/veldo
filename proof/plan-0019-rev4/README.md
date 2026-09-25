@@ -49,7 +49,6 @@ reviewer judges section, one was added in the repository's three parts.
 | VELDO-0062 | AC1 keeps the login source per dispatch, login separation to Release 2; AC5 adds the re-run rule at a limit and one run at a time for a new account; Notes give the store registry and selection order |
 | VELDO-0079 | AC2: such work is admitted at default priority unless the PM raises a question or another priority |
 | VELDO-0088 | AC1: the default pipeline, model nodes as Runner dispatches, one coordination run writing single-unit requirements; Notes: the service runs the cycle scheduler |
-| VELDO-0089 | AC1: specialist roles with a capability configuration reference and a kind |
 | VELDO-0090 | AC1's set includes the `when assigned` items a staffing choice requests |
 | VELDO-0091 | AC1: requirements quote every external reference with tool, fetch time and digest |
 | VELDO-0126 | AC1: ticket key prefixes name projects, the new-project route to the factory project, "a new project" in every question |
