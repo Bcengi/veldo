@@ -24,7 +24,9 @@ the store's coordinates. The project must be ACTIVE (project_not_active:<state> 
            coordination budget, and independent review separate from implementation by principal and
            independence group. Missing or conflicting staffing writes no team: it opens an owner
            request in the VELDO-0064 inbox, addressed to the project's owner and naming every problem,
-           and refuses incomplete_roster:<first problem>. A worker is never invented. A complete
+           and refuses incomplete_roster:<first problem>. The request's subject binds the project's
+           team: a repeat returns the pending request, and once the owner answered or declined it a
+           repeat opens a new one. A worker is never invented. A complete
            proposal is recorded as the pending proposal: its revision, the revision it amends and the
            digest of exactly its content.
   amend    The owner's answer, settled by the VELDO-0068 settlement on the decision_disposition
@@ -54,12 +56,13 @@ VELDO-0068 keep them.
 
 STATED LIMITS. Concurrent amendment races, mid-cycle reassignment and recovery are Release 2;
 additional owners and delegation are Release 3; adversarial decision review (VELDO-0070) is not
-invoked. Observations carry identities, versions, outcomes and named refusals, never team content or
-signatures. Standard library only.
+invoked. Observations carry identities (an amendment's request included), versions, outcomes and named
+refusals, never team content or signatures. Standard library only.
 """
 import copy
 import hashlib
 import importlib.util
+import itertools
 import json
 from pathlib import Path
 import re
@@ -338,7 +341,8 @@ class Teams:
         command = packet.get('command') if isinstance(packet, dict) else None
         command = command if isinstance(command, dict) else {}
         observation = dict(self.ids, schema=SCHEMA, operation=command.get('operation'), project=None, unit=None,
-                           command_id=command.get('command_id'), accepted_versions={})
+                           command_id=command.get('command_id'), request=None,
+                           accepted_versions={})
         try:
             result = self._apply(packet, command, observation)
         except Refused as exc:
@@ -367,6 +371,8 @@ class Teams:
         op, principal, name = command['operation'], command['principal'], command['project']
         tid = team_id(name)
         observation['project'] = PJ.project_id(name)
+        if op == 'amend':
+            observation['request'] = command['request'] if _is_str(command.get('request')) else None
         state = self.membership.authority_state(self.store, self.conn)
         now = self.clock()
         key = self.AC.active_key(state['keyring'], principal, now)
@@ -553,14 +559,28 @@ class Teams:
         pinned += [aid, unit_id, review_policy_id(self.ids['repository_uuid']), builder] + sorted(seen)
 
     def _owner_request(self, project, team, problems, now):
-        """Open (or find) the owner request that names the staffing problems; its id, or None."""
+        """Open (or find) the owner request that names the staffing problems; its id, or None.
+
+        The subject binds the project's team, so the same problems in another project ask that
+        project's owner. While a request for exactly this subject is pending it is the answer; once
+        the owner answered, declined or it was canceled, a repeat opens the next round's request."""
         name = project['name']
-        subject_digest = _digest({'team': team, 'problems': problems})
-        alias = 'team-staffing-' + subject_digest.split(':', 1)[1][:24]
-        aid = self.assignment.assignment_id(self.ids['repository_uuid'], alias)
+        subject_digest = _digest({'team_id': team_id(name), 'team': team, 'problems': problems})
+        digest = subject_digest.split(':', 1)[1]
+        for round_ in itertools.count():
+            suffix = '' if round_ == 0 else '-%d' % round_
+            alias = 'team-staffing-' + digest[:24] + suffix
+            aid = self.assignment.assignment_id(self.ids['repository_uuid'], alias)
+            row = _row(self.conn, aid)
+            if row is None:
+                break
+            if row['kind'] != REQUEST_KIND or (row['data'].get('subject') or {}).get('digest') != subject_digest:
+                return None
+            if row['data'].get('state') in self.assignment.PENDING:
+                return aid
         body = dict(self.ids, operation='open', alias=alias, principal=self.requester,
-                    command_id='team-request-' + subject_digest.split(':', 1)[1][:32],
-                    nonce='team-request-nonce-' + subject_digest.split(':', 1)[1][:32], assignment=dict(
+                    command_id='team-request-' + digest[:32] + suffix,
+                    nonce='team-request-nonce-' + digest[:32] + suffix, assignment=dict(
                         kind='decision', owner=project.get('owner'), scope=[name],
                         deadline=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(now + REQUEST_WINDOW)),
                         budget={'owner_minutes': 10}, brief=staffing_brief(name, problems),
@@ -570,7 +590,6 @@ class Teams:
             self.inbox.apply({'command': body, 'signature': self.request_sign(self.store.canonical_bytes(body))})
         except Exception:  # noqa: BLE001 - the refusal stands; a request that did not open is reported as None
             return None
-        # Opened now, or opened by an earlier proposal of exactly this team with exactly these problems.
         row = _row(self.conn, aid)
         if row and row['kind'] == REQUEST_KIND and (row['data'].get('subject') or {}).get('digest') == subject_digest:
             return aid
