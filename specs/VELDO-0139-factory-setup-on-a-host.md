@@ -117,3 +117,10 @@ dispatcher.
 the owner decides readiness.
 
 2026-09-25: the owner marked this specification ready on Telegram (29107 asked, 29108 "Yes").
+
+2026-09-25: built on build-veldo-0139. veldo factory setup (.veldo/control_factory_setup.py, routed by
+bin/veldo) orders the store, the owner's self-signed bootstrap, the chat and edge enrollments, his
+delegation, the host trust, the workspace enrollment, the ingress configuration and the VELDO-0047 install;
+suite 73_veldo_0139_factory_setup (11 rows), red at c98d63f by assertion, finding 139 with 11 mutants each
+red on its named row. Proof in proof/VELDO-0139/. The real Telegram leg is pending, run by the lead with
+the owner. Status left ready.
