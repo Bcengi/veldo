@@ -4,8 +4,10 @@ WHAT THIS MODULE IS. The one writer of a repository's project records in the con
 project is the continuing coordination boundary its objectives, backlog items and execution units
 belong to: entity `project:<name>` of kind `project`, the identity every existing reader already
 resolves (the eligibility Gate reads `project:<unit.project>`, the inbox walks unit, backlog item,
-objective and `project_uuid`). The service declares that kind as its own (control_store's
-declare_owners), so no other command on any connection writes a project record.
+objective and `project_uuid`). The service declares that kind, and the `project:` id prefix, as its
+own (control_store's declare_owners), so no other command on any connection writes a project record
+or any other record at a project's id (the Gate judges a unit's project only from a record of kind
+project, so a record of another kind there would stop the project's units and block its activation).
 
 Every change is a real signed command from the enrolled owner: {'command': body, 'signature'} where
 the body carries the operation, the project name, the principal, a command id, a nonce and the
@@ -52,8 +54,11 @@ runs one of its units, in a holding state. Reservations: a worker slot of the pr
 or a call of it still pending or unknown.
 
 STATED LIMITS. A project record written before this service (no `state`) is not judged by the
-Gate's lifecycle rule; nothing writes one once the service has declared the kind. Ownership
-transfer, additional owners and delegation are Release 3; concurrent activation and restart are
+Gate's lifecycle rule; nothing writes one once the service has declared the kind. An ACTIVE
+project whose recorded owner loses project_owner or the project's scope, or is revoked or expires,
+can be paused, canceled or completed by nobody, so the Gate halts its units at their next station
+(project_not_active:owner_not_current) until he is current again. Ownership transfer (handover to a
+new owner), additional owners and delegation are Release 3; concurrent activation and restart are
 Release 2. Observations carry identities, versions, outcomes and named refusals, never charter text,
 reasons, dispositions or signatures. Standard library only.
 """
@@ -79,6 +84,7 @@ EL = _organ('control_eligibility')
 
 SCHEMA = 'veldo.project/v1'
 KIND = 'project'
+ID_PREFIX = 'project:'
 OPERATION = 'project_operation'
 OWNER = 'VELDO-0076 project lifecycle'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
@@ -112,7 +118,7 @@ def taxonomy(code):
 
 
 def project_id(name):
-    return 'project:' + name
+    return ID_PREFIX + name
 
 
 def _is_str(v):
@@ -191,7 +197,8 @@ class Projects:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction, 'writes': WRITES}
-        store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,)}, module=__file__)
+        store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,)}, prefixes={ID_PREFIX: (OPERATION,)},
+                             module=__file__)
 
     # Commands.
 

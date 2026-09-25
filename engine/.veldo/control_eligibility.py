@@ -16,10 +16,17 @@ later station passes the earlier decision back as its ticket and the Gate refuse
 the claim's own lifecycle writes (claim record, unit and backlog state) are station OUTPUTS: they
 are compared by their definition digest and claim ownership is re-decided fresh.
 
-PROJECT LIFECYCLE (VELDO-0076). Every station refuses a unit whose project record carries a lifecycle
-state other than ACTIVE (project_not_active:<state>), so a paused or canceled project's units are
-neither offered, claimed, prepared, launched nor published, and a ticket issued before the pause is
-also stale (its project input moved).
+PROJECT LIFECYCLE (VELDO-0076). A unit's project is judged only from a record of kind project at
+project:<name>; a record of any other kind at that id refuses project_not_active:not_a_project (the
+project service also owns the project: id prefix, so no other command writes one). Every station
+refuses a unit whose project record carries a lifecycle state other than ACTIVE
+(project_not_active:<state>), so a paused or canceled project's units are neither offered, claimed,
+prepared, launched nor published, and a ticket issued before the pause is also stale (its project
+input moved). An ACTIVE project whose recorded owner is not a current person member holding
+project_owner in a scope covering the project refuses project_not_active:owner_not_current: only
+that owner may pause or cancel it, so while he cannot, its work halts at its next station until he is
+current again (the fail-safe of VELDO-0138's demoted owner; handover to a new owner is Release 3).
+The owner's membership record is a consumed input (project_owner).
 
 COMPLETION. completion() is the one reader of the four facts (attempt finished, artifact accepted,
 revision landed, objective satisfied) over stored completion receipts, judged by
@@ -101,6 +108,8 @@ def _organ(name):
 
 CC = _organ('completion_contract')
 E = _organ('control_enrollment')
+# VELDO-0076: the membership reading (scope_covers, authority_contract.active_member) a project's owner is judged by.
+CM = _organ('control_membership')
 SN = _organ('control_snapshot')
 # VELDO-0054: exact decision-record dependency evaluation, the decisions_settled predicate's answer.
 DD = _organ('control_decision_dependency')
@@ -165,6 +174,8 @@ OUTPUT_LABELS = ('claim',)
 # VELDO-0076: the one lifecycle state of a project record (control_project.py) whose units any station
 # admits. A record with no lifecycle state predates that service, which is its kind's only writer.
 PROJECT_ACTIVE = 'ACTIVE'
+PROJECT_KIND = 'project'
+PROJECT_OWNER_ROLE = 'project_owner'
 
 # The error taxonomy every refusal code maps to (observability). Unknown is never success.
 TAXONOMY = {
@@ -185,7 +196,8 @@ TAXONOMY = {
     'missing_decision': 'missing_authority', 'ambiguous_decision': 'missing_authority',
     'unsupported_decision': 'missing_authority', 'unsigned_decision': 'missing_authority',
     'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',
-    # VELDO-0076: the unit's project is paused, canceled or completed.
+    # VELDO-0076: the unit's project is paused, canceled or completed, is not a project record, or
+    # its recorded owner is no longer current.
     'project_not_active': 'missing_authority',
 }
 
@@ -609,8 +621,10 @@ class Gate:
     """One domain's shared eligibility over a real control store connection. Read-only."""
 
     def __init__(self, store, conn, *, domain_uuid, repository_uuid, authority_generation=1, observe=None,
-                 workspace=None, settlement_trust=None):
+                 workspace=None, settlement_trust=None, clock=time.time):
         self.store, self.conn = store, conn
+        # VELDO-0076: the time a project owner's membership is judged current at.
+        self.clock = clock
         # The workspace whose architecture every decision judges (VELDO-0053). A store-only Gate (no
         # workspace) cannot look at a file, so its architecture predicate always refuses
         # (missing_evidence:architecture/workspace): the default argument is never a pass.
@@ -739,6 +753,9 @@ class Gate:
             inputs['plan'] = self._entity('plan:' + data['plan']) if data.get('plan') else None
             inputs['admission'] = self._entity('admission:' + unit)
             inputs['project'] = self._entity('project:' + str(data.get('project')))
+            owner = self._project_owner(inputs['project'])
+            if owner is not None:
+                inputs['project_owner'] = self._entity(owner)
             inputs['authority'] = self._entity('authority:' + self.domain_uuid)
             inputs['claim'] = self._entity(self.claims.claim_id(self.repository_uuid, unit))
             for dep in data.get('depends_on') or []:
@@ -936,13 +953,42 @@ class Gate:
         b = self._data(inputs.get('backlog'))
         if not isinstance(b, dict) or inputs['backlog']['value']['kind'] != 'backlog_item':
             problems.append('missing_authority:backlog')
-        project = self._data(inputs.get('project'))
-        if not isinstance(project, dict):
+        record = inputs.get('project') or {}
+        project = self._data(record)
+        if record.get('value') is not None and record['value'].get('kind') != PROJECT_KIND:
+            # VELDO-0076: only a record of kind project decides a unit's project.
+            problems.append('project_not_active:not_a_project')
+        elif not isinstance(project, dict):
             problems.append('missing_authority:project')
         elif 'state' in project and project['state'] != PROJECT_ACTIVE:
             # VELDO-0076: a paused, canceled or completed project stops every station of its units.
             problems.append('project_not_active:%s' % project['state'])
+        elif 'state' in project and not self._owner_current(data.get('project'), project, inputs.get('project_owner')):
+            # VELDO-0076: nobody may stop a project whose owner lost his authority, so its work halts here.
+            problems.append('project_not_active:owner_not_current')
         return problems
+
+    def _project_owner(self, record):
+        value = (record or {}).get('value') or {}
+        data = value.get('data')
+        if value.get('kind') != PROJECT_KIND or not isinstance(data, dict):
+            return None
+        owner = data.get('owner')
+        return owner if isinstance(owner, str) and owner else None
+
+    def _owner_current(self, name, project, member):
+        """Whether the project's recorded owner is a current person member holding project_owner in a
+        scope that covers the project, from his accepted membership record (id = principal)."""
+        owner = project.get('owner')
+        value = (member or {}).get('value') or {}
+        if not isinstance(owner, str) or not owner or value.get('kind') != 'membership' \
+                or not isinstance(value.get('data'), dict) or not isinstance(name, str):
+            return False
+        entry = dict(value['data'], principal=owner)
+        roles = entry.get('roles')
+        return (CM.AC.active_member(entry, self.clock())[0] and entry.get('principal_type') == 'person'
+                and isinstance(roles, list) and PROJECT_OWNER_ROLE in roles
+                and CM.scope_covers(entry.get('scope'), [name]))
 
     @staticmethod
     def _identity(label, value):
