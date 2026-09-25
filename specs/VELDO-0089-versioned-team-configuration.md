@@ -32,6 +32,7 @@ footprint:
   - "scripts/suites/*_veldo_0089_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0089-versioned-team-configuration.md"
   - "specs/index.md"
   - "proof/VELDO-0089/*"
@@ -97,6 +98,26 @@ implementation or historical evidence. Risk and approval requirements remain unc
 
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
+
+## What the reviewer judges
+
+- Normal use: a project's team is plain versioned data naming one project manager and the required
+  elaboration, implementation and independent review roles, each with its responsibilities, expertise,
+  proposal permissions, engine eligibility, budget and independence. A team missing a required role,
+  or with conflicting staffing, produces an owner request, never invented workers. The current scoped
+  owner amends the team with a version-bound signed command through the settlement path; the roster
+  never grants admission or any other authority. Builder and reviewer assignments bind the current team
+  revision and the applicable VELDO-0049 engineering-review policy (count, independence, exact subject).
+  A role's tools and MCP servers come only from VELDO-0127's capability configuration.
+- Threat model: a team accepted without required independent review; a stale or altered amendment, or
+  a manager promoting himself; a configured PM or any roster role gaining admission rights; an
+  assignment made with a missing review policy (defaulting to no reviews), too few reviews, the same
+  builder and reviewer, or a reviewer bound to the wrong subject; a second tool or capability filter in
+  the team schema. The owner's account, the store and the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); adversarial
+  decision-review workflows (VELDO-0070, Release 3); additional owners and delegation (Release 3);
+  recovery and restart (Release 2); forged rows in our own store and files planted in the installed
+  directory.
 
 ## Notes
 
