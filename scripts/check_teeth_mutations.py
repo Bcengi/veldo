@@ -5068,9 +5068,27 @@ def cases():
           "                          if answered else self._permission(stop, item, state, now))\n",
           'resume/stale-or-wrong-actor')
     andon('resolver-roles-unchecked', 'control_andon.py',
-          "                or not set(stop['resolving']['roles']) <= set(entry.get('roles') or [])\n",
+          "                or not roles <= set(entry.get('roles') or [])\n",
           "                or False  # defect: the resolving roles are not reread at resume\n",
           'resume/stale-or-wrong-actor')
+    # Review finding 75: the designated authority must meet the settlement's effective requirement at raise
+    # and at resume, and be reachable; an unreachable authority's notice is classed missing_authority.
+    andon('effective-requirement-not-computed-at-raise', 'control_andon.py',
+          "            need = self._requirement(resolving['roles'])\n",
+          "            need = {'roles': sorted(set(resolving['roles']))}  # defect: the settlement's requirement is not computed\n",
+          'stop/designated-authority-deliverable')
+    andon('resume-rechecks-recorded-roles-only', 'control_andon.py',
+          "        roles = set(settled_roles) | set(stop['resolving']['roles'])\n",
+          "        roles = set(stop['resolving']['roles'])  # defect: the settled requirement's roles are not re-checked\n",
+          'resume/stale-or-wrong-actor')
+    andon('unreachable-authority-misclassed', 'control_andon.py',
+          "    return code if code in UNREACHABLE_AUTHORITY else otherwise\n",
+          "    return 'missing_authority' if code in ('missing_authority', 'not_activated') else otherwise  # defect: the prior classes\n",
+          'notice/unreachable-authority-classed')
+    andon('enrolled-chat-unchecked', 'control_andon.py',
+          "            enrolled = self._enrolled_chat(resolving['principal'])\n",
+          "            enrolled = self._enrolled_chat(resolving['principal']) or ('no-chat', 0)  # defect: the chat is not checked\n",
+          'stop/designated-authority-deliverable')
     andon('contract-at-stale-unit-version', 'control_andon.py',
           "'issued_at_unit_version': u['version'] + 1,",
           "'issued_at_unit_version': u['version'],  # defect: the contract names the stopped unit version\n                        ",
