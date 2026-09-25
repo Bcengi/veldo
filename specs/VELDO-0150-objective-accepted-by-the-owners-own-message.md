@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0150
 title: An objective proposed from the project owner's own message is accepted by that message, and any other is still presented
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

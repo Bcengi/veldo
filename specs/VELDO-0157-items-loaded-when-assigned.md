@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0157
 title: The capability items a staffing choice assigns load with that run, and no other when-assigned item does
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

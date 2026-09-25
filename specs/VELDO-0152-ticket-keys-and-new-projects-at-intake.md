@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0152
 title: Intake routes a message by the ticket key prefixes a project lists, and a new-project request to the factory project
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

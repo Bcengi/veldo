@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0161
 title: A repository the owner names is adopted under one identity on his settled answer and taken on by the running factory without a restart
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

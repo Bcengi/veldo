@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0143
 title: A repository the owner asks for in chat is created or adopted and bound to a new project on his one answer
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

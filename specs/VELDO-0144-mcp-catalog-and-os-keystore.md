@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0144
 title: MCP servers defined once as versioned catalog records, with credentials only in the host OS keystore
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

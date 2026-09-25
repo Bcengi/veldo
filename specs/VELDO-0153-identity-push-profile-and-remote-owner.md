@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0153
 title: Every push the factory makes for a repository authenticates with its Git identity alone, to a remote under that identity's owner
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

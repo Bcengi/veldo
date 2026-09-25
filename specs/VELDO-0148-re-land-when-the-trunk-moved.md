@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0148
 title: A land refused because another factory moved main is re-landed on the new tip, re-merged and re-gated, and nothing ever forces
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0149
 title: A project activates on any repository this domain adopted, by the owner's signed command or by his settled answer
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

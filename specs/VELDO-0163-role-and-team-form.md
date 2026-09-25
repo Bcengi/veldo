@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0163
 title: The owner writes a role's capability configuration and a project's team roles in a minimal UI form
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

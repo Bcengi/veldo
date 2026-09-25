@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0146
 title: Work of several units gets a separate elaboration run and a second PM cycle that stages the units against the published requirements
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

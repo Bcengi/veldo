@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0145
 title: The UI shell, the live run terminal and the decisions screen on phone and desktop
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0147
 title: The Mac legs of the engine, account, capability, execution record and credential qualifications built on Linux first
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

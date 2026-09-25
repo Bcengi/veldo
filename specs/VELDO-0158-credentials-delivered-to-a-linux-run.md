@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0158
 title: Each Linux run receives exactly its servers' credentials, resolved from the keystore just before spawn and added to the run's redaction set
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

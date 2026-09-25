@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0151
 title: A team may name specialist roles beyond the four required ones, and every role names its capability configuration and its kind
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

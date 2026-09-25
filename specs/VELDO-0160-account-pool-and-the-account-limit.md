@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0160
 title: Work runs on every registered subscription account at once, moves off an account at its limit, and a limited run is classified and decided re-run or ask
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

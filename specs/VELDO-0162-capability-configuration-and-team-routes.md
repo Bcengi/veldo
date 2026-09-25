@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0162
 title: The owner saves capability configuration revisions, team revisions and the default team through typed API routes the authority executes, and a team revision becomes current on his own authenticated save or on his settled answer to another member's proposal
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

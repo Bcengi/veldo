@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0142
 title: Every repository is bound to exactly one Git identity, configured at setup, and every commit the factory makes for it is authored as that identity
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required

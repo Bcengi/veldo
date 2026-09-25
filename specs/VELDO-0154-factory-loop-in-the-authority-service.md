@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0154
 title: The factory loop runs inside the authority service, woken only by commits, run ends and account resets, and re-dispatches or asks the owner at an account limit
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required

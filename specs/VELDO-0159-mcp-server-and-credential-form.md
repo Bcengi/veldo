@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0159
 title: The owner defines an MCP server and sets its credential in a minimal UI form, whose credential field is write-only
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
