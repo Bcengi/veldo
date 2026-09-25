@@ -1,0 +1,5 @@
+--- a/.veldo/tasks.py
++++ b/.veldo/tasks.py
+@@ -357 +357 @@
+-        return not _factory("control_backlog").outcome_problems(gate.conn, task.get("id"))
++        pass  # defect: the declared output existing on disk concludes the task

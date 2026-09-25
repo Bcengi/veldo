@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -281 +281 @@
+-        if isinstance(landing, dict) and not CC.landing_receipt_problems(landing) and landing.get('unit_id') == uid:
++        if isinstance(landing, dict):  # defect: an incomplete landing receipt is an outcome

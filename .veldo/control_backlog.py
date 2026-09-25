@@ -724,6 +724,8 @@ class Backlog:
 
     def _dispose_unit(self, conn, command, data, project, entry):
         uid = command.get('unit')
+        if data['state'] in TERMINAL:
+            raise Refused('invalid_transition:%s->%s' % (data['state'], data['state']), 'a finished item disposes of nothing')
         if uid not in [u['unit'] for u in data['decomposition'] or []]:
             raise Refused('invalid_input:unit', 'the unit is not in this item\'s decomposition')
         row = _row(conn, uid)

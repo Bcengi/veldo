@@ -1,0 +1,5 @@
+--- a/.veldo/frontier.py
++++ b/.veldo/frontier.py
+@@ -587 +587 @@
+-            unready = _executable(gate, sid)
++            unready = []  # defect: the frontier offers work that is not prioritized

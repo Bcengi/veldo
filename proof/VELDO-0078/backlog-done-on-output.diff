@@ -1,0 +1,6 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -755 +755,2 @@
+-            problems = outcome_problems(conn, u['unit'])
++            problems = [] if self.workspace and u.get('produces') and (Path(self.workspace) / u['produces']).exists() \
++                else outcome_problems(conn, u['unit'])  # defect: a declared output is an outcome

@@ -5351,6 +5351,57 @@ def cases():
           'observability/named-refusals',
           also=[("accepted_versions=dict(versions or {}), outcome=outcome,",
                  "accepted_versions=dict(versions or {}), extra=dict(extra), outcome=outcome,")])
+
+    # VELDO-0078: each criterion's declared falsifier first, then the threat model's other shapes.
+    def backlog(name, module, old, new, rows, also=()):
+        add(78, name, '73_veldo_0078_backlog.py', module, old, new, rows, also)
+
+    # AC1 (declared falsifier): tasks.claim_task allows admitted but unprioritized work.
+    backlog('task-claim-skips-priority', 'tasks.py',
+            '        problems = _factory("control_backlog").executable_problems(gate.conn, task_id)\n',
+            '        problems = [p for p in _factory("control_backlog").executable_problems(gate.conn, task_id)\n'
+            '                    if p != "missing_authority:priority"]  # defect: admitted, unprioritized work is claimed\n',
+            ['priority/missing-priority'])
+    backlog('frontier-offers-unprioritized', 'frontier.py', '            unready = _executable(gate, sid)\n',
+            '            unready = []  # defect: the frontier offers work that is not prioritized\n',
+            ['priority/missing-priority'])
+    backlog('any-member-decides', 'control_backlog.py',
+            "        if req.get('owner') != owner or settlement['data'].get('principals') != [owner]:\n",
+            "        if False:  # defect: any member's settled answer admits and prioritizes\n", ['priority/owner-decision'])
+    backlog('backlog-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_backlog.py",\n', '', ['install/assets'])
+    # AC2 (declared falsifier): an appended unit is executable without renewed prioritization.
+    backlog('appended-unit-executable', 'control_backlog.py',
+            "                u['unit']: {'kind': UNIT_KIND, 'data': self._new_unit(data, u, revision, entry)}}\n",
+            "                u['unit']: {'kind': UNIT_KIND, 'data': dict(self._new_unit(data, u, revision, entry),\n"
+            "                                                            state='READY')}}  # defect: no fresh priority\n",
+            ['activation/decomposition-growth'])
+    backlog('stale-revision-answer-applies', 'control_backlog.py', "        if found != target:\n",
+            "        if (found.get('kind'), found.get('ref')) != (target['kind'], target['ref']):  # defect: any revision\n",
+            ['activation/decomposition-growth'])
+    # AC3 (declared falsifier): output-file existence is DONE.
+    backlog('output-file-done', 'tasks.py',
+            '        return not _factory("control_backlog").outcome_problems(gate.conn, task.get("id"))\n',
+            '        pass  # defect: the declared output existing on disk concludes the task\n',
+            ['done/missing-outcome'])
+    # AC3: a blocked phase resumes only on its resolved binding.
+    backlog('resume-without-resolution', 'control_backlog.py',
+            "        if ruling != 'approve':\n            raise Refused('not_approved:%s' % ruling, 'the owner did not resolve the block')\n",
+            "        if False:  # defect: any settled answer about the block resumes it\n"
+            "            raise Refused('not_approved:%s' % ruling, 'the owner did not resolve the block')\n",
+            ['blocked/resume-binding'])
+    backlog('blocked-item-executable', 'control_backlog.py',
+            "    if state == 'BLOCKED':\n        return ['blocked:backlog']\n",
+            "    if state == 'BLOCKED':\n        return []  # defect: a blocked item's units are executable\n",
+            ['blocked/resume-binding'])
+    backlog('backlog-done-on-output', 'control_backlog.py',
+            "            problems = outcome_problems(conn, u['unit'])\n",
+            "            problems = [] if self.workspace and u.get('produces') and (Path(self.workspace) / u['produces']).exists() \\\n"
+            "                else outcome_problems(conn, u['unit'])  # defect: a declared output is an outcome\n",
+            ['done/missing-outcome'])
+    backlog('incomplete-landing-accepted', 'control_backlog.py',
+            "        if isinstance(landing, dict) and not CC.landing_receipt_problems(landing) and landing.get('unit_id') == uid:\n",
+            "        if isinstance(landing, dict):  # defect: an incomplete landing receipt is an outcome\n",
+            ['done/missing-outcome'])
     return result
 
 

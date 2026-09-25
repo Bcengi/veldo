@@ -1,0 +1,1292 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0078 install/assets",
+    true
+   ],
+   [
+    "VELDO-0078 priority/declared-set",
+    true
+   ],
+   [
+    "VELDO-0078 priority/missing-priority",
+    true
+   ],
+   [
+    "VELDO-0078 priority/store-inspection",
+    true
+   ],
+   [
+    "VELDO-0078 priority/owner-decision",
+    true
+   ],
+   [
+    "VELDO-0078 lifecycle/foreign-sources",
+    true
+   ],
+   [
+    "VELDO-0078 activation/first-claim",
+    true
+   ],
+   [
+    "VELDO-0078 activation/decomposition-growth",
+    true
+   ],
+   [
+    "VELDO-0078 blocked/resume-binding",
+    true
+   ],
+   [
+    "VELDO-0078 done/missing-outcome",
+    true
+   ],
+   [
+    "VELDO-0078 done/authorized-alternative",
+    true
+   ],
+   [
+    "VELDO-0078 done/accepted-outcomes",
+    true
+   ],
+   [
+    "VELDO-0078 lifecycle/regular-path",
+    true
+   ],
+   [
+    "VELDO-0078 other-process",
+    true
+   ],
+   [
+    "VELDO-0078 observability",
+    true
+   ]
+  ],
+  "seconds": 3.585
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: priority/declared-set: only prioritized work is offered or claimed, at every entry",
+    "VELDO-0078 detail: priority/missing-priority: the direct task claim is refused for missing priority, and the ledger was never asked; the task claim through the authority is refused for missing priority",
+    "VELDO-0078 detail: activation/decomposition-growth: the task claim refuses the appended unit for missing priority"
+   ],
+   "diff": "proof/VELDO-0078/task-claim-skips-priority.diff",
+   "failed_rows": [
+    "VELDO-0078 priority/declared-set",
+    "VELDO-0078 priority/missing-priority",
+    "VELDO-0078 activation/decomposition-growth"
+   ],
+   "module": ".veldo/tasks.py",
+   "mutant_sha256": "cf47a03286f80f54b829d8f94a91d1e8ca5a02fda84b5b574378c0d53460ed8e",
+   "name": "task-claim-skips-priority",
+   "named_row_red": true,
+   "named_rows": [
+    "priority/missing-priority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     false
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     false
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.6,
+   "source_sha256": "ca475ae1af0e5915b8b57eb6b3ba183f6b5ff738544c69cdf33cab7e67c4b20c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: priority/declared-set: only prioritized work is offered or claimed, at every entry",
+    "VELDO-0078 detail: priority/missing-priority: the Gate's selection accepts it, and the frontier still does not offer it"
+   ],
+   "diff": "proof/VELDO-0078/frontier-offers-unprioritized.diff",
+   "failed_rows": [
+    "VELDO-0078 priority/declared-set",
+    "VELDO-0078 priority/missing-priority"
+   ],
+   "module": ".veldo/frontier.py",
+   "mutant_sha256": "dbb17a86261d4afd1422f7cdc6656b0a6bacc723c2488d911a7c17e4c4354dc2",
+   "name": "frontier-offers-unprioritized",
+   "named_row_red": true,
+   "named_rows": [
+    "priority/missing-priority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     false
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     false
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.482,
+   "source_sha256": "414c209d4b07e3baaa5177dc1048896c126a53db5264506b951c41ed89a54078"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: priority/owner-decision: another project_owner member's settled answer does not prioritize; an answer to another brief does not prioritize; the admitted item is unchanged",
+    "VELDO-0078 detail: done/authorized-alternative: another member's settled answer does not authorize it; the owner's settled answer authorizes the alternative outcome",
+    "VELDO-0078 detail: done/accepted-outcomes: each unit's outcome is recorded by its receipt or its authorization",
+    "VELDO-0078 detail: other-process: it sees the DONE item and the admitted one; it gets the same executable answers",
+    "VELDO-0078 detail: observability: the pending work is exposed"
+   ],
+   "diff": "proof/VELDO-0078/any-member-decides.diff",
+   "failed_rows": [
+    "VELDO-0078 priority/owner-decision",
+    "VELDO-0078 done/authorized-alternative",
+    "VELDO-0078 done/accepted-outcomes",
+    "VELDO-0078 other-process",
+    "VELDO-0078 observability"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "11dbb1ec31441daf862f2bacca5d81d4b1133bd0100aa218c531557965ddd0cc",
+   "name": "any-member-decides",
+   "named_row_red": true,
+   "named_rows": [
+    "priority/owner-decision"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     false
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     false
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     false
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     false
+    ],
+    [
+     "VELDO-0078 observability",
+     false
+    ]
+   ],
+   "seconds": 3.468,
+   "source_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: install/assets: .veldo/control_backlog.py installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0078/backlog-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0078 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "91743d6a366279e93a37c0d6f90007e79d1ec68230896ab128d6333fad3def0a",
+   "name": "backlog-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     false
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.464,
+   "source_sha256": "544cd7ef8ced141fbcbd9245b120c668ff8a565abebdbbf7d749ec241ffac8b3"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: activation/decomposition-growth: an appended unit is PLANNED, not executable; the claim receiver refuses the appended unit; the earlier prioritization does not cover the appended units; an answer to an earlier revision is refused; the fresh prioritization of the current revision makes them executable; then they are claimed",
+    "VELDO-0078 detail: blocked/resume-binding: its blockers are cleared and the work continues"
+   ],
+   "diff": "proof/VELDO-0078/appended-unit-executable.diff",
+   "failed_rows": [
+    "VELDO-0078 activation/decomposition-growth",
+    "VELDO-0078 blocked/resume-binding"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "65c96fac51f630339f9932c856ecd5a8c111e7064ac66ec9f90b863277ba22db",
+   "name": "appended-unit-executable",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/decomposition-growth"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     false
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.572,
+   "source_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: activation/decomposition-growth: an answer to an earlier revision is refused",
+    "VELDO-0078 detail: blocked/resume-binding: an answer bound to another block does not resume; the owner's refusal keeps it blocked; the owner's settled resolution resumes exactly that phase"
+   ],
+   "diff": "proof/VELDO-0078/stale-revision-answer-applies.diff",
+   "failed_rows": [
+    "VELDO-0078 activation/decomposition-growth",
+    "VELDO-0078 blocked/resume-binding"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "a3b135fc842ab9cd3a322e89e94a7cb7b11e2298ec9e3381bf24708c4d4aaa3f",
+   "name": "stale-revision-answer-applies",
+   "named_row_red": true,
+   "named_rows": [
+    "activation/decomposition-growth"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     false
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     false
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.662,
+   "source_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: done/missing-outcome: the task with its product on disk is not concluded without an accepted outcome"
+   ],
+   "diff": "proof/VELDO-0078/output-file-done.diff",
+   "failed_rows": [
+    "VELDO-0078 done/missing-outcome"
+   ],
+   "module": ".veldo/tasks.py",
+   "mutant_sha256": "32413e6e8696c3863362cdaba076ab5b1a5cc9aac8137fe954fbd82c23ca9984",
+   "name": "output-file-done",
+   "named_row_red": true,
+   "named_rows": [
+    "done/missing-outcome"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     false
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.678,
+   "source_sha256": "ca475ae1af0e5915b8b57eb6b3ba183f6b5ff738544c69cdf33cab7e67c4b20c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: blocked/resume-binding: the owner's refusal keeps it blocked; the owner's settled resolution resumes exactly that phase"
+   ],
+   "diff": "proof/VELDO-0078/resume-without-resolution.diff",
+   "failed_rows": [
+    "VELDO-0078 blocked/resume-binding"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "96fa2b422e1d8437ff25137531d5bef90e2b837c01ab9e3cb402908411fa7817",
+   "name": "resume-without-resolution",
+   "named_row_red": true,
+   "named_rows": [
+    "blocked/resume-binding"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     false
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.672,
+   "source_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: blocked/resume-binding: every open unit is blocked at the Gate and at the claim"
+   ],
+   "diff": "proof/VELDO-0078/blocked-item-executable.diff",
+   "failed_rows": [
+    "VELDO-0078 blocked/resume-binding"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "4ac7a257e81b02fa32e2dcba6b39fdba34f2024b7cceeb037c4ccdfcd15105fa",
+   "name": "blocked-item-executable",
+   "named_row_red": true,
+   "named_rows": [
+    "blocked/resume-binding"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     false
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.752,
+   "source_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: done/missing-outcome: a path-only output is not DONE; a canceled attempt is not an outcome; a missing required receipt is not DONE; an incomplete landing receipt or one for another revision is not DONE; the item is still ACTIVE",
+    "VELDO-0078 detail: done/authorized-alternative: a disposal without a settled answer is refused; another member's settled answer does not authorize it; an outcome this release does not name is refused; the owner's settled answer authorizes the alternative outcome",
+    "VELDO-0078 detail: done/accepted-outcomes: complete receipts and the authorized alternative make it DONE; each unit's outcome is recorded by its receipt or its authorization; the task is concluded from its accepted outcome",
+    "VELDO-0078 detail: other-process: it gets the same outcome answers"
+   ],
+   "diff": "proof/VELDO-0078/backlog-done-on-output.diff",
+   "failed_rows": [
+    "VELDO-0078 done/missing-outcome",
+    "VELDO-0078 done/authorized-alternative",
+    "VELDO-0078 done/accepted-outcomes",
+    "VELDO-0078 other-process"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "2d2cb54fa9135fefb197657bd2b09231652f6579bb53d76f7afe48ad2ab67304",
+   "name": "backlog-done-on-output",
+   "named_row_red": true,
+   "named_rows": [
+    "done/missing-outcome"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     false
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     false
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     false
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     false
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.664,
+   "source_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: done/missing-outcome: an incomplete landing receipt or one for another revision is not DONE; the item is still ACTIVE",
+    "VELDO-0078 detail: done/authorized-alternative: a disposal without a settled answer is refused; another member's settled answer does not authorize it; an outcome this release does not name is refused; the owner's settled answer authorizes the alternative outcome",
+    "VELDO-0078 detail: done/accepted-outcomes: complete receipts and the authorized alternative make it DONE; each unit's outcome is recorded by its receipt or its authorization"
+   ],
+   "diff": "proof/VELDO-0078/incomplete-landing-accepted.diff",
+   "failed_rows": [
+    "VELDO-0078 done/missing-outcome",
+    "VELDO-0078 done/authorized-alternative",
+    "VELDO-0078 done/accepted-outcomes"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "b0fd2056ac86436b1ee3717e2bbd881e6cc5c075f78b9a11f5d7acea197cbcfe",
+   "name": "incomplete-landing-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "done/missing-outcome"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     false
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     false
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     false
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.709,
+   "source_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  }
+ ],
+ "noop": {
+  "control_backlog.py": {
+   "copy_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.596,
+   "source_sha256": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275"
+  },
+  "frontier.py": {
+   "copy_sha256": "414c209d4b07e3baaa5177dc1048896c126a53db5264506b951c41ed89a54078",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.635,
+   "source_sha256": "414c209d4b07e3baaa5177dc1048896c126a53db5264506b951c41ed89a54078"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "544cd7ef8ced141fbcbd9245b120c668ff8a565abebdbbf7d749ec241ffac8b3",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.583,
+   "source_sha256": "544cd7ef8ced141fbcbd9245b120c668ff8a565abebdbbf7d749ec241ffac8b3"
+  },
+  "tasks.py": {
+   "copy_sha256": "ca475ae1af0e5915b8b57eb6b3ba183f6b5ff738544c69cdf33cab7e67c4b20c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 3.59,
+   "source_sha256": "ca475ae1af0e5915b8b57eb6b3ba183f6b5ff738544c69cdf33cab7e67c4b20c"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 78",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 57.712,
+ "spec_id": "VELDO-0078",
+ "suite": "scripts/suites/73_veldo_0078_backlog.py"
+}
