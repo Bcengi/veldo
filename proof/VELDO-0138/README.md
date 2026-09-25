@@ -123,3 +123,7 @@ Not run here, and no real token file was read. Through the running factory servi
 - A pass runs in the serve loop between requests, so a slow Bot API exchange delays the next request
   by up to the exchange's timeout (hardening is Release 2), and a restart during a qualification run
   loses that run's exchanges, so the run is qualified again (restart recovery is Release 2).
+
+`red-at-7ae39ff.json`: the current suite against the tree before review 2's filed fix, where
+`owner/demoted-halts` is the one red row, by assertion (a demoted owner's edge was still admitted). Mutation
+`demoted-owner-still-binds` reds that row; finding 138 now has 14.

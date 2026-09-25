@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_activation.py
 +++ b/.veldo/control_channel_activation.py
-@@ -243 +243 @@
+@@ -244 +244 @@
 -        return ['unavailable_service']
 +        return ['fixture_only_evidence']  # defect: a failed exchange is named fixture evidence

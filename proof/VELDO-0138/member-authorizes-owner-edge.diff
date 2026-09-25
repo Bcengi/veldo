@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_activation.py
 +++ b/.veldo/control_channel_activation.py
-@@ -560 +560 @@
+@@ -561 +561 @@
 -        if signer != params['owner']:
 +        if False:  # defect: another member authorizes

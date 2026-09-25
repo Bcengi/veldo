@@ -162,3 +162,5 @@ Release 1 scope in Notes.
 2026-09-25: the footprint names proof/VELDO-0073/*: the owner-binding fix reshaped a line VELDO-0073's
 fixture-evidence-accepted mutation anchors on, so that mutation was re-aimed and VELDO-0073's mutations record
 and diffs are regenerated to match (24 mutants, every named row red by assertion, controls green).
+
+2026-09-25, review 2 (filed item fixed): an owner who lost project_owner left an edge nobody could stop, since only he may sign for it and he no longer may. The gate now binds the edge only while its recorded owner is a current person holding project_owner, so a demotion halts it as a revocation does (owner_not_current). Row owner/demoted-halts, red at 7ae39ff, mutation demoted-owner-still-binds.

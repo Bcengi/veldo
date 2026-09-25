@@ -1,0 +1,92 @@
+{
+ "by_assertion": true,
+ "commit": "7ae39ff13d553ac83aa2ac0680a8622f95d594a8",
+ "details": [
+  "VELDO-0138 owner/demoted-halts detail: an exchange admitted for the owner is refused once he no longer holds project_owner (accepted, admitted -> admitted)"
+ ],
+ "failed_rows": [
+  "VELDO-0138 owner/demoted-halts"
+ ],
+ "modules": {
+  ".veldo/control_channel_activation.py": {
+   "at_commit": "0f0c3022a2a68571f93db834f980f5ef345216d93359351396dd34793087e3ae",
+   "now": "a1f4e7c74ed01efe8b8aa75b63ca3bd74d7a724b22c66a4ee053099ebe0f9096"
+  },
+  ".veldo/control_channel_ingress.py": {
+   "at_commit": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb",
+   "now": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "880b1a321e39966b9a6d67074c17b420fe4f40be6d267010ec8ae7de7bac6745",
+   "now": "880b1a321e39966b9a6d67074c17b420fe4f40be6d267010ec8ae7de7bac6745"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": "c2c287642df991b7af8c285da5fbbb4fcbc174eece2eedef6018e43d516e0bef",
+   "now": "c2c287642df991b7af8c285da5fbbb4fcbc174eece2eedef6018e43d516e0bef"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "25ae92d944e73439ce263a867606703a17a036fb573560ea0e2e56330ba302de",
+   "now": "25ae92d944e73439ce263a867606703a17a036fb573560ea0e2e56330ba302de"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0138 install/assets",
+   true
+  ],
+  [
+   "VELDO-0138 served/inert",
+   true
+  ],
+  [
+   "VELDO-0138 served/settlement",
+   true
+  ],
+  [
+   "VELDO-0138 qualification/recorded-by-service",
+   true
+  ],
+  [
+   "VELDO-0138 command/owner",
+   true
+  ],
+  [
+   "VELDO-0138 command/owner-only",
+   true
+  ],
+  [
+   "VELDO-0138 command/stop-live",
+   true
+  ],
+  [
+   "VELDO-0138 command/stop-keeps-pending",
+   true
+  ],
+  [
+   "VELDO-0138 restart/active-stays-active",
+   true
+  ],
+  [
+   "VELDO-0138 restart/stopped-stays-stopped",
+   true
+  ],
+  [
+   "VELDO-0138 restart/never-activated-stays-inert",
+   true
+  ],
+  [
+   "VELDO-0138 qualification/transport-failure-named",
+   true
+  ],
+  [
+   "VELDO-0138 owner/demoted-halts",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 28.146,
+ "spec_id": "VELDO-0138",
+ "suite": "scripts/suites/71_veldo_0138_channel_service.py",
+ "tree": "git archive 7ae39ff13d553ac83aa2ac0680a8622f95d594a8, unchanged; the current suite file run against it"
+}
