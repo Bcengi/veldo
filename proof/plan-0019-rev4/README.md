@@ -47,7 +47,6 @@ reviewer judges section, one was added in the repository's three parts.
 | VELDO-0060 | AC1 adds the everything-off baseline, the paid-API guard, the environment strip and the pinned executable; AC4 keeps the usage caps, login separation to Release 2 |
 | VELDO-0061 | The same for Codex |
 | VELDO-0062 | AC1 keeps the login source per dispatch, login separation to Release 2; AC5 adds the re-run rule at a limit and one run at a time for a new account; Notes give the store registry and selection order |
-| VELDO-0077 | AC1: an objective from his own message is accepted by that message |
 | VELDO-0079 | AC2: such work is admitted at default priority unless the PM raises a question or another priority |
 | VELDO-0088 | AC1: the default pipeline, model nodes as Runner dispatches, one coordination run writing single-unit requirements; Notes: the service runs the cycle scheduler |
 | VELDO-0089 | AC1: specialist roles with a capability configuration reference and a kind |

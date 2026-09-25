@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W103
 plan_revision: 4
-depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149]
+depends_on: [VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0076, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0132, VELDO-0139, VELDO-0142, VELDO-0149, VELDO-0150]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -111,10 +111,11 @@ acceptance_criteria:
       Claim: The same settlement activates the new project on the adopted repository with the default
       team and pipeline and admits its first objective, which is built as the project's first ordinary
       unit. Set and completeness: After creation or adoption reaches `active`, the settlement is applied
-      as the project's activation (VELDO-0076, applied from his answer by VELDO-0149) with the default team template (VELDO-0089) and the
-      default pipeline (VELDO-0132), and its first objective is accepted and admitted at the default
-      priority with no further question; a repository that ended `failed` activates nothing. Observe the
-      owner told "tidepool is ready; the first objective is next", and the first unit dispatched in the
+      as the project's activation (VELDO-0076, applied from his answer by VELDO-0149) with the default
+      team template (VELDO-0089) and the default pipeline (VELDO-0132), and its first objective is
+      accepted by his answer, or by his first message when it named both (VELDO-0150), and admitted at
+      the default priority with no further question; a repository that ended `failed` activates
+      nothing. Observe the owner told "tidepool is ready; the first objective is next", and the first unit dispatched in the
       new repository with the identity as author. Falsifier: Activate the project while its repository
       is still `provisioning`; the activation-order check must fail.
     falsified_by: >
