@@ -228,7 +228,7 @@ class Reporter:
         self.conn.command_registry[OPERATION] = {'transition': transition, 'writes': WRITES}
         self.S.declare_owners(self.conn, OWNER, kinds={KIND: (OPERATION,)}, module=__file__)
 
-    # -- reading ------------------------------------------------------------------------------
+    # Reading.
 
     def _entity(self, eid):
         row = self.conn.execute('SELECT kind, version, data FROM entities WHERE id=?', (eid,)).fetchone()
@@ -272,7 +272,7 @@ class Reporter:
         source.update(fact.pop('source_extra', {}))
         return dict(fact, event=event, source=source)
 
-    # -- the handlers: each returns the fact its committed record carries, or None ----------------
+    # The handlers: each returns the fact its committed record carries, or None.
 
     @staticmethod
     def _data(entry):
@@ -389,7 +389,7 @@ class Reporter:
                                       event['record_digest'], event['receipt'], entry, fact))
         return found
 
-    # -- rendering -----------------------------------------------------------------------------
+    # Rendering.
 
     def _presentation(self, request):
         """(reply_to, line) for a pending decision: its current presentation, or none said plainly."""
@@ -423,7 +423,7 @@ class Reporter:
                      % (s['journal_seq'], s['command_id'], s['record_digest'], s['entity_id'], _shown(s['entity_digest'])))
         return '\n'.join(line.rstrip() for line in lines), reply_to
 
-    # -- writing ---------------------------------------------------------------------------------
+    # Writing.
 
     def _commit(self, params, expected):
         self._serial += 1

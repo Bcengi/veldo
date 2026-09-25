@@ -90,7 +90,7 @@
   },
   ".veldo/control_telegram_report.py": {
    "at_commit": null,
-   "now": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+   "now": "463414995f6783cbc7ac36c0691d1a603e473bd71504910083029e17889c2216"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "f3cc191133fd8f8ff2155d65b4f93925f8e499f96be681299007e8d1fb45aef3",
@@ -157,7 +157,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.385,
+ "seconds": 1.703,
  "spec_id": "VELDO-0128",
  "suite": "scripts/suites/72_veldo_0128_reports.py",
  "tree": "git archive e1349222175238f31ebb9fab4de29a86e3ed6f68, unchanged; the current suite file run against it"
