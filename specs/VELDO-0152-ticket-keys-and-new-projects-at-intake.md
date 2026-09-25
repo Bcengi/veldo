@@ -48,7 +48,9 @@ acceptance_criteria:
       Claim: A ticket key in the text whose prefix exactly one candidate project lists decides that
       project, as the candidate's name does. Set and completeness: Give project records an optional list
       of ticket key prefixes (for example `BCG`) and drive, through the common intake with one Telegram
-      message and one authenticated API call each, "please do BCG-123" with one project listing `BCG`,
+      message and one API request each (the request signed by the API edge and submitted through
+      `Intake.receive('api_request', ...)`, the intake interface the authenticated API calls, as
+      VELDO-0126 drives it), "please do BCG-123" with one project listing `BCG`,
       with two projects listing it, and with none. The first routes to that project; the second and third
       keep an inbox proposal and ask "which project?" rather than invent ownership. Falsifier: Ignore the
       projects' ticket key prefixes when resolving the project; the ticket-key routing row must fail.
@@ -133,3 +135,8 @@ sections 2(e) and 5(e), whose VELDO-0126 AC1 amendments are carried here whole b
 landed: the ticket key rule, the new-project route with the design's falsifier, and the "a new project"
 answer, one criterion each. A draft: only the owner
 marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, third review: AC1 drives the API leg through the intake interface
+`Intake.receive('api_request', ...)` with a request the API edge signs, as VELDO-0126 does, rather than
+an authenticated API call, because the API server (VELDO-0130) is a later stage and drives its own leg.
+Criterion meaning and status unchanged.

@@ -46,8 +46,10 @@ acceptance_criteria:
       Claim: An objective proposed from the project owner's own authenticated message is accepted by
       that message, and any other objective is accepted only by the owner's answer to its presentation.
       Set and completeness: Create an objective in one project through the shared intake (VELDO-0126)
-      from the owner's own Telegram message, one from his authenticated API call, and one each from a
-      message and an API call by a principal who is not the project's owner. The first two are accepted
+      from the owner's own Telegram message, one from his API request submitted, signed by the API edge,
+      through `Intake.receive('api_request', ...)`, the intake interface the authenticated API calls, as
+      VELDO-0126 drives it, and one each from a message and an API request by a principal who is not the
+      project's owner. The first two are accepted
       with no presentation; the others are presented for current owner acceptance through VELDO-0077,
       and a stale answer after a bound field changes is refused. Acceptance alone admits and prioritizes
       nothing (VELDO-0077 AC1). Falsifier: Accept an objective from a message by a principal who is not
@@ -123,3 +125,8 @@ message, in the order of section 12 of the design.
 section 4(e), whose VELDO-0077 AC1 amendment is carried here whole because VELDO-0077 has landed; its
 criterion and falsifier are AC1, and AC2 checks the acceptance evidence that amendment named. A draft: only the owner
 marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, third review: AC1 drives the API leg through the intake interface
+`Intake.receive('api_request', ...)` with a request the API edge signs, as VELDO-0126 does, rather than
+an authenticated API call, because the API server (VELDO-0130) is a later stage and drives its own leg.
+Criterion meaning and status unchanged.
