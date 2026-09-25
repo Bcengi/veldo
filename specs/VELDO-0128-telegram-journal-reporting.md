@@ -22,6 +22,9 @@ footprint:
   - "packs/*/.veldo/request_doorbell.py"
   - ".veldo/init_scaffold.py"
   - "engine/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_service_channel*.py"
+  - ".veldo/control_service_channel*.py"
+  - "packs/*/.veldo/control_service_channel*.py"
   - "scripts/suites/*_veldo_0128_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -143,3 +146,17 @@ completion only from VELDO-0051's confirmed-landing reader) into correlated owne
 activated VELDO-0073 edge, recording each real send outcome. The footprint gains `.veldo/init_scaffold.py`
 and its engine copy: the scaffold must install the new module, as every runtime asset is installed.
 Proof in proof/VELDO-0128/, teeth finding 128.
+
+2026-09-25: review 1 rework. Three blocking findings fixed. The gate and review reports read the records
+their real writers commit: the gate observations control_proof records for LiveLoop.gate, and the floor
+steps dispatch.py's floor_transition commits (accept_build, record_review passing or returning the unit,
+handoff), never execution_unit edges no writer makes. The progress report reads only the dispatch record's
+own fields (the receiver, the process, termination.returncode, signal and deadline_stop, the refusal and
+the unknown reason) and names no worker, which the contract does not carry. The running service's
+Channel.tick runs the reporter on an active edge only, with its since stored in the authority as a
+telegram_report_cursor record (reporting starts after the owner's first activation), so a restart neither
+repeats nor drops a report and nothing is sent or recorded while the edge is stopped. The reporter keeps its
+own record-before-send path through the presenter's gated edge. The footprint gains
+control_service_channel.py and its copies. The suite drives the real dispatch, proof and floor writers and
+the channel; rows sources/real-writers, wiring/tick-reports, wiring/restart and wiring/stopped-edge are new.
+Red record at f623b78, 23 finding-128 mutations, proof in proof/VELDO-0128/. Status stays ready.
