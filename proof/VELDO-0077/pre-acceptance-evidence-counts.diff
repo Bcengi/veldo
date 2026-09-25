@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -562 +562 @@
+-            if recorded is None or accepted_at is None or recorded <= accepted_at:
++            if False:  # defect: evidence kept before the acceptance counts

@@ -29,6 +29,7 @@ footprint:
   - "scripts/suites/*_veldo_0077_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0077-objective-acceptance-outcome-assessment.md"
   - "specs/index.md"
   - "proof/VELDO-0077/*"
@@ -96,6 +97,25 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+- Normal use: a message becomes an objective in one project through the VELDO-0126 common intake and
+  is presented to the current owner, whose acceptance (through the VELDO-0068 settlement) binds its
+  exact observable outcome, scope, authority and evidence requirements. An accepted objective permits
+  bounded elaboration only: features proposed under it still need their own admission and priority.
+  It is satisfied only by an authorized evidence assessment of its accepted revision; it is canceled
+  only with an explicit, authorized disposition of its unfinished work, and its owner and history are
+  kept.
+- Threat model: a stale answer accepted after a bound field changed; a feature admitted or
+  prioritized because its objective was accepted; satisfaction inferred from shipped specification
+  counts, or from missing evidence, a wrong signer or a stale objective revision; contributing units
+  canceled without an authorized disposition; a terminal objective reopened without a linked new
+  objective; accepted history or receipts changed by cancellation. The owner's account, the store and
+  the signing edge are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); objectives
+  spanning projects and additional owners (Release 3); recovery and restart (Release 2); forged rows in
+  our own store and files planted in the installed directory.
+
 ## Notes
 
 An accepted objective permits bounded elaboration only. 0059 starts at common message intake
@@ -111,6 +131,10 @@ Live engine/channel qualification cannot be replaced by model-response or author
 Current authorization, independent engineering review, enforceable pre-call spend caps and exact
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
+Release 3 governance, filed from review 77a and not built here: evidence requirements that name a
+specific check path or digest, and an assessor who must be someone other than the proposer or the
+project's owner.
+
 ## History
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
@@ -121,3 +145,18 @@ AC3 restart moved to Release 2; cross-project depth moved to Release 3. Exact ob
 acceptance and evidence-based satisfaction remain. The criteria, declared evidence universe,
 Context and Notes above now carry only the retained function. No specification status or
 historical proof was changed.
+
+2026-09-25, build: `.veldo/control_objective.py` (new, installed by the scaffold) is the one writer of
+objective records and the features under them; acceptance applies a VELDO-0068 settlement on the
+decision_disposition touchpoint bound to the objective's current revision, digest and shown brief;
+features are RAW and never admitted or prioritized by it; satisfaction is the bound assessor's signed
+assessment of the accepted revision over kept evidence records; cancellation needs the owner's
+disposition of every unfinished feature. `request.py` and `authorization.py` were not changed: they are
+not on the control store path. Proof in `proof/VELDO-0077/`; status stays ready.
+
+2026-09-25, review 77a fix: a transfer at cancellation stays inside the receiving objective's accepted
+scope (`out_of_scope:<item>`) under its accepted revision; a feature has one disposition; evidence must
+be recorded after the acceptance (`stale_subject:evidence`); amend is refused in a project that is not
+active; rows and mutants for each, red against 86a58f0 by assertion. Status stays ready.
+
+2026-09-25, review 2 (blocking, fixed by the lead): two transfers into one accepted receiver in one cancel wrote two history entries both claiming ACCEPTED to ACTIVE; the receiver now records the state each transfer really moved it from. Row cancel/transfer-bounded gains the two-transfer case, red at 0304483 (red-at-0304483.json); mutation receiver-history-stale-source (finding 77: 24). Filed: evidence freshness is by record time only (Release 3, with the check-binding item); a deterministic pre-acceptance check cannot count again (same content id); a transfer can activate a receiver in a paused project; the brief joins scope items with "; ".

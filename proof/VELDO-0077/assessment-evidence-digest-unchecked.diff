@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -559 +559 @@
+-            if row is None or row['kind'] != requirement['kind'] or row['digest'] != named.get('digest'):
++            if row is None or row['kind'] != requirement['kind']:  # defect: the named digest is not compared

@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -549 +549 @@
+-        if entry['by'] != data['bound']['authority']['assessor']:
++        if False:  # defect: any person in scope assesses the objective

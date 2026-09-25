@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -631 +631 @@
+-                item['objective_revision'] = to['data']['accepted_revision']
++                pass  # defect: the moved feature keeps the source objective's revision
