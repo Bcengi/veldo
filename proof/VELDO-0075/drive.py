@@ -14,6 +14,7 @@ extracted read-only with `git archive` into a temporary directory, and writes
 proof/VELDO-0075/red-at-COMMIT.json. Nothing in that tree is changed. At 9fa7e4d the andon module does
 not exist, so the suite constructs no andon service, asserts each named interface, and each row fails
 by its own assertions; at e5c2bc8 (before the review 75 fix) it exists, and the rows that fix answers
+fail by their own assertions; at 3ed40c1 (before the review 75b fix) the rows that fix answers
 fail by their own assertions. The suite's support authority (scripts/suites/support/v73_authority.py) is read
 from that tree, where it is byte-identical to the current one.
 
@@ -38,7 +39,7 @@ HERE = Path(__file__).resolve().parent
 SUITE = '72_veldo_0075_andon.py'
 PREFIX = 'VELDO-0075 '
 FINDING = 75
-MODULES = ('control_andon.py', 'init_scaffold.py')
+MODULES = ('control_andon.py', 'init_scaffold.py', 'control_request_settlement.py')
 
 
 def _load(name, path):
