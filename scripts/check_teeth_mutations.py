@@ -4866,7 +4866,7 @@ def cases():
                'activation/explicit-bound-operates')
     # AC2 (declared falsifier): fixture-only evidence accepted as the platform's.
     activation('fixture-evidence-accepted', 'control_channel_activation.py',
-               "    if not exchanges or not all(proven_exchange(x, origin) for x in exchanges):\n",
+               "    if not exchanges or unproven:\n",
                "    if not exchanges:  # defect: any recorded exchange is evidence\n", 'qualification/real-platform-proof')
     activation('tls-host-unchecked', 'control_channel_activation.py',
                "    return (isinstance(tls, dict) and tls.get('verified') is True and tls.get('host') == TELEGRAM_HOST\n"
