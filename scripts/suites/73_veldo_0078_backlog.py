@@ -21,6 +21,7 @@ command is answered no_backlog_service and each row fails by its own assertions.
 
 def _v78_suite():
     import contextlib
+    import ast
     import copy
     import http.server
     import importlib.util
@@ -729,7 +730,7 @@ def _v78_suite():
 
             # AC3: a clean blocked phase resumes only on its settled binding; DONE needs accepted outcomes.
             with region('blocked/resume-binding', 'done/missing-outcome', 'done/authorized-alternative',
-                        'done/accepted-outcomes', 'lifecycle/regular-path'):
+                        'done/accepted-outcomes', 'done/one-completion-reader', 'lifecycle/regular-path'):
                 phase, why = 'review of VELDO-9786', 'the owner must choose the payment provider'
                 blocked = bop('pm', 'block', M, phase=phase, reason=why)
                 held = item(M)
@@ -851,6 +852,29 @@ def _v78_suite():
                     ('the task is concluded from its accepted outcome', concluded(U4) is True),
                     ('DONE is terminal', str(bop('pm', 'block', M, phase='again', reason='again').get('reason')).startswith(
                         'invalid_transition'))])
+
+                # The backlog's landing answer is the completion reader's: a reader that says otherwise decides it.
+                class Says:
+                    def __init__(self, answer):
+                        self.conn, self.answer = reader, answer
+
+                    def landing(self, uid):
+                        return self.answer
+                backlog_tree = ast.parse((mods / 'control_backlog.py').read_text()) if CB is not None else None
+                backlog_names = ({n.attr for n in ast.walk(backlog_tree) if isinstance(n, ast.Attribute)}
+                                 | {n.value for n in ast.walk(backlog_tree) if isinstance(n, ast.Constant)
+                                    and isinstance(n.value, str)}) if backlog_tree is not None else {'no_backlog_service'}
+                check('done/one-completion-reader', [
+                    ('DONE recorded exactly the receipt the completion reader finds for each landed unit',
+                     all(gate.landing(u) is not None and outcomes.get(u, {}).get('receipt_id') == gate.landing(u) for u in (U1, U2, U3))),
+                    ('a reader that finds no landing makes a landed unit a missing outcome',
+                     attempt(lambda: CB.outcome_problems(Says(None), U1)) == ['missing_outcome:' + U1]),
+                    ('a reader that finds a landing makes an unlanded unit an accepted outcome',
+                     executable('VELDO-9783') == ['missing_authority:priority']
+                     and attempt(lambda: CB.outcome_problems(Says('receipt:reader'), 'VELDO-9783')) == []),
+                    ('the backlog judges no receipt itself: no completion_contract, no receipt predicate of its own',
+                     not {'completion_contract', 'fact_problems', 'landing_receipt_problems', 'revision_landed'}
+                     & backlog_names)])
 
                 # The regular path, with the reject, return and cancel branches.
                 _r, R = take('rejected')
