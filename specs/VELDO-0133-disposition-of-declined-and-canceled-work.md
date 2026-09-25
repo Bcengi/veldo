@@ -264,7 +264,8 @@ text, the unit's project, the source identity and provenance taken from the evid
 the question and answer command identities beside them. Anything else (missing evidence, a sender
 or request principal who is not the answering person, a message outside that person's own private
 chat, a packet the edge did not sign, another source kind) is refused by name with nothing written,
-and `dispose` refuses it as `not_authorized`, `missing_evidence` or `invalid_input`. No third source
+and `dispose` refuses it as `not_authorized`, `missing_evidence` or `invalid_input`, or as
+`stale_subject` when the evidence was already taken, was edited or its packet was already used. No third source
 kind exists; the intake's adapters and behavior are unchanged (the lead, 2026-09-24, reversing the
 earlier decision that this item does not change VELDO-0126).
 
@@ -296,3 +297,8 @@ VELDO-0126: the intake gains the public `submit_attested`, the answer carries ke
 or an edge-signed API request, and the footprint gains the intake modules. Suite rows
 squatted-request-refused, foreign-chat-refused and no-foreign-follow-up, red at 0b3759f by
 assertion (proof/VELDO-0133/red-at-0b3759f.json), and three finding 133 mutations.
+
+2026-09-24, fresh check of the attested-intake fix: passed. The Notes now name stale_subject for evidence
+already taken, edited or reused, which is what dispose returns. Filed: the evidence is not tied to the
+answer itself (a person may point at another message of their own), and an API packet's own text and
+project are replaced by the answer's; both affect only the answering person's own sources.
