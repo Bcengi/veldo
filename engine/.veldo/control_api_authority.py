@@ -159,7 +159,9 @@ class ApiAuthority:
         provenance = {'channel': AS.CHANNEL, 'edge': self.edge, 'request_id': a['request_id'],
                       'credential_id': a['credential_id'], 'assertion_digest': AS.digest(a)}
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
-        return {'outcome': done['outcome'], 'reason': done['refusal']} if done['refusal'] else {'outcome': 'revoked'}
+        if done['refusal']:
+            return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
+        return {'outcome': 'revoked'}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1

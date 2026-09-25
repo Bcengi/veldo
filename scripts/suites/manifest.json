@@ -851,6 +851,15 @@
    ],
    "regions": "Per-channel activation of the Telegram edge: every installed Telegram send and receive entry point gated on an explicit owner-signed activation record bound to the current chat enrollment, edge key and qualification evidence; fixture evidence never qualifying the Telegram origin; notifications only waking canonical acquisition; the production construction of the settlement path from host configuration; explicit stop and stale key or configuration bindings producing no authority",
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, journal, possession and answer signatures, the actual protected signer process, the VELDO-0066 Acquirer, VELDO-0065 presenter and VELDO-0068 settlement service built by control_channel_ingress.open_ingress from 0600 host configuration files, a real Git repository for the host trust check, and two loopback Bot API servers. A socket guard replaces socket.create_connection for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Reads proof/VELDO-0073/live/qualification.json when the live run has recorded it. Writes only temporary fixtures."
+  },
+  {
+   "name": "71_veldo_0130_api",
+   "file": "71_veldo_0130_api.py",
+   "requires": [
+    "71_veldo_0130_api"
+   ],
+   "regions": "The authenticated API phase 1: passkey registration and sign-in verified with the standard library and OpenSSL (a stand-in browser and W3C WebAuthn test vectors), steward-signed api_credential enrollment and revocation, server-side sessions with the cookie, anti-forgery token, Origin and fetch-metadata checks, idle and absolute expiry and revocation ending sessions, the published route table, body actor fields refused, the api channel edge signing through the protected signer, the authority recheck, and messages into VELDO-0126 intake and decision answers into VELDO-0068 settlement with one ruling per request against Telegram",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal, possession and edge signatures, the actual protected signer process, the VELDO-0066 Acquirer, VELDO-0065 presenter, VELDO-0126 intake and VELDO-0068 settlement over a loopback Bot API, openssl-generated ES256 and Ed25519 passkey keys, and the API served on a loopback port. Writes only temporary fixtures."
   }
  ]
 }

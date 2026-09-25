@@ -390,13 +390,18 @@ class ControlApi:
     # registration, the first half of enrollment
 
     def _pending_files(self):
+        """The pending registrations still waiting for a steward: an expired one, or one whose credential
+        the authority now holds, is removed."""
         now, live = time.time(), []
         for path in sorted((self.state_dir / 'pending').glob('*.json')):
             try:
-                expires = json.loads(path.read_text())['binding']['expires_at']
+                binding = json.loads(path.read_text())['binding']
+                expires, credential_id = binding['expires_at'], binding['credential_id']
             except (OSError, ValueError, KeyError, TypeError):
-                expires = 0
-            if expires <= now:
+                expires, credential_id = 0, None
+            enrolled = credential_id is not None and CR.record(
+                self.authority.inspect([CR.entity_id(credential_id)]).get('entities') or {}, credential_id) is not None
+            if expires <= now or enrolled:
                 path.unlink(missing_ok=True)
             else:
                 live.append(path)
@@ -426,11 +431,17 @@ class ControlApi:
             raise Refused('unauthenticated:registration', 'no such pending registration')
         return found
 
+    def _drop(self, rid):
+        """A failed ceremony ends its registration, so it holds no pending place."""
+        with self._lock:
+            self._registrations.pop(rid, None)
+
     def _registration_credential(self, route, body, session, extra):
         found = self._registration(body['registration_id'])
         problems = W.registration_problems(body['client_data_json'], found['challenge'], self.origin,
                                            body['credential_id'], body['public_key'], body['algorithm'])
         if problems:
+            self._drop(body['registration_id'])
             raise Refused('unauthenticated:' + problems[0], 'the registration ceremony does not verify')
         binding = {'schema': W.BINDING_SCHEMA, 'rp_id': self.rp_id, 'origin': self.origin,
                    'credential_id': body['credential_id'], 'public_key': body['public_key'],
@@ -448,6 +459,7 @@ class ControlApi:
         proof = {k: body[k] for k in CR.PROOF_FIELDS}
         problems = W.possession_problems(binding, proof, self.origin, self.rp_id, self.state_dir)
         if problems:
+            self._drop(body['registration_id'])
             raise Refused('unauthenticated:' + problems[0], 'the possession ceremony does not verify')
         path = self.state_dir / 'pending' / (body['registration_id'] + '.json')
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -489,7 +501,8 @@ class ControlApi:
         if not answer.get('ok'):
             code = str(answer.get('reason'))
             klass = answer.get('taxonomy') or 'unknown_outcome'
-            raise Refused((klass if klass in STATUS else 'unknown_outcome') + ':' + code, 'refused by the authority')
+            klass = klass if klass in STATUS else 'unknown_outcome'
+            raise Refused(code if error_class(code) == klass else klass + ':' + code, 'refused by the authority')
         if route.operation == 'revoke_credential':
             self.sessions.end_by_credential(parameters['credential_id'])
         result = answer.get('result') or {}
