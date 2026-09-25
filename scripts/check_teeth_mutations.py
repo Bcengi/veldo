@@ -4316,6 +4316,120 @@ def cases():
                 'refs-bound',
                 also=[('c["workspace"], c["commit"],\n                                               bind_refs=True)\n',
                        'c["workspace"], c["commit"],\n                                               bind_refs=False)\n')])
+    # VELDO-0057: each criterion's declared falsifier and further defects of the threat model, each against
+    # the one suite 70 row it names (a second row where the defect reaches both). Anchors are exact text
+    # in .veldo/control_landing.py and .veldo/lander.py, the two production modules suite 70 installs.
+    def landing(name, old, new, rows, module='control_landing.py', also=()):
+        add(57, name, '70_veldo_0057_landing.py', module, old, new, list(rows), also)
+
+    # AC1, declared: publish without checking the exact old tip (the lease names the tip the remote holds now).
+    landing('landing-old-tip-read-now',
+            "'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': subject['old_tip']}}\n",
+            "'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': self._remote_tip()}}"
+            "  # defect: the old tip is whatever the remote holds now\n", ['exact-tip/moved-tip-refused'])
+    landing('lander-factory-push-unleased',
+            '        if self.landing is not None:\n            return self._publish(unit, detail)\n',
+            '        pass  # defect: a factory land pushes the candidate itself\n', ['exact-tip/moved-tip-refused'],
+            module='lander.py',
+            also=[('"--force-with-lease=refs/heads/%s:%s" % (self.trunk, c["watermark"])', '"--force"')])
+    landing('landing-candidate-objects-not-transferred', '            self._transfer(candidate, dispatch)\n',
+            '            pass  # defect: the publication clone never receives the candidate\n', ['exact-tip/compare-and-swap'])
+    # AC2, declared: an approval for a different candidate tree is accepted.
+    differences = "                differences.append([f for f in SUBJECT_FIELDS if bound.get(f) != exact[f]])\n"
+    landing('landing-approval-tree-unbound', differences,
+            "                differences.append([f for f in SUBJECT_FIELDS if f != 'tree' and bound.get(f) != exact[f]])"
+            "  # defect: an approval for another tree is accepted\n", ['exact-subject/approval'])
+    landing('landing-approval-dependencies-unbound', differences,
+            "                differences.append([f for f in SUBJECT_FIELDS if f != 'dependencies' and bound.get(f) != exact[f]])"
+            "  # defect: the dependency versions approved are not compared\n", ['exact-subject/dependency-version'])
+    landing('landing-dependency-landing-unread', '            if not row or not gate.landed(dep):\n',
+            '            if not row:  # defect: a dependency no longer landed is not seen\n', ['exact-subject/dependency-unlanded'])
+    subject_review = ("            if (handoff.get('source') or {}).get('commit') != fields['evidence']:\n"
+                      "                codes.append('binding_mismatch:review/source')\n"
+                      "            if (handoff.get('proof') or {}).get('digest') != candidate['proof']['digest']:\n"
+                      "                codes.append('binding_mismatch:review/proof')\n"
+                      "        except Refused as error:\n            codes.extend(error.codes)\n        dependencies = {}\n")
+    landing('landing-review-source-unchecked', subject_review,
+            subject_review.replace("            if (handoff.get('source') or {}).get('commit') != fields['evidence']:\n",
+                                   "            if False:  # defect: the reviewed source is not compared\n"),
+            ['exact-subject/source'])
+    landing('landing-review-proof-unchecked', subject_review,
+            subject_review.replace("            if (handoff.get('proof') or {}).get('digest') != candidate['proof']['digest']:\n",
+                                   "            if False:  # defect: the reviewed proof is not compared\n"),
+            ['exact-subject/proof'])
+    landing('landing-tree-not-rederived', "        if tree is None or tree != fields['tree']:\n",
+            "        if tree is None:  # defect: the recorded tree is taken for the commit's tree\n", ['exact-subject/tree'])
+    landing('landing-authority-generation-unread', "        elif authority['data'].get('generation') != self.generation:\n",
+            "        elif False:  # defect: a superseded authority generation is current\n", ['exact-subject/authority'])
+    landing('landing-approval-compared-with-old-tip',
+            "        exact = {'tree': tree, 'source': fields['evidence'], 'proof': proof, 'dependencies': dependencies}\n",
+            "        exact = {'tree': fields['watermark'], 'source': fields['evidence'], 'proof': proof,"
+            " 'dependencies': dependencies}  # defect: the approval is compared with another subject\n",
+            ['exact-subject/valid-publishes'])
+    # AC3, declared: a new publication attempt for an unknown result.
+    landing('landing-new-attempt-for-unknown', '            if outstanding:\n',
+            '            if False:  # defect: another publication of the unit is attempted over an unknown one\n',
+            ['unconfirmed/unknown-stops'])
+    recorded = '            if recorded is not None:\n                return self._recorded(unit, candidate, dispatch, recorded)\n'
+    landing('landing-unknown-attempted-again', recorded,
+            "            if recorded is not None and recorded['data'].get('status') != 'unknown':  # defect: an unknown one is tried again\n"
+            '                return self._recorded(unit, candidate, dispatch, recorded)\n', ['unconfirmed/unknown-stops'])
+    landing('landing-failed-attempted-again', recorded,
+            "            if recorded is not None and recorded['data'].get('status') != 'refused':  # defect: a failed one is tried again\n"
+            '                return self._recorded(unit, candidate, dispatch, recorded)\n', ['unconfirmed/failed-no-attempt'])
+    landing('landing-confirmation-from-executor-answer', "        if tip != fields['commit']:\n",
+            "        if False:  # defect: the executor's answer is taken for the remote's\n", ['unconfirmed/moved-after-ack'])
+    # AC4, declared: completion after a local finalize with push disabled.
+    local = '        if not self.push:\n            # Nothing is published, so nothing is completed: no receipt, no projection.\n'
+    landing('lander-completes-after-local-finalize', local,
+            '        if not self.push:\n'
+            '            if self.landing is not None:  # defect: completion is recorded after a local finalize\n'
+            '                L, sid = self.landing, _unit_id(unit)\n'
+            '                landing = {k: c.get(v) for k, v in (("implementation_commit", "implementation"),\n'
+            '                           ("old_remote_tip", "watermark"), ("candidate_commit", "commit"), ("tested_tree", "tree"))}\n'
+            '                landing.update(proof_digest=c["proof"]["digest"], reviewed_source_digest=c["proof"]["digest"],\n'
+            '                               gate_invocation="local", gate_output_location="local", unit_id=sid,\n'
+            '                               dispatch_id=unit.get("dispatch"), replication_receipt="local-journal",\n'
+            '                               remote_confirmation={"local": c["commit"]})\n'
+            '                rid = "receipt:revision_landed:%s:local" % sid\n'
+            '                L._command("upsert_entity", {"entity_id": rid, "kind": "completion_receipt", "data": {\n'
+            '                    "fact": "revision_landed", "subject": {"id": sid, "revision": 1}, "publication_receipt": landing,\n'
+            '                    "remote_confirmation": landing["remote_confirmation"], "replicated": "local-journal",\n'
+            '                    "spec_shipped_event": "local"}}, {rid: 0})\n',
+            ['completion/push-disabled', 'completion/readers'], module='lander.py')
+    landing('lander-push-disabled-publishes', local,
+            '        if not self.push and self.landing is not None:\n'
+            '            return self._publish(unit, detail)  # defect: a push-disabled land publishes and completes\n' + local,
+            ['completion/push-disabled'], module='lander.py')
+    # AC4: each link of the evidence chain, re-derived before the receipt.
+    for link, old, new in (
+            ('implementation', "        if (manifest or {}).get('commit') != fields['implementation']:\n"
+                               "            codes.append('binding_mismatch:implementation')\n",
+             "        if False:  # defect: the implementation commit is not re-derived\n"
+             "            codes.append('binding_mismatch:implementation')\n"),
+            ('old-tip', "        if payload.get('old_tip') != fields['watermark']:\n", "        if False:  # defect: the old tip is not re-derived\n"),
+            ('candidate', "        if payload.get('commit') != fields['commit']:\n", "        if False:  # defect: the candidate is not re-derived\n"),
+            ('tested-tree', "        if payload.get('tree') != fields['tree']:\n", "        if False:  # defect: the tested tree is not re-derived\n"),
+            ('gate', "        if _digest(body) != reference.get('digest'):\n", "        if False:  # defect: the gate observation is not re-read\n"),
+            ('publication', "            if (data.get('kind') != 'publication' or data.get('dispatch_id') != dispatch or data.get('unit') != sid\n",
+             "            if (False  # defect: the publication named is not required to be this unit's\n"),
+            ('reviewed', "        except Refused as error:\n            codes.extend(error.codes)\n        observation, reference = {}, {}\n",
+             "        except Refused as error:\n            codes.extend(error.codes)\n"
+             "        codes = [c for c in codes if not c.startswith('binding_mismatch:review/')]  # defect: the review is not re-derived\n"
+             "        observation, reference = {}, {}\n"),
+            ('proof', "        proof, manifest = self._manifest(self.clone, sid, fields['evidence'])\n        if proof is None or proof != candidate['proof']['digest']:\n",
+             "        proof, manifest = self._manifest(self.clone, sid, fields['evidence'])\n        if False:  # defect: the proof digest is not re-derived\n")):
+        landing('landing-chain-%s-unchecked' % link, old, new, ['completion/corrupt-each'])
+    landing('landing-receipt-gate-unbound', "            'gate_invocation': {'observation_digest': reference.get('digest'),",
+            "            'gate_invocation': {'observation_digest': None,  # defect: the gate observation is not bound\n                               ",
+            ['completion/evidence-chain'])
+    landing('landing-receipt-effect-unbound',
+            "            'publication_effect': {'id': effect['id'], 'version': effect['version'], 'digest': effect['digest'],",
+            "            'publication_effect': {'id': effect['id'], 'version': effect['version'], 'digest': None,"
+            "  # defect: the final receipt is not bound\n                                  ",
+            ['completion/evidence-chain'])
+    landing('landing-projection-not-run', '            projection = self.project()\n',
+            '            projection = {}  # defect: the projection is not run after the receipt\n', ['completion/projection'])
     # VELDO-0135: enrolled work offered from its floor record. Each criterion's declared falsifier and
     # further defects, each against the one suite 67 row it names; anchors are exact text in the
     # frontier and work loop the suite installs.
