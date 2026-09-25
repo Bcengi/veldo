@@ -1,0 +1,1363 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0128 install/assets",
+    true
+   ],
+   [
+    "VELDO-0128 registry/declared-set",
+    true
+   ],
+   [
+    "VELDO-0128 registry/delivery",
+    true
+   ],
+   [
+    "VELDO-0128 registry/committed-sources",
+    true
+   ],
+   [
+    "VELDO-0128 content/running",
+    true
+   ],
+   [
+    "VELDO-0128 content/awaiting-decision",
+    true
+   ],
+   [
+    "VELDO-0128 content/gate-rejected",
+    true
+   ],
+   [
+    "VELDO-0128 content/completed",
+    true
+   ],
+   [
+    "VELDO-0128 content/unknown-explicit",
+    true
+   ],
+   [
+    "VELDO-0128 stop/no-second-notice",
+    true
+   ],
+   [
+    "VELDO-0128 recipient/owner-chat-only",
+    true
+   ],
+   [
+    "VELDO-0128 recipient/substitution-refused",
+    true
+   ],
+   [
+    "VELDO-0128 send/refusal-recorded",
+    true
+   ],
+   [
+    "VELDO-0128 observability/named-refusals",
+    true
+   ]
+  ],
+  "seconds": 1.647
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 registry/declared-set detail: the registry names exactly the declared event set [objective_accepted, decision_awaiting, work_progress, gate_result, stop]",
+    "VELDO-0128 registry/delivery detail: completion: a report for every committed source [[]]",
+    "VELDO-0128 registry/delivery detail: completion: every report was sent, stored by the platform exactly as recorded, to the owner",
+    "VELDO-0128 registry/delivery detail: the registry-to-delivery comparison: the delivered events are the declared set",
+    "VELDO-0128 registry/delivery detail: the stop and the completion name their unit and run",
+    "VELDO-0128 content/completed detail: every completion report is a spec.shipped VELDO-0051 derives for its receipt [[]]",
+    "VELDO-0128 content/completed detail: the build-only attempt and the unconfirmed publication are no completion",
+    "VELDO-0128 content/completed detail: the completion names the confirmed revision and the proof"
+   ],
+   "diff": "proof/VELDO-0128/report-completion-handler-omitted.diff",
+   "failed_rows": [
+    "VELDO-0128 registry/declared-set",
+    "VELDO-0128 registry/delivery",
+    "VELDO-0128 content/completed"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "4e68af7a34c761ec668d7c20a7cae622dd8334522aa4c81c96e72f99a6414a2b",
+   "name": "report-completion-handler-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "registry/delivery"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     false
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     false
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     false
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.644,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 registry/delivery detail: completion: a report for every committed source [['receipt:attempt_finished:U128-build:0', 'receipt:revision_landed:U128-land:0']]",
+    "VELDO-0128 registry/delivery detail: every report keeps project, unit, run and the source event identity, and shows them",
+    "VELDO-0128 registry/committed-sources detail: every report names a committed journal record and entity by digest, after since",
+    "VELDO-0128 registry/committed-sources detail: no report for the prepared dispatch, the build-only receipts, the presentation records, the revised stop or the andon's own request",
+    "VELDO-0128 content/completed detail: every completion report is a spec.shipped VELDO-0051 derives for its receipt [[('U128-build', 'receipt:attempt_finished:U128-build:0'), ('U128-land', 'receipt:revision_landed:U128-land:0')]]",
+    "VELDO-0128 content/completed detail: the build-only attempt and the unconfirmed publication are no completion"
+   ],
+   "diff": "proof/VELDO-0128/report-complete-from-build-only.diff",
+   "failed_rows": [
+    "VELDO-0128 registry/delivery",
+    "VELDO-0128 registry/committed-sources",
+    "VELDO-0128 content/completed"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "6cb29908b6ddc9ad3e3ed6179feadbc463cb54ae2d1316eef74a44001e17b6f5",
+   "name": "report-complete-from-build-only",
+   "named_row_red": true,
+   "named_rows": [
+    "content/completed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     false
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     false
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     false
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.675,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 recipient/substitution-refused detail: the substituted chat is refused by name at the gate [[None]]",
+    "VELDO-0128 recipient/substitution-refused detail: the refusal is visibly unsent and the source event is kept",
+    "VELDO-0128 send/refusal-recorded detail: the send result observed is the platform's: refused by name, no message identity [sent None]",
+    "VELDO-0128 send/refusal-recorded detail: it is visibly unsent in the metrics, and a later run sends nothing again",
+    "VELDO-0128 observability/named-refusals detail: metrics count accepted and refused operations, the sent and unsent reports, and no pending work [{'accepted': 55, 'refused': 0, 'pending': 0, 'sent': 15, 'unsent': 0, 'anomalies': 0}]"
+   ],
+   "diff": "proof/VELDO-0128/report-refused-marked-delivered.diff",
+   "failed_rows": [
+    "VELDO-0128 recipient/substitution-refused",
+    "VELDO-0128 send/refusal-recorded",
+    "VELDO-0128 observability/named-refusals"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "e4fd2925c2c7debdb416a74349ad5d10abe35cf19787e95a0cda34a840e68269",
+   "name": "report-refused-marked-delivered",
+   "named_row_red": true,
+   "named_rows": [
+    "send/refusal-recorded"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     false
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     false
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     false
+    ]
+   ],
+   "seconds": 1.666,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 install/assets detail: .veldo/control_telegram_report.py installed by the scaffold",
+    "VELDO-0128 install/assets detail: .veldo/control_telegram_report.py laid by the installer"
+   ],
+   "diff": "proof/VELDO-0128/report-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0128 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "2d0b5f3e86217caedeae797c095111db8275835ff3fe9f9283a1a1655ef75b6a",
+   "name": "report-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     false
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.656,
+   "source_sha256": "0a1603ba79300cf035e0d7407264d2d9afd9a1bd620d34b7658acb74fc2a3224"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 registry/delivery detail: decision_awaiting: a report for every committed source [['assignment:activation-repository:A128', 'assignment:activation-repository:G128', 'assignment:activation-repository:Q128']]",
+    "VELDO-0128 registry/committed-sources detail: every report names a committed journal record and entity by digest, after since",
+    "VELDO-0128 recipient/substitution-refused detail: the substituted chat is refused by name at the gate [['chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled', 'chat_not_enrolled']]",
+    "VELDO-0128 recipient/substitution-refused detail: nothing reached that chat, and the gate refused the one send by name",
+    "VELDO-0128 recipient/substitution-refused detail: the refusal is visibly unsent and the source event is kept"
+   ],
+   "diff": "proof/VELDO-0128/report-before-since.diff",
+   "failed_rows": [
+    "VELDO-0128 registry/delivery",
+    "VELDO-0128 registry/committed-sources",
+    "VELDO-0128 recipient/substitution-refused"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "1a470bc92a40627c0d1fec615f8bbdb37986f4fc2c29ce08e1a576d6d83fe409",
+   "name": "report-before-since",
+   "named_row_red": true,
+   "named_rows": [
+    "registry/committed-sources"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     false
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     false
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     false
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.733,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 registry/delivery detail: every report keeps project, unit, run and the source event identity, and shows them",
+    "VELDO-0128 registry/committed-sources detail: every report names a committed journal record and entity by digest, after since",
+    "VELDO-0128 recipient/substitution-refused detail: the refusal is visibly unsent and the source event is kept",
+    "VELDO-0128 send/refusal-recorded detail: the source event is kept and no decision was fabricated"
+   ],
+   "diff": "proof/VELDO-0128/report-source-uncorrelated.diff",
+   "failed_rows": [
+    "VELDO-0128 registry/delivery",
+    "VELDO-0128 registry/committed-sources",
+    "VELDO-0128 recipient/substitution-refused",
+    "VELDO-0128 send/refusal-recorded"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "9c9a7cf5914df952b54668329f3c0d7cecca826cd4b492a319b88caf3777b036",
+   "name": "report-source-uncorrelated",
+   "named_row_red": true,
+   "named_rows": [
+    "registry/committed-sources"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     false
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     false
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     false
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     false
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.708,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 registry/committed-sources detail: no report for the prepared dispatch, the build-only receipts, the presentation records, the revised stop or the andon's own request",
+    "VELDO-0128 content/running detail: the running report's delivered bytes are the recorded text",
+    "VELDO-0128 content/running detail: it states the committed fact: dispatch, unit, station, state and worker, from its journal record",
+    "VELDO-0128 content/running detail: and its next action",
+    "VELDO-0128 content/unknown-explicit detail: an unknown dispatch outcome is said to be unknown and nothing is assumed"
+   ],
+   "diff": "proof/VELDO-0128/report-running-from-current-state.diff",
+   "failed_rows": [
+    "VELDO-0128 registry/committed-sources",
+    "VELDO-0128 content/running",
+    "VELDO-0128 content/unknown-explicit"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "1e768186c483ab83188cce395fdb8d4d420a9aa3c55846313ac3d152705473cf",
+   "name": "report-running-from-current-state",
+   "named_row_red": true,
+   "named_rows": [
+    "content/running"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     false
+    ],
+    [
+     "VELDO-0128 content/running",
+     false
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     false
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.671,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 content/awaiting-decision detail: it is sent as a reply to the request's current presentation and names it [None 9004]",
+    "VELDO-0128 content/awaiting-decision detail: the admission wait with no presentation says so plainly and links nothing",
+    "VELDO-0128 stop/no-second-notice detail: it replies to the stop request's current presentation, the andon's latest notice"
+   ],
+   "diff": "proof/VELDO-0128/report-presentation-unlinked.diff",
+   "failed_rows": [
+    "VELDO-0128 content/awaiting-decision",
+    "VELDO-0128 stop/no-second-notice"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "c42728c7ce6c66d051c16478beea4314bb79e29c070970919eb6e23dda89d499",
+   "name": "report-presentation-unlinked",
+   "named_row_red": true,
+   "named_rows": [
+    "content/awaiting-decision"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     false
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     false
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.675,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 content/gate-rejected detail: the gate rejection states the unit, the edge and its failure receipt"
+   ],
+   "diff": "proof/VELDO-0128/report-gate-rejected-as-passed.diff",
+   "failed_rows": [
+    "VELDO-0128 content/gate-rejected"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "c7153dafaa8d5ac5e6007dfe89e3904e250577c355773108c7453a63314271d0",
+   "name": "report-gate-rejected-as-passed",
+   "named_row_red": true,
+   "named_rows": [
+    "content/gate-rejected"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     false
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.667,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 content/running detail: the running report's delivered bytes are the recorded text",
+    "VELDO-0128 content/running detail: it states the committed fact: dispatch, unit, station, state and worker, from its journal record",
+    "VELDO-0128 content/running detail: and its next action",
+    "VELDO-0128 content/unknown-explicit detail: an unknown dispatch outcome is said to be unknown and nothing is assumed"
+   ],
+   "diff": "proof/VELDO-0128/report-unknown-as-running.diff",
+   "failed_rows": [
+    "VELDO-0128 content/running",
+    "VELDO-0128 content/unknown-explicit"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "9f68082947f0d83895133a9df2a044bb5a1cd0841a6cf0df77dce0b1cc8fb9ed",
+   "name": "report-unknown-as-running",
+   "named_row_red": true,
+   "named_rows": [
+    "content/unknown-explicit"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     false
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     false
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.693,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 registry/delivery detail: decision_awaiting: a report for every committed source [['assignment:activation-repository:A128', 'assignment:activation-repository:G128', 'assignment:activation-repository:andon-d3843b84978e314790ef5cfe', 'assignment:activation-repository:andon-d3843b84978e314790ef5cfe']]",
+    "VELDO-0128 registry/committed-sources detail: no report for the prepared dispatch, the build-only receipts, the presentation records, the revised stop or the andon's own request",
+    "VELDO-0128 stop/no-second-notice detail: the andon's own request is never reported as a waiting decision, nor its revision"
+   ],
+   "diff": "proof/VELDO-0128/report-andon-request-reported.diff",
+   "failed_rows": [
+    "VELDO-0128 registry/delivery",
+    "VELDO-0128 registry/committed-sources",
+    "VELDO-0128 stop/no-second-notice"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "eb35d9de9794394dde96bdc173473e252593b64bb1a546199fac292ee6e52c9c",
+   "name": "report-andon-request-reported",
+   "named_row_red": true,
+   "named_rows": [
+    "stop/no-second-notice"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     false
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     false
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     false
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.675,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 recipient/owner-chat-only detail: every report send was admitted by the activation gate, one admission each [0 of 13]",
+    "VELDO-0128 recipient/substitution-refused detail: the substituted chat is refused by name at the gate [[None]]",
+    "VELDO-0128 recipient/substitution-refused detail: nothing reached that chat, and the gate refused the one send by name",
+    "VELDO-0128 recipient/substitution-refused detail: the refusal is visibly unsent and the source event is kept"
+   ],
+   "diff": "proof/VELDO-0128/report-gate-bypassed.diff",
+   "failed_rows": [
+    "VELDO-0128 recipient/owner-chat-only",
+    "VELDO-0128 recipient/substitution-refused"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "455c267935f3d25df7a8f478439b2bbed3bbe4dab8a61c8dbf72af68d9e61fc9",
+   "name": "report-gate-bypassed",
+   "named_row_red": true,
+   "named_rows": [
+    "recipient/owner-chat-only",
+    "recipient/substitution-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     false
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     false
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.673,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 recipient/substitution-refused detail: the refusal is visibly unsent and the source event is kept",
+    "VELDO-0128 send/refusal-recorded detail: the send result observed is the platform's: refused by name, no message identity [None None]",
+    "VELDO-0128 send/refusal-recorded detail: it is visibly unsent in the metrics, and a later run sends nothing again",
+    "VELDO-0128 send/refusal-recorded detail: the source event is kept and no decision was fabricated"
+   ],
+   "diff": "proof/VELDO-0128/report-refusal-drops-source.diff",
+   "failed_rows": [
+    "VELDO-0128 recipient/substitution-refused",
+    "VELDO-0128 send/refusal-recorded"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "fc8e864bdd0efd5e1d0b94e26e3e9317077cbc6000f983cb28946ded9c98a89c",
+   "name": "report-refusal-drops-source",
+   "named_row_red": true,
+   "named_rows": [
+    "send/refusal-recorded"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     false
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     false
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.676,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0128 observability/named-refusals detail: every refusal is named and classed; unknown is never success"
+   ],
+   "diff": "proof/VELDO-0128/report-refusal-unclassed.diff",
+   "failed_rows": [
+    "VELDO-0128 observability/named-refusals"
+   ],
+   "module": ".veldo/control_telegram_report.py",
+   "mutant_sha256": "600aa8c22b30294d23080baf1613221651067445de68ddea02294f3fa550f7f7",
+   "name": "report-refusal-unclassed",
+   "named_row_red": true,
+   "named_rows": [
+    "observability/named-refusals"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     false
+    ]
+   ],
+   "seconds": 1.654,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  }
+ ],
+ "noop": {
+  "control_telegram_report.py": {
+   "copy_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.693,
+   "source_sha256": "a07b4d66d3f5dbdc1778a3ed2dcf23ec608829a8e4d51d3bd809a3c3bd283d2b"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "0a1603ba79300cf035e0d7407264d2d9afd9a1bd620d34b7658acb74fc2a3224",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0128 install/assets",
+     true
+    ],
+    [
+     "VELDO-0128 registry/declared-set",
+     true
+    ],
+    [
+     "VELDO-0128 registry/delivery",
+     true
+    ],
+    [
+     "VELDO-0128 registry/committed-sources",
+     true
+    ],
+    [
+     "VELDO-0128 content/running",
+     true
+    ],
+    [
+     "VELDO-0128 content/awaiting-decision",
+     true
+    ],
+    [
+     "VELDO-0128 content/gate-rejected",
+     true
+    ],
+    [
+     "VELDO-0128 content/completed",
+     true
+    ],
+    [
+     "VELDO-0128 content/unknown-explicit",
+     true
+    ],
+    [
+     "VELDO-0128 stop/no-second-notice",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/owner-chat-only",
+     true
+    ],
+    [
+     "VELDO-0128 recipient/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0128 send/refusal-recorded",
+     true
+    ],
+    [
+     "VELDO-0128 observability/named-refusals",
+     true
+    ]
+   ],
+   "seconds": 1.694,
+   "source_sha256": "0a1603ba79300cf035e0d7407264d2d9afd9a1bd620d34b7658acb74fc2a3224"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 128",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 28.5,
+ "spec_id": "VELDO-0128",
+ "suite": "scripts/suites/72_veldo_0128_reports.py"
+}

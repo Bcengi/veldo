@@ -20,6 +20,8 @@ footprint:
   - "engine/.veldo/request_doorbell.py"
   - ".veldo/request_doorbell.py"
   - "packs/*/.veldo/request_doorbell.py"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0128_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -134,3 +136,10 @@ not tests run by this writing revision.
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-09-25: built. `.veldo/control_telegram_report.py` projects the declared event set (accepted
+objective, grooming and admission waits, dispatch progress, gate and review results, andon stops, and
+completion only from VELDO-0051's confirmed-landing reader) into correlated owner reports through the
+activated VELDO-0073 edge, recording each real send outcome. The footprint gains `.veldo/init_scaffold.py`
+and its engine copy: the scaffold must install the new module, as every runtime asset is installed.
+Proof in proof/VELDO-0128/, teeth finding 128.

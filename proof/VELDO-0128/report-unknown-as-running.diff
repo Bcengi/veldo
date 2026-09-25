@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -316 +316 @@
+-        status = data.get('state')
++        status = 'running' if data.get('state') == 'unknown' else data.get('state')  # defect

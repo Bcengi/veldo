@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -315 +315 @@
+-        data, before = self._data(entry), self._data(prior)
++        data, before = (self._entity(eid) or {}).get('data') or {}, self._data(prior)  # defect: current, not committed
