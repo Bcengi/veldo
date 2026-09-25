@@ -90,19 +90,24 @@ acceptance_criteria:
       Accept a team save bound to an older team version; the stale-team row must fail.
   - id: AC3
     text: >
-      Claim: A proposed team revision becomes current only by the project owner's settled answer to one
-      request that shows exactly that proposal. Set and completeness: After an accepted `propose_team`,
-      the authority opens one VELDO-0064 decision request to the project's current owner on VELDO-0089's
-      amendment touchpoint, whose brief and target are exactly VELDO-0089's amendment brief and target of
-      the pending proposal; a repeat save of the same proposal returns that request. Answer it through the
-      API's decision route (VELDO-0130) and, for a second proposal, from Telegram; the authority applies
-      the settlement (VELDO-0068) as VELDO-0089's `amend`, and the team read route shows the new revision
-      current. A decline leaves the earlier revision current, and this holds when the owner made the save
-      himself. Falsifier: Make a proposed team revision current without the owner's settled answer; the
-      owner-answer row must fail.
+      Claim: A team revision the project owner saves himself through the authenticated API becomes current
+      on that save, recorded as his decision, and a revision anyone else proposes becomes current only by
+      his settled answer to one request that shows exactly that proposal. Set and completeness: Save a team
+      revision as the owner through the API; the team read route shows it current, the journal records the
+      owner's authenticated principal as its decider, and no decision request is opened, as VELDO-0150 treats
+      his own message. Then have another principal (a PM run) submit `propose_team`; the authority opens one
+      VELDO-0064 decision request to the project's current owner on VELDO-0089's amendment touchpoint, whose
+      brief and target are exactly VELDO-0089's amendment brief and target of the pending proposal, and a
+      repeat submission returns that request. Answer it through the API's decision route (VELDO-0130) and,
+      for a second proposal, from Telegram; the authority applies the settlement (VELDO-0068) as
+      VELDO-0089's `amend`, and the read route shows the new revision current. A decline leaves the earlier
+      revision current. Falsifier: Make another principal's proposed team revision current without the
+      owner's settled answer, and separately open a decision request for the owner's own save; the
+      owner-answer row and the owner-save row must each fail.
     falsified_by: >
-      Make a proposed team revision current without the owner's settled answer; the owner-answer row must
-      fail.
+      Make another principal's proposed team revision current without the owner's settled answer, and
+      separately open a decision request for the owner's own save; the owner-answer row and the owner-save
+      row must each fail.
   - id: AC4
     text: >
       Claim: The factory keeps one default team, a versioned team the owner saves through the team route,
@@ -209,3 +214,7 @@ project with a "default team template (VELDO-0089)" that VELDO-0089 does not def
 specification, built in the design's second stage and so before VELDO-0143, defines it: a versioned team
 the factory project's owner saves through the team route, whose revision named in the answered project
 proposal becomes the new project's first team revision. A draft.
+
+2026-09-25, lead: AC3 counts the owner's own authenticated save as his decision, as VELDO-0150 does for his
+own message, so he is never asked to approve a change he made himself; a revision anyone else proposes still
+needs his settled answer.
