@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0133
 title: Ask what becomes of work whose person assignment is declined, canceled or expired
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -266,3 +266,5 @@ suite 69_veldo_0133_dispositions carries the rows, with the red record at 3e00de
 proof/VELDO-0133/. The footprint gains scripts/suites/60_veldo_0064_inbox.py: its parked-units row
 declines a unit parked on the owner's assignment, and under AC1 that decline now asks the owner, so the
 row reads that unit as awaiting_disposition instead of declined. Only that expectation changed.
+
+2026-09-24: the owner marked this specification ready on Telegram (29088 asked, 29089 "Ready"), after its build.
