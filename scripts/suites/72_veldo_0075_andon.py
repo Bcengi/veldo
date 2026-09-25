@@ -351,6 +351,19 @@ def _v75_checks(base):
             wrong = resume(build)
             check(RW, 'after stale and wrong-actor answers the stop does not resume [%s]' % wrong.get('reason'),
                   wrong.get('reason') == 'no_settlement' and unit_state('unit-running') == 'AWAITING_AUTHORITY')
+            # A wrong actor at resume: the settlement's author no longer holds the resolving roles.
+            uid = unit('unit-demoted', 'VERIFYING')
+            held = raise_stop(raise_packet('worker', uid, 'build', 'reason-demoted', roles=('project_owner', 'technical_authority')))
+            sid = held.get('stop_id')
+            reply(sid, 'accept: resume it')
+            ok = (settled(sid) or {}).get('ruling') == 'approve'
+            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'admission_authority',
+                                                                                 'priority_authority']})
+            demoted = resume(sid)
+            check(RW, 'a settlement whose author no longer holds the resolving roles does not resume [%s]' % demoted.get('reason'),
+                  ok and demoted.get('reason') == 'not_authorized' and unit_state(uid) == 'AWAITING_AUTHORITY')
+            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'admission_authority',
+                                                                                 'priority_authority', 'technical_authority']})
 
         # AC3: the designated authority's current settlement resumes a clean stop with a fresh station contract.
         with section(RF):
@@ -386,19 +399,6 @@ def _v75_checks(base):
                 twice = resume(sid)
                 check(RF, '%s: a second resume is refused and issues no second contract [%s]' % (uid, twice.get('reason')),
                       twice.get('reason') == 'not_stopped' and (entity(uid) or {}).get('version') == u.get('version'))
-            # The designated authority must still hold the resolving roles when the stop resumes.
-            uid = unit('unit-demoted', 'VERIFYING')
-            held = raise_stop(raise_packet('worker', uid, 'build', 'reason-demoted', roles=('project_owner', 'technical_authority')))
-            sid = held.get('stop_id')
-            reply(sid, 'accept: resume it')
-            ok = (settled(sid) or {}).get('ruling') == 'approve'
-            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'admission_authority',
-                                                                                 'priority_authority']})
-            demoted = resume(sid)
-            check(RF, 'a settlement whose author no longer holds the resolving roles does not resume [%s]' % demoted.get('reason'),
-                  ok and demoted.get('reason') == 'not_authorized' and unit_state(uid) == 'AWAITING_AUTHORITY')
-            A.admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner', 'admission_authority',
-                                                                                 'priority_authority', 'technical_authority']})
 
         # AC3: an unknown-effect stop never resumes on an answer; its dispatch stays as it was.
         with section(RX):
