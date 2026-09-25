@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W94
 plan_revision: 4
-depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0159]
+depends_on: [VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0159, VELDO-0160]
 placement: [loop, distribution]
 protected_paths: []
 footprint:
@@ -195,3 +195,7 @@ moves earlier, to the new stage 2 draft VELDO-0159, so the owner can enter the A
 before this specification is built; the "MCP servers and credentials" row keeps the catalog table, the
 revision history and the credential list and opens that form, so it is not built twice, and depends_on
 adds VELDO-0159. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0160, which now owns the
+per-account rate-limit windows, reset times and "no account until" the usage row shows (split out of
+VELDO-0062). Status unchanged.

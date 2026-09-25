@@ -113,40 +113,6 @@ acceptance_criteria:
       account label for usage; the ledger-attribution comparison must fail.
     falsified_by: >
       Use a caller-supplied account label for usage; the ledger-attribution comparison must fail.
-  - id: AC5
-    text: >
-      Claim: The owner registers any number of logged-in subscription accounts for each provider,
-      each once with its own login, and the factory runs work on all of them at the same time, each
-      with its own credentials, usage and rate-limit windows, moving new work off an account that
-      has reached its limit. Set and completeness: Register three Claude Code accounts and one Codex
-      account (each its own profile: Claude Code's config directory, Codex's home), run concurrent
-      work across them, and read back that each invocation used exactly its own account's profile and
-      was charged to that account; exhaust one account's allowance and require new work to go to
-      another account of the same provider while nothing is sent to the exhausted one until its
-      reported reset; add an account later with no restart of running work. An account with no
-      usage observation yet admits one run at a time until its first observation, because unknown is
-      never zero. Falsifier: Launch two accounts' work with one shared profile; the per-account
-      isolation check must fail.
-    falsified_by: >
-      Launch two accounts' work with one shared profile; the per-account isolation check must fail.
-  - id: AC6
-    text: >
-      Claim: A run stopped by its account's limit is classified `account_limit` with its window and
-      reset time, and a re-run-or-ask decision is made over its record: re-run on another account only
-      when the record shows no call to an MCP tool not marked read-only, and otherwise ask the owner,
-      naming the calls. Set and completeness: Feed the receiver's classification a stream that reports
-      its window exhausted, an engine that ends with its rate-limit result, and an ordinary nonzero
-      exit, and read back `account_limit` with the window and reset time recorded for the first two
-      only. Feed the decision fixture records in the execution record's shape (VELDO-0141) with the
-      read-only marks of catalog revisions (VELDO-0144): one with no MCP call, one with only calls to
-      tools marked read-only, one with a call to a tool not marked read-only, and one with a call to a
-      tool of a server whose revision marks nothing; the first two decide re-run and the others decide
-      ask with exactly those calls named. Carrying out the decision (the new dispatch, or the question
-      to the owner) is VELDO-0154 AC3. Falsifier: Decide re-run for a record that shows a call to an
-      MCP tool not marked read-only; the ask-decision row must fail.
-    falsified_by: >
-      Decide re-run for a record that shows a call to an MCP tool not marked read-only; the
-      ask-decision row must fail.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern, preserve accepted evidence and unresolved obligations,
@@ -178,15 +144,14 @@ No automatic recovery, extra channel activation or broader host qualification is
   account, project and unit.
 - Threat model: an invocation authenticated with another account's profile or one taken from the
   caller's environment; a paid API credential reaching the engine; a worker's own report claiming less
-  usage than the CLI recorded; work sent to an account at its limit before its reported reset; a run
-  that wrote through an MCP server decided for a re-run on another account instead of asking. MCP servers keep the
+  usage than the CLI recorded; a usage reservation released before its settlement (the pool, the limit
+  and the re-run decision are VELDO-0160's). MCP servers keep the
   credentials their configuration gives them (VELDO-0127, VELDO-0144). The owner's account and the
   installed engine are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); a child
   deliberately hunting credentials through kernel interfaces; CLI report formats the installed CLIs do
   not produce; lost reports after a crash (Release 2); a worker's tools reading their own engine
-  login, accepted for Release 1 by the owner (Telegram 29163) with the separation in Release 2;
-  carrying a session over to another account mid-run.
+  login, accepted for Release 1 by the owner (Telegram 29163) with the separation in Release 2.
 
 ## Notes
 
@@ -204,17 +169,8 @@ source dispatch) and its concurrency, one run by default. `.veldo/accounts.py` b
 that prepares a profile directory and prints its login step for either provider. The owner registers
 an account for a provider and host, logs in once into the prepared profile, and a short qualification
 run confirms the login is a subscription; the Runner reads the pool at every dispatch, so the new
-account takes work at the next dispatch.
-
-Choosing an account is part of preparing a dispatch, inside the VELDO-0036 reservation. The candidates
-are the active accounts of an engine the role allows, with a profile on the chosen host, outside every
-reported rate-limit window and under their concurrency. The Runner picks the lowest last reported
-utilization on the tightest window, then the fewest active runs, then the least recently used. With
-no candidate the unit waits, the UI shows "no account until" the earliest reset, and the factory loop
-sets a timer for that time (VELDO-0154 AC1). The re-run rule (AC6) is a decision over a record: it
-reads a run's execution record in VELDO-0141's shape and the read-only marks of VELDO-0144's catalog
-revisions, so its checks use fixture records and this concern depends on neither; VELDO-0154 AC3 feeds it
-each real run's record and carries out what it decides.
+account takes work at the next dispatch. Running on many accounts at once, choosing among them, the
+limit and the re-run rule are VELDO-0160.
 
 VELDO-0036 supplies atomic account/project/unit usage reservations. Before every initial,
 retry or follow-on CLI invocation, check all applicable caps and outstanding reservations;
@@ -282,3 +238,9 @@ unchanged.
 2026-09-25, PLAN-0019 revision 4, third review: the title drops "credential separation", which is
 Release 2 hardening since the owner's answer (Telegram 29163), and names what Release 1 keeps: each
 invocation on its own account's subscription login, and live usage accounting. Status unchanged.
+
+2026-09-25, PLAN-0019 revision 4, third review: this specification held six criteria, so the pool (AC5)
+and the `account_limit` classification with the re-run-or-ask decision (AC6) move to the new draft
+VELDO-0160, where AC5 is its AC1 unchanged and AC6 is two criteria with a falsifier each; the selection
+order moves with them. AC1 to AC4 (the login per dispatch, the pre-launch caps, settlement and
+attribution) are unchanged. Status unchanged.

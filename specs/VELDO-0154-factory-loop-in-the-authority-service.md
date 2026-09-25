@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W114
 plan_revision: 4
-depends_on: [VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0129, VELDO-0141]
+depends_on: [VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064, VELDO-0129, VELDO-0141, VELDO-0160]
 placement: [loop, fleet]
 protected_paths: []
 footprint:
@@ -72,10 +72,10 @@ acceptance_criteria:
       Ignore end of file on the launch pipe when the receiver dies; the receiver-death row must fail.
   - id: AC3
     text: >
-      Claim: The loop carries out the re-run-or-ask decision VELDO-0062 AC6 makes for a run that ended
+      Claim: The loop carries out the re-run-or-ask decision VELDO-0160 AC3 makes for a run that ended
       `account_limit`: it dispatches the same station again under a new dispatch identity on another
       account from the same accepted commit, or asks the owner whether to re-run, naming the calls. Set
-      and completeness: End a real run as `account_limit` and feed VELDO-0062's decision its execution
+      and completeness: End a real run as `account_limit` and feed VELDO-0160's decision its execution
       record (VELDO-0141). For a re-run decision observe one new dispatch of the same station, on
       another account of an engine the role allows, from the same accepted commit, and nothing sent to
       the exhausted account before its reported reset. For an ask decision (a record with a call to an
@@ -122,7 +122,7 @@ policy or deployed service changes in this draft.
 - Normal use: the Runner and factory loop run inside the authority service, and each commit, each
   run's end on the launch pipe and each account reset wakes one pass that offers every eligible unit
   and next station; a run stopped by its account's limit is dispatched again on another account or put
-  to the owner as VELDO-0062 decides.
+  to the owner as VELDO-0160 decides.
 - Threat model: a build ending that wakes nothing, or a receiver that died leaving its unit and account
   slot stuck; a paused project's unit offered; a loop pass started by polling or by any timer but an
   account reset; a run that may have written through an MCP server re-run without asking, or an
@@ -161,3 +161,7 @@ VELDO-0039, VELDO-0047, VELDO-0062, VELDO-0064 and VELDO-0141, the factory loop 
 part of What the reviewer judges come from VELDO-0129, which keeps VELDO-0039 and `control_launch` as
 well, and this specification depends on VELDO-0129 for the real build and review it dispatches.
 A draft: only the owner marks a specification ready.
+
+2026-09-25, PLAN-0019 revision 4, third review: the re-run-or-ask decision moved from VELDO-0062 AC6 to
+VELDO-0160 AC3, so AC3 names it there and depends_on adds VELDO-0160, which also owns the account
+selection and rate-limit windows the reset timer of AC1 reads. Criterion meaning unchanged.
