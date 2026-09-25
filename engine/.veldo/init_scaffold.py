@@ -223,6 +223,9 @@ _FILES = [
     # VELDO-0076: the project service (activation, pause, resume, cancel, completion). A runtime asset
     # the authority loads; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_project.py",
+    # VELDO-0089: the team service (versioned team configuration and builder/reviewer assignments).
+    # A runtime asset the authority loads; no validator import, so not REQUIRED_SUBSTRATE.
+    ".veldo/control_team.py",
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",
