@@ -16,6 +16,11 @@ later station passes the earlier decision back as its ticket and the Gate refuse
 the claim's own lifecycle writes (claim record, unit and backlog state) are station OUTPUTS: they
 are compared by their definition digest and claim ownership is re-decided fresh.
 
+PROJECT LIFECYCLE (VELDO-0076). Every station refuses a unit whose project record carries a lifecycle
+state other than ACTIVE (project_not_active:<state>), so a paused or canceled project's units are
+neither offered, claimed, prepared, launched nor published, and a ticket issued before the pause is
+also stale (its project input moved).
+
 COMPLETION. completion() is the one reader of the four facts (attempt finished, artifact accepted,
 revision landed, objective satisfied) over stored completion receipts, judged by
 completion_contract.fact_problems for the exact subject revision. Landed additionally needs the exact
@@ -157,6 +162,10 @@ READER_CALLS = ('completion_status', 'completion', 'landed', '_landed_from')
 LIFECYCLE_FIELDS = {'unit': ('state',), 'backlog': ('state',)}
 OUTPUT_LABELS = ('claim',)
 
+# VELDO-0076: the one lifecycle state of a project record (control_project.py) whose units any station
+# admits. A record with no lifecycle state predates that service, which is its kind's only writer.
+PROJECT_ACTIVE = 'ACTIVE'
+
 # The error taxonomy every refusal code maps to (observability). Unknown is never success.
 TAXONOMY = {
     'invalid_input': 'invalid_input', 'missing_authority': 'missing_authority', 'draft_plan': 'missing_authority',
@@ -176,6 +185,8 @@ TAXONOMY = {
     'missing_decision': 'missing_authority', 'ambiguous_decision': 'missing_authority',
     'unsupported_decision': 'missing_authority', 'unsigned_decision': 'missing_authority',
     'unbound_decision': 'stale_subject', 'decision_ruling': 'missing_authority',
+    # VELDO-0076: the unit's project is paused, canceled or completed.
+    'project_not_active': 'missing_authority',
 }
 
 OBSERVATION_LIMIT = 1000
@@ -925,8 +936,12 @@ class Gate:
         b = self._data(inputs.get('backlog'))
         if not isinstance(b, dict) or inputs['backlog']['value']['kind'] != 'backlog_item':
             problems.append('missing_authority:backlog')
-        if not isinstance(self._data(inputs.get('project')), dict):
+        project = self._data(inputs.get('project'))
+        if not isinstance(project, dict):
             problems.append('missing_authority:project')
+        elif 'state' in project and project['state'] != PROJECT_ACTIVE:
+            # VELDO-0076: a paused, canceled or completed project stops every station of its units.
+            problems.append('project_not_active:%s' % project['state'])
         return problems
 
     @staticmethod
