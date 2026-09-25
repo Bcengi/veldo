@@ -750,6 +750,31 @@ def _v77_suite():
                     ('the receiver lists no canceled feature',
                      all(((entity(f) or {}).get('data') or {}).get('state') != 'CANCELED' for f in listed))])
 
+                # Two transfers into one ACCEPTED receiver in one cancel: its state moves once, and its
+                # history records ACCEPTED to ACTIVE for the first and ACTIVE to ACTIVE for the second.
+                oW = propose(pid_of(ask('For proj-a: winter passes.')), 'A traveler buys a winter pass.').get('objective_id')
+                accept_through_settlement(oW, 'OBJ-W')
+                oV = propose(pid_of(ask('For proj-a: winter checkout.')), 'A winter pass checks out.').get('objective_id')
+                accept_through_settlement(oV, 'OBJ-V')
+                w1 = send('pm', 'propose_feature', objective=oW, objective_version=objective(oW).get('version'),
+                          feature='winter-cart', title='Winter cart', scope=['checkout']).get('feature_id')
+                w2 = send('pm', 'propose_feature', objective=oW, objective_version=objective(oW).get('version'),
+                          feature='winter-cart-2', title='Winter cart two', scope=['checkout']).get('feature_id')
+                v_before = objective(oV)
+                both = send('olga', 'cancel', objective=oW, objective_version=objective(oW).get('version'),
+                            reason='Winter moved to a partner.',
+                            dispositions=[{'target': w1, 'disposition': 'transfer', 'to': oV, 'recorded_by': 'olga'},
+                                          {'target': w2, 'disposition': 'transfer', 'to': oV, 'recorded_by': 'olga'}])
+                v_after = objective(oV)
+                v_new = [(h.get('source'), h.get('target'), h.get('feature'))
+                         for h in (v_after.get('history') or [])[len(v_before.get('history') or []):]]
+                check('cancel/transfer-bounded', [
+                    ('two transfers into one accepted receiver move its state once',
+                     both.get('ok') and v_before.get('state') == 'ACCEPTED' and v_after.get('state') == 'ACTIVE'
+                     and v_after.get('version', 0) - v_before.get('version', 0) == 1),
+                    ('and its history names the transition each transfer really made',
+                     v_new == [('ACCEPTED', 'ACTIVE', w1), ('ACTIVE', 'ACTIVE', w2)])])
+
             with region('observability'):
                 # The row's own objectives and feature, measured as a change, so objectives other rows
                 # (or a probe) leave pending do not decide it.
