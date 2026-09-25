@@ -1,5 +1,5 @@
---- a/.veldo/control_backlog.py
-+++ b/.veldo/control_backlog.py
-@@ -294 +294 @@
+--- a/.veldo/control_backlog_priority.py
++++ b/.veldo/control_backlog_priority.py
+@@ -39 +39 @@
 -        return ['blocked:backlog']
 +        return []  # defect: a blocked item's units are executable

@@ -19,6 +19,10 @@
     true
    ],
    [
+    "VELDO-0078 priority/gate-question",
+    true
+   ],
+   [
     "VELDO-0078 priority/store-inspection",
     true
    ],
@@ -75,7 +79,7 @@
     true
    ]
   ],
-  "seconds": 4.353
+  "seconds": 5.129
  },
  "controls_green": true,
  "mutants": [
@@ -112,6 +116,10 @@
      false
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -168,7 +176,7 @@
      true
     ]
    ],
-   "seconds": 4.535,
+   "seconds": 6.61,
    "source_sha256": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620"
   },
   {
@@ -183,7 +191,7 @@
     "VELDO-0078 priority/missing-priority"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "11d37e76660421993500b11fe5897e6126fe277f2808014d5187a18a13665f2b",
+   "mutant_sha256": "b402275ddc5d707412a04cdd7a444566fe20c051dbc6d2d11b35c2ab4a0bf081",
    "name": "frontier-offers-unprioritized",
    "named_row_red": true,
    "named_rows": [
@@ -204,6 +212,10 @@
      false
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -260,8 +272,8 @@
      true
     ]
    ],
-   "seconds": 4.566,
-   "source_sha256": "f562e865ae049e08c457c60e8808cc0eb91a603ff557f08b681d876818422d77"
+   "seconds": 7.701,
+   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
   },
   {
    "by_assertion": true,
@@ -279,7 +291,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "c03e1b22ff02eb4e58fe299a333ac4629d6886c34a6359da0852cca608d76cfb",
+   "mutant_sha256": "3eca25502355e943e6c766362cb140a0e83d2401d64d181a32b53921c8a5c6b1",
    "name": "backlog-priority-only-at-selection",
    "named_row_red": true,
    "named_rows": [
@@ -300,6 +312,10 @@
      false
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -356,8 +372,196 @@
      true
     ]
    ],
-   "seconds": 4.48,
-   "source_sha256": "f562e865ae049e08c457c60e8808cc0eb91a603ff557f08b681d876818422d77"
+   "seconds": 6.967,
+   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: priority/gate-question: the Gate's priority predicate is that module, and the service re-exports the same function; the Gate loaded no entity contract and no backlog service"
+   ],
+   "diff": "proof/VELDO-0078/backlog-gate-loads-the-service.diff",
+   "failed_rows": [
+    "VELDO-0078 priority/gate-question"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "927630c21db223815ce67149dac4943a4ee3d08d93362a7456afd45e10a25fd0",
+   "name": "backlog-gate-loads-the-service",
+   "named_row_red": true,
+   "named_rows": [
+    "priority/gate-question"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     false
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 6.22,
+   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: priority/gate-question: and the service refuses to load over it"
+   ],
+   "diff": "proof/VELDO-0078/backlog-classification-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0078 priority/gate-question"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "a4a67effe9c6c55d623e6a9c29103bb3125d1043c23fa01e0e27ede5f4f78f1e",
+   "name": "backlog-classification-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "priority/gate-question"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     false
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 4.853,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -375,7 +579,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "dce3b0844b025f92f343b04400a658aa2a8c07d9d581bf52cf180de01f3636cd",
+   "mutant_sha256": "c1f332b836e4e1c8e657428ebee4db6f47150c43e9a562e4898a44bbdd3d6818",
    "name": "backlog-priority-not-a-gate-predicate",
    "named_row_red": true,
    "named_rows": [
@@ -396,6 +600,10 @@
      false
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -452,8 +660,8 @@
      true
     ]
    ],
-   "seconds": 4.523,
-   "source_sha256": "f562e865ae049e08c457c60e8808cc0eb91a603ff557f08b681d876818422d77"
+   "seconds": 5.205,
+   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
   },
   {
    "by_assertion": true,
@@ -475,7 +683,7 @@
     "VELDO-0078 observability"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "448b3f05f49fdeaccd26290941dc062c84f024cf3556185d6f0a9f30c42eef5b",
+   "mutant_sha256": "efdc24a4a55b00e4697960b7cad0614c01b6ada9060087061350aa535b23f5fb",
    "name": "any-member-decides",
    "named_row_red": true,
    "named_rows": [
@@ -496,6 +704,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -552,20 +764,20 @@
      false
     ]
    ],
-   "seconds": 4.41,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 7.746,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0078 detail: install/assets: .veldo/control_backlog.py installed by the scaffold"
+    "VELDO-0078 detail: install/assets: the backlog service and its question installed by the scaffold"
    ],
    "diff": "proof/VELDO-0078/backlog-not-scaffolded.diff",
    "failed_rows": [
     "VELDO-0078 install/assets"
    ],
    "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "bac9986e40d03e431e7494e22c1fb853399efed4ee5f98a8828b4232ed6918e9",
+   "mutant_sha256": "6284bd5c181259730b7842cbb5a58b3ecf56bfffd10a474d50c701cd769398c7",
    "name": "backlog-not-scaffolded",
    "named_row_red": true,
    "named_rows": [
@@ -586,6 +798,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -642,8 +858,102 @@
      true
     ]
    ],
-   "seconds": 4.567,
-   "source_sha256": "75d7989a2cadb52d160c679db31659402144d4b7cfaaabd0f2bdea725092379e"
+   "seconds": 7.967,
+   "source_sha256": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0078 detail: install/assets: the backlog service and its question installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0078/backlog-question-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0078 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "757cbe0c68c3756b4929e4ca2d6ac8c03e0a4751158383eca7b6a79c012083e7",
+   "name": "backlog-question-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     false
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 6.972,
+   "source_sha256": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf"
   },
   {
    "by_assertion": true,
@@ -657,7 +967,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "38c6d3792998e5cb7d15edde0d416e0dc656c63872d796639afbc8655eeff061",
+   "mutant_sha256": "d54ec89d987c9b241d6d047fcb63e147449c411591416b89d5158a30e11ee7b6",
    "name": "appended-unit-executable",
    "named_row_red": true,
    "named_rows": [
@@ -678,6 +988,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -734,8 +1048,8 @@
      true
     ]
    ],
-   "seconds": 4.315,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.292,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -749,7 +1063,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "8c3662c86879bf0bdba8139877a890364776114daba276123cb852660692d0f7",
+   "mutant_sha256": "cf29a4c03162eee7c7685cbff9ef62a0ef42cc756c0b85b5cfd787b45cc87cbb",
    "name": "stale-revision-answer-applies",
    "named_row_red": true,
    "named_rows": [
@@ -770,6 +1084,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -826,8 +1144,8 @@
      true
     ]
    ],
-   "seconds": 4.447,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.21,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -860,6 +1178,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -916,7 +1238,7 @@
      true
     ]
    ],
-   "seconds": 4.387,
+   "seconds": 5.513,
    "source_sha256": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620"
   },
   {
@@ -929,7 +1251,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "b561a80f9b6bf288936c0d4e2c6709b4928b4a4a9eea4e85839139e8c0436dbf",
+   "mutant_sha256": "2ed76a9ef71425a03795ceda920bdf0b67f832ad56f0c4cf38ce6e60e41c483c",
    "name": "resume-without-resolution",
    "named_row_red": true,
    "named_rows": [
@@ -950,6 +1272,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1006,8 +1332,8 @@
      true
     ]
    ],
-   "seconds": 4.472,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.396,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -1018,8 +1344,8 @@
    "failed_rows": [
     "VELDO-0078 blocked/resume-binding"
    ],
-   "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "1347cf42fac17beae89c297a5407a04a13a303f51d98b740cbd453ae01c4feaf",
+   "module": ".veldo/control_backlog_priority.py",
+   "mutant_sha256": "7beb2a17ed3f727ba9e106d30daed00754bfbd751f11d54b0829f75fbbb8bf58",
    "name": "blocked-item-executable",
    "named_row_red": true,
    "named_rows": [
@@ -1040,6 +1366,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1096,8 +1426,8 @@
      true
     ]
    ],
-   "seconds": 4.388,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.406,
+   "source_sha256": "e0439077c0ee2a6f61ded190c6bcbcab79564d0538a940d765bb6b6683ecfda4"
   },
   {
    "by_assertion": true,
@@ -1115,7 +1445,7 @@
     "VELDO-0078 other-process"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "1e05c64555bbf817eed7e101b324e94152a4358aa4c6b8926a009857550c5c40",
+   "mutant_sha256": "3fce1f2d442b66d76807c8fa179d6ba5cf990ac802a9a3ba80af621fb8469818",
    "name": "backlog-done-on-output",
    "named_row_red": true,
    "named_rows": [
@@ -1136,6 +1466,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1192,8 +1526,8 @@
      true
     ]
    ],
-   "seconds": 4.323,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.145,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -1209,7 +1543,7 @@
     "VELDO-0078 done/accepted-outcomes"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "416a29dc3dd9522c9f9cbe97223665dc148ee305d5e4554a1a10a264c7962e74",
+   "mutant_sha256": "d7eef8e119f5c99fa5dab56dd6422aff54c4019c3f0dc83c638796f624a10a81",
    "name": "incomplete-landing-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1230,6 +1564,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1286,8 +1624,8 @@
      true
     ]
    ],
-   "seconds": 4.353,
-   "source_sha256": "f562e865ae049e08c457c60e8808cc0eb91a603ff557f08b681d876818422d77"
+   "seconds": 5.222,
+   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
   },
   {
    "by_assertion": true,
@@ -1305,7 +1643,7 @@
     "VELDO-0078 done/one-completion-reader"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "a13b63ac29fd3c3788268e0b653688887ba0aac58e60c4e4945a79fadac9bbe7",
+   "mutant_sha256": "5a71962506c7073ebd8440ac1658ab91fcdfaed8fa0b4a14b033ed7d9f6e8728",
    "name": "backlog-done-own-landing-reader",
    "named_row_red": true,
    "named_rows": [
@@ -1326,6 +1664,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1382,8 +1724,8 @@
      true
     ]
    ],
-   "seconds": 4.386,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.329,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -1395,7 +1737,7 @@
     "VELDO-0078 done/closed-unit"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "5e07cbda33200ddca09bff6d663564a46599b65d4076deaae00a9f8a3a478786",
+   "mutant_sha256": "6d5e0122aa4c36938dceca76f9d61b5d86b67bd491103ae441e75b65162c3870",
    "name": "backlog-closed-unit-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1416,6 +1758,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1472,8 +1818,8 @@
      true
     ]
    ],
-   "seconds": 4.372,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.494,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -1485,7 +1831,7 @@
     "VELDO-0078 done/closed-unit"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "f606ce296d1180c1d536e79183c9ebf27a1314d01eb05f37f2dfbbe50c2512a4",
+   "mutant_sha256": "ba6ed9c81dc79375d6c67794095460f43161d9a2465987ddfa49c08d67c5d544",
    "name": "backlog-closed-unit-not-counted",
    "named_row_red": true,
    "named_rows": [
@@ -1506,6 +1852,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1562,8 +1912,8 @@
      true
     ]
    ],
-   "seconds": 4.391,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.19,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -1575,7 +1925,7 @@
     "VELDO-0078 blocked/resume-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "f4691284127808a153bfc5a4aa9b2cd7c745c061db1f71ceeb6a2fc20afec514",
+   "mutant_sha256": "87b2c4639d2210d8f23e11d41e57686a83115ff0d4bcaa47824622ad4b817781",
    "name": "backlog-resume-brief-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -1596,6 +1946,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1652,8 +2006,8 @@
      true
     ]
    ],
-   "seconds": 4.433,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.147,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   },
   {
    "by_assertion": true,
@@ -1667,7 +2021,7 @@
     "VELDO-0078 done/accepted-outcomes"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "dce68fbf926dd873c587544103f14339371c510551bc82addc54e1c6d8faa509",
+   "mutant_sha256": "84c4c8701796f45dfa900f063fdfd8871242179876703089ae832e7f638ff725",
    "name": "backlog-alternative-brief-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -1688,6 +2042,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -1744,13 +2102,13 @@
      true
     ]
    ],
-   "seconds": 4.461,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.455,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
   }
  ],
  "noop": {
   "control_backlog.py": {
-   "copy_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb",
+   "copy_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1765,6 +2123,10 @@
     ],
     [
      "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
      true
     ],
     [
@@ -1824,11 +2186,93 @@
      true
     ]
    ],
-   "seconds": 4.499,
-   "source_sha256": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "seconds": 5.942,
+   "source_sha256": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+  },
+  "control_backlog_priority.py": {
+   "copy_sha256": "e0439077c0ee2a6f61ded190c6bcbcab79564d0538a940d765bb6b6683ecfda4",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0078 install/assets",
+     true
+    ],
+    [
+     "VELDO-0078 priority/declared-set",
+     true
+    ],
+    [
+     "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
+     "VELDO-0078 priority/store-inspection",
+     true
+    ],
+    [
+     "VELDO-0078 priority/owner-decision",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/foreign-sources",
+     true
+    ],
+    [
+     "VELDO-0078 activation/first-claim",
+     true
+    ],
+    [
+     "VELDO-0078 activation/decomposition-growth",
+     true
+    ],
+    [
+     "VELDO-0078 blocked/resume-binding",
+     true
+    ],
+    [
+     "VELDO-0078 done/missing-outcome",
+     true
+    ],
+    [
+     "VELDO-0078 done/authorized-alternative",
+     true
+    ],
+    [
+     "VELDO-0078 done/accepted-outcomes",
+     true
+    ],
+    [
+     "VELDO-0078 done/one-completion-reader",
+     true
+    ],
+    [
+     "VELDO-0078 lifecycle/regular-path",
+     true
+    ],
+    [
+     "VELDO-0078 done/closed-unit",
+     true
+    ],
+    [
+     "VELDO-0078 other-process",
+     true
+    ],
+    [
+     "VELDO-0078 observability",
+     true
+    ]
+   ],
+   "seconds": 5.748,
+   "source_sha256": "e0439077c0ee2a6f61ded190c6bcbcab79564d0538a940d765bb6b6683ecfda4"
   },
   "control_eligibility.py": {
-   "copy_sha256": "f562e865ae049e08c457c60e8808cc0eb91a603ff557f08b681d876818422d77",
+   "copy_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1843,6 +2287,10 @@
     ],
     [
      "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
      true
     ],
     [
@@ -1902,11 +2350,11 @@
      true
     ]
    ],
-   "seconds": 4.596,
-   "source_sha256": "f562e865ae049e08c457c60e8808cc0eb91a603ff557f08b681d876818422d77"
+   "seconds": 5.034,
+   "source_sha256": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
   },
   "init_scaffold.py": {
-   "copy_sha256": "75d7989a2cadb52d160c679db31659402144d4b7cfaaabd0f2bdea725092379e",
+   "copy_sha256": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1921,6 +2369,10 @@
     ],
     [
      "VELDO-0078 priority/missing-priority",
+     true
+    ],
+    [
+     "VELDO-0078 priority/gate-question",
      true
     ],
     [
@@ -1980,8 +2432,8 @@
      true
     ]
    ],
-   "seconds": 4.614,
-   "source_sha256": "75d7989a2cadb52d160c679db31659402144d4b7cfaaabd0f2bdea725092379e"
+   "seconds": 5.097,
+   "source_sha256": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf"
   },
   "tasks.py": {
    "copy_sha256": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620",
@@ -2002,6 +2454,10 @@
      true
     ],
     [
+     "VELDO-0078 priority/gate-question",
+     true
+    ],
+    [
      "VELDO-0078 priority/store-inspection",
      true
     ],
@@ -2058,13 +2514,13 @@
      true
     ]
    ],
-   "seconds": 4.612,
+   "seconds": 5.143,
    "source_sha256": "6933d675fe0180ca243c5b8b7e325537ab1663baba14c06a78964d0a5f9b5620"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 78",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 102.483,
+ "serial_seconds": 156.133,
  "spec_id": "VELDO-0078",
  "suite": "scripts/suites/73_veldo_0078_backlog.py"
 }

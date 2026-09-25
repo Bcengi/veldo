@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -125 +125 @@
+-BL = _organ('control_backlog_priority')
++BL = _organ('control_backlog')  # defect: the Gate loads the service, its entity contract and the parser

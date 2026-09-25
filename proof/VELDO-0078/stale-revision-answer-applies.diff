@@ -1,5 +1,5 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -609 +609 @@
+@@ -614 +614 @@
 -        if found != target:
 +        if (found.get('kind'), found.get('ref')) != (target['kind'], target['ref']):  # defect: any revision

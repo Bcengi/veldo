@@ -1,6 +1,6 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -706 +706,2 @@
+@@ -711 +711,2 @@
 -                u['unit']: {'kind': UNIT_KIND, 'data': self._new_unit(data, u, revision, entry)}}
 +                u['unit']: {'kind': UNIT_KIND, 'data': dict(self._new_unit(data, u, revision, entry),
 +                                                            state='READY')}}  # defect: no fresh priority

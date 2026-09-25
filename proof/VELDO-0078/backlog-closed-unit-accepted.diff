@@ -1,5 +1,5 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -319,0 +320,2 @@
+@@ -324,0 +325,2 @@
 +    if u.get('state') == 'CANCELED' and not isinstance(alternative, dict):
 +        return []  # defect: any CANCELED unit is an accepted outcome

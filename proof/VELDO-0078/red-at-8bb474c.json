@@ -2,7 +2,9 @@
  "by_assertion": true,
  "commit": "8bb474c82049297ebf196878cf4a725b837499b0",
  "details": [
+  "VELDO-0078 detail: install/assets: the backlog service and its question installed by the scaffold; both engine copies identical; both laid by the installer",
   "VELDO-0078 detail: priority/missing-priority: the Gate's selection refuses it for missing priority, so the frontier does not offer it; every Gate station (plan run-check and the cycle's assignment step included) names its missing priority; the Gate refuses it at claim and at direct execution for missing priority alone; the VELDO-0132 cycle's assignment step refuses it for missing priority, and assigns prioritized work",
+  "VELDO-0078 detail: priority/gate-question: the question imports nothing; the Gate's priority predicate is that module, and the service re-exports the same function; its classification is the entity contract's; a classification that drifts is named; and the service refuses to load over it",
   "VELDO-0078 detail: activation/decomposition-growth: the task claim refuses the appended unit, not admitted and not prioritized at the Gate",
   "VELDO-0078 detail: blocked/resume-binding: an answer to this block shown another brief does not resume; the owner's refusal keeps it blocked; the owner's settled resolution resumes exactly that phase",
   "VELDO-0078 detail: done/authorized-alternative: an answer shown another brief does not authorize it; the owner's settled answer authorizes the alternative outcome",
@@ -12,7 +14,9 @@
   "VELDO-0078 detail: other-process: the other process read the store read-only; it sees the DONE item and the admitted one; it gets the same executable answers; it gets the same outcome answers"
  ],
  "failed_rows": [
+  "VELDO-0078 install/assets",
   "VELDO-0078 priority/missing-priority",
+  "VELDO-0078 priority/gate-question",
   "VELDO-0078 activation/decomposition-growth",
   "VELDO-0078 blocked/resume-binding",
   "VELDO-0078 done/authorized-alternative",
@@ -24,7 +28,11 @@
  "modules": {
   ".veldo/control_backlog.py": {
    "at_commit": "1866d88941a66303872613ddce1611ece836e6535ec59aeb902fb9d45f872275",
-   "now": "085ac09cb663fdf6b3163db5f9a57a3f36b6d8f80b6e5a0397761a96c72e79cb"
+   "now": "5dc12c310cbcc2482aa52dbf241400fe04623e4c5357d753abf8bc68044a3597"
+  },
+  ".veldo/control_backlog_priority.py": {
+   "at_commit": null,
+   "now": "e0439077c0ee2a6f61ded190c6bcbcab79564d0538a940d765bb6b6683ecfda4"
   },
   ".veldo/control_claim.py": {
    "at_commit": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf",
@@ -32,7 +40,7 @@
   },
   ".veldo/control_eligibility.py": {
    "at_commit": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868",
-   "now": "f562e865ae049e08c457c60e8808cc0eb91a603ff557f08b681d876818422d77"
+   "now": "df20782cb9cd81f15d75b53644f3ec39f8fc8e826cbad7e64bed0863d90c93af"
   },
   ".veldo/control_objective.py": {
    "at_commit": "5b9f2122696ffed618407e54883f9c656a8ee24c9dd31652e35fb1092d244392",
@@ -48,7 +56,7 @@
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "544cd7ef8ced141fbcbd9245b120c668ff8a565abebdbbf7d749ec241ffac8b3",
-   "now": "75d7989a2cadb52d160c679db31659402144d4b7cfaaabd0f2bdea725092379e"
+   "now": "f124e6f60ffd775833dc86639f754971b4f2cfc12ac398a346ef9df531857bcf"
   },
   ".veldo/tasks.py": {
    "at_commit": "ca475ae1af0e5915b8b57eb6b3ba183f6b5ff738544c69cdf33cab7e67c4b20c",
@@ -59,7 +67,7 @@
  "rows": [
   [
    "VELDO-0078 install/assets",
-   true
+   false
   ],
   [
    "VELDO-0078 priority/declared-set",
@@ -67,6 +75,10 @@
   ],
   [
    "VELDO-0078 priority/missing-priority",
+   false
+  ],
+  [
+   "VELDO-0078 priority/gate-question",
    false
   ],
   [
@@ -127,7 +139,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 4.31,
+ "seconds": 4.799,
  "spec_id": "VELDO-0078",
  "suite": "scripts/suites/73_veldo_0078_backlog.py",
  "tree": "git archive 8bb474c82049297ebf196878cf4a725b837499b0, unchanged; the current suite file run against it"
