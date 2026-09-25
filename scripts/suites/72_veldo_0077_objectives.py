@@ -734,22 +734,6 @@ def _v77_suite():
                                   {'target': fp, 'disposition': 'stop', 'recorded_by': 'olga'}])
                 fc_after = (entity(fc) or {}).get('data') or {}
                 listed = objective(oR).get('features') or []
-                check('cancel/transfer-bounded', [
-                    ('the source is accepted at revision 1 and the receiver, scoped to checkout, at revision 2',
-                     objective(oT).get('accepted_revision') == 1 and objective(oR).get('accepted_revision') == 2
-                     and objective(oR).get('bound', {}).get('scope') == ['checkout'] and bool(fc) and bool(fp)),
-                    ('a transfer outside the receiver\'s accepted scope is refused by name',
-                     outside_transfer.get('reason') == 'out_of_scope:payments'),
-                    ('nothing was written for it', after_outside == start),
-                    ('a disposition set naming one feature twice is refused',
-                     twice.get('reason') == 'invalid_input:duplicate_disposition'),
-                    ('nothing was written for that either', after_twice == start),
-                    ('an in-scope transfer moves the feature under the receiver\'s accepted revision',
-                     moved.get('ok') and fc_after.get('objective_uuid') == oR and fc_after.get('state') == 'RAW'
-                     and fc_after.get('objective_revision') == 2 and fc in listed),
-                    ('the receiver lists no canceled feature',
-                     all(((entity(f) or {}).get('data') or {}).get('state') != 'CANCELED' for f in listed))])
-
                 # Two transfers into one ACCEPTED receiver in one cancel: its state moves once, and its
                 # history records ACCEPTED to ACTIVE for the first and ACTIVE to ACTIVE for the second.
                 oW = propose(pid_of(ask('For proj-a: winter passes.')), 'A traveler buys a winter pass.').get('objective_id')
@@ -769,6 +753,20 @@ def _v77_suite():
                 v_new = [(h.get('source'), h.get('target'), h.get('feature'))
                          for h in (v_after.get('history') or [])[len(v_before.get('history') or []):]]
                 check('cancel/transfer-bounded', [
+                    ('the source is accepted at revision 1 and the receiver, scoped to checkout, at revision 2',
+                     objective(oT).get('accepted_revision') == 1 and objective(oR).get('accepted_revision') == 2
+                     and objective(oR).get('bound', {}).get('scope') == ['checkout'] and bool(fc) and bool(fp)),
+                    ('a transfer outside the receiver\'s accepted scope is refused by name',
+                     outside_transfer.get('reason') == 'out_of_scope:payments'),
+                    ('nothing was written for it', after_outside == start),
+                    ('a disposition set naming one feature twice is refused',
+                     twice.get('reason') == 'invalid_input:duplicate_disposition'),
+                    ('nothing was written for that either', after_twice == start),
+                    ('an in-scope transfer moves the feature under the receiver\'s accepted revision',
+                     moved.get('ok') and fc_after.get('objective_uuid') == oR and fc_after.get('state') == 'RAW'
+                     and fc_after.get('objective_revision') == 2 and fc in listed),
+                    ('the receiver lists no canceled feature',
+                     all(((entity(f) or {}).get('data') or {}).get('state') != 'CANCELED' for f in listed)),
                     ('two transfers into one accepted receiver move its state once',
                      both.get('ok') and v_before.get('state') == 'ACCEPTED' and v_after.get('state') == 'ACTIVE'
                      and v_after.get('version', 0) - v_before.get('version', 0) == 1),
