@@ -639,6 +639,23 @@ def _v75_checks(base):
                                                                                  'priority_authority', 'technical_authority']})
             check(NU, 'an owner no longer current is owner_not_current, classed missing_authority [%s]'
                   % (demoted.get('notice') or {}).get('reason'), notice_refused(demoted, 'owner_not_current'))
+            # Review 75b (the owner exemption of the bound-chat refusal): the record's own owner re-enrolled on a
+            # different chat while the edge is active is in the window the gate names stale_enrollment. His stop
+            # is recorded and its notice deferred under that name; nothing is sent.
+            with section(RD):
+                A.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
+                          dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner',
+                               chat_id=5550075, revoked_at=None))
+                sent = sends()
+                uid = unit('unit-owner-new-chat', 'RUNNING')
+                moved = raise_stop(raise_packet('worker', uid, 'build', 'reason-owner-new-chat'))
+                check(RD, 'the owner re-enrolled on a different chat while the edge is active: his stop is recorded and '
+                      'its notice deferred as stale_enrollment [%s %s %s]' % (moved.get('outcome'), moved.get('reason'),
+                                                                             (moved.get('notice') or {}).get('reason')),
+                      (acts.current() or {}).get('state') == 'active' and moved.get('outcome') == 'stopped'
+                      and unit_state(uid) == 'AWAITING_AUTHORITY'
+                      and (stop_of(moved.get('stop_id')).get('resolving') or {}).get('principal') == 'owner'
+                      and notice_refused(moved, 'stale_enrollment') and sends() == sent)
             # Filed item (review 75b): the owner re-enrolls the same chat; until he activates again the gate names it
             # stale_enrollment, and a notice in that window keeps the name.
             A.fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
@@ -648,7 +665,30 @@ def _v75_checks(base):
                       if andon is not None else {})
             check(NU, 'a chat enrollment changed since the activation is stale_enrollment, classed missing_authority [%s]'
                   % (window.get('notice') or {}).get('reason'), notice_refused(window, 'stale_enrollment'))
-            A.authorize(acts, 'stop')
+            # Review 75b (the activation pin of the raise): the edge's activation changes between the raise's read
+            # and its commit (the owner stops the edge from inside the commit). The raise is refused stale_subject,
+            # nothing is written and the unit is unchanged. The stop it makes is the one this row needs next.
+            with section(RD):
+                real_commit = andon._commit
+
+                def racing(params, expected, *rest):
+                    A.authorize(acts, 'stop')
+                    return real_commit(params, expected, *rest)
+
+                andon._commit = racing
+                try:
+                    count = len(andon.stops())
+                    uid = unit('unit-activation-race', 'RUNNING')
+                    raced = raise_stop(raise_packet('worker', uid, 'build', 'reason-activation-race'))
+                finally:
+                    andon._commit = real_commit
+                check(RD, 'the edge\'s activation changed inside the raise\'s commit: refused stale_subject, no stop written, '
+                      'the unit unchanged [%s %s %s]' % (raced.get('outcome'), raced.get('reason'), unit_state(uid)),
+                      (acts.current() or {}).get('state') == 'stopped' and raced.get('outcome') == 'refused'
+                      and raced.get('reason') == 'stale_subject' and len(andon.stops()) == count
+                      and unit_state(uid) == 'RUNNING')
+            if (acts.current() or {}).get('state') != 'stopped':
+                A.authorize(acts, 'stop')
             halted = (andon.revise_stop(revise_packet('worker', stops.get('VERIFYING'), 'reason-edge-stopped'))
                       if andon is not None else {})
             check(NU, 'an edge the owner stopped is edge_stopped, classed missing_authority [%s]'
