@@ -1,5 +1,5 @@
 --- a/.veldo/control_landing.py
 +++ b/.veldo/control_landing.py
-@@ -350 +350 @@
+@@ -356 +356 @@
 -        elif authority['data'].get('generation') != self.generation:
 +        elif False:  # defect: a superseded authority generation is current

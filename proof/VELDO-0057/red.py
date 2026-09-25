@@ -10,6 +10,17 @@ lander.py is that commit's file, and control_landing.py is pointed at a path tha
 suite installs none (as that commit installs none). Every other installed module is compared with that
 commit's copy and reported. A row that fails reports its observation, never a crash: each region reds
 its rows on a raise, and a `ran/` row says whether it did.
+
+The first critical review's record is the same script at cc300b6:
+
+    python3 -B proof/VELDO-0057/red.py cc300b6 > proof/VELDO-0057/red-cc300b6.json
+
+There control_landing.py writes the receipt with the unit's revision as it stands at completion (the
+publication carries none), reports ok for a completion whose projection was refused, and reports another
+unit's publication as this one's in a refusal naming that unit's dispatch: completion/revision-moved,
+completion/projection-refused and completion/foreign-dispatch red by assertion, and completion/corrupt-each
+and completion/readers with them, because the revision-2 receipt that lands leaves the restored revision-1
+unit not landed.
 """
 import importlib.util
 import json

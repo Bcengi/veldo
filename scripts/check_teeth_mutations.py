@@ -4379,8 +4379,8 @@ def cases():
 
     # AC1, declared: publish without checking the exact old tip (the lease names the tip the remote holds now).
     landing('landing-old-tip-read-now',
-            "'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': subject['old_tip']}}\n",
-            "'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': self._remote_tip()}}"
+            "'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': subject['old_tip'],\n",
+            "'payload': {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': self._remote_tip(),"
             "  # defect: the old tip is whatever the remote holds now\n", ['exact-tip/moved-tip-refused'])
     landing('lander-factory-push-unleased',
             '        if self.landing is not None:\n            return self._publish(unit, detail)\n',
@@ -4489,6 +4489,26 @@ def cases():
             ['completion/evidence-chain'])
     landing('landing-projection-not-run', '            projection = self.project()\n',
             '            projection = {}  # defect: the projection is not run after the receipt\n', ['completion/projection'])
+    # First critical review: the receipt names the revision current at completion, not the published one.
+    landing('landing-receipt-current-revision',
+            "                published = (data.get('payload') or {}).get('revision')\n"
+            "                if unit_row['data'].get('revision') != published:\n"
+            "                    raise Refused('stale_subject:landing/revision', 'revision %r was published; the unit is at %r'\n"
+            "                                  % (published, unit_row['data'].get('revision')))\n"
+            "                subject = {'id': sid, 'revision': published}\n",
+            "                subject = {'id': sid, 'revision': unit_row['data'].get('revision')}"
+            "  # defect: the receipt takes the revision current at completion\n", ['completion/revision-moved'])
+    landing('landing-receipt-transition-revision-unchecked', "    if revision != payload.get('revision'):\n",
+            "    if False:  # defect: the transition takes a receipt about any revision the unit is at\n",
+            ['completion/revision-moved'])
+    landing('landing-projection-refusal-ok', "        if 'refused' in projection:\n",
+            "        if False:  # defect: a completion whose projection was refused is reported ok\n",
+            ['completion/projection-refused'])
+    landing('landing-refusal-foreign-published',
+            "            # Another unit's publication under this dispatch is never reported as this unit's.\n"
+            "            effect = None\n",
+            "            pass  # defect: another unit's publication is reported as this one's\n",
+            ['completion/foreign-dispatch'])
     # VELDO-0135: enrolled work offered from its floor record. Each criterion's declared falsifier and
     # further defects, each against the one suite 67 row it names; anchors are exact text in the
     # frontier and work loop the suite installs.

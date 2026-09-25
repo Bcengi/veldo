@@ -1,5 +1,5 @@
 --- a/.veldo/control_landing.py
 +++ b/.veldo/control_landing.py
-@@ -536 +536 @@
+@@ -545 +545 @@
 -        if payload.get('commit') != fields['commit']:
 +        if False:  # defect: the candidate is not re-derived

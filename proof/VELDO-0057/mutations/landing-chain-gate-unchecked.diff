@@ -1,5 +1,5 @@
 --- a/.veldo/control_landing.py
 +++ b/.veldo/control_landing.py
-@@ -312 +312 @@
+@@ -318 +318 @@
 -        if _digest(body) != reference.get('digest'):
 +        if False:  # defect: the gate observation is not re-read

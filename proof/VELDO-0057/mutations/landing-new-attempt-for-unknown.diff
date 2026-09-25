@@ -1,5 +1,5 @@
 --- a/.veldo/control_landing.py
 +++ b/.veldo/control_landing.py
-@@ -507 +507 @@
+@@ -516 +516 @@
 -            if outstanding:
 +            if False:  # defect: another publication of the unit is attempted over an unknown one

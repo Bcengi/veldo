@@ -1,5 +1,5 @@
 --- a/.veldo/control_landing.py
 +++ b/.veldo/control_landing.py
-@@ -633 +633 @@
+@@ -647 +647 @@
 -            projection = self.project()
 +            projection = {}  # defect: the projection is not run after the receipt

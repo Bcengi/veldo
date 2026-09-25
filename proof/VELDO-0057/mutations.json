@@ -1,11 +1,11 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 57 --jobs 4 --diff-dir proof/VELDO-0057/mutations",
  "summary": {
-  "mutations_rejected": 29,
+  "mutations_rejected": 33,
   "green_suites": {
-   "70_veldo_0057_landing.py": 54
+   "70_veldo_0057_landing.py": 57
   },
-  "driver_seconds": 53.6
+  "driver_seconds": 57.4
  },
  "all_targets_red_by_assertion": true,
  "mutations_per_row": {
@@ -73,6 +73,16 @@
   ],
   "completion/projection": [
    "landing-projection-not-run"
+  ],
+  "completion/revision-moved": [
+   "landing-receipt-current-revision",
+   "landing-receipt-transition-revision-unchecked"
+  ],
+  "completion/projection-refused": [
+   "landing-projection-refusal-ok"
+  ],
+  "completion/foreign-dispatch": [
+   "landing-refusal-foreign-published"
   ]
  },
  "every_row_has_two_or_more": false,
@@ -80,16 +90,16 @@
   {
    "module": ".veldo/control_landing.py",
    "identical_bytes": true,
-   "rows": 28,
+   "rows": 31,
    "failed_rows": [],
-   "seconds": 6.6
+   "seconds": 6.4
   },
   {
    "module": ".veldo/lander.py",
    "identical_bytes": true,
-   "rows": 28,
+   "rows": 31,
    "failed_rows": [],
-   "seconds": 6.2
+   "seconds": 6.4
   }
  ],
  "mutations": [
@@ -133,6 +143,9 @@
     "exact-subject/valid-publishes",
     "unconfirmed/unknown-stops",
     "unconfirmed/moved-after-ack",
+    "completion/revision-moved",
+    "completion/projection-refused",
+    "completion/foreign-dispatch",
     "completion/corrupt-each",
     "completion/readers",
     "completion/projection"
@@ -164,6 +177,9 @@
     "exact-subject/valid-publishes",
     "unconfirmed/unknown-stops",
     "unconfirmed/moved-after-ack",
+    "completion/revision-moved",
+    "completion/projection-refused",
+    "completion/foreign-dispatch",
     "completion/corrupt-each",
     "completion/readers",
     "completion/projection"
@@ -325,6 +341,9 @@
     "exact-subject/valid-publishes",
     "unconfirmed/unknown-stops",
     "unconfirmed/moved-after-ack",
+    "completion/revision-moved",
+    "completion/projection-refused",
+    "completion/foreign-dispatch",
     "completion/corrupt-each",
     "completion/readers",
     "completion/projection"
@@ -398,6 +417,8 @@
     "exact-subject/tree",
     "exact-subject/dependency-version",
     "exact-subject/valid-publishes",
+    "completion/revision-moved",
+    "completion/projection-refused",
     "completion/corrupt-each",
     "completion/readers",
     "completion/projection"
@@ -465,6 +486,7 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
+    "completion/revision-moved",
     "completion/corrupt-each"
    ],
    "target_red": true,
@@ -525,6 +547,7 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
+    "completion/revision-moved",
     "completion/corrupt-each"
    ],
    "target_red": true,
@@ -540,6 +563,7 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
+    "completion/foreign-dispatch",
     "completion/corrupt-each"
    ],
    "target_red": true,
@@ -555,6 +579,7 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
+    "completion/revision-moved",
     "completion/corrupt-each"
    ],
    "target_red": true,
@@ -615,11 +640,76 @@
    "edits": 1,
    "baseline": "green",
    "red_rows": [
+    "completion/projection-refused",
     "completion/projection"
    ],
    "target_red": true,
    "target_region_completed": true,
    "diff": "mutations/landing-projection-not-run.diff"
+  },
+  {
+   "mutation": "landing-receipt-current-revision",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/revision-moved"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/revision-moved"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-receipt-current-revision.diff"
+  },
+  {
+   "mutation": "landing-receipt-transition-revision-unchecked",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/revision-moved"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/revision-moved",
+    "completion/projection-refused",
+    "completion/corrupt-each",
+    "completion/readers",
+    "completion/projection"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-receipt-transition-revision-unchecked.diff"
+  },
+  {
+   "mutation": "landing-projection-refusal-ok",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/projection-refused"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/projection-refused"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-projection-refusal-ok.diff"
+  },
+  {
+   "mutation": "landing-refusal-foreign-published",
+   "module": ".veldo/control_landing.py",
+   "target_rows": [
+    "completion/foreign-dispatch"
+   ],
+   "edits": 1,
+   "baseline": "green",
+   "red_rows": [
+    "completion/foreign-dispatch"
+   ],
+   "target_red": true,
+   "target_region_completed": true,
+   "diff": "mutations/landing-refusal-foreign-published.diff"
   }
  ]
 }

@@ -1,5 +1,5 @@
 --- a/.veldo/control_landing.py
 +++ b/.veldo/control_landing.py
-@@ -400 +400 @@
+@@ -406 +406 @@
 -        exact = {'tree': tree, 'source': fields['evidence'], 'proof': proof, 'dependencies': dependencies}
 +        exact = {'tree': fields['watermark'], 'source': fields['evidence'], 'proof': proof, 'dependencies': dependencies}  # defect: the approval is compared with another subject

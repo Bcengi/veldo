@@ -1,0 +1,6 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -685,2 +685 @@
+-            # Another unit's publication under this dispatch is never reported as this unit's.
+-            effect = None
++            pass  # defect: another unit's publication is reported as this one's

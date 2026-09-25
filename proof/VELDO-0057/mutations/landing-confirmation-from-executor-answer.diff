@@ -1,5 +1,5 @@
 --- a/.veldo/control_landing.py
 +++ b/.veldo/control_landing.py
-@@ -573 +573 @@
+@@ -582 +582 @@
 -        if tip != fields['commit']:
 +        if False:  # defect: the executor's answer is taken for the remote's
