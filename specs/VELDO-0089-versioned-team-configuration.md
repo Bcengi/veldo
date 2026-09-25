@@ -147,3 +147,10 @@ review-tier/adversarial decision-review depth moved to Release 3. Versioned role
 budgets and applicable 0049 engineering review remain. The criteria, declared evidence
 universe, Context and Notes above now carry only the retained function. No specification
 status or historical proof was changed.
+
+2026-09-25, built on branch build-veldo-0089: `.veldo/control_team.py` (engine copy identical, installed by
+init_scaffold) is the team service: a closed versioned team schema, staffing problems opening an owner
+request, owner amendments applied only from the project owner's settled VELDO-0068 answer, and
+builder/reviewer assignments bound to the current team revision and the VELDO-0049 review policy.
+Suite 73_veldo_0089_team, red record at d0cf6a5 and 23 finding-89 mutations in proof/VELDO-0089/. No
+footprint path was added. Status unchanged.

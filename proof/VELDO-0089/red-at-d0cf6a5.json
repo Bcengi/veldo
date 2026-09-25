@@ -52,7 +52,7 @@
   },
   ".veldo/control_team.py": {
    "at_commit": null,
-   "now": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "now": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "c61516253b6eedb87a5096a49a4c006113c3e0fdd892c6dc06e71e6b96b97238",
@@ -155,7 +155,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.674,
+ "seconds": 1.818,
  "spec_id": "VELDO-0089",
  "suite": "scripts/suites/73_veldo_0089_team.py",
  "tree": "git archive d0cf6a5dff4a6e42815da556c3685ca827af326f, unchanged; the current suite file run against it"

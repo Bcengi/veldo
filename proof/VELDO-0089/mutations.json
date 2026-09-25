@@ -99,7 +99,7 @@
     true
    ]
   ],
-  "seconds": 2.067
+  "seconds": 2.056
  },
  "controls_green": true,
  "mutants": [
@@ -214,7 +214,7 @@
      true
     ]
    ],
-   "seconds": 2.024,
+   "seconds": 2.006,
    "source_sha256": "7ce520e602e1c7978674dadaecebe2349af0b36c1936a0789bf72a8f0b225951"
   },
   {
@@ -235,7 +235,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "95ec7d4a89b8e0010db7974385dbe3194bbe92834af1c92728869ed854aef8ec",
+   "mutant_sha256": "d41dde6fc327615648d8c56427503640e0b384a30a661ccc70ea6e980d33f915",
    "name": "review-role-not-required",
    "named_row_red": true,
    "named_rows": [
@@ -336,8 +336,8 @@
      true
     ]
    ],
-   "seconds": 2.027,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 1.982,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -357,7 +357,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "997c33bc30fdf0856826271cdf91bd8f0a8ca37aead5e52319365d7a47d6478f",
+   "mutant_sha256": "9d6f71480f96a905f7e342a7a7093e5fd66ffd65b3bc95c66d15464d83626749",
    "name": "no-owner-request",
    "named_row_red": true,
    "named_rows": [
@@ -458,8 +458,8 @@
      true
     ]
    ],
-   "seconds": 1.965,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 1.921,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -477,7 +477,7 @@
     "VELDO-0089 team/project-requirements"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "97bd4a226994f9dde128de4e7c38769053bb02efc631c40a23e1708e3a63860a",
+   "mutant_sha256": "05afc5f62e49edb4ad549b7a459b98131410f46579ae42a428a1e1b8437a0951",
    "name": "tool-field-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -578,8 +578,8 @@
      true
     ]
    ],
-   "seconds": 2.065,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.019,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -593,7 +593,7 @@
     "VELDO-0089 team/project-requirements"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "eb991395ba00f943f9f617743a04cbdc0f30555056dda9d4bfefc648e6493d41",
+   "mutant_sha256": "a6628e5cc91c7e2e506897c800f604ef995dc0f41b53fc07bb36b543588e150d",
    "name": "two-managers-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -694,8 +694,8 @@
      true
     ]
    ],
-   "seconds": 2.111,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.041,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -713,7 +713,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "b0e28bad9068c2e7999f39e9e671745ac0157b42f6893ad12a710d0cd6c10e5f",
+   "mutant_sha256": "19368a5d06663f228f3b4984dd16f9492aa2ab0c3623d3e74fa02f8535a72dd1",
    "name": "separation-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -814,8 +814,8 @@
      true
     ]
    ],
-   "seconds": 2.177,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.028,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -833,7 +833,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "097bd17855e4ecb208cd5f7fa7aab4d919d4d2be969a2bf4279db33791e4ba5f",
+   "mutant_sha256": "d061c4b04ce8a8d89583644a49003ccf9af16d33fbefec131298db2f11c09fdf",
    "name": "invented-worker-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -934,8 +934,8 @@
      true
     ]
    ],
-   "seconds": 2.086,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.018,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -947,7 +947,7 @@
     "VELDO-0089 team/project-requirements"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "52e7d1c86d4d74dc97d060f767731c77bec832c94280f73cdb9c6126b159219a",
+   "mutant_sha256": "5fa32f1b75bcd7215709c2ff045b596ad5d6a74a57b62b22380f39db3c81bc3d",
    "name": "budget-over-project",
    "named_row_red": true,
    "named_rows": [
@@ -1048,8 +1048,8 @@
      true
     ]
    ],
-   "seconds": 2.163,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.027,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1061,7 +1061,7 @@
     "VELDO-0089 team/project-requirements"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "9744947c98fb761fe503f5e31ceb76f6b49af625a83fa9bf086061f7094403b1",
+   "mutant_sha256": "60923c8126117e143170cb59c11728c112e874e68128110b0bc1cc74bb5d12c3",
    "name": "engine-unregistered",
    "named_row_red": true,
    "named_rows": [
@@ -1162,8 +1162,8 @@
      true
     ]
    ],
-   "seconds": 2.102,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.051,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1175,7 +1175,7 @@
     "VELDO-0089 team/roster-not-authority"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "4ec524d12d5a6481239307560317a3e9015392063545f3d7db6df038258e4c1f",
+   "mutant_sha256": "8704673efc7e47146777f910fd2763dcccc188da08bea9e9b88c7d2599dbac4c",
    "name": "roster-grants-admission",
    "named_row_red": true,
    "named_rows": [
@@ -1276,8 +1276,8 @@
      true
     ]
    ],
-   "seconds": 2.15,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.065,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1289,7 +1289,7 @@
     "VELDO-0089 team/roster-not-authority"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "f164dfe996153cf3c26a931317338e6c42d4cb22f857a44f76f5718f3401715b",
+   "mutant_sha256": "7bde139fc0ec66fdf60d7326d9d12b675274bc8297786541f6657b1dda5fb0aa",
    "name": "authority-permission-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1390,8 +1390,8 @@
      true
     ]
    ],
-   "seconds": 2.158,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.15,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1407,7 +1407,7 @@
     "VELDO-0089 team/self-promotion"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "bb8f434cecaae02c3d8adf5fec8b1348b86b7ca16d70a42179da8bed6f97520f",
+   "mutant_sha256": "b6223ed63229a6d360e074c764e6fef8f290fd01b4b6f77b93d3ac6f68748261",
    "name": "amendment-version-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -1508,8 +1508,8 @@
      true
     ]
    ],
-   "seconds": 2.097,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.053,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1525,7 +1525,7 @@
     "VELDO-0089 team/self-promotion"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "5ccb13bd4816380f68a984ad8a724fe8add6887afbc298e410d0f3ec0b4aca56",
+   "mutant_sha256": "ff34b71cd09fd834cc19624473c48b8afc7dac322d1a4f68b7f1e6d1d87f5750",
    "name": "amendment-target-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1627,8 +1627,8 @@
      true
     ]
    ],
-   "seconds": 2.198,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.037,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1642,7 +1642,7 @@
     "VELDO-0089 team/self-promotion"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "49316e1d7c8bf4229beb24311649e8ab11ccd1366a31f8e358114728c83caaef",
+   "mutant_sha256": "232227bc5513db16d1f6ae8b9517e59c357b73cf163b19c05c356c6b2829f48d",
    "name": "amendment-brief-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1743,8 +1743,8 @@
      true
     ]
    ],
-   "seconds": 2.102,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.016,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1756,7 +1756,7 @@
     "VELDO-0089 team/altered-amendment"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "d5c602b9ac1c2a9468092e37ea80b7b94ac518c123d38e0e51a477fd9ed1488b",
+   "mutant_sha256": "8d27f0c4b6c33b96509d42bad5ebcfeb4c81e62ed96c44d55699118ad87a419b",
    "name": "amendment-signature-unverified",
    "named_row_red": true,
    "named_rows": [
@@ -1857,8 +1857,8 @@
      true
     ]
    ],
-   "seconds": 2.141,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.02,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1872,7 +1872,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "d577693497ad952c910ac35a02698452e3e2f580e55cea2e39414d7484737f20",
+   "mutant_sha256": "93a34adad782b369698252c8d86b6267005b1f10486f86020b707e7133aea220",
    "name": "any-settler-amends",
    "named_row_red": true,
    "named_rows": [
@@ -1973,8 +1973,8 @@
      true
     ]
    ],
-   "seconds": 2.127,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.032,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -1986,7 +1986,7 @@
     "VELDO-0089 team/self-promotion"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "f63cea0b8cae9d573f480bc2c3c99a19f2f02f8e97465e976caa5d4f4b3b2b8f",
+   "mutant_sha256": "37385ff3dd545c7063dada6c43bf01e1a432a3576331aae43667e0d56a6f2911",
    "name": "scope-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2087,8 +2087,8 @@
      true
     ]
    ],
-   "seconds": 2.265,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 1.999,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -2104,7 +2104,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "1ee4092ce09da99f4fe41ddc5dc58c31c5c80e71811613272e1fa2f1b8527d6c",
+   "mutant_sha256": "4dd95df15fd0dd1587a5986795c7e14730350bca9c15f334b784d258996a8010",
    "name": "policy-defaults-to-no-reviews",
    "named_row_red": true,
    "named_rows": [
@@ -2205,8 +2205,8 @@
      true
     ]
    ],
-   "seconds": 2.064,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.008,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -2220,7 +2220,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "e4bb9aaa440066598ea753894349de3fa91c9afe009866129d9b86b9c8e157a9",
+   "mutant_sha256": "c7912f010144965aed00fbd40854464e2ed214eba2bd9ed21ad47d2430cb9722",
    "name": "review-count-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2321,8 +2321,8 @@
      true
     ]
    ],
-   "seconds": 2.149,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.003,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -2336,7 +2336,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "843a6145038462c691eaebbdb84e7ec81fe9d756a04e3873d3a2460febbea69a",
+   "mutant_sha256": "30c0df3cf199a06e88d20d76c3ed355d04cb4b6b9e6be978015e5fbfc1bd6d13",
    "name": "reviewer-independence-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2437,8 +2437,8 @@
      true
     ]
    ],
-   "seconds": 2.112,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.017,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -2452,7 +2452,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "a735b3c8bed83e396e0066db4e93e680e21b256914d916a12cfb5e11ffe6a9ca",
+   "mutant_sha256": "4018ecb2bbb168ff7f5bf238ba5c8ca477a275934585880746688d9af15c4996",
    "name": "subject-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -2553,8 +2553,8 @@
      true
     ]
    ],
-   "seconds": 2.134,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.045,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -2568,7 +2568,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "9c0231d27999aec68f2e6bb084a25bc8e46ed300991a549c5ede9efc4ed3ea1d",
+   "mutant_sha256": "9f69c0e1e730f4f2b30bdb3cc68e69ab10b153b72587909638e2a84e7906a9fb",
    "name": "team-revision-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -2669,8 +2669,8 @@
      true
     ]
    ],
-   "seconds": 2.085,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.011,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   {
    "by_assertion": true,
@@ -2684,7 +2684,7 @@
     "VELDO-0089 team/observability"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "dc82841e3323518c539a6e35dc8be4262cfb526a700f6dd2a34d2c93d7ca3b2a",
+   "mutant_sha256": "1414417dc1b5fb41ea833789f6ef641e6bfe177c2c07157d3160837498946808",
    "name": "non-manager-assigns",
    "named_row_red": true,
    "named_rows": [
@@ -2785,13 +2785,13 @@
      true
     ]
    ],
-   "seconds": 2.081,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "seconds": 2.139,
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   }
  ],
  "noop": {
   "control_team.py": {
-   "copy_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1",
+   "copy_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2890,7 +2890,7 @@
     ]
    ],
    "seconds": 2.033,
-   "source_sha256": "325f5aa295b08a35edc517ab30ef4fec7243f21a976aa1f89ddd15ac3831b4f1"
+   "source_sha256": "f029c166d21f29778983e7dd58933f53ef5ec5bad7055b1d4ec0ea0c902991d6"
   },
   "init_scaffold.py": {
    "copy_sha256": "7ce520e602e1c7978674dadaecebe2349af0b36c1936a0789bf72a8f0b225951",
@@ -2991,13 +2991,13 @@
      true
     ]
    ],
-   "seconds": 2.069,
+   "seconds": 2.046,
    "source_sha256": "7ce520e602e1c7978674dadaecebe2349af0b36c1936a0789bf72a8f0b225951"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 89",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 54.752,
+ "serial_seconds": 52.823,
  "spec_id": "VELDO-0089",
  "suite": "scripts/suites/73_veldo_0089_team.py"
 }
