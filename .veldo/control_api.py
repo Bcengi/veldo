@@ -52,10 +52,15 @@ for its member and serves the answer with its identities, versions, watermark an
 kept or served from this process, so an unreadable authority is unavailable_service, never an answer.
 The live stream (`Stream`, served as text/event-stream) is fed by `deliver(hint)`, which the authority
 calls with the VELDO-0046 notification hint after it commits: `deliver` reads the committed records
-after its cursor through the authority's VELDO-0051 feed, ends every session a record revokes (`follow`),
-closes every stream whose session ended, and re-reads the rest through `events` for each stream's own
-member, so a revoked credential or membership closes its open stream at once. Nothing is polled: a
-stream waits on its own condition, and its idle timeout only writes a keep-alive.
+after its cursor through the authority's feed, one page of at most EVENT_LIMIT records after another
+until it reaches the hinted record, however far behind the cursor is (a restart or lost hints), and
+applies each page in order: it ends every session a record revokes (`follow`) and closes their streams
+as the record is met. It then re-reads the rest through `events` for each stream's own member, page
+after page to the head, so a revoked credential or membership closes its open stream at once. A stream
+opened after a cursor, or resumed with the Last-Event-ID an EventSource sends on reconnect (each frame's
+id is its cursor), is filled the same way. A stream whose session ended by idle expiry or its absolute
+lifetime closes as session_expired, one ended by revocation as revoked. Nothing is polled: a stream
+waits on its own condition, and its idle timeout only writes a keep-alive.
 
 ACTIONS (AC4). The UI action contract is control_api_models.ACTIONS: each action with a route is a POST
 here whose operation the authority executes as the named existing command (a workflow save is VELDO-0132's
@@ -241,6 +246,13 @@ class Sessions:
 
     def __init__(self, clock=time.time):
         self.clock, self._lock, self._by_hash = clock, threading.Lock(), {}
+        # Handles of sessions ended by expiry, with when, so a stream of one is closed naming the expiry.
+        self._expired = {}
+
+    def _expire(self, key, session, now):
+        del self._by_hash[key]
+        self._expired[session['handle']] = now
+        self._expired = {h: t for h, t in self._expired.items() if now - t <= ABSOLUTE_SECONDS}
 
     @staticmethod
     def _hash(cookie):
@@ -264,7 +276,7 @@ class Sessions:
             if session is None:
                 return None, 'no_session'
             if expired(session, now):
-                del self._by_hash[key]
+                self._expire(key, session, now)
                 return None, 'session_expired'
             return dict(session), None
 
@@ -296,15 +308,20 @@ class Sessions:
 
     def alive(self, handle):
         """Whether the session named by `handle` exists and has not expired; an expired one is ended."""
+        return self.state(handle) == 'live'
+
+    def state(self, handle):
+        """'live', 'session_expired' for a session its idle expiry or absolute lifetime ended (now or
+        before), or 'ended' for one ended otherwise (revoked, signed out) or never made."""
         now = self.clock()
         with self._lock:
             for key, session in list(self._by_hash.items()):
                 if session['handle'] == handle:
                     if expired(session, now):
-                        del self._by_hash[key]
-                        return False
-                    return True
-        return False
+                        self._expire(key, session, now)
+                        return 'session_expired'
+                    return 'live'
+            return 'session_expired' if handle in self._expired else 'ended'
 
 
 class ControlApi:
@@ -413,7 +430,7 @@ class ControlApi:
             raise Refused(problem, 'the request carries exactly the route\'s fields')
         if session is not None:
             self.sessions.touch(session['handle'])
-        return self.handlers[route.name](route, body, session, extra)
+        return self.handlers[route.name](route, body, session, extra, headers)
 
     def _cookie(self, headers):
         for part in str(headers.get('Cookie') or '').split(';'):
@@ -452,7 +469,7 @@ class ControlApi:
 
     # sign-in
 
-    def _challenge(self, route, body, session, extra):
+    def _challenge(self, route, body, session, extra, headers):
         challenge, now = W.b64url(secrets.token_bytes(32)), self.clock()
         with self._lock:
             self._challenges = {c: t for c, t in self._challenges.items() if now - t <= CHALLENGE_SECONDS}
@@ -471,7 +488,7 @@ class ControlApi:
             issued = self._challenges.pop(named, None) if isinstance(named, str) else None
         return named if issued is not None and self.clock() - issued <= CHALLENGE_SECONDS else None
 
-    def _sign_in(self, route, body, session, extra):
+    def _sign_in(self, route, body, session, extra, headers):
         challenge = self._take_challenge(body['client_data_json'])
         if challenge is None:
             raise Refused('unauthenticated:challenge', 'no unused challenge of this API')
@@ -481,27 +498,35 @@ class ControlApi:
         if found.get('rp_id') != self.rp_id or found.get('origin') != self.origin:
             raise Refused('unauthenticated:relying_party', 'the credential is another relying party\'s')
         problems = W.assertion_problems(found, body, challenge, self.origin, self.rp_id, self.state_dir)
+        self._verifier_unavailable(problems)
         if problems:
             raise Refused('unauthenticated:' + problems[0], 'the assertion does not verify')
         cookie, made = self.sessions.create(found['principal'], found['credential_id'])
         extra.append(('Set-Cookie', '%s=%s; Secure; HttpOnly; SameSite=Strict; Path=/' % (COOKIE, cookie)))
         return 200, self._session_view(made)
 
+    @staticmethod
+    def _verifier_unavailable(problems):
+        """A ceremony that could not be verified because this host has no openssl at a fixed system
+        location is the service unavailable, never a failed signature."""
+        if problems == [W.OPENSSL_UNAVAILABLE]:
+            raise Refused('unavailable_service:openssl', 'no openssl executable at a fixed system location')
+
     def _session_view(self, session):
         return {'principal': session['principal'], 'credential_id': session['credential_id'],
                 'csrf_token': session['token'], 'idle_expires_at': session['seen'] + IDLE_SECONDS,
                 'expires_at': session['created'] + ABSOLUTE_SECONDS}
 
-    def _session_read(self, route, body, session, extra):
+    def _session_read(self, route, body, session, extra, headers):
         return 200, self._session_view(dict(session, seen=self.clock()))
 
-    def _sign_out(self, route, body, session, extra):
+    def _sign_out(self, route, body, session, extra, headers):
         self.sessions.end(session['handle'])
         extra.append(('Set-Cookie', '%s=; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' % COOKIE))
         self._reap('signed_out')
         return 200, {'outcome': 'signed_out'}
 
-    def _sign_out_everywhere(self, route, body, session, extra):
+    def _sign_out_everywhere(self, route, body, session, extra, headers):
         ended = self.sessions.end_by_principal(session['principal'])
         extra.append(('Set-Cookie', '%s=; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' % COOKIE))
         self._reap('signed_out')
@@ -519,22 +544,26 @@ class ControlApi:
                 expires, credential_id = binding['expires_at'], binding['credential_id']
             except (OSError, ValueError, KeyError, TypeError):
                 expires, credential_id = 0, None
+            # Read through the guarded inspection: a down service is unavailable_service, never a raise.
             enrolled = credential_id is not None and CR.record(
-                self.authority.inspect([CR.entity_id(credential_id)]).get('entities') or {}, credential_id) is not None
+                self._inspect([CR.entity_id(credential_id)]), credential_id) is not None
             if expires <= now or enrolled:
                 path.unlink(missing_ok=True)
             else:
                 live.append(path)
         return live
 
-    def _registration_begin(self, route, body, session, extra):
+    def _registration_begin(self, route, body, session, extra, headers):
         label = body['label']
         if not isinstance(label, str) or not label.strip() or len(label) > CR.LABEL_LIMIT or not label.isprintable():
             raise Refused('invalid_input:label', 'a label is printable text of at most %d characters' % CR.LABEL_LIMIT)
         now = time.time()
+        # The pending files are judged against the authority before the lock is taken: no authority call
+        # is ever made while this API's lock is held.
+        waiting = self._pending_files()
         with self._lock:
             self._registrations = {k: r for k, r in self._registrations.items() if r['expires_at'] > now}
-            if len(self._registrations) + len(self._pending_files()) >= PENDING_LIMIT:
+            if len(self._registrations) + len(waiting) >= PENDING_LIMIT:
                 raise Refused('unavailable_service:pending_limit', 'at most three pending registrations')
             rid, challenge = secrets.token_hex(16), W.b64url(secrets.token_bytes(32))
             self._registrations[rid] = {'label': label, 'challenge': challenge, 'user_handle': W.new_user_handle(),
@@ -556,7 +585,7 @@ class ControlApi:
         with self._lock:
             self._registrations.pop(rid, None)
 
-    def _registration_credential(self, route, body, session, extra):
+    def _registration_credential(self, route, body, session, extra, headers):
         found = self._registration(body['registration_id'])
         problems = W.registration_problems(body['client_data_json'], found['challenge'], self.origin,
                                            body['credential_id'], body['public_key'], body['algorithm'])
@@ -571,28 +600,38 @@ class ControlApi:
             found['binding'] = binding
         return 200, {'possession_challenge': W.binding_challenge(binding), 'user_handle': found['user_handle']}
 
-    def _registration_possession(self, route, body, session, extra):
+    def _registration_possession(self, route, body, session, extra, headers):
         found = self._registration(body['registration_id'])
         binding = found.get('binding')
         if binding is None:
             raise Refused('unauthenticated:registration', 'the registration ceremony comes first')
         proof = {k: body[k] for k in CR.PROOF_FIELDS}
         problems = W.possession_problems(binding, proof, self.origin, self.rp_id, self.state_dir)
+        self._verifier_unavailable(problems)
         if problems:
             self._drop(body['registration_id'])
             raise Refused('unauthenticated:' + problems[0], 'the possession ceremony does not verify')
+        # One possession request completes a registration: it is claimed under the lock, so a second
+        # request racing on the same registration id is refused by name, never a raised error.
+        with self._lock:
+            claimed = self._registrations.get(body['registration_id']) is found
+            if claimed:
+                del self._registrations[body['registration_id']]
+        if not claimed:
+            raise Refused('stale_version:registration_completed', 'another possession request completed it')
         path = self.state_dir / 'pending' / (body['registration_id'] + '.json')
-        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        try:
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError:
+            raise Refused('stale_version:registration_completed', 'another possession request completed it') from None
         with os.fdopen(fd, 'w') as handle:
             handle.write(json.dumps({'binding': binding, 'proof': proof}, sort_keys=True))
-        with self._lock:
-            self._registrations.pop(body['registration_id'], None)
         shown = CR.describe({'binding': binding})
         return 200, dict(shown, pending_id=body['registration_id'], outcome='pending_steward_enrollment')
 
     # writes through the edge
 
-    def _write(self, route, body, session, extra):
+    def _write(self, route, body, session, extra, headers):
         parameters = {f: body.get(f) for f in route.required + route.optional}
         now = time.time()
         request_id = 'api-' + secrets.token_hex(16)
@@ -655,28 +694,46 @@ class ControlApi:
 
     # reads and events (AC2)
 
-    def _contract(self, route, body, session, extra):
+    def _contract(self, route, body, session, extra, headers):
         return 200, MO.contract()
 
-    def _read(self, route, body, session, extra):
+    def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
 
-    def _workflow_read(self, route, body, session, extra):
+    def _workflow_read(self, route, body, session, extra, headers):
         version = _count(body.get('version'), 'version') if 'version' in body else None
         return 200, self._ask(self.authority.workflow, session['principal'], body['workflow'], version)
 
-    def _events_read(self, route, body, session, extra):
+    def _events_read(self, route, body, session, extra, headers):
         after = _count(body.get('after', '0'), 'after', minimum=0)
         return 200, self._ask(self.authority.events, session['principal'], after, EVENT_LIMIT)
 
-    def _stream(self, route, body, session, extra):
+    def _stream(self, route, body, session, extra, headers):
         after = _count(body.get('after', '0'), 'after', minimum=0)
+        # An EventSource reconnecting sends the id of the last frame it received (each frame's id is its
+        # cursor) on the same URL; the stream resumes from it rather than from the URL's `after`.
+        resume = headers.get('Last-Event-ID')
+        if resume is not None:
+            after = _count(resume, 'last_event_id', minimum=0)
         answer = self._ask(self.authority.events, session['principal'], after, EVENT_LIMIT)
         stream = Stream(session['handle'], session['principal'], session['credential_id'], after)
-        self._push(stream, answer, always=True)
+        self._fill(stream, answer, always=True)
         with self._lock:
             self._streams.append(stream)
         return 200, stream
+
+    def _fill(self, stream, answer, always=False):
+        """Queue every record after the stream's cursor up to the head its first answer names, one
+        frame per feed page (the first frame always), reading the next page through `events` for the
+        stream's own member until the cursor reaches that head or a page brings nothing new."""
+        head = (answer.get('watermark') or {}).get('seq') or 0
+        while True:
+            before = stream.cursor
+            self._push(stream, answer, always)
+            always = False
+            if stream.cursor == before or stream.cursor >= head:
+                return
+            answer = self._ask(self.authority.events, stream.principal, stream.cursor, EVENT_LIMIT)
 
     @staticmethod
     def _push(stream, answer, always=False):
@@ -699,61 +756,76 @@ class ControlApi:
             self._streams = [s for s in self._streams if s is not stream]
 
     def _reap(self, reason):
-        """Close every open stream whose session no longer exists."""
+        """Close every open stream whose session no longer exists: as `reason`, or as session_expired
+        when its session's expiry ended it."""
         with self._lock:
             for stream in self._streams:
-                if stream.closed is None and not self.sessions.alive(stream.handle):
-                    stream.close(reason)
+                state = self.sessions.state(stream.handle) if stream.closed is None else 'live'
+                if state != 'live':
+                    stream.close('session_expired' if state == 'session_expired' else reason)
             self._streams = [s for s in self._streams if s.closed is None]
 
     def deliver(self, hint):
         """The authority's post-commit notification (the VELDO-0046 hint: coordinates, command id, record
-        digest and watermark). Follows the committed records after this API's cursor, ends the sessions
-        they revoke, closes those sessions' streams, and feeds every other open stream through `events`
-        for its own member. Returns {delivered, ended, closed} or a named refusal."""
+        digest and watermark). Follows the committed records after this API's cursor, page after page of
+        the feed until the hinted record, applying every page in order: the sessions a record revokes end
+        and their streams close as each record is met. Then it feeds every other open stream through
+        `events` for its own member, page after page to the head. Returns {delivered, ended, closed,
+        cursor} or a named refusal (with the cursor the pages already applied reached)."""
         if (not isinstance(hint, dict) or hint.get('schema') != 'veldo.control_notification/v1'
                 or any(hint.get(f) != v for f, v in self.ids.items()) or type(hint.get('watermark')) is not int
                 or hint['watermark'] < 1):
             return {'refusal': 'invalid_input:hint'}
-        after = self._cursor if self._cursor is not None else hint['watermark'] - 1
-        try:
-            # From the hinted record itself, so the hint is judged against the journal even when it is
-            # a record this API has already followed.
-            feed = self.authority.feed(min(after, hint['watermark'] - 1), EVENT_LIMIT)
-        except Exception:  # noqa: BLE001 - nothing is delivered from an unreadable authority
-            return {'refusal': 'unavailable_service:authority'}
-        if not isinstance(feed, dict) or not feed.get('ok'):
-            return {'refusal': str((feed or {}).get('reason') or 'unavailable_service:authority')}
-        named = [e for e in feed['events'] if e['seq'] == hint['watermark']]
-        if not named or named[0]['record_digest'] != hint.get('record_digest') or named[0]['command_id'] != hint.get('command_id'):
-            return {'refusal': 'stale_version:hint'}
-        fresh = [e for e in feed['events'] if e['seq'] > after]
-        ended = sum(self.follow({'transition': e['revocations']}) for e in fresh)
-        self._cursor = fresh[-1]['seq'] if fresh else max(after, self._cursor or 0)
+        target = hint['watermark']
+        followed = self._cursor if self._cursor is not None else target - 1
+        # From the hinted record itself when this API has already followed it, so the hint is judged
+        # against the journal; otherwise from the cursor, one page after another.
+        after, named, fresh, ended = min(followed, target - 1), None, 0, 0
+        while named is None:
+            try:
+                feed = self.authority.feed(after, EVENT_LIMIT)
+            except Exception:  # noqa: BLE001 - nothing more is delivered from an unreadable authority
+                return {'refusal': 'unavailable_service:authority', 'cursor': self._cursor}
+            if not isinstance(feed, dict) or not feed.get('ok'):
+                return {'refusal': str((feed or {}).get('reason') or 'unavailable_service:authority'),
+                        'cursor': self._cursor}
+            page = [e for e in feed['events'] if e['seq'] > after]
+            if not page:
+                break
+            for event in page:
+                if event['seq'] > followed:
+                    ended += self.follow({'transition': event['revocations']})
+                    self._cursor = followed = event['seq']
+                    fresh += 1
+                if event['seq'] == target:
+                    named = event
+            after = page[-1]['seq']
+        if named is None or named['record_digest'] != hint.get('record_digest') or named['command_id'] != hint.get('command_id'):
+            return {'refusal': 'stale_version:hint', 'cursor': self._cursor}
         closed = 0
         for stream in self.streams():
-            if not self.sessions.alive(stream.handle):
-                stream.close('revoked')
+            state = self.sessions.state(stream.handle)
+            if state != 'live':
+                stream.close(state if state == 'session_expired' else 'revoked')
                 closed += 1
                 continue
-            # The stream's member, judged again now: its credential and membership, then its read.
+            # The stream's member, judged again now: its credential and membership, then its reads.
             try:
                 why = self._credential_problem(stream.credential_id, stream.principal)[1]
                 if why:
                     self.sessions.end_by_credential(stream.credential_id)
                     why = 'unauthenticated:' + why
                 else:
-                    answer = self._ask(self.authority.events, stream.principal, stream.cursor, EVENT_LIMIT)
+                    self._fill(stream, self._ask(self.authority.events, stream.principal, stream.cursor, EVENT_LIMIT))
             except Refused as exc:
                 why = exc.code
             if why:
                 stream.close(why)
                 closed += 1
                 continue
-            self._push(stream, answer)
         with self._lock:
             self._streams = [s for s in self._streams if s.closed is None]
-        return {'delivered': len(fresh), 'ended': ended, 'closed': closed, 'cursor': self._cursor}
+        return {'delivered': fresh, 'ended': ended, 'closed': closed, 'cursor': self._cursor}
 
     # following the journal
 

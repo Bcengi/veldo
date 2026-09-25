@@ -37,8 +37,10 @@ refusal); `workflow` is VELDO-0132's Workflows.load of one revision. `events` is
 every committed journal record after a sequence, read through the VELDO-0051 publication's own journal
 reader, each with its identity (sequence, command, record digest, commit time), the kinds and ids it
 changed and never their data, the credential and membership revocations it commits, and the events the
-publication derives at that record, with the publication's watermark and freshness: "stale" with the
-count of records not yet published whenever the published watermark is behind the head. An unreadable
+publication has published at that record (its own log, never past its stored watermark), with the
+publication's watermark and freshness: "stale" with the count of records not yet published whenever the
+published watermark is behind the head. The records come from the publication's public bounded journal
+reader (VELDO-0051's control_event_projection.journal), one query of at most `limit` records. An unreadable
 store is unavailable_service, never an empty answer.
 
 ONLY THE AUTHORITY RUNS IT (phase 3). The authority service (control_service_api) constructs this judge
@@ -231,21 +233,16 @@ class ApiAuthority:
         self._authority()
         if self.publication is None:
             raise WF.Refused('unavailable_service:publication', 'no VELDO-0051 publication on this authority')
-        # The publication's own journal reader and stored watermark; its refusals keep their names.
-        rows = self.publication._rows()
-        mark = self.publication.watermark()
-        head = rows[-1][0] if rows else 0
-        published = mark['watermark'] if mark else 0
-        derived, _judged = self.publication.derive(rows, after)
+        # The publication's own public bounded readers: at most `limit` journal records after `after` with
+        # the head, and the events it has published up to its stored watermark. Its refusals keep their names.
+        rows, top = self.publication.journal(after, limit)
+        head = top['seq']
+        listed, published = self.publication.published(after, rows[-1][0] if rows else after)
         by_seq = {}
-        for event in derived:
+        for event in listed:
             by_seq.setdefault(event.get('journal_seq'), []).append(event['id'])
         out = []
         for seq, command, digest, changes, committed in rows:
-            if seq <= after:
-                continue
-            if len(out) >= limit:
-                break
             revocations = {}
             for eid, change in changes.items():
                 data = (change or {}).get('data') or {}
@@ -256,7 +253,7 @@ class ApiAuthority:
                         'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],
                         'revocations': revocations, 'published': by_seq.get(seq, [])})
         return {'schema': 'veldo.api_events/v1', 'after': after, 'events': out,
-                'watermark': {'seq': head, 'record_digest': rows[-1][2] if rows else None},
+                'watermark': {'seq': head, 'record_digest': top['record_digest']},
                 'publication': {'watermark': published, 'head': head, 'pending_records': max(0, head - published),
                                 'freshness': 'live' if published == head else 'stale'}}
 

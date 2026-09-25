@@ -15,7 +15,10 @@ user present (bit 0) and user verified (bit 2) set; the userHandle is the creden
 signature verifies over authenticatorData followed by SHA-256 of clientDataJSON. The signature counter
 is not read, because synced passkeys report zero.
 
-THE SIGNATURE is checked by the openssl command line as a subprocess (`openssl_verifies`): "openssl
+THE SIGNATURE is checked by the openssl command line as a subprocess (`openssl_verifies`), the
+executable found once at an absolute path among fixed system locations (OPENSSL_LOCATIONS), never
+through PATH; with none there, an assertion is refused openssl_unavailable, which the API answers
+unavailable_service rather than as a signature that failed: "openssl
 dgst -sha256 -verify" with the DER key for ES256 (a WebAuthn ES256 signature is already DER ECDSA) and
 "openssl pkeyutl -verify -pubin -rawin" for Ed25519. The argument vector is fixed, there is no shell,
 the key and signature go in files in a fresh 0700 directory under the caller's state directory, the
@@ -38,7 +41,6 @@ import json
 import os
 from pathlib import Path
 import secrets
-import shutil
 import struct
 import subprocess
 import tempfile
@@ -52,6 +54,11 @@ USER_PRESENT, USER_VERIFIED = 0x01, 0x04
 CREDENTIAL_ID_BYTES = 1023  # the WebAuthn Level 2 maximum
 USER_HANDLE_BYTES = 16
 TIMEOUT = 10
+# Where the openssl executable is looked for, in this order, never through PATH: the Homebrew prefixes of
+# macOS (whose /usr/bin/openssl is LibreSSL), then the system's own. Resolved once per process.
+OPENSSL_LOCATIONS = ('/opt/homebrew/bin/openssl', '/usr/local/bin/openssl', '/usr/bin/openssl', '/bin/openssl')
+OPENSSL_UNAVAILABLE = 'openssl_unavailable'
+_resolved = []
 # The DER SubjectPublicKeyInfo prefixes of the two accepted key types, byte for byte: an uncompressed
 # P-256 point (RFC 5480) and a raw Ed25519 key (RFC 8410). A key with any other prefix or length is refused.
 SPKI_PREFIX = {ES256: bytes.fromhex('3059301306072a8648ce3d020106082a8648ce3d03010703420004'),
@@ -166,6 +173,8 @@ def assertion_problems(credential, assertion, challenge, origin, rp_id, state_di
         return ['user_not_verified']
     if assertion.get('user_handle') != credential.get('user_handle'):
         return ['wrong_user_handle']
+    if openssl_path() is None:
+        return [OPENSSL_UNAVAILABLE]
     signature = unb64url(assertion.get('signature'))
     if signature is None or key_problem(credential.get('public_key'), credential.get('algorithm')):
         return ['signature_invalid']
@@ -192,8 +201,17 @@ def possession_problems(binding, proof, origin, rp_id, state_dir):
 
 
 def openssl_path():
-    """The openssl executable on this process's PATH, or None."""
-    return shutil.which('openssl')
+    """The absolute path of the openssl executable: the first of OPENSSL_LOCATIONS that is an executable
+    regular file, resolved once for this process (PATH is never read), or None when there is none."""
+    if not _resolved:
+        found = None
+        for place in OPENSSL_LOCATIONS:
+            real = os.path.realpath(place)
+            if os.path.isfile(real) and os.access(real, os.X_OK):
+                found = real
+                break
+        _resolved.append(found)
+    return _resolved[0]
 
 
 def openssl_verifies(algorithm, spki_der, message, signature, state_dir):

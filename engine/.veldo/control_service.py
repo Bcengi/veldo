@@ -81,8 +81,10 @@ signature must be the enrolled api edge's in the API's request namespace (never 
 it; a steward's enroll_api_credential or revoke_api_credential packet is admitted by
 control_api_credentials; inspect reports the API's status. After every packet or channel pass that
 advanced the journal, whoever sent it, the service sends the head record's hint to each subscribed API,
-so a revocation committed here ends the API's sessions and closes their open streams. An API that cannot
-be constructed leaves the service serving everything else, its refusal reported by name.
+so a revocation committed here ends the API's sessions and closes their open streams. Once serving, a
+new instance sends that hint to every API a previous instance had subscribed (`announce_api`), so an
+API whose service restarted reconciles by itself. An API that cannot be constructed leaves the service
+serving everything else, its refusal reported by name.
 
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
@@ -1046,6 +1048,18 @@ class Service:
             self._log(dict(sent, kind='api', operation='api_hint', at=time.time(), domain_uuid=self.domain))
         return sent
 
+    def announce_api(self):
+        """Once serving, wake every API a previous instance had subscribed (they see this new instance and
+        reconcile); a failure is logged by name and never ends the service."""
+        if self.api is None:
+            return None
+        try:
+            sent = self.api.announce()
+        except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never success
+            sent = {'outcome': 'refused', 'reason': 'unknown_outcome:' + type(error).__name__}
+        self._log(dict(sent, kind='api', operation='api_announce', at=time.time(), domain_uuid=self.domain))
+        return sent
+
     def api_status(self):
         if self.api is None:
             return {'available': False, 'configured': bool(self.config.get('api_service')),
@@ -1192,6 +1206,7 @@ def serve(config_path):
             inode = os.stat(config['socket']).st_ino
             listener.settimeout(0.25)
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
+            service.announce_api()
             next_pass = time.monotonic()
             try:
                 while not stopping:

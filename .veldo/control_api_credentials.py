@@ -72,7 +72,8 @@ REFUSALS = {'forbidden_command': 'invalid_input', 'envelope_refused': 'invalid_i
             'scope_refused': 'unauthorized', 'principal_not_member': 'unauthorized',
             'invalid_credential': 'invalid_input', 'registration_expired': 'stale_version',
             'credential_in_use': 'invalid_input', 'possession_unproven': 'missing_evidence',
-            'not_enrolled': 'stale_version', 'store_refused': 'unavailable_service'}
+            'not_enrolled': 'stale_version', 'store_refused': 'unavailable_service',
+            'openssl_unavailable': 'unavailable_service'}
 
 
 class Refused(Exception):
@@ -306,7 +307,10 @@ class Credentials:
             held = _held(entities)
             if binding['credential_id'] in held or binding['public_key'] in held:
                 raise Refused('credential_in_use', 'the credential id and key are new', versions)
-            if W.possession_problems(binding, params['proof'], self.origin, self.rp_id, self.state_dir):
+            unproven = W.possession_problems(binding, params['proof'], self.origin, self.rp_id, self.state_dir)
+            if unproven == [W.OPENSSL_UNAVAILABLE]:
+                raise Refused('openssl_unavailable', 'no openssl executable at a fixed system location', versions)
+            if unproven:
                 raise Refused('possession_unproven', 'the possession assertion does not verify', versions)
             data = {'schema': SCHEMA, 'principal': principal, 'credential_id': binding['credential_id'],
                     'public_key': binding['public_key'], 'algorithm': binding['algorithm'],

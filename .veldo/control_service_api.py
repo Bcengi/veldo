@@ -28,8 +28,11 @@ sends the VELDO-0046 hint of the head record (identity only) to each subscribed 
 connection to the API's own socket, which must be this account's socket in a directory nobody else can
 enter, its peer checked by the kernel's answer (SO_PEERCRED). The hint only wakes: the API reads the
 committed records after its cursor through `feed`, ends the sessions a revocation ends and closes their
-streams. A subscriber whose socket is gone or refuses is dropped; the API subscribes again, and reconciles
-from its cursor, when an answer names a new service instance.
+streams. Each hint names this service instance and its number for that subscriber. The subscribers are
+remembered across a restart (a 0600 file in the service's state directory), and a new instance sends
+each the head's hint once it serves (`announce`), so an API whose service restarted sees the new
+instance on its hint socket and subscribes again and reconciles by itself. A subscriber whose socket is
+gone or refuses is dropped and forgotten.
 
 Observations carry identities, digests, counts and named refusals, never a signature, a key or a
 credential. Standard library only.
@@ -61,6 +64,7 @@ SCHEMA = 'veldo.api_service/v1'
 FIELDS = ('schema', 'store_path', 'authority_ids', 'authority_generation', 'journal', 'api_edge', 'domain',
           'projects', 'rp_id', 'origin', 'workflows_repository', 'publication_root')
 SUBSCRIBER_LIMIT = 8
+SUBSCRIBERS_NAME = 'api-subscribers.json'
 HINT_LIMIT = 64 * 1024
 PUSH_SECONDS = 0.5
 EVENT_LIMIT = 256
@@ -170,7 +174,11 @@ class ServiceApi:
                                            workflows=workflows, publication=publication, clock=clock,
                                            authority_lock=lock)
         self.instance = '%d-%s' % (os.getpid(), os.urandom(6).hex())
-        self.subscribers = []
+        # The subscribed APIs' hint sockets, remembered across a restart in this 0600 file of the service's
+        # state directory, and each one's hint number from this instance.
+        self.subscribers_file = Path(state_dir) / SUBSCRIBERS_NAME
+        self.subscribers = self._remembered()
+        self.sequence = {}
         self.counts = {'calls': 0, 'refused': 0, 'published': 0, 'dropped': 0}
 
     # -- the request signature -----------------------------------------------------------------
@@ -260,6 +268,28 @@ class ServiceApi:
             return 'invalid_input:subscribe:directory'
         return None
 
+    def _remembered(self):
+        """The subscribers a previous instance remembered: this account's own 0600 file, a list of at most
+        SUBSCRIBER_LIMIT absolute paths; anything else is no subscriber (each API subscribes again)."""
+        try:
+            info = os.lstat(str(self.subscribers_file))
+            if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o077:
+                return []
+            listed = json.loads(self.subscribers_file.read_text())
+        except (OSError, ValueError):
+            return []
+        if not isinstance(listed, list) or len(listed) > SUBSCRIBER_LIMIT:
+            return []
+        return [p for p in dict.fromkeys(listed) if isinstance(p, str) and os.path.isabs(p)]
+
+    def _remember(self):
+        """Write the subscriber list (0600, replaced whole), so the next instance can wake each API."""
+        temporary = self.subscribers_file.with_name(self.subscribers_file.name + '.%d.tmp' % os.getpid())
+        fd = os.open(str(temporary), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, 'w') as handle:
+            handle.write(json.dumps(self.subscribers))
+        os.replace(str(temporary), str(self.subscribers_file))
+
     def subscribe(self, path):
         problem = self._socket_problem(path)
         if problem:
@@ -268,27 +298,38 @@ class ServiceApi:
             if len(self.subscribers) >= SUBSCRIBER_LIMIT:
                 raise Refused('unavailable_service:subscribe:limit', 'at most %d subscribed APIs' % SUBSCRIBER_LIMIT)
             self.subscribers.append(path)
-        return dict(self.hint(), ok=True, reason='subscribed', subscribers=len(self.subscribers))
+            self._remember()
+        return dict(self.hint(), ok=True, reason='subscribed', subscribers=len(self.subscribers),
+                    sequence=self.sequence.get(path, 0))
 
     def hint(self):
         """The VELDO-0046 hint of the journal head: identity only, never domain data."""
         return self.authority.hint()
 
     def publish(self):
-        """Send the head record's hint to every subscribed API. Returns {sent, dropped}."""
-        hint = self.hint()
-        body = json.dumps(hint, sort_keys=True).encode()
+        """Send the head record's hint to every subscribed API, naming this instance and the hint's number
+        for that subscriber (counted whether or not it arrives, so a lost hint is a gap the API sees).
+        Returns {sent, dropped}."""
+        hint = dict(self.hint(), instance=self.instance)
         sent, dropped = 0, []
         for path in list(self.subscribers):
-            outcome = self._push(path, body)
+            self.sequence[path] = self.sequence.get(path, 0) + 1
+            outcome = self._push(path, json.dumps(dict(hint, sequence=self.sequence[path]), sort_keys=True).encode())
             if outcome == 'sent':
                 sent += 1
             elif outcome == 'gone':
                 dropped.append(path)
-        self.subscribers = [p for p in self.subscribers if p not in dropped]
+        if dropped:
+            self.subscribers = [p for p in self.subscribers if p not in dropped]
+            self._remember()
         self.counts['published'] += sent
         self.counts['dropped'] += len(dropped)
         return {'sent': sent, 'dropped': len(dropped), 'watermark': hint.get('watermark')}
+
+    def announce(self):
+        """Once this instance serves: the head's hint to every subscriber a previous instance remembered,
+        so each API sees the new instance and reconciles without waiting for a request of its own."""
+        return self.publish() if self.subscribers else {'sent': 0, 'dropped': 0}
 
     def _push(self, path, body):
         if self._socket_problem(path):

@@ -15,9 +15,13 @@ THE HINTS. `Hints` is the API's own local stream socket, in the API's 0700 state
 accepting only a peer the kernel says is this account (SO_PEERCRED). The service sends the VELDO-0046
 hint of the head record after each commit, and each is handed to ControlApi.deliver, which reads the
 records after its cursor through `feed`, ends the sessions a revocation ends and closes their streams.
-`ServiceAuthority.connect` subscribes that socket; when an answer names another service instance (the
-authority restarted and forgot its subscribers), it subscribes again and delivers the head's hint, so
-the API reconciles every record after its cursor.
+`ServiceAuthority.connect` subscribes that socket. The service remembers its subscribers across a restart
+and, once serving, sends each the head's hint; every hint names the service instance that sent it and
+its number for this subscriber. When a hint, or the answer to any call, names another instance, or a
+hint's number skips (hints were lost), the API subscribes again by itself and delivers the head's hint,
+so it reconciles every record after its cursor (ControlApi.deliver pages the feed to the head) without
+waiting for a request of its own. Deliveries run one at a time; a reconcile noticed inside one runs
+when that delivery ends, once.
 
 `open_api` is the production construction of the API process from its 0600 host configuration
 (veldo.api_process/v1): the enrolled workspace and host trust the request is routed and verified with,
@@ -72,7 +76,13 @@ class ServiceAuthority:
         self.sign, self.enrollment, self.timeout = sign, enrollment, timeout
         self.instance, self.seen, self.socket, self.api = None, None, None, None
         self.calls = {'accepted': 0, 'refused': 0}
+        # One delivery at a time. The thread delivering is remembered, so a new service instance noticed by
+        # a call made inside a delivery defers its reconcile to the end of that delivery (never re-entering
+        # it), and the reconcile is applied once however many calls notice it.
         self._delivering = threading.Lock()
+        self._deliverer, self._due = None, False
+        # The last hint number the subscribed instance sent this API (a gap means hints were lost).
+        self.sequence = None
 
     def _call(self, call, **arguments):
         try:
@@ -92,7 +102,7 @@ class ServiceAuthority:
         result = answer['result']
         instance = self.seen = result.pop('instance', None)
         if call != 'subscribe' and self.socket is not None and instance is not None and instance != self.instance:
-            self._resubscribe()
+            self._reconcile_due()
         return result
 
     # the ControlApi authority interface
@@ -130,22 +140,46 @@ class ServiceAuthority:
         if not result.get('ok'):
             raise Unavailable(str(result.get('reason')), 'the service did not subscribe the API')
         self.instance = self.seen
+        self.sequence = result.get('sequence') if type(result.get('sequence')) is int else None
         return {k: result.get(k) for k in ('schema', 'domain_uuid', 'repository_uuid', 'store_uuid', 'command_id',
                                            'record_digest', 'watermark')}
 
-    def _resubscribe(self):
-        """A new service instance: subscribe again, then deliver the head so every record after the
-        API's cursor is reconciled."""
-        hint = self._subscribe()
-        if type(hint.get('watermark')) is int and hint['watermark'] > 0:
-            self.deliver(hint)
+    def _reconcile_due(self):
+        """A new service instance (it restarted and may have forgotten this subscriber) or a gap in its
+        hints: subscribe again and deliver the head, so every record after the API's cursor is reconciled.
+        On the delivering thread it is deferred to the end of the delivery in hand; on any other thread it
+        runs now, after any delivery in hand."""
+        self._due = True
+        if self._deliverer != threading.get_ident():
+            self.deliver(None)
 
     def deliver(self, hint):
-        """One hint to the API's deliver, one at a time (the hint socket and a reconnect share it)."""
+        """One hint to the API's deliver, one at a time (the hint socket and a reconcile share it), then
+        any reconcile that became due, once. A hint names the service instance that sent it and its number
+        for this subscriber: another instance, or a number that skips, makes the reconcile due. `None`
+        delivers only a due reconcile."""
         if self.api is None:
             return {'refusal': 'unavailable_service:not_connected'}
         with self._delivering:
-            return self.api.deliver(hint)
+            self._deliverer = threading.get_ident()
+            try:
+                answer = None
+                if hint is not None:
+                    sender, number = (hint.get('instance'), hint.get('sequence')) if isinstance(hint, dict) else (None, None)
+                    if sender is not None and (sender != self.instance or type(number) is not int
+                                               or self.sequence is None or number != self.sequence + 1):
+                        self._due = True
+                    elif sender is not None:
+                        self.sequence = number
+                    answer = self.api.deliver(hint)
+                while self._due:
+                    self._due = False
+                    head = self._subscribe()
+                    if type(head.get('watermark')) is int and head['watermark'] > 0:
+                        answer = self.api.deliver(head)
+                return answer
+            finally:
+                self._deliverer = None
 
 
 def _peer_uid(conn):

@@ -27,8 +27,9 @@ ever labeled live that was not read at the head.
 
 REDACTION (`redact`). Every served value is walked: a field whose name is a credential or signature
 field, or a mapping of environment or headers, is replaced by the marker, and so is any text the
-engine's secret scanner recognizes by a known credential shape. The paths redacted are returned with the
-value.
+engine's secret scanner finds by its own full detection (secret_scan.scan_text: its known credential
+shapes and its entropy detector, which catches a key no pattern covers yet). The paths redacted are
+returned with the value.
 
 WHAT IT IS NOT. Not the transport, not a writer, not a cache. Standard library only.
 """
@@ -148,7 +149,7 @@ def redact(value, path='$'):
             return {k: walk(v, '%s.%s' % (where, k), k if isinstance(k, str) else None) for k, v in item.items()}
         if isinstance(item, list):
             return [walk(v, '%s[%d]' % (where, i)) for i, v in enumerate(item)]
-        if isinstance(item, str) and any(rx.search(item) for rx, _why in SCAN.PATTERNS):
+        if isinstance(item, str) and SCAN.scan_text(item):
             paths.append(where)
             return MARKER
         return item
