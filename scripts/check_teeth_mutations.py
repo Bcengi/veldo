@@ -6385,6 +6385,58 @@ def cases():
             "            or __import__('re').match(r'CLAUDE_\\w*?(?:TOKEN(?!S)|API_KEY|OAUTH|SECRET|CLIENT_KEY|AUTH)', name))"
             "  # defect: the word rule, back\n",
             'login/no-paid-api')
+    # The strip tables of the third review's finding 1: back to the old tables, or without the sensitive list.
+    account('account-claude-old-tables', 'control_engine_claude.py',
+            "CREDENTIALS = frozenset((\n",
+            'CREDENTIALS = frozenset((\n'
+            "    'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'AWS_BEARER_TOKEN_BEDROCK',\n"
+            "    'ANTHROPIC_FOUNDRY_API_KEY', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'ANTHROPIC_AWS_API_KEY',\n"
+            "    'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY',\n"
+            "    'CLAUDE_CODE_USE_ANTHROPIC_AWS', 'CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD', 'CLAUDE_CODE_USE_MANTLE',\n"
+            "    'CLAUDE_CODE_USE_GATEWAY', 'ANTHROPIC_FOUNDRY_RESOURCE', 'ANTHROPIC_VERTEX_PROJECT_ID',\n"
+            "    'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_GOOGLE_CLOUD_PROJECT', 'ANTHROPIC_GOOGLE_CLOUD_LOCATION',\n"
+            "    'ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID', 'CLOUD_ML_REGION', 'CLAUDE_CODE_SKIP_BEDROCK_AUTH',\n"
+            "    'CLAUDE_CODE_SKIP_VERTEX_AUTH', 'CLAUDE_CODE_SKIP_FOUNDRY_AUTH', 'CLAUDE_CODE_SKIP_ANTHROPIC_AWS_AUTH',\n"
+            "    'CLAUDE_CODE_SKIP_ANTHROPIC_GOOGLE_CLOUD_AUTH', 'CLAUDE_CODE_SKIP_MANTLE_AUTH',\n"
+            "    'ANTHROPIC_CUSTOM_HEADERS', 'CLAUDE_CODE_OAUTH_REFRESH_TOKEN', 'CLAUDE_CODE_ARTIFACTS_API_TOKEN',\n"
+            "    'CLAUDE_CODE_MEMORY_API_TOKEN', 'CLAUDE_CODE_SLACK_TAG_TOKEN', 'ANTHROPIC_IDENTITY_TOKEN',\n"
+            "    'ANTHROPIC_IDENTITY_TOKEN_FILE', 'ALL_INPUTS', 'INPUT_ANTHROPIC_API_KEY', 'INPUT_ANTHROPIC_AUTH_TOKEN',\n"
+            "    'INPUT_ANTHROPIC_CUSTOM_HEADERS', 'INPUT_CLAUDE_CODE_OAUTH_TOKEN',\n"
+            "    'INPUT_CLAUDE_CODE_OAUTH_REFRESH_TOKEN', 'INPUT_CLAUDE_CODE_ARTIFACTS_API_TOKEN',\n"
+            "    'INPUT_CLAUDE_CODE_MEMORY_API_TOKEN', 'INPUT_CLAUDE_CODE_SLACK_TAG_TOKEN',\n"
+            "    'INPUT_ANTHROPIC_FOUNDRY_API_KEY', 'INPUT_ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'INPUT_ANTHROPIC_AWS_API_KEY',\n"
+            "    'INPUT_ANTHROPIC_IDENTITY_TOKEN', 'INPUT_ANTHROPIC_IDENTITY_TOKEN_FILE', 'INPUT_ALL_INPUTS',\n"
+            "    'CLAUDE_CODE_SESSION_ACCESS_TOKEN', 'CLAUDE_CODE_HOST_SESSION_ID', 'ANTHROPIC_AWS_BASE_URL',\n"
+            "    'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL',\n"
+            "    'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_GOOGLE_CLOUD_BASE_URL', 'ANTHROPIC_VERTEX_BASE_URL',\n"
+            "    '_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL')) or frozenset((  # defect: the old tables\n",
+            'login/no-paid-api')
+    account('account-codex-old-tables', 'control_engine_codex.py',
+            "CREDENTIALS = frozenset((\n",
+            'CREDENTIALS = frozenset((\n'
+            "    'OPENAI_API_KEY', 'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_FEDERATION_RULE_ID',\n"
+            "    'OPENAI_IDENTITY_TOKEN_FILE', 'AWS_BEARER_TOKEN_BEDROCK')) or frozenset((  # defect: the old tables\n",
+            'login/configured-environment')
+    account('account-claude-sensitive-list-dropped', 'control_engine_claude.py',
+            "SETTINGS = frozenset((\n",
+            "CREDENTIALS = CREDENTIALS - frozenset(('CLAUDE_CODE_CLIENT_CERT', 'CLAUDE_CODE_CLIENT_KEY', "
+            "'CLAUDE_CODE_CLIENT_KEY_PASSPHRASE', 'CLAUDE_CODE_ARTIFACTS_API_BASE_URL', "
+            "'CLAUDE_CODE_ARTIFACT_ASSET_BASE_URL', 'CLAUDE_CODE_ARTIFACT_LIVE_BASE_URL', "
+            "'CLAUDE_CODE_ARTIFACT_SYNC_BASE_URL', 'CLAUDE_CODE_ARTIFACT_VIEWER_BASE_URL', "
+            "'CLAUDE_CODE_MEMORY_API_BASE_URL', 'CLAUDE_CODE_CUSTOM_OAUTH_URL', 'CLAUDE_CODE_API_BASE_URL', "
+            "'CLAUDE_CODE_OAUTH_SCOPES', 'CLAUDE_CODE_OAUTH_CLIENT_ID', 'CLAUDE_SESSION_INGRESS_TOKEN_FILE', "
+            "'CLAUDE_CODE_ENVIRONMENT_KIND', 'CLAUDE_CODE_REMOTE_SESSION_ID', "
+            "'CLAUDE_CODE_FEDERATION_CACHE_DIR', 'CLAUDE_CODE_HOST_CREDS_FILE', "
+            "'CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST', 'CLAUDE_CODE_HOST_AUTH_ENV_VAR', "
+            "'CLAUDE_SECURESTORAGE_CONFIG_DIR', 'CLAUDE_CODE_REMOTE_SETTINGS_PATH', "
+            "'CLAUDE_CODE_MANAGED_SETTINGS_PATH', 'CLAUDE_CODE_DISABLE_ADMIN_ENV_UNION', "
+            "'CLAUDE_CODE_MOCK_REMOTE_SETTINGS', 'USE_LOCAL_OAUTH', 'USE_STAGING_OAUTH', "
+            "'CLAUDE_LOCAL_OAUTH_API_BASE', 'CLAUDE_LOCAL_OAUTH_APPS_BASE', "
+            "'CLAUDE_LOCAL_OAUTH_CONSOLE_BASE', 'CLAUDE_BRIDGE_BASE_URL', "
+            "'CLAUDE_BRIDGE_SESSION_INGRESS_URL', "
+            "'CLAUDE_REMOTE_TOOLS_BRIDGE_URL'))  # defect: the sensitive-variable list is dropped\n"
+            "SETTINGS = frozenset() and frozenset((  # defect: the list's settings too\n",
+            'login/no-paid-api')
     # What the adapter configures is never silently reduced; a login in it is refused (the lead's decision).
     account('account-configured-login-accepted', 'control_accounts.py',
             "                  if name in PROFILES.values() or name.startswith(REFUSED_PREFIXES) or name in credentials)\n",
@@ -6398,6 +6450,11 @@ def cases():
             "    environment.update(configured)\n    environment[variable] = directory\n",
             "    environment.update({k: v for k, v in configured.items() if not strips(k, named)})"
             "  # defect: the configuration is stripped as if inherited\n    environment[variable] = directory\n",
+            'login/configured-environment')
+    account('account-configured-model-dropped', 'control_launch.py',
+            "                                                adapter.get('environment') or {}, CREDENTIALS)\n",
+            "                                                {k: v for k, v in (adapter.get('environment') or {}).items()\n"
+            "                                                 if 'MODEL' not in k}, CREDENTIALS)  # defect: the configured model is dropped\n",
             'login/configured-environment')
     account('account-fleet-codex-to-claude', 'fleet.py',
             "        names = [n for n in ACCT.list_accounts(root=accounts_root)\n"
@@ -6457,13 +6514,13 @@ def cases():
             'settle/missing-retained')
     # Claude Code's conclusive total is modelUsage over every model (the second review's finding 1).
     account('account-claude-main-loop-usage', 'control_engine_claude.py',
-            "            total = {'tokens': _model_tokens(event.get('modelUsage')), 'messages': turns}\n",
-            "            total = {'tokens': _tokens(event.get('usage')), 'messages': turns}  # defect: the main loop only\n",
+            "            running = _model_tokens(event.get('modelUsage'))\n",
+            "            running = _tokens(event.get('usage'))  # defect: the main loop only\n",
             'settle/model-usage')
     account('account-claude-missing-model-usage-main-loop', 'control_engine_claude.py',
-            "            total = {'tokens': _model_tokens(event.get('modelUsage')), 'messages': turns}\n",
-            "            total = {'tokens': _model_tokens(event['modelUsage']) if 'modelUsage' in event\n"
-            "                     else _tokens(event.get('usage')), 'messages': turns}  # defect: main loop when absent\n",
+            "            running = _model_tokens(event.get('modelUsage'))\n",
+            "            running = (_model_tokens(event['modelUsage']) if 'modelUsage' in event\n"
+            "                       else _tokens(event.get('usage')))  # defect: main loop when absent\n",
             'settle/model-usage')
     # Codex's limit signal is its usage-limit message (the second review's finding 2).
     account('account-codex-limit-unobserved', 'control_engine_codex.py',
@@ -6473,6 +6530,12 @@ def cases():
     account('account-codex-workspace-unobserved', 'control_engine_codex.py',
             "            window = next((window for text, window in EXHAUSTED if text in message), None)\n",
             "            window = None  # defect: only the usage-limit family of the error table is read\n",
+            'usage/rate-limit-reset')
+    account('account-codex-spend-cap-unobserved', 'control_engine_codex.py',
+            "    ('You hit your spend cap set in your workspace. Increase your spend cap to continue.', 'workspace_spend_cap'),\n"
+            "    ('You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.',\n"
+            "     'workspace_spend_cap'),\n",
+            "",  # defect: the workspace spend cap messages are not read
             'usage/rate-limit-reset')
     account('account-codex-exhaustion-reset-invented', 'control_engine_codex.py',
             "                return []\n            reset = None\n",
