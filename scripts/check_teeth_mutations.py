@@ -7051,6 +7051,78 @@ def cases():
     pool('pool-dispatches-uncounted', 'control_account_pool.py',
          "            shown['dispatches'][account] = shown['dispatches'].get(account, 0) + 1\n",
          "            pass  # defect: dispatches are not counted per account\n", ['pool/per-account-isolation'])
+    # The lead's decision (fail closed): a tool-call form the decision does not recognize is an unknown call.
+    pool('decision-unknown-call-skipped', 'control_account_limit.py',
+         "            if call.get('unknown'):\n                found.append(",
+         "            if call.get('unknown'):\n                continue  # defect: an unknown call is no call\n"
+         "                found.append(",
+         ['decision/unknown-forms'])
+    pool('decision-claude-server-tool-blocks-free', 'control_engine_claude.py',
+         "            found.append(_unknown(kind, block.get('id') if isinstance(block.get('id'), str) else None))\n",
+         "            pass  # defect: an MCP-connector, server-tool or unlisted block is no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-unseen-result-free', 'control_engine_claude.py',
+         "            elif ident not in seen:\n",
+         "            elif False:  # defect: the result of a call the record never showed is no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-streamed-tool-use-free', 'control_engine_claude.py',
+         "            elif tag not in TOOL_FREE_BLOCKS:\n",
+         "            elif False:  # defect: a streamed tool call is no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-unlisted-message-free', 'control_engine_claude.py',
+         "    if tag not in MESSAGES:\n",
+         "    if False:  # defect: a message type the binary does not list is taken as tool-free\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-unlisted-stream-event-free', 'control_engine_claude.py',
+         "        if name not in STREAM_EVENTS:\n",
+         "        if False:  # defect: a streaming event the schema does not name is taken as tool-free\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-unseen-progress-free', 'control_engine_claude.py',
+         "        return [_unknown(kind, ident) for ident in ids if ident not in seen]\n",
+         "        return []  # defect: progress and summaries of calls never shown are no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-codex-unlisted-item-free', 'control_engine_codex.py',
+         "        return [{'id': ident, 'server': None, 'tool': None, 'unknown': kind}]\n",
+         "        return []  # defect: dynamic, sub-agent and unlisted items are no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-codex-unlisted-event-free', 'control_engine_codex.py',
+         "    if name not in EVENTS:\n",
+         "    if False:  # defect: an event type exec does not list is taken as tool-free\n",
+         ['decision/unknown-forms'])
+    pool('decision-redacted-name-trusted', 'control_engine_claude.py',
+         "        elif redacted and name not in BUILTIN_TOOLS:\n",
+         "        elif False:  # defect: a redacted tool name is taken as it reads\n",
+         ['decision/redacted-name'])
+    pool('decision-redaction-not-passed', 'control_account_limit.py',
+         "        shown = (engine.tool_calls(event, shown_ids, bool(line['redacted'])) if event is not None\n",
+         "        shown = (engine.tool_calls(event, shown_ids, False) if event is not None  # defect: redaction unread\n",
+         ['decision/redacted-name'])
+    # Negative controls of the fail-closed reading: what is tool-free, or a call the record showed, stays no call.
+    pool('decision-shown-ids-per-line', 'control_account_limit.py',
+         "        shown = (engine.tool_calls(event, shown_ids, bool(line['redacted'])) if event is not None\n",
+         "        shown = (engine.tool_calls(event, set(), bool(line['redacted'])) if event is not None  # defect\n",
+         ['decision/tool-free-forms'])
+    pool('decision-claude-tool-ids-unremembered', 'control_engine_claude.py',
+         "        if isinstance(ident, str):\n            seen.add(ident)\n",
+         "        if False:  # defect: the ids of the calls shown are not remembered\n            seen.add(ident)\n",
+         ['decision/tool-free-forms'])
+    pool('decision-codex-builtin-items-ask', 'control_engine_codex.py',
+         "    if kind in TOOL_FREE_ITEMS or kind in BUILTIN_ITEMS:\n",
+         "    if kind in TOOL_FREE_ITEMS:  # defect: exec's own commands and file changes ask\n",
+         ['decision/tool-free-forms'])
+    pool('decision-claude-thinking-asks', 'control_engine_claude.py',
+         "TOOL_FREE_BLOCKS = frozenset(('text', 'thinking', 'redacted_thinking', 'compaction', 'fallback'))\n",
+         "TOOL_FREE_BLOCKS = frozenset(('text', 'compaction', 'fallback'))  # defect: reasoning blocks ask\n",
+         ['decision/tool-free-forms'])
+    # The readers' tables are the binaries' own.
+    pool('format-claude-builtin-table-drifts', 'control_engine_claude.py',
+         "BUILTIN_TOOLS = frozenset(('Bash', 'Read', 'Write',",
+         "BUILTIN_TOOLS = frozenset(('Bash', 'Write',  # defect: a built-in tool dropped\n",
+         ['decision/redacted-name', 'format/tool-forms'])
+    pool('format-codex-dynamic-item-builtin', 'control_engine_codex.py',
+         "BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))\n",
+         "BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search', 'dynamic_tool_call'))  # defect\n",
+         ['decision/unknown-forms', 'format/tool-forms'])
     # Installation.
     pool('pool-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_pool.py",\n', '', ['install/assets'])
     pool('decision-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_limit.py",\n', '',

@@ -57,6 +57,7 @@ def _v160_suite():
     ROWS = ('pool/per-account-isolation', 'pool/one-registration', 'pool/concurrent',
             'limit/stream-exhausted', 'limit/rate-limit-result', 'limit/claude-rejected-texts',
             'decision/rerun', 'decision/ask', 'decision/unreadable-asks', 'decision/same-id-write',
+            'decision/unknown-forms', 'decision/redacted-name', 'decision/tool-free-forms', 'format/tool-forms',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -978,6 +979,177 @@ sys.exit(payload.get('code', 0))
                       'the write [%s, %s]' % (provider, (found or {}).get('decision'), named(found) or error),
                       (found or {}).get('decision') == 'ask'
                       and named(found) == [(at, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')])
+
+        # AC3, fail closed (the lead's decision): a tool-call form the decision does not recognize is an unknown
+        # call and asks, naming its line and form; the forms are the binaries' own (cli-formats.json tool_forms).
+        CFORMS = FORMATS['claude_code'].get('tool_forms') or {}
+        XFORMS = FORMATS['codex'].get('tool_forms') or {}
+
+        def c_line(kind, **fields):
+            return dict({'type': kind, 'uuid': str(uuid.uuid4()), 'session_id': SESSION}, **fields)
+
+        def c_user(content):
+            return c_line('user', message={'role': 'user', 'content': content}, parent_tool_use_id=None)
+
+        def c_stream(event):
+            return c_line('stream_event', event=event, parent_tool_use_id=None)
+
+        def c_blocks(blocks):
+            return c_msg('mu-%s' % os.urandom(3).hex(), 1, 1, blocks)['line']
+
+        def x_any(kind, item_id, **fields):
+            return {'type': 'item.started', 'item': dict({'id': item_id, 'type': kind}, **fields)}
+
+        def forms(found):
+            return sorted((c['sequence'], c['reason'], c.get('form')) for c in (found or {}).get('calls') or [])
+
+        c_head = [('wrapper', {'schema': 'veldo.launch_identity/v1'}), ('engine', c_init()['line'])]
+        c_tail = [('engine', c_result(1, 1)['line'])]
+        x_head = [('engine', x_thread()['line']), ('engine', x_started()['line'])]
+        x_tail = [('engine', x_done(1, 1)['line'])]
+        # (engine, what, lines, the form each names, the table that lists it or None for a type no table lists)
+        UNKNOWN = (
+            ('claude_code', 'an mcp_tool_use block', [c_blocks([{'type': 'mcp_tool_use', 'id': 'mcptoolu_1',
+                                                                 'name': 'add_comment', 'server_name': 'tracker',
+                                                                 'input': {}}])],
+             'mcp_tool_use', 'response_blocks'),
+            ('claude_code', 'an mcp_tool_result block', [c_blocks([{'type': 'mcp_tool_result', 'tool_use_id': 'mcptoolu_2',
+                                                                    'is_error': False, 'content': []}])],
+             'mcp_tool_result', 'response_blocks'),
+            ('claude_code', 'a server_tool_use block', [c_blocks([{'type': 'server_tool_use', 'id': 'srvtoolu_1',
+                                                                   'name': 'web_fetch', 'input': {}}])],
+             'server_tool_use', 'response_blocks'),
+            ('claude_code', 'a stream_event starting a tool_use block',
+             [c_stream({'type': 'content_block_start', 'index': 0,
+                        'content_block': tool_use('toolu_s1', 'mcp__tracker__add_comment')})],
+             'stream_event:tool_use', 'response_blocks'),
+            ('claude_code', 'a stream_event starting a message that holds a tool_use',
+             [c_stream({'type': 'message_start', 'message': {'id': 'ms-1', 'role': 'assistant',
+                                                             'content': [tool_use('toolu_s2', 'Bash')]}})],
+             'stream_event:tool_use', 'response_blocks'),
+            ('claude_code', 'a stream_event of a type the schema does not name',
+             [c_stream({'type': 'unlisted_stream_event'})], 'stream_event:unlisted_stream_event', None),
+            ('claude_code', 'a user tool_result for an id never seen',
+             [c_user([{'type': 'tool_result', 'tool_use_id': 'toolu_never', 'content': 'commented'}])],
+             'tool_result', 'request_blocks'),
+            ('claude_code', 'a tool_use block in a user message', [c_user([tool_use('toolu_u', 'mcp__tracker__search')])],
+             'tool_use', 'request_blocks'),
+            ('claude_code', 'a tool_progress for an id never seen',
+             [c_line('tool_progress', tool_use_id='toolu_never', tool_name='mcp__tracker__add_comment',
+                     parent_tool_use_id=None, elapsed_time_seconds=1)], 'tool_progress', 'messages'),
+            ('claude_code', 'a tool_use_summary of an id never seen',
+             [c_line('tool_use_summary', summary='commented', preceding_tool_use_ids=['toolu_never'])],
+             'tool_use_summary', 'messages'),
+            ('claude_code', 'a content block of a type no table lists', [c_blocks([{'type': 'unlisted_block', 'id': 'x1'}])],
+             'unlisted_block', None),
+            ('claude_code', 'a message of a type no table lists', [c_line('unlisted_message')],
+             'message:unlisted_message', None),
+            ('claude_code', 'a system message of a subtype no table lists', [c_line('system', subtype='unlisted_subtype')],
+             'message:system/unlisted_subtype', None),
+            ('codex', 'a dynamic_tool_call item', [x_any('dynamic_tool_call', 'item_d', tool='add_comment',
+                                                         arguments={}, status='in_progress')],
+             'dynamic_tool_call', 'thread_items'),
+            ('codex', 'a collab_agent_tool_call item', [x_any('collab_agent_tool_call', 'item_c', tool='spawn_agent',
+                                                              status='in_progress')],
+             'collab_agent_tool_call', 'thread_items'),
+            ('codex', 'a sub_agent_activity item', [x_any('sub_agent_activity', 'item_a')], 'sub_agent_activity',
+             'thread_items'),
+            ('codex', 'an item of a type no table lists', [x_any('unlisted_item', 'item_x')], 'unlisted_item', None),
+            ('codex', 'an event of a type no table lists', [{'type': 'turn.unlisted'}], 'event:turn.unlisted', None),
+        )
+        with region('decision/unknown-forms'):
+            for provider, what, lines, form, table in UNKNOWN:
+                head, tail = (c_head, c_tail) if provider == 'claude_code' else (x_head, x_tail)
+                found, error = decide(record_of(head + [('engine', line) for line in lines] + tail), provider)
+                at = len(head) + 1
+                check('decision/unknown-forms', '%s, %s: decided ask, naming that line as an unknown call of form %s '
+                      '[%s, %s]' % (provider, what, form, (found or {}).get('decision'), forms(found) or error),
+                      (found or {}).get('decision') == 'ask' and forms(found) == [(at, 'unknown_call', form)]
+                      and named(found) == [(at, None, None, None, None, 'unknown_call')]
+                      and (found or {}).get('mcp_calls') == 0)
+
+        # A redacted line whose tool name is neither mcp__ nor one the binary lists as built in may be a redacted
+        # MCP tool's name: redacted_unreadable. A built-in name, or an MCP name that still reads, is decided as is.
+        with region('decision/redacted-name'):
+            for name, expected in (('[REDACTED:known_pattern]', [(3, None, None, None, None, 'redacted_unreadable')]),
+                                   ('Agent', [(3, None, None, None, None, 'redacted_unreadable')]),
+                                   ('Read', []), ('mcp__tracker__get_issue', [])):
+                record = record_of(c_head + [('engine', c_blocks([tool_use('toolu_x', name)]))] + c_tail)
+                record[len(c_head)]['redacted'] = ['known_pattern']
+                found, error = decide(record, 'claude_code')
+                check('decision/redacted-name', 'a redacted line whose tool_use is named %r: decided %s [%s, %s]'
+                      % (name, 'ask' if expected else 're-run', (found or {}).get('decision'), named(found) or error),
+                      (found or {}).get('decision') == ('ask' if expected else 'rerun') and named(found) == expected
+                      and (name in (CFORMS.get('builtin_tools') or ())) == (name == 'Read'))
+
+        # Negative control: every tool-free or built-in form, and a result, progress and summary of a call the
+        # record showed, is no MCP call, so the fail-closed reading does not ask for everything.
+        with region('decision/tool-free-forms'):
+            claude_free = [
+                c_blocks([{'type': 'text', 'text': 'working'}, {'type': 'thinking', 'thinking': 'x', 'signature': 's'},
+                          {'type': 'redacted_thinking', 'data': 'd'}, tool_use('toolu_bash', 'Bash')]),
+                c_user([{'type': 'tool_result', 'tool_use_id': 'toolu_bash', 'content': 'ok'},
+                        {'type': 'text', 'text': 'go on'}]),
+                c_user('a plain prompt'),
+                c_line('tool_progress', tool_use_id='toolu_bash', tool_name='Bash', parent_tool_use_id=None,
+                       elapsed_time_seconds=1),
+                c_line('tool_use_summary', summary='ran a command', preceding_tool_use_ids=['toolu_bash']),
+                c_stream({'type': 'message_start', 'message': {'id': 'ms-2', 'role': 'assistant', 'content': []}}),
+                c_stream({'type': 'content_block_start', 'index': 0, 'content_block': {'type': 'text', 'text': ''}}),
+                c_stream({'type': 'content_block_delta', 'index': 0, 'delta': {'type': 'text_delta', 'text': 'x'}}),
+                c_stream({'type': 'content_block_stop', 'index': 0}),
+                c_line('system', subtype='hook_started', hook_id='h', hook_name='n', hook_event='e'),
+                c_line('auth_status', isAuthenticating=False, output=[])]
+            codex_free = [x_any(kind, 'item_%s' % kind) for kind in
+                          ('agent_message', 'reasoning', 'todo_list', 'error', 'command_execution', 'file_change',
+                           'web_search')]
+            for provider, lines, head, tail in (('claude_code', claude_free, c_head, c_tail),
+                                                ('codex', codex_free, x_head, x_tail)):
+                found, error = decide(record_of(head + [('engine', line) for line in lines] + tail), provider)
+                check('decision/tool-free-forms', '%s: %d lines of tool-free and built-in forms decide re-run, naming no '
+                      'call [%s, %s]' % (provider, len(lines), (found or {}).get('decision'), forms(found) or error),
+                      (found or {}).get('decision') == 'rerun' and (found or {}).get('calls') == [])
+
+        # The readers' tables are the binaries' own; each listed fixture form is one they list, each unlisted one not.
+        with region('format/tool-forms'):
+            CE, XE = getattr(L, 'ENGINES', {}).get('claude_code'), getattr(L, 'ENGINES', {}).get('codex')
+            claude_tables = {'messages': {tuple(m) for m in CFORMS.get('messages') or ()},
+                             'response_blocks': list(CFORMS.get('response_blocks') or ()),
+                             'request_blocks': list(CFORMS.get('request_blocks') or ()),
+                             'stream_events': list(CFORMS.get('stream_events') or ()),
+                             'builtin_tools': set(CFORMS.get('builtin_tools') or ())}
+            module_tables = {'messages': set(getattr(CE, 'MESSAGES', ())),
+                             'response_blocks': list(getattr(CE, 'RESPONSE_BLOCKS', ())),
+                             'request_blocks': list(getattr(CE, 'REQUEST_BLOCKS', ())),
+                             'stream_events': list(getattr(CE, 'STREAM_EVENTS', ())),
+                             'builtin_tools': set(getattr(CE, 'BUILTIN_TOOLS', ()))}
+            check('format/tool-forms', 'claude_code: the reader\'s message, block, streaming event and built-in tool '
+                  'tables are the binary\'s own [%s]' % [k for k in claude_tables if claude_tables[k] != module_tables[k]],
+                  claude_tables == module_tables and len(claude_tables['messages']) > 40
+                  and set(getattr(CE, 'TOOL_FREE_REQUEST', ())) <= set(claude_tables['request_blocks'])
+                  and set(getattr(CE, 'TOOL_FREE_BLOCKS', ())) <= set(claude_tables['response_blocks']))
+            exec_items = set(XFORMS.get('exec_items') or ())
+            known = set(getattr(XE, 'TOOL_FREE_ITEMS', ())) | set(getattr(XE, 'BUILTIN_ITEMS', ())) | {getattr(XE, 'MCP_ITEM', None)}
+            check('format/tool-forms', 'codex: the reader\'s item and event tables are exec\'s own [%s, %s]'
+                  % (sorted(known ^ exec_items), sorted(set(getattr(XE, 'EVENTS', ())) ^ set(FORMATS['codex']['events']))),
+                  known == exec_items and len(exec_items) == 8
+                  and set(getattr(XE, 'EVENTS', ())) == set(FORMATS['codex']['events']))
+            listed = {'response_blocks': set(claude_tables['response_blocks']),
+                      'request_blocks': set(claude_tables['request_blocks']),
+                      'messages': {m[0] for m in claude_tables['messages']},
+                      'thread_items': set(XFORMS.get('thread_items') or ())}
+            every = {'claude_code': set().union(*listed.values(), claude_tables['stream_events'],
+                                                {m[1] for m in claude_tables['messages'] if m[1]}),
+                     'codex': set().union(listed['thread_items'], exec_items, FORMATS['codex']['events'])}
+            wrong = []
+            for provider, what, lines, form, table in UNKNOWN:
+                tag = form.split(':')[-1].split('/')[-1]  # the type tag the form names
+                if (tag not in listed[table]) if table else (tag in every[provider]):
+                    wrong.append(what)
+            check('format/tool-forms', 'each unknown-call fixture form is one the binaries list (the named ones) or one '
+                  'no table lists (the unlisted ones) [%s]' % wrong, not wrong and bool(CFORMS) and bool(XFORMS)
+                  and {'dynamic_tool_call', 'collab_agent_tool_call', 'sub_agent_activity'} <= listed['thread_items']
+                  and not {'dynamic_tool_call', 'collab_agent_tool_call', 'sub_agent_activity'} & exec_items)
 
         # Installation: both new modules laid down by the scaffold, the engine copies identical.
         with region('install/assets'):
