@@ -151,8 +151,10 @@ def _v160_suite():
         writer.command_registry['claim_operation'] = {'transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
+        events = []
         reservations = RES.Reservations(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
-                                        authorize=RES.service_authority, signer='runner', sign=sign)
+                                        authorize=RES.service_authority, signer='runner', sign=sign,
+                                        observe=events.append)
         BIG = dict(capacity=50, invocations=200, wall_seconds=10 ** 7)
         # The owner's account records, over profiles the local helper prepares for either provider.
         accounts = ACC.Accounts(S, writer, principal='owner', signer='owner', sign=sign)
@@ -518,6 +520,10 @@ sys.exit(payload.get('code', 0))
                       and isinstance(trace.get('windows'), dict))
             check('pool/per-account-isolation', 'the four engines ran on four different profiles [%d]' % len(set(profile_seen)),
                   len(profile_seen) == 4 and len(set(profile_seen)) == 4)
+            counted, error = attempt(lambda: POOL.metrics(reservations._records()))
+            check('pool/per-account-isolation', 'the metrics count one dispatch on each account [%s]'
+                  % ((counted or {}).get('dispatches'), ),
+                  (counted or {}).get('dispatches') == {a: 1 for a in tokens})
             shown, error = attempt(lambda: ACC.usage(reservations, accounts))
             charged = {a: ((shown or {}).get('account', {}).get(a) or {}).get('totals', {}).get('tokens') for a in tokens}
             check('pool/per-account-isolation', 'each account\'s shown usage is its own run\'s tokens [%s]' % charged,
@@ -553,6 +559,9 @@ sys.exit(payload.get('code', 0))
             passed = getattr(error, 'passed', None) or {}
             check('pool/moved-off', 'the dispatches above were offered before acct-c1\'s reported reset [%.1f s left]'
                   % (reset - time.time()), time.time() < reset)
+            seen = [e for e in events if e.get('outcome') == 'refused' and str(e.get('refusal', '')).startswith('no_account')]
+            check('pool/moved-off', 'the refusal is observed with each account\'s reason [%s]'
+                  % (seen[-1] if seen else None), bool(seen) and seen[-1].get('passed') == passed)
             check('pool/moved-off', 'with the other two at their concurrency, the next dispatch waits: refused before '
                   'anything is prepared, "no account until" acct-c1\'s reported reset, acct-c1 passed over at its limit '
                   '[%s, %s]' % (code(error), passed),
@@ -682,6 +691,10 @@ sys.exit(payload.get('code', 0))
                 check(row, '%s: the window and reset time are recorded on the account, exhausted [%s]' % (engine, recorded),
                       recorded.get('status') == 'rejected' and recorded.get('reset_at') == expected['reset_at']
                       and recorded.get('source_dispatch') == launch.dispatch_id)
+                counted, error = attempt(lambda: POOL.metrics(reservations._records()))
+                check(row, '%s: the metrics count the run ended account_limit on its account and window [%s]'
+                      % (engine, ((counted or {}).get('account_limit') or {}).get(account)),
+                      ((counted or {}).get('account_limit') or {}).get(account) == {expected['window']: 1})
 
         # AC3: the re-run-or-ask decision over fixture records in the form the Notes give.
         def record_of(lines):

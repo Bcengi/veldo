@@ -6980,6 +6980,17 @@ def cases():
          "        if hasattr(account, 'reserve') and not getattr(self, '_pooled', None):\n"
          "            self._pooled = True  # defect: only the Runner's first dispatch reads the pool\n",
          ['pool/concurrent', 'pool/added-account'])
+    # Observability: the reasons a waiting dispatch's accounts were passed over, and the counts.
+    pool('pool-refusal-reasons-unobserved', 'control_reservations.py',
+         "                              **({'passed': error.passed} if isinstance(getattr(error, 'passed', None), dict) else {})))\n",
+         "                              **{}))  # defect: the reasons are not observed\n", ['pool/moved-off'])
+    pool('pool-limit-uncounted', 'control_account_pool.py',
+         "        elif record.get('type') == 'invocation' and record.get('outcome') == ACC.LIMIT_OUTCOME:\n",
+         "        elif False:  # defect: runs ended account_limit are not counted\n",
+         ['limit/stream-exhausted', 'limit/rate-limit-result'])
+    pool('pool-dispatches-uncounted', 'control_account_pool.py',
+         "            shown['dispatches'][account] = shown['dispatches'].get(account, 0) + 1\n",
+         "            pass  # defect: dispatches are not counted per account\n", ['pool/per-account-isolation'])
     # Installation.
     pool('pool-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_pool.py",\n', '', ['install/assets'])
     pool('decision-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_limit.py",\n', '',

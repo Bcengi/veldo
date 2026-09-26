@@ -181,7 +181,9 @@ class Reservations:
             result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
         except (Refused, self.store.StoreRefused) as error:
             self.counts['refused'] += 1
-            self.observe(dict(event, outcome='refused', refusal=error.code))
+            # VELDO-0160: a dispatch with no candidate account names each account's reason in its observation.
+            self.observe(dict(event, outcome='refused', refusal=error.code,
+                              **({'passed': error.passed} if isinstance(getattr(error, 'passed', None), dict) else {})))
             raise
         self.counts['accepted'] += 1
         self.observe(dict(event, outcome='accepted', watermark=result['seq']))
