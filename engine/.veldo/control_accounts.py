@@ -10,10 +10,21 @@ directory and prints its one login step; this module is the record the Runner an
 receiver read. Choosing among accounts, the pool and the limit are VELDO-0160.
 
 THE LOGIN COMES FROM THE RECORD. `login_environment` builds an engine's environment from the
-inherited one: every provider's profile variable and every paid-API credential variable is removed,
-and the one profile variable of the account's provider is set to that account's profile on this host.
-The account is the one the accepted dispatch contract records, never one named by the caller's
-environment. MCP server credentials are not provider model credentials and are not touched here.
+inherited one: every provider's profile variable and every variable that could log either CLI in
+another way is removed, and the one profile variable of the account's provider is set to that
+account's profile on this host. The account is the one the accepted dispatch contract records, never
+one named by the caller's environment. MCP server credentials are not provider model credentials and
+are not touched here.
+
+THE STRIP IS BY FAMILY, NOT BY A FIXED LIST (`strips`). Removed: every name under the model
+providers' own prefixes (ANTHROPIC_, OPENAI_, CODEX_, and CLAUDE_CODE_USE_, the switches that move
+Claude Code to another provider); every CLAUDE_ name that carries a credential word (a TOKEN, not a
+count of TOKENS; API_KEY, OAUTH, SECRET, CLIENT_KEY or AUTH); and every name the installed binaries'
+own credential tables list (each engine module's CREDENTIALS, extracted from the binary, the
+launch receiver passes their union). A variable a later CLI adds under one of those families is
+removed without anyone listing it. General cloud and tool credentials (AWS, Azure, Google, package
+registries) stay: they are the worker's tools' own logins, and neither CLI sends a model request
+through them once the provider switches are gone.
 
 A WINDOW REOPENS ONLY ON ITS REPORTED RESET. `blocking` names the windows that refuse a new
 invocation now: a window the CLI reported rejected (its allowance exhausted) until its reported reset,
@@ -24,8 +35,11 @@ command writes an `account` record. `authorize(conn, command)` is the caller's c
 predicate, run inside the transaction. Standard library only.
 """
 import copy
+import importlib.util
 import json
 import math
+from pathlib import Path
+import re
 
 SCHEMA = 'veldo.account/v1'
 KIND = 'account'
@@ -33,8 +47,21 @@ PREFIX = 'account:'
 OPERATION = 'account_registry'
 OWNER = 'veldo-0062-accounts'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
-# Each provider's login profile variable, the one place it is named.
-PROFILES = {'claude_code': 'CLAUDE_CONFIG_DIR', 'codex': 'CODEX_HOME'}
+
+
+def _helper():
+    spec = importlib.util.spec_from_file_location('control_accounts_helper', Path(__file__).with_name('accounts.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# Each provider's login profile variable, from the one place it is named (accounts.PROFILE_ENV).
+PROFILES = dict(_helper().PROFILE_ENV)
+# The provider families whose every variable is stripped from an engine's environment, and the
+# credential words a CLAUDE_ variable is stripped for.
+STRIP_PREFIXES = ('ANTHROPIC_', 'OPENAI_', 'CODEX_', 'CLAUDE_CODE_USE_')
+CLAUDE_CREDENTIAL = re.compile(r'CLAUDE_\w*?(?:TOKEN(?!S)|API_KEY|OAUTH|SECRET|CLIENT_KEY|AUTH)')
 STATUSES = ('active', 'paused', 'disabled')
 WINDOW_STATUSES = ('allowed', 'rejected')
 # Who may register or change an account (the owner) and who records what a CLI reported (the
@@ -118,11 +145,18 @@ def profile(record, host):
     return variable, directory
 
 
-def login_environment(inherited, record, host, paid_api):
-    """The engine environment: `inherited` without any provider's profile variable or any paid-API
-    credential variable in `paid_api`, with the account's own profile on `host` set."""
+def strips(name, named):
+    """Whether `name` never reaches an engine: a provider profile variable, a name in a provider
+    family or carrying a Claude credential word, or one the binaries' credential tables (`named`) list."""
+    return (name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or CLAUDE_CREDENTIAL.match(name) is not None
+            or name in named)
+
+
+def login_environment(inherited, record, host, named):
+    """The engine environment: `inherited` without every variable `strips` removes, with the
+    account's own profile on `host` set, the only login variable left."""
     variable, directory = profile(record, host)
-    environment = {k: v for k, v in inherited.items() if k not in PROFILES.values() and k not in paid_api}
+    environment = {k: v for k, v in inherited.items() if not strips(k, named)}
     environment[variable] = directory
     return environment
 

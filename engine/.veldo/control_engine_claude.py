@@ -1,25 +1,38 @@
 """Claude Code's login and usage reports as the launch receiver reads them, VELDO-0062.
 
+Every format and name here is the installed CLI's own (Claude Code 2.1.281), read from the schema
+its binary embeds for the stream JSON messages and from its credential tables; the extraction is
+proof/VELDO-0062/extract_formats.py and its table cli-formats.json.
+
 LOGIN. A Claude Code run logs in only through its subscription account's profile, the directory
-CLAUDE_CONFIG_DIR names (control_accounts sets it from the account the dispatch recorded). Every
-variable that would authenticate it another way, a paid API key or token, or a switch to the Bedrock,
-Vertex or Foundry APIs, is in PAID_API and never reaches the engine. (The subscription token of
-an account configured to use one, and qualifying the switches on the pinned version, are
-VELDO-0155.)
+CLAUDE_CONFIG_DIR names (control_accounts sets it from the account the dispatch recorded, and strips
+every other login variable by family). CREDENTIALS is every name the binary's own credential and
+provider tables list (the API keys and bearer tokens, the provider switches and their companions,
+the endpoint overrides, the skip-auth switches, the session tokens and its list of Anthropic secrets
+with their INPUT_ forms), so a name the families miss is still stripped. (The subscription token of
+an account configured to use one is VELDO-0155.)
 
 USAGE, FROM THE CLI'S OWN STREAM (print mode with stream JSON output). What is counted is only what
 the CLI reports, at the granularity it reports it:
 - an `assistant` event's `message.usage`, once per message id (a message is streamed in several
-  events with the same id and usage, and a repeated delivery changes nothing): tokens are the sum of
-  its input, output, cache creation and cache read token counts; messages are the distinct assistant
-  messages seen;
-- the `result` event, the CLI's own total for the invocation, once: its `usage` token counts and
-  `num_turns`. Only a result makes the token and message totals conclusive; without one they stay
-  unknown and their reservation is retained;
+  events with the same id and usage, and a repeated delivery changes nothing), the main loop's and a
+  subagent's alike (`parent_tool_use_id` set): tokens are the sum of its input, output, cache
+  creation and cache read token counts (the nullable ones count when present; the nested
+  `cache_creation` and `server_tool_use` objects are breakdowns, never added); messages are the
+  distinct assistant messages seen. These are the live observations a cap is checked against;
+- the `result` event's `modelUsage`, the conclusive total: per model, over every model call of the
+  invocation (main loop, Task subagents, sidechains, compaction), cumulative, so the latest result
+  is read. Its tokens are the sum over every model of inputTokens, outputTokens, cacheReadInputTokens
+  and cacheCreationInputTokens. The result's `usage` is never read for accounting: the binary's schema
+  says it is the MAIN AGENT LOOP ONLY and to prefer modelUsage. A result without a readable
+  modelUsage leaves tokens unknown (never zero, never the main loop's usage) and their reservation is
+  retained. Messages are the distinct assistant messages or `num_turns`, whichever is more; only a
+  result makes them conclusive;
 - a `rate_limit_event`'s `rate_limit_info`: `rateLimitType` names the window, `status` `rejected`
-  means its allowance is exhausted, `resetsAt` is its reported reset (Unix seconds) and `utilization`
-  what the CLI reported. Nothing is invented: a missing reset stays missing.
-`total_cost_usd` is never read: subscription usage has no per-call price.
+  means its allowance is exhausted (`allowed` and `allowed_warning` are not), `resetsAt` is its
+  reported reset (Unix seconds) and `utilization` what the CLI reported. Nothing is invented: a missing
+  reset stays missing.
+`total_cost_usd` and `costUSD` are never read: subscription usage has no per-call price.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 Standard library only.
@@ -27,13 +40,33 @@ Standard library only.
 import hashlib
 import json
 import math
+import time
 
 PROVIDER = 'claude_code'
-PROFILE = 'CLAUDE_CONFIG_DIR'
-PAID_API = ('ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK',
-            'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_API_KEY',
-            'AWS_BEARER_TOKEN_BEDROCK', 'OPENAI_API_KEY', 'CODEX_API_KEY')
+CREDENTIALS = frozenset((
+    'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'AWS_BEARER_TOKEN_BEDROCK',
+    'ANTHROPIC_FOUNDRY_API_KEY', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'ANTHROPIC_AWS_API_KEY',
+    'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY',
+    'CLAUDE_CODE_USE_ANTHROPIC_AWS', 'CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD', 'CLAUDE_CODE_USE_MANTLE',
+    'CLAUDE_CODE_USE_GATEWAY', 'ANTHROPIC_FOUNDRY_RESOURCE', 'ANTHROPIC_VERTEX_PROJECT_ID',
+    'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_GOOGLE_CLOUD_PROJECT', 'ANTHROPIC_GOOGLE_CLOUD_LOCATION',
+    'ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID', 'CLOUD_ML_REGION', 'CLAUDE_CODE_SKIP_BEDROCK_AUTH',
+    'CLAUDE_CODE_SKIP_VERTEX_AUTH', 'CLAUDE_CODE_SKIP_FOUNDRY_AUTH', 'CLAUDE_CODE_SKIP_ANTHROPIC_AWS_AUTH',
+    'CLAUDE_CODE_SKIP_ANTHROPIC_GOOGLE_CLOUD_AUTH', 'CLAUDE_CODE_SKIP_MANTLE_AUTH',
+    'ANTHROPIC_CUSTOM_HEADERS', 'CLAUDE_CODE_OAUTH_REFRESH_TOKEN', 'CLAUDE_CODE_ARTIFACTS_API_TOKEN',
+    'CLAUDE_CODE_MEMORY_API_TOKEN', 'CLAUDE_CODE_SLACK_TAG_TOKEN', 'ANTHROPIC_IDENTITY_TOKEN',
+    'ANTHROPIC_IDENTITY_TOKEN_FILE', 'ALL_INPUTS', 'INPUT_ANTHROPIC_API_KEY', 'INPUT_ANTHROPIC_AUTH_TOKEN',
+    'INPUT_ANTHROPIC_CUSTOM_HEADERS', 'INPUT_CLAUDE_CODE_OAUTH_TOKEN',
+    'INPUT_CLAUDE_CODE_OAUTH_REFRESH_TOKEN', 'INPUT_CLAUDE_CODE_ARTIFACTS_API_TOKEN',
+    'INPUT_CLAUDE_CODE_MEMORY_API_TOKEN', 'INPUT_CLAUDE_CODE_SLACK_TAG_TOKEN',
+    'INPUT_ANTHROPIC_FOUNDRY_API_KEY', 'INPUT_ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'INPUT_ANTHROPIC_AWS_API_KEY',
+    'INPUT_ANTHROPIC_IDENTITY_TOKEN', 'INPUT_ANTHROPIC_IDENTITY_TOKEN_FILE', 'INPUT_ALL_INPUTS',
+    'CLAUDE_CODE_SESSION_ACCESS_TOKEN', 'CLAUDE_CODE_HOST_SESSION_ID', 'ANTHROPIC_AWS_BASE_URL',
+    'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL',
+    'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_GOOGLE_CLOUD_BASE_URL', 'ANTHROPIC_VERTEX_BASE_URL',
+    '_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL'))
 TOKEN_FIELDS = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
+MODEL_TOKEN_FIELDS = ('inputTokens', 'outputTokens', 'cacheReadInputTokens', 'cacheCreationInputTokens')
 
 
 def _count(value):
@@ -45,12 +78,23 @@ def _number(value):
 
 
 def _tokens(usage):
-    if not isinstance(usage, dict):
+    """A message's tokens: its four counts, a nullable one counted when present; None if unreadable."""
+    if not isinstance(usage, dict) or not all(_count(usage.get(f)) for f in TOKEN_FIELDS[:2]):
         return None
-    counts = [usage[f] for f in TOKEN_FIELDS if f in usage]
-    if not counts or not all(_count(c) for c in counts):
+    counts = [usage[f] for f in TOKEN_FIELDS if usage.get(f) is not None]
+    return sum(counts) if all(_count(c) for c in counts) else None
+
+
+def _model_tokens(model_usage):
+    """The invocation's tokens over every model in `modelUsage`; None if absent or unreadable."""
+    if not isinstance(model_usage, dict):
         return None
-    return sum(counts)
+    total = 0
+    for entry in model_usage.values():
+        if not isinstance(entry, dict) or not all(_count(entry.get(f)) for f in MODEL_TOKEN_FIELDS):
+            return None
+        total += sum(entry[f] for f in MODEL_TOKEN_FIELDS)
+    return total
 
 
 def receipt(line):
@@ -61,9 +105,11 @@ class Meter:
     """Reads one invocation's stream line by line. `feed(bytes)` returns the observations the
     complete lines in it make: {'kind': 'usage', 'usage': cumulative {tokens, messages}} or
     {'kind': 'window', 'window_id', 'status', 'reset_at', 'utilization'}, each with its `line` and
-    `receipt`. `final()` is the conclusive total, empty when the CLI reported none."""
+    `receipt`. `final()` is the conclusive total, without tokens when the result had no readable
+    modelUsage and empty when the CLI reported no result. `clock` and `zone` are the engine's clock
+    and local time zone, for a CLI that states times in local time (this one does not)."""
 
-    def __init__(self):
+    def __init__(self, clock=time.time, zone=None):
         self.pending = b''
         self.messages = {}
         self.result = None
@@ -85,11 +131,18 @@ class Meter:
         tokens = sum(self.messages.values())
         messages = len(self.messages)
         if self.result is not None:
-            tokens, messages = max(tokens, self.result['tokens']), max(messages, self.result['messages'])
+            messages = max(messages, self.result['messages'])
+            if self.result['tokens'] is not None:
+                tokens = max(tokens, self.result['tokens'])
         return {'tokens': tokens, 'messages': messages}
 
     def final(self):
-        return self.cumulative() if self.result is not None else {}
+        if self.result is None:
+            return {}
+        total = self.cumulative()
+        if self.result['tokens'] is None:
+            del total['tokens']  # No modelUsage: the tokens stay unknown.
+        return total
 
     def line(self, line):
         try:
@@ -112,11 +165,19 @@ class Meter:
             self.messages[ident] = tokens
             return [dict(seen, kind='usage', usage=self.cumulative())]
         if kind == 'result':
-            tokens = _tokens(event.get('usage'))
             turns = event.get('num_turns')
-            if self.result is not None or tokens is None or not _count(turns):
-                return []  # One total per invocation; a repeated result settles nothing twice.
-            self.result = {'tokens': tokens, 'messages': turns}
+            if not _count(turns):
+                return []
+            total = {'tokens': _model_tokens(event.get('modelUsage')), 'messages': turns}
+            prior = self.result
+            if prior is not None:
+                # Cumulative: the latest result's totals, never below what an earlier one reported.
+                total = {'messages': max(turns, prior['messages']),
+                         'tokens': None if total['tokens'] is None and prior['tokens'] is None
+                         else max(t for t in (total['tokens'], prior['tokens']) if t is not None)}
+                if total == prior:
+                    return []  # The same total again settles nothing twice.
+            self.result = total
             return [dict(seen, kind='usage', usage=self.cumulative())]
         if kind == 'rate_limit_event':
             info = event.get('rate_limit_info')

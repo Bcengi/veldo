@@ -48,6 +48,8 @@ def _load(name, rel):
 
 
 ACCT = _load("veldo_accounts_fl", ".veldo/accounts.py")
+# The one provider a fleet worker (a Claude Code session) can log in as.
+CLAUDE = "claude_code"
 
 
 class WorkerSpawner:
@@ -417,8 +419,9 @@ def make_in_session_spawner(start, account=None, accounts=None, accounts_root=No
                             capabilities=None, stop=None):
     """Build the account-selecting in-session spawner the launcher scales through. `account`
     pins the fleet to ONE registered account (one worker); otherwise the pool spreads across
-    `accounts` (default: every registered account), one account per worker. Every listed
-    account is resolved up front, so an unknown account fails BY NAME here rather than mid-fleet.
+    `accounts` (default: every registered Claude Code account), one account per worker. Every listed
+    account is resolved up front, so an unknown account, or a Codex one named for a Claude session,
+    fails BY NAME here rather than mid-fleet.
     Returns (spawner, capacity), where capacity is how many concurrent workers the account pool
     supports; the caller caps max_workers at it so one account is never run as two workers."""
     if account is not None:
@@ -426,9 +429,16 @@ def make_in_session_spawner(start, account=None, accounts=None, accounts_root=No
     elif accounts is not None:
         names = list(accounts)
     else:
-        names = ACCT.list_accounts(root=accounts_root)
+        # A Claude session takes only a Claude Code login (VELDO-0062): the registry also holds Codex ones.
+        names = [n for n in ACCT.list_accounts(root=accounts_root)
+                 if ACCT.get(n, root=accounts_root).get("provider", CLAUDE) == CLAUDE]
     for n in names:
         ACCT.resolve(n, root=accounts_root)   # unknown account fails by name, before any spawn
+        provider = ACCT.get(n, root=accounts_root).get("provider", CLAUDE)
+        if provider != CLAUDE:
+            raise ACCT.AccountError(
+                "account %r is a %s login, and a fleet worker is a Claude Code session: its %s would "
+                "name another engine's profile" % (n, provider, ACCT.PROFILE_ENV[CLAUDE]))
     selector = AccountSpreader(names)
     sp = InSessionSpawner(start, selector, capabilities=capabilities, stop=stop,
                           accounts_root=accounts_root)

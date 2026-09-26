@@ -70,8 +70,8 @@ SUBSCRIPTION LOGIN AND USAGE (VELDO-0062). An adapter that declares an `engine` 
 accepted contract records (its reservation's account) from the store's account records
 (control_accounts): an unregistered, paused or disabled account, one of another provider, or one with
 no profile on this host is refused by name. The engine's environment is the inherited one with every
-provider's profile variable and every paid-API credential variable removed and that account's own
-profile set (CLAUDE_CONFIG_DIR or CODEX_HOME), never a profile the caller's environment names. After
+provider's profile variable and every other login variable removed (by family, and every name the
+installed binaries' credential tables list, control_accounts.strips) and that account's own profile set (CLAUDE_CONFIG_DIR or CODEX_HOME), never a profile the caller's environment names. After
 acceptance, and before anything is spawned, the invocation (initial, retry or follow-on,
 control_reservation_runtime.boundary) is checked and reserved against every applicable cap and the
 account's reported rate-limit windows through VELDO-0036's InvocationGuard, bounded by the contract
@@ -122,6 +122,8 @@ RT = _organ('control_retirement')
 ACC = D.RES.ACC
 RTM = _organ('control_reservation_runtime')
 ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
+# Every name either binary's credential tables list: none reaches any engine, whichever it is.
+CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.values()))
 RECEIPTS_SCHEMA = 'veldo.usage_receipts/v1'
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
@@ -645,7 +647,9 @@ class Receiver:
             ACC.profile(record, self.host)
         except ACC.Refused as error:
             return error.code
-        self.login = {'engine': module, 'account': account, 'record': record}
+        # The engine's local time zone, for a CLI that states a reset in local time (Codex).
+        zone = (adapter.get('environment') or {}).get('TZ', os.environ.get('TZ'))
+        self.login = {'engine': module, 'account': account, 'record': record, 'zone': zone}
         return None
 
     def _invoke(self, contract, acceptance, adapter):
@@ -707,9 +711,8 @@ class Receiver:
         environment = dict(os.environ)
         environment.update(adapter.get('environment') or {})
         if self.login is not None:
-            # VELDO-0062: the recorded account's own profile, no other profile and no paid-API credential.
-            environment = ACC.login_environment(environment, self.login['record'], self.host,
-                                                self.login['engine'].PAID_API)
+            # VELDO-0062: the recorded account's own profile, no other profile and no other login.
+            environment = ACC.login_environment(environment, self.login['record'], self.host, CREDENTIALS)
             environment['VELDO_ACCOUNT'] = self.login['account']
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
@@ -1015,7 +1018,7 @@ class Metering:
         self.dispatch_id = contract['dispatch_id']
         self.account = contract['reservation']['account']
         self.engine = receiver.login['engine']
-        self.meter = self.engine.Meter()
+        self.meter = self.engine.Meter(zone=receiver.login.get('zone'))
         self.invocation = 'invocation/' + self.dispatch_id
         self.boundary = RTM.boundary(contract)
         self.guard = RTM.InvocationGuard(reservations, self.engine.PROVIDER, launch, self._stop)

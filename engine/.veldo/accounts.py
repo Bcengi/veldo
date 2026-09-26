@@ -54,9 +54,10 @@ import uuid
 from datetime import datetime, timezone
 
 SCHEMA = "veldo.accounts/v1"
-CONFIG_DIR_ENV = "CLAUDE_CONFIG_DIR"
-# Each provider's profile variable and its one-time login command (VELDO-0062).
+# Each provider's login profile variable (VELDO-0062): THE ONE PLACE it is named. control_accounts,
+# the launch receiver and fleet.py read it from here. And each provider's one-time login command.
 PROFILE_ENV = {"claude_code": "CLAUDE_CONFIG_DIR", "codex": "CODEX_HOME"}
+CONFIG_DIR_ENV = PROFILE_ENV["claude_code"]
 LOGIN_COMMAND = {"claude_code": "claude   # then /login as this account", "codex": "codex login"}
 
 
