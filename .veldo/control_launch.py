@@ -69,9 +69,12 @@ SUBSCRIPTION LOGIN AND USAGE (VELDO-0062). An adapter that declares an `engine` 
 `codex`) runs a logged-in subscription CLI. Before acceptance the receiver reads the account the
 accepted contract records (its reservation's account) from the store's account records
 (control_accounts): an unregistered, paused or disabled account, one of another provider, or one with
-no profile on this host is refused by name. The engine's environment is the inherited one with every
-provider's profile variable and every other login variable removed (by family, and every name the
-installed binaries' credential tables list, control_accounts.strips) and that account's own profile set (CLAUDE_CONFIG_DIR or CODEX_HOME), never a profile the caller's environment names. After
+no profile on this host is refused by name, as is an adapter whose configured environment names a
+login (control_accounts.refused). The engine's environment is the inherited one with every provider's
+profile variable and every other login variable removed (by family, and every name the installed
+binaries' lists make a login or a setting of the owner's shell, control_accounts.strips), then the
+adapter's configured one as configured, and that account's own profile set (CLAUDE_CONFIG_DIR or
+CODEX_HOME), never a profile the caller's environment names. After
 acceptance, and before anything is spawned, the invocation (initial, retry or follow-on,
 control_reservation_runtime.boundary) is checked and reserved against every applicable cap and the
 account's reported rate-limit windows through VELDO-0036's InvocationGuard, bounded by the contract
@@ -122,8 +125,11 @@ RT = _organ('control_retirement')
 ACC = D.RES.ACC
 RTM = _organ('control_reservation_runtime')
 ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
-# Every name either binary's credential tables list: none reaches any engine, whichever it is.
+# Every name either binary's lists make a login: none reaches any engine, whichever it is, and an
+# adapter configuring one is refused. STRIPPED adds each binary's settings of the owner's shell, which
+# the inherited environment loses and an adapter may configure.
 CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.values()))
+STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
 RECEIPTS_SCHEMA = 'veldo.usage_receipts/v1'
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
@@ -639,6 +645,10 @@ class Receiver:
         module = ENGINES.get(engine)
         if module is None:
             return 'unregistered_adapter:engine:' + str(engine)
+        # What the adapter configures reaches the engine as configured; a login in it is refused by name.
+        configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)
+        if configured:
+            return 'invalid_input:adapter_environment:' + configured[0]
         account = contract['reservation']['account']
         record = ACC.read(self.conn, account)
         if record is not None and record.get('provider') != module.PROVIDER:
@@ -709,11 +719,14 @@ class Receiver:
         its dispatch's own containment group (VELDO-0040); a transport to another host is started as
         configured, and that host's profile contains the engine there."""
         environment = dict(os.environ)
-        environment.update(adapter.get('environment') or {})
         if self.login is not None:
-            # VELDO-0062: the recorded account's own profile, no other profile and no other login.
-            environment = ACC.login_environment(environment, self.login['record'], self.host, CREDENTIALS)
+            # VELDO-0062: the recorded account's own profile, no other profile and no other login in what
+            # the engine inherits; what the adapter configures, as configured.
+            environment = ACC.login_environment(environment, self.login['record'], self.host, STRIPPED,
+                                                adapter.get('environment') or {}, CREDENTIALS)
             environment['VELDO_ACCOUNT'] = self.login['account']
+        else:
+            environment.update(adapter.get('environment') or {})
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         if adapter.get('identity', 'local') != 'reported':

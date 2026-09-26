@@ -6351,13 +6351,54 @@ def cases():
             "        'AWS_BEARER_TOKEN_BEDROCK', 'OPENAI_API_KEY', 'CODEX_API_KEY')}  # defect: back to a fixed list\n",
             'login/no-paid-api')
     account('account-login-families-ignored', 'control_accounts.py',
-            "    return (name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or CLAUDE_CREDENTIAL.match(name) is not None\n",
-            "    return (name in PROFILES.values()  # defect: a provider family's new name is not stripped\n",
+            "    return name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or name in named\n",
+            "    return name in PROFILES.values() or name in named  # defect: a provider family's new name is not stripped\n",
             'login/no-paid-api')
     account('account-credential-tables-ignored', 'control_accounts.py',
-            "            or name in named)\n",
-            "            )  # defect: the names only the binaries' credential tables list reach the engine\n",
+            "    return name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or name in named\n",
+            "    return name in PROFILES.values() or name.startswith(STRIP_PREFIXES)  # defect: the lists are ignored\n",
             'login/no-paid-api')
+    # The binaries' own lists of logins and redirects (the third review's finding 1).
+    account('account-claude-lists-ignored', 'control_engine_claude.py',
+            "CREDENTIALS = frozenset((\n",
+            "CREDENTIALS = frozenset() and frozenset((  # defect: Claude Code's lists are not read\n",
+            'login/no-paid-api')
+    account('account-securestorage-redirect-passes', 'control_engine_claude.py',
+            "'CLAUDE_SECURESTORAGE_CONFIG_DIR', ",
+            "",  # defect: the OAuth store redirect of the sensitive-variable set reaches the engine
+            'login/no-paid-api')
+    account('account-host-creds-passes', 'control_engine_claude.py',
+            " 'CLAUDE_CODE_HOST_CREDS_FILE',\n",
+            "\n",  # defect: a host credentials file Claude Code copies into its environment reaches it
+            'login/no-paid-api')
+    account('account-session-tokens-path-passes', 'control_engine_claude.py',
+            " 'CLAUDE_BG_SOCKET_TOKENS_PATH',\n",
+            "\n",  # defect: the background session tokens path (a TOKENS name) reaches the engine
+            'login/no-paid-api')
+    account('account-settings-inherited', 'control_launch.py',
+            "STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))\n",
+            "STRIPPED = CREDENTIALS  # defect: the owner's shell's Claude Code settings reach the engine\n",
+            'login/no-paid-api')
+    account('account-token-word-strips', 'control_accounts.py',
+            "    return name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or name in named\n",
+            "    return (name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or name in named\n"
+            "            or __import__('re').match(r'CLAUDE_\\w*?(?:TOKEN(?!S)|API_KEY|OAUTH|SECRET|CLIENT_KEY|AUTH)', name))"
+            "  # defect: the word rule, back\n",
+            'login/no-paid-api')
+    # What the adapter configures is never silently reduced; a login in it is refused (the lead's decision).
+    account('account-configured-login-accepted', 'control_accounts.py',
+            "                  if name in PROFILES.values() or name.startswith(REFUSED_PREFIXES) or name in credentials)\n",
+            "                  if False)  # defect: a configured login is accepted\n",
+            'login/configured-environment')
+    account('account-codex-lists-ignored', 'control_engine_codex.py',
+            "CREDENTIALS = frozenset((\n",
+            "CREDENTIALS = frozenset() and frozenset((  # defect: Codex's lists are not read\n",
+            'login/configured-environment')
+    account('account-configured-stripped', 'control_accounts.py',
+            "    environment.update(configured)\n    environment[variable] = directory\n",
+            "    environment.update({k: v for k, v in configured.items() if not strips(k, named)})"
+            "  # defect: the configuration is stripped as if inherited\n    environment[variable] = directory\n",
+            'login/configured-environment')
     account('account-fleet-codex-to-claude', 'fleet.py',
             "        names = [n for n in ACCT.list_accounts(root=accounts_root)\n"
             "                 if ACCT.get(n, root=accounts_root).get(\"provider\", CLAUDE) == CLAUDE]\n",

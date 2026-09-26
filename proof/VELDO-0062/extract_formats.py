@@ -269,6 +269,127 @@ CLAUDE_TABLES = [
 ]
 ENV_ARRAY = re.compile(r'(?:new Set\()?\[("[A-Z0-9_]+"(?:,"[A-Z0-9_]+")*)\]\)?')
 
+# Claude Code's lists that spread other lists (`...NAME`), each read with every spread resolved to the
+# nearest definition of that minified name: (name, the exact text the list starts with, decision, reason,
+# exceptions). `strip`: every name is a login, credential, credential or settings redirect, endpoint or
+# paid-API switch; it never reaches the engine from the inherited environment and a configured one is
+# refused. The exceptions of a strip list name what it holds that is not a login: `keep` names are the
+# general proxy, CA, runtime, cloud and home names the worker's own tools need, passed as inherited;
+# `setting` names are Claude Code's own non-login settings, stripped from the inherited environment (they
+# are the owner's shell's, not the adapter's) but passed when the adapter configures them.
+KEEP_PROXY = ('HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY', 'ALL_PROXY')
+KEEP_RUNTIME = ('NODE_EXTRA_CA_CERTS', 'NODE_TLS_REJECT_UNAUTHORIZED', 'NODE_OPTIONS')
+KEEP_CLOUD = ('GOOGLE_APPLICATION_CREDENTIALS', 'GOOGLE_CLOUD_PROJECT', 'GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES',
+              'GCLOUD_PROJECT', 'CLOUDSDK_CONFIG', 'METADATA_SERVER_DETECTION')
+KEEP_CLOUD_PREFIXES = ('AWS_', 'GCE_METADATA_')
+KEEP_HOME = ('HOME', 'XDG_CONFIG_HOME', 'APPDATA', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH', 'PROGRAMDATA')
+CLAUDE_SETTINGS = ('CLAUDE_CODE_PROXY_RESOLVES_HOSTS', 'CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER',
+                   'CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS', 'API_FORCE_IDLE_TIMEOUT', 'CLAUDE_CODE_CERT_STORE')
+
+
+def _sensitive_exceptions(names):
+    """The names of Claude Code's sensitive-variable set that are not a login, each with why."""
+    found = {}
+    for name in names:
+        if name in KEEP_PROXY:
+            found[name] = {'decision': 'keep', 'reason': 'general proxy: the worker\'s tools reach the network through it'}
+        elif name in KEEP_RUNTIME:
+            found[name] = {'decision': 'keep', 'reason': 'CA and runtime: the worker\'s tools verify TLS and run node with it'}
+        elif (name in KEEP_CLOUD or name.startswith(KEEP_CLOUD_PREFIXES)) and name != 'AWS_BEARER_TOKEN_BEDROCK':
+            found[name] = {'decision': 'keep', 'reason': 'cloud: the worker\'s tools\' own cloud login; no model request '
+                           'goes through it once the provider switches are stripped'}
+        elif name in KEEP_HOME:
+            found[name] = {'decision': 'keep', 'reason': 'home: every tool the worker runs needs its home directory'}
+        elif name in CLAUDE_SETTINGS:
+            found[name] = {'decision': 'setting', 'reason': 'a Claude Code connection setting, not a login'}
+    return found
+
+
+CLAUDE_LISTS = [
+    ('sensitive_env', 'var ji=new Set(["HTTPS_PROXY"', 'strip',
+     'the variables Claude Code refuses to take from a settings file: its logins, the credential and settings '
+     'redirects (CLAUDE_SECURESTORAGE_CONFIG_DIR, CLAUDE_CODE_HOST_CREDS_FILE, the managed and remote settings paths, '
+     'the OAuth, bridge and federation overrides), the endpoints and provider switches', _sensitive_exceptions),
+    ('fd_tokens', 'Q0t=["CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR"', 'strip',
+     'the credentials handed to Claude Code through a file descriptor', None),
+    ('session_secrets', 'Z0t=["CLAUDE_CODE_OAUTH_TOKEN",...Q0t', 'strip',
+     'the OAuth, bridge, trusted-device and background-session tokens and auth paths', None),
+    ('host_creds_env', 'Spo=new Set([...YU,...hW.filter(', 'strip',
+     'the variables a CLAUDE_CODE_HOST_CREDS_FILE may set when Claude Code copies it into its environment at start-up',
+     None),
+    ('model_config', 'z4e=["ANTHROPIC_MODEL"', 'model',
+     'the model configuration: stripped from the inherited environment only through the ANTHROPIC_ family, passed '
+     'when the adapter configures it (the configured model is a capability, not a login)', None),
+    ('custom_model_option', 'Bin=["ANTHROPIC_CUSTOM_MODEL_OPTION"', 'model', 'the custom model option, as model_config',
+     None),
+    ('not_secrets', 'Gi=new Set(["CLAUDE_CODE_CLIENT_KEY"', 'keep',
+     'the names Claude Code itself says look like a secret and are not (its token thresholds and usage settings); '
+     'a name here that a strip list also names is stripped', None),
+]
+# The one filtered spread these lists use, as the binary writes it: Spo takes hW without the first-party
+# assumption, the artifact names and the memory API names (Ame is Xo.includes).
+HOST_CREDS_FILTER = ('...hW.filter((e)=>e!=="_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL"&&!e.startsWith("CLAUDE_CODE_ARTIFACT")'
+                     '&&!Ame(e))')
+AME = 'function Ame(e){return Xo.includes(e)}'
+
+
+def _js_list(js, at, seen=()):
+    """The string values of the array literal whose '[' is the first one at or after `at`, every
+    `...NAME` spread resolved to the nearest definition of NAME (and the one filtered spread above)."""
+    text = js.text
+    start = text.index('[', at)
+    names, depth, pos, item = [], 0, start + 1, ''
+    items = []
+    while True:
+        ch = text[pos]
+        if ch == '"':
+            end = text.index('"', pos + 1)
+            item += text[pos:end + 1]
+            pos = end + 1
+            continue
+        if ch in '([{':
+            depth += 1
+        elif ch in ')]}':
+            if depth == 0:
+                items.append(item)
+                break
+            depth -= 1
+        elif ch == ',' and depth == 0:
+            items.append(item)
+            item = ''
+            pos += 1
+            continue
+        item += ch
+        pos += 1
+    for item in (i.strip() for i in items):
+        if not item:
+            continue
+        if re.fullmatch(r'"[A-Za-z0-9_]+"', item):
+            names.append(item[1:-1])
+        elif item == HOST_CREDS_FILTER:
+            if text.count(AME) != 1:
+                raise Moved('the memory-name test of the host credentials filter moved')
+            memory = _js_list(js, _definition(js, 'Xo', text.index(AME)), seen)
+            names += [n for n in _js_list(js, _definition(js, 'hW', at), seen)
+                      if n != '_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL' and not n.startswith('CLAUDE_CODE_ARTIFACT')
+                      and n not in memory]
+        elif re.fullmatch(r'\.\.\.[A-Za-z_$][A-Za-z0-9_$]*', item):
+            ref = item[3:]
+            if ref in seen:
+                raise Moved('a list spreads itself: ' + ref)
+            names += _js_list(js, _definition(js, ref, at), seen + (ref,))
+        else:
+            raise Moved('an unread list item at %d: %r' % (start, item[:80]))
+    return names
+
+
+def _definition(js, name, near):
+    """The offset of the nearest `NAME=[` or `NAME=new Set([` (minified names repeat)."""
+    sites = js._sites(name, r'=(?:new Set\()?\[')
+    if not sites:
+        raise Moved('no list named ' + name)
+    return min(sites, key=lambda m: abs(m.start() - near)).start()
+
 
 def claude(path):
     raw = Path(path).read_bytes()
@@ -294,6 +415,17 @@ def claude(path):
         if name == 'anthropic_secrets' and '.flatMap((e)=>[e,`INPUT_${e}`])' in tail:
             names = names + ['INPUT_' + n for n in names]
         tables.append({'name': name, 'decision': decision, 'reason': reason, 'offset': at, 'names': names})
+    for name, anchor, decision, reason, exceptions in CLAUDE_LISTS:
+        if text.count(anchor) != 1:
+            raise Moved('%s: anchor found %d times' % (name, text.count(anchor)))
+        at = text.index(anchor)
+        names = list(dict.fromkeys(_js_list(js, at)))
+        if len(names) < 2 or not all(re.fullmatch(r'[A-Z_][A-Z0-9_]*', n) for n in names):
+            raise Moved('%s: not a list of variable names' % name)
+        table = {'name': name, 'decision': decision, 'reason': reason, 'offset': at, 'names': names}
+        if exceptions is not None:
+            table['exceptions'] = exceptions(names)
+        tables.append(table)
     endpoints = text.find('[{endpoint:"ANTHROPIC_BASE_URL"')
     if endpoints < 0:
         raise Moved('provider endpoint table moved')
@@ -307,7 +439,7 @@ def claude(path):
         if at < 0:
             raise Moved('usage note moved: ' + name)
         note = text[at:text.index('"', at)]
-        notes[name] = note.replace('\\u2014', '-').replace('\\u2013', '-')[:600]
+        notes[name] = note.replace('\\u2014', '-').replace('\\u2013', '-')[:1000]
     version = Path(path).resolve().name
     return {'binary': str(Path(path).resolve()), 'version': version, 'sha256': _digest(path),
             'source': 'the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)',
@@ -353,6 +485,158 @@ CODEX_TABLES = [
      'the default exclusions of Codex\'s shell environment policy for its tool children: its Codex and OpenAI names are '
      'stripped by prefix, NODE_REPL_AUTH_TOKEN is a tool\'s own'),
 ]
+# The auth, endpoint and credential-redirect variables Codex reads, each by its literal neighbours (all
+# `strip`: a login, a login endpoint, the model endpoint or a redirect of where the login or its state is
+# read; each is also under the OPENAI_ or CODEX_ family, so the tables are what refuses them when an
+# adapter configures one).
+CODEX_TABLES += [
+    ('agent_identity_endpoints', b'error', b'CODEX_AGENT_IDENTITY_AUTHAPI_BASE_URLCODEX_AGENT_IDENTITY_JWKS_BASE_URL',
+     b'https://auth.openai.com/api/accounts', 'strip', 'the agent identity login endpoints'),
+    ('auth_endpoint', b'agent identity registration attempt failed; retrying',
+     b'CODEX_AGENT_IDENTITY_JWKS_BASE_URLCODEX_AUTHAPI_BASE_URL', b'https://auth.openai.com/api/accounts', 'strip',
+     'the account login endpoint'),
+    ('refresh_override', b'', b'CODEX_REFRESH_TOKEN_URL_OVERRIDE', b'login/src/auth/default_client.rs', 'strip',
+     'the token refresh endpoint'),
+    ('login_client', b'login/src/auth/default_client.rs', b'CODEX_APP_SERVER_LOGIN_CLIENT_ID',
+     b'codex-mcp/src/binding_clients.rs', 'strip', 'the login client id'),
+    ('login_issuer', b'ChatGPT login is disabled. Use API key login instead.', b'CODEX_APP_SERVER_LOGIN_ISSUER',
+     b'Amazon Bedrock API key must not be empty.', 'strip', 'the login issuer'),
+    ('revoke_override', b'token', b'CODEX_REVOKE_TOKEN_URL_OVERRIDE', b'https://auth.openai.com/oauth/revoke', 'strip',
+     'the token revocation endpoint'),
+    ('chatgpt_base', b'is_workspace_account', b'CODEX_APP_SERVER_CHATGPT_BASE_URL', b'/backend-api', 'strip',
+     'the ChatGPT backend the subscription login talks to'),
+    ('openai_base', b'GITHUB_ENTERPRISE_TOKEN', b'OPENAI_BASE_URL', b'sk-OPENAI_API_KEY', 'strip',
+     'the model endpoint of the built-in OpenAI provider'),
+    ('oss_provider', b'provider auth.command must not be empty', b'CODEX_OSS_PORTCODEX_OSS_BASE_URL', b'responses',
+     'strip', 'the endpoint of the local model provider'),
+    ('organization', b'OpenAI-Organization', b'OPENAI_ORGANIZATION', b'x-amzn-mantle-client-agent', 'strip',
+     'the organization an API-key login bills'),
+    ('sqlite_home', b'Environment value for `$', b'CODEX_SQLITE_HOME', b'` is overridden', 'strip',
+     'where Codex keeps its thread state, a redirect of the profile beside CODEX_HOME'),
+]
+
+# Codex's error table: the text of every error its protocol Display prints (what `codex exec --json`
+# puts in an `error` event and a failed turn), read from three places in the binary: the fixed messages,
+# the format templates (length-prefixed pieces, 0xc0 marking an argument, 0x00 ending a template) and the
+# workspace messages. Each message is classified: an exhaustion is a window the account's CLI reported
+# exhausted (its id, and whether the message states its reset), anything else is not an allowance
+# statement. A message this list does not classify fails the extraction by name.
+CODEX_ERROR_FIXED = (b'LandlockRulesetLandlockPathFdTokioJoinEnvVar', b'request_id', (
+    'turn aborted. Something went wrong? Hit `/feedback` to report the issue.',
+    'shared rollout token budget exhausted',
+    "Codex ran out of room in the model's context window. Start a new thread or clear earlier history before retrying.",
+    'agent thread limit reached',
+    'session configured event was not the first event in the stream',
+    'timeout waiting for child process to exit',
+    'request timed out',
+    'spawn failed: child stdout/stderr not captured',
+    'interrupted (Ctrl-C). Something went wrong? Hit `/feedback` to report the issue.',
+    'Image poisoning',
+    'Selected model is at capacity. Please try a different model.',
+    'Quota exceeded. Check your plan and billing details.',
+    'To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.',
+    "We're currently experiencing high demand, which may cause temporary errors.",
+    'internal error; agent loop died unexpectedly',
+    'codex-linux-sandbox was required but not provided'))
+CODEX_ERROR_TEMPLATES = (b'protocol/src/models.rs', b'\x00&sandbox denied exec error', b'\x00\x19invalid --profile value')
+CODEX_ERROR_WORKSPACE = (b'<empty>', b"\x80\x96\x00You've hit your usage limit. Upgrade to Pro", (
+    'Your workspace is out of credits. Add credits to continue.',
+    'Your workspace is out of credits. Ask your workspace owner to refill in order to continue.',
+    'You hit your spend cap set in your workspace. Increase your spend cap to continue.',
+    'You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.'))
+CODEX_ERROR_PRO = b"\x80\x96\x00You've hit your usage limit. Upgrade to Pro"
+CODEX_EXHAUSTION = {
+    'Your workspace is out of credits. Add credits to continue.': 'workspace_credits',
+    'Your workspace is out of credits. Ask your workspace owner to refill in order to continue.': 'workspace_credits',
+    'You hit your spend cap set in your workspace. Increase your spend cap to continue.': 'workspace_spend_cap',
+    'You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.':
+        'workspace_spend_cap',
+    'Quota exceeded. Check your plan and billing details.': 'quota',
+    'To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.': 'plan',
+}
+# The messages that name a limit, a credit, a quota or a plan and are still not an allowance statement.
+CODEX_NOT_EXHAUSTION = {
+    'shared rollout token budget exhausted': "Codex's own budget for one rollout, a local setting, not the account's",
+    'agent thread limit reached': "Codex's own cap on concurrent agent threads",
+    'exceeded retry limit, last status: {}{}': 'a request that failed its retries; it states no allowance',
+    'Selected model is at capacity. Please try a different model.': 'the service is busy; transient',
+}
+ALLOWANCE_WORDS = re.compile(r'limit|credit|quota|spend|plan|billing|budget|capacity', re.I)
+
+
+def _templates(block):
+    """The format templates of a packed Display block: each a list of text pieces, None for an argument."""
+    found, current, at = [], [], 0
+    while at < len(block):
+        byte = block[at]
+        if byte == 0x00:
+            found.append(current)
+            current, at = [], at + 1
+        elif byte == 0xc0:
+            current.append(None)
+            at += 1
+        elif byte == 0x80:
+            length = int.from_bytes(block[at + 1:at + 3], 'little')
+            current.append(block[at + 3:at + 3 + length].decode())
+            at += 3 + length
+        elif byte < 0x80:
+            current.append(block[at + 1:at + 1 + byte].decode())
+            at += 1 + byte
+        else:
+            raise Moved('codex error templates: an unread byte %#x' % byte)
+    if current:
+        found.append(current)
+    return [''.join('{}' if piece is None else piece for piece in template) for template in found if template]
+
+
+def _classify(message):
+    if message.startswith("You've hit your usage limit"):
+        return {'window': 'usage_limit', 'reset': 'stated or none (its retry phrase)'}
+    if message in CODEX_EXHAUSTION:
+        return {'window': CODEX_EXHAUSTION[message], 'reset': 'none: blocked until observed otherwise'}
+    if message in CODEX_NOT_EXHAUSTION:
+        return {'window': None, 'reason': CODEX_NOT_EXHAUSTION[message]}
+    if ALLOWANCE_WORDS.search(message):
+        raise Moved('codex error table: an unclassified message names an allowance: %r' % message)
+    return {'window': None, 'reason': 'a local, request or transient error; it states no allowance'}
+
+
+def codex_errors(raw):
+    entries = []
+    before, after, messages = CODEX_ERROR_FIXED
+    run = before + ''.join(messages).encode() + after
+    if raw.count(run) != 1:
+        raise Moved('codex error table: the fixed messages moved')
+    entries += [('fixed', m, raw.index(run) + len(before)) for m in messages]
+    anchor, start, end = CODEX_ERROR_TEMPLATES
+    at = raw.find(anchor)
+    first = raw.find(start, at)
+    last = raw.find(end, first)
+    if at < 0 or first < 0 or last < 0 or last - first > 4096:
+        raise Moved('codex error table: the templates moved')
+    entries += [('template', m, first) for m in _templates(raw[first + 1:last + 1])]
+    before, after, messages = CODEX_ERROR_WORKSPACE
+    run = before + ''.join(messages).encode() + after
+    if raw.count(run) != 1:
+        raise Moved('codex error table: the workspace messages moved')
+    entries += [('workspace', m, raw.index(run) + len(before)) for m in messages]
+    pro = raw.find(CODEX_ERROR_PRO)
+    entries += [('template', m, pro) for m in _templates(raw[pro:raw.index(b'\xc0\x00', pro) + 2])]
+    table = []
+    for source, message, offset in entries:
+        table.append(dict({'message': message, 'source': source, 'offset': offset}, **_classify(message)))
+    if not any(e['window'] == 'usage_limit' for e in table) or len({e['message'] for e in table}) != len(table):
+        raise Moved('codex error table: incomplete or repeated')
+    return table
+
+
+# What the binary says about where exec's turn usage comes from: the thread token usage it reports is a
+# thread total and a last-turn figure; the strings do not say which one turn.completed copies.
+CODEX_USAGE_SOURCE = (b'exec/src/event_processor_with_jsonl_output.rs', b'thread/tokenUsage/updated',
+                      b'totalmodelContextWindowstruct ThreadTokenUsage with 3 elements',
+                      b'struct TokenUsageInfo with 3 elements', b'last_token_usage')
+
+
 ENV_NAME_START = re.compile(rb'(?<=[A-Z0-9])(?=(?:OPENAI|CODEX|AWS|AZURE|GOOGLE|NODE)_)')
 
 
@@ -377,6 +661,9 @@ def codex(path):
              'suffixes': ['st', 'nd', 'rd', 'th'],
              'source': "protocol error Display: the message, then ' Try again at <local time>.' (same day: %-I:%M %p; "
                        "else %b %-d<suffix>, %Y %-I:%M %p) or ' Try again later.' with no reset"}
+    for piece in CODEX_USAGE_SOURCE:
+        if piece not in raw:
+            raise Moved('codex usage source moved: %r' % piece)
     tables = []
     for name, before, run, after, decision, reason in CODEX_TABLES:
         at = raw.find(before + run + after)
@@ -411,7 +698,14 @@ def codex(path):
             'source': "the serde names of codex-exec's ThreadEvent (tag 'type') and its payload structs, packed in the "
                       "binary's literals; the strings show field names, not which are always present, so every usage "
                       "field is marked optional",
-            'events': events, 'usage_limit': limit, 'credential_tables': tables}
+            'events': events, 'usage_limit': limit, 'errors': codex_errors(raw), 'credential_tables': tables,
+            'notes': {'turn.completed.usage': (
+                "exec's turn usage is read from the thread token usage its event processor receives "
+                "(thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's "
+                "TokenUsageInfo of total_token_usage, last_token_usage and model_context_window): a thread total "
+                "and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed "
+                "thread is never subtracted: the sum of the invocation's own completed turns never counts less "
+                "than the CLI recorded under either reading")}}
 
 
 def extract(claude_path, codex_path):

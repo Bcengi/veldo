@@ -6,11 +6,14 @@ and its credential tables; the extraction is proof/VELDO-0062/extract_formats.py
 cli-formats.json.
 
 LOGIN. A Codex run logs in only through its subscription account's profile, the directory CODEX_HOME
-names (control_accounts sets it from the account the dispatch recorded, and strips every other login
-variable by family). CREDENTIALS is every name the binary's own auth tables list (the API key and
-access token variables, the agent identity variables and the Bedrock bearer token), so a name the
-families miss is still stripped. (Forcing the ChatGPT login method and the file credential store are
-VELDO-0156.)
+names (control_accounts sets it from the account the dispatch recorded, and strips the OPENAI_ and
+CODEX_ families from the inherited environment). CREDENTIALS is every name the binary's own auth
+tables make a login: the API key and access token variables, the agent identity variables and
+endpoints, the login endpoint, client, issuer and token refresh and revocation overrides, the ChatGPT
+backend, the model endpoints (OPENAI_BASE_URL, the local provider's), the organization an API key bills
+and CODEX_SQLITE_HOME, the thread state beside CODEX_HOME. An adapter configuring one is refused by
+name; its other CODEX_ settings pass. (Forcing the ChatGPT login method and the file credential store
+are VELDO-0156.)
 
 USAGE, FROM THE CLI'S OWN STREAM (`codex exec` with JSON output). Its events are `thread.started`,
 `turn.started`, `turn.completed` (with `usage`), `turn.failed` (with `error.message`), the `item.*`
@@ -48,8 +51,14 @@ import zoneinfo
 
 PROVIDER = 'codex'
 CREDENTIALS = frozenset((
-    'OPENAI_API_KEY', 'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_FEDERATION_RULE_ID',
-    'OPENAI_IDENTITY_TOKEN_FILE', 'AWS_BEARER_TOKEN_BEDROCK'))
+    'CODEX_ACCESS_TOKEN', 'CODEX_AGENT_IDENTITY_AUTHAPI_BASE_URL', 'CODEX_AGENT_IDENTITY_JWKS_BASE_URL',
+    'CODEX_API_KEY', 'CODEX_APP_SERVER_CHATGPT_BASE_URL', 'CODEX_APP_SERVER_LOGIN_CLIENT_ID',
+    'CODEX_APP_SERVER_LOGIN_ISSUER', 'CODEX_AUTHAPI_BASE_URL', 'CODEX_OSS_BASE_URL', 'CODEX_OSS_PORT',
+    'CODEX_REFRESH_TOKEN_URL_OVERRIDE', 'CODEX_REVOKE_TOKEN_URL_OVERRIDE', 'CODEX_SQLITE_HOME',
+    'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_FEDERATION_RULE_ID', 'OPENAI_IDENTITY_TOKEN_FILE',
+    'OPENAI_ORGANIZATION'))
+# No Codex list holds a non-login setting that the families would not already strip.
+SETTINGS = frozenset()
 LIMIT_MESSAGE = "You've hit your usage limit"
 LIMIT_WINDOW = 'usage_limit'
 MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')

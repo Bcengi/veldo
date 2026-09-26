@@ -57,7 +57,8 @@ def _v62_suite():
         'accounts.py': ROOT / ".veldo" / "accounts.py",
         'fleet.py': ROOT / ".veldo" / "fleet.py",
     }
-    ROWS = ('login/recorded-account-profile', 'login/no-paid-api', 'login/substitution-refused', 'login/fleet-provider',
+    ROWS = ('login/recorded-account-profile', 'login/no-paid-api', 'login/configured-environment',
+            'login/substitution-refused', 'login/fleet-provider',
             'usage/reserved-before-launch', 'usage/allowance-states', 'usage/competing-remainder',
             'usage/cap-stops-worker', 'usage/rate-limit-reset',
             'settle/once', 'settle/model-usage', 'settle/missing-retained', 'settle/timeout-retained',
@@ -171,12 +172,17 @@ def _v62_suite():
             if status != 'active':
                 accounts.status('status/' + account, account, status, now=time.time())
             registered.append((account, None))
-        for account, provider in (('acct-c1', 'claude_code'), ('acct-c2', 'claude_code'), ('acct-c3', 'claude_code'),
-                                  ('acct-x1', 'codex'), ('acct-x2', 'codex'), ('acct-x3', 'codex')):
+        # x2 to x5 each take one Codex limit observation: a future stated reset, none stated, a stated
+        # minute that already ended, and a workspace out of credits.
+        REGISTERED = [('acct-c1', 'claude_code'), ('acct-c2', 'claude_code'), ('acct-c3', 'claude_code'),
+                      ('acct-x1', 'codex'), ('acct-x2', 'codex'), ('acct-x3', 'codex'), ('acct-x4', 'codex'),
+                      ('acct-x5', 'codex')]
+        for account, provider in REGISTERED:
             register(account, provider)
         register('acct-paused', 'claude_code', status='paused')
         register('acct-mac', 'claude_code', hosts=['mac-host-62'])
-        ALL = ('acct-c1', 'acct-c2', 'acct-c3', 'acct-x1', 'acct-x2', 'acct-x3', 'acct-paused', 'acct-mac', 'acct-none')
+        REGISTERED += [('acct-paused', 'claude_code'), ('acct-mac', 'claude_code')]
+        ALL = tuple(a for a, _ in REGISTERED) + ('acct-none',)
 
         def roles_only(conn, command):
             # Only where the tree has no production reservation authority (the red record's).
@@ -230,20 +236,58 @@ def _v62_suite():
         markers.mkdir()
         engines = base / 'bin'
         engines.mkdir()
-        # The login variables planted in the caller's environment: every name the binaries' credential
-        # tables this work strips list (from the extracted table, never from production), the nine the
-        # finding named, and a probe of every stripped family a later CLI could add a name to. Kept: a
-        # neutral variable, a Claude Code count setting and the tool credentials of the tables kept.
-        TABLED = sorted({n for engine in ('claude_code', 'codex') for table in FORMATS[engine]['credential_tables']
-                         if table['decision'] == 'strip' for n in table['names']})
+        # The login variables planted in the caller's environment: every name of every list the binaries
+        # hold (from the extracted table, never from production), each with the outcome its list decides,
+        # the names the reviews found passing, and a probe of every stripped family a later CLI could add a
+        # name to. From what the engine inherits, a list's login and setting names and every family name are
+        # stripped; its kept names (general proxy, CA, runtime, cloud, tool credentials, the names the binary
+        # says are not secrets) reach the engine, as does a name no list or family covers.
+        FAMILY = ('ANTHROPIC_', 'OPENAI_', 'CODEX_', 'CLAUDE_CODE_USE_')
+        PROFILE_VARS = ('CLAUDE_CONFIG_DIR', 'CODEX_HOME')
+        HOME_NAMES = ('HOME', 'XDG_CONFIG_HOME', 'APPDATA', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH', 'PROGRAMDATA')
+
+        def decisions():
+            """Each listed name's decision over every list: strip over setting over model over keep."""
+            rank = {'keep': 0, 'model': 1, 'setting': 2, 'strip': 3}
+            found = {}
+            for engine in ('claude_code', 'codex'):
+                for table in FORMATS[engine]['credential_tables']:
+                    for name in table['names']:
+                        decision = ((table.get('exceptions') or {}).get(name) or {}).get('decision', table['decision'])
+                        if name not in found or rank[decision] > rank[found[name]]:
+                            found[name] = decision
+            return found
+        DECIDED = decisions()
+        LISTED = sorted(DECIDED)
+        TABLED = sorted(n for n, d in DECIDED.items() if d == 'strip')
+        LOGINS = TABLED
+        SETTINGS_LISTED = sorted(n for n, d in DECIDED.items() if d == 'setting')
+        MODEL_LISTED = sorted(n for n, d in DECIDED.items() if d == 'model')
         NINE = ['CODEX_ACCESS_TOKEN', 'CLAUDE_CODE_USE_ANTHROPIC_AWS', 'ANTHROPIC_AWS_API_KEY', 'CLAUDE_CODE_USE_GATEWAY',
                 'CLAUDE_CODE_USE_MANTLE', 'CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN',
                 'CLAUDE_CODE_OAUTH_REFRESH_TOKEN', 'CLAUDE_CODE_SESSION_ACCESS_TOKEN']
+        # The third review's: redirects of the OAuth store, host credentials, settings, API and bridge.
+        REDIRECTS = ['CLAUDE_SECURESTORAGE_CONFIG_DIR', 'CLAUDE_CODE_HOST_CREDS_FILE', 'CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST',
+                     'CLAUDE_CODE_MANAGED_SETTINGS_PATH', 'CLAUDE_CODE_REMOTE_SETTINGS_PATH', 'CLAUDE_CODE_API_BASE_URL',
+                     'USE_STAGING_OAUTH', 'USE_LOCAL_OAUTH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_CODE_FEDERATION_CACHE_DIR',
+                     'CLAUDE_BG_SOCKET_TOKENS_PATH']
         probe = os.urandom(3).hex().upper()
-        FAMILIES = ['ANTHROPIC_V62_' + probe, 'OPENAI_V62_' + probe, 'CODEX_V62_' + probe, 'CLAUDE_CODE_USE_V62_' + probe,
-                    'CLAUDE_CODE_V62_%s_TOKEN' % probe, 'CLAUDE_V62_%s_API_KEY' % probe, 'CLAUDE_V62_%s_OAUTH' % probe]
-        STRIPPED = sorted(set(TABLED) | set(NINE) | set(FAMILIES))
-        KEPT = ['V62_NEUTRAL_' + probe, 'CLAUDE_CODE_MAX_OUTPUT_TOKENS', 'AWS_SECRET_ACCESS_KEY', 'HF_TOKEN']
+        FAMILIES = ['ANTHROPIC_V62_' + probe, 'OPENAI_V62_' + probe, 'CODEX_V62_' + probe, 'CLAUDE_CODE_USE_V62_' + probe]
+
+        def inherited_outcome(name):
+            if name in PROFILE_VARS or name.startswith(FAMILY) or DECIDED.get(name) in ('strip', 'setting'):
+                return 'strip'
+            return 'keep'
+        STRIPPED = sorted({n for n in LISTED if inherited_outcome(n) == 'strip'} | set(NINE) | set(REDIRECTS)
+                          | set(FAMILIES))
+        # Kept, planted: every kept listed name but the home names (the receiver's own tools need the real
+        # ones; they are checked to arrive unchanged), a neutral name, count and threshold settings.
+        KEPT = sorted({n for n in LISTED if inherited_outcome(n) == 'keep' and n not in HOME_NAMES}
+                      | {'V62_NEUTRAL_' + probe, 'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
+        # What the Claude adapter configures: the model table, the settings and a threshold setting, each of
+        # which must reach the engine with its configured value; the Codex adapter a setting of its family.
+        CONFIGURED_CLAUDE = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | {'CLAUDE_CODE_IDLE_TOKEN_THRESHOLD'})
+        CONFIGURED_CODEX = ['CODEX_CA_CERTIFICATE', 'RUST_LOG']
         fake = '''#!%s -B
 import json, os, sqlite3, sys, time
 from pathlib import Path
@@ -259,7 +303,8 @@ except Exception as error:
     seen = {'error': repr(error)}
 own = {'engine': Path(sys.argv[0]).name, 'pid': os.getpid(), 'dispatch': dispatch, 'started': time.time(),
        'invocation': seen, 'names': sorted(os.environ),
-       'env': {k: os.environ.get(k) for k in ('CLAUDE_CONFIG_DIR', 'CODEX_HOME', 'VELDO_ACCOUNT')}}
+       'env': {k: os.environ.get(k) for k in ('CLAUDE_CONFIG_DIR', 'CODEX_HOME', 'VELDO_ACCOUNT')},
+       'values': dict(os.environ)}
 (markers / ('%%d.tmp' %% os.getpid())).write_text(json.dumps(own))
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
 raw = sys.stdin.buffer.read()
@@ -299,11 +344,23 @@ sys.exit(payload.get('code', 0))
             'host': HOST, 'receipts': str(receipts),
             'adapters': {
                 'claude': {'identity': 'reported', 'engine': 'claude_code',
-                           'environment': {'ANTHROPIC_API_KEY': plant('adapter-anthropic')},
+                           'environment': {name: plant('adapter-' + name.lower()) for name in CONFIGURED_CLAUDE},
                            'argv': wrapper + [str(engines / 'claude'), str(db), str(markers), DOMAIN]},
                 'codex': {'identity': 'reported', 'engine': 'codex',
-                          'environment': {'OPENAI_API_KEY': plant('adapter-openai')},
-                          'argv': wrapper + [str(engines / 'codex'), str(db), str(markers), DOMAIN]}}}))
+                          'environment': {name: plant('adapter-' + name.lower()) for name in CONFIGURED_CODEX},
+                          'argv': wrapper + [str(engines / 'codex'), str(db), str(markers), DOMAIN]},
+                # Adapters configuring a login: refused by name when the configuration is loaded.
+                'claude-api-key': {'identity': 'reported', 'engine': 'claude_code',
+                                   'environment': {'ANTHROPIC_MODEL': 'configured-model',
+                                                   'ANTHROPIC_API_KEY': plant('adapter-anthropic')},
+                                   'argv': wrapper + [str(engines / 'claude'), str(db), str(markers), DOMAIN]},
+                'claude-oauth-store': {'identity': 'reported', 'engine': 'claude_code',
+                                       'environment': {'CLAUDE_SECURESTORAGE_CONFIG_DIR': str(base / 'elsewhere')},
+                                       'argv': wrapper + [str(engines / 'claude'), str(db), str(markers), DOMAIN]},
+                'codex-endpoint': {'identity': 'reported', 'engine': 'codex',
+                                   'environment': {'OPENAI_BASE_URL': 'http://127.0.0.1:9/v1'},
+                                   'argv': wrapper + [str(engines / 'codex'), str(db), str(markers), DOMAIN]}}}))
+        CONFIGURED = json.loads(config.read_text())['adapters']
         CONFIGURATION = {'mcp_servers': {'tracker': {'command': 'tracker-mcp', 'args': []}},
                          'tools': ['Read', 'Edit', 'Bash'], 'model': 'configured-model'}
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
@@ -324,7 +381,7 @@ sys.exit(payload.get('code', 0))
         fixture_lines = []
 
         def job(adapter, script, code=0, deadline=40, resume=None):
-            if adapter == 'codex':
+            if adapter.startswith('codex'):
                 script = [x_thread()] + list(script)  # `codex exec --json` opens every stream with its thread.
             fixture_lines.extend((adapter, step['line']) for step in script if 'line' in step)
             payload = {'task': 'work the unit', 'script': script, 'code': code}
@@ -555,7 +612,7 @@ sys.exit(payload.get('code', 0))
 
         def ok(adapter, inp=1, out=1):
             """A normal, complete report of one small invocation, in the adapter's own format."""
-            return [c_result(inp, out, 1)] if adapter == 'claude' else [x_started(), x_done(inp, out)]
+            return [c_result(inp, out, 1)] if adapter.startswith('claude') else [x_started(), x_done(inp, out)]
 
         # AC2, first because its minute must pass: Codex's usage-limit message, one stating its reset (the
         # end of the minute it names, within the next minute) and one stating none.
@@ -583,7 +640,7 @@ sys.exit(payload.get('code', 0))
                       and (codex_reset is None or time.time() < codex_reset))
 
         # AC1: the login of the account the dispatch recorded, never the caller's; no paid API.
-        with region('login/recorded-account-profile', 'login/no-paid-api'):
+        with region('login/recorded-account-profile', 'login/no-paid-api', 'login/configured-environment'):
             caller = dict(os.environ, CLAUDE_CONFIG_DIR=profiles['acct-c3'], CODEX_HOME=profiles['acct-x2'],
                           VELDO_ACCOUNT='acct-c3')
             for name in STRIPPED + KEPT:
@@ -612,22 +669,65 @@ sys.exit(payload.get('code', 0))
                 check('login/recorded-account-profile', '%s: its ambient account label is the recorded one [%s]'
                       % (account, env.get('VELDO_ACCOUNT')), env.get('VELDO_ACCOUNT') == account)
                 names = set(own.get('names') or ())
-                leaked = sorted(set(STRIPPED + ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY']) & names)
-                check('login/no-paid-api', '%s: no login variable reached the engine: none of the %d the binaries\' '
-                      'credential tables list, the nine the finding named or the family probes, planted in the '
-                      'caller\'s environment and in the adapter\'s [%s]' % (account, len(TABLED), leaked[:12]),
+                values = own.get('values') or {}
+                adapter = 'codex' if account.startswith('acct-x') else 'claude'
+                wanted = CONFIGURED[adapter]['environment']
+                # A name the adapter configures arrives with the configured value, and the account's own profile
+                # variable with its profile (the rows above), never with the caller's.
+                leaked = sorted(n for n in set(STRIPPED) & names
+                                if (n not in wanted and n not in PROFILE_VARS) or values.get(n) == caller[n])
+                check('login/no-paid-api', '%s: no login variable reached the engine: none of the %d names the '
+                      'binaries\' lists strip, the redirects and names the reviews found, or the family probes, all '
+                      'planted in the caller\'s environment [%s]' % (account, len(STRIPPED), leaked[:12]),
                       bool(names) and not leaked)
-                check('login/no-paid-api', '%s: what is not a login still reached it: a neutral variable, a count '
-                      'setting and the tool credentials of the kept tables [%s]'
-                      % (account, sorted(set(KEPT) - names)), bool(names) and set(KEPT) <= names)
+                missing = sorted(n for n in KEPT if n not in wanted and values.get(n) != caller[n])
+                homes = sorted(n for n in HOME_NAMES if n in os.environ and values.get(n) != os.environ[n])
+                check('login/no-paid-api', '%s: what is not a login still reached it unchanged: the %d kept names of '
+                      'the lists (general proxy, CA, runtime, cloud, tool credentials, the not-secret thresholds and '
+                      'usage settings), a neutral name, a count setting and the home names [%s, %s]'
+                      % (account, len(KEPT), missing[:8], homes), bool(names) and not missing and not homes)
+                dropped = sorted(n for n, v in wanted.items() if values.get(n) != v)
+                check('login/configured-environment', '%s: every name its adapter configures reached the engine with '
+                      'its configured value, though the same names were planted otherwise in the caller\'s: %s [%s]'
+                      % (account, 'the model table, the settings and a threshold' if adapter == 'claude'
+                         else 'a setting of its family and a neutral one', dropped[:8]),
+                      bool(values) and not dropped and len(wanted) >= (25 if adapter == 'claude' else 2))
             check('login/recorded-account-profile', 'the two Claude Code accounts ran on two different profiles',
                   (seen['acct-c1'][2].get('env') or {}).get('CLAUDE_CONFIG_DIR')
                   != (seen['acct-c2'][2].get('env') or {}).get('CLAUDE_CONFIG_DIR'))
             check('login/recorded-account-profile', 'the owner registered every account [%s]'
-                  % [r for r in registered if r[1]], len(registered) == 8 and not [r for r in registered if r[1]])
-            check('login/no-paid-api', 'every tabled name, the nine and the probes were planted [%d tabled, %d]'
-                  % (len(TABLED), len(STRIPPED)), len(TABLED) >= 60 and set(NINE) <= set(TABLED)
+                  % [r for r in registered if r[1]], len(registered) == len(REGISTERED) and not [r for r in registered if r[1]])
+            lists = {t['name'] for e in ('claude_code', 'codex') for t in FORMATS[e]['credential_tables']}
+            check('login/no-paid-api', 'every name of every extracted list, the nine, the redirects and the probes '
+                  'were planted [%d listed in %d lists, %d stripped, %d kept]' % (len(LISTED), len(lists), len(STRIPPED),
+                                                                                len(KEPT)),
+                  {'sensitive_env', 'fd_tokens', 'session_secrets', 'host_creds_env', 'not_secrets', 'model_config',
+                   'auth_endpoint', 'sqlite_home'} <= lists and len(TABLED) >= 130
+                  and set(NINE) | set(REDIRECTS) <= set(TABLED)
+                  and set(LISTED) - set(HOME_NAMES) <= set(STRIPPED) | set(KEPT)
                   and all(caller.get(name) for name in STRIPPED + KEPT))
+
+        # AC1, the adapter's configuration: never silently reduced; a login in it refused by name.
+        with region('login/configured-environment'):
+            for adapter, account, name in (('claude-api-key', 'acct-c1', 'ANTHROPIC_API_KEY'),
+                                           ('claude-oauth-store', 'acct-c1', 'CLAUDE_SECURESTORAGE_CONFIG_DIR'),
+                                           ('codex-endpoint', 'acct-x1', 'OPENAI_BASE_URL')):
+                launch, record = run(account, admitted('VELDO-6216-' + adapter), adapter, ok(adapter))
+                check('login/configured-environment', '%s configures %s: refused by name when its configuration is '
+                      'loaded, nothing launched or reserved [%s]' % (adapter, name, (record or {}).get('refusal')),
+                      (record or {}).get('refusal') == 'invalid_input:adapter_environment:' + name
+                      and not engine_markers(launch.dispatch_id) and not spawned(launch.dispatch_id)
+                      and not invocation(launch.dispatch_id))
+            # The production refusal over every listed name: each login is refused, nothing else is.
+            credentials = L.CREDENTIALS
+            logins = sorted(set(LOGINS) | set(REDIRECTS) | set(NINE))
+            passed = [n for n in logins if not ACC.refused({n: 'x'}, credentials)]
+            others = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | set(KEPT) | {'CODEX_CA_CERTIFICATE'})
+            blocked = [n for n in others if ACC.refused({n: 'x'}, credentials)]
+            check('login/configured-environment', 'configured, each of the %d login names of the lists is refused '
+                  'and none of the %d model, setting or kept names is [%s, %s]' % (len(logins), len(others), passed[:6],
+                                                                                   blocked[:6]),
+                  len(logins) >= 130 and not passed and not blocked and set(MODEL_LISTED) <= set(others))
 
         with region('login/substitution-refused'):
             cases = []
@@ -676,7 +776,7 @@ sys.exit(payload.get('code', 0))
                 return {'worker': worker_id}
             pool, pool_error = attempt(lambda: FL.make_in_session_spawner(start, accounts_root=str(helper_root)))
             claude_profiles = sorted(profiles[a] for a in ('acct-c1', 'acct-c2', 'acct-c3', 'acct-paused', 'acct-mac'))
-            codex_profiles = {profiles[a] for a in ('acct-x1', 'acct-x2', 'acct-x3')}
+            codex_profiles = {profiles[a] for a, provider in REGISTERED if provider == 'codex'}
             if pool is not None:
                 spawner, capacity = pool
                 for n in range(capacity):

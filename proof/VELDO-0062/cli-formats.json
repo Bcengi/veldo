@@ -257,6 +257,456 @@
    },
    {
     "decision": "strip",
+    "exceptions": {
+     "ALL_PROXY": {
+      "decision": "keep",
+      "reason": "general proxy: the worker's tools reach the network through it"
+     },
+     "API_FORCE_IDLE_TIMEOUT": {
+      "decision": "setting",
+      "reason": "a Claude Code connection setting, not a login"
+     },
+     "APPDATA": {
+      "decision": "keep",
+      "reason": "home: every tool the worker runs needs its home directory"
+     },
+     "AWS_ACCESS_KEY_ID": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_CONFIG_FILE": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_CONTAINER_AUTHORIZATION_TOKEN": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_CONTAINER_CREDENTIALS_FULL_URI": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_EC2_METADATA_SERVICE_ENDPOINT": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_ENDPOINT_URL": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_ENDPOINT_URL_BEDROCK": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_ENDPOINT_URL_BEDROCK_RUNTIME": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_ENDPOINT_URL_SSO": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_ENDPOINT_URL_SSO_OIDC": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_ENDPOINT_URL_STS": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_PROFILE": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_ROLE_ARN": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_SECRET_ACCESS_KEY": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_SESSION_TOKEN": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_SHARED_CREDENTIALS_FILE": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "AWS_WEB_IDENTITY_TOKEN_FILE": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "CLAUDE_CODE_CERT_STORE": {
+      "decision": "setting",
+      "reason": "a Claude Code connection setting, not a login"
+     },
+     "CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER": {
+      "decision": "setting",
+      "reason": "a Claude Code connection setting, not a login"
+     },
+     "CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS": {
+      "decision": "setting",
+      "reason": "a Claude Code connection setting, not a login"
+     },
+     "CLAUDE_CODE_PROXY_RESOLVES_HOSTS": {
+      "decision": "setting",
+      "reason": "a Claude Code connection setting, not a login"
+     },
+     "CLOUDSDK_CONFIG": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "GCE_METADATA_HOST": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "GCE_METADATA_IP": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "GCE_METADATA_ROOT": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "GCLOUD_PROJECT": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "GOOGLE_APPLICATION_CREDENTIALS": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "GOOGLE_CLOUD_PROJECT": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "HOME": {
+      "decision": "keep",
+      "reason": "home: every tool the worker runs needs its home directory"
+     },
+     "HOMEDRIVE": {
+      "decision": "keep",
+      "reason": "home: every tool the worker runs needs its home directory"
+     },
+     "HOMEPATH": {
+      "decision": "keep",
+      "reason": "home: every tool the worker runs needs its home directory"
+     },
+     "HTTPS_PROXY": {
+      "decision": "keep",
+      "reason": "general proxy: the worker's tools reach the network through it"
+     },
+     "HTTP_PROXY": {
+      "decision": "keep",
+      "reason": "general proxy: the worker's tools reach the network through it"
+     },
+     "METADATA_SERVER_DETECTION": {
+      "decision": "keep",
+      "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
+     },
+     "NODE_EXTRA_CA_CERTS": {
+      "decision": "keep",
+      "reason": "CA and runtime: the worker's tools verify TLS and run node with it"
+     },
+     "NODE_OPTIONS": {
+      "decision": "keep",
+      "reason": "CA and runtime: the worker's tools verify TLS and run node with it"
+     },
+     "NODE_TLS_REJECT_UNAUTHORIZED": {
+      "decision": "keep",
+      "reason": "CA and runtime: the worker's tools verify TLS and run node with it"
+     },
+     "NO_PROXY": {
+      "decision": "keep",
+      "reason": "general proxy: the worker's tools reach the network through it"
+     },
+     "PROGRAMDATA": {
+      "decision": "keep",
+      "reason": "home: every tool the worker runs needs its home directory"
+     },
+     "USERPROFILE": {
+      "decision": "keep",
+      "reason": "home: every tool the worker runs needs its home directory"
+     },
+     "XDG_CONFIG_HOME": {
+      "decision": "keep",
+      "reason": "home: every tool the worker runs needs its home directory"
+     }
+    },
+    "name": "sensitive_env",
+    "names": [
+     "HTTPS_PROXY",
+     "HTTP_PROXY",
+     "NO_PROXY",
+     "CLAUDE_CODE_PROXY_RESOLVES_HOSTS",
+     "CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER",
+     "CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS",
+     "API_FORCE_IDLE_TIMEOUT",
+     "ANTHROPIC_UNIX_SOCKET",
+     "NODE_EXTRA_CA_CERTS",
+     "CLAUDE_CODE_CERT_STORE",
+     "CLAUDE_CODE_CLIENT_CERT",
+     "CLAUDE_CODE_CLIENT_KEY",
+     "CLAUDE_CODE_CLIENT_KEY_PASSPHRASE",
+     "ALL_PROXY",
+     "NODE_OPTIONS",
+     "NODE_TLS_REJECT_UNAUTHORIZED",
+     "CLAUDE_CODE_USE_BEDROCK",
+     "CLAUDE_CODE_USE_VERTEX",
+     "CLAUDE_CODE_USE_FOUNDRY",
+     "CLAUDE_CODE_USE_ANTHROPIC_AWS",
+     "CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD",
+     "CLAUDE_CODE_USE_MANTLE",
+     "CLAUDE_CODE_USE_GATEWAY",
+     "ANTHROPIC_FOUNDRY_RESOURCE",
+     "ANTHROPIC_VERTEX_PROJECT_ID",
+     "ANTHROPIC_AWS_WORKSPACE_ID",
+     "ANTHROPIC_GOOGLE_CLOUD_PROJECT",
+     "ANTHROPIC_GOOGLE_CLOUD_LOCATION",
+     "ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID",
+     "CLOUD_ML_REGION",
+     "ANTHROPIC_BASE_URL",
+     "_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL",
+     "ANTHROPIC_BEDROCK_BASE_URL",
+     "ANTHROPIC_VERTEX_BASE_URL",
+     "ANTHROPIC_FOUNDRY_BASE_URL",
+     "ANTHROPIC_AWS_BASE_URL",
+     "ANTHROPIC_GOOGLE_CLOUD_BASE_URL",
+     "ANTHROPIC_BEDROCK_MANTLE_BASE_URL",
+     "CLAUDE_CODE_ARTIFACTS_API_BASE_URL",
+     "CLAUDE_CODE_ARTIFACTS_API_TOKEN",
+     "CLAUDE_CODE_ARTIFACT_ASSET_BASE_URL",
+     "CLAUDE_CODE_ARTIFACT_LIVE_BASE_URL",
+     "CLAUDE_CODE_ARTIFACT_SYNC_BASE_URL",
+     "CLAUDE_CODE_ARTIFACT_VIEWER_BASE_URL",
+     "CLAUDE_CODE_MEMORY_API_BASE_URL",
+     "CLAUDE_CODE_MEMORY_API_TOKEN",
+     "AWS_ENDPOINT_URL_STS",
+     "AWS_ENDPOINT_URL",
+     "AWS_ENDPOINT_URL_SSO",
+     "AWS_ENDPOINT_URL_SSO_OIDC",
+     "AWS_ENDPOINT_URL_BEDROCK",
+     "AWS_ENDPOINT_URL_BEDROCK_RUNTIME",
+     "AWS_ACCESS_KEY_ID",
+     "AWS_SECRET_ACCESS_KEY",
+     "AWS_SESSION_TOKEN",
+     "AWS_PROFILE",
+     "AWS_CONFIG_FILE",
+     "AWS_SHARED_CREDENTIALS_FILE",
+     "GOOGLE_APPLICATION_CREDENTIALS",
+     "GOOGLE_CLOUD_PROJECT",
+     "AWS_CONTAINER_CREDENTIALS_FULL_URI",
+     "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI",
+     "AWS_CONTAINER_AUTHORIZATION_TOKEN",
+     "AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE",
+     "AWS_EC2_METADATA_SERVICE_ENDPOINT",
+     "AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE",
+     "AWS_WEB_IDENTITY_TOKEN_FILE",
+     "AWS_ROLE_ARN",
+     "GCE_METADATA_HOST",
+     "GCE_METADATA_ROOT",
+     "GCE_METADATA_IP",
+     "METADATA_SERVER_DETECTION",
+     "CLOUDSDK_CONFIG",
+     "GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES",
+     "GCLOUD_PROJECT",
+     "CLAUDE_CODE_CUSTOM_OAUTH_URL",
+     "ANTHROPIC_API_KEY",
+     "ANTHROPIC_AUTH_TOKEN",
+     "CLAUDE_CODE_OAUTH_TOKEN",
+     "AWS_BEARER_TOKEN_BEDROCK",
+     "ANTHROPIC_FOUNDRY_API_KEY",
+     "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+     "ANTHROPIC_AWS_API_KEY",
+     "CLAUDE_CODE_API_BASE_URL",
+     "CLAUDE_CODE_OAUTH_REFRESH_TOKEN",
+     "CLAUDE_CODE_OAUTH_SCOPES",
+     "CLAUDE_CODE_OAUTH_CLIENT_ID",
+     "CLAUDE_CODE_SESSION_ACCESS_TOKEN",
+     "CLAUDE_SESSION_INGRESS_TOKEN_FILE",
+     "CLAUDE_CODE_ENVIRONMENT_KIND",
+     "CLAUDE_CODE_REMOTE_SESSION_ID",
+     "ANTHROPIC_FEDERATION_RULE_ID",
+     "ANTHROPIC_ORGANIZATION_ID",
+     "ANTHROPIC_WORKSPACE_ID",
+     "ANTHROPIC_SERVICE_ACCOUNT_ID",
+     "ANTHROPIC_IDENTITY_TOKEN",
+     "ANTHROPIC_IDENTITY_TOKEN_FILE",
+     "ANTHROPIC_SCOPE",
+     "ANTHROPIC_PROFILE",
+     "ANTHROPIC_CONFIG_DIR",
+     "CLAUDE_CODE_FEDERATION_CACHE_DIR",
+     "HOME",
+     "XDG_CONFIG_HOME",
+     "APPDATA",
+     "USERPROFILE",
+     "HOMEDRIVE",
+     "HOMEPATH",
+     "PROGRAMDATA",
+     "ANTHROPIC_CUSTOM_HEADERS",
+     "CLAUDE_CODE_HOST_CREDS_FILE",
+     "CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST",
+     "CLAUDE_CODE_HOST_AUTH_ENV_VAR",
+     "CLAUDE_CONFIG_DIR",
+     "CLAUDE_SECURESTORAGE_CONFIG_DIR",
+     "CLAUDE_CODE_REMOTE_SETTINGS_PATH",
+     "CLAUDE_CODE_MANAGED_SETTINGS_PATH",
+     "CLAUDE_CODE_DISABLE_ADMIN_ENV_UNION",
+     "CLAUDE_CODE_MOCK_REMOTE_SETTINGS",
+     "USE_LOCAL_OAUTH",
+     "USE_STAGING_OAUTH",
+     "CLAUDE_LOCAL_OAUTH_API_BASE",
+     "CLAUDE_LOCAL_OAUTH_APPS_BASE",
+     "CLAUDE_LOCAL_OAUTH_CONSOLE_BASE",
+     "CLAUDE_BRIDGE_BASE_URL",
+     "CLAUDE_BRIDGE_OAUTH_TOKEN",
+     "CLAUDE_BRIDGE_SESSION_INGRESS_URL",
+     "CLAUDE_REMOTE_TOOLS_BRIDGE_URL"
+    ],
+    "offset": 193738325,
+    "reason": "the variables Claude Code refuses to take from a settings file: its logins, the credential and settings redirects (CLAUDE_SECURESTORAGE_CONFIG_DIR, CLAUDE_CODE_HOST_CREDS_FILE, the managed and remote settings paths, the OAuth, bridge and federation overrides), the endpoints and provider switches"
+   },
+   {
+    "decision": "strip",
+    "name": "fd_tokens",
+    "names": [
+     "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",
+     "CLAUDE_CODE_GATEWAY_TOKEN_FILE_DESCRIPTOR",
+     "CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR",
+     "CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR"
+    ],
+    "offset": 193481111,
+    "reason": "the credentials handed to Claude Code through a file descriptor"
+   },
+   {
+    "decision": "strip",
+    "name": "session_secrets",
+    "names": [
+     "CLAUDE_CODE_OAUTH_TOKEN",
+     "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",
+     "CLAUDE_CODE_GATEWAY_TOKEN_FILE_DESCRIPTOR",
+     "CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR",
+     "CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR",
+     "CLAUDE_CODE_ARTIFACTS_API_TOKEN",
+     "CLAUDE_CODE_SLACK_TAG_TOKEN",
+     "CLAUDE_CODE_HFI_BEARER_TOKEN",
+     "CLAUDE_BRIDGE_OAUTH_TOKEN",
+     "CLAUDE_TRUSTED_DEVICE_TOKEN",
+     "AGENT_PROXY_AUTH_TOKEN",
+     "CLAUDE_CODE_MCP_SERVE_AUTH_TOKEN",
+     "CLAUDE_BG_AUTH_SNAPSHOT_PATH",
+     "CLAUDE_BG_SOCKET_TOKENS_PATH",
+     "CLAUDE_BG_RV_AUTH",
+     "CLAUDE_BG_PTY_AUTH",
+     "CLAUDE_BG_CLAIM_AUTH"
+    ],
+    "offset": 193481286,
+    "reason": "the OAuth, bridge, trusted-device and background-session tokens and auth paths"
+   },
+   {
+    "decision": "strip",
+    "name": "host_creds_env",
+    "names": [
+     "ANTHROPIC_API_KEY",
+     "ANTHROPIC_AUTH_TOKEN",
+     "CLAUDE_CODE_OAUTH_TOKEN",
+     "AWS_BEARER_TOKEN_BEDROCK",
+     "ANTHROPIC_FOUNDRY_API_KEY",
+     "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+     "ANTHROPIC_AWS_API_KEY",
+     "ANTHROPIC_BASE_URL",
+     "ANTHROPIC_BEDROCK_BASE_URL",
+     "ANTHROPIC_VERTEX_BASE_URL",
+     "ANTHROPIC_FOUNDRY_BASE_URL",
+     "ANTHROPIC_AWS_BASE_URL",
+     "ANTHROPIC_GOOGLE_CLOUD_BASE_URL",
+     "ANTHROPIC_BEDROCK_MANTLE_BASE_URL",
+     "ANTHROPIC_CUSTOM_HEADERS",
+     "CLAUDE_CODE_SKIP_VERTEX_AUTH"
+    ],
+    "offset": 202404254,
+    "reason": "the variables a CLAUDE_CODE_HOST_CREDS_FILE may set when Claude Code copies it into its environment at start-up"
+   },
+   {
+    "decision": "model",
+    "name": "model_config",
+    "names": [
+     "ANTHROPIC_MODEL",
+     "ANTHROPIC_DEFAULT_MODEL",
+     "ANTHROPIC_DEFAULT_FABLE_MODEL",
+     "ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION",
+     "ANTHROPIC_DEFAULT_FABLE_MODEL_NAME",
+     "ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL_DESCRIPTION",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL_SUPPORTED_CAPABILITIES",
+     "ANTHROPIC_DEFAULT_OPUS_MODEL",
+     "ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION",
+     "ANTHROPIC_DEFAULT_OPUS_MODEL_NAME",
+     "ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL_SUPPORTED_CAPABILITIES",
+     "ANTHROPIC_SMALL_FAST_MODEL",
+     "ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION",
+     "CLAUDE_CODE_SUBAGENT_MODEL",
+     "CLAUDE_CODE_3P_PROBE_WROTE_SONNET_DEFAULT",
+     "CLAUDE_CODE_3P_PROBE_WROTE_OPUS_DEFAULT"
+    ],
+    "offset": 193480031,
+    "reason": "the model configuration: stripped from the inherited environment only through the ANTHROPIC_ family, passed when the adapter configures it (the configured model is a capability, not a login)"
+   },
+   {
+    "decision": "model",
+    "name": "custom_model_option",
+    "names": [
+     "ANTHROPIC_CUSTOM_MODEL_OPTION",
+     "ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION",
+     "ANTHROPIC_CUSTOM_MODEL_OPTION_NAME",
+     "ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES"
+    ],
+    "offset": 193480937,
+    "reason": "the custom model option, as model_config"
+   },
+   {
+    "decision": "keep",
+    "name": "not_secrets",
+    "names": [
+     "CLAUDE_CODE_CLIENT_KEY",
+     "CLAUDE_CODE_API_KEY_HELPER_TTL_MS",
+     "CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS",
+     "CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER",
+     "CLAUDE_CODE_AUTH_FAIL_EXIT_MS",
+     "CLAUDE_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT",
+     "CLAUDE_CODE_IDLE_TOKEN_THRESHOLD",
+     "CLAUDE_CODE_RESUME_TOKEN_THRESHOLD",
+     "CLAUDE_CODE_ARG_KEY_SHAPE"
+    ],
+    "offset": 194092220,
+    "reason": "the names Claude Code itself says look like a secret and are not (its token thresholds and usage settings); a name here that a strip list also names is stripped"
+   },
+   {
+    "decision": "strip",
     "name": "provider_endpoints",
     "names": [
      "ANTHROPIC_AWS_BASE_URL",
@@ -2444,7 +2894,7 @@
    }
   },
   "notes": {
-   "result.modelUsage": "Per-model totals for every model call made through the query pipeline during this query() call - main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, ",
+   "result.modelUsage": "Per-model totals for every model call made through the query pipeline during this query() call - main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, when it has them (so the first result already carries the earlier turns), and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.",
    "result.usage": "MAIN AGENT LOOP ONLY - excludes Task subagent, sidechain, and auxiliary model calls, and is per-turn in streaming-input sessions. Prefer modelUsage for token/cost accounting."
   },
   "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
@@ -2518,6 +2968,404 @@
     ],
     "offset": 216938379,
     "reason": "the default exclusions of Codex's shell environment policy for its tool children: its Codex and OpenAI names are stripped by prefix, NODE_REPL_AUTH_TOKEN is a tool's own"
+   },
+   {
+    "decision": "strip",
+    "name": "agent_identity_endpoints",
+    "names": [
+     "CODEX_AGENT_IDENTITY_AUTHAPI_BASE_URL",
+     "CODEX_AGENT_IDENTITY_JWKS_BASE_URL"
+    ],
+    "offset": 215894950,
+    "reason": "the agent identity login endpoints"
+   },
+   {
+    "decision": "strip",
+    "name": "auth_endpoint",
+    "names": [
+     "CODEX_AGENT_IDENTITY_JWKS_BASE_URL",
+     "CODEX_AUTHAPI_BASE_URL"
+    ],
+    "offset": 212898077,
+    "reason": "the account login endpoint"
+   },
+   {
+    "decision": "strip",
+    "name": "refresh_override",
+    "names": [
+     "CODEX_REFRESH_TOKEN_URL_OVERRIDE"
+    ],
+    "offset": 212405856,
+    "reason": "the token refresh endpoint"
+   },
+   {
+    "decision": "strip",
+    "name": "login_client",
+    "names": [
+     "CODEX_APP_SERVER_LOGIN_CLIENT_ID"
+    ],
+    "offset": 212405920,
+    "reason": "the login client id"
+   },
+   {
+    "decision": "strip",
+    "name": "login_issuer",
+    "names": [
+     "CODEX_APP_SERVER_LOGIN_ISSUER"
+    ],
+    "offset": 212923750,
+    "reason": "the login issuer"
+   },
+   {
+    "decision": "strip",
+    "name": "revoke_override",
+    "names": [
+     "CODEX_REVOKE_TOKEN_URL_OVERRIDE"
+    ],
+    "offset": 215917946,
+    "reason": "the token revocation endpoint"
+   },
+   {
+    "decision": "strip",
+    "name": "chatgpt_base",
+    "names": [
+     "CODEX_APP_SERVER_CHATGPT_BASE_URL"
+    ],
+    "offset": 214856972,
+    "reason": "the ChatGPT backend the subscription login talks to"
+   },
+   {
+    "decision": "strip",
+    "name": "openai_base",
+    "names": [
+     "OPENAI_BASE_URL"
+    ],
+    "offset": 216818717,
+    "reason": "the model endpoint of the built-in OpenAI provider"
+   },
+   {
+    "decision": "strip",
+    "name": "oss_provider",
+    "names": [
+     "CODEX_OSS_PORT",
+     "CODEX_OSS_BASE_URL"
+    ],
+    "offset": 216246430,
+    "reason": "the endpoint of the local model provider"
+   },
+   {
+    "decision": "strip",
+    "name": "organization",
+    "names": [
+     "OPENAI_ORGANIZATION"
+    ],
+    "offset": 216246116,
+    "reason": "the organization an API-key login bills"
+   },
+   {
+    "decision": "strip",
+    "name": "sqlite_home",
+    "names": [
+     "CODEX_SQLITE_HOME"
+    ],
+    "offset": 211516062,
+    "reason": "where Codex keeps its thread state, a redirect of the profile beside CODEX_HOME"
+   }
+  ],
+  "errors": [
+   {
+    "message": "turn aborted. Something went wrong? Hit `/feedback` to report the issue.",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "shared rollout token budget exhausted",
+    "offset": 216945383,
+    "reason": "Codex's own budget for one rollout, a local setting, not the account's",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "Codex ran out of room in the model's context window. Start a new thread or clear earlier history before retrying.",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "agent thread limit reached",
+    "offset": 216945383,
+    "reason": "Codex's own cap on concurrent agent threads",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "session configured event was not the first event in the stream",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "timeout waiting for child process to exit",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "request timed out",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "spawn failed: child stdout/stderr not captured",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "interrupted (Ctrl-C). Something went wrong? Hit `/feedback` to report the issue.",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "Image poisoning",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "Selected model is at capacity. Please try a different model.",
+    "offset": 216945383,
+    "reason": "the service is busy; transient",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "Quota exceeded. Check your plan and billing details.",
+    "offset": 216945383,
+    "reset": "none: blocked until observed otherwise",
+    "source": "fixed",
+    "window": "quota"
+   },
+   {
+    "message": "To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.",
+    "offset": 216945383,
+    "reset": "none: blocked until observed otherwise",
+    "source": "fixed",
+    "window": "plan"
+   },
+   {
+    "message": "We're currently experiencing high demand, which may cause temporary errors.",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "internal error; agent loop died unexpectedly",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "codex-linux-sandbox was required but not provided",
+    "offset": 216945383,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "sandbox denied exec error, exit code: {}, stdout: {}, stderr: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "Missing environment variable: `{}`.",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "stream disconnected before completion: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "no thread with id: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "duplicate tool: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "sandbox error: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "unsupported operation: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "Fatal error: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "Error while reading the server response: {}{}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": ", request id: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "Connection failed: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "exceeded retry limit, last status: {}{}",
+    "offset": 211619825,
+    "reason": "a request that failed its retries; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "You've hit your usage limit for {}. Switch to another model now,{}",
+    "offset": 211619825,
+    "reset": "stated or none (its retry phrase)",
+    "source": "template",
+    "window": "usage_limit"
+   },
+   {
+    "message": "You've hit your usage limit. {},{}",
+    "offset": 211619825,
+    "reset": "stated or none (its retry phrase)",
+    "source": "template",
+    "window": "usage_limit"
+   },
+   {
+    "message": "You've hit your usage limit. Upgrade to Plus to continue using Codex (https://chatgpt.com/explore/plus),{}",
+    "offset": 211619825,
+    "reset": "stated or none (its retry phrase)",
+    "source": "template",
+    "window": "usage_limit"
+   },
+   {
+    "message": "You've hit your usage limit. Visit https://chatgpt.com/codex/settings/usage to purchase more credits{}",
+    "offset": 211619825,
+    "reset": "stated or none (its retry phrase)",
+    "source": "template",
+    "window": "usage_limit"
+   },
+   {
+    "message": "You've hit your usage limit. To get more access now, send a request to your admin{}",
+    "offset": 211619825,
+    "reset": "stated or none (its retry phrase)",
+    "source": "template",
+    "window": "usage_limit"
+   },
+   {
+    "message": "You've hit your usage limit.{}",
+    "offset": 211619825,
+    "reset": "stated or none (its retry phrase)",
+    "source": "template",
+    "window": "usage_limit"
+   },
+   {
+    "message": "unexpected status {}: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": ", auth error: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": ", auth error code: {}",
+    "offset": 211619825,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": "Your workspace is out of credits. Add credits to continue.",
+    "offset": 216968214,
+    "reset": "none: blocked until observed otherwise",
+    "source": "workspace",
+    "window": "workspace_credits"
+   },
+   {
+    "message": "Your workspace is out of credits. Ask your workspace owner to refill in order to continue.",
+    "offset": 216968214,
+    "reset": "none: blocked until observed otherwise",
+    "source": "workspace",
+    "window": "workspace_credits"
+   },
+   {
+    "message": "You hit your spend cap set in your workspace. Increase your spend cap to continue.",
+    "offset": 216968214,
+    "reset": "none: blocked until observed otherwise",
+    "source": "workspace",
+    "window": "workspace_spend_cap"
+   },
+   {
+    "message": "You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.",
+    "offset": 216968214,
+    "reset": "none: blocked until observed otherwise",
+    "source": "workspace",
+    "window": "workspace_spend_cap"
+   },
+   {
+    "message": "You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits{}",
+    "offset": 216968555,
+    "reset": "stated or none (its retry phrase)",
+    "source": "template",
+    "window": "usage_limit"
    }
   ],
   "events": {
@@ -2646,6 +3494,9 @@
     },
     "type": "object"
    }
+  },
+  "notes": {
+   "turn.completed.usage": "exec's turn usage is read from the thread token usage its event processor receives (thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's TokenUsageInfo of total_token_usage, last_token_usage and model_context_window): a thread total and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed thread is never subtracted: the sum of the invocation's own completed turns never counts less than the CLI recorded under either reading"
   },
   "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
   "source": "the serde names of codex-exec's ThreadEvent (tag 'type') and its payload structs, packed in the binary's literals; the strings show field names, not which are always present, so every usage field is marked optional",
