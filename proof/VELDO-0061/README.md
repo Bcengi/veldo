@@ -217,8 +217,10 @@ red by assertion; the baseline and the no-op copies are green.
 | adapter-update-check-left-on | control_engine_codex.py | pin/qualified-record |
 | adapter-qualification-not-scaffolded | init_scaffold.py | pin/qualified-record |
 
-The other findings with mutations in the modules this changes still reject: 39 (30), 40 (22), 41 (34),
-45 (23) and 62 (50, over its suite with the fake Codex now pinned). Suites run, plain and under the
-stage environment, all green: `78_veldo_0061_codex_adapter`, `75_veldo_0062_accounts`, the VELDO-0036,
-0039, 0040, 0041, 0042 and 0045 suites, `24_veldo_0007_install_and_run`, `26_veldo_0009_install_stamp`,
-`03_plugin_extension_loading_runner` and `50_git_environment`.
+The other findings with mutations in the modules this changes still reject: 60 (32), 62 (50, over its
+suite with the fake Codex and the fake Claude Code both pinned), 39 (30), 40 (22), 41 (34), 42 (21) and
+45 (23). Suites run plain, all green: `79_veldo_0061_codex_adapter`, `78_veldo_0060_claude_adapter` (whose
+contained rows run this adapter on the local Linux contained launch too), `75_veldo_0062_accounts` and
+every suite that loads a module this changes (48 of them), `50_git_environment` and
+`24_veldo_0007_install_and_run`; under the stage environment, all green: this one and the VELDO-0060,
+0062, 0039, 0040, 0041 and 0042 suites.

@@ -1,55 +1,88 @@
 # VELDO-0060 proof: the Claude Code adapter, from its pinned executable, returning validated artifacts
 
+Built on branch build-veldo-0060, then integrated with VELDO-0061 on build-veldo-0060-0061, where the
+review's two blockers were fixed and the filed hardening of both reviews was done. This README describes
+the integrated tree.
+
 ## The design as built
+
+**One engine protocol.** `control_launch.ENGINE_PROTOCOL` is what every subscription engine module
+implements with the same signatures: `Refused` (a named refusal), `bind(adapter, state_root)` (the pinned
+executable, checked before acceptance), `command(binding, adapter)` (the engine argv),
+`environment(binding)` (the settings the engine always runs with), `Terminal()` (the terminal output
+decoder, `feed`, `close`, `document(termination, cause)`), `Meter` (VELDO-0062) and `REGISTRATION` (the
+lifecycle operations). `control_engine_claude` and `control_engine_codex` both implement it, and the
+receiver drives every engine through one path, `Receiver._bind`, after the login check: the bind (a
+`Refused` is the dispatch's refusal, nothing accepted, reserved or spawned), the engine's own command, the
+one argv check below, and the engine's settings set last in its environment, an adapter configuring one
+of them otherwise refused by name (`invalid_input:adapter_environment:DISABLE_AUTOUPDATER`). An engine
+module missing any protocol name is refused before acceptance
+(`unregistered_adapter:engine_protocol:<engine>:<name>`).
 
 **The pinned executable.** A Claude Code adapter names the version it runs (`executable: {version}`),
 never a path, and the receiver config names the factory state root (`state_root`). The qualification
 record `engine/runtime/claude-qualification.json` (installed at `.veldo/runtime/`, laid by the scaffold
-as a runtime asset beside `control_engine_claude.py`) lists the one qualified version, 2.1.281, with its
-digest, the flags of print mode with stream JSON output (`--print --output-format stream-json
---verbose`), the environment it always runs with (`DISABLE_AUTOUPDATER=1`), its terminal protocol (the
-`result` event, `success` and the four error subtypes), its subscription login (`CLAUDE_CONFIG_DIR`,
-`apiKeySource` `none`), its usage units and its six rate-limit windows. Every one of those values is the
-binary's own (below). `control_engine_claude.pin` copies the installer's versioned file
-(`~/.local/share/claude/versions/<version>`) to `<state root>/engines/claude_code/<version>` as a new
-0555 regular file and refuses a source that is a link, an unqualified version or a copy of another
-digest, leaving nothing in place. `bind` is the check the receiver makes before acceptance
-(`control_launch.Receiver._executable`, after the login check): an unqualified version
-(`invalid_input:engine_version:<v>`), a receiver with no state root
-(`missing_authority:engine_state_root`), a pinned copy that is missing
-(`missing_evidence:engine_executable`), a link or not a regular file
-(`binding_mismatch:engine_executable`) or of another digest (`binding_mismatch:engine_digest`), and an
-adapter configuring `DISABLE_AUTOUPDATER` otherwise (`invalid_input:adapter_environment:...`) are each
-refused by name, so nothing is spawned or reserved. The auto-updating `~/.local/bin/claude` link is never
-read. The engine's argv is the adapter's `argv` (its wrapper, transport or clone prefix) followed by the
-pinned path and the qualified flags; its environment is VELDO-0062's login environment plus the
-version's settings. An engine module without `bind` (Codex today) launches as before, so VELDO-0061 plugs
-its own pin into the same seam.
+beside `control_engine_claude.py`) lists 2.1.281 with its digest, the flags of print mode with stream JSON
+output (`--print --output-format stream-json --verbose`), `DISABLE_AUTOUPDATER=1`, its terminal protocol,
+its subscription login, its usage units and its six rate-limit windows, every value the binary's own
+(below). `pin` copies the installer's versioned file (`~/.local/share/claude/versions/<version>`) to
+`<state root>/engines/claude_code/<version>` as a new 0555 regular file and refuses a linked source, an
+unqualified version or a copy of another digest, leaving nothing in place. `bind` refuses by name an
+unqualified version (`invalid_input:engine_version:<v>`), no state root
+(`missing_authority:engine_state_root`), a missing copy (`missing_evidence:engine_executable`), a link or
+a file that is not regular (`binding_mismatch:engine_executable`), a linked directory on the way to it
+(`binding_mismatch:engine_path`), a copy that is not this account's own
+(`binding_mismatch:engine_owner`), one that is writable or carries a setuid, setgid or sticky bit
+(`binding_mismatch:engine_mode`) and one of another digest (`binding_mismatch:engine_digest`). The
+auto-updating `~/.local/bin/claude` link is never read. `command` is the adapter's prefix (its clone
+entrance, or a transport's trusted wrapper) followed by the pinned path and the qualified flags.
 
-**The lifecycle.** `control_engine_claude.LIFECYCLE` is the adapter's registration: launch
-(`Receiver._spawn`), accept (`Receiver.launch` records the acceptance before the spawn), observe
-(`Meter.feed` and `Terminal.feed` over the stream), stop (`Launch.stop`), exit (`Receiver._reap`) and
-artifacts (`Terminal.artifact`). The input binding is the dispatch packet on standard input, the prompt
-of print mode; the source binding is the VELDO-0042 clone at the accepted commit; the tool bindings are
-the recorded configuration, handed through unchanged (their flags are VELDO-0127's).
+**The pin binds what runs.** For every engine the receiver checks (`pinned_argv_problem`) that what the
+trusted wrapper will exec (a local adapter's whole argv; a reported adapter's argv after its transport's
+`control_launch.py exec`) is the pinned path itself, or the installed clone entrance
+(`<python> -B control_clone.py enter <clones> --`, beside the receiver for a local adapter) followed by the
+pinned path, and that the qualified flags follow it. The pinned path somewhere in the argv is not enough:
+a shell or a package manager's link before it is refused `invalid_input:engine_executable`. The engine's
+environment names the pinned path and digest (`VELDO_ENGINE_PATH`, `VELDO_ENGINE_SHA256`); whichever
+trusted program execs the engine (the wrapper, when no entrance stands before it, or the clone entrance)
+re-hashes the file immediately before the exec, refuses a changed one (exit 70, the engine never runs)
+and passes neither name to the engine. The clone provisioner takes `engines`, directories every clone's
+users may read and execute but never write (`Clones(engines=...)`, recorded in the manifest's protected
+write targets): the pinned copies' directory and the engine packages, so no worker replaces what the
+next dispatch runs.
 
-**The artifact.** `Terminal` decodes the same stream the Meter reads and returns, at the final report,
-the invocation's artifact: the verdict, every problem, the decoded `result` (subtype, error flag, turns,
-session, stop reason, the digest of its result text, its errors), the digest of the line it came from,
-the stream's line and malformed counts, the receiver's own output digest and size, and the exit. The
-verdict is `complete` only for a zero exit with no signal, stop or deadline, a stream of well-formed
-events and a `success` result that is not an error; otherwise it names the first of `stopped`, `timeout`,
-`signal`, `nonzero_exit`, `malformed_output`, `missing_result` and `engine_error`. The receiver writes it
-0600 beside the invocation's receipts, returns it to the runner (an `artifact` event before the end) and
-sets the outcomes from it: the invocation's final report and the worker slot are `completed` only when
-the artifact is complete, so a zero exit without its terminal record is `failed`. The dispatch record
-itself still carries only the exit status and output digest; completion stays VELDO-0021's and
-VELDO-0052's.
+**The lifecycle.** `control_engine_claude.REGISTRATION['lifecycle']` is the adapter's registration: accept
+(`Receiver.launch`: bound, then the acceptance recorded before the spawn), launch (`Receiver._spawn`, the
+pinned command in the dispatch's wrapper), observe (`Meter.feed` and `Terminal.feed`), stop
+(`Launch.stop`), exit (`Receiver._reap`) and artifacts (`Terminal.document`, the exit record's artifact).
+The input binding is the dispatch packet on standard input, the prompt of print mode; the source binding
+is the VELDO-0042 clone at the accepted commit; the tool bindings are the recorded configuration, handed
+through unchanged (their flags are VELDO-0127's).
 
-**Stop and caps** are the existing machinery, qualified here with the pinned adapter: the stop request
-reaches the receiver, the worker's session is killed and its invocation records the stop; every initial,
-retry and follow-on invocation is checked and reserved against its caps and the account's windows before
-the spawn (VELDO-0062), and a reached cap stops the worker.
+**The artifact and completion.** `Terminal` decodes the stream the Meter reads. Its document, one shape
+for every engine (`veldo.engine_artifact/v1`: schema, engine, verdict, complete, then this engine's
+problems, the decoded `result` with its subtype, error flag, turns, session, stop reason, result digest,
+errors and tokens, the digest of the line it came from, and the stream's counts), is bound to the
+dispatch, invocation, account and pinned executable and kept 0600 in a 0700 directory (the config's
+`artifacts`, else beside the store). The verdict is `complete` only for a zero exit with no signal, stop
+or deadline, a stream of well-formed events and a `success` result that is not an error; otherwise it
+names the first of `stopped`, `timeout`, `signal`, `nonzero_exit`, `malformed_output`, `missing_result`
+and `engine_error`. The terminal record's tokens are the result's `modelUsage` total over every model;
+without a readable `modelUsage` they are unknown (`None`), never the result's `usage`, which is the main
+agent loop's alone. The receiver sends the report {path, digest, verdict, complete} to the runner before
+the end (`Launch.artifact`), settles the invocation `completed` only when it is complete, and the exit
+record binds the report's verdict, completeness and digest (`control_dispatch`'s exit transition,
+`artifact`). `control_dispatch.completed(record)` is the one completion gate: an exited record, exit 0,
+no signal, no deadline stop and, when it binds an artifact, a complete one. The runner's worker slot
+(`Runner.wait`) and the floor's build and review checks (`dispatch._clean_exit`) both read it, so a zero
+exit without its terminal record is never a completed build.
+
+**Stop and caps** are the existing machinery on this configuration. On the local contained launch the
+stop is VELDO-0040's and 0041's: SIGTERM to the engine, SIGTERM to its group after the stop grace,
+cgroup.kill after the kill grace, and the exit recorded only once the group is empty; on the reported
+path the worker's session is killed and the dispatch recorded unknown, since that path cannot confirm the
+far engine ended. Every initial, retry and follow-on invocation is checked and reserved against its caps
+and the account's windows before the spawn (VELDO-0062), and a reached cap stops the worker.
 
 Out of this build: the everything-off baseline, the paid-API guard and the environment strip
 (VELDO-0155); the role's own selections (VELDO-0127); the Mac leg (VELDO-0147); separating the login from
@@ -76,81 +109,90 @@ extraction and exits 1 when a CLI update moved anything. The stream formats are 
 `scripts/suites/78_veldo_0060_claude_adapter.py`
 (`python3 scripts/selftest.py --suite 78_veldo_0060_claude_adapter`). One temporary tree in the owner's
 runtime directory (so the clone's protected targets are not beneath a temporary directory) holds the
-installed `.veldo` copy the suite loads and the receiver executes. Real: a SQLite control store with
-OpenSSH journal signatures, two account records the owner registers over profiles the helper prepares,
-VELDO-0036 reservations under their production authorization, VELDO-0052's Gate, VELDO-0031 claims, a Git
-source bound to the store, a VELDO-0042 clone confined with Landlock, the VELDO-0039 Runner and receiver
-processes and the trusted wrapper. The engine is a fake `claude` written into a versions directory of the
-installer's shape as 2.1.281 and copied by the production `pin` under the state root; the suite's
-installed qualification record names its digest. It records its argv, environment, working directory,
-process identity and the invocation record the store holds at its start, then prints what its packet
-scripts: stream lines, perturbed bytes, a sleep, a descendant (in its session or one that leaves it) or a
-signal to itself. Launches use the wrapper without a containment group, since a contained launch needs
-the systemd user manager, which the suite never touches. Each row is reported once.
+installed `.veldo` copy the suite loads and the receiver, wrapper and clone entrance execute. Real: a
+SQLite control store with OpenSSH journal signatures, three account records the owner registers over
+profiles the helper prepares (two Claude Code, one Codex), VELDO-0036 reservations under their production
+authorization, VELDO-0052's Gate, VELDO-0031 claims, a Git source bound to the store, VELDO-0042 clones
+confined with Landlock, the VELDO-0039 Runner and receiver processes and the trusted wrapper, VELDO-0040
+transient scopes under the owner's systemd user manager in a slice of the run's own (stopped, and its
+failed units cleared, at the end; no unit is installed) and VELDO-0049's FloorAuthority over the same
+store. The engine is a fake `claude` written into a versions directory of the installer's shape as
+2.1.281 and copied by the production `pin` under the state root; the same fake laid out as a Codex
+vendor package and qualified by `control_engine_codex.qualification` is the Codex engine of the
+contained rows. It records its argv, environment, working directory, cgroup, process identity and the
+invocation record the store holds at its start, then prints what its packet scripts: stream lines,
+perturbed bytes, a sleep, a descendant (cooperative, ignoring SIGTERM, or leaving its session, each
+saying when its signal disposition is set), a write probe, SIGTERM ignored, or a signal to itself. The
+contained profile's `systemd_run` is a shim that records each spawn by its dispatch and, for a unit a
+request file names, changes the bound executable after its bind and before its exec. Each row is
+reported once.
 
 | Criterion | Rows |
 |---|---|
-| AC1 | `lifecycle/registration`, `lifecycle/pinned-launch`, `pin/unexpected-launch` (declared falsifier), `pin/copy`, `pin/shipped-qualification` |
-| AC2 | `artifact/complete`, `artifact/missing-result` (declared falsifier), `artifact/exits`, `artifact/malformed-output`, `artifact/missing-usage` |
-| AC3 | `stop/requested`, `stop/descendant-alive` (declared falsifier) |
+| AC1 | `lifecycle/registration`, `lifecycle/pinned-launch`, `pin/unexpected-launch` (declared falsifier), `pin/copy`, `pin/shipped-qualification`, `pin/argv-binds-what-runs`, `pin/rehash-before-exec`, `contained/bind`, `contained/scope`, `contained/clone-entry`, `contained/pinned-exec`, `contained/engines-protected`, `contained/rehash-before-exec` |
+| AC2 | `artifact/complete`, `artifact/missing-result` (declared falsifier), `artifact/exits`, `artifact/malformed-output`, `artifact/missing-usage`, `artifact/exit-record`, `floor/missing-result`, `contained/artifact`, `contained/exit-record` |
+| AC3 | `stop/requested`, `stop/descendant-alive`, `contained/stop-cooperative`, `contained/stop-forced`, `contained/stop-descendant` (declared falsifier) |
 | AC4 | `caps/before-launch` (declared falsifier), `caps/allowance-states`, `caps/stop-at-cap` |
 | Fixtures | `format/fake-lines`, `format/fake-argv` |
 
-`lifecycle/*`: the registration lists exactly launch, accept, observe, stop, exit and artifacts, and each
-is observed on the runs (one spawn from the pinned path, the acceptance journaled before the run record,
-settled usage reports, the stop run, the exited record, the artifact file equal to the returned one);
-the engine ran once from the pinned copy under the state root (a regular file of the qualified digest,
+`lifecycle/*`: the registration lists exactly accept, launch, observe, stop, exit and artifacts, each
+observed on the runs; the engine ran once from the pinned copy (a regular file of the qualified digest,
 not the installer's file, not a link) with exactly the qualified flags, `DISABLE_AUTOUPDATER=1` and the
 recorded account's profile, in its isolated clone at the accepted commit. `pin/unexpected-launch`: the
-pinned copy's bytes changed after pinning, an unknown version, the pinned path a link to the qualified
-bytes, a missing copy, a receiver with no state root and an adapter configuring the updater on are each
-refused by name with nothing spawned or reserved, and the restored copy launches again. `pin/copy`: the
-production pin made a new 0555 regular file of the qualified digest; another build of the version, a
-versioned path that is a link and an unqualified version are refused with nothing left in place.
-`pin/shipped-qualification`: the shipped record and its installed copy are identical and the scaffold
-lays it; its digest is the binary's as both tables read it; its flags are options of the binary's main
-command with the output format among the choices and verbose beside stream JSON; its updater switch,
-error subtypes, login and rate-limit windows are the binary's. `artifact/*`: live runs of a normal exit
-(complete; the terminal record is the printed result, bound to its line's digest and to the receiver's
-output digest; kept 0600; invocation and slot completed), a zero exit with the result removed
-(`missing_result`, invocation and slot failed, tokens unknown and the next invocation under the cap
-refused `unknown_allowance`), a nonzero exit, a signal, an error result with exit 1 and with exit 0, a
-truncated line and a line that is not JSON in an otherwise complete stream (`malformed_output`), and a
-result with its `modelUsage` removed (the terminal record kept, the tokens unknown and the reservation
-retained). `stop/requested`: a stop of a running worker kills it and the descendant in its session
-(read from `/proc` with their start times), the same invocation of the same dispatch and account records
-`cancelled` with its tokens unknown and the next invocation refused, the artifact is `stopped` by a
-signal, and the wrapper path records the dispatch unknown. `stop/descendant-alive`: a descendant that left
-the worker's session survives the stop, and the dispatch is never recorded as ended while it lives (it is
-unknown and the slot is held). `caps/*`: initial, retry and follow-on each reserved as such before the
-engine started (the engine saw its pending reservation; the reservation's journal sequence precedes the
-run record), a retry and a follow-on past the unit's invocation cap refused with nothing spawned;
-available allowance settled with the CLI's tokens and messages, one invocation and its wall time;
-exhausted, unknown and rate-limited allowance each refused with nothing launched; the report that reached
-the token cap stopped the worker, whose artifact is `stopped`. `format/*`: every scripted line (over 60) conforms
-to the binary's schema and cover every event the adapter reads; each perturbed line is exactly its
-perturbation (cut short, not JSON, a result without the `modelUsage` the schema requires) of a conforming
-line; every one of the fake's starts used only options the binary's main command declares, values among
-their choices, verbose beside stream JSON, and exactly the qualified flags.
+pinned copy's bytes changed, an unknown version, the pinned path a link to the qualified bytes, a missing
+copy, no state root, a copy its owner can write, a state root reached through a link and an adapter
+configuring the updater on are each refused by name with nothing spawned or reserved; the restored copy
+launches again, and the copy the launches ran is this account's own, 0555. `pin/copy`,
+`pin/shipped-qualification`: as built on build-veldo-0060 (the production pin's copy; the shipped record
+against the binary's own tables). `pin/argv-binds-what-runs`: the pinned path in the argv behind a shell
+(no entrance, after the entrance, after a transport's wrapper) and, for Codex, behind a shell after the
+entrance or behind a package manager's link, each refused `invalid_input:engine_executable` with nothing
+run. `pin/rehash-before-exec` (the wrapper) and `contained/rehash-before-exec` (the clone entrance, both
+engines): the bound executable changed after its bind and before its exec is refused at the exec, exit
+70, the engine never ran, the artifact is not complete, the invocation and slot failed. `artifact/*`:
+the live exits and perturbed bytes of build-veldo-0060, plus the terminal record's tokens (the
+`modelUsage` total for a complete run, unknown for a result without `modelUsage`, which still carries
+its main-loop `usage`); `artifact/exit-record`: the exit record binds the verdict, completeness and
+digest of the artifact the runner was given, and the completion gate reads it (complete for the normal
+run, not complete for the zero exit without its result); `floor/missing-result`: the floor refuses to
+accept the build whose dispatch exited 0 without its terminal record (`missing_evidence:build_dispatch`),
+while the complete run's build passes that check and is refused next for its absent proof.
+`contained/*`, each for Claude Code and for Codex: bound before acceptance and launched once (an unknown
+version, a changed Codex binary refused with no scope spawned); the engine in its dispatch's own scope in
+the run's slice, the group the receiver reported, empty at the end; entered through the Landlock
+entrance as the recorded process, in its scope, at the accepted commit, its writes into the clone root,
+the pinned copies' directory and the Codex package denied (all three in the manifest's protected write
+targets); the recorded process the pinned executable with exactly its flags, the updater off, its
+account's profile and neither re-hash name; a complete artifact bound to the pinned executable (the Codex
+document verifying from its own lines); the exit recorded for the recorded process, exit 0, binding the
+complete artifact, invocation and slot completed; a cooperative stop ending before any kill, a forced
+stop killing the engine that ignores it after the configured graces, and a descendant that outlives the
+group's SIGTERM ended only by the kill, the dispatch recorded ended after it, every process gone when
+that end was read, the original invocation cancelled with its usage retained. `stop/*` and `caps/*`: as
+on build-veldo-0060 (the reported path's stop recorded unknown; the caps before the spawn). `format/*`:
+every scripted Claude Code line conforms to the binary's schema, every Codex line is an exec event of the
+binary's with its item a declared kind, each perturbed line is exactly its perturbation, and every Claude
+Code start used only the binary's options with exactly the qualified flags.
 
-Plain run: 43 passed (26 preamble, 17 rows) in 11 seconds. Stage environment run (`env -i`, the stage's
-variables, TZ=UTC): 43 passed in 13 seconds.
+Plain run: 58 passed (26 preamble, 32 rows) in about 16 seconds. Stage environment run (`env -i`, the
+stage's variables, TZ=UTC): 58 passed in about 21 seconds. No scope, slice or process of the run is left.
 
 ## Red record
 
-`red-at-b39a0fdc.json`: the current suite over `git archive b39a0fdc`, unchanged. All 15 behavior rows
-fail by their own assertion: the engine module pins nothing, decodes no terminal record and registers no
-lifecycle, the receiver launches the adapter's argv as configured (here the wrapper alone, refused
-`spawn_failed:ENOENT`) and returns no artifact, and no qualification record ships. `format/fake-lines` is
-green there, as it must be (it checks the suite's own scripted lines against the table);
-`format/fake-argv` is red because that tree never starts the fake, so there is no argv to check.
+`red-at-b39a0fdc.json`: the current suite over `git archive b39a0fdc`, unchanged. All 31 behavior rows
+fail by their own assertion (no row raised): that tree's engine modules pin nothing, decode no terminal
+record and register no lifecycle, its receiver launches each adapter's argv as configured and returns no
+artifact, its exit record binds none and its floor completes a build on the exit code, its clones protect
+no engines and nothing re-hashes an engine before its exec, and no qualification record ships.
+`format/fake-lines` is green there, as it must be: it checks the suite's own scripted lines against the
+binary's tables.
 
 ## Mutations (finding 60)
 
 Registered in `scripts/check_teeth_mutations.py` with the `claude-` prefix, each declared falsifier
-first; `drive.py` records `mutations.json` and one applied diff per mutant. All 21 turn their named row
-red by assertion; the baseline and the no-op copies are green. `check_teeth_mutations.py --finding 60`:
-21 rejected.
+first; `drive.py` records `mutations.json` and one applied diff per mutant. All 32 turn their named row
+red by assertion; the baseline and the no-op copies are green. `check_teeth_mutations.py --finding 60
+--jobs 2`: 32 rejected.
 
 | Mutant | Module | Named row |
 |---|---|---|
@@ -166,24 +208,38 @@ red by assertion; the baseline and the no-op copies are green. `check_teeth_muta
 | claude-missing-result-complete (AC2 falsifier) | control_engine_claude.py | artifact/missing-result |
 | claude-invocation-completed-on-exit | control_launch.py | artifact/missing-result |
 | claude-slot-completed-on-exit | control_launch.py | artifact/missing-result |
+| claude-floor-exit-code-completes | dispatch.py | floor/missing-result |
+| claude-completion-gate-exit-only | control_dispatch.py | floor/missing-result |
+| claude-exit-artifact-unbound | control_launch.py | artifact/exit-record |
 | claude-artifact-unreturned | control_launch.py | artifact/complete |
 | claude-signal-ignored | control_engine_claude.py | artifact/exits |
 | claude-nonzero-ignored | control_engine_claude.py | artifact/exits |
 | claude-error-result-complete | control_engine_claude.py | artifact/exits |
 | claude-malformed-ignored | control_engine_claude.py | artifact/malformed-output |
-| claude-stop-recorded-ended (AC3 falsifier) | control_launch.py | stop/descendant-alive |
+| claude-stop-leaves-descendant (AC3 falsifier) | control_launch.py | contained/stop-descendant |
+| claude-stop-recorded-ended | control_launch.py | stop/descendant-alive |
 | claude-stopped-invocation-released | control_launch.py | stop/requested |
 | claude-cap-checked-after-launch (AC4 falsifier) | control_launch.py | caps/before-launch |
+| claude-argv-position-unchecked | control_launch.py | pin/argv-binds-what-runs |
+| claude-wrapper-rehash-skipped | control_launch.py | pin/rehash-before-exec |
+| claude-entrance-rehash-skipped | control_clone.py | contained/rehash-before-exec |
+| claude-engines-unprotected | control_clone.py | contained/engines-protected |
+| claude-mode-unchecked | control_engine_claude.py | pin/unexpected-launch |
+| claude-parent-link-followed | control_engine_claude.py | pin/unexpected-launch |
+| claude-terminal-main-loop-usage | control_engine_claude.py | artifact/missing-usage |
 | claude-usage-cap-stop-ignored | control_launch.py | caps/stop-at-cap |
 
-The AC3 falsifier is driven on the wrapper path, the only stop path the suite can run without the
-systemd user manager: there the receiver cannot see a descendant that left the session, so a requested
-stop must record the dispatch unknown, and the mutant that records it ended reds the row while the
-descendant lives. The contained path's own check (the group must be empty before an exit is recorded) is
-VELDO-0040's and VELDO-0041's, qualified by their suites.
+The AC3 falsifier is `claude-stop-leaves-descendant`: it breaks the contained path's empty-group check
+(the worker's exit ends the stop, whatever is left in its group), and `contained/stop-descendant` reds for
+both engines because the dispatch is recorded ended while a descendant that ignores SIGTERM still lives.
+The build-veldo-0060 falsifier, `claude-stop-recorded-ended`, mutated the reported path's own rule (a
+stop it cannot confirm is recorded unknown); it stays as that path's check, not as the falsifier. The
+owner check of `bind` (`binding_mismatch:engine_owner`) has no negative row and no mutant: making a copy
+another account owns needs root or a second account, which this build does not have (user namespaces
+are refused on this host).
 
-The other findings with mutations in the modules this changes still reject: 62 (50), 39 (30), 40 (22)
-and 41 (34). Suites run plain, all green: this one, `75_veldo_0062_accounts` and every suite that loads
-`control_launch.py` or `init_scaffold.py` (42 of them) and `50_git_environment`; under the stage
-environment, all green: this one and the VELDO-0062, 0039, 0040, 0041, 0042, 0045 and 0009 suites and
-`50_git_environment`.
+The other findings with mutations in the modules this changes still reject: 61 (28), 62 (50), 39 (30),
+40 (22), 41 (34), 42 (21) and 45 (23). Suites run plain, all green: this one, `79_veldo_0061_codex_adapter`,
+`75_veldo_0062_accounts` and every suite that loads a module this changes (48 of them, the floor's
+among them), `50_git_environment` and `24_veldo_0007_install_and_run`; under the stage environment, all green: this one and the VELDO-0061,
+0062, 0039, 0040, 0041 and 0042 suites.
