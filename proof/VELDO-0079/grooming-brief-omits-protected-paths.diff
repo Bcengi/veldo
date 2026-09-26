@@ -1,0 +1,4 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -276 +275,0 @@
+-        'Protected paths: %s.' % _list(c['protected_paths']),

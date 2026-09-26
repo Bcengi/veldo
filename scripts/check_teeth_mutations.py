@@ -6345,7 +6345,7 @@ def cases():
              ['material/changed-decomposition'])
     # AC1: the brief shows every field, and only the complete material admits.
     grooming('grooming-brief-omits-questions', 'control_grooming_request.py',
-             "        'Questions: %s.' % _list(['%s: %s' % (q['id'], q['text']) for q in c['questions']]),\n", '',
+             "        'Questions: %s.' % _list(['%s - %s' % (q['id'], q['text']) for q in c['questions']]),\n", '',
              ['material/telegram-brief'])
     grooming('grooming-brief-omits-protected-paths', 'control_grooming_request.py',
              "        'Protected paths: %s.' % _list(c['protected_paths']),\n", '', ['material/telegram-brief'])

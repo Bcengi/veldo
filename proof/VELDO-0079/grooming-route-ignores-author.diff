@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -317 +317 @@
+-    if author != owner and author not in managers:
++    if False:  # defect: any member's proposal is admitted by his message

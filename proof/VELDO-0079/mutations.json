@@ -1,0 +1,2229 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0079 install/assets",
+    true
+   ],
+   [
+    "VELDO-0079 route/own-message-default",
+    true
+   ],
+   [
+    "VELDO-0079 route/ask-when-needed",
+    true
+   ],
+   [
+    "VELDO-0079 material/telegram-brief",
+    true
+   ],
+   [
+    "VELDO-0079 material/bound-fields",
+    true
+   ],
+   [
+    "VELDO-0079 material/changed-decomposition",
+    true
+   ],
+   [
+    "VELDO-0079 authority/owner-choices",
+    true
+   ],
+   [
+    "VELDO-0079 authority/pm-self-admission",
+    true
+   ],
+   [
+    "VELDO-0079 authority/separate-predicates",
+    true
+   ],
+   [
+    "VELDO-0079 authority/questions-unresolved",
+    true
+   ],
+   [
+    "VELDO-0079 authority/reprioritize-withdraw",
+    true
+   ],
+   [
+    "VELDO-0079 ruling/parameter-binding",
+    true
+   ],
+   [
+    "VELDO-0079 ruling/duplicate",
+    true
+   ],
+   [
+    "VELDO-0079 observability",
+    true
+   ]
+  ],
+  "seconds": 7.103
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: material/changed-decomposition: after another unit was appended, that answer is refused as a changed decomposition; neither appended unit became executable by it; the regroomed decomposition, answered again, prioritizes both"
+   ],
+   "diff": "proof/VELDO-0079/grooming-decomposition-digest-unbound.diff",
+   "failed_rows": [
+    "VELDO-0079 material/changed-decomposition"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "68c512dc613558f4a9bde1530a62551214ab2c0b021159a21f2177c589e09350",
+   "name": "grooming-decomposition-digest-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "material/changed-decomposition"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     false
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.774,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: material/changed-decomposition: after another unit was appended, that answer is refused as a changed decomposition; neither appended unit became executable by it; the regroomed decomposition, answered again, prioritizes both"
+   ],
+   "diff": "proof/VELDO-0079/grooming-live-binding-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0079 material/changed-decomposition"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "0175b87ec7b3cdd5431ba5019f3c4a6c8c550d891f84f822aed66899a4bcc213",
+   "name": "grooming-live-binding-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "material/changed-decomposition"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     false
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.92,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: fragments absent from the Telegram text: ['admission/questions', 'priority/questions']",
+    "VELDO-0079 detail: material/telegram-brief: every field of the request is in the bytes Telegram received, for both decisions"
+   ],
+   "diff": "proof/VELDO-0079/grooming-brief-omits-questions.diff",
+   "failed_rows": [
+    "VELDO-0079 material/telegram-brief"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "ba8d4bc677d86639e683d938e94857d92cca78bc3f187e20be2fcbaba5b4cf23",
+   "name": "grooming-brief-omits-questions",
+   "named_row_red": true,
+   "named_rows": [
+    "material/telegram-brief"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     false
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.763,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: fragments absent from the Telegram text: ['admission/protected_paths', 'admission/protected_paths', 'priority/protected_paths', 'priority/protected_paths']",
+    "VELDO-0079 detail: material/telegram-brief: every field of the request is in the bytes Telegram received, for both decisions"
+   ],
+   "diff": "proof/VELDO-0079/grooming-brief-omits-protected-paths.diff",
+   "failed_rows": [
+    "VELDO-0079 material/telegram-brief"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "f47a31916e6ed9123f32831f05bb464bea621ac55caa0ed52349bf623194607a",
+   "name": "grooming-brief-omits-protected-paths",
+   "named_row_red": true,
+   "named_rows": [
+    "material/telegram-brief"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     false
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.816,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: material/telegram-brief: an answer to the item's thinner brief does not admit groomed work; an answer to other text beside the request's digest does not admit it",
+    "VELDO-0079 detail: authority/owner-choices: each choice moves the item where it says; accepting both runs the work; a reject or return cancels the priority request still waiting",
+    "VELDO-0079 detail: authority/separate-predicates: his admission answer settles and is applied; admitted without priority, nothing runs; the admission was applied once",
+    "VELDO-0079 detail: authority/questions-unresolved: his answer to the questions admits it, and then the priority applies; the admission names the questions his answer resolved; the units run now",
+    "VELDO-0079 detail: ruling/parameter-binding: after the priority changed, the retained ruling is refused by its digest; after the ceiling changed, the retained ruling is refused by its digest",
+    "VELDO-0079 detail: ruling/duplicate: the admission was applied; the same signed command again is refused as stale and writes nothing; the one admission is bound to the one settlement"
+   ],
+   "diff": "proof/VELDO-0079/grooming-thin-admission-accepted.diff",
+   "failed_rows": [
+    "VELDO-0079 material/telegram-brief",
+    "VELDO-0079 authority/owner-choices",
+    "VELDO-0079 authority/separate-predicates",
+    "VELDO-0079 authority/questions-unresolved",
+    "VELDO-0079 ruling/parameter-binding",
+    "VELDO-0079 ruling/duplicate"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "d5d40d6a3bbedaac0f10eb97bc60105020e97ddef8905ba07e3e23d57bcc0bb4",
+   "name": "grooming-thin-admission-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "material/telegram-brief"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     false
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     false
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     false
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     false
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     false
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     false
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.759,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: material/telegram-brief: an answer to other text beside the request's digest does not admit it"
+   ],
+   "diff": "proof/VELDO-0079/grooming-brief-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0079 material/telegram-brief"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "11561c2f9011f9662a7d3a9b888bb8784782ac9449ca1b786c0d233c48f0d9af",
+   "name": "grooming-brief-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "material/telegram-brief"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     false
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.826,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: material/bound-fields: an answer settled before a specification file changed is not applied; no unit ran"
+   ],
+   "diff": "proof/VELDO-0079/grooming-specification-files-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0079 material/bound-fields"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "a7e536bc5e3bb69da289cb5b95e3e910726b84b4ec8f0921ee509c1ad1a50347",
+   "name": "grooming-specification-files-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "material/bound-fields"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     false
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.976,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: material/bound-fields: each change revised the pending requests: a new version whose presentation supersedes the one shown; an answer to the earlier presentation is refused after each change"
+   ],
+   "diff": "proof/VELDO-0079/grooming-pending-request-not-revised.diff",
+   "failed_rows": [
+    "VELDO-0079 material/bound-fields"
+   ],
+   "module": ".veldo/control_grooming.py",
+   "mutant_sha256": "3d12d411634ee3ad59865a5aa1b657c42c37954fd1733caf74ee2da990fe6d37",
+   "name": "grooming-pending-request-not-revised",
+   "named_row_red": true,
+   "named_rows": [
+    "material/bound-fields"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     false
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 7.301,
+   "source_sha256": "8e66c86c5a7472197e7a9f4821be8c8489b3aed3b1d369b6f627332f7655500b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable",
+    "VELDO-0079 detail: material/bound-fields: each proposed field is its own new revision with a new digest; each change revised the pending requests: a new version whose presentation supersedes the one shown; an answer to the earlier presentation is refused after each change; an answer settled before a specification file changed is not applied; no unit ran",
+    "VELDO-0079 detail: authority/owner-choices: each choice moves the item where it says; each settlement carries the owner's own reasoning and his ruling; a reject or return cancels the priority request still waiting; rejected or returned work does not run",
+    "VELDO-0079 detail: authority/pm-self-admission: its signed answer through the API edge is refused as not the owner's; its request to admit by his message is refused by the question it asked; its admit naming the unanswered request is refused for want of a settlement; an answer without the owner's own reasoning is refused; nothing was admitted and nothing runs",
+    "VELDO-0079 detail: authority/separate-predicates: his admission answer settles and is applied; his priority answer does not settle: the priority authority is its own predicate; admitted without priority, nothing runs; the admission was applied once",
+    "VELDO-0079 detail: authority/questions-unresolved: the priority answer settled first; it is not applied while the admission with its questions is unanswered; no unit runs meanwhile; his answer to the questions admits it, and then the priority applies; the admission names the questions his answer resolved",
+    "VELDO-0079 detail: ruling/parameter-binding: the owner's admission answers settled; after the priority changed, the retained ruling is refused by its digest; after the ceiling changed, the retained ruling is refused by its digest; the retained signed answer submitted again is refused: its request version is settled; a ruling on one item does not admit another; nothing of it runs",
+    "VELDO-0079 detail: ruling/duplicate: the owner's answer settled once; the same signed answer again is refused and settles nothing more; the admission was applied; the same signed command again is refused as stale and writes nothing",
+    "VELDO-0079 detail: observability: every grooming route is observed with its reasons"
+   ],
+   "diff": "proof/VELDO-0079/grooming-route-ignores-question.diff",
+   "failed_rows": [
+    "VELDO-0079 route/ask-when-needed",
+    "VELDO-0079 material/bound-fields",
+    "VELDO-0079 authority/owner-choices",
+    "VELDO-0079 authority/pm-self-admission",
+    "VELDO-0079 authority/separate-predicates",
+    "VELDO-0079 authority/questions-unresolved",
+    "VELDO-0079 ruling/parameter-binding",
+    "VELDO-0079 ruling/duplicate",
+    "VELDO-0079 observability"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "de8c968e1198c800591974d059baf88356cd8c8bd88a192ca51e0b46ae5030e3",
+   "name": "grooming-route-ignores-question",
+   "named_row_red": true,
+   "named_rows": [
+    "route/ask-when-needed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     false
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     false
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     false
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     false
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     false
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     false
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     false
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     false
+    ],
+    [
+     "VELDO-0079 observability",
+     false
+    ]
+   ],
+   "seconds": 3.766,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable"
+   ],
+   "diff": "proof/VELDO-0079/grooming-route-ignores-priority.diff",
+   "failed_rows": [
+    "VELDO-0079 route/ask-when-needed"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "7cb189a7947e9ef12340a9020190aef1dc1dd36bee0f5f44dc60369c6c8046a0",
+   "name": "grooming-route-ignores-priority",
+   "named_row_red": true,
+   "named_rows": [
+    "route/ask-when-needed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     false
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.737,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable"
+   ],
+   "diff": "proof/VELDO-0079/grooming-route-ignores-answered-objective.diff",
+   "failed_rows": [
+    "VELDO-0079 route/ask-when-needed"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "71d9279130dc260d64bb21a4d76ff5b5dec3d6435a86ccdf1086958d6ac80daf",
+   "name": "grooming-route-ignores-answered-objective",
+   "named_row_red": true,
+   "named_rows": [
+    "route/ask-when-needed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     false
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.769,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable"
+   ],
+   "diff": "proof/VELDO-0079/grooming-route-ignores-author.diff",
+   "failed_rows": [
+    "VELDO-0079 route/ask-when-needed"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "90269e533994e2a4aede5a90aa8c5e9d331497d7bc7d7ff0ac900f36093da512",
+   "name": "grooming-route-ignores-author",
+   "named_row_red": true,
+   "named_rows": [
+    "route/ask-when-needed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     false
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.543,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/ask-when-needed: none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable",
+    "VELDO-0079 detail: authority/pm-self-admission: its request to admit by his message is refused by the question it asked; its admit naming the unanswered request is refused for want of a settlement; nothing was admitted and nothing runs"
+   ],
+   "diff": "proof/VELDO-0079/grooming-message-admission-skips-route.diff",
+   "failed_rows": [
+    "VELDO-0079 route/ask-when-needed",
+    "VELDO-0079 authority/pm-self-admission"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "68cec024b74a2678684d02633d83a0617671bd424d04dc134ff96c2c53147129",
+   "name": "grooming-message-admission-skips-route",
+   "named_row_red": true,
+   "named_rows": [
+    "route/ask-when-needed",
+    "authority/pm-self-admission"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     false
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     false
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.868,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/own-message-default: the item is admitted and prioritized by his message; at the default priority; the admission and priority name his message as their evidence; they name the request revision they applied; nothing was presented: no request opened and nothing sent; every unit is executable",
+    "VELDO-0079 detail: material/changed-decomposition: the appended unit is groomed for priority alone, presented because his message predates it; after another unit was appended, that answer is refused as a changed decomposition; neither appended unit became executable by it; the regroomed decomposition, answered again, prioritizes both",
+    "VELDO-0079 detail: authority/pm-self-admission: nothing was admitted and nothing runs",
+    "VELDO-0079 detail: authority/separate-predicates: his own message cannot admit at a priority he may not set",
+    "VELDO-0079 detail: authority/reprioritize-withdraw: his message admitted it at the default priority; his signed reprioritization is applied, the work unchanged otherwise; the same rank again changes nothing",
+    "VELDO-0079 detail: observability: every grooming route is observed with its reasons"
+   ],
+   "diff": "proof/VELDO-0079/grooming-route-never-own-message.diff",
+   "failed_rows": [
+    "VELDO-0079 route/own-message-default",
+    "VELDO-0079 material/changed-decomposition",
+    "VELDO-0079 authority/pm-self-admission",
+    "VELDO-0079 authority/separate-predicates",
+    "VELDO-0079 authority/reprioritize-withdraw",
+    "VELDO-0079 observability"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "ca6e7a8ed7492d92e0f866f2f6b0e093a54c0b1b30ba18e9db719c7c4a4b817b",
+   "name": "grooming-route-never-own-message",
+   "named_row_red": true,
+   "named_rows": [
+    "route/own-message-default"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     false
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     false
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     false
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     false
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     false
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     false
+    ]
+   ],
+   "seconds": 7.255,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: authority/separate-predicates: his own message cannot admit at a priority he may not set; admitted without priority, nothing runs"
+   ],
+   "diff": "proof/VELDO-0079/grooming-message-admission-priority-role.diff",
+   "failed_rows": [
+    "VELDO-0079 authority/separate-predicates"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "2238eba7af2476491c1ff41fe4252a4e9c59db3ed7fd934f77fb0f8ae642ceee",
+   "name": "grooming-message-admission-priority-role",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/separate-predicates"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     false
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 7.022,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: authority/questions-unresolved: the admission names the questions his answer resolved"
+   ],
+   "diff": "proof/VELDO-0079/grooming-admission-questions-unrecorded.diff",
+   "failed_rows": [
+    "VELDO-0079 authority/questions-unresolved"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "d472d38c30068679bdc8b018a2e1c43b023f24cdf8c853458bb5ebf080232f82",
+   "name": "grooming-admission-questions-unrecorded",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/questions-unresolved"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     false
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.884,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: authority/questions-unresolved: it is not applied while the admission with its questions is unanswered"
+   ],
+   "diff": "proof/VELDO-0079/grooming-priority-applied-before-admission.diff",
+   "failed_rows": [
+    "VELDO-0079 authority/questions-unresolved"
+   ],
+   "module": ".veldo/control_grooming.py",
+   "mutant_sha256": "a26138089f9e80a1ad86ba15ef263f0d468e0b01a548df02fa2104cfa3b83f1c",
+   "name": "grooming-priority-applied-before-admission",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/questions-unresolved"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     false
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.843,
+   "source_sha256": "8e66c86c5a7472197e7a9f4821be8c8489b3aed3b1d369b6f627332f7655500b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: authority/owner-choices: a reject or return cancels the priority request still waiting"
+   ],
+   "diff": "proof/VELDO-0079/grooming-withdraw-skipped.diff",
+   "failed_rows": [
+    "VELDO-0079 authority/owner-choices"
+   ],
+   "module": ".veldo/control_grooming.py",
+   "mutant_sha256": "c05334f9026ddee777308e3f4e8dcd56ee5919b8143ec43fd76461df66201278",
+   "name": "grooming-withdraw-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/owner-choices"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     false
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.706,
+   "source_sha256": "8e66c86c5a7472197e7a9f4821be8c8489b3aed3b1d369b6f627332f7655500b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: authority/reprioritize-withdraw: his signed reprioritization is applied, the work unchanged otherwise; the same rank again changes nothing"
+   ],
+   "diff": "proof/VELDO-0079/grooming-reprioritize-unapplied.diff",
+   "failed_rows": [
+    "VELDO-0079 authority/reprioritize-withdraw"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "9ff037741456135f87cd39c95cae1870331d81bfa031e3067c6bd3f8a8d962f7",
+   "name": "grooming-reprioritize-unapplied",
+   "named_row_red": true,
+   "named_rows": [
+    "authority/reprioritize-withdraw"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     false
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.971,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: ruling/parameter-binding: after the priority changed, the retained ruling is refused by its digest; after the ceiling changed, the retained ruling is refused by its digest"
+   ],
+   "diff": "proof/VELDO-0079/grooming-ruling-digest-unvalidated.diff",
+   "failed_rows": [
+    "VELDO-0079 ruling/parameter-binding"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "002f4f3dc6f6d8dbe1211ad328fd8e7de3fa2d5f16c3a9c7af9518e4e6320290",
+   "name": "grooming-ruling-digest-unvalidated",
+   "named_row_red": true,
+   "named_rows": [
+    "ruling/parameter-binding"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     false
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.889,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: install/assets: the grooming service and its request contract installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0079/grooming-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0079 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "2cb37378fedad0dee832ba2e5c7881ffc70962f0cd58d645a581d051af4e0a1e",
+   "name": "grooming-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     false
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.875,
+   "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: install/assets: the grooming service and its request contract installed by the scaffold"
+   ],
+   "diff": "proof/VELDO-0079/grooming-request-not-scaffolded.diff",
+   "failed_rows": [
+    "VELDO-0079 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "629a997df291e03207a7490b8875273abae999ab4946747169e7055d5df5ceea",
+   "name": "grooming-request-not-scaffolded",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     false
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.787,
+   "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: observability: every refusal is named and classified, never as success"
+   ],
+   "diff": "proof/VELDO-0079/grooming-refusal-unclassified.diff",
+   "failed_rows": [
+    "VELDO-0079 observability"
+   ],
+   "module": ".veldo/control_grooming.py",
+   "mutant_sha256": "e9f73a4f8685e859c452f1e952abc3b4e8fe825ea168958066b107f38bc9e07f",
+   "name": "grooming-refusal-unclassified",
+   "named_row_red": true,
+   "named_rows": [
+    "observability"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     false
+    ]
+   ],
+   "seconds": 6.848,
+   "source_sha256": "8e66c86c5a7472197e7a9f4821be8c8489b3aed3b1d369b6f627332f7655500b"
+  }
+ ],
+ "mutations_per_row": {
+  "authority/owner-choices": [
+   "grooming-withdraw-skipped"
+  ],
+  "authority/pm-self-admission": [
+   "grooming-message-admission-skips-route"
+  ],
+  "authority/questions-unresolved": [
+   "grooming-admission-questions-unrecorded",
+   "grooming-priority-applied-before-admission"
+  ],
+  "authority/reprioritize-withdraw": [
+   "grooming-reprioritize-unapplied"
+  ],
+  "authority/separate-predicates": [
+   "grooming-message-admission-priority-role"
+  ],
+  "install/assets": [
+   "grooming-not-scaffolded",
+   "grooming-request-not-scaffolded"
+  ],
+  "material/bound-fields": [
+   "grooming-specification-files-unchecked",
+   "grooming-pending-request-not-revised"
+  ],
+  "material/changed-decomposition": [
+   "grooming-decomposition-digest-unbound",
+   "grooming-live-binding-unchecked"
+  ],
+  "material/telegram-brief": [
+   "grooming-brief-omits-questions",
+   "grooming-brief-omits-protected-paths",
+   "grooming-thin-admission-accepted",
+   "grooming-brief-unchecked"
+  ],
+  "observability": [
+   "grooming-refusal-unclassified"
+  ],
+  "route/ask-when-needed": [
+   "grooming-route-ignores-question",
+   "grooming-route-ignores-priority",
+   "grooming-route-ignores-answered-objective",
+   "grooming-route-ignores-author",
+   "grooming-message-admission-skips-route"
+  ],
+  "route/own-message-default": [
+   "grooming-route-never-own-message"
+  ],
+  "ruling/parameter-binding": [
+   "grooming-ruling-digest-unvalidated"
+  ]
+ },
+ "noop": {
+  "control_backlog.py": {
+   "copy_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.92,
+   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+  },
+  "control_grooming.py": {
+   "copy_sha256": "8e66c86c5a7472197e7a9f4821be8c8489b3aed3b1d369b6f627332f7655500b",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.841,
+   "source_sha256": "8e66c86c5a7472197e7a9f4821be8c8489b3aed3b1d369b6f627332f7655500b"
+  },
+  "control_grooming_request.py": {
+   "copy_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.861,
+   "source_sha256": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 6.859,
+   "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 79",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 189.482,
+ "spec_id": "VELDO-0079",
+ "suite": "scripts/suites/76_veldo_0079_grooming.py"
+}

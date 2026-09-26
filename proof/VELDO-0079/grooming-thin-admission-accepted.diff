@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -702 +702 @@
+-        target, brief = groomed[:2] if groomed else (decision_target(data), admission_brief(data))
++        target, brief = decision_target(data), admission_brief(data)  # defect: the thin brief admits groomed work

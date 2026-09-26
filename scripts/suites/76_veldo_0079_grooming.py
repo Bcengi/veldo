@@ -667,7 +667,7 @@ def _v79_suite():
                     'evidence': ['outcome (gate_observation)', own_command],
                     'decomposition': [str(item_t.get('decomposition_digest'))] + t_units,
                     'alternatives': ['a paper pass at the desk'],
-                    'questions': ['q-map: May the pass page show a map?']}
+                    'questions': ['q-map - May the pass page show a map?']}
                 missing_parts = sorted('%s/%s' % (tp, f) for tp in texts for f, parts in expected.items()
                                        for p in parts if words(p) not in texts[tp])
                 if missing_parts:

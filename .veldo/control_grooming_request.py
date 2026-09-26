@@ -284,7 +284,7 @@ def brief(record, touchpoint):
             _list(['%s (%s, scope %s)' % (u['unit'], u['specification'], ', '.join(u['scope']))
                    for u in c['decomposition']['units']])),
         'Alternatives: %s.' % _list(c['alternatives']),
-        'Questions: %s.' % _list(['%s: %s' % (q['id'], q['text']) for q in c['questions']]),
+        'Questions: %s.' % _list(['%s - %s' % (q['id'], q['text']) for q in c['questions']]),
         ('Admission and priority are separate decisions: admitting runs nothing until the work is prioritized.'
          if touchpoint == ADMISSION else
          'Admission and priority are separate decisions: approving makes the listed units executable at this rank.'),
