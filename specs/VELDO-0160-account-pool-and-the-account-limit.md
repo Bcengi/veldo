@@ -212,3 +212,22 @@ AC2 and AC3 elsewhere stay right. Criterion meaning unchanged. A draft.
 
 2026-09-25, lead: AC1's registration and concurrency claims each get their own falsifier beside
 isolation.
+
+2026-09-26, built (Release 1, Linux): the account pool (`control_account_pool`) chooses each dispatch's
+account inside its VELDO-0036 worker reservation (`Reservations.reserve_pooled`), reading the account
+records at every dispatch: candidates are the active accounts of the adapter's engine with a profile on
+its host, outside every reported window and under their concurrency, one run at a time until an
+account's first observation, in the Notes' order; with none the dispatch is refused
+`no_account_until:<earliest reset>` naming each account's reason. The Runner takes the pool as its
+account (two small `control_launch.py` hunks, the pool branch in `Runner.prepare` and the classification
+in `Metering.settle`). A second registration of an account, by id or by its profile under another name,
+is refused `duplicate_account:<id>`. Each engine meter keeps the limit its stream stated (Claude Code's
+rejected `rate_limit_event` or its rate-limit result, whose usage-limit message gives the window and
+reset; Codex's usage-limit message in an `error` event or a `turn.failed`), and the final report ends
+such a run `account_limit` with its window and reset. `control_account_limit.decide` makes the re-run-or-
+ask decision over a fixture record in the Notes' form. Proof in `proof/VELDO-0160/`: suite
+`78_veldo_0160_account_pool` (13 rows), the red record at 52f817d5 (all 11 behavior rows red by
+assertion, the two format rows green) and 35 finding 160 mutations, each red on its named row. The
+footprint adds `proof/VELDO-0062/extract_formats.py` and `cli-formats.json`: the extractor now also
+reads Claude Code's usage-limit message and Codex's MCP tool-call item out of the binaries, so every
+fake line comes from the real formats. Status unchanged.

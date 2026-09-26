@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -126 +126 @@
+-        if active >= admits:
++        if active >= admits or any(r.get('type') == 'worker' and not r.get('retired') for r in records.values()):  # defect: one pooled run at a time

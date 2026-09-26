@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -186 +186 @@
+-                              **({'passed': error.passed} if isinstance(getattr(error, 'passed', None), dict) else {})))
++                              **{}))  # defect: the reasons are not observed

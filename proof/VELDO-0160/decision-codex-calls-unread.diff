@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -149 +149 @@
+-    if not isinstance(item, dict) or item.get('type') != MCP_ITEM:
++    if True:  # defect: Codex's MCP tool calls are not read

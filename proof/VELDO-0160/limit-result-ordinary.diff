@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -187,0 +188,2 @@
++    if limit['signal'] == 'result':
++        return outcome, None  # defect: the engine's rate-limit result is an ordinary failure

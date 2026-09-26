@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -118 +118 @@
+-        if limited:
++        if limited and False:  # defect: an account inside its reported window is a candidate

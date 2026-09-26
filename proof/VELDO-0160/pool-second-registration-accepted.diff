@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -302 +302 @@
+-                        raise Refused('duplicate_account:' + other['id'], '%s on %s' % (directory, host))
++                        pass  # defect: the same login is registered again under another name

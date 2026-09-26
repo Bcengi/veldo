@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -126 +126 @@
+-        if active >= admits:
++        if False:  # defect: an account at its concurrency is a candidate

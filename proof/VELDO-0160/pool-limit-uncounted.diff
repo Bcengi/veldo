@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -184 +184 @@
+-        elif record.get('type') == 'invocation' and record.get('outcome') == ACC.LIMIT_OUTCOME:
++        elif False:  # defect: runs ended account_limit are not counted
