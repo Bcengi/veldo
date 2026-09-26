@@ -170,7 +170,7 @@ where the script says, so concurrency is observed rather than timed. No real eng
 |---|---|
 | AC1 | `pool/per-account-isolation` (declared falsifier), `pool/one-registration` (declared), `pool/concurrent` (declared) |
 | AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted`, `limit/claude-rejected-texts` |
-| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names` |
+| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls` |
 | AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared), `pool/usage-observes`, `pool/selection-order`, `pool/until-earliest` |
 | Install | `install/assets` |
 | Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines`, `format/tool-forms` |
@@ -230,19 +230,30 @@ no inner name or a non-string one asks `unreadable`; an inner read-only MCP call
 `task_progress` whose `last_tool_name` is an MCP write (the checker's reproduction) asks naming it, the
 same last tool on two lines is one call, a workflow agent's `lastToolName` naming a write asks; a
 non-string last tool, a `workflow_progress` that is not a list and an entry that is not an object ask
-`unreadable`; a read-only last tool and `Bash` decide re-run. `decision/frame-tool-names`: a
+`unreadable`; each of these also names the task's one counted call the record never shows; a read-only
+last tool and `Bash`, with the task's one call shown under it, decide re-run. `decision/subagent-calls`
+(the lead's decision on a nested agent's hidden call): a depth-2 agent whose reply was an MCP write then
+`Read` shows only `Read` as its last tool and counts 2 calls (the checker's reproduction, as objects and as
+JSON text) asks, naming task `t2` and 2 unshown calls; a depth-1 agent whose two calls (`Read`, a read-only
+MCP call) are shown under it, with its end counting 2 or reporting no usage, decides re-run; an end or a
+progress counting one call more than shown asks, naming the task and 1; a count missing, not a whole
+number, negative, a usage that is not an object, a progress without the task's id, an end whose usage has
+no count, and an end lower than the progress reported ask `unreadable`; a depth-2 reply of one MCP write
+asks for the write and for the unshown call. `decision/frame-tool-names`: a
 `tool_progress` of a shown call naming an MCP write asks naming it, an MCP write and its heartbeat are
 one call, an assistant message whose `attribution_mcp_server` and `attribution_mcp_tool` name a write,
 and one whose `batch_tool_uses` holds a write, ask naming them; an attribution that is not a name asks
 `unreadable`; a heartbeat of the shown REPL call decides re-run. `decision/tool-free-forms` (the negative control):
 21 Claude Code lines of tool-free forms, of a `Bash` call's result, progress, heartbeat and summary, of
 the six tool-free frames outside the message union, of a REPL call whose inner tool is `Read` and of a
-task whose last tool and workflow agent's are built in, and 7 Codex items of exec's tool-free and
+sub-agent whose one `Bash` call is shown under its task (started, progress, end, each counting 1) with
+built-in last tool and workflow agent, and 7 Codex items of exec's tool-free and
 own-tool types, decide re-run naming nothing. `format/tool-forms`: the
 readers' tables equal the binaries' (`cli-formats.json`): the message, block, streaming event and
 built-in tables, the built-in names with the Agent tool's current one, every tool-named field declared
 or emitted (the six read as calls named), the tool-free frames, and exec's items with `collab_tool_call`
-a sub-agent call; each named fixture form is one the binaries list and each unlisted one is in no
+a sub-agent call, and a task's count of its calls read from the frames, count field, task id and parent
+the binary writes (`task_counts`), Codex reporting none; each named fixture form is one the binaries list and each unlisted one is in no
 table. `limit/claude-rejected-texts` (AC2): each of the binary's eight rejected-status texts (the
 two admin ones with their suffix, and the out-of-credits one again with a reset and the progress
 piece) ends a run `account_limit`, the `unified` window with the reset it states, recorded exhausted.
@@ -254,15 +265,15 @@ all four limited (resets 900, 600, 1200 s ahead, and one at 300 s on its five-ho
 window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
-Plain run after the second check's round: 52 passed (26 preamble, 26 rows) in 19.3 s. Stage environment run
-(`env -i`, the stage's variables, TZ=UTC): 52 passed in 25.5 s. After the merge the fake `claude` is
+Plain run after the nested-agent fix: 53 passed (26 preamble, 27 rows) in 19.8 s. Stage environment run
+(`env -i`, the stage's variables, TZ=UTC): 53 passed in 25.2 s. After the merge the fake `claude` is
 installed, pinned and qualified as version 2.1.281 under the factory state root and the fake Codex is a
 qualified vendor package (VELDO-0060, VELDO-0061), as suite 75 does.
 
 ## Red record
 
 `red-at-52f817d5.json`: the current suite over `git archive 52f817d5` (main before this work),
-unchanged, regenerated after the second check's round. All 24 behavior rows fail by their own
+unchanged, regenerated after the nested-agent fix. All 25 behavior rows fail by their own
 assertion: there is no account pool (the Runner given
 a pool refuses `invalid_input` and nothing is dispatched), the same login registers twice under two
 names and a second record of an id is refused unnamed, no run is classified `account_limit` (each limited
@@ -273,7 +284,7 @@ they check the suite's own fixtures against the extracted table, not production.
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 78 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 2224 s, after the second check's round).
+`drive.py` records `mutations.json` and one applied diff per mutant. All 86 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 2224 s, after the second check's round).
 
 | Mutant | Module | Named rows |
 |---|---|---|
@@ -355,11 +366,20 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | decision-claude-control-request-free | control_engine_claude.py | `decision/unknown-forms`, `format/tool-forms` |
 | format-claude-tool-field-unlisted | control_engine_claude.py | `format/tool-forms` |
 | format-codex-collab-item-builtin | control_engine_codex.py | `decision/unknown-forms`, `format/tool-forms` |
+| decision-claude-task-counts-unread (the lead's nested-agent falsifier) | control_account_limit.py | `decision/subagent-calls`, `decision/task-progress-tool` |
+| decision-claude-task-one-over-allowed | control_engine_claude.py | `decision/subagent-calls` |
+| decision-claude-task-shown-any-parent | control_engine_claude.py | `decision/subagent-calls` |
+| decision-claude-task-count-drop-accepted | control_engine_claude.py | `decision/subagent-calls` |
+| decision-claude-task-count-unreadable-skipped | control_engine_claude.py | `decision/subagent-calls` |
+| decision-claude-task-first-count-kept | control_engine_claude.py | `decision/subagent-calls` |
+| decision-claude-task-notification-count-unread | control_engine_claude.py | `decision/subagent-calls`, `format/tool-forms` |
+| format-claude-task-count-field-moved | control_engine_claude.py | `decision/subagent-calls`, `format/tool-forms` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 78 rejected (65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 86 rejected after the nested-agent fix (78 before it, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
 
-Suites run after the second check's round, plain and under the stage environment, all green:
-`78_veldo_0160_account_pool` (26 rows), `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
-(20), `75_veldo_0062_accounts` (22) and `58_veldo_0036_reservations` (10). Before the merge the suites of
+Suites run after the nested-agent fix, plain and under the stage environment, all green:
+`78_veldo_0160_account_pool` (27 rows), `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
+(20) and `75_veldo_0062_accounts` (22); `extract_formats.py --check` matches the installed binaries. After the
+second check's round `58_veldo_0036_reservations` (10) was also green; no module it reads changed since. Before the merge the suites of
 every module this touches and every suite that reads `init_scaffold.py` were run green as well.
