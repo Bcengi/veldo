@@ -276,3 +276,20 @@ of these out of the binaries into `cli-formats.json`. New rows `decision/repl-in
 `decision/task-progress-tool` and `decision/frame-tool-names`; `decision/redacted-name`,
 `decision/unknown-forms`, `decision/tool-free-forms` and `format/tool-forms` extended; 13 more finding
 160 mutations (78 in all, each rejected). Status unchanged.
+
+2026-09-26, the lead's decision on a nested agent's hidden call (fail closed): in Claude Code 2.1.281 an
+agent that a sub-agent starts (depth 2 or more) has its messages dropped unless the SDK's
+`forwardSubagentText` option is set, so its `tool_use` blocks never reach the stream and its task's progress
+names only the last tool of each message; a depth-2 reply of an MCP write then `Read` showed only `Read` and
+was decided re-run. The decision now reads, for every task the stream reports (`system/task_started`,
+`task_progress` and `task_notification`, keyed by the task's `tool_use_id`), the task's count of its own
+calls (`usage.tool_uses`, which the binary raises by one for each `tool_use` block of the task's own
+messages) against the distinct `tool_use` blocks the record shows under it (`parent_tool_use_id`); any
+shortfall is that many calls the record cannot name, an unknown call of form `task_tool_uses` that asks,
+naming the task and the shortfall (`unshown`). A count frame whose count cannot be read, and a count lower
+than the task reported before, are unreadable and ask. Every field, frame and the forwarding gate were read
+from the 2.1.281 bytes, and the extractor now records them in `cli-formats.json` (`task_counts`). New row
+`decision/subagent-calls`; `decision/task-progress-tool`, `decision/tool-free-forms` and `format/tool-forms`
+follow the reading; 8 more finding 160 mutations (86 in all). Forwarding sub-agent text
+(`forwardSubagentText`), which would put a nested agent's own blocks in the stream, is filed for VELDO-0141's
+live view, not set here. Status unchanged.
