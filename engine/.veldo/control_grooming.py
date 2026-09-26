@@ -13,7 +13,7 @@ of backlog items: this service asks it to admit and prioritize, and it judges th
                  its objective, its project and the specification files. An AWAITING_GROOMING item is
                  asked for admission and priority; a PRIORITIZED or ACTIVE item with units appended since
                  its prioritization is asked for priority only. A proposal whose material equals the
-                 current revision's writes nothing; any change is a new revision.
+                 current revision's, from its author, writes nothing; any change is a new revision.
   groom          The current revision takes its route (control_grooming_request.route). When the owner's own
                  message admits it (the objective was accepted by his own message, no question, the default
                  priority, written by the owner or the project manager), the backlog's admit_message
@@ -65,6 +65,8 @@ COORDINATES = ('domain_uuid', 'repository_uuid', 'store_uuid')
 ITEM_KIND, OBJECTIVE_KIND, PROJECT_KIND, UNIT_KIND = 'backlog_item', 'objective', 'project', 'execution_unit'
 CHOICES = ('accept', 'return_for_elaboration', 'reject')
 PENDING_STATES = ('OFFERED', 'ACCEPTED', 'IN_PROGRESS', 'SUBMITTED')
+# The presenter's outcomes that mean the owner has the request in front of him.
+SHOWN = ('published', 'already_presented', 'answered')
 TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 'out_of_budget': 'invalid_input',
             'no_such_item': 'invalid_input', 'not_authorized': 'missing_authority',
             'project_not_active': 'missing_authority', 'not_approved': 'missing_authority',
@@ -212,7 +214,8 @@ class Grooming:
         fields = GR.content(GR.derived(data, objective['data'], project['data']), found, command['proposal'])
         rid = GR.request_id(iid)
         current = read(self.conn, rid)
-        if current is not None and current['content'] == fields and current['touchpoints'] == touchpoints:
+        if (current is not None and current['content'] == fields and current['touchpoints'] == touchpoints
+                and current['author'] == principal):
             return self._observe('propose', iid, 'unchanged', request=rid, revision=current['revision'],
                                  digest=current['digest'])
         revision = (current or {}).get('revision', 0) + 1
@@ -300,6 +303,11 @@ class Grooming:
                 presented.append(self._present(record, touchpoint))
             except Refused as exc:
                 return self._observe('groom', iid, 'refused', exc.code, path=path, reasons=reasons, requests=presented)
+        unshown = [r for r in presented if r['outcome'] not in SHOWN]
+        if unshown:
+            # A request the presenter could not show to the owner is reported, never as presented.
+            return self._observe('groom', iid, 'refused', 'unavailable_service:presentation', path=path, reasons=reasons,
+                                 revision=record['revision'], requests=presented)
         return self._observe('groom', iid, 'presented', path=path, reasons=reasons, revision=record['revision'],
                              requests=presented)
 

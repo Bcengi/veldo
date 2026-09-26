@@ -32,6 +32,10 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_backlog.py"
+  - ".veldo/control_backlog.py"
+  - "packs/*/.veldo/control_backlog.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0079_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -163,3 +167,27 @@ self-admission kept in its set. A What the reviewer judges section is added. Sta
 2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0150, because AC2 admits work under
 an objective the owner's own message accepted, which is VELDO-0150's acceptance path. Criteria and
 status unchanged.
+
+2026-09-25, build: `.veldo/control_grooming_request.py` (new) is the admission request contract (R09): the
+sixteen fields (class, lane, outcome, scope, exclusions, priority, ceiling, policy, specification
+revisions, protected paths, release authority, expiry, evidence, decomposition, alternatives, questions),
+the brief that renders every one of them, the binding (the decomposition by its digest) and digest a
+ruling names as its target, the live comparison with the item, objective, project and specification
+files, and the route: the owner's own message (VELDO-0150's own_message acceptance) admits at the default
+priority, rank 3, only when the project manager asks nothing, proposes the default and wrote the revision
+himself or the owner did. `.veldo/control_grooming.py` (new) is the grooming service, the one writer of
+admission requests (declared owner): the PM proposes, the service routes the revision, presents each
+decision as its own VELDO-0064 request on the `admission` or `priority` touchpoint through VELDO-0065,
+revises a pending request when a proposed field changes so its new presentation supersedes the one shown,
+and applies settled answers through the backlog. The footprint gains `.veldo/control_backlog.py` (and its
+engine and pack copies), because the backlog is the one writer of backlog items and AC2 needs two of its
+transitions: `admit_message` (AWAITING_GROOMING to PRIORITIZED in one transaction on his message's
+evidence) and the owner's own `reprioritize`; its admit and prioritize accept only the admission
+request's target and brief once grooming recorded one, refuse a revision that no longer binds the live
+records, and require the owner to hold admission_authority to admit and priority_authority to prioritize
+when the decision is applied. It also gains `scripts/check_teeth_mutations.py`, for finding 79.
+`request.py`, `request_projection.py`, `request_reconcile.py` and `authorization.py` were not changed:
+they are the PLAN-0016 file surface, not on the control store path. VELDO-0150's `accept_message` is not
+called by this code: the admission reads the objective's recorded acceptance path, and calling it is the
+intake-to-objective step, not admission. Suite `76_veldo_0079_grooming`, red at 516afd1 by assertion;
+finding 79 in `proof/VELDO-0079/`. Status stays ready.
