@@ -208,3 +208,22 @@ workspace gains the specification files of the units it grooms, every row keeps 
 `material/ungroomed-thin-brief` and finding 79 the mutation `grooming-thin-path-reopened` (24 mutations);
 two mutations are re-anchored on the new code. The default priority stays one constant, rank 3, for every
 project. Status stays ready.
+
+2026-09-25, build, review findings B1 and F2. B1: the own-message route read only the current revision,
+so the project manager could undo a question he had raised or a ruling the owner had made by proposing
+again. `control_grooming_request.py` now reads the item's history from the store (`history`: every
+decision request grooming opened for the admission request, by its shared `alias`, and the settled
+rulings among them not yet applied), and `route` names `presented` once any request was opened to the
+owner, so his message never admits that item again; grooming and the backlog's `admit_message` both
+pass it. A new revision recorded while a request is pending revises that request at once, so its new
+presentation supersedes the one he saw and an answer to that one is refused. A settled ruling other
+than an approval that is not yet applied (`held`) refuses the next proposal and the next grooming
+(`stale_subject:settled_ruling`), so his reject or return is applied as he gave it; a settled approval
+of an earlier revision authorizes nothing later (its digest binds it). The backlog refuses an answer
+already applied as `already_applied` before judging its binding, the precedence VELDO-0078 had. Suite
+`76_veldo_0079_grooming` gains `route/presented-then-proposed`, `route/ruling-settled-unapplied` and
+`route/returned-then-proposed` (18 rows), red at 11a65a7 by assertion; finding 79 gains six mutations
+(30). F2: row `activation/decomposition-growth` of the 0078 suite applies the earlier answer to the grown
+decomposition with no proposal between and expects `stale_subject:decomposition`, then keeps the
+request-digest refusal as its own later part; finding 78 gains `grown-decomposition-unchecked` (30).
+Status stays ready.

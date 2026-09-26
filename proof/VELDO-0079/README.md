@@ -22,8 +22,12 @@ the binding, and a ruling names it by `target` (kind, record, digest). `live_pro
 store-derived field that no longer matches the live item, objective and project. `route` decides whether
 the owner's own message admits: only when the objective was accepted by his own message (VELDO-0150),
 the revision asks for admission, raises no question, proposes the default priority and was written by
-the project's owner or its project manager (control_team's PM role); otherwise the named reasons
-(`objective_by_answer`, `fresh_priority`, `question`, `priority`, `author`).
+the project's owner or its project manager (control_team's PM role), and no request of the item was ever
+opened to the owner; otherwise the named reasons (`objective_by_answer`, `fresh_priority`, `question`,
+`priority`, `author`, `presented`). `history` reads that from the store, not from the current revision:
+every decision request grooming opened for the admission request (each under the shared `alias`) and
+the settled rulings among them not yet applied to the item; `held` keeps those that hold the item, all
+but approvals.
 
 **The grooming service, `.veldo/control_grooming.py` (new).** The one writer of `admission_request`
 records (declared owner of the kind and of the `admission-request:` prefix). `propose` is a signed
@@ -34,7 +38,10 @@ backlog's `admit_message`, or each decision becomes its own VELDO-0064 request (
 `admission` or `priority` touchpoint targeting the revision's digest, the brief, the expiry as deadline),
 framed and presented on Telegram through VELDO-0065; a request still pending from an earlier revision is
 revised, so its new presentation visibly supersedes the one the owner saw and an answer to that one is
-refused as stale by the settlement. `apply_rulings` applies the owner's settled answers through the
+refused as stale by the settlement. That revision happens when the new revision is recorded (`propose`),
+not later at `groom`, so the owner never has an answerable earlier request in front of him. While a
+settled reject or return is not yet applied, `propose` and `groom` refuse `stale_subject:settled_ruling`,
+so it is applied as he gave it; a settled approval of an earlier revision authorizes nothing later. `apply_rulings` applies the owner's settled answers through the
 backlog, the admission first; a priority answered before the admission waits, and a reject or return
 cancels the priority request still open. The service signs as its configured requester, an enrolled
 service member, never the owner.
@@ -42,8 +49,9 @@ service member, never the owner.
 **The backlog, `.veldo/control_backlog.py` (footprint addition).** It stays the one writer of backlog
 items, so AC2's two new transitions are its own: `admit_message` (AWAITING_GROOMING to ADMITTED to
 PRIORITIZED in one transaction, every unit READY, the admission and priority records naming the
-objective's intake command, attribution and the admission request revision and digest; any other route
-refuses `not_approved:<reason>`), and the owner's signed `reprioritize` (a new priority record, state and
+objective's intake command, attribution and the admission request revision and digest; the route is
+judged with the item's history, so an item any request of which was opened to the owner is refused
+`not_approved:presented`; any other route refuses `not_approved:<reason>`), and the owner's signed `reprioritize` (a new priority record, state and
 units unchanged). `admit` and `prioritize` accept only a settled answer whose target is the item's
 admission request at its current revision (the existing `found != target` comparison, which now compares
 its digest) and whose request showed exactly its brief, and refuse a revision that no longer binds the
@@ -63,9 +71,14 @@ olga answers through the API edge and pm applies the answer through the backlog;
 prioritized work are groomed afresh for their priority. The rows that present their own terms (another
 touchpoint, another owner, another brief) now use the admission request's target and brief, and the
 growth row answers grooming's rank-2 request for the first appended unit, then applies it after the second
-append and pm's new proposal, so it is still refused `stale_subject:binding`. Its workspace gains the
+append with no proposal between, refused `stale_subject:decomposition` by the grown decomposition itself
+(the live binding); after pm then proposes the grown decomposition's grooming, the same answer is refused
+`stale_subject:binding` by the request's digest, as its own part. An answer already applied is refused
+`already_applied` before its binding is judged, the precedence VELDO-0078 had. Its workspace gains the
 specification files of the units it grooms (grooming binds each one's digest). All 20 rows keep their
-meaning and pass, and finding 78 still rejects all 29 mutations, each red on its named row by assertion
+meaning and pass, and finding 78 rejects all 30 mutations (its 29 and `grown-decomposition-unchecked`,
+which disables the backlog's live binding and reds the growth row's decomposition part), each red on its
+named row by assertion
 (driven with VELDO-0078's own proof driver into a scratch directory; `proof/VELDO-0078` is unchanged).
 
 **Not changed.** `request.py`, `request_projection.py`, `request_reconcile.py` and `authorization.py` are
@@ -89,7 +102,7 @@ policy digest. Each row is reported once and fails by assertion.
 | Criterion | Rows |
 |---|---|
 | AC1 | `material/telegram-brief`, `material/ungroomed-thin-brief`, `material/bound-fields`, `material/changed-decomposition` (declared falsifier) |
-| AC2 | `route/own-message-default`, `route/ask-when-needed` (declared falsifier), `authority/owner-choices`, `authority/pm-self-admission`, `authority/separate-predicates`, `authority/questions-unresolved`, `authority/reprioritize-withdraw` |
+| AC2 | `route/own-message-default`, `route/ask-when-needed` (declared falsifier), `route/presented-then-proposed`, `route/ruling-settled-unapplied`, `route/returned-then-proposed`, `authority/owner-choices`, `authority/pm-self-admission`, `authority/separate-predicates`, `authority/questions-unresolved`, `authority/reprioritize-withdraw` |
 | AC3 | `ruling/parameter-binding` (declared falsifier), `ruling/duplicate` |
 | Installation, observability | `install/assets`, `observability` |
 
@@ -111,7 +124,19 @@ answered again, both run. `route/own-message-default`: pm proposes with no quest
 message admits and prioritizes at rank 3, naming his intake command, with no request opened and nothing
 sent, and every unit is executable. `route/ask-when-needed`: a question, rank 1, an objective accepted by
 answer, and a proposal by a plain member are each presented and published, none admitted, the backlog's
-`admit_message` refused by that reason. `authority/owner-choices`: accept, reject and return move the
+`admit_message` refused by that reason. `route/presented-then-proposed`: pm re-proposes a presented item
+with the question dropped at the default priority; recording that revision supersedes both requests in
+front of olga before grooming runs, her answer to the earlier presentation is `stale_presentation`,
+grooming presents it naming `presented`, her message is `not_approved:presented`, and her reject of the
+revision in front of her is applied (REJECTED); and after her settled reject of a rank-1 proposal, pm's
+default re-proposal and the next grooming are `stale_subject:settled_ruling`, the revision unchanged, and
+her reject is applied. `route/ruling-settled-unapplied`: her reject settled and not yet applied, pm's
+proposal with the question dropped is refused and writes no revision, grooming sends her nothing, her
+message does not admit it, and her reject is applied with the priority request canceled.
+`route/returned-then-proposed`: her return is applied (PREPARED, priority canceled), pm requests grooming
+and proposes with the question dropped, and the item is presented to her again as a new request, her
+message `not_approved:presented`. In all three nothing is admitted and no unit runs.
+`authority/owner-choices`: accept, reject and return move the
 item where they say, each settlement carries the owner's own reasoning, and a reject or return cancels
 the priority request. `authority/pm-self-admission`: the PM's own signed answer is `not_owner`, its
 message admission `not_approved:question`, its unsettled admit `missing_evidence:settlement`, its
@@ -131,8 +156,9 @@ one settlement; the same signed admit command again is refused `stale_version`, 
 admission names that one settlement.
 
 Stage environment run (`env -i` with the gate's variables, HOME in `/dev/shm`) and a normal run: suites
-`76_veldo_0079_grooming` (15 rows), `73_veldo_0078_backlog` (20), `75_veldo_0150_own_message_acceptance`
-(13), `72_veldo_0077_objectives` (20), `72_veldo_0128_reports` (18) and `52_writer_boundary` (10) pass.
+`76_veldo_0079_grooming` (18 rows), `73_veldo_0078_backlog` (20), `75_veldo_0150_own_message_acceptance`
+(13), `72_veldo_0077_objectives` (20), `72_veldo_0128_reports` (18) `52_writer_boundary` (10) and `50_git_environment` (4) pass; after
+review B1 and F2, `20_veldo_0003_task_source`, `65_veldo_0132_workflow` and `71_veldo_0130_api` pass too.
 After the thin path closed, `50_git_environment`, `20_veldo_0003_task_source`, `65_veldo_0132_workflow`
 and `71_veldo_0130_api` also pass in a normal run. Before it, in a normal run, the 56 suites that load
 `init_scaffold.py`, `control_backlog.py` or the task source, and `50_git_environment`, passed (4822
@@ -142,10 +168,15 @@ key-value text, so questions render as `id - text`).
 ## Red record
 
 `red-at-516afd1.json`: the current suite over `git archive 516afd1`, the commit before this change,
-unchanged. All 15 rows fail by their own assertion and no region raised: the tree has no grooming
+unchanged. All 18 rows fail by their own assertion and no region raised: the tree has no grooming
 service, so every grooming call is answered `no_grooming_service`, nothing is presented or admitted by
 message, its backlog has neither `admit_message` nor `reprioritize`, and it admits the ungroomed item on
 its thin brief.
+
+`red-at-11a65a7.json`: the same suite over `git archive 11a65a7`, this branch before review B1's fix.
+Exactly the three history rows fail, each by its assertion: that tree lets the current revision decide
+alone, so the re-proposed item is admitted by her message, the earlier request stays answerable, and her
+reject is refused at apply.
 
 `red-at-b43de71.json`: the same suite over `git archive b43de71`, this branch before the thin path closed.
 Exactly one row fails, `material/ungroomed-thin-brief`, by its assertion: that tree admits an item grooming
@@ -155,9 +186,9 @@ never asked about on VELDO-0078's thin brief.
 
 Registered in `scripts/check_teeth_mutations.py` with the `grooming-` prefix, each declared falsifier
 first; `python3 -B proof/VELDO-0079/drive.py` records `mutations.json` and one applied diff per mutant.
-All 24 turn their named rows red by assertion; the baseline and the no-op copies of the four modules are
-green. The teeth driver run for finding 79 with two jobs rejects all 24; finding 78 (the other mutations
-of `control_backlog.py`, over the rewritten VELDO-0078 suite) still rejects all 29.
+All 30 turn their named rows red by assertion; the baseline and the no-op copies of the four modules are
+green. The teeth driver run for finding 79 with two jobs rejects all 30; finding 78 (the other mutations
+of `control_backlog.py`, over the rewritten VELDO-0078 suite) rejects all 30.
 `grooming-thin-admission-accepted` and `grooming-brief-unchecked` are re-anchored on the new code: the
 first accepts an answer to the item's own thin target beside the groomed one, the second any brief shown.
 
@@ -178,6 +209,12 @@ first accepts an answer to the item's own thin target beside the groomed one, th
 | grooming-route-ignores-author | route/ask-when-needed |
 | grooming-message-admission-skips-route | route/ask-when-needed, authority/pm-self-admission |
 | grooming-route-never-own-message | route/own-message-default |
+| grooming-route-ignores-presentation | route/presented-then-proposed, route/returned-then-proposed |
+| grooming-settled-ruling-ignored | route/presented-then-proposed, route/ruling-settled-unapplied |
+| grooming-message-admission-ignores-history | route/presented-then-proposed, route/returned-then-proposed |
+| grooming-proposal-not-superseding | route/presented-then-proposed |
+| grooming-proposal-over-settled-ruling | route/ruling-settled-unapplied |
+| grooming-presented-over-settled-ruling | route/ruling-settled-unapplied |
 | grooming-message-admission-priority-role | authority/separate-predicates |
 | grooming-admission-questions-unrecorded | authority/questions-unresolved |
 | grooming-priority-applied-before-admission | authority/questions-unresolved |
