@@ -56,7 +56,7 @@ limit, on a final report). `control_account_pool.metrics` counts dispatches per 
 **The re-run-or-ask decision is over a record.** `control_account_limit.decide(record, servers,
 marks, provider)` reads a fixture record in the form of the specification's Notes (each line's gapless
 `sequence`, `received_at`, `stream`, `redacted` and `payload`), finds each MCP tool call on the engine
-lines with the engine module's own reader (`mcp_calls`: Claude Code's `tool_use` block named
+lines with the engine module's own reader (`tool_calls`: Claude Code's `tool_use` block named
 `mcp__<server>__<tool>`, Codex's `mcp_tool_call` item), each call once by its id, and decides `rerun`
 when every call is to a tool the call's server's configured revision marks read-only, else `ask`,
 naming exactly the other calls with their sequence, server, tool, catalog id, revision and reason
@@ -71,11 +71,32 @@ or `redacted_unreadable` when the line's `redacted` field is set (VELDO-0141 AC4
 the payload text, which can break the JSON). A structurally malformed record or configuration is refused
 by name, never decided. Carrying the decision out is VELDO-0154 AC3.
 
-**control_launch.py has two small hunks.** `Runner.prepare` (the pool branch and the account the
-contract records) and `Metering.settle` (the classification and its `limit`). The VELDO-0060/0061
-integration rewrites the receiver's engine hooks elsewhere in that file; its `Metering.settle` hunk
-sets `outcome = 'failed'` for a completed run without a complete terminal record, and on merge that
-line belongs before the classification so a stream-reported limit on such a run is still classified.
+**A tool-call form the decision does not recognize asks (the lead's decision, fail closed).** Each
+engine module reads only the forms its binary's own tables list (`cli-formats.json`, `tool_forms`) and
+names any other an unknown call, which the decision names by its sequence with its `form`, reason
+`unknown_call`. Claude Code: the stream's message types and the subtypes of `system` and `result`
+(`MESSAGES`), the content blocks of an assistant message and of a user message, of which text,
+reasoning, compaction and (in a user message) images, documents and search results are tool-free; a
+`tool_use` is read (an `mcp__` name is an MCP call, every id is remembered), and an `mcp_tool_use`,
+`mcp_tool_result`, `server_tool_use` or other server-tool block is unknown; a user `tool_result`, a
+`tool_progress` or a `tool_use_summary` for an id no earlier line showed is unknown, as is a `tool_use`
+in a user message; a `stream_event` carrying any block that is not tool-free (a `tool_use` first) is
+unknown, and so is a streaming event the schema does not name. On a line whose `redacted` field is set,
+a `tool_use` name that is neither `mcp__...` nor in the binary's `BUILTIN_TOOL_NAMES` (a partial list,
+so an omitted built-in asks) is `redacted_unreadable`. Codex: exec's event types and item types; its
+messages, reasoning, to-do lists and errors are tool-free, its commands, file changes and web searches
+are its own tools whose effects stay in the clone, `mcp_tool_call` is read, and every other item type
+(the core's `dynamic_tool_call`, `collab_agent_tool_call` and `sub_agent_activity` among them) and every
+other event type is unknown.
+
+**control_launch.py has two small hunks.** `Runner.prepare` (the pool branch; the contract records the
+chosen account id, never the pool) and `Metering.settle` (the classification and its `limit`). Merged
+with main (VELDO-0060 and VELDO-0061), settle runs: close the meter, take the exit's outcome, keep the
+artifact (`self.report = self._artifact(...)`), make a completion without a complete terminal record
+`failed`, then `ACC.classify(outcome, self.meter.limit())`, then the guard's final report with the
+`limit`; so a limit the stream stated on a run whose terminal record is missing is still
+`account_limit`. THE ENGINE PROTOCOL's docstring names the meters' `limit()`; `ENGINE_PROTOCOL` stays
+the ten module names it checks.
 
 Out of this build: the re-dispatch and the question to the owner (VELDO-0154 AC3), the timer at the
 earliest reset (VELDO-0154 AC1), a count of decisions by outcome (the decision is a pure function; its
@@ -94,7 +115,12 @@ compiler keeps out of the literal pool). `cli-formats.json` is regenerated and `
 installed binaries. The review round added Claude Code's other rejected-status texts: each return of the
 message builder's `overageStatus === "rejected"` branch that is not the template, read by its exact text
 inside that branch, and the admin suffix two of them take (`rejected`, `admin_suffix`,
-`admin_suffixed`). Every line the suite's fakes print and every engine payload of the fixture records
+`admin_suffixed`). The fail-closed round added `tool_forms` for both engines: Claude Code's SDK message
+union (each member's type and subtype), the content block unions of an assistant and of a user message
+(the modelled blocks and the type tags the binary lists), the streaming events the `stream_event` schema
+names and the binary's `BUILTIN_TOOL_NAMES`; Codex exec's ThreadItem tags (its literal run, and `error`)
+and the core's ThreadItem tags (its literal run, where `dynamic_tool_call`, `collab_agent_tool_call`
+and `sub_agent_activity` are listed). `format/tool-forms` requires the readers' tables to equal these. Every line the suite's fakes print and every engine payload of the fixture records
 conforms to that table (the two format rows).
 
 ## Suite
@@ -112,10 +138,10 @@ where the script says, so concurrency is observed rather than timed. No real eng
 |---|---|
 | AC1 | `pool/per-account-isolation` (declared falsifier), `pool/one-registration` (declared), `pool/concurrent` (declared) |
 | AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted`, `limit/claude-rejected-texts` |
-| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write` |
+| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms` |
 | AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared), `pool/usage-observes`, `pool/selection-order`, `pool/until-earliest` |
 | Install | `install/assets` |
-| Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines` |
+| Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines`, `format/tool-forms` |
 
 `pool/*` (AC1): three Claude Code accounts and one Codex account, registered once each, take four
 pooled dispatches at once: the three Claude Code dispatches go to the three Claude Code accounts and the
@@ -151,7 +177,20 @@ breaks the JSON, that is wholly `[redacted]`, that is wrapped in a list, or whos
 or server (Codex) is not a string decides ask naming exactly that line (`redacted_unreadable` for the
 two redacted forms, `unreadable` for the rest), and a redacted line whose event still reads is decided by
 its calls. `decision/same-id-write`: one id shown read-only and then naming a write decides ask naming
-the write. `limit/claude-rejected-texts` (AC2): each of the binary's eight rejected-status texts (the
+the write. `decision/unknown-forms`: each of 13 Claude Code forms (an `mcp_tool_use`, an `mcp_tool_result`
+and a `server_tool_use` block, a `stream_event` starting a `tool_use` block, one starting a message that
+holds a `tool_use`, a streaming event the schema does not name, a user `tool_result` for an id never
+seen, a `tool_use` in a user message, a `tool_progress` and a `tool_use_summary` for an id never seen,
+and a block, message and system subtype no table lists) and 5 Codex forms (`dynamic_tool_call`,
+`collab_agent_tool_call`, `sub_agent_activity`, an item and an event type no table lists) decides ask,
+naming exactly that line as `unknown_call` with its form and counting no MCP call.
+`decision/redacted-name`: on a redacted line a `tool_use` named `[REDACTED:known_pattern]` or `Agent`
+(a built-in the binary's partial list omits) decides ask as `redacted_unreadable`, one named `Read` or
+`mcp__tracker__get_issue` (read-only) decides re-run. `decision/tool-free-forms` (the negative control):
+11 Claude Code lines of tool-free forms and of a `Bash` call's result, progress and summary, and 7 Codex
+items of exec's tool-free and own-tool types, decide re-run naming nothing. `format/tool-forms`: the
+readers' tables equal the binaries' (`cli-formats.json`), each named fixture form is one the binaries
+list and each unlisted one is in no table. `limit/claude-rejected-texts` (AC2): each of the binary's eight rejected-status texts (the
 two admin ones with their suffix, and the out-of-credits one again with a reset and the progress
 piece) ends a run `account_limit`, the `unified` window with the reset it states, recorded exhausted.
 `pool/usage-observes` (AC4): a Codex account whose one run reported usage and no window admits its
