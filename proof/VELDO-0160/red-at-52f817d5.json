@@ -30,7 +30,7 @@
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:03pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 10:56pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
@@ -92,11 +92,12 @@
   "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided re-run [None, no decision module]",
   "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Read': decided re-run [None, no decision module]",
   "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'mcp__tracker__get_issue': decided re-run [None, no decision module]",
-  "VELDO-0160 decision/tool-free-forms detail: claude_code: 21 lines of tool-free and built-in forms decide re-run, naming no call [None, no decision module]",
+  "VELDO-0160 decision/tool-free-forms detail: claude_code: 26 lines of tool-free and built-in forms decide re-run, naming no call [None, no decision module]",
   "VELDO-0160 decision/tool-free-forms detail: codex: 7 lines of tool-free and built-in forms decide re-run, naming no call [None, no decision module]",
   "VELDO-0160 format/tool-forms detail: claude_code: the reader's message, block, streaming event and built-in tool tables are the binary's own [['messages', 'response_blocks', 'request_blocks', 'stream_events', 'builtin_tools']]",
   "VELDO-0160 format/tool-forms detail: claude_code: the built-in names are BUILTIN_TOOL_NAMES and the current name of each tool it lists under an old one ({'Agent': ('Task',)}) [None, ['Agent', 'AskUserQuestion', 'Bash', 'Edit', 'Glob', 'Grep', 'JavaScript', 'NotebookEdit', 'REPL', 'Read', 'SendUserMessage', 'Skill', 'Task', 'TaskCreate', 'TaskGet', 'TaskList', 'TaskStop', 'TaskUpdate', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Write']]",
   "VELDO-0160 format/tool-forms detail: claude_code: every field of the binary's messages that names a tool, declared or emitted, is in the reader's table, and the tool names that ran are read as calls [[('assistant', 'attribution_mcp_tool'), ('assistant', 'batch_tool_uses'), ('assistant', 'context_usage.mcp_tools'), ('assistant', 'message.usage.server_tool_use'), ('assistant', 'parent_tool_use_id'), ('assistant', 'tool_use_meta')], []]",
+  "VELDO-0160 format/tool-forms detail: claude_code: a task's count of its calls is read from the frames, fields and parent the binary writes it in, and codex reports none [['system/task_notification', 'system/task_progress'], {}, []]",
   "VELDO-0160 format/tool-forms detail: claude_code: the frames outside the message union the reader takes as tool-free are the ones whose schema provably carries no tool call [[('active_goal', None), ('autocompact_state', None), ('control_cancel_request', None), ('control_request', None), ('control_response', None), ('keep_alive', None), ('system', 'post_turn_summary'), ('system', 'task_summary'), ('transcript_mirror', None)], []]",
   "VELDO-0160 format/tool-forms detail: codex: the reader's item and event tables are exec's own, its own collab_tool_call a sub-agent call [['', 'agent_message', 'collab_tool_call', 'command_execution', 'error', 'file_change', 'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'], ['error', 'item.completed', 'item.started', 'item.updated', 'thread.started', 'turn.completed', 'turn.failed', 'turn.started']]",
   "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [None, no decision module, None MCP calls]",
@@ -121,6 +122,34 @@
   "VELDO-0160 decision/frame-tool-names detail: an assistant message decomposed from a batch holding an MCP write: decided ask [None, no decision module, None MCP calls]",
   "VELDO-0160 decision/frame-tool-names detail: an MCP attribution that is not a name: decided ask [None, no decision module, None MCP calls]",
   "VELDO-0160 decision/frame-tool-names detail: a heartbeat of a shown built-in call (negative control): decided rerun [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a depth-2 agent's hidden MCP write (the checker's reproduction): decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a depth-2 agent's hidden MCP write (the checker's reproduction): the shortfalls name [('t2', 2)] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a depth-2 agent's hidden MCP write (the checker's reproduction): decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a depth-2 agent's hidden MCP write (the checker's reproduction) (as JSON text): the shortfalls name [('t2', 2)] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a depth-1 agent whose calls are all shown and read-only (negative control): decided rerun [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a depth-1 agent whose calls are all shown and read-only (negative control): the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task end that reports no usage (negative control): decided rerun [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task end that reports no usage (negative control): the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task whose end counts one call more than the record shows: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task whose end counts one call more than the record shows: the shortfalls name [('t1', 1)] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task whose progress counts one call more than the record shows: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task whose progress counts one call more than the record shows: the shortfalls name [('t1', 1)] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress whose usage has no count of calls: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress whose usage has no count of calls: the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress whose count is not a whole number: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress whose count is not a whole number: the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress whose count is negative: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress whose count is negative: the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress whose usage is not an object: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress whose usage is not an object: the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress without its task's id: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task_progress without its task's id: the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task end whose usage has no count of calls: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task end whose usage has no count of calls: the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a task end whose count is lower than its progress reported: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a task end whose count is lower than its progress reported: the shortfalls name [] [no decision module]",
+  "VELDO-0160 decision/subagent-calls detail: a depth-2 agent whose reply was one hidden MCP write, named as its last tool: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/subagent-calls detail: a depth-2 agent whose reply was one hidden MCP write, named as its last tool: the shortfalls name [('t2', 1)] [no decision module]",
   "VELDO-0160 pool/moved-off detail: acct-c1's CLI reported its window exhausted, recorded with its reset [{}]",
   "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
   "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
@@ -160,6 +189,7 @@
   "VELDO-0160 decision/repl-inner-call",
   "VELDO-0160 decision/task-progress-tool",
   "VELDO-0160 decision/frame-tool-names",
+  "VELDO-0160 decision/subagent-calls",
   "VELDO-0160 pool/moved-off",
   "VELDO-0160 pool/added-account",
   "VELDO-0160 pool/one-run-while-unknown",
@@ -171,7 +201,7 @@
  "modules": {
   ".veldo/control_account_limit.py": {
    "at_commit": null,
-   "now": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
+   "now": "3533b9745e2b2c7804f9fadbbe46003f0f6a774843cebd2a1b9e1e70c068a038"
   },
   ".veldo/control_account_pool.py": {
    "at_commit": null,
@@ -183,11 +213,11 @@
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "9a9b490e53e57873ab2aaaa71f548e0c0721ce69dfd2ef3536064e99d494462e",
-   "now": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+   "now": "51c81e967d58d30aa6d40493806b708cc22f7062b7d5fb70ee2c697c80350c88"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
-   "now": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
+   "now": "350d1df57f02c2886339a759946e5f8f3ebcf585fea6cda8341548f25193fd74"
   },
   ".veldo/control_launch.py": {
    "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
@@ -277,6 +307,10 @@
    false
   ],
   [
+   "VELDO-0160 decision/subagent-calls",
+   false
+  ],
+  [
    "VELDO-0160 pool/moved-off",
    false
   ],
@@ -314,7 +348,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 33.934,
+ "seconds": 34.687,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"
