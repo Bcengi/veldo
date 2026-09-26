@@ -61,7 +61,7 @@ def _v62_suite():
             'login/substitution-refused', 'login/fleet-provider',
             'usage/reserved-before-launch', 'usage/allowance-states', 'usage/competing-remainder',
             'usage/cap-stops-worker', 'usage/rate-limit-reset',
-            'settle/once', 'settle/model-usage', 'settle/missing-retained', 'settle/timeout-retained',
+            'settle/once', 'settle/model-usage', 'settle/resumed-delta', 'settle/missing-retained', 'settle/timeout-retained',
             'settle/cancel-retained',
             'attribution/stored-account', 'attribution/measurement-removed', 'attribution/watermark',
             'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -380,9 +380,10 @@ sys.exit(payload.get('code', 0))
         # Every line a fake engine is scripted to print, by adapter, for the format rows.
         fixture_lines = []
 
-        def job(adapter, script, code=0, deadline=40, resume=None):
+        def job(adapter, script, code=0, deadline=40, resume=None, thread=None):
             if adapter.startswith('codex'):
-                script = [x_thread()] + list(script)  # `codex exec --json` opens every stream with its thread.
+                # `codex exec --json` opens every stream with its thread (a resumed one with the thread it resumes).
+                script = [x_thread(thread or (resume if resume else None))] + list(script)
             fixture_lines.extend((adapter, step['line']) for step in script if 'line' in step)
             payload = {'task': 'work the unit', 'script': script, 'code': code}
             if resume:
@@ -513,6 +514,47 @@ sys.exit(payload.get('code', 0))
             return {'tokens': sum(n(e['usage'].get('input_tokens')) + n(e['usage'].get('output_tokens')) for e in done),
                     'messages': len(done)}
 
+        def c_running(lines):
+            """The running total the latest result in these Claude Code lines states (modelUsage over every
+            model), or None without one."""
+            found = None
+            for line in lines:
+                event = json.loads(line)
+                models = event.get('modelUsage') if event.get('type') == 'result' else None
+                if isinstance(models, dict):
+                    total = sum(m.get(k) or 0 for m in models.values() for k in (
+                        'inputTokens', 'outputTokens', 'cacheReadInputTokens', 'cacheCreationInputTokens'))
+                    found = total if found is None else max(found, total)
+            return found
+
+        def own_tokens(dispatch_id):
+            """This suite's reading of what one stored receipt charges: its recomputed total, except that a
+            Claude Code invocation resuming a session (its contract's `resume`) is charged its result's running
+            total less the running total of the latest earlier receipt of that session; with no such earlier
+            total, or a running total below it, only what its own messages streamed."""
+            header, lines = receipt_read(dispatch_id)
+            found = recompute(header['provider'], lines)
+            resume = (((rec(dispatch_id).get('contract') or {}).get('input') or {}).get('payload') or {}).get('resume')
+            if header['provider'] != 'claude_code' or not resume:
+                return found['tokens']
+            order = invocation(dispatch_id).get('accepted_seq')
+            earlier = []
+            for path in receipts.glob('*.jsonl'):
+                raw = path.read_bytes().split(b'\n')
+                other, other_lines = json.loads(raw[0]), [line for line in raw[1:] if line]
+                if other['provider'] != 'claude_code' or other['dispatch_id'] == dispatch_id:
+                    continue
+                if (invocation(other['dispatch_id']).get('accepted_seq') or 0) >= order:
+                    continue
+                if any(json.loads(line).get('session_id') == resume for line in other_lines):
+                    earlier.append((invocation(other['dispatch_id']).get('accepted_seq'), c_running(other_lines)))
+            prior = max(earlier)[1] if earlier else None
+            running = c_running(lines)
+            streamed = recompute('claude_code', [line for line in lines if json.loads(line).get('type') == 'assistant'])
+            if prior is None or running is None or running < prior:
+                return streamed['tokens']
+            return max(streamed['tokens'], running - prior)
+
         def receipts_by_account():
             totals = {}
             for path in sorted(receipts.glob('*.jsonl')):
@@ -522,13 +564,13 @@ sys.exit(payload.get('code', 0))
                 found = recompute(header['provider'], [line for line in raw[1:] if line])
                 total = totals.setdefault(account, {'invocations': 0, 'tokens': 0, 'messages': 0})
                 total['invocations'] += 1
-                total['tokens'] += found['tokens']
+                total['tokens'] += own_tokens(header['dispatch_id'])
                 total['messages'] += found['messages']
             return totals
 
         def receipts_tokens(dispatch_id):
             header, lines = receipt_read(dispatch_id)
-            return recompute(header.get('provider'), lines)['tokens'] if header else None
+            return own_tokens(dispatch_id) if header else None
 
         # Stream lines in the shapes the installed CLIs print (the format rows check each one against
         # the table extracted from the binaries). Claude Code 2.1.281's stream JSON:
@@ -540,21 +582,21 @@ sys.exit(payload.get('code', 0))
                     'cache_creation': {'ephemeral_5m_input_tokens': create, 'ephemeral_1h_input_tokens': 0},
                     'server_tool_use': {'web_search_requests': 0, 'web_fetch_requests': 0}, 'service_tier': 'standard'}
 
-        def c_init():
+        def c_init(session=None):
             return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
                              'cwd': '/work', 'tools': ['Read', 'Edit', 'Bash'],
                              'mcp_servers': [{'name': 'tracker', 'status': 'connected'}], 'model': 'configured-model',
                              'permissionMode': 'default', 'slash_commands': [], 'output_style': 'default', 'skills': [],
-                             'plugins': [], 'uuid': str(uuid.uuid4()), 'session_id': SESSION}}
+                             'plugins': [], 'uuid': str(uuid.uuid4()), 'session_id': session or SESSION}}
 
-        def c_msg(mid, inp, out, read=0, create=0, parent=None):
+        def c_msg(mid, inp, out, read=0, create=0, parent=None, session=None):
             return {'line': {'type': 'assistant', 'parent_tool_use_id': parent, 'uuid': str(uuid.uuid4()),
-                             'session_id': SESSION,
+                             'session_id': session or SESSION,
                              'message': {'id': mid, 'type': 'message', 'role': 'assistant', 'model': 'configured-model',
                                          'content': [], 'stop_reason': None, 'stop_sequence': None,
                                          'usage': c_usage(inp, out, read, create)}}}
 
-        def c_result(inp, out, turns, cache=0, models=None, main=None):
+        def c_result(inp, out, turns, cache=0, models=None, main=None, session=None):
             # `usage` is the main loop's; `modelUsage` per model over every call, the total accounted.
             models = models or {'configured-model': (inp, out, cache, 0)}
             return {'line': {
@@ -565,7 +607,7 @@ sys.exit(payload.get('code', 0))
                                       'cacheCreationInputTokens': c, 'webSearchRequests': 0, 'costUSD': 0,
                                       'contextWindow': 200000, 'maxOutputTokens': 32000}
                                for name, (i, o, r, c) in models.items()},
-                'permission_denials': [], 'uuid': str(uuid.uuid4()), 'session_id': SESSION}}
+                'permission_denials': [], 'uuid': str(uuid.uuid4()), 'session_id': session or SESSION}}
 
         def c_rate(status, reset, kind='five_hour', utilization=None):
             info = {'status': status, 'rateLimitType': kind}
@@ -577,8 +619,8 @@ sys.exit(payload.get('code', 0))
                              'session_id': SESSION}}
 
         # Codex 0.154.0's exec JSON and its usage-limit message.
-        def x_thread():
-            return {'line': {'type': 'thread.started', 'thread_id': 'thread-62-' + os.urandom(4).hex()}}
+        def x_thread(thread=None):
+            return {'line': {'type': 'thread.started', 'thread_id': thread or 'thread-62-' + os.urandom(4).hex()}}
 
         def x_started():
             return {'line': {'type': 'turn.started'}}
@@ -804,11 +846,20 @@ sys.exit(payload.get('code', 0))
         # AC2: every invocation boundary checked and reserved before its launch.
         with region('usage/reserved-before-launch'):
             order = []
-            for account, adapter, script in (('acct-c1', 'claude', [c_result(2, 1, 1)]),
-                                             ('acct-x1', 'codex', [x_started(), x_done(2, 1)])):
+            for account, adapter in (('acct-c1', 'claude'), ('acct-x1', 'codex')):
                 unit = admitted('VELDO-6204-' + adapter, invocations=3)
-                for boundary, resume in (('initial', None), ('retry', None), ('follow_on', 'session-' + adapter)):
-                    launch, record = run(account, unit, adapter, script, resume=resume)
+                first = 'session-62-first-' + os.urandom(4).hex()
+                # The follow-on resumes the initial invocation's session, and prints the running total the
+                # real CLI prints for it: the earlier turns' 3 tokens and its own 3.
+                scripts = {
+                    'claude': {'initial': [c_result(2, 1, 1, session=first)], 'retry': [c_result(2, 1, 1)],
+                               'follow_on': [c_result(4, 2, 1, session=first)]},
+                    'codex': {'initial': [x_started(), x_done(2, 1)], 'retry': [x_started(), x_done(2, 1)],
+                              'follow_on': [x_started(), x_done(2, 1)]}}[adapter]
+                for boundary, resume in (('initial', None), ('retry', None), ('follow_on', first)):
+                    script = scripts[boundary]
+                    launch, record = run(account, unit, adapter, script, resume=resume,
+                                         thread=first if boundary == 'initial' else None)
                     own = engine_markers(launch.dispatch_id)
                     seen = (own[0] if own else {}).get('invocation') or {}
                     call = invocation(launch.dispatch_id)
@@ -823,7 +874,7 @@ sys.exit(payload.get('code', 0))
                           and seen.get('boundary') == boundary and len(own) == 1 and spawned(launch.dispatch_id) == 1
                           and (record or {}).get('state') == 'exited'
                           and None not in (reserved_at, ran_at) and reserved_at < ran_at)
-                launch, record = run(account, unit, adapter, script, resume='session-' + adapter)
+                launch, record = run(account, unit, adapter, script, resume=first)
                 # A process spawned before the check has written its spawn marker within this wait, even
                 # when its engine never ran; an engine started before the check, its own marker.
                 late = spawned(launch.dispatch_id, timeout=3.0) or bool(marker_wait(launch.dispatch_id, timeout=0.5))
@@ -959,7 +1010,8 @@ sys.exit(payload.get('code', 0))
                 again, again_error = attempt(lambda: reservations.report(
                     'redeliver/' + launch.dispatch_id, 'invocation/' + launch.dispatch_id, last.get('sequence'),
                     last.get('usage'), final=last.get('final'), outcome=last.get('outcome'),
-                    receipts=last.get('receipts', ()), now=time.time()))
+                    receipts=last.get('receipts', ()), now=time.time(),
+                    **({'session': last['session']} if 'session' in last else {})))
                 changed, changed_error = attempt(lambda: reservations.report(
                     'conflict/' + launch.dispatch_id, 'invocation/' + launch.dispatch_id, last.get('sequence'),
                     dict(last.get('usage') or {}, tokens=1), final=True, outcome='completed', now=time.time()))
@@ -1021,6 +1073,72 @@ sys.exit(payload.get('code', 0))
             check('settle/model-usage', 'claude: a result without modelUsage settles its messages and leaves its '
                   'tokens unknown [%s, %s]' % (final, meter_error),
                   isinstance(final, dict) and 'tokens' not in final and final.get('messages') == 1)
+
+        # A resumed session's first result carries the earlier turns: only the difference is charged.
+        with region('settle/resumed-delta'):
+            def settle_run(account, unit, script, resume=None, thread=None, adapter='claude'):
+                launch, record = run(account, unit, adapter, script, resume=resume, thread=thread)
+                return launch, invocation(launch.dispatch_id)
+            opus = 'claude-opus-4-7'
+            chain = 'session-62-chain-' + os.urandom(4).hex()
+            unit = admitted('VELDO-6217-chain')
+            calls = []
+            for resume, own, running in ((None, (10, 200, 3000, 400), (10, 200, 3000, 400)),
+                                         (chain, (5, 100, 1500, 0), (15, 300, 4500, 400)),
+                                         (chain, (1, 10, 0, 0), (16, 310, 4500, 400))):
+                mid = 'chain-%d' % len(calls)
+                launch, call = settle_run('acct-c1', unit, [c_init(session=chain),
+                                                            c_msg(mid, *own, session=chain),
+                                                            c_result(*running[:2], 1, models={opus: running},
+                                                                     session=chain)], resume=resume)
+                calls.append((launch, call, sum(own), sum(running)))
+            charged = [c.get('charge', {}).get('tokens') for _, c, _, _ in calls]
+            check('settle/resumed-delta', 'claude: a session and two follow-ons resuming it, each printing the running '
+                  'total the CLI prints, are charged their own share, not the running total [%s charged, %s own, %s '
+                  'running]' % (charged, [o for _, _, o, _ in calls], [r for _, _, _, r in calls]),
+                  charged == [3610, 1605, 11] and all(c.get('state') == 'settled' for _, c, _, _ in calls)
+                  and reservations.balances('unit', unit)['tokens'] == calls[-1][3] == 5226)
+            settled = reservations.session('claude_code', chain) if hasattr(reservations, 'session') else None
+            check('settle/resumed-delta', 'claude: the ledger settles the session with the running total of the last '
+                  'invocation that ran it, read back by session id [%s]' % settled,
+                  (settled or {}).get('tokens') == 5226
+                  and (settled or {}).get('invocation') == 'invocation/' + calls[-1][0].dispatch_id)
+            # An earlier total that is unknown makes this one unknown, never the whole total: a session no
+            # invocation settled, one settled without a running total, and a running total below the settled one.
+            fresh = 'session-62-fresh-' + os.urandom(4).hex()
+            silent = 'session-62-silent-' + os.urandom(4).hex()
+            low = 'session-62-low-' + os.urandom(4).hex()
+            proj = project('p-resume-unknown')
+            settle_run('acct-c1', admitted('VELDO-6217-silent-a', proj), [c_init(session=silent),
+                                                                        c_msg('silent-a', 7, 3, session=silent)])
+            settle_run('acct-c1', admitted('VELDO-6217-low-a', proj), [c_init(session=low),
+                                                                     c_result(10, 200, 1, models={opus: (10, 200, 3000, 400)},
+                                                                              session=low)])
+            for label, session in (('a session no invocation settled', fresh),
+                                   ('a session settled without a running total', silent),
+                                   ('a running total below the settled one', low)):
+                running = (1, 1, 1000, 0) if session == low else (40, 60, 9000, 0)
+                launch, call = settle_run('acct-c1', admitted('VELDO-6217-%s-b' % session[11:16], proj),
+                                          [c_init(session=session), c_msg(session + '-b', 3, 4, session=session),
+                                           c_result(*running[:2], 1, models={opus: running}, session=session)],
+                                          resume=session)
+                check('settle/resumed-delta', 'claude: resuming %s leaves the tokens unknown and keeps what its own '
+                      'messages streamed, never the whole running total [%s, %s, %s]'
+                      % (label, call.get('state'), call.get('unknown'), call.get('charge', {}).get('tokens')),
+                      call.get('state') == 'unknown' and call.get('unknown') == ['tokens']
+                      and call.get('charge', {}).get('tokens') == 7 and call.get('charge', {}).get('messages') == 1)
+            # Codex: the binary does not say whether turn.completed is the thread's total; a resumed thread is
+            # charged the sum its own completed turns report, never less.
+            thread = 'thread-62-chain-' + os.urandom(4).hex()
+            unit = admitted('VELDO-6217-codex')
+            first_launch, first_call = settle_run('acct-x1', unit, [x_started(), x_done(100, 50)], thread=thread,
+                                                  adapter='codex')
+            launch, call = settle_run('acct-x1', unit, [x_started(), x_done(120, 60)], resume=thread, adapter='codex')
+            check('settle/resumed-delta', 'codex: a follow-on resuming a thread is charged what its own completed turn '
+                  'reports, never less [%s, %s]' % (first_call.get('charge', {}).get('tokens'),
+                                                    call.get('charge', {}).get('tokens')),
+                  first_call.get('charge', {}).get('tokens') == 150 and call.get('state') == 'settled'
+                  and call.get('charge', {}).get('tokens') == 180)
 
         with region('settle/missing-retained'):
             for account, adapter, script in (('acct-c1', 'claude', [c_msg('m1', 70, 30)]),

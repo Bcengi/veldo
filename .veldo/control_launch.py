@@ -1031,7 +1031,14 @@ class Metering:
         self.dispatch_id = contract['dispatch_id']
         self.account = contract['reservation']['account']
         self.engine = receiver.login['engine']
-        self.meter = self.engine.Meter(zone=receiver.login.get('zone'))
+        # A follow-on resumes a CLI session whose earlier turns the CLI may carry into this invocation's
+        # report: the meter is given the session's running total the ledger settled last (None when no
+        # invocation settled it, or settled it without one), so only the difference is charged.
+        payload = (contract.get('input') or {}).get('payload')
+        self.resumes = str(payload['resume']) if isinstance(payload, dict) and payload.get('resume') else None
+        settled = reservations.session(self.engine.PROVIDER, self.resumes) if self.resumes else None
+        self.meter = self.engine.Meter(zone=receiver.login.get('zone'), resumed=self.resumes is not None,
+                                       prior=(settled or {}).get('tokens'))
         self.invocation = 'invocation/' + self.dispatch_id
         self.boundary = RTM.boundary(contract)
         self.guard = RTM.InvocationGuard(reservations, self.engine.PROVIDER, launch, self._stop)
@@ -1112,9 +1119,10 @@ class Metering:
             else:
                 outcome = 'completed' if termination.get('returncode') == 0 else 'failed'
         self.sequence += 1
+        session = self.meter.session() if termination is not None else None
         try:
             self.guard.observe('usage/%s/%d' % (self.dispatch_id, self.sequence), self.invocation, self.sequence,
-                               usage, now=now, final=True, outcome=outcome, receipts=self.receipts)
+                               usage, now=now, final=True, outcome=outcome, receipts=self.receipts, session=session)
         except (D.RES.Refused, ACC.Refused, S.StoreRefused) as error:
             self.errors.append(error.code)
         finally:

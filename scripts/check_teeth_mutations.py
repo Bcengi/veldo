@@ -6482,6 +6482,32 @@ def cases():
             "        return self.cumulative() if self.turns and not self.open and not self.incomplete else {}\n",
             "        return self.cumulative()  # defect: an unfinished turn is taken as a conclusive total\n",
             'settle/missing-retained')
+    # A resumed session's first result carries the earlier turns (the third review's finding 2).
+    account('account-claude-resume-whole-total', 'control_engine_claude.py',
+            "        if total is None or not self.resumed:\n            return total\n",
+            "        if True:  # defect: a resumed session is charged its whole running total\n            return total\n",
+            'settle/resumed-delta')
+    account('account-claude-resume-unknown-prior-whole', 'control_engine_claude.py',
+            "        if self.prior is None or total < self.prior:\n            return None\n",
+            "        if self.prior is None or total < self.prior:\n"
+            "            return total  # defect: an unknown earlier total charges the whole running total\n",
+            'settle/resumed-delta')
+    account('account-resume-prior-unread', 'control_launch.py',
+            "                                       prior=(settled or {}).get('tokens'))\n",
+            "                                       prior=None)  # defect: the resumed session's settled total is not read\n",
+            'settle/resumed-delta')
+    account('account-session-unsettled', 'control_launch.py',
+            "        session = self.meter.session() if termination is not None else None\n",
+            "        session = None  # defect: the session's running total is never settled for its next resumption\n",
+            'settle/resumed-delta')
+    account('account-codex-resume-subtracted', 'control_engine_codex.py',
+            "        self.thread = None\n",
+            "        self.thread = None\n"
+            "        self.tokens_less = prior if resumed and prior else 0  # defect: a resumed thread is subtracted\n",
+            'settle/resumed-delta',
+            also=[("    def cumulative(self):\n        return {'tokens': self.tokens, 'messages': self.turns}\n",
+                   "    def cumulative(self):\n"
+                   "        return {'tokens': max(0, self.tokens - self.tokens_less), 'messages': self.turns}\n")])
     account('account-claude-repeat-counted', 'control_engine_claude.py',
             "            if self.messages.get(ident, -1) >= tokens:\n"
             "                return []  # The same message again: nothing new to count.\n",

@@ -26,6 +26,13 @@ events and `error` (with `message`). What is counted is only what the CLI report
 - a turn that started and did not complete (`turn.failed`, or a stream that ended) leaves the totals
   unknown, and their reservation is retained; only an invocation whose every turn completed has a
   conclusive total.
+A RESUMED THREAD IS NOT SUBTRACTED. The binary shows that exec's turn usage comes from the thread token
+usage its event processor receives, a thread total and a last-turn figure, but its strings do not say
+which one `turn.completed` copies (proof/VELDO-0062/cli-formats.json, codex notes). Subtracting the
+resumed thread's settled total would under-count if it is the turn's own; the sum of this invocation's
+own completed turns never counts less than the CLI recorded under either reading. So `resumed` and
+`prior` are accepted for the common interface and not used; `session()` still names the thread and its
+conclusive sum for the ledger.
 
 THE LIMIT SIGNAL. `codex exec --json` prints no rate-limit snapshot (its `rate_limits` exist only in
 an internal event that exec does not emit). What it prints when the subscription's allowance is
@@ -114,9 +121,10 @@ class Meter:
     `clock` and `zone` are the engine's clock and local time zone (its TZ), for the reset its
     usage-limit message states in local time."""
 
-    def __init__(self, clock=time.time, zone=None):
+    def __init__(self, clock=time.time, zone=None, resumed=False, prior=None):
         self.pending = b''
         self.clock, self.zone = clock, zone
+        self.thread = None
         self.open = False
         self.incomplete = False
         self.turns = 0
@@ -144,6 +152,13 @@ class Meter:
     def final(self):
         return self.cumulative() if self.turns and not self.open and not self.incomplete else {}
 
+    def session(self):
+        """{provider, id, tokens}: the thread this invocation ran and its conclusive sum (None when it has
+        none); None when the CLI named no thread."""
+        if self.thread is None:
+            return None
+        return {'provider': PROVIDER, 'id': self.thread, 'tokens': self.final().get('tokens')}
+
     def _limited(self, seen, message):
         """A usage-limit message as the `usage_limit` window; the same statement again adds nothing."""
         if not isinstance(message, str) or LIMIT_MESSAGE not in message:
@@ -164,7 +179,9 @@ class Meter:
         seen = {'line': line, 'receipt': receipt(line)}
         found = []
         kind = event.get('type')
-        if kind == 'turn.started':
+        if kind == 'thread.started' and isinstance(event.get('thread_id'), str) and event['thread_id']:
+            self.thread = event['thread_id']
+        elif kind == 'turn.started':
             if self.open:
                 self.incomplete = True
             self.open = True

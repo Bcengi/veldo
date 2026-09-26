@@ -199,22 +199,49 @@ class Reservations:
                          dict(dispatch=identity(dispatch), invocation=invocation, boundary=boundary,
                               wall_seconds=wall_seconds), now)
 
-    def report(self, command_id, invocation, sequence, usage, *, final=False, outcome=None, receipts=(), now):
+    def report(self, command_id, invocation, sequence, usage, *, final=False, outcome=None, receipts=(), now,
+               session=None):
         """`receipts` are the digests of the CLI's own report lines this report was read from
-        (VELDO-0062): the raw lines stay with the receiver, the ledger carries what checks them."""
+        (VELDO-0062): the raw lines stay with the receiver, the ledger carries what checks them.
+        `session` ({provider, id, tokens}, final reports only) is the CLI session the invocation ran
+        and the CLI's own running token total for it at the end (None when it reported none): a CLI that
+        carries a resumed session's earlier totals into its report is charged only the difference, read
+        back by `session`."""
         receipts = list(receipts)
         if (not isinstance(sequence, int) or isinstance(sequence, bool) or sequence < 1
                 or not isinstance(usage, dict) or set(usage) - set(USAGE)
                 or any(not number(v) for v in usage.values())
                 or outcome not in (None, 'completed', 'failed', 'timeout', 'cancelled', 'not_executed')
                 or not all(isinstance(r, str) and r.startswith(RECEIPT) and len(r) == len(RECEIPT) + 64
-                           for r in receipts)):
+                           for r in receipts)
+                or (session is not None and (not final or not isinstance(session, dict)
+                                             or set(session) != {'provider', 'id', 'tokens'}
+                                             or not all(isinstance(session[k], str) and session[k].strip()
+                                                        for k in ('provider', 'id'))
+                                             or (session['tokens'] is not None and not number(session['tokens']))))):
             raise Refused('invalid_input')
         payload = dict(sequence=sequence, usage=usage, final=final, outcome=outcome)
         if receipts:
             payload['receipts'] = receipts
+        if session is not None:
+            payload['session'] = dict(session)
         return self._run(command_id, 'report', entity('invocation', [self.domain, identity(invocation)]),
                          payload, now)
+
+    def session(self, provider, session_id):
+        """What the ledger settled last for a CLI session (VELDO-0062): {invocation, dispatch, tokens,
+        reported_seq} of the latest final report naming it (tokens None when that report had no running
+        total), or None when no invocation of this domain settled it."""
+        found = None
+        for record in self._records().values():
+            if record.get('type') != 'invocation' or record['context']['domain'] != self.domain:
+                continue
+            session = record.get('session') or {}
+            if session.get('provider') == provider and session.get('id') == session_id and (
+                    found is None or record['reported_seq'] > found['reported_seq']):
+                found = dict(invocation=record['invocation'], dispatch=record['dispatch'], tokens=session['tokens'],
+                             reported_seq=record['reported_seq'])
+        return found
 
     def window(self, command_id, account, unit, remaining, reset_at, watermark, *, now, window_id='subscription'):
         if (unit not in USAGE or (remaining is not None and not number(remaining))
@@ -277,6 +304,8 @@ class Reservations:
             value['reported_seq'] = self.conn.execute('SELECT COALESCE(MAX(seq),0)+1 FROM journal').fetchone()[0]
             value['observed'].update(p['usage'])
             value['outcome'] = p['outcome'] or value['outcome']
+            if 'session' in p:
+                value['session'] = p['session']
             for unit, amount in p['usage'].items():
                 value['charge'][unit] = max(value['charge'].get(unit, 0), amount)
                 if p['final'] and unit in value['unknown']:
