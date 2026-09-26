@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -586 +586 @@
+-        if highest is None or count > highest[0]:
++        if highest is None:  # defect: the task's first count is kept, not its highest

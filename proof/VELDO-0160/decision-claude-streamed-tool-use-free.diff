@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -510 +510 @@
+@@ -531 +531 @@
 -            elif tag not in TOOL_FREE_BLOCKS:
 +            elif False:  # defect: a streamed tool call is no call

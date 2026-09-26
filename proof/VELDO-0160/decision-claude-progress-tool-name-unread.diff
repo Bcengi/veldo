@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -520 +520 @@
+@@ -541 +541 @@
 -            found += _named(event.get('tool_name'), ids[0], redacted)
 +            pass  # defect: the tool a tool_progress is of is not read

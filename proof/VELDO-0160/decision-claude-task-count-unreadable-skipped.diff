@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -582 +582 @@
+-            return [_unreadable(task if isinstance(task, str) else None)]
++            return []  # defect: a count frame that cannot be read is skipped

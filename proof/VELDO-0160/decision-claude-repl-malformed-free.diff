@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -387 +387 @@
+@@ -408 +408 @@
 -        return [_unreadable()]
 +        return []  # defect: a repl_call that cannot be read is no call

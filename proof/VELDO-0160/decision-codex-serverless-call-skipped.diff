@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -217 +217 @@
+@@ -220 +220 @@
 -        return [{'id': item.get('id'), 'server': None, 'tool': None, 'unreadable': True}]
 +        return []  # defect: a tool call whose server cannot be read is no call
