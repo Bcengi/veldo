@@ -13,7 +13,33 @@ Every change is a real signed command from the enrolled owner: {'command': body,
 the body carries the operation, the project name, the principal, a command id, a nonce and the
 store's coordinates, signed under the command namespace with the principal's active verification
 key. The principal must be an active person holding `project_owner` in a membership scope that covers
-the project, and for every operation after activation the owner the record names.
+the project, and for every operation after activation the owner the record names. Activation has one
+more path (VELDO-0149): the owner's settled answer to an activation request (activate_settled, below).
+
+WHERE A PROJECT MAY RUN (VELDO-0149, amending VELDO-0076 AC1). The execution repository is any
+repository adopted in this domain: the repository this service's store is enrolled for (its
+coordinates, the VELDO-0029 binding the authority runs under, which is what VELDO-0076 accepted), or
+any repository the store binds for this domain (control_store.bind_repositories, the record the
+adoption of a repository writes, read back with bound_repository inside the activating transaction as
+well). A repository no binding of this domain records, including one bound only in another domain, is
+refused invalid_input:execution_repository and nothing is written. The observation of every
+activation names the binding that adopted its repository.
+
+THE SETTLED ANSWER (VELDO-0149). activate_settled(request) applies an activation from the owner's
+answer to an activation request, settled by the VELDO-0068 settlement service this service is given
+(same connection, same coordinates). The request is an inbox request whose settlement terms name the
+ACTIVATION_TOUCHPOINT and a target of kind ACTIVATION_TARGET (activation_target: the project's id and
+the digest of the proposal), and the proposal carries the project's name and every ACTIVATION_FIELDS
+value, so the answer binds exactly what the signed command binds: an omitted field refuses
+missing_field:<field>. It applies only when the request is SATISFIED by the settlement of its current
+version, whose typed effect is that settlement's approval of these terms and carries this proposal
+(otherwise unsettled:no_answer, unsettled:not_settled, unsettled:request_closed, stale_answer when
+the only answers name a presentation or request version that has since changed, not_approved:<ruling>,
+invalid_input:settlement), and when the settlement's only principal is the owner the proposal binds
+(not_owner otherwise). Then the owner must be current and every activation check above applies, and
+the activation commits pinned to the request, its terms, the settlement and the owner's membership.
+The record is the signed command's, with the settlement as its provenance; a second application of
+the same settlement refuses already_exists.
 
 THE LIFECYCLE is entity_contract's R05 vocabulary and nothing else: every transition is asked of
 entity_contract.transition with the evidence this service established, so an undeclared edge, a
@@ -22,7 +48,7 @@ terminal source or a missing predicate is refused by name.
   activate  creates the record ACTIVE through the declared DRAFT -> ACTIVE edge (the record never sits
             in DRAFT: Release 1 has no draft authoring). It binds ACTIVATION_FIELDS: the owner (the
             signer), the charter (signed with the command; its digest and charter_revision 1 are
-            kept), the execution repository (this store's one repository), the authority policy
+            kept), the execution repository (a repository adopted in this domain), the authority policy
             (each touchpoint's roles, every role held by a current person member in the project's
             scope: authority_policy_applies) and a finite coordination budget (every required
             unit present, every cap a finite positive number: bounded_coordination_budget). An
@@ -89,6 +115,14 @@ OPERATION = 'project_operation'
 OWNER = 'VELDO-0076 project lifecycle'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
 OPERATIONS = ('activate', 'pause', 'resume', 'cancel', 'complete')
+# VELDO-0149: the two paths an activation comes by, and the activation request a settled answer answers:
+# a VELDO-0068 request of this touchpoint whose terms target the project under this target kind.
+ACTIVATION_PATHS = ('signed_command', 'settled_answer')
+ACTIVATION_TOUCHPOINT = 'decision_disposition'
+ACTIVATION_TARGET = 'project_activation'
+# The VELDO-0068 records a settled answer is read from (control_request_settlement, control_assignment).
+REQUEST_KIND, TERMS_KIND, SETTLEMENT_KIND, EFFECT_KIND = 'assignment', 'settlement_terms', 'request_settlement', 'settlement_effect'
+SETTLED_STATE, APPROVED_EFFECT = 'SATISFIED', 'decision_approved'
 COORDINATES = ('domain_uuid', 'repository_uuid', 'store_uuid')
 OWNER_ROLE = 'project_owner'
 # What activation binds (R04, R05), in the order a missing one is named.
@@ -109,7 +143,8 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 
             'no_such_project': 'invalid_input', 'not_authorized': 'missing_authority', 'not_owner': 'missing_authority',
             'inapplicable_policy': 'missing_authority', 'already_exists': 'stale_subject',
             'stale_subject': 'stale_subject', 'stale_version': 'stale_subject', 'invalid_transition': 'stale_subject',
-            'open_obligation': 'missing_evidence', 'unavailable_service': 'unavailable_service'}
+            'open_obligation': 'missing_evidence', 'unavailable_service': 'unavailable_service',
+            'unsettled': 'missing_evidence', 'stale_answer': 'stale_subject', 'not_approved': 'missing_authority'}
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
 
 
@@ -128,6 +163,19 @@ def _is_str(v):
 def _digest(value):
     return 'sha256:' + hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'),
                                                  ensure_ascii=True).encode()).hexdigest()
+
+
+def activation_proposal(name, fields):
+    """The proposal an activation request carries (VELDO-0149): the project's name and the fields the
+    activation binds, exactly the signed command's."""
+    return dict(fields, project=name)
+
+
+def activation_target(proposal):
+    """The settlement terms target of an activation request for `proposal`: the project and the digest of
+    the proposal, so a settled answer names exactly what it activates."""
+    name = proposal.get('project') if isinstance(proposal, dict) else None
+    return {'kind': ACTIVATION_TARGET, 'ref': project_id(str(name)), 'digest': _digest(proposal)}
 
 
 def charter_problems(charter):
@@ -182,20 +230,28 @@ class Projects:
     `store` and `membership` are the control_store and control_membership modules; `sign(bytes)`
     signs journal records as `journal_signer`. `stop(dispatch_id, reason) -> bool` is the host's
     ordinary stop of running work (runner_stop(runner) in production). `settlement_trust` is the
-    VELDO-0054 settlement verifier the completion's decision read uses (None settles nothing)."""
+    VELDO-0054 settlement verifier the completion's decision read uses (None settles nothing).
+    `settlement` is the VELDO-0068 Settlement service on this same connection and coordinates, whose
+    settled answers activate_settled applies (None: no activation comes from an answer)."""
 
     def __init__(self, store, membership, conn, coordinates, journal_signer, sign, *, stop,
-                 settlement_trust=None, authority_generation=1, clock=time.time):
+                 settlement_trust=None, authority_generation=1, clock=time.time, settlement=None):
         if set(coordinates) != set(COORDINATES) or not all(_is_str(v) for v in coordinates.values()):
             raise Refused('invalid_input', 'coordinates are domain, repository and store identities')
         if not callable(stop):
             raise Refused('invalid_input', 'the host stop policy is required')
+        if settlement is not None and (getattr(settlement, 'conn', None) is not conn
+                                       or getattr(settlement, 'ids', None) != dict(coordinates)):
+            raise Refused('invalid_input', 'the settlement service is this connection\'s, at these coordinates')
         self.store, self.membership, self.AC = store, membership, membership.AC
         self.conn, self.ids = conn, dict(coordinates)
         self.journal_signer, self.sign, self.stop = journal_signer, sign, stop
         self.settlement_trust, self.authority_generation, self.clock = settlement_trust, authority_generation, clock
+        self.settlement = settlement
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
+        # VELDO-0149: activations by the path they came by, accepted and refused, and each refusal's count.
+        self.activations = {path: {'accepted': 0, 'refused': 0, 'refusals': {}} for path in ACTIVATION_PATHS}
         conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction, 'writes': WRITES}
         store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,)}, prefixes={ID_PREFIX: (OPERATION,)},
                              module=__file__)
@@ -207,8 +263,23 @@ class Projects:
         command = command if isinstance(command, dict) else {}
         observation = dict(self.ids, schema=SCHEMA, operation=command.get('operation'), project=None,
                            command_id=command.get('command_id'), accepted_versions={})
+        if command.get('operation') == 'activate':
+            observation.update(path='signed_command', execution_repository=command.get('execution_repository'),
+                               adoption=None)
+        return self._run(lambda: self._apply(packet, command, observation), observation)
+
+    def activate_settled(self, request):
+        """VELDO-0149: activate the project an activation request proposes, from the owner's answer the
+        VELDO-0068 settlement settled (see THE SETTLED ANSWER). Returns what apply returns."""
+        observation = dict(self.ids, schema=SCHEMA, operation='activate', project=None, command_id=None,
+                           accepted_versions={}, path='settled_answer', execution_repository=None, adoption=None,
+                           request_id=request if _is_str(request) else None, settlement_id=None, receipt_id=None,
+                           presentation_id=None)
+        return self._run(lambda: self._activate_settled(request, observation), observation)
+
+    def _run(self, work, observation):
         try:
-            result = self._apply(packet, command, observation)
+            result = work()
         except Refused as exc:
             result = {'ok': False, 'reason': exc.code, 'obligations': exc.obligations}
         except self.store.StoreRefused as exc:
@@ -220,6 +291,11 @@ class Projects:
                            taxonomy=None if result['ok'] else taxonomy(result['reason']),
                            obligations=[dict(o) for o in result.get('obligations') or []])
         self.counts[observation['outcome']] += 1
+        if observation.get('path') in self.activations:
+            tally = self.activations[observation['path']]
+            tally[observation['outcome']] += 1
+            if not result['ok']:
+                tally['refusals'][result['reason']] = tally['refusals'].get(result['reason'], 0) + 1
         self.observations.append(observation)
         return result
 
@@ -254,14 +330,10 @@ class Projects:
         if op == 'activate':
             if current is not None:
                 raise Refused('already_exists', pid)
-            missing = [f for f in ACTIVATION_FIELDS if f not in command]
-            if missing:
-                raise Refused('missing_field:' + missing[0], ', '.join(missing))
-            if command['owner'] != principal:
+            fields = self._bound_fields(command)
+            if fields['owner'] != principal:
                 raise Refused('not_owner', 'the owner activates the project, and is its signer')
-            if command['execution_repository'] != self.ids['repository_uuid']:
-                raise Refused('invalid_input:execution_repository', 'one execution repository: this store\'s')
-            fields = {f: command[f] for f in ACTIVATION_FIELDS}
+            observation['adoption'] = self._adoption(fields['execution_repository'])
             self._activation_evidence(fields, state, name, now)
             params['fields'] = fields
         else:
@@ -301,6 +373,123 @@ class Projects:
                 result['stops'].append({'dispatch': dispatch_id, 'asked': asked})
         observation['stops'] = [dict(s) for s in result['stops']]
         return result
+
+    # VELDO-0149: what activation binds, where it may run, and the settled answer.
+
+    @staticmethod
+    def _bound_fields(source):
+        """Every field activation binds, from a signed command or a settled proposal; the first omitted
+        one refuses by its name."""
+        missing = [f for f in ACTIVATION_FIELDS if f not in source]
+        if missing:
+            raise Refused('missing_field:' + missing[0], ', '.join(missing))
+        return {f: source[f] for f in ACTIVATION_FIELDS}
+
+    def _adopted(self, conn, repository):
+        """Whether `repository` is adopted in this domain: this store's own enrolled repository, or one
+        the store binds for this domain (control_store.bind_repositories), read on `conn`."""
+        if not _is_str(repository):
+            return False
+        return (repository == self.ids['repository_uuid']
+                or self.store.bound_repository(conn, self.ids['domain_uuid'], repository) is not None)
+
+    def _adoption(self, repository):
+        """The binding that adopted `repository` in this domain, for the observation; refused by name when
+        none does."""
+        if not self._adopted(self.conn, repository):
+            raise Refused('invalid_input:execution_repository', 'not adopted in this domain')
+        path = self.store.bound_repository(self.conn, self.ids['domain_uuid'], repository)
+        return {'domain_uuid': self.ids['domain_uuid'], 'repository_uuid': repository, 'path': path,
+                'by': 'enrollment' if repository == self.ids['repository_uuid'] else 'store_binding'}
+
+    def _row(self, eid):
+        if not _is_str(eid):
+            return None
+        row = self.conn.execute('SELECT kind, version, data FROM entities WHERE id=?', (eid,)).fetchone()
+        return None if row is None else {'kind': row[0], 'version': row[1], 'data': json.loads(row[2])}
+
+    def _activate_settled(self, request, observation):
+        if self.settlement is None:
+            raise Refused('unavailable_service', 'no settlement service: no activation comes from an answer')
+        found = self._row(request)
+        data = found['data'] if found is not None and found['kind'] == REQUEST_KIND else None
+        if not isinstance(data, dict) or type(data.get('request_version')) is not int:
+            raise Refused('invalid_input:request', 'no inbox request')
+        subject = data.get('subject') if isinstance(data.get('subject'), dict) else {}
+        terms_row = self._row(subject.get('ref'))
+        terms = terms_row['data'] if terms_row is not None and terms_row['kind'] == TERMS_KIND else None
+        if not isinstance(terms, dict) or _digest(terms) != subject.get('digest'):
+            raise Refused('invalid_input:request', 'the request names no recorded settlement terms')
+        target = terms.get('target') if isinstance(terms.get('target'), dict) else {}
+        if terms.get('touchpoint') != ACTIVATION_TOUCHPOINT or target.get('kind') != ACTIVATION_TARGET:
+            raise Refused('invalid_input:not_an_activation', 'the request does not ask to activate a project')
+        proposal = terms.get('proposal')
+        name = proposal.get('project') if isinstance(proposal, dict) else None
+        if not _is_str(name) or not _NAME.match(name) or target != activation_target(proposal):
+            raise Refused('invalid_input:proposal', 'the target is not the proposal it names')
+        pid = project_id(name)
+        observation['project'] = pid
+        observation['execution_repository'] = proposal.get('execution_repository')
+        fields = self._bound_fields(proposal)
+        # The owner's answer: the settlement of the request's current version, and its typed effect.
+        version = data['request_version']
+        reference = data.get('settlement') if isinstance(data.get('settlement'), dict) else {}
+        settled = self._row(reference.get('settlement_id'))
+        effect = self._row(reference.get('effect_id'))
+        if not (data.get('state') == SETTLED_STATE and reference.get('request_version') == version
+                and settled is not None and settled['kind'] == SETTLEMENT_KIND):
+            raise Refused(self._unsettled(request, data), 'the request version is not settled')
+        s, e = settled['data'], (effect or {}).get('data') or {}
+        observation.update(settlement_id=s.get('settlement_id'), receipt_id=s.get('receipt_id'),
+                           presentation_id=s.get('presentation_id'))
+        if s.get('ruling') != 'approve':
+            raise Refused('not_approved:%s' % s.get('ruling'), 'the owner did not approve the activation')
+        if (s.get('request_id') != request or s.get('request_version') != version
+                or s.get('terms_id') != terms.get('terms_id') or s.get('terms_digest') != _digest(terms)
+                or effect is None or effect['kind'] != EFFECT_KIND or e.get('settlement_id') != s.get('settlement_id')
+                or e.get('type') != APPROVED_EFFECT or e.get('target') != target or e.get('proposal') != proposal):
+            raise Refused('invalid_input:settlement', 'the settlement is not the approval of these terms')
+        if s.get('principals') != [fields['owner']]:
+            raise Refused('not_owner', 'the settled answer is not the owner\'s the activation binds')
+        state = self.membership.authority_state(self.store, self.conn)
+        now = self.clock()
+        owner_problems = self._owner_problems(state, fields['owner'], name, now)
+        if owner_problems:
+            raise Refused(owner_problems[0], '; '.join(owner_problems))
+        if state['entities'].get(pid) is not None:
+            raise Refused('already_exists', pid)
+        observation['adoption'] = self._adoption(fields['execution_repository'])
+        self._activation_evidence(fields, state, name, now)
+        command_id = 'project-activation:%s' % s['settlement_id']
+        observation['command_id'] = command_id
+        owner = fields['owner']
+        versions = {pid: 0, owner: state['entities'].get(owner, {}).get('version', 0), request: found['version'],
+                    subject['ref']: terms_row['version'], reference['settlement_id']: settled['version'],
+                    reference['effect_id']: effect['version']}
+        observation['accepted_versions'] = versions
+        params = dict(action='activate', project_id=pid, name=name, principal=owner, command_id=command_id, at=now,
+                      fields=fields, settlement={'request_id': request, 'request_version': version,
+                                                 'settlement_id': s['settlement_id'], 'receipt_id': s.get('receipt_id'),
+                                                 'effect_id': reference['effect_id'],
+                                                 'presentation_id': s.get('presentation_id')})
+        stored = dict(command_id=command_id, principal=self.journal_signer, operation=OPERATION, parameters=params,
+                      expected_versions=versions, artifact_digests=[], nonce=command_id)
+        receipt = self.store.execute(self.conn, stored, self.journal_signer, self.sign, self.authority_generation)
+        return {'ok': True, 'reason': 'activate', 'project_id': pid, 'project': read(self.store, self.conn, name),
+                'receipt': receipt, 'stops': [], 'obligations': []}
+
+    def _unsettled(self, request, data):
+        """Why a request has no settlement to apply: closed some other way, answered only to a presentation or
+        request version that has since changed, answered at its current presentation but not yet settled,
+        or not answered at all."""
+        if data.get('state') not in self.settlement.I.PENDING:
+            return 'unsettled:request_closed'
+        version = data['request_version']
+        current = (self.settlement.presenter.head(request) or {}).get('current')
+        answers = [a for v in range(1, version + 1) for _e, _v, _c, a in self.settlement.answers(request, v)]
+        if any(a.get('request_version') == version and a.get('presentation_id') == current for a in answers):
+            return 'unsettled:not_settled'
+        return 'stale_answer' if answers else 'unsettled:no_answer'
 
     def _owner_problems(self, state, principal, name, now):
         entry = self.AC.membership_entry(state['membership'], principal)
@@ -358,12 +547,19 @@ class Projects:
             if current is not None:
                 raise Refused('already_exists', pid)
             fields = params['fields']
+            if not self._adopted(conn, fields['execution_repository']):
+                raise Refused('invalid_input:execution_repository', 'not adopted in this domain')
             evidence = {p: True for p in ACTIVATION_PREDICATES}
             self._edge('DRAFT', 'ACTIVE', evidence)
+            provenance = {'source': 'activate', 'created_by': params['principal'], 'created_at': now}
+            settled = params.get('settlement')
+            if settled is not None:
+                # VELDO-0149: activated from the owner's settled answer, which the record names.
+                provenance.update(source='settled_answer', **settled)
+                entry['settlement_id'] = settled['settlement_id']
             data = dict(schema=SCHEMA, name=params['name'], state='ACTIVE', domain_uuid=self.ids['domain_uuid'],
                         repository_uuid=self.ids['repository_uuid'], charter_digest=_digest(fields['charter']),
-                        charter_revision=1, provenance={'source': 'activate', 'created_by': params['principal'],
-                                                        'created_at': now},
+                        charter_revision=1, provenance=provenance,
                         history=[dict(entry, source='DRAFT', target='ACTIVE')], stopping=[], **fields)
             return {pid: {'kind': KIND, 'data': data}}
         if current is None or current.get('kind') != KIND:
@@ -472,9 +668,11 @@ class Projects:
         return found
 
     def metrics(self):
-        """Accepted and refused commands, and the projects by lifecycle state (the pending work)."""
+        """Accepted and refused commands, the projects by lifecycle state (the pending work), and the
+        activations by the path they came by, accepted and refused, with each refusal's count (VELDO-0149)."""
         states = {}
         for _eid, data in self._kind(self.conn, KIND):
             if isinstance(data, dict):
                 states[str(data.get('state'))] = states.get(str(data.get('state')), 0) + 1
-        return dict(self.counts, projects=states)
+        return dict(self.counts, projects=states,
+                    activations={path: dict(t, refusals=dict(t['refusals'])) for path, t in self.activations.items()})
