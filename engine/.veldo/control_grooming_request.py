@@ -39,13 +39,21 @@ written by the project's owner or its project manager, and nothing about the ite
 Anything else is presented: an objective accepted by an answer, a question, another priority, another
 author, a prioritization of units appended after admission (his message predates them), and an item any
 of whose requests was opened to the owner (`presented`), since his answer or his pending decision governs
-it from then on, whatever a later revision proposes. The reasons are named.
+it from then on, whatever a later revision proposes. His message admits once per message
+(`message_used`): as soon as a request of any item whose objective that same message accepted was opened
+to him (and so presented or ruled on), it admits no later item from that message, so work he rejected is
+never re-cut into a new feature under the same objective and admitted by his original message
+(`message_history`). The reasons are named.
 
 HISTORY (`history`). Every decision request grooming opens for an admission request has its own alias
 (`alias`), so what the owner was asked, and what he ruled, is read from the store and not from the
 current revision. A settled ruling other than an approval that is not yet applied to the item (`held`)
 holds the item: no later revision is proposed or presented over it, so his reject or return is applied
-as he gave it. A settled approval of an earlier revision authorizes nothing later (its digest binds it).
+as he gave it. The backlog applies it without the live binding and expiry checks, since it authorizes
+nothing; otherwise a later append or a changed specification file would hold the item for good. A
+settled approval of an earlier revision authorizes nothing later (its digest binds it). The message-wide
+history reads only records the project manager cannot write: grooming's admission requests, the
+backlog's items, the objectives service's acceptances and the requests grooming opened.
 
 STALE BINDING (`live_problems`). A request revision binds what the store says now: the item's class,
 scope and decomposition, the objective's accepted outcome and acceptance, the project's policy and
@@ -76,6 +84,8 @@ RELEASE_AUTHORITY = 'land'
 EXPIRY_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 ADMISSION, PRIORITY = 'admission', 'priority'
 OWN_MESSAGE = 'own_message'
+MESSAGE_USED = 'message_used'
+ITEM_KIND, OBJECTIVE_KIND = 'backlog_item', 'objective'
 
 
 def _organ(name):
@@ -146,6 +156,38 @@ def history(conn, repository, rid, applied):
 def held(unapplied):
     """The settled rulings in `unapplied` that hold the item until they are applied: all but approvals."""
     return [u for u in unapplied if u['ruling'] != 'approve']
+
+
+def message_of(objective):
+    """What identifies the owner's own message that accepted `objective` (VELDO-0150): its intake command
+    and its intake source, as the objectives service recorded them. () for an objective accepted otherwise."""
+    acceptance = objective.get('acceptance') if isinstance(objective.get('acceptance'), dict) else {}
+    if acceptance.get('path') != OWN_MESSAGE:
+        return ()
+    return tuple('%s:%s' % (k, acceptance[k]) for k in ('intake_command', 'intake_source') if _is_str(acceptance.get(k)))
+
+
+def _data(conn, eid, kind):
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', (eid,)).fetchone() if _is_str(eid) else None
+    return json.loads(row[1]) if row is not None and row[0] == kind else None
+
+
+def message_history(conn, repository, message, exclude=None):
+    """The id of every request grooming opened to the owner for an admission request other than `exclude`
+    whose item's objective was accepted by the same message (`message`, message_of's answer), read on
+    `conn` from grooming's admission requests, the backlog's items and the objectives' acceptances."""
+    if not message:
+        return []
+    opened = []
+    for (text,) in conn.execute('SELECT data FROM entities WHERE kind=? ORDER BY id', (KIND,)):
+        record = json.loads(text)
+        if record.get('repository_uuid') != repository or record.get('uuid') == exclude:
+            continue
+        item = _data(conn, record.get('item'), ITEM_KIND) or {}
+        objective = _data(conn, item.get('objective_uuid'), OBJECTIVE_KIND) or {}
+        if set(message_of(objective)) & set(message):
+            opened += history(conn, repository, record['uuid'], item.get('applied'))[0]
+    return opened
 
 
 # Building the request.
@@ -352,10 +394,11 @@ def live_problems(fields, item, objective, project):
     return ['stale_subject:' + f for f in STORE_FIELDS if held[f] != now[f]]
 
 
-def route(fields, touchpoints, objective, owner, managers, author, opened):
+def route(fields, touchpoints, objective, owner, managers, author, opened, used=()):
     """(path, reasons): OWN_MESSAGE when the owner's own message admits this revision at the default
     priority, else 'present' with every reason it is presented. `opened` is history's first answer: the
-    requests grooming ever opened to the owner for this item."""
+    requests grooming ever opened to the owner for this item; `used` is message_history's: those opened
+    for any other item from the same message."""
     reasons = []
     acceptance = objective.get('acceptance') if isinstance(objective.get('acceptance'), dict) else {}
     if acceptance.get('path') != OWN_MESSAGE or objective.get('accepted_revision') is None:
@@ -370,4 +413,6 @@ def route(fields, touchpoints, objective, owner, managers, author, opened):
         reasons.append('author')
     if opened:
         reasons.append(PRESENTED)
+    if used:
+        reasons.append(MESSAGE_USED)
     return (OWN_MESSAGE if not reasons else 'present'), reasons

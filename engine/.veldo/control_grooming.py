@@ -11,8 +11,9 @@ of backlog items: this service asks it to admit and prioritize, and it judges th
                  the exclusions, the priority (the default when none is named), the coordination ceiling,
                  the expiry, the alternatives and the questions. The other fields are read from the item,
                  its objective, its project and the specification files. An AWAITING_GROOMING item is
-                 asked for admission and priority; a PRIORITIZED or ACTIVE item with units appended since
-                 its prioritization is asked for priority only. A proposal whose material equals the
+                 asked for admission and priority; an ADMITTED item (its priority rejected while the
+                 admission was pending) and a PRIORITIZED or ACTIVE item with units appended since its
+                 prioritization are asked for priority only. A proposal whose material equals the
                  current revision's, from its author, writes nothing; any change is a new revision. A
                  request still pending when a new revision is recorded is revised at once, so its new
                  presentation tells the owner the earlier one is superseded and an answer to that one is
@@ -29,11 +30,15 @@ of backlog items: this service asks it to admit and prioritize, and it judges th
                  pending from an earlier revision is revised, so its new presentation visibly supersedes the
                  one the owner saw before and an answer to that one is refused as stale. Once any request of
                  the item was opened to the owner, his message never admits it again (the route's
-                 `presented`), and nothing is presented over a settled ruling not yet applied.
+                 `presented`); once one was opened for any item from the same message, that message admits
+                 no later item (`message_used`); and nothing is presented over a settled ruling not yet
+                 applied.
   apply_rulings  The owner's settled answers of the current revision are applied through the backlog, the
                  admission first: approve admits, reject rejects, return sends the item back to PREPARED, and
                  a priority request still pending after a reject or return is canceled. A priority answered
-                 before the admission waits; nothing runs until both are applied.
+                 before the admission waits; nothing runs until both are applied. A reject or return is
+                 applied as he gave it even when the item or a specification changed since (the backlog
+                 checks freshness for approvals only), so it never holds the item for good.
 
 The owner's later reprioritization (the backlog's reprioritize) and withdrawal (its cancel) are his own
 signed backlog commands.
@@ -263,6 +268,9 @@ class Grooming:
         units appended to prioritized work."""
         if data.get('state') == 'AWAITING_GROOMING':
             return [GR.ADMISSION, GR.PRIORITY]
+        if data.get('state') == 'ADMITTED':
+            # Admitted, its priority rejected: it is groomed for its priority again.
+            return [GR.PRIORITY]
         if data.get('state') in self.CB.EXECUTABLE_STATES:
             planned = [u['unit'] for u in data.get('decomposition') or []
                        if (_row(self.conn, u.get('unit')) or {}).get('data', {}).get('state') == 'PLANNED']
@@ -305,8 +313,9 @@ class Grooming:
         OB = self.CB._objectives()
         managers = OB.project_managers(self.store, self.conn, project.get('name'))
         opened, _unapplied = GR.history(self.conn, self.ids['repository_uuid'], record['uuid'], item.get('applied'))
+        used = GR.message_history(self.conn, self.ids['repository_uuid'], GR.message_of(objective), exclude=record['uuid'])
         return GR.route(record['content'], record['touchpoints'], objective, project.get('owner'), managers,
-                        record['author'], opened)
+                        record['author'], opened, used)
 
     def groom(self, iid):
         try:

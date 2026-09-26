@@ -21,9 +21,12 @@ feature and is never written here), and it moves along entity_contract's R11 voc
                     revision (control_grooming_request.target, its complete material by digest), the
                     request showed its owner exactly that revision's brief, the revision still binds the
                     live item, objective, project and specification files (live_problems), and the
-                    request's owner and the settlement's only principal are the project's owner. An item
-                    grooming recorded no request for is refused missing_evidence:admission_request: there is
-                    no thinner brief that admits. Approve: AWAITING_GROOMING -> ADMITTED
+                    request's owner and the settlement's only principal are the project's owner. Those last
+                    two freshness checks are an approval's: a settled reject or return of that revision
+                    authorizes nothing, so it is applied as the owner gave it even after the item or a
+                    specification file changed or the request lapsed (_fresh). An item grooming recorded no
+                    request for is refused missing_evidence:admission_request: there is no thinner brief
+                    that admits. Approve: AWAITING_GROOMING -> ADMITTED
                     (admission_authority_receipt) and an accepted `admission:<unit>` record per unit;
                     reject: REJECTED, its units CANCELED; return_for_elaboration: back to PREPARED.
   admit_message     VELDO-0079: the owner's own message that proposed the item's objective (VELDO-0150's
@@ -33,7 +36,8 @@ feature and is never written here), and it moves along entity_contract's R11 voc
                     own_message (control_grooming_request.route: no question, the default priority, written
                     by the project's owner or its project manager, and no request of the item ever opened
                     to the owner, read from the store by control_grooming_request.history, so a later
-                    revision never undoes what he was asked or ruled). AWAITING_GROOMING -> ADMITTED ->
+                    revision never undoes what he was asked or ruled; nor of any other item from the same
+                    message, message_history, so his message admits once). AWAITING_GROOMING -> ADMITTED ->
                     PRIORITIZED in one transaction, every unit READY, the admission and priority records
                     naming the objective's intake command as their evidence. Any other route refuses
                     not_approved:<reason> and writes nothing.
@@ -454,6 +458,9 @@ class Backlog:
             if op == 'admit_message':
                 # The requests of its history, which the route reads.
                 pinned += GR.history(self.conn, self.ids['repository_uuid'], GR.request_id(iid), found.get('applied'))[0]
+                objective = (_row(self.conn, found.get('objective_uuid')) or {}).get('data') or {}
+                pinned += GR.message_history(self.conn, self.ids['repository_uuid'], GR.message_of(objective),
+                                             exclude=GR.request_id(iid))
         pinned.append('project:' + project)
         versions = {eid: (_row(self.conn, eid) or {}).get('version', 0)
                     for eid in dict.fromkeys(written + [p for p in pinned if _is_str(p)] + [principal])}
@@ -649,17 +656,30 @@ class Backlog:
     def _groomed(self, conn, data, project, touchpoint):
         """VELDO-0079: (target, brief, request) of the item's admission request for `touchpoint`. Every admission
         and prioritization answers grooming's request: an item grooming recorded none for is refused by name.
-        The request's current revision must still bind the live records."""
+        Whether its current revision still binds the live records is _fresh's."""
         row = _row(conn, GR.request_id(data['uuid']))
         request = row['data'] if row is not None and row['kind'] == GR.KIND and isinstance(row['data'], dict) else None
         if request is None:
             raise Refused('missing_evidence:admission_request', 'grooming recorded no admission request for the item')
         if request.get('item') != data['uuid'] or touchpoint not in (request.get('touchpoints') or []):
             raise Refused('missing_evidence:admission_request', 'the item\'s admission request does not ask this')
-        problems = self._request_problems(conn, request, data, project)
-        if problems:
-            raise Refused(problems[0], '; '.join(problems))
         return GR.target(request), GR.brief(request, touchpoint), request
+
+    def _fresh(self, conn, command, data, project, touchpoint, target, brief, request):
+        """An approval needs the request's current revision to bind the live item, objective, project and
+        specification files, unlapsed: otherwise the first problem is refused by name. The owner's settled
+        reject or return of exactly that revision authorizes nothing, so it is applied as he gave it
+        whatever changed since; judging it fresh would leave it unappliable and the item held for good
+        (control_grooming_request.held)."""
+        problems = self._request_problems(conn, request, data, project)
+        if not problems:
+            return
+        try:
+            ruling = self._settled(conn, command, touchpoint, target, brief, project, data['applied'])[0]
+        except Refused:
+            ruling = None
+        if ruling in (None, 'approve'):
+            raise Refused(problems[0], '; '.join(problems))
 
     def _request_problems(self, conn, request, data, project):
         """Why the admission request's current revision no longer binds the live item, objective, project
@@ -680,6 +700,7 @@ class Backlog:
             raise Refused('invalid_transition:%s->ADMITTED' % data['state'], 'an item is admitted from grooming')
         self._unapplied(command, data['applied'])
         target, brief, request = self._groomed(conn, data, project, ADMISSION)
+        self._fresh(conn, command, data, project, ADMISSION, target, brief, request)
         ruling, record, _effect = self._settled(conn, command, ADMISSION, target, brief, project, data['applied'])
         if ruling not in ADMISSION_RULINGS:
             raise Refused('not_approved:%s' % ruling, 'the owner did not rule on the admission')
@@ -716,6 +737,7 @@ class Backlog:
             raise Refused('nothing_to_prioritize', 'every unit of this revision is prioritized already')
         self._unapplied(command, data['applied'])
         target, brief, request = self._groomed(conn, data, project, PRIORITY)
+        self._fresh(conn, command, data, project, PRIORITY, target, brief, request)
         ruling, record, _effect = self._settled(conn, command, PRIORITY, target, brief, project, data['applied'])
         data['applied'] = list(data['applied']) + [command['request']]
         history = dict(entry, source=source, target=source, revision=data['decomposition_revision'],
@@ -771,8 +793,10 @@ class Backlog:
         # The item's history, not its current revision alone: once any request was opened to the owner, his
         # answer or his pending decision governs it, and his message never admits it.
         opened, _unapplied = GR.history(conn, self.ids['repository_uuid'], request['uuid'], data['applied'])
+        # And the history of every other item from the same message: his message admits once.
+        spent = GR.message_history(conn, self.ids['repository_uuid'], GR.message_of(objective), exclude=request['uuid'])
         path, reasons = GR.route(request['content'], request.get('touchpoints') or [], objective, owner, managers,
-                                 request.get('author'), opened)
+                                 request.get('author'), opened, spent)
         if path != GR.OWN_MESSAGE:
             raise Refused('not_approved:' + reasons[0], 'his message does not admit this: ' + ', '.join(reasons))
         acceptance = objective['acceptance']
