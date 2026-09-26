@@ -1,0 +1,96 @@
+{
+ "by_assertion": true,
+ "commit": "b43de71400172deae95ec1d7030f86383dcd0929",
+ "details": [
+  "VELDO-0079 detail: material/ungroomed-thin-brief: the backlog refuses it by name; nothing is written: the journal and the item are unchanged; no unit is admitted or executable"
+ ],
+ "failed_rows": [
+  "VELDO-0079 material/ungroomed-thin-brief"
+ ],
+ "modules": {
+  ".veldo/control_backlog.py": {
+   "at_commit": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec",
+   "now": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+  },
+  ".veldo/control_grooming.py": {
+   "at_commit": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044",
+   "now": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
+  },
+  ".veldo/control_grooming_request.py": {
+   "at_commit": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f",
+   "now": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9",
+   "now": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0079 install/assets",
+   true
+  ],
+  [
+   "VELDO-0079 route/own-message-default",
+   true
+  ],
+  [
+   "VELDO-0079 route/ask-when-needed",
+   true
+  ],
+  [
+   "VELDO-0079 material/telegram-brief",
+   true
+  ],
+  [
+   "VELDO-0079 material/ungroomed-thin-brief",
+   false
+  ],
+  [
+   "VELDO-0079 material/bound-fields",
+   true
+  ],
+  [
+   "VELDO-0079 material/changed-decomposition",
+   true
+  ],
+  [
+   "VELDO-0079 authority/owner-choices",
+   true
+  ],
+  [
+   "VELDO-0079 authority/pm-self-admission",
+   true
+  ],
+  [
+   "VELDO-0079 authority/separate-predicates",
+   true
+  ],
+  [
+   "VELDO-0079 authority/questions-unresolved",
+   true
+  ],
+  [
+   "VELDO-0079 authority/reprioritize-withdraw",
+   true
+  ],
+  [
+   "VELDO-0079 ruling/parameter-binding",
+   true
+  ],
+  [
+   "VELDO-0079 ruling/duplicate",
+   true
+  ],
+  [
+   "VELDO-0079 observability",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 7.094,
+ "spec_id": "VELDO-0079",
+ "suite": "scripts/suites/76_veldo_0079_grooming.py",
+ "tree": "git archive b43de71400172deae95ec1d7030f86383dcd0929, unchanged; the current suite file run against it"
+}

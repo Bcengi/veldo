@@ -23,6 +23,10 @@
     true
    ],
    [
+    "VELDO-0079 material/ungroomed-thin-brief",
+    true
+   ],
+   [
     "VELDO-0079 material/bound-fields",
     true
    ],
@@ -63,7 +67,7 @@
     true
    ]
   ],
-  "seconds": 6.884
+  "seconds": 7.252
  },
  "controls_green": true,
  "mutants": [
@@ -102,6 +106,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -142,7 +150,7 @@
      true
     ]
    ],
-   "seconds": 6.875,
+   "seconds": 7.117,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -155,7 +163,7 @@
     "VELDO-0079 material/changed-decomposition"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "0175b87ec7b3cdd5431ba5019f3c4a6c8c550d891f84f822aed66899a4bcc213",
+   "mutant_sha256": "b68cfd11a1d9c7d46195c89962a63a280dfaf320219d926bbcd8b48c384838ee",
    "name": "grooming-live-binding-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -180,6 +188,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -220,8 +232,8 @@
      true
     ]
    ],
-   "seconds": 6.92,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.233,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -259,6 +271,10 @@
      false
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -299,7 +315,7 @@
      true
     ]
    ],
-   "seconds": 6.788,
+   "seconds": 6.983,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -338,6 +354,10 @@
      false
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -378,13 +398,14 @@
      true
     ]
    ],
-   "seconds": 6.767,
+   "seconds": 7.189,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0079 detail: material/telegram-brief: an answer to the item's thinner brief does not admit groomed work; an answer to other text beside the request's digest does not admit it",
+    "VELDO-0079 detail: material/changed-decomposition: the regroomed decomposition, answered again, prioritizes both",
     "VELDO-0079 detail: authority/owner-choices: each choice moves the item where it says; accepting both runs the work; a reject or return cancels the priority request still waiting",
     "VELDO-0079 detail: authority/separate-predicates: his admission answer settles and is applied; admitted without priority, nothing runs; the admission was applied once",
     "VELDO-0079 detail: authority/questions-unresolved: his answer to the questions admits it, and then the priority applies; the admission names the questions his answer resolved; the units run now",
@@ -394,6 +415,7 @@
    "diff": "proof/VELDO-0079/grooming-thin-admission-accepted.diff",
    "failed_rows": [
     "VELDO-0079 material/telegram-brief",
+    "VELDO-0079 material/changed-decomposition",
     "VELDO-0079 authority/owner-choices",
     "VELDO-0079 authority/separate-predicates",
     "VELDO-0079 authority/questions-unresolved",
@@ -401,7 +423,7 @@
     "VELDO-0079 ruling/duplicate"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "d5d40d6a3bbedaac0f10eb97bc60105020e97ddef8905ba07e3e23d57bcc0bb4",
+   "mutant_sha256": "a5c201b50c2920e44dc199de1f793578fd8760b40d3437ccb870c1985a1e4555",
    "name": "grooming-thin-admission-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -426,12 +448,16 @@
      false
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
     [
      "VELDO-0079 material/changed-decomposition",
-     true
+     false
     ],
     [
      "VELDO-0079 authority/owner-choices",
@@ -466,8 +492,8 @@
      true
     ]
    ],
-   "seconds": 6.665,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.08,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -479,7 +505,7 @@
     "VELDO-0079 material/telegram-brief"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "11561c2f9011f9662a7d3a9b888bb8784782ac9449ca1b786c0d233c48f0d9af",
+   "mutant_sha256": "fd3ee644a966833fbc4ee6576ef0c53602c131849491c1fa12bde3aceda2cc67",
    "name": "grooming-brief-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -504,6 +530,10 @@
      false
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -544,8 +574,90 @@
      true
     ]
    ],
-   "seconds": 6.781,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.359,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: material/ungroomed-thin-brief: the backlog refuses it by name; nothing is written: the journal and the item are unchanged; no unit is admitted or executable"
+   ],
+   "diff": "proof/VELDO-0079/grooming-thin-path-reopened.diff",
+   "failed_rows": [
+    "VELDO-0079 material/ungroomed-thin-brief"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "ab2959f18ab3cfaa19099523270749e9797ed5ec7342a68fba9641fd1cbe7197",
+   "name": "grooming-thin-path-reopened",
+   "named_row_red": true,
+   "named_rows": [
+    "material/ungroomed-thin-brief"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     false
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 7.368,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -557,7 +669,7 @@
     "VELDO-0079 material/bound-fields"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "a7e536bc5e3bb69da289cb5b95e3e910726b84b4ec8f0921ee509c1ad1a50347",
+   "mutant_sha256": "350618cab331d04c7611b2e43ce53f7f05f9bf719583265ed8e7906adff1c32e",
    "name": "grooming-specification-files-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -579,6 +691,10 @@
     ],
     [
      "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
      true
     ],
     [
@@ -622,8 +738,8 @@
      true
     ]
    ],
-   "seconds": 6.985,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.076,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -660,6 +776,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      false
     ],
@@ -700,7 +820,7 @@
      true
     ]
    ],
-   "seconds": 7.244,
+   "seconds": 7.408,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   {
@@ -754,6 +874,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      false
     ],
@@ -794,7 +918,7 @@
      false
     ]
    ],
-   "seconds": 3.705,
+   "seconds": 3.892,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -832,6 +956,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -872,7 +1000,7 @@
      true
     ]
    ],
-   "seconds": 6.737,
+   "seconds": 7.012,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -910,6 +1038,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -950,7 +1082,7 @@
      true
     ]
    ],
-   "seconds": 6.699,
+   "seconds": 7.156,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -988,6 +1120,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1028,7 +1164,7 @@
      true
     ]
    ],
-   "seconds": 6.685,
+   "seconds": 6.91,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -1043,7 +1179,7 @@
     "VELDO-0079 authority/pm-self-admission"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "68cec024b74a2678684d02633d83a0617671bd424d04dc134ff96c2c53147129",
+   "mutant_sha256": "6b07e57901d49f789fd438ee9a18ede2ab237fb57a4072a42c9b942ce3b00ed8",
    "name": "grooming-message-admission-skips-route",
    "named_row_red": true,
    "named_rows": [
@@ -1069,6 +1205,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1109,8 +1249,8 @@
      true
     ]
    ],
-   "seconds": 6.99,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.216,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -1157,6 +1297,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1197,7 +1341,7 @@
      false
     ]
    ],
-   "seconds": 7.36,
+   "seconds": 7.51,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -1210,7 +1354,7 @@
     "VELDO-0079 authority/separate-predicates"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "2238eba7af2476491c1ff41fe4252a4e9c59db3ed7fd934f77fb0f8ae642ceee",
+   "mutant_sha256": "9d347e48f56eb5410fad3cd077c0675675193ff6c2b28e1a290f5ba0a5e4aa68",
    "name": "grooming-message-admission-priority-role",
    "named_row_red": true,
    "named_rows": [
@@ -1235,6 +1379,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1275,8 +1423,8 @@
      true
     ]
    ],
-   "seconds": 6.78,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.065,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -1288,7 +1436,7 @@
     "VELDO-0079 authority/questions-unresolved"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "d472d38c30068679bdc8b018a2e1c43b023f24cdf8c853458bb5ebf080232f82",
+   "mutant_sha256": "d4d5bd5c4e4a1e21d5b3e75b139a840bed74a4503f832b01f58ad6318ec9de07",
    "name": "grooming-admission-questions-unrecorded",
    "named_row_red": true,
    "named_rows": [
@@ -1313,6 +1461,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1353,8 +1505,8 @@
      true
     ]
    ],
-   "seconds": 6.792,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.057,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -1391,6 +1543,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1431,7 +1587,7 @@
      true
     ]
    ],
-   "seconds": 6.902,
+   "seconds": 7.127,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   {
@@ -1469,6 +1625,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1509,7 +1669,7 @@
      true
     ]
    ],
-   "seconds": 6.779,
+   "seconds": 7.219,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   {
@@ -1522,7 +1682,7 @@
     "VELDO-0079 authority/reprioritize-withdraw"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "9ff037741456135f87cd39c95cae1870331d81bfa031e3067c6bd3f8a8d962f7",
+   "mutant_sha256": "2253b0efd939d435994857e4da517c10ec9b32b00a1556baea363b3b88322397",
    "name": "grooming-reprioritize-unapplied",
    "named_row_red": true,
    "named_rows": [
@@ -1547,6 +1707,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1587,8 +1751,8 @@
      true
     ]
    ],
-   "seconds": 6.846,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.133,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -1600,7 +1764,7 @@
     "VELDO-0079 ruling/parameter-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "002f4f3dc6f6d8dbe1211ad328fd8e7de3fa2d5f16c3a9c7af9518e4e6320290",
+   "mutant_sha256": "34c3dcb5f2adcc70c9202775e774e0535ab2f0dc3ca103c210915b519d7287a2",
    "name": "grooming-ruling-digest-unvalidated",
    "named_row_red": true,
    "named_rows": [
@@ -1625,6 +1789,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1665,8 +1833,8 @@
      true
     ]
    ],
-   "seconds": 6.924,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.195,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
    "by_assertion": true,
@@ -1703,6 +1871,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1743,7 +1915,7 @@
      true
     ]
    ],
-   "seconds": 6.916,
+   "seconds": 7.252,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   },
   {
@@ -1781,6 +1953,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -1821,7 +1997,7 @@
      true
     ]
    ],
-   "seconds": 6.856,
+   "seconds": 7.15,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   },
   {
@@ -1856,6 +2032,10 @@
     ],
     [
      "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
      true
     ],
     [
@@ -1899,7 +2079,7 @@
      false
     ]
    ],
-   "seconds": 6.984,
+   "seconds": 7.166,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   }
  ],
@@ -1938,6 +2118,9 @@
    "grooming-thin-admission-accepted",
    "grooming-brief-unchecked"
   ],
+  "material/ungroomed-thin-brief": [
+   "grooming-thin-path-reopened"
+  ],
   "observability": [
    "grooming-refusal-unclassified"
   ],
@@ -1957,7 +2140,7 @@
  },
  "noop": {
   "control_backlog.py": {
-   "copy_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec",
+   "copy_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1976,6 +2159,10 @@
     ],
     [
      "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
      true
     ],
     [
@@ -2019,8 +2206,8 @@
      true
     ]
    ],
-   "seconds": 6.86,
-   "source_sha256": "4160e6898191ecbb1f7bcc5ff61663cdafcc71008a9f728135243951d8c072ec"
+   "seconds": 7.169,
+   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   "control_grooming.py": {
    "copy_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044",
@@ -2045,6 +2232,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -2085,7 +2276,7 @@
      true
     ]
    ],
-   "seconds": 6.957,
+   "seconds": 7.152,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   "control_grooming_request.py": {
@@ -2111,6 +2302,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -2151,7 +2346,7 @@
      true
     ]
    ],
-   "seconds": 6.861,
+   "seconds": 6.987,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   "init_scaffold.py": {
@@ -2177,6 +2372,10 @@
      true
     ],
     [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
      "VELDO-0079 material/bound-fields",
      true
     ],
@@ -2217,13 +2416,13 @@
      true
     ]
    ],
-   "seconds": 6.696,
+   "seconds": 7.053,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 79",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 189.238,
+ "serial_seconds": 204.486,
  "spec_id": "VELDO-0079",
  "suite": "scripts/suites/76_veldo_0079_grooming.py"
 }

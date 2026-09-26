@@ -1,5 +1,5 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -800 +800 @@
+@@ -761 +761 @@
 -        if path != GR.OWN_MESSAGE:
 +        if False:  # defect: the backlog does not ask the route

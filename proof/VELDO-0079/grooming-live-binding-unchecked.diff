@@ -1,5 +1,5 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -690 +690 @@
+@@ -660 +660 @@
 -        problems = GR.live_problems(fields, data, objective, project['data'])
 +        problems = []  # defect: the live records are not compared
