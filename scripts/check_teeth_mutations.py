@@ -6918,8 +6918,8 @@ def cases():
          ['limit/stream-exhausted', 'limit/rate-limit-result'])
     # AC3 (declared falsifier): re-run decided for a record with a call to an MCP tool not marked read-only.
     pool('decision-ask-reruns', 'control_account_limit.py',
-         "    return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(shown)}\n",
-         "    return {'schema': SCHEMA, 'decision': RERUN, 'calls': named, 'mcp_calls': len(shown)}  # defect\n",
+         "    return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(read)}\n",
+         "    return {'schema': SCHEMA, 'decision': RERUN, 'calls': named, 'mcp_calls': len(read)}  # defect\n",
          ['decision/ask'])
     pool('decision-unlisted-server-read-only', 'control_account_limit.py',
          "            reason = 'server_not_configured'\n",
@@ -6931,11 +6931,11 @@ def cases():
          "  # defect: a revision that marks nothing marks everything\n",
          ['decision/ask'])
     pool('decision-claude-calls-unread', 'control_engine_claude.py',
-         "        if isinstance(name, str) and name.startswith(MCP_PREFIX):\n",
-         "        if False:  # defect: Claude Code's MCP tool calls are not read\n",
+         "        elif isinstance(name, str) and name.startswith(MCP_PREFIX):\n",
+         "        elif False:  # defect: Claude Code's MCP tool calls are not read\n",
          ['decision/ask'])
     pool('decision-codex-calls-unread', 'control_engine_codex.py',
-         "    if not isinstance(item, dict) or item.get('type') != MCP_ITEM:\n",
+         "    if kind != MCP_ITEM:\n",
          "    if True:  # defect: Codex's MCP tool calls are not read\n",
          ['decision/ask'])
     pool('decision-call-named-twice', 'control_account_limit.py',
@@ -6950,6 +6950,62 @@ def cases():
          "        if line['sequence'] != at or isinstance(line['sequence'], bool):\n",
          "        if isinstance(line['sequence'], bool):  # defect: a gap in the sequence is not refused\n",
          ['decision/ask'])
+    # The review (fail safe): an engine line the decision cannot read is skipped as though it showed no call.
+    pool('decision-unreadable-line-skipped', 'control_account_limit.py',
+         "        shown = engine.mcp_calls(event) if event is not None else [{'unreadable': True}]\n",
+         "        shown = engine.mcp_calls(event) if event is not None else []  # defect: an unreadable line is no call\n",
+         ['decision/unreadable-asks'])
+    pool('decision-unreadable-call-skipped', 'control_account_limit.py',
+         "            if call.get('unreadable'):\n                found.append(",
+         "            if call.get('unreadable'):\n                continue  # defect: the skip restored\n                found.append(",
+         ['decision/unreadable-asks'])
+    pool('decision-event-any-object', 'control_account_limit.py',
+         "    return payload if isinstance(payload, dict) and _text(payload.get('type')) else None\n",
+         "    return payload if isinstance(payload, (dict, list)) else None  # defect: any JSON value is an event\n",
+         ['decision/unreadable-asks'])
+    pool('decision-claude-nameless-call-skipped', 'control_engine_claude.py',
+         "            found.append(_unreadable(block.get('id')))  # A tool call whose tool cannot be read.\n",
+         "            pass  # defect: a tool call whose name cannot be read is no call\n",
+         ['decision/unreadable-asks'])
+    pool('decision-codex-serverless-call-skipped', 'control_engine_codex.py',
+         "        return [{'id': item.get('id'), 'server': None, 'tool': None, 'unreadable': True}]\n",
+         "        return []  # defect: a tool call whose server cannot be read is no call\n",
+         ['decision/unreadable-asks'])
+    pool('decision-redaction-unread', 'control_account_limit.py',
+         "                              'unreadable': 'redacted_unreadable' if line['redacted'] else 'unreadable'})\n",
+         "                              'unreadable': 'unreadable'})  # defect: the line's redaction is never read\n",
+         ['decision/unreadable-asks'])
+    pool('decision-same-id-first-wins', 'control_account_limit.py',
+         "            key = (call.get('id') if _text(call.get('id')) else ('line', at), call['server'], call['tool'])\n",
+         "            key = call.get('id') if _text(call.get('id')) else ('line', at, call['server'], call['tool'])"
+         "  # defect: an id counts once, whatever tool it names later\n",
+         ['decision/same-id-write'])
+    # The review: Claude Code's rejected-status texts that do not start "You've hit your" are not read.
+    pool('limit-claude-rejected-texts-unread', 'control_engine_claude.py',
+         "    if isinstance(text, str) and text.startswith(LIMIT_REJECTED):\n        return LIMIT_WINDOW\n",
+         "", ['limit/claude-rejected-texts'])
+    # The review's surviving mutants: usage alone is no observation; the order reversed; the latest reset.
+    pool('pool-observed-by-window-only', 'control_account_pool.py',
+         "    return bool((record or {}).get('windows')) or _uses(records, (record or {}).get('id'))[2]\n",
+         "    return bool((record or {}).get('windows'))  # defect: usage alone is not an observation\n",
+         ['pool/usage-observes'])
+    pool('pool-highest-utilization-first', 'control_account_pool.py',
+         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append(((0, -used) if used is not None else (1, 0), active, last, name))  # defect\n",
+         ['pool/selection-order'])
+    pool('pool-most-recently-used-first', 'control_account_pool.py',
+         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append(((0, used) if used is not None else (1, 0), active, -last, name))  # defect\n",
+         ['pool/selection-order'])
+    pool('pool-until-latest-reset', 'control_account_pool.py',
+         "                until = max(resets) if until is None else min(until, max(resets))\n",
+         "                until = max(resets) if until is None else max(until, max(resets))  # defect: the latest\n",
+         ['pool/until-earliest'])
+    pool('pool-until-first-window-reset', 'control_account_pool.py',
+         "                until = max(resets) if until is None else min(until, max(resets))\n",
+         "                until = min(resets) if until is None else min(until, min(resets))"
+         "  # defect: an account reopens at its first window's reset\n",
+         ['pool/until-earliest'])
     # AC4 (declared falsifiers): an account chosen inside its reported window; the pool read only when the
     # Runner starts; a second concurrent run admitted on an account with no observation.
     pool('pool-inside-window', 'control_account_pool.py',
