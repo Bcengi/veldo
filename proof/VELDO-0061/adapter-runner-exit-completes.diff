@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -303 +303 @@
+-            clean = clean and self._completed(record['dispatch_id'])
++            pass  # defect: the runner returns the slot completed on the exit code

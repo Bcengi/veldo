@@ -1,0 +1,158 @@
+{
+ "by_assertion": true,
+ "commit": "b39a0fdcd97db54655b709aa47e5e1b1eb76284e",
+ "details": [
+  "VELDO-0061 lifecycle/registered detail: the installed Codex adapter registration enumerates exactly the six lifecycle operations the specification names [[]]",
+  "VELDO-0061 lifecycle/registered detail: the registration's flags are the installed qualification's, and every configured Codex adapter launches with them [None None]",
+  "VELDO-0061 lifecycle/registered detail: each registered operation was driven through the trusted runner on the qualified configuration and observed [['artifacts']]",
+  "VELDO-0061 lifecycle/normal-run detail: its environment names its dispatch, the acceptance it launched under, its account's own profile and DISABLE_AUTOUPDATER=1 [None]",
+  "VELDO-0061 lifecycle/normal-run detail: the stream was observed as it came (its usage line kept as a receipt) and its artifact document returned with the exit, naming the pinned executable [None]",
+  "VELDO-0061 lifecycle/actual-binary detail: its zero exit with no terminal record is no completion: its artifact document is malformed output (help text), the invocation failed and the slot was not returned completed [None completed]",
+  "VELDO-0061 pin/unexpected-launch detail: changed: refused stale_subject:engine_digest before acceptance, with nothing spawned, reserved or run [None ['prepared', 'accepted', 'running', 'exited'] spawns=1]",
+  "VELDO-0061 pin/unexpected-launch detail: newer: refused stale_subject:engine_version before acceptance, with nothing spawned, reserved or run [None ['prepared', 'accepted', 'running', 'exited'] spawns=1]",
+  "VELDO-0061 pin/unexpected-launch detail: link: refused invalid_input:engine_link before acceptance, with nothing spawned, reserved or run [None ['prepared', 'accepted', 'running', 'exited'] spawns=1]",
+  "VELDO-0061 pin/unexpected-launch detail: npm: refused invalid_input:engine_link before acceptance, with nothing spawned, reserved or run [None ['prepared', 'accepted', 'running', 'exited'] spawns=1]",
+  "VELDO-0061 pin/unexpected-launch detail: flags: refused invalid_input:engine_flags before acceptance, with nothing spawned, reserved or run [None ['prepared', 'accepted', 'running', 'exited'] spawns=1]",
+  "VELDO-0061 pin/qualified-record detail: the installed qualification record is what the production writer makes of the installed vendor binary now [AttributeError]",
+  "VELDO-0061 pin/qualified-record detail: it names Codex 0.154.0, the vendor path inside @openai/codex, the digest both extracted tables read from the binary, and the qualified flags",
+  "VELDO-0061 pin/qualified-record detail: init lays it down beside the module that reads it, from a canonical engine copy identical to it",
+  "VELDO-0061 artifacts/normal-exit detail: a zero exit whose last turn closed with turn.completed is a result: its thread, turn and items as printed [None]",
+  "VELDO-0061 artifacts/normal-exit detail: the document verifies from its own lines, and one with its verdict changed does not",
+  "VELDO-0061 artifacts/missing-result detail: the normal stream with its terminal record removed, exit 0: missing_result, never completion [None]",
+  "VELDO-0061 artifacts/missing-result detail: the invocation settled failed and the worker slot was returned failed, not completed [completed completed]",
+  "VELDO-0061 artifacts/malformed-output detail: a line that is not JSON and an event exec does not print make the output malformed, both named, never completion [None None]",
+  "VELDO-0061 artifacts/missing-usage detail: a completed turn whose usage the CLI left out is a result with its usage unknown: the reservation is retained, never counted zero [None unknown {'invocations': 1, 'wall_seconds': 0.047397}]",
+  "VELDO-0061 artifacts/nonzero-and-signal detail: failed: the live exit {'returncode': 1, 'signal': None} is turn_failed, the invocation failed [None {'deadline_stop': False, 'output_bytes': 673, 'output_digest': 'sha256:ead1558ad9f30ee860b2301b545ce59063ffeed4c58731a53ed718a2bfdbea89', 'returncode': 1, 'signal': None}]",
+  "VELDO-0061 artifacts/nonzero-and-signal detail: nonzero: the live exit {'returncode': 3, 'signal': None} is nonzero_exit, the invocation failed [None {'deadline_stop': False, 'output_bytes': 654, 'output_digest': 'sha256:03d18ea997e1e24bd1610f70ffa01197030dbd1b2e12f08ca6778f839d5732b7', 'returncode': 3, 'signal': None}]",
+  "VELDO-0061 artifacts/nonzero-and-signal detail: signal: the live exit {'returncode': None, 'signal': 9} is signal, the invocation failed [None {'deadline_stop': False, 'output_bytes': 210, 'output_digest': 'sha256:7526120b2952d6291c6d363406f9ad0b7e94d4fddc49f41850a18ff834c7ec05', 'returncode': None, 'signal': 9}]",
+  "VELDO-0061 stop/cooperative detail: cooperative: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
+  "VELDO-0061 stop/forced detail: forced: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
+  "VELDO-0061 stop/termination detail: termination: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
+  "VELDO-0061 caps/boundaries detail: normal: the initial invocation was reserved against its caps before its engine was spawned (reservation 110 before the running record 111), and it ran the pinned binary",
+  "VELDO-0061 caps/boundaries detail: retry: the retry invocation was reserved against its caps before its engine was spawned (reservation 282 before the running record 283), and it ran the pinned binary",
+  "VELDO-0061 caps/boundaries detail: follow: the follow_on invocation was reserved against its caps before its engine was spawned (reservation 302 before the running record 303), and it ran the pinned binary",
+  "VELDO-0061 caps/refused-before-launch detail: the unknown one is refused for its unknown allowance, after the invocation that left it unknown ran [missing_authority:allowance:unknown_allowance:tokens]",
+  "VELDO-0061 caps/refused-before-launch detail: the limited account carries the usage_limit window Codex reported, rejected with no reset stated, from the invocation that saw it [{'usage_limit': {'observed_at': 1790412898.4637809, 'reset_at': None, 'source_dispatch': 'dispatch/VELDO-9612/41ece5d1228d42008eeefd0d79769360', 'status': 'rejected', 'utilization': None}}]",
+  "VELDO-0061 caps/stop-at-cap detail: the capped invocation returned what it printed up to the stop as its artifacts, never as a completion [None]",
+  "VELDO-0061 caps/observed detail: normal: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 1500, 'wall_seconds': 0.048192}]",
+  "VELDO-0061 caps/observed detail: retry: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 800, 'wall_seconds': 0.049359}]",
+  "VELDO-0061 caps/observed detail: follow: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 550, 'wall_seconds': 0.050855}]"
+ ],
+ "failed_rows": [
+  "VELDO-0061 lifecycle/registered",
+  "VELDO-0061 lifecycle/normal-run",
+  "VELDO-0061 lifecycle/actual-binary",
+  "VELDO-0061 pin/unexpected-launch",
+  "VELDO-0061 pin/qualified-record",
+  "VELDO-0061 artifacts/normal-exit",
+  "VELDO-0061 artifacts/missing-result",
+  "VELDO-0061 artifacts/malformed-output",
+  "VELDO-0061 artifacts/missing-usage",
+  "VELDO-0061 artifacts/nonzero-and-signal",
+  "VELDO-0061 stop/cooperative",
+  "VELDO-0061 stop/forced",
+  "VELDO-0061 stop/termination",
+  "VELDO-0061 caps/boundaries",
+  "VELDO-0061 caps/refused-before-launch",
+  "VELDO-0061 caps/stop-at-cap",
+  "VELDO-0061 caps/observed"
+ ],
+ "modules": {
+  ".veldo/control_engine_codex.py": {
+   "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
+   "now": "dd6d9fa3be301cf6b1b9aa4b73ff03bd362bd8089974f63c47de124dfe686cc1"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
+   "now": "d33f3f45e13990de7ab01fb37395753bdf31b0c06d5879c53e93b3d70be76587"
+  },
+  ".veldo/control_reservations.py": {
+   "at_commit": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f",
+   "now": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "75eea8d7afe5ceb868c3afa3255b68d53613c20d91a91e673d6be2b4fa008233",
+   "now": "2f6caafb17c566877105b10b91747516c026e2b577ab77e890c5237c31507f3b"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0061 lifecycle/registered",
+   false
+  ],
+  [
+   "VELDO-0061 lifecycle/normal-run",
+   false
+  ],
+  [
+   "VELDO-0061 lifecycle/actual-binary",
+   false
+  ],
+  [
+   "VELDO-0061 pin/unexpected-launch",
+   false
+  ],
+  [
+   "VELDO-0061 pin/qualified-record",
+   false
+  ],
+  [
+   "VELDO-0061 artifacts/normal-exit",
+   false
+  ],
+  [
+   "VELDO-0061 artifacts/missing-result",
+   false
+  ],
+  [
+   "VELDO-0061 artifacts/malformed-output",
+   false
+  ],
+  [
+   "VELDO-0061 artifacts/missing-usage",
+   false
+  ],
+  [
+   "VELDO-0061 artifacts/nonzero-and-signal",
+   false
+  ],
+  [
+   "VELDO-0061 stop/cooperative",
+   false
+  ],
+  [
+   "VELDO-0061 stop/forced",
+   false
+  ],
+  [
+   "VELDO-0061 stop/termination",
+   false
+  ],
+  [
+   "VELDO-0061 caps/boundaries",
+   false
+  ],
+  [
+   "VELDO-0061 caps/refused-before-launch",
+   false
+  ],
+  [
+   "VELDO-0061 caps/stop-at-cap",
+   false
+  ],
+  [
+   "VELDO-0061 caps/observed",
+   false
+  ],
+  [
+   "VELDO-0061 format/codex-fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 23.644,
+ "spec_id": "VELDO-0061",
+ "suite": "scripts/suites/78_veldo_0061_codex_adapter.py",
+ "tree": "git archive b39a0fdcd97db54655b709aa47e5e1b1eb76284e, unchanged; the current suite file run against it"
+}

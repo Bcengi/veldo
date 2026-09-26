@@ -6855,8 +6855,9 @@ def cases():
            "        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')\n",
            'pin/unexpected-launch')
     claude('claude-binding-skipped', 'control_launch.py',
-           "        if module is None or not hasattr(module, 'bind'):\n            return None\n",
-           "        if True:  # defect: no executable is bound, the adapter's argv runs as configured\n            return None\n",
+           "        if module is None:\n            return None\n        try:\n            bound = module.bind(",
+           "        if True:  # defect: no executable is bound, the adapter's argv runs as configured\n"
+           "            return None\n        try:\n            bound = module.bind(",
            'lifecycle/pinned-launch')
     claude('claude-unknown-version-accepted', 'control_engine_claude.py',
            "    entry = record['versions'].get(version) if isinstance(version, str) and VERSION_TEXT.fullmatch(version) else None\n",
@@ -6887,7 +6888,7 @@ def cases():
            '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid beside the engine module\n',
            'pin/shipped-qualification')
     claude('claude-lifecycle-stop-unregistered', 'control_engine_claude.py',
-           "             ('stop', 'control_launch.Launch.stop: the runner\\'s stop request to the receiver'),\n",
+           "        'stop': 'control_launch.Launch.stop: the runner\\'s stop request to the receiver',\n",
            "",
            'lifecycle/registration')
     # AC2 (declared falsifier): a zero exit with its terminal record removed is accepted.
@@ -6897,16 +6898,16 @@ def cases():
            "  # defect: a zero exit without its result is accepted\n            found.append('missing_result')\n",
            'artifact/missing-result')
     claude('claude-invocation-completed-on-exit', 'control_launch.py',
-           "                if outcome == 'completed' and not self.artifact['complete']:\n",
-           "                if False:  # defect: the invocation completes on a zero exit alone\n",
+           "            if outcome == 'completed' and not self.report['complete']:\n",
+           "            if False:  # defect: the invocation completes on a zero exit alone\n",
            'artifact/missing-result')
     claude('claude-slot-completed-on-exit', 'control_launch.py',
            "                clean = clean and artifact.get('complete') is True\n",
            "                clean = clean  # defect: the worker slot completes on a zero exit alone\n",
            'artifact/missing-result')
     claude('claude-artifact-unreturned', 'control_launch.py',
-           "            if self.metering.artifact is not None:\n"
-           "                self.emit({'event': 'artifact', 'artifact': self.metering.artifact})\n",
+           "            if self.metering.report is not None:\n"
+           "                self.emit({'event': 'artifact', 'artifact': self.metering.report})\n",
            "            pass  # defect: the artifact is not returned to the runner\n",
            'artifact/complete')
     claude('claude-signal-ignored', 'control_engine_claude.py',
@@ -6950,6 +6951,131 @@ def cases():
            "                            metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
            'caps/stop-at-cap')
 
+
+    # VELDO-0061: each criterion's declared falsifier first, then the threat model's other shapes.
+    def adapter(name, module, old, new, row, also=()):
+        add(61, name, '79_veldo_0061_codex_adapter.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): the executable binding is skipped after its digest changes.
+    adapter('adapter-digest-unbound', 'control_engine_codex.py',
+            "    if digest != record['sha256']:\n",
+            "    if False:  # defect: a changed digest is not checked\n",
+            'pin/unexpected-launch')
+    adapter('adapter-pin-skipped', 'control_launch.py',
+            "        if module is None:\n            return None\n        try:\n            bound = module.bind(",
+            "        if True:  # defect: the engine's executable is never bound\n"
+            "            return None\n        try:\n            bound = module.bind(",
+            'pin/unexpected-launch')
+    adapter('adapter-version-unbound', 'control_engine_codex.py',
+            "    if manifest.get('version') != record['package_version']:\n",
+            "    if False:  # defect: another version of the package is launched\n",
+            'pin/unexpected-launch')
+    adapter('adapter-link-accepted', 'control_engine_codex.py',
+            "    if os.path.realpath(executable) != os.path.normpath(executable):\n",
+            "    if False:  # defect: a link, the package manager's own among them, is followed\n",
+            'pin/unexpected-launch')
+    adapter('adapter-flags-unbound', 'control_launch.py',
+            "    if argv[at:at + len(flags)] != flags:\n",
+            "    if False:  # defect: the engine is launched with other flags than the qualified ones\n",
+            'pin/unexpected-launch')
+    adapter('adapter-autoupdater-unset', 'control_engine_codex.py',
+            "ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}\n",
+            "ENVIRONMENT = {}  # defect: the updater is not disabled\n",
+            'lifecycle/normal-run')
+    adapter('adapter-engine-environment-ignored', 'control_launch.py',
+            "            environment.update(self.binding['environment'])\n",
+            "            pass  # defect: the engine's pinned settings never reach it\n",
+            'lifecycle/normal-run')
+    adapter('adapter-stop-unregistered', 'control_engine_codex.py',
+            "        'stop': 'control_launch.Launch.stop: the cooperative stop and its bounded escalation over the containment group',\n",
+            "",
+            'lifecycle/registered')
+    adapter('adapter-artifacts-unreported', 'control_launch.py',
+            "            if self.metering.report is not None:\n"
+            "                self.emit({'event': 'artifact', 'artifact': self.metering.report})\n",
+            "            pass  # defect: the artifacts are not returned to the runner\n",
+            'lifecycle/normal-run')
+    # AC2 (declared falsifier): a zero exit is accepted with its terminal record removed.
+    adapter('adapter-missing-result-accepted', 'control_engine_codex.py',
+            "        if self.terminal != 'turn.completed' or self.turn_open:\n            return 'missing_result'\n",
+            "        if False:  # defect: a stream with no terminal record is a result\n            return 'missing_result'\n",
+            'artifacts/missing-result')
+    adapter('adapter-exit-code-completes', 'control_launch.py',
+            "            if outcome == 'completed' and not self.report['complete']:\n",
+            "            if False:  # defect: the exit code decides the invocation's outcome\n",
+            'artifacts/missing-result')
+    adapter('adapter-runner-exit-completes', 'control_launch.py',
+            "                clean = clean and artifact.get('complete') is True\n",
+            "                pass  # defect: the runner returns the slot completed on the exit code\n",
+            'artifacts/missing-result')
+    adapter('adapter-malformed-accepted', 'control_engine_codex.py',
+            "        if self.malformed:\n            return 'malformed_output'\n",
+            "        if False:  # defect: malformed output is not named\n            return 'malformed_output'\n",
+            'artifacts/malformed-output')
+    adapter('adapter-undeclared-event-accepted', 'control_engine_codex.py',
+            "    if not isinstance(event, dict) or event.get('type') not in EVENTS:\n        return 'unknown_event'\n",
+            "    if not isinstance(event, dict):  # defect: an event exec does not print is read as one\n"
+            "        return 'unknown_event'\n    if event.get('type') not in EVENTS:\n        return None\n",
+            'artifacts/malformed-output')
+    adapter('adapter-missing-usage-zero', 'control_engine_codex.py',
+            "            counts = [usage.get(f) for f in ('input_tokens', 'output_tokens')]\n",
+            "            counts = [usage.get(f, 0) for f in ('input_tokens', 'output_tokens')]  # defect: missing usage is zero\n",
+            'artifacts/missing-usage')
+    adapter('adapter-failed-turn-unnamed', 'control_engine_codex.py',
+            "        if self.terminal == 'turn.failed':\n            return 'turn_failed'\n",
+            "        if False:  # defect: a failed turn is not named\n            return 'turn_failed'\n",
+            'artifacts/nonzero-and-signal')
+    adapter('adapter-signal-unnamed', 'control_engine_codex.py',
+            "        if termination.get('signal') is not None:\n            return 'signal'\n",
+            "        if False:  # defect: a signal exit is not named\n            return 'signal'\n",
+            'artifacts/nonzero-and-signal')
+    adapter('adapter-nonzero-exit-result', 'control_engine_codex.py',
+            "        if termination.get('returncode') != 0:\n            return 'nonzero_exit'\n",
+            "        if False:  # defect: a nonzero exit after a completed turn is a result\n            return 'nonzero_exit'\n",
+            'artifacts/nonzero-and-signal')
+    adapter('adapter-artifacts-unverified', 'control_engine_codex.py',
+            "    return all(fresh[k] == document.get(k) for k in DECODED)\n",
+            "    return True  # defect: a document is believed, never decoded again\n",
+            'artifacts/normal-exit')
+    # AC3 (declared falsifier): stopped is reported while a real worker descendant remains alive.
+    adapter('adapter-stop-leaves-descendant', 'control_launch.py',
+            "                if code is not None and (group is None or not group.populated()):\n",
+            "                if code is not None:  # defect: the worker's exit ends the stop, whatever is left in its group\n",
+            'stop/termination')
+    adapter('adapter-stop-graces-ignored', 'control_launch.py',
+            "        return self._settings('stop_grace_seconds', 'kill_grace_seconds')\n",
+            "        return (2.5, 2.5)  # defect: the configured graces are not the ones the stop uses\n",
+            'stop/forced')
+    adapter('adapter-stop-outcome-lost', 'control_launch.py',
+            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n                outcome = 'cancelled'\n",
+            "            elif False:  # defect: a stopped invocation's outcome is taken from its exit\n"
+            "                outcome = 'cancelled'\n",
+            'stop/cooperative')
+    # AC4 (declared falsifier): the cap is checked after the launch instead of before.
+    adapter('adapter-cap-checked-after-launch', 'control_launch.py',
+            "        metering = Metering(self, contract, reservations, accounts, launch)\n        try:\n",
+            "        metering = Metering(self, contract, reservations, accounts, launch)\n"
+            "        launch(metering.invocation, None)  # defect: the invocation is launched, then its cap is checked\n"
+            "        metering.guard.launch = lambda invocation, configuration: None\n"
+            "        try:\n",
+            'caps/refused-before-launch')
+    adapter('adapter-cap-stop-ignored', 'control_launch.py',
+            "                        if metering is not None and metering.feed(chunk):\n"
+            "                            # VELDO-0062: a cap the CLI's own report reached stops the worker.\n"
+            "                            begin('usage_cap')\n",
+            "                        if metering is not None and metering.feed(chunk):\n"
+            "                            pass  # defect: a reached cap does not stop the worker\n",
+            'caps/stop-at-cap')
+    adapter('adapter-window-unchecked', 'control_reservations.py',
+            "            for window in ACC.blocking(ACC.read(self.conn, context['account']), now):\n"
+            "                raise Refused('rate_limited:' + window)\n",
+            "            for window in ():  # defect: the account's reported usage limit is not read\n"
+            "                raise Refused('rate_limited:' + window)\n",
+            'caps/refused-before-launch')
+    adapter('adapter-qualification-not-scaffolded', 'init_scaffold.py',
+            '_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]\n',
+            '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid down\n',
+            'pin/qualified-record')
     return result
 
 

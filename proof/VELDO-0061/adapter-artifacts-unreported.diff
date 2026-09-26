@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -668 +668 @@
+-                   'artifacts': self.metering.returned if self.metering is not None else None})
++                   'artifacts': None})  # defect: the artifacts are not returned with the exit

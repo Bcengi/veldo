@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -774 +774 @@
+-            environment.update(getattr(self.login['engine'], 'ENVIRONMENT', None) or {})
++            pass  # defect: the engine's pinned settings never reach it

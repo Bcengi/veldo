@@ -307,14 +307,19 @@ class Meter:
 QUALIFICATION = 'runtime/claude-qualification.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
-# The adapter's lifecycle, each operation with what performs it for this engine. The receiver drives
-# them in this order; the suite enumerates them from here.
-LIFECYCLE = (('launch', 'control_launch.Receiver._spawn: the pinned command in the dispatch\'s wrapper'),
-             ('accept', 'control_launch.Receiver.launch: the acceptance recorded before the spawn'),
-             ('observe', 'Meter.feed and Terminal.feed over the stream JSON the engine prints'),
-             ('stop', 'control_launch.Launch.stop: the runner\'s stop request to the receiver'),
-             ('exit', 'control_launch.Receiver._reap: the reaped exit recorded on the dispatch'),
-             ('artifacts', 'Terminal.artifact: the decoded terminal record and its verdict'))
+# The adapter registration (control_launch.ENGINE_PROTOCOL): its lifecycle operations, each with what
+# performs it for this engine, in the order the receiver drives them; the suite enumerates them here.
+REGISTRATION = {
+    'engine': PROVIDER,
+    'lifecycle': {
+        'accept': 'control_launch.Receiver.launch: the executable bound (bind) and the acceptance recorded before the spawn',
+        'launch': 'control_launch.Receiver._spawn: the pinned command (command) in the dispatch\'s wrapper',
+        'observe': 'Meter.feed and Terminal.feed over the stream JSON the engine prints',
+        'stop': 'control_launch.Launch.stop: the runner\'s stop request to the receiver',
+        'exit': 'control_launch.Receiver._reap: the reaped exit recorded on the dispatch',
+        'artifacts': 'Terminal.document: the decoded terminal record and its verdict, the exit record\'s artifact',
+    },
+}
 VERSION_TEXT = re.compile(r'[0-9]+(?:\.[0-9]+){1,3}')
 STOPS = ('requested', 'usage_cap', 'heartbeat_missing')
 
@@ -386,13 +391,15 @@ def pin(version, *, versions, state_root, record=None):
     finally:
         if partial.exists():
             partial.unlink()
-    return bind({'version': version}, state_root, record)
+    return bind({'executable': {'version': version}}, state_root, record)
 
 
-def bind(executable, state_root, record=None):
-    """{version, path, sha256}: the executable a launch runs, checked before anything is spawned. The
-    adapter names a qualified version; its pinned copy under the state root must be a regular file (not
+def bind(adapter, state_root, record=None):
+    """{engine, version, path, sha256, flags}: the executable a launch of `adapter` runs, checked before
+    anything is accepted or spawned (control_launch.ENGINE_PROTOCOL). The adapter names a qualified
+    version (`executable: {version}`); its pinned copy under the state root must be a regular file (not
     a link) whose digest is the qualified one."""
+    executable = adapter.get('executable') if isinstance(adapter, dict) else None
     version = executable.get('version') if isinstance(executable, dict) else None
     entry = qualified(version, record)
     if not isinstance(state_root, str) or not os.path.isabs(state_root):
@@ -406,12 +413,14 @@ def bind(executable, state_root, record=None):
         raise Refused('binding_mismatch:engine_executable', 'the pinned executable is not a regular file')
     if _file_digest(path) != entry['sha256']:
         raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')
-    return {'version': version, 'path': str(path), 'sha256': entry['sha256']}
+    return {'engine': PROVIDER, 'version': version, 'path': str(path), 'sha256': entry['sha256'],
+            'flags': list(entry['flags'])}
 
 
-def command(bound, record=None):
-    """The engine's argv: the pinned path and its version's qualified flags."""
-    return [bound['path']] + list(qualified(bound['version'], record)['flags'])
+def command(bound, adapter):
+    """The engine's argv: the adapter's configured prefix (its clone entrance, or a transport's trusted
+    wrapper), then the pinned path and its version's qualified flags."""
+    return list(adapter.get('argv') or []) + [bound['path']] + list(bound['flags'])
 
 
 def environment(bound, record=None):
@@ -445,7 +454,7 @@ def _terminal(event):
 
 class Terminal:
     """What one invocation's stdout returns: `feed(bytes)` line by line, `close()` for the last line, then
-    `artifact(termination, cause)`. A line that is not a JSON object with a string `type`, or a `result`
+    `document(termination, cause)`. A line that is not a JSON object with a string `type`, or a `result`
     the schema does not declare, is malformed; the latest well-formed result is the terminal record."""
 
     def __init__(self):
@@ -504,8 +513,9 @@ class Terminal:
             found.append('engine_error')
         return found
 
-    def artifact(self, termination, cause):
-        """The artifact of the invocation: its verdict, every problem, the terminal record and the stream."""
+    def document(self, termination, cause):
+        """The artifact of the invocation (control_launch.ENGINE_PROTOCOL's shape: schema, engine, verdict,
+        complete): its verdict, every problem, the terminal record and the stream."""
         problems = self.problems(termination, cause)
         return {'schema': ARTIFACT_SCHEMA, 'engine': PROVIDER, 'verdict': problems[0] if problems else 'complete',
                 'complete': not problems, 'problems': problems, 'terminal': self.result, 'terminal_receipt': self.receipt,

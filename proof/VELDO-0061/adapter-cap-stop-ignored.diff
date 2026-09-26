@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -990,2 +990 @@
+-                            # VELDO-0062: a cap the CLI's own report reached stops the worker.
+-                            begin('usage_cap')
++                            pass  # defect: a reached cap does not stop the worker

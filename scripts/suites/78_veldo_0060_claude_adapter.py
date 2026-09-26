@@ -298,6 +298,7 @@ sys.exit(payload.get('code', 0))
         pin_mode = (os.lstat(pinned).st_mode & 0o777) if pinned.exists() else None
 
         receipts = state / 'receipts'
+        artifacts = state / 'artifacts'
         config = base / 'receiver.json'
         # Every process the receiver spawns first writes a spawn marker naming its dispatch, then execs the
         # trusted wrapper (the same pid): a spawn is recorded even when its engine never runs.
@@ -309,7 +310,7 @@ sys.exit(payload.get('code', 0))
         receiver_config = {
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
-            'host': HOST, 'receipts': str(receipts), 'state_root': str(factory),
+            'host': HOST, 'receipts': str(receipts), 'artifacts': str(artifacts), 'state_root': str(factory),
             'adapters': {
                 'claude': {'identity': 'reported', 'engine': 'claude_code', 'executable': pinned_exe, 'argv': wrapper},
                 'claude-clone': {'identity': 'reported', 'engine': 'claude_code', 'executable': pinned_exe,
@@ -405,14 +406,25 @@ sys.exit(payload.get('code', 0))
             return row[0] if row else None
 
         def artifact_file(dispatch_id):
-            path = receipts / (hashlib.sha256(('invocation/' + dispatch_id).encode()).hexdigest() + '.artifact.json')
+            path = artifacts / (hashlib.sha256(('invocation/' + dispatch_id).encode()).hexdigest() + '.json')
             if not path.exists():
                 return None, None
             return json.loads(path.read_text()), (path.stat().st_mode & 0o777)
 
         def returned(launch):
-            # The artifact the receiver returned to the runner (none from a tree without this work).
-            return getattr(launch, 'artifact', None)
+            # The artifact document the receiver reported to the runner, read from the file its report names
+            # and checked against the report's digest, verdict and completeness (none from a tree without
+            # this work, or when the report does not match its file).
+            report = getattr(launch, 'artifact', None) or {}
+            path = Path(report.get('path') or '/nonexistent')
+            if not path.is_file():
+                return None
+            data = path.read_bytes()
+            found = json.loads(data)
+            if ('sha256:' + hashlib.sha256(data).hexdigest() != report.get('digest')
+                    or report.get('verdict') != found.get('verdict') or report.get('complete') != found.get('complete')):
+                return None
+            return found
 
         def slot_outcome(account, dispatch_id):
             return (runner(account).retirements.entries.get(dispatch_id) or {}).get('outcome')
@@ -525,7 +537,7 @@ sys.exit(payload.get('code', 0))
                   and head == ((record or {}).get('contract') or {}).get('source', {}).get('commit'))
 
             # Every lifecycle operation of the registration, each observed on this run or the stop run below.
-            lifecycle = [name for name, _ in getattr(E, 'LIFECYCLE', ())]
+            lifecycle = list(((getattr(E, 'REGISTRATION', None) or {}).get('lifecycle') or {}))
             accepted_at = journal_seq('dispatch/accept/%s/' % launch.dispatch_id)
             ran_at = journal_seq('dispatch/run/%s/' % launch.dispatch_id)
             call = invocation(launch.dispatch_id)
@@ -556,7 +568,7 @@ sys.exit(payload.get('code', 0))
                   and result_line is not None and artifact.get('terminal_receipt') == sha(result_line)
                   and (artifact.get('stream') or {}).get('output_digest') == termination.get('output_digest')
                   and (artifact.get('stream') or {}).get('lines') == len(lines) == 3)
-            check('artifact/complete', 'the artifact is kept 0600 beside the receipts, the same one the runner was '
+            check('artifact/complete', 'the artifact is kept 0600 in the artifacts directory, the same one the runner was '
                   'given, bound to the dispatch, invocation and pinned digest [%s]' % mode,
                   stored == artifact and mode == 0o600 and artifact.get('dispatch_id') == launch.dispatch_id
                   and artifact.get('invocation') == 'invocation/' + launch.dispatch_id
@@ -793,7 +805,7 @@ sys.exit(payload.get('code', 0))
             observed = normal_run.get('observed') or {}
             check('lifecycle/registration', 'the installed registration lists exactly the lifecycle operations, and '
                   'each was driven and observed on these runs [%s, %s]' % (lifecycle, observed),
-                  lifecycle == ['launch', 'accept', 'observe', 'stop', 'exit', 'artifacts']
+                  lifecycle == ['accept', 'launch', 'observe', 'stop', 'exit', 'artifacts']
                   and all(observed.get(name) is True for name in lifecycle))
 
         with region('stop/descendant-alive'):

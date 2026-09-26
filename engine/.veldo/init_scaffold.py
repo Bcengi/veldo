@@ -396,6 +396,9 @@ _RUNTIME_ASSETS = [("runtime/langgraph-records.json", ".veldo/runtime/langgraph-
 # VELDO-0060: the Claude Code qualification record (the pinned version, its digest, flags and terminal
 # protocol), read by control_engine_claude.py beside it before any Claude Code launch.
 _RUNTIME_ASSETS += [("runtime/claude-qualification.json", ".veldo/runtime/claude-qualification.json")]
+# VELDO-0061: the qualification record of the pinned Codex executable, which control_engine_codex.py
+# reads beside itself before a Codex engine is accepted or spawned.
+_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]
 
 # The canonical gate is laid down transformed (see _starter_gate).
 _GATE = "scripts/verify.sh"

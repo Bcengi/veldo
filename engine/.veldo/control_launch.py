@@ -86,18 +86,27 @@ the wall time it took and the CLI's conclusive totals, or, when the CLI reported
 message units stay unknown and their reservation is retained. Timeout, cancellation or a missing
 report never release it.
 
-THE PINNED ENGINE AND ITS ARTIFACT (VELDO-0060). An engine module that pins its executable (`bind`,
-Claude Code's control_engine_claude) is bound before acceptance: the adapter names a qualified
-version (`executable: {version}`), the receiver config names the factory state root (`state_root`),
-and a version the installed qualification record does not list or a pinned copy that is missing, a
-link or of another digest is refused by name, so nothing is spawned. The engine's argv is the
-adapter's `argv` (its wrapper or transport prefix) followed by the pinned path and the version's
-qualified flags, and its environment always carries the version's own settings (DISABLE_AUTOUPDATER);
-an adapter configuring one of them otherwise is refused by name. When the engine module decodes its
-terminal record (`Terminal`), the final report writes the invocation's artifact (0600, beside its
-receipts) and the receiver reports it to the runner before the end: the invocation and the worker slot
-are `completed` only when the artifact is complete, so a zero exit without a terminal record is never a
-completion.
+THE ENGINE PROTOCOL (VELDO-0060, VELDO-0061). Every subscription engine module (ENGINES) implements
+ENGINE_PROTOCOL with the same signatures, and the receiver drives each through the one path here:
+- `bind(adapter, state_root)`, before acceptance: the pinned executable the adapter runs, checked
+  against the engine's installed qualification record, or `Refused` by name, so nothing is accepted,
+  reserved or spawned. Claude Code's adapter names a qualified version whose pinned copy lies under the
+  factory state root (the config's `state_root`); Codex's names the vendor binary inside its package.
+- `command(binding, adapter)`: the engine argv. Claude Code's is the adapter's prefix (its clone
+  entrance, or a transport's trusted wrapper) followed by the pinned path and the qualified flags;
+  Codex's is the adapter's own argv, exactly. The receiver then checks, for every engine, that the argv
+  runs the pinned path followed by its qualified flags, or refuses it by name.
+- `environment(binding)`: the settings the engine always runs with (DISABLE_AUTOUPDATER), set last in
+  its environment; an adapter configuring one of them otherwise is refused by name.
+- `Terminal()`: the terminal output decoder, fed what the meter is fed. At the end its document (one
+  shape for every engine: schema, engine, verdict, complete, then the engine's own decoded fields,
+  bound to the dispatch, invocation, account and pinned executable) is kept in a private file (0600 in
+  a 0700 directory, beside the store unless the config names `artifacts`), and its report {path, digest,
+  verdict, complete} is sent to the runner before the end. The invocation and the worker slot are
+  `completed` only when the document is complete, so a zero exit without a terminal record is never a
+  completion.
+- `Meter` (VELDO-0062), with PROVIDER, CREDENTIALS, SETTINGS and REGISTRATION (the lifecycle operations).
+An engine module that does not implement the protocol is refused by name before acceptance.
 
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
@@ -143,7 +152,11 @@ ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('cont
 # the inherited environment loses and an adapter may configure.
 CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.values()))
 STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
+# What every engine module implements, with the same signatures (THE ENGINE PROTOCOL above).
+ENGINE_PROTOCOL = ('PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind', 'command',
+                   'environment', 'Terminal')
 RECEIPTS_SCHEMA = 'veldo.usage_receipts/v1'
+ARTIFACT_REPORT = ('path', 'digest', 'verdict', 'complete')
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
 ACCEPT_SECONDS = 30
@@ -171,6 +184,20 @@ def process_identity(pid):
             raise ValueError('process identity unreadable')
         return {'platform': 'darwin', 'host': host, 'boot_id': boot, 'pid': pid, 'start': start}
     raise ValueError('no process identity reader for ' + sys.platform)
+
+
+# THE ENGINE PROTOCOL's argv check, the same for every engine.
+
+def pinned_argv_problem(argv, bound):
+    """None when the engine argv runs the bound pinned path, once, followed by its qualified flags; else
+    the named refusal."""
+    path, flags = bound.get('path'), list(bound.get('flags') or [])
+    if not isinstance(path, str) or argv.count(path) != 1:
+        return 'invalid_input:engine_executable'
+    at = argv.index(path) + 1
+    if argv[at:at + len(flags)] != flags:
+        return 'invalid_input:engine_flags'
+    return None
 
 
 # The runner: decide, reserve, prepare the complete contract, then invoke the receiver.
@@ -296,7 +323,7 @@ class Runner:
             clean = termination.get('returncode') == 0 and not termination.get('deadline_stop')
             artifact = getattr(launch, 'artifact', None)
             if artifact is not None:
-                # VELDO-0060: an engine's zero exit completes only with a complete artifact.
+                # An engine's zero exit completes only with a complete artifact (THE ENGINE PROTOCOL).
                 clean = clean and artifact.get('complete') is True
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
         elif record and record['state'] == 'unknown':
@@ -379,6 +406,7 @@ class Launch:
         if isinstance(message.get('heartbeat'), dict):
             self.heartbeat = message['heartbeat']
         if message.get('event') == 'artifact' and isinstance(message.get('artifact'), dict):
+            # The engine's artifact report {path, digest, verdict, complete} (THE ENGINE PROTOCOL).
             self.artifact = message['artifact']
         return message
 
@@ -502,7 +530,7 @@ class Receiver:
         self.host = config.get('host') or socket.gethostname()
         self.login = None
         self.metering = None
-        self.executable = None
+        self.binding = None
 
     def close(self):
         self.conn.close()
@@ -557,7 +585,7 @@ class Receiver:
         if not refusal:
             refusal = self._login(contract, adapter)
         if not refusal:
-            refusal = self._executable(adapter)
+            refusal = self._bind(adapter)
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -635,8 +663,8 @@ class Receiver:
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
-            if self.metering.artifact is not None:
-                self.emit({'event': 'artifact', 'artifact': self.metering.artifact})
+            if self.metering.report is not None:
+                self.emit({'event': 'artifact', 'artifact': self.metering.report})
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
             # outcome is unknown, and the unit and station stay held.
@@ -670,6 +698,9 @@ class Receiver:
         module = ENGINES.get(engine)
         if module is None:
             return 'unregistered_adapter:engine:' + str(engine)
+        missing = [name for name in ENGINE_PROTOCOL if not hasattr(module, name)]
+        if missing:
+            return 'unregistered_adapter:engine_protocol:%s:%s' % (engine, missing[0])
         # What the adapter configures reaches the engine as configured; a login in it is refused by name.
         configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)
         if configured:
@@ -687,23 +718,28 @@ class Receiver:
         self.login = {'engine': module, 'account': account, 'record': record, 'zone': zone}
         return None
 
-    def _executable(self, adapter):
-        """VELDO-0060: the pinned executable of an engine that pins one, bound before acceptance. None
-        when it may run; else the named refusal."""
-        self.executable = None
+    def _bind(self, adapter):
+        """THE ENGINE PROTOCOL's one binding path (VELDO-0060, VELDO-0061): the engine's pinned executable,
+        its argv and its settings, bound before acceptance. None when it may run; else the named refusal,
+        with nothing accepted, reserved or spawned."""
+        self.binding = None
         module = (self.login or {}).get('engine')
-        if module is None or not hasattr(module, 'bind'):
+        if module is None:
             return None
         try:
-            bound = module.bind(adapter.get('executable'), self.config.get('state_root'))
+            bound = module.bind(adapter, self.config.get('state_root'))
+            argv = module.command(bound, adapter)
             settings = module.environment(bound)
         except module.Refused as error:
             return error.code
+        refusal = pinned_argv_problem(argv, bound)
+        if refusal:
+            return refusal
         configured = adapter.get('environment') or {}
         for name in sorted(settings):
             if name in configured and configured[name] != settings[name]:
                 return 'invalid_input:adapter_environment:' + name
-        self.executable = dict(bound, argv=module.command(bound), environment=settings)
+        self.binding = dict(bound, argv=argv, environment=settings)
         return None
 
     def _invoke(self, contract, acceptance, adapter):
@@ -772,10 +808,10 @@ class Receiver:
         else:
             environment.update(adapter.get('environment') or {})
         argv = list(adapter['argv'])
-        if self.executable is not None:
-            # VELDO-0060: the adapter's prefix, then the pinned engine with its qualified flags and settings.
-            argv += self.executable['argv']
-            environment.update(self.executable['environment'])
+        if self.binding is not None:
+            # THE ENGINE PROTOCOL: the bound engine argv and the engine's own settings, last.
+            argv = list(self.binding['argv'])
+            environment.update(self.binding['environment'])
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         if adapter.get('identity', 'local') != 'reported':
@@ -1099,9 +1135,9 @@ class Metering:
         self.start = None
         self.settled = False
         self.file = None
-        # VELDO-0060: the engine's terminal record, decoded from the same stream, and its artifact.
-        self.terminal = self.engine.Terminal() if hasattr(self.engine, 'Terminal') else None
-        self.artifact = None
+        # THE ENGINE PROTOCOL: the engine's terminal output, decoded from the same stream, and its report.
+        self.terminal = self.engine.Terminal()
+        self.report = None
 
     def _stop(self, dispatch_id):
         self.stop = True
@@ -1112,7 +1148,6 @@ class Metering:
         directory = Path(self.receiver.config.get('receipts') or Path(self.receiver.config['store']).parent / 'receipts')
         directory.mkdir(mode=0o700, parents=True, exist_ok=True)
         path = directory / (hashlib.sha256(self.invocation.encode()).hexdigest() + '.jsonl')
-        self.path = path
         self.file = os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb')
         header = {'schema': RECEIPTS_SCHEMA, 'dispatch_id': self.dispatch_id, 'invocation': self.invocation,
                   'account': self.account, 'project': self.contract['reservation']['project'],
@@ -1122,10 +1157,9 @@ class Metering:
 
     def feed(self, chunk):
         """Whether the worker must stop, after the observations in `chunk`."""
+        self.terminal.feed(chunk)
         for observation in self.meter.feed(chunk):
             self._observe(observation)
-        if self.terminal is not None:
-            self.terminal.feed(chunk)
         return self.stop
 
     def _keep(self, line):
@@ -1156,17 +1190,26 @@ class Metering:
             self.stop = True
 
     def _artifact(self, termination, cause):
-        """The invocation's artifact (VELDO-0060): the engine's decoded terminal record and verdict, bound
-        to its dispatch, invocation and pinned executable, kept 0600 beside its receipts."""
-        executable = self.receiver.executable or {}
-        artifact = dict(self.terminal.artifact(termination, cause), dispatch_id=self.dispatch_id,
+        """The invocation's artifact (THE ENGINE PROTOCOL): the engine's decoded document, bound to its
+        dispatch, invocation, account and pinned executable, kept in its private file; its report {path,
+        digest, verdict, complete}. A document that cannot be kept is reported with no path: never complete."""
+        self.terminal.close()
+        executable = self.receiver.binding or {}
+        document = dict(self.terminal.document(termination, cause), dispatch_id=self.dispatch_id,
                         invocation=self.invocation, account=self.account,
-                        executable={k: executable.get(k) for k in ('version', 'sha256', 'path')})
-        if self.file is not None:
-            path = self.path.with_suffix('.artifact.json')
-            with os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w') as handle:
-                handle.write(json.dumps(artifact, sort_keys=True) + '\n')
-        return artifact
+                        executable={k: executable.get(k) for k in ('engine', 'version', 'path', 'sha256')})
+        data = (json.dumps(document, sort_keys=True) + '\n').encode()
+        directory = Path(self.receiver.config.get('artifacts') or Path(self.receiver.config['store']).parent / 'artifacts')
+        try:
+            directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+            path = directory / (hashlib.sha256(self.invocation.encode()).hexdigest() + '.json')
+            with os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as handle:
+                handle.write(data)
+        except OSError as error:
+            self.errors.append('artifact:' + type(error).__name__)
+            path = None
+        return {'path': str(path) if path else None, 'digest': 'sha256:' + hashlib.sha256(data).hexdigest(),
+                'verdict': document['verdict'], 'complete': document['complete'] is True and path is not None}
 
     def settle(self, termination, cause):
         """The one final report. `termination` None: the engine never started (not executed)."""
@@ -1187,11 +1230,9 @@ class Metering:
                 outcome = 'cancelled'
             else:
                 outcome = 'completed' if termination.get('returncode') == 0 else 'failed'
-            if self.terminal is not None:
-                self.terminal.close()
-                self.artifact = self._artifact(termination, cause)
-                if outcome == 'completed' and not self.artifact['complete']:
-                    outcome = 'failed'  # VELDO-0060: a zero exit is a completion only with its terminal record
+            self.report = self._artifact(termination, cause)
+            if outcome == 'completed' and not self.report['complete']:
+                outcome = 'failed'  # a zero exit is a completion only with its terminal record (THE ENGINE PROTOCOL)
         self.sequence += 1
         session = self.meter.session() if termination is not None else None
         try:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -701 +701 @@
+-        bind = getattr((self.login or {}).get('engine'), 'bind', None)
++        bind = None  # defect: the engine's executable is never bound

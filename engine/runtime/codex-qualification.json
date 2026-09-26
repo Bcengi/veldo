@@ -1,0 +1,56 @@
+{
+ "authentication": "the subscription login of the account profile CODEX_HOME names",
+ "engine": "codex",
+ "environment": {
+  "DISABLE_AUTOUPDATER": "1"
+ },
+ "executable": "vendor/x86_64-unknown-linux-musl/bin/codex",
+ "flags": [
+  "exec",
+  "--json"
+ ],
+ "package": "@openai/codex",
+ "package_version": "0.154.0-linux-x64",
+ "rate_limit_windows": [
+  "plan",
+  "quota",
+  "usage_limit",
+  "workspace_credits",
+  "workspace_spend_cap"
+ ],
+ "schema": "veldo.engine_qualification/v1",
+ "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "terminal_protocol": {
+  "events": [
+   "error",
+   "item.completed",
+   "item.started",
+   "item.updated",
+   "thread.started",
+   "turn.completed",
+   "turn.failed",
+   "turn.started"
+  ],
+  "failed": "turn.failed",
+  "item_kinds": [
+   "agent_message",
+   "reasoning",
+   "command_execution",
+   "file_change",
+   "mcp_tool_call",
+   "web_search",
+   "todo_list",
+   "collab_tool_call",
+   "error"
+  ],
+  "stream": "stdout, one JSON event per line",
+  "terminal": "turn.completed"
+ },
+ "usage_units": [
+  "invocations",
+  "wall_seconds",
+  "tokens",
+  "messages"
+ ],
+ "version": "0.154.0"
+}

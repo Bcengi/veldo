@@ -30,6 +30,8 @@ footprint:
   - ".veldo/runtime/codex-qualification*.json"
   - "packs/*/runtime/codex-qualification*.json"
   - "scripts/suites/*_veldo_0061_*.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0061-codex-adapter-qualification.md"
@@ -193,3 +195,22 @@ footprint drops `control_runner`, which does not exist; the Runner is class `Run
 tested only the paid-API guard, so the everything-off baseline, the paid-API guard and the environment
 strip move to the new draft VELDO-0156, each with its own criterion and a falsifier that breaks exactly
 that guard. AC1 names VELDO-0156 in place of AC5; AC1 to AC4 are otherwise unchanged. Status unchanged.
+
+2026-09-26, build: the Codex adapter as built. `control_engine_codex` gains the adapter registration
+(its six lifecycle operations and the code implementing each, the qualified flags `exec --json` and
+DISABLE_AUTOUPDATER), the qualification writer and `bind`, which the receiver calls before acceptance:
+the configured `executable` must be an absolute path with no link on the way, inside an `@openai/codex`
+package of the recorded version at the recorded package-relative path, with the recorded digest, launched
+with the recorded flags, or it is refused by name with nothing accepted, reserved or spawned. The record
+of Codex 0.154.0 on Linux x64 is `runtime/codex-qualification.json` (engine canon and installed copy,
+laid down by init). The engine's terminal output is decoded (`Artifacts`) into an artifact document kept
+privately beside the store and reported with the exit; the invocation settles `completed` only when its
+verdict is `result`, and the runner returns such a slot completed only on that recorded outcome. The
+item kinds and fields exec prints are read from the binary by `proof/VELDO-0061/extract_items.py`
+(`codex-exec.json`), beside VELDO-0062's event table. The footprint adds
+`scripts/check_teeth_mutations.py` (finding 61) and `scripts/suites/75_veldo_0062_accounts.py`, whose
+fake Codex adapters were unpinned and are now laid out and qualified as a vendor package, since an
+unpinned Codex launch is now refused. The live model run on the owner's registered subscription is not
+part of this build: the installed binary is exercised through the whole lifecycle with `--help`, and no
+model runs. Proof in proof/VELDO-0061: 18 rows, red record against b39a0fdc, 26 finding 61 mutants
+rejected; findings 39, 40, 41, 45 and 62 still reject. Status unchanged.
