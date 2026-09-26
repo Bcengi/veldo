@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -418 +418 @@
+-    if os.path.realpath(path.parent) != os.path.normpath(str(path.parent)):
++    if False:  # defect: a linked directory on the way to the pinned copy is followed

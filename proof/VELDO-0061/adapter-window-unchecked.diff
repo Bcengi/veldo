@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -122 +122 @@
+-            for window in ACC.blocking(ACC.read(self.conn, context['account']), now):
++            for window in ():  # defect: the account's reported usage limit is not read

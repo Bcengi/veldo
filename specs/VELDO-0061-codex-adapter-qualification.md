@@ -23,6 +23,15 @@ footprint:
   - "engine/.veldo/control_engine_codex*.py"
   - ".veldo/control_engine_codex*.py"
   - "packs/*/.veldo/control_engine_codex*.py"
+  - "engine/.veldo/dispatch.py"
+  - ".veldo/dispatch.py"
+  - "packs/*/.veldo/dispatch.py"
+  - "engine/.veldo/control_dispatch.py"
+  - ".veldo/control_dispatch.py"
+  - "packs/*/.veldo/control_dispatch.py"
+  - "engine/.veldo/control_clone.py"
+  - ".veldo/control_clone.py"
+  - "packs/*/.veldo/control_clone.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -30,6 +39,8 @@ footprint:
   - ".veldo/runtime/codex-qualification*.json"
   - "packs/*/runtime/codex-qualification*.json"
   - "scripts/suites/*_veldo_0061_*.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0061-codex-adapter-qualification.md"
@@ -193,3 +204,56 @@ footprint drops `control_runner`, which does not exist; the Runner is class `Run
 tested only the paid-API guard, so the everything-off baseline, the paid-API guard and the environment
 strip move to the new draft VELDO-0156, each with its own criterion and a falsifier that breaks exactly
 that guard. AC1 names VELDO-0156 in place of AC5; AC1 to AC4 are otherwise unchanged. Status unchanged.
+
+2026-09-26, build: the Codex adapter as built. `control_engine_codex` gains the adapter registration
+(its six lifecycle operations and the code implementing each, the qualified flags `exec --json` and
+DISABLE_AUTOUPDATER), the qualification writer and `bind`, which the receiver calls before acceptance:
+the configured `executable` must be an absolute path with no link on the way, inside an `@openai/codex`
+package of the recorded version at the recorded package-relative path, with the recorded digest, launched
+with the recorded flags, or it is refused by name with nothing accepted, reserved or spawned. The record
+of Codex 0.154.0 on Linux x64 is `runtime/codex-qualification.json` (engine canon and installed copy,
+laid down by init). The engine's terminal output is decoded (`Artifacts`) into an artifact document kept
+privately beside the store and reported with the exit; the invocation settles `completed` only when its
+verdict is `result`, and the runner returns such a slot completed only on that recorded outcome. The
+item kinds and fields exec prints are read from the binary by `proof/VELDO-0061/extract_items.py`
+(`codex-exec.json`), beside VELDO-0062's event table. The footprint adds
+`scripts/check_teeth_mutations.py` (finding 61) and `scripts/suites/75_veldo_0062_accounts.py`, whose
+fake Codex adapters were unpinned and are now laid out and qualified as a vendor package, since an
+unpinned Codex launch is now refused. The live model run on the owner's registered subscription is not
+part of this build: the installed binary is exercised through the whole lifecycle with `--help`, and no
+model runs. Proof in proof/VELDO-0061: 18 rows, red record against b39a0fdc, 26 finding 61 mutants
+rejected; findings 39, 40, 41, 45 and 62 still reject. Status unchanged.
+
+2026-09-26, integrated with VELDO-0060 and both reviews' filed items done (branch build-veldo-0060-0061):
+ONE engine protocol. Both engine modules implement `control_launch.ENGINE_PROTOCOL` with the same
+signatures (`Refused`, `bind(adapter, state_root)`, `command(binding, adapter)`, `environment(binding)`,
+`Terminal().document(termination, cause)`, `Meter`, `REGISTRATION`); `Unbound` is now `Refused` and
+`Artifacts` is `Terminal`, and the receiver drives every engine through one path (`Receiver._bind`): the
+pin checked before acceptance with zero spawns, each engine's own argv composition (this one's: the
+adapter's argv exactly, nothing appended), one argv check (where the executable stands and that the
+qualified flags follow it moved from `bind` into the receiver, for both engines), DISABLE_AUTOUPDATER set
+last, one artifact document shape (`veldo.engine_artifact/v1`: schema, engine, verdict, complete; this
+engine's verdict for a completion is now `complete`, was `result`) and one report {path, digest, verdict,
+complete} sent before the end. The two completion gates are one: `control_dispatch`'s exit record binds
+the artifact's verdict, completeness and digest and `control_dispatch.completed` decides the runner's
+worker slot and the floor's build and review dispatches (the store-read invocation outcome is no longer
+the runner's gate); the footprint adds `dispatch.py` and `control_dispatch.py` for it (authorized by the
+lead). The suite is renumbered `79_veldo_0061_codex_adapter` (both were 78). Filed items done: the pinned
+path must be what the trusted wrapper execs or the first argument after the installed clone entrance's
+`--` (a shell or the package manager's link first is refused); the wrapper or the clone entrance re-hashes
+the pinned file immediately before the exec; clones write-protect the engines directories
+(`Clones(engines=...)`, so the footprint adds `control_clone.py`); Codex launches with
+`-c check_for_update_on_startup=false` (DISABLE_AUTOUPDATER does nothing for this binary; the qualification
+record was regenerated by the production writer). VELDO-0060's suite also runs this adapter on the local
+contained path. Proof: suite `79_veldo_0061_codex_adapter` (18 rows), the red record at b39a0fdc
+regenerated, finding 61's mutations. Status unchanged.
+
+2026-09-26, integration review fixes (branch build-veldo-0060-0061): `Terminal.document` now reads
+`cause`. An invocation stopped on request, at its usage cap or for a missed heartbeat is `stopped` and
+never complete, whatever it printed and however it exited, as Claude Code's is: a Codex run that answers a
+stop with `turn.completed` and exits 0 no longer completes its exit record, the completion gate or the
+floor while its invocation says cancelled. The document keeps its `cause` and `verify` decodes with it.
+The receiver's refusal of an engine module missing a protocol name is now driven by a row. Proof: suite
+`79_veldo_0061_codex_adapter` gains `stop/stopped-not-complete` and `lifecycle/engine-protocol` (20
+rows); mutations `adapter-stop-cause-ignored` and `adapter-engine-protocol-unchecked`; the red record at
+b39a0fdc regenerated. Status unchanged.

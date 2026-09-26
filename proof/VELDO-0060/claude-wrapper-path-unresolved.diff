@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1342 +1342 @@
+-    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):
++    elif pinned is not None and os.path.abspath(path) == pinned:  # defect: a `..` in the path skips the re-hash

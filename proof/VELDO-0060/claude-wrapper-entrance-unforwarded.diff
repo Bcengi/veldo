@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1341 +1341 @@
+-        environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected
++        pass  # defect: the clone entrance is not told what to re-hash

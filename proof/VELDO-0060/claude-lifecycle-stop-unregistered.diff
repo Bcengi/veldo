@@ -1,0 +1,4 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -322 +321,0 @@
+-        'stop': 'control_launch.Launch.stop: the runner\'s stop request to the receiver',

@@ -23,6 +23,15 @@ footprint:
   - "engine/.veldo/control_engine_claude*.py"
   - ".veldo/control_engine_claude*.py"
   - "packs/*/.veldo/control_engine_claude*.py"
+  - "engine/.veldo/dispatch.py"
+  - ".veldo/dispatch.py"
+  - "packs/*/.veldo/dispatch.py"
+  - "engine/.veldo/control_dispatch.py"
+  - ".veldo/control_dispatch.py"
+  - "packs/*/.veldo/control_dispatch.py"
+  - "engine/.veldo/control_clone.py"
+  - ".veldo/control_clone.py"
+  - "packs/*/.veldo/control_clone.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -30,6 +39,8 @@ footprint:
   - ".veldo/runtime/claude-qualification*.json"
   - "packs/*/runtime/claude-qualification*.json"
   - "scripts/suites/*_veldo_0060_*.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0060-claude-code-adapter-qualification.md"
@@ -194,3 +205,61 @@ unchanged.
 tested only the paid-API stop, so the everything-off baseline, the paid-API guard and the environment
 strip move to the new draft VELDO-0155, each with its own criterion and a falsifier that breaks exactly
 that guard. AC1 names VELDO-0155 in place of AC5; AC1 to AC4 are otherwise unchanged. Status unchanged.
+
+2026-09-26, built (Release 1, Linux): the Claude Code adapter names a qualified version, never a path.
+The qualification record `engine/runtime/claude-qualification.json` (installed beside
+`control_engine_claude.py`, laid by the scaffold) lists 2.1.281 with its digest, its print-mode stream
+JSON flags, `DISABLE_AUTOUPDATER`, its terminal protocol, login, usage units and windows, each read
+from the binary's bytes (`proof/VELDO-0060/extract_cli.py`, `cli-options.json`, and VELDO-0062's
+`cli-formats.json`). `control_engine_claude.pin` copies the installer's versioned file under the
+factory state root; the receiver binds it before acceptance and refuses an unknown version, a missing,
+linked or changed copy and a configured updater by name, then launches the adapter's prefix followed by
+the pinned path and the qualified flags. `Terminal` decodes the stream's result into an artifact kept
+0600 beside the receipts and returned to the runner; the invocation and the worker slot are completed
+only when it is complete, so a zero exit without its result is failed. The footprint adds
+`scripts/check_teeth_mutations.py` (finding 60) and `scripts/suites/75_veldo_0062_accounts.py`, whose
+fake claude must now be installed and pinned as the qualified version its adapters name. Not built
+here: the live run of the real CLI (the build ran no model and logged nothing in, so `live_usage` is
+null), and a contained stop (the suite does not touch the systemd user manager; the stop rows run on the
+wrapper path, the contained path is VELDO-0040's and VELDO-0041's). Proof: suite
+`78_veldo_0060_claude_adapter` (17 rows), the red record at b39a0fdc (all 15 behavior rows red by
+assertion) and 21 finding 60 mutations, each red on its named row; findings 39, 40, 41 and 62 still
+reject. Status unchanged.
+
+2026-09-26, integrated with VELDO-0061 and the review's blockers fixed (branch build-veldo-0060-0061):
+ONE engine protocol. Both engine modules implement `control_launch.ENGINE_PROTOCOL` with the same
+signatures (`Refused`, `bind(adapter, state_root)`, `command(binding, adapter)`, `environment(binding)`,
+`Terminal().document(termination, cause)`, `Meter`, `REGISTRATION`), and the receiver drives every engine
+through one path (`Receiver._bind`): the pin checked before acceptance with nothing spawned, each engine's
+own argv composition (this one's: the adapter's prefix, the pinned path, the qualified flags), one argv
+check, DISABLE_AUTOUPDATER set last with an adapter configuring it otherwise refused by name, one artifact
+document shape and one report {path, digest, verdict, complete}; the artifact now lives in the config's
+`artifacts` directory. Review blocker 1 (floor completion): `control_dispatch`'s exit record binds the
+artifact's verdict, completeness and digest, and `control_dispatch.completed` is the one completion gate,
+read by the runner's worker slot and by the floor (`dispatch._clean_exit`, for the build and review
+dispatches), so a zero exit without its terminal record is refused at the floor; the footprint adds
+`dispatch.py` and `control_dispatch.py` for it (AC2 needs it; the lead authorized the amendment). Review
+blocker 2 (contained path): the suite runs this adapter and VELDO-0061's on the local Linux contained
+launch in transient user systemd scopes in its own slice (bind, scope, Landlock clone entrance, pinned
+exec, cooperative and forced stop, artifact, exit record), and the AC3 declared falsifier is now
+`claude-stop-leaves-descendant`, which breaks the contained path's empty-group check: a descendant that
+outlives the group's SIGTERM keeps the dispatch from being recorded ended until the kill (the earlier
+`claude-stop-recorded-ended` stays as the reported path's own check). Filed hardening done: the pinned
+path must be what the trusted wrapper execs or the first argument after the installed clone entrance's
+`--`; the wrapper or the entrance, whichever execs the engine, re-hashes it immediately before the exec
+and refuses a changed one; clones write-protect the engines directories (`Clones(engines=...)`, so the
+footprint adds `control_clone.py`); `bind` refuses a copy that is not this account's own, a writable or
+special-bit copy and a linked directory on its way; the terminal record's tokens are modelUsage's, unknown
+without it, never the main loop's usage. The owner check cannot be driven negative without a second
+account or root (no row for it). Proof: suite `78_veldo_0060_claude_adapter` (32 rows), the red record
+at b39a0fdc regenerated, finding 60's mutations. Status unchanged.
+
+2026-09-26, integration review fixes (branch build-veldo-0060-0061): a local adapter's clone entrance
+must be run by the receiver's own Python (`sys.executable`, resolved), else `invalid_input:engine_interpreter`
+before acceptance, so a shell or a package manager's link can no longer stand where neither the wrapper
+nor the entrance re-hashes. The trusted wrapper compares resolved paths, so a state root spelled through
+`..` is still re-hashed before the exec, and it passes VELDO_ENGINE_PATH and VELDO_ENGINE_SHA256 on to the
+clone entrance only, never to an engine. Proof: suite `78_veldo_0060_claude_adapter` gains
+`pin/entrance-interpreter` and `pin/rehash-dot-dot` (34 rows); mutations
+`claude-entrance-interpreter-unchecked`, `claude-wrapper-path-unresolved` and
+`claude-wrapper-entrance-unforwarded`; the red record at b39a0fdc regenerated. Status unchanged.

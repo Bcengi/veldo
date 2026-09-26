@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -267 +267 @@
+-            and (artifact is None or artifact.get('complete') is True))
++            and True)  # defect: the completion gate ignores the artifact the exit record binds

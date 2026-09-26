@@ -765,9 +765,9 @@ def _dispatches(conn, domain, repository, unit, station):
 
 
 def _clean_exit(record):
-    termination = (record or {}).get("termination") or {}
-    return ((record or {}).get("state") == "exited" and termination.get("returncode") == 0
-            and termination.get("signal") is None and termination.get("deadline_stop") is False)
+    """VELDO-0060/0061: the dispatch authority's one completion gate (control_dispatch.completed): an exited
+    record with a clean exit and, for an engine worker, the complete artifact its exit record binds."""
+    return _floor_organ("control_dispatch").completed(record)
 
 
 # The transition.

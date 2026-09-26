@@ -75,13 +75,45 @@ content block that is not an object naming its type, a `tool_use` block whose na
 the decision never takes it for no call.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
+
+THE PINNED EXECUTABLE, VELDO-0060. A Claude Code adapter names the version it runs (`executable:
+{version}`), never a path. The qualification record (QUALIFICATION, the installed
+`.veldo/runtime/claude-qualification.json` beside this module, canonical at engine/runtime/) lists each
+qualified version with its digest, the flags of print mode with stream JSON output (read from the
+binary's own options, proof/VELDO-0060/cli-options.json), the environment it runs with
+(DISABLE_AUTOUPDATER, the binary's switch that turns its updater off), its terminal protocol, its
+subscription login and the usage units and rate-limit windows it reports. `pin` copies the versioned
+file the installer keeps (~/.local/share/claude/versions/<version>) under the factory state root, at
+<state root>/engines/claude_code/<version>, and refuses a copy whose digest is not the qualified one;
+the interactive updater may remove an old version, and the auto-updating ~/.local/bin/claude link is
+never read. `bind` is the check every launch makes before acceptance, so before anything is spawned: a
+version the record does not list, a pinned copy that is absent, a link or not a regular file, and a
+copy whose digest differs are each refused by name, as are a linked directory on the way to it, a copy
+that is not this account's own, and one that is writable or carries a setuid, setgid or sticky bit (the pin
+writes it 0555). `command` is the adapter's prefix, the pinned path and the qualified flags; the role's own
+selections are VELDO-0127's and the everything-off baseline VELDO-0155's.
+
+THE TERMINAL RECORD AND THE ARTIFACT, VELDO-0060. `Terminal` reads the same stream and returns what an
+invocation's output yields, judged by the receiver and never by the worker: the decoded `result` event
+(its subtype, error flag, turns, session, stop reason, the digest of its result text, its errors and
+its tokens, modelUsage's total or None when the result carries no readable modelUsage, never its
+main-loop `usage`),
+the digest of the line it came from, how many lines the stream had and how many were not a JSON event,
+and the verdict. Only a zero exit with no signal, no stop and no deadline, a stream of well-formed
+events and a `result` whose subtype is `success` and whose `is_error` is false is `complete`; a zero
+exit whose stream has no result is `missing_result`, never a completion. The usage of that invocation
+is the Meter's: a result without readable usage leaves it unknown and its reservation retained.
 Standard library only.
 """
 import datetime
 import hashlib
 import json
 import math
+import os
+from pathlib import Path
 import re
+import shutil
+import stat
 import time
 import zoneinfo
 
@@ -407,3 +439,236 @@ class Meter:
                          reset_at=reset if _number(reset) else None,
                          utilization=utilization if _number(utilization) and utilization >= 0 else None)]
         return []
+
+
+# VELDO-0060: the pinned executable, its command line and the terminal record.
+
+QUALIFICATION = 'runtime/claude-qualification.json'
+QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
+ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
+# The adapter registration (control_launch.ENGINE_PROTOCOL): its lifecycle operations, each with what
+# performs it for this engine, in the order the receiver drives them; the suite enumerates them here.
+REGISTRATION = {
+    'engine': PROVIDER,
+    'lifecycle': {
+        'accept': 'control_launch.Receiver.launch: the executable bound (bind) and the acceptance recorded before the spawn',
+        'launch': 'control_launch.Receiver._spawn: the pinned command (command) in the dispatch\'s wrapper',
+        'observe': 'Meter.feed and Terminal.feed over the stream JSON the engine prints',
+        'stop': 'control_launch.Launch.stop: the runner\'s stop request to the receiver',
+        'exit': 'control_launch.Receiver._reap: the reaped exit recorded on the dispatch',
+        'artifacts': 'Terminal.document: the decoded terminal record and its verdict, the exit record\'s artifact',
+    },
+}
+VERSION_TEXT = re.compile(r'[0-9]+(?:\.[0-9]+){1,3}')
+STOPS = ('requested', 'usage_cap', 'heartbeat_missing')
+
+
+class Refused(Exception):
+    def __init__(self, code, detail=''):
+        self.code, self.detail = code, detail
+        super().__init__(code + (': ' + detail if detail else ''))
+
+
+def _file_digest(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for block in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(block)
+    return 'sha256:' + digest.hexdigest()
+
+
+def qualification(path=None):
+    """The installed qualification record, beside this module; refused by name when unreadable."""
+    path = Path(path) if path is not None else Path(__file__).resolve().parent / QUALIFICATION
+    try:
+        record = json.loads(path.read_text())
+    except (OSError, ValueError):
+        raise Refused('missing_evidence:engine_qualification', str(path))
+    if (not isinstance(record, dict) or record.get('schema') != QUALIFICATION_SCHEMA
+            or record.get('engine') != PROVIDER or not isinstance(record.get('versions'), dict)):
+        raise Refused('invalid_input:engine_qualification', str(path))
+    return record
+
+
+def qualified(version, record=None):
+    """The qualified entry of `version`: refused by name when the record does not list it."""
+    record = qualification() if record is None else record
+    entry = record['versions'].get(version) if isinstance(version, str) and VERSION_TEXT.fullmatch(version) else None
+    if (not isinstance(entry, dict) or not isinstance(entry.get('sha256'), str)
+            or not isinstance(entry.get('flags'), list)):
+        raise Refused('invalid_input:engine_version:%s' % version, 'no qualified Claude Code version')
+    return entry
+
+
+def pinned_path(state_root, version):
+    return Path(state_root) / 'engines' / PROVIDER / version
+
+
+def pin(version, *, versions, state_root, record=None):
+    """Copy the installer's versioned executable `versions/<version>` under the factory state root and
+    return its binding. The copy is a new regular file (written beside, then renamed into place) whose
+    digest must be the qualified one; a source that is a link, or that the record does not qualify, is
+    refused and nothing is left in place."""
+    entry = qualified(version, record)
+    source = Path(versions) / version
+    try:
+        info = os.lstat(source)
+    except OSError:
+        raise Refused('missing_evidence:engine_source', str(source))
+    if not stat.S_ISREG(info.st_mode):
+        raise Refused('binding_mismatch:engine_source', 'the versioned executable is not a regular file')
+    target = pinned_path(state_root, version)
+    target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    partial = target.parent / ('.%s.%s.partial' % (version, os.urandom(6).hex()))
+    try:
+        with open(source, 'rb') as reading, open(partial, 'xb') as writing:
+            shutil.copyfileobj(reading, writing, 1 << 20)
+        os.chmod(partial, 0o555)
+        if _file_digest(partial) != entry['sha256']:
+            raise Refused('binding_mismatch:engine_digest', 'the versioned executable is not the qualified one')
+        os.replace(partial, target)
+    finally:
+        if partial.exists():
+            partial.unlink()
+    return bind({'executable': {'version': version}}, state_root, record)
+
+
+def bind(adapter, state_root, record=None):
+    """{engine, version, path, sha256, flags}: the executable a launch of `adapter` runs, checked before
+    anything is accepted or spawned (control_launch.ENGINE_PROTOCOL). The adapter names a qualified
+    version (`executable: {version}`); its pinned copy under the state root must be a regular file (not
+    a link) whose digest is the qualified one."""
+    executable = adapter.get('executable') if isinstance(adapter, dict) else None
+    version = executable.get('version') if isinstance(executable, dict) else None
+    entry = qualified(version, record)
+    if not isinstance(state_root, str) or not os.path.isabs(state_root):
+        raise Refused('missing_authority:engine_state_root', 'the receiver names no factory state root')
+    path = pinned_path(state_root, version)
+    try:
+        info = os.lstat(path)
+    except OSError:
+        raise Refused('missing_evidence:engine_executable', str(path))
+    if not stat.S_ISREG(info.st_mode):
+        raise Refused('binding_mismatch:engine_executable', 'the pinned executable is not a regular file')
+    if os.path.realpath(path.parent) != os.path.normpath(str(path.parent)):
+        raise Refused('binding_mismatch:engine_path', 'a directory on the way to the pinned executable is a link')
+    if info.st_uid != os.geteuid():
+        raise Refused('binding_mismatch:engine_owner', 'the pinned executable is not this account\'s own copy')
+    if info.st_mode & 0o7222:
+        raise Refused('binding_mismatch:engine_mode', 'the pinned executable is writable or carries a special bit')
+    if _file_digest(path) != entry['sha256']:
+        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')
+    return {'engine': PROVIDER, 'version': version, 'path': str(path), 'sha256': entry['sha256'],
+            'flags': list(entry['flags'])}
+
+
+def command(bound, adapter):
+    """The engine's argv: the adapter's configured prefix (its clone entrance, or a transport's trusted
+    wrapper), then the pinned path and its version's qualified flags."""
+    return list(adapter.get('argv') or []) + [bound['path']] + list(bound['flags'])
+
+
+def environment(bound, record=None):
+    """What the engine's environment always carries for its version (DISABLE_AUTOUPDATER)."""
+    return dict(qualified(bound['version'], record).get('environment') or {})
+
+
+def _text(value):
+    return isinstance(value, str)
+
+
+def _terminal(event):
+    """The decoded `result` event, or None when it is not one the CLI's schema declares."""
+    subtype, turns = event.get('subtype'), event.get('num_turns')
+    errors = event.get('errors')
+    if (not _text(subtype) or not isinstance(event.get('is_error'), bool) or not _count(turns)
+            or not _text(event.get('session_id')) or not (event.get('stop_reason') is None or _text(event['stop_reason']))):
+        return None
+    if subtype == 'success':
+        if not _text(event.get('result')):
+            return None
+        text, errors = event['result'], []
+    elif subtype.startswith('error_') and isinstance(errors, list) and all(_text(e) for e in errors):
+        text = None
+    else:
+        return None
+    # Its usage is modelUsage's total over every model, the invocation's; without a readable modelUsage the
+    # tokens are unknown (None), never the result's `usage`, which is the main agent loop's alone.
+    return {'subtype': subtype, 'is_error': event['is_error'], 'num_turns': turns, 'session_id': event['session_id'],
+            'stop_reason': event.get('stop_reason'), 'errors': list(errors),
+            'tokens': _model_tokens(event.get('modelUsage')),
+            'result_digest': None if text is None else 'sha256:' + hashlib.sha256(text.encode()).hexdigest()}
+
+
+class Terminal:
+    """What one invocation's stdout returns: `feed(bytes)` line by line, `close()` for the last line, then
+    `document(termination, cause)`. A line that is not a JSON object with a string `type`, or a `result`
+    the schema does not declare, is malformed; the latest well-formed result is the terminal record."""
+
+    def __init__(self):
+        self.pending = b''
+        self.lines = 0
+        self.malformed = 0
+        self.result = None
+        self.receipt = None
+
+    def feed(self, chunk):
+        self.pending += chunk
+        while b'\n' in self.pending:
+            line, _, self.pending = self.pending.partition(b'\n')
+            self._line(line)
+
+    def close(self):
+        line, self.pending = self.pending, b''
+        self._line(line)
+
+    def _line(self, line):
+        if not line.strip():
+            return
+        self.lines += 1
+        try:
+            event = json.loads(line)
+        except ValueError:
+            event = None
+        if not isinstance(event, dict) or not _text(event.get('type')):
+            self.malformed += 1
+            return
+        if event['type'] == 'result':
+            decoded = _terminal(event)
+            if decoded is None:
+                self.malformed += 1
+                return
+            self.result, self.receipt = decoded, receipt(line)
+
+    def problems(self, termination, cause):
+        """Every reason the output is not a completion, the first the verdict; [] when it is one."""
+        if termination is None:
+            return ['not_executed']
+        found = []
+        if cause in STOPS:
+            found.append('stopped')
+        if termination.get('deadline_stop'):
+            found.append('timeout')
+        if termination.get('signal') is not None:
+            found.append('signal')
+        elif termination.get('returncode') != 0:
+            found.append('nonzero_exit')
+        if self.malformed:
+            found.append('malformed_output')
+        if self.result is None:
+            found.append('missing_result')
+        elif self.result['subtype'] != 'success' or self.result['is_error']:
+            found.append('engine_error')
+        return found
+
+    def document(self, termination, cause):
+        """The artifact of the invocation (control_launch.ENGINE_PROTOCOL's shape: schema, engine, verdict,
+        complete): its verdict, every problem, the terminal record and the stream."""
+        problems = self.problems(termination, cause)
+        return {'schema': ARTIFACT_SCHEMA, 'engine': PROVIDER, 'verdict': problems[0] if problems else 'complete',
+                'complete': not problems, 'problems': problems, 'terminal': self.result, 'terminal_receipt': self.receipt,
+                'stream': {'lines': self.lines, 'malformed': self.malformed,
+                           'output_digest': (termination or {}).get('output_digest'),
+                           'output_bytes': (termination or {}).get('output_bytes')},
+                'exit': {'returncode': (termination or {}).get('returncode'), 'signal': (termination or {}).get('signal'),
+                         'deadline_stop': (termination or {}).get('deadline_stop'), 'cause': cause}}

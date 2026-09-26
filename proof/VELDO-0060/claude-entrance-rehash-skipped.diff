@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -398 +398 @@
+-        if _file_digest(pinned) != expected:
++        if False:  # defect: the clone entrance execs the pinned engine without re-hashing it

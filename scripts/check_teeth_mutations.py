@@ -7055,6 +7055,335 @@ def cases():
     pool('pool-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_pool.py",\n', '', ['install/assets'])
     pool('decision-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_limit.py",\n', '',
          ['install/assets'])
+
+    # VELDO-0060: the Claude Code adapter. Each criterion's declared falsifier first, then the threat
+    # model's other shapes, each on the row that names it.
+    def claude(name, module, old, new, row, also=()):
+        add(60, name, '78_veldo_0060_claude_adapter.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): executable binding skipped after the pinned copy's digest changes.
+    claude('claude-pin-digest-unchecked', 'control_engine_claude.py',
+           "    if _file_digest(path) != entry['sha256']:\n"
+           "        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')\n",
+           "    if False:  # defect: the pinned copy's digest is not checked before the launch\n"
+           "        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')\n",
+           'pin/unexpected-launch')
+    claude('claude-binding-skipped', 'control_launch.py',
+           "        if module is None:\n            return None\n        try:\n            bound = module.bind(",
+           "        if True:  # defect: no executable is bound, the adapter's argv runs as configured\n"
+           "            return None\n        try:\n            bound = module.bind(",
+           'lifecycle/pinned-launch')
+    claude('claude-unknown-version-accepted', 'control_engine_claude.py',
+           "    entry = record['versions'].get(version) if isinstance(version, str) and VERSION_TEXT.fullmatch(version) else None\n",
+           "    entry = record['versions'].get(version) or next(iter(record['versions'].values()))"
+           "  # defect: an unknown version runs a qualified one\n",
+           'pin/unexpected-launch')
+    claude('claude-link-followed', 'control_engine_claude.py',
+           "        info = os.lstat(path)\n    except OSError:\n        raise Refused('missing_evidence:engine_executable', str(path))\n",
+           "        info = os.stat(path)  # defect: a link to the qualified bytes is followed\n    except OSError:\n"
+           "        raise Refused('missing_evidence:engine_executable', str(path))\n",
+           'pin/unexpected-launch')
+    claude('claude-updater-left-on', 'control_engine_claude.py',
+           "    return dict(qualified(bound['version'], record).get('environment') or {})\n",
+           "    return {}  # defect: the version's settings (DISABLE_AUTOUPDATER) are not set\n",
+           'lifecycle/pinned-launch')
+    claude('claude-updater-configured-accepted', 'control_launch.py',
+           "            if name in configured and configured[name] != settings[name]:\n"
+           "                return 'invalid_input:adapter_environment:' + name\n",
+           "            if False:  # defect: an adapter configuring the updater otherwise is overridden in silence\n"
+           "                return 'invalid_input:adapter_environment:' + name\n",
+           'pin/unexpected-launch')
+    claude('claude-pin-unverified', 'control_engine_claude.py',
+           "        if _file_digest(partial) != entry['sha256']:\n",
+           "        if False:  # defect: the copy's digest is not checked\n",
+           'pin/copy')
+    claude('claude-qualification-not-installed', 'init_scaffold.py',
+           '_RUNTIME_ASSETS += [("runtime/claude-qualification.json", ".veldo/runtime/claude-qualification.json")]\n',
+           '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid beside the engine module\n',
+           'pin/shipped-qualification')
+    claude('claude-lifecycle-stop-unregistered', 'control_engine_claude.py',
+           "        'stop': 'control_launch.Launch.stop: the runner\\'s stop request to the receiver',\n",
+           "",
+           'lifecycle/registration')
+    # AC2 (declared falsifier): a zero exit with its terminal record removed is accepted.
+    claude('claude-missing-result-complete', 'control_engine_claude.py',
+           "        if self.result is None:\n            found.append('missing_result')\n",
+           "        if self.result is None and termination.get('returncode') != 0:"
+           "  # defect: a zero exit without its result is accepted\n            found.append('missing_result')\n",
+           'artifact/missing-result')
+    claude('claude-invocation-completed-on-exit', 'control_launch.py',
+           "            if outcome == 'completed' and not self.report['complete']:\n",
+           "            if False:  # defect: the invocation completes on a zero exit alone\n",
+           'artifact/missing-result')
+    claude('claude-slot-completed-on-exit', 'control_launch.py',
+           "            clean = D.completed(record)\n",
+           "            clean = (record['termination'] or {}).get('returncode') == 0"
+           "  # defect: the worker slot completes on a zero exit alone\n",
+           'artifact/missing-result')
+    # AC2 at the floor (0060 review blocker 1): the dispatch authority's completion gate ignores the artifact
+    # its exit record binds, or the exit record binds none.
+    claude('claude-floor-exit-code-completes', 'dispatch.py',
+           '    return _floor_organ("control_dispatch").completed(record)\n',
+           '    termination = (record or {}).get("termination") or {}  # defect: the floor reads the exit code alone\n'
+           '    return ((record or {}).get("state") == "exited" and termination.get("returncode") == 0\n'
+           '            and termination.get("signal") is None and termination.get("deadline_stop") is False)\n',
+           'floor/missing-result')
+    claude('claude-completion-gate-exit-only', 'control_dispatch.py',
+           "            and (artifact is None or artifact.get('complete') is True))\n",
+           "            and True)  # defect: the completion gate ignores the artifact the exit record binds\n",
+           'floor/missing-result')
+    claude('claude-exit-artifact-unbound', 'control_launch.py',
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)\n",
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())"
+           "  # defect: the exit record binds no artifact\n",
+           'artifact/exit-record')
+    claude('claude-artifact-unreturned', 'control_launch.py',
+           "            if self.metering.report is not None:\n"
+           "                self.emit({'event': 'artifact', 'artifact': self.metering.report})\n",
+           "            pass  # defect: the artifact is not returned to the runner\n",
+           'artifact/complete')
+    claude('claude-signal-ignored', 'control_engine_claude.py',
+           "        if termination.get('signal') is not None:\n            found.append('signal')\n",
+           "        if termination.get('signal') is not None:\n            pass  # defect: a signal exit is not a problem\n",
+           'artifact/exits')
+    claude('claude-nonzero-ignored', 'control_engine_claude.py',
+           "        elif termination.get('returncode') != 0:\n            found.append('nonzero_exit')\n",
+           "        elif False:  # defect: a nonzero exit is not a problem\n            found.append('nonzero_exit')\n",
+           'artifact/exits')
+    claude('claude-error-result-complete', 'control_engine_claude.py',
+           "        elif self.result['subtype'] != 'success' or self.result['is_error']:\n",
+           "        elif False:  # defect: an error result is a completion\n",
+           'artifact/exits')
+    claude('claude-malformed-ignored', 'control_engine_claude.py',
+           "        if not isinstance(event, dict) or not _text(event.get('type')):\n            self.malformed += 1\n",
+           "        if not isinstance(event, dict) or not _text(event.get('type')):\n"
+           "            pass  # defect: a line that is not an event is not counted\n",
+           'artifact/malformed-output')
+    # AC3 (declared falsifier): stopped reported while a real worker descendant remains alive. The contained
+    # path's empty-group check is broken, so the worker's exit ends the stop whatever is left in its group.
+    claude('claude-stop-leaves-descendant', 'control_launch.py',
+           "                if code is not None and (group is None or not group.populated()):\n",
+           "                if code is not None:  # defect: the worker's exit ends the stop, whatever is left in its group\n",
+           'contained/stop-descendant')
+    # The reported (transport) path's own check: a requested stop it cannot confirm is never recorded ended.
+    claude('claude-stop-recorded-ended', 'control_launch.py',
+           "        if remote and supervision['cause'] in ('requested', 'usage_cap'):\n",
+           "        if remote and supervision['cause'] in ('usage_cap',):  # defect: a requested stop is recorded as ended\n",
+           'stop/descendant-alive')
+    claude('claude-stopped-invocation-released', 'control_launch.py',
+           "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n                outcome = 'cancelled'\n",
+           "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n"
+           "                usage, outcome = {}, 'not_executed'  # defect: a stopped invocation releases its reservation\n",
+           'stop/requested')
+    # AC4 (declared falsifier): the caps are checked after the launch instead of before.
+    claude('claude-cap-checked-after-launch', 'control_launch.py',
+           "        metering = Metering(self, contract, reservations, accounts, launch)\n        try:\n",
+           "        metering = Metering(self, contract, reservations, accounts, launch)\n"
+           "        launch(metering.invocation, None)  # defect: the caps are checked after the launch\n        try:\n",
+           'caps/before-launch')
+    # Filed hardening (0060 and 0061 reviews): the pin binds what runs; the exec re-hashes it; no worker writes
+    # the engines; the copy's mode and the directories on its way; the terminal record's usage.
+    claude('claude-argv-position-unchecked', 'control_launch.py',
+           "    if engine[at] != path:\n        return 'invalid_input:engine_executable'\n",
+           "    at = engine.index(path) if path in engine else at  # defect: the pinned path anywhere in the argv binds\n"
+           "    if engine[at] != path:\n        return 'invalid_input:engine_executable'\n",
+           'pin/argv-binds-what-runs')
+    claude('claude-wrapper-rehash-skipped', 'control_launch.py',
+           "        if not unchanged:\n",
+           "        if False:  # defect: the wrapper execs the pinned engine without re-hashing it\n",
+           'pin/rehash-before-exec')
+    claude('claude-entrance-rehash-skipped', 'control_clone.py',
+           "        if _file_digest(pinned) != expected:\n",
+           "        if False:  # defect: the clone entrance execs the pinned engine without re-hashing it\n",
+           'contained/rehash-before-exec')
+    claude('claude-engines-unprotected', 'control_clone.py',
+           "        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata, *self.engines})\n",
+           "        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata})"
+           "  # defect: a worker may replace the pinned engines\n",
+           'contained/engines-protected')
+    claude('claude-mode-unchecked', 'control_engine_claude.py',
+           "    if info.st_mode & 0o7222:\n",
+           "    if False:  # defect: a writable pinned copy is launched\n",
+           'pin/unexpected-launch')
+    claude('claude-parent-link-followed', 'control_engine_claude.py',
+           "    if os.path.realpath(path.parent) != os.path.normpath(str(path.parent)):\n",
+           "    if False:  # defect: a linked directory on the way to the pinned copy is followed\n",
+           'pin/unexpected-launch')
+    claude('claude-terminal-main-loop-usage', 'control_engine_claude.py',
+           "            'tokens': _model_tokens(event.get('modelUsage')),\n",
+           "            'tokens': _model_tokens(event['modelUsage']) if 'modelUsage' in event else _tokens(event.get('usage')),"
+           "  # defect: the main loop's usage stands in\n",
+           'artifact/missing-usage')
+    claude('claude-usage-cap-stop-ignored', 'control_launch.py',
+           "                        if metering is not None and metering.feed(chunk):\n"
+           "                            # VELDO-0062: a cap the CLI's own report reached stops the worker.\n"
+           "                            begin('usage_cap')\n",
+           "                        if metering is not None:\n"
+           "                            metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
+           'caps/stop-at-cap')
+    # Integration review: a local entrance is run by the receiver's own Python; the wrapper compares resolved
+    # paths, so a state root spelled through `..` is still re-hashed; the re-hash names reach the entrance.
+    claude('claude-entrance-interpreter-unchecked', 'control_launch.py',
+           "        if not reported and os.path.realpath(engine[0]) != os.path.realpath(sys.executable):\n",
+           "        if False:  # defect: any program may run the entrance, and then nothing re-hashes the engine\n",
+           'pin/entrance-interpreter')
+    claude('claude-wrapper-path-unresolved', 'control_launch.py',
+           "    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):\n",
+           "    elif pinned is not None and os.path.abspath(path) == pinned:  # defect: a `..` in the path skips the re-hash\n",
+           'pin/rehash-dot-dot')
+    claude('claude-wrapper-entrance-unforwarded', 'control_launch.py',
+           "        environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected\n",
+           "        pass  # defect: the clone entrance is not told what to re-hash\n",
+           'contained/rehash-before-exec')
+
+
+    # VELDO-0061: each criterion's declared falsifier first, then the threat model's other shapes.
+    def adapter(name, module, old, new, row, also=()):
+        add(61, name, '79_veldo_0061_codex_adapter.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): the executable binding is skipped after its digest changes.
+    adapter('adapter-digest-unbound', 'control_engine_codex.py',
+            "    if digest != record['sha256']:\n",
+            "    if False:  # defect: a changed digest is not checked\n",
+            'pin/unexpected-launch')
+    adapter('adapter-pin-skipped', 'control_launch.py',
+            "        if module is None:\n            return None\n        try:\n            bound = module.bind(",
+            "        if True:  # defect: the engine's executable is never bound\n"
+            "            return None\n        try:\n            bound = module.bind(",
+            'pin/unexpected-launch')
+    adapter('adapter-version-unbound', 'control_engine_codex.py',
+            "    if manifest.get('version') != record['package_version']:\n",
+            "    if False:  # defect: another version of the package is launched\n",
+            'pin/unexpected-launch')
+    adapter('adapter-link-accepted', 'control_engine_codex.py',
+            "    if os.path.realpath(executable) != os.path.normpath(executable):\n",
+            "    if False:  # defect: a link, the package manager's own among them, is followed\n",
+            'pin/unexpected-launch')
+    adapter('adapter-flags-unbound', 'control_launch.py',
+            "    if engine[at + 1:at + 1 + len(flags)] != flags:\n",
+            "    if False:  # defect: the engine is launched with other flags than the qualified ones\n",
+            'pin/unexpected-launch')
+    adapter('adapter-autoupdater-unset', 'control_engine_codex.py',
+            "ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}\n",
+            "ENVIRONMENT = {}  # defect: the updater is not disabled\n",
+            'lifecycle/normal-run')
+    adapter('adapter-engine-environment-ignored', 'control_launch.py',
+            "            environment.update(self.binding['environment'])\n",
+            "            pass  # defect: the engine's pinned settings never reach it\n",
+            'lifecycle/normal-run')
+    adapter('adapter-stop-unregistered', 'control_engine_codex.py',
+            "        'stop': 'control_launch.Launch.stop: the cooperative stop and its bounded escalation over the containment group',\n",
+            "",
+            'lifecycle/registered')
+    adapter('adapter-artifacts-unreported', 'control_launch.py',
+            "            if self.metering.report is not None:\n"
+            "                self.emit({'event': 'artifact', 'artifact': self.metering.report})\n",
+            "            pass  # defect: the artifacts are not returned to the runner\n",
+            'lifecycle/normal-run')
+    # AC2 (declared falsifier): a zero exit is accepted with its terminal record removed.
+    adapter('adapter-missing-result-accepted', 'control_engine_codex.py',
+            "        if self.terminal != 'turn.completed' or self.turn_open:\n            return 'missing_result'\n",
+            "        if False:  # defect: a stream with no terminal record is a result\n            return 'missing_result'\n",
+            'artifacts/missing-result')
+    adapter('adapter-exit-code-completes', 'control_launch.py',
+            "            if outcome == 'completed' and not self.report['complete']:\n",
+            "            if False:  # defect: the exit code decides the invocation's outcome\n",
+            'artifacts/missing-result')
+    adapter('adapter-runner-exit-completes', 'control_launch.py',
+            "            clean = D.completed(record)\n",
+            "            clean = (record['termination'] or {}).get('returncode') == 0"
+            "  # defect: the runner returns the slot completed on the exit code\n",
+            'artifacts/missing-result')
+    adapter('adapter-malformed-accepted', 'control_engine_codex.py',
+            "        if self.malformed:\n            return 'malformed_output'\n",
+            "        if False:  # defect: malformed output is not named\n            return 'malformed_output'\n",
+            'artifacts/malformed-output')
+    adapter('adapter-undeclared-event-accepted', 'control_engine_codex.py',
+            "    if not isinstance(event, dict) or event.get('type') not in EVENTS:\n        return 'unknown_event'\n",
+            "    if not isinstance(event, dict):  # defect: an event exec does not print is read as one\n"
+            "        return 'unknown_event'\n    if event.get('type') not in EVENTS:\n        return None\n",
+            'artifacts/malformed-output')
+    adapter('adapter-missing-usage-zero', 'control_engine_codex.py',
+            "            counts = [usage.get(f) for f in ('input_tokens', 'output_tokens')]\n",
+            "            counts = [usage.get(f, 0) for f in ('input_tokens', 'output_tokens')]  # defect: missing usage is zero\n",
+            'artifacts/missing-usage')
+    adapter('adapter-failed-turn-unnamed', 'control_engine_codex.py',
+            "        if self.terminal == 'turn.failed':\n            return 'turn_failed'\n",
+            "        if False:  # defect: a failed turn is not named\n            return 'turn_failed'\n",
+            'artifacts/nonzero-and-signal')
+    adapter('adapter-signal-unnamed', 'control_engine_codex.py',
+            "        if termination.get('signal') is not None:\n            return 'signal'\n",
+            "        if False:  # defect: a signal exit is not named\n            return 'signal'\n",
+            'artifacts/nonzero-and-signal')
+    adapter('adapter-nonzero-exit-result', 'control_engine_codex.py',
+            "        if termination.get('returncode') != 0:\n            return 'nonzero_exit'\n",
+            "        if False:  # defect: a nonzero exit after a completed turn is a result\n            return 'nonzero_exit'\n",
+            'artifacts/nonzero-and-signal')
+    adapter('adapter-artifacts-unverified', 'control_engine_codex.py',
+            "    return all(fresh[k] == document.get(k) for k in DECODED)\n",
+            "    return True  # defect: a document is believed, never decoded again\n",
+            'artifacts/normal-exit')
+    # AC3 (declared falsifier): stopped is reported while a real worker descendant remains alive.
+    adapter('adapter-stop-leaves-descendant', 'control_launch.py',
+            "                if code is not None and (group is None or not group.populated()):\n",
+            "                if code is not None:  # defect: the worker's exit ends the stop, whatever is left in its group\n",
+            'stop/termination')
+    adapter('adapter-stop-graces-ignored', 'control_launch.py',
+            "        return self._settings('stop_grace_seconds', 'kill_grace_seconds')\n",
+            "        return (2.5, 2.5)  # defect: the configured graces are not the ones the stop uses\n",
+            'stop/forced')
+    adapter('adapter-stop-outcome-lost', 'control_launch.py',
+            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n                outcome = 'cancelled'\n",
+            "            elif False:  # defect: a stopped invocation's outcome is taken from its exit\n"
+            "                outcome = 'cancelled'\n",
+            'stop/cooperative')
+    # AC4 (declared falsifier): the cap is checked after the launch instead of before.
+    adapter('adapter-cap-checked-after-launch', 'control_launch.py',
+            "        metering = Metering(self, contract, reservations, accounts, launch)\n        try:\n",
+            "        metering = Metering(self, contract, reservations, accounts, launch)\n"
+            "        launch(metering.invocation, None)  # defect: the invocation is launched, then its cap is checked\n"
+            "        metering.guard.launch = lambda invocation, configuration: None\n"
+            "        try:\n",
+            'caps/refused-before-launch')
+    adapter('adapter-cap-stop-ignored', 'control_launch.py',
+            "                        if metering is not None and metering.feed(chunk):\n"
+            "                            # VELDO-0062: a cap the CLI's own report reached stops the worker.\n"
+            "                            begin('usage_cap')\n",
+            "                        if metering is not None and metering.feed(chunk):\n"
+            "                            pass  # defect: a reached cap does not stop the worker\n",
+            'caps/stop-at-cap')
+    adapter('adapter-window-unchecked', 'control_reservations.py',
+            "            for window in ACC.blocking(ACC.read(self.conn, context['account']), now):\n"
+            "                raise Refused('rate_limited:' + window)\n",
+            "            for window in ():  # defect: the account's reported usage limit is not read\n"
+            "                raise Refused('rate_limited:' + window)\n",
+            'caps/refused-before-launch')
+    # Filed hardening: the pin binds what runs, and the binary's own update check is off.
+    adapter('adapter-argv-position-unchecked', 'control_launch.py',
+            "    if engine[at] != path:\n        return 'invalid_input:engine_executable'\n",
+            "    at = engine.index(path) if path in engine else at  # defect: the pinned path anywhere in the argv binds\n"
+            "    if engine[at] != path:\n        return 'invalid_input:engine_executable'\n",
+            'pin/unexpected-launch')
+    adapter('adapter-update-check-left-on', 'control_engine_codex.py',
+            "FLAGS = ('exec', '--json', '-c', 'check_for_update_on_startup=false')\n",
+            "FLAGS = ('exec', '--json')  # defect: the binary's own startup update check stays on\n",
+            'pin/qualified-record')
+    adapter('adapter-qualification-not-scaffolded', 'init_scaffold.py',
+            '_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]\n',
+            '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid down\n',
+            'pin/qualified-record')
+    # Integration review: a stopped Codex invocation is judged as Claude Code's is, whatever it printed and
+    # however it exited; an engine module missing a protocol name is refused by that name.
+    adapter('adapter-stop-cause-ignored', 'control_engine_codex.py',
+            "        if cause in STOPS:\n            return 'stopped'\n",
+            "        if False:  # defect: a stopped invocation is judged by its output and exit alone\n"
+            "            return 'stopped'\n",
+            'stop/stopped-not-complete')
+    adapter('adapter-engine-protocol-unchecked', 'control_launch.py',
+            "        if missing:\n            return 'unregistered_adapter:engine_protocol:%s:%s' % (engine, missing[0])\n",
+            "        if False:  # defect: an engine module missing a protocol name is driven as if it had it\n"
+            "            return 'unregistered_adapter:engine_protocol:%s:%s' % (engine, missing[0])\n",
+            'lifecycle/engine-protocol')
     return result
 
 

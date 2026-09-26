@@ -86,6 +86,40 @@ the wall time it took and the CLI's conclusive totals, or, when the CLI reported
 message units stay unknown and their reservation is retained. Timeout, cancellation or a missing
 report never release it.
 
+THE ENGINE PROTOCOL (VELDO-0060, VELDO-0061). Every subscription engine module (ENGINES) implements
+ENGINE_PROTOCOL with the same signatures, and the receiver drives each through the one path here:
+- `bind(adapter, state_root)`, before acceptance: the pinned executable the adapter runs, checked
+  against the engine's installed qualification record, or `Refused` by name, so nothing is accepted,
+  reserved or spawned. Claude Code's adapter names a qualified version whose pinned copy lies under the
+  factory state root (the config's `state_root`); Codex's names the vendor binary inside its package.
+- `command(binding, adapter)`: the engine argv. Claude Code's is the adapter's prefix (its clone
+  entrance, or a transport's trusted wrapper) followed by the pinned path and the qualified flags;
+  Codex's is the adapter's own argv, exactly. The receiver then checks, for every engine, that the argv
+  binds what runs (`pinned_argv_problem`): what the trusted wrapper execs (a local adapter's whole argv, a
+  reported adapter's argv after its transport's `control_launch.py exec`) is the pinned path itself, or
+  the clone entrance (`<python> -B control_clone.py enter <clones> --`, for a local adapter the installed
+  one beside this receiver, run by this receiver's own Python) and then the pinned path, followed by its
+  qualified flags; anything else, a shell or a package manager's link first among them, is refused by
+  name. The engine's environment names the pinned path and digest (VELDO_ENGINE_PATH,
+  VELDO_ENGINE_SHA256), and whichever trusted program execs the engine (this wrapper, or the clone
+  entrance) re-hashes the file immediately before the exec and refuses a changed one (exit 70, the
+  engine never runs). The wrapper compares resolved paths, and passes the two names on to the clone
+  entrance only: the engine inherits neither.
+- `environment(binding)`: the settings the engine always runs with (DISABLE_AUTOUPDATER), set last in
+  its environment; an adapter configuring one of them otherwise is refused by name.
+- `Terminal()`: the terminal output decoder, fed what the meter is fed. At the end its document (one
+  shape for every engine: schema, engine, verdict, complete, then the engine's own decoded fields,
+  bound to the dispatch, invocation, account and pinned executable) is kept in a private file (0600 in
+  a 0700 directory, beside the store unless the config names `artifacts`), and its report {path, digest,
+  verdict, complete} is sent to the runner before the end. The invocation and the worker slot are
+  `completed` only when the document is complete, so a zero exit without a terminal record is never a
+  completion: the exit record binds the report's verdict, completeness and digest, and the runner's slot
+  and the build and review floor read completion from that record through control_dispatch.completed.
+- `Meter` (VELDO-0062), with PROVIDER, CREDENTIALS, SETTINGS and REGISTRATION (the lifecycle operations).
+  Its methods are the same for every engine: `feed`, `close`, `final`, `session` and (VELDO-0160)
+  `limit()`, the account limit the engine's own stream reported, or None, which settle classifies.
+An engine module that does not implement the protocol is refused by name before acceptance.
+
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
 """
@@ -130,7 +164,11 @@ ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('cont
 # the inherited environment loses and an adapter may configure.
 CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.values()))
 STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
+# What every engine module implements, with the same signatures (THE ENGINE PROTOCOL above).
+ENGINE_PROTOCOL = ('PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind', 'command',
+                   'environment', 'Terminal')
 RECEIPTS_SCHEMA = 'veldo.usage_receipts/v1'
+ARTIFACT_REPORT = ('path', 'digest', 'verdict', 'complete')
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
 ACCEPT_SECONDS = 30
@@ -158,6 +196,62 @@ def process_identity(pid):
             raise ValueError('process identity unreadable')
         return {'platform': 'darwin', 'host': host, 'boot_id': boot, 'pid': pid, 'start': start}
     raise ValueError('no process identity reader for ' + sys.platform)
+
+
+# THE ENGINE PROTOCOL's argv check and exec-time re-hash, the same for every engine.
+
+ENTRANCE_MODULE, WRAPPER_MODULE = 'control_clone.py', 'control_launch.py'
+ENGINE_PATH, ENGINE_DIGEST = 'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'
+WRAPPER_REFUSED = 70
+
+
+def engine_argv(argv, reported):
+    """What the trusted wrapper execs: a local adapter's whole argv (the receiver starts the wrapper around
+    it), a reported adapter's argv after its transport's wrapper (`control_launch.py exec`); None when a
+    reported argv names no wrapper."""
+    if not reported:
+        return list(argv)
+    for at in range(len(argv) - 2, -1, -1):
+        if Path(argv[at]).name == WRAPPER_MODULE and argv[at + 1] == 'exec':
+            return list(argv[at + 2:])
+    return None
+
+
+def entrance(engine):
+    """Whether an engine argv is the clone entrance's shape: `<python> -B control_clone.py enter <clones> --`
+    and then what it execs."""
+    return (len(engine) > 6 and engine[1] == '-B' and Path(engine[2]).name == ENTRANCE_MODULE and engine[3] == 'enter'
+            and engine[5] == '--')
+
+
+def pinned_argv_problem(argv, bound, reported=False):
+    """None when the argv binds what runs: the engine argv (engine_argv) is the bound pinned path, or the
+    clone entrance and then the pinned path, followed by its qualified flags; else the named refusal. A
+    local adapter's entrance is the installed one beside this receiver, run by this receiver's own Python."""
+    path, flags = bound.get('path'), list(bound.get('flags') or [])
+    engine = engine_argv(argv, reported)
+    if not isinstance(path, str) or not engine:
+        return 'invalid_input:engine_executable'
+    at = 0
+    if entrance(engine):
+        if not reported and Path(engine[2]).resolve() != Path(__file__).resolve().with_name(ENTRANCE_MODULE):
+            return 'invalid_input:engine_entrance'
+        if not reported and os.path.realpath(engine[0]) != os.path.realpath(sys.executable):
+            return 'invalid_input:engine_interpreter'
+        at = 6
+    if engine[at] != path:
+        return 'invalid_input:engine_executable'
+    if engine[at + 1:at + 1 + len(flags)] != flags:
+        return 'invalid_input:engine_flags'
+    return None
+
+
+def file_digest(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for block in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(block)
+    return 'sha256:' + digest.hexdigest()
 
 
 # The runner: decide, reserve, prepare the complete contract, then invoke the receiver.
@@ -286,8 +380,9 @@ class Runner:
         """Wait for the launched dispatch's terminal record; a conclusive end returns its slot."""
         record = launch.wait(timeout)
         if record and record['state'] == 'exited':
-            termination = record['termination'] or {}
-            clean = termination.get('returncode') == 0 and not termination.get('deadline_stop')
+            # The one completion gate (control_dispatch.completed): the exit record's clean exit and, for an
+            # engine, the complete artifact it binds (THE ENGINE PROTOCOL).
+            clean = D.completed(record)
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
         elif record and record['state'] == 'unknown':
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known.
@@ -326,6 +421,7 @@ class Launch:
         self.stop_requested = False
         self.ends_by = None
         self.heartbeat = None
+        self.artifact = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -367,6 +463,9 @@ class Launch:
             self.ends_by = message['ends_by']
         if isinstance(message.get('heartbeat'), dict):
             self.heartbeat = message['heartbeat']
+        if message.get('event') == 'artifact' and isinstance(message.get('artifact'), dict):
+            # The engine's artifact report {path, digest, verdict, complete} (THE ENGINE PROTOCOL).
+            self.artifact = message['artifact']
         return message
 
     def _end_receiver(self):
@@ -489,6 +588,7 @@ class Receiver:
         self.host = config.get('host') or socket.gethostname()
         self.login = None
         self.metering = None
+        self.binding = None
 
     def close(self):
         self.conn.close()
@@ -542,6 +642,8 @@ class Receiver:
             refusal = self._qualify(adapter)
         if not refusal:
             refusal = self._login(contract, adapter)
+        if not refusal:
+            refusal = self._bind(adapter)
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -619,6 +721,8 @@ class Receiver:
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
+            if self.metering.report is not None:
+                self.emit({'event': 'artifact', 'artifact': self.metering.report})
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
             # outcome is unknown, and the unit and station stay held.
@@ -639,7 +743,9 @@ class Receiver:
                                     expected_state='running')
             self.emit({'event': 'unknown', 'supervision': supervision})
             return
-        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())
+        report = self.metering.report if self.metering is not None else None
+        artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
+        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)
         self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision})
 
     def _login(self, contract, adapter):
@@ -652,6 +758,9 @@ class Receiver:
         module = ENGINES.get(engine)
         if module is None:
             return 'unregistered_adapter:engine:' + str(engine)
+        missing = [name for name in ENGINE_PROTOCOL if not hasattr(module, name)]
+        if missing:
+            return 'unregistered_adapter:engine_protocol:%s:%s' % (engine, missing[0])
         # What the adapter configures reaches the engine as configured; a login in it is refused by name.
         configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)
         if configured:
@@ -667,6 +776,30 @@ class Receiver:
         # The engine's local time zone, for a CLI that states a reset in local time (Codex).
         zone = (adapter.get('environment') or {}).get('TZ', os.environ.get('TZ'))
         self.login = {'engine': module, 'account': account, 'record': record, 'zone': zone}
+        return None
+
+    def _bind(self, adapter):
+        """THE ENGINE PROTOCOL's one binding path (VELDO-0060, VELDO-0061): the engine's pinned executable,
+        its argv and its settings, bound before acceptance. None when it may run; else the named refusal,
+        with nothing accepted, reserved or spawned."""
+        self.binding = None
+        module = (self.login or {}).get('engine')
+        if module is None:
+            return None
+        try:
+            bound = module.bind(adapter, self.config.get('state_root'))
+            argv = module.command(bound, adapter)
+            settings = module.environment(bound)
+        except module.Refused as error:
+            return error.code
+        refusal = pinned_argv_problem(argv, bound, adapter.get('identity', 'local') == 'reported')
+        if refusal:
+            return refusal
+        configured = adapter.get('environment') or {}
+        for name in sorted(settings):
+            if name in configured and configured[name] != settings[name]:
+                return 'invalid_input:adapter_environment:' + name
+        self.binding = dict(bound, argv=argv, environment=settings)
         return None
 
     def _invoke(self, contract, acceptance, adapter):
@@ -734,11 +867,18 @@ class Receiver:
             environment['VELDO_ACCOUNT'] = self.login['account']
         else:
             environment.update(adapter.get('environment') or {})
+        argv = list(adapter['argv'])
+        if self.binding is not None:
+            # THE ENGINE PROTOCOL: the bound engine argv and the engine's own settings, last.
+            argv = list(self.binding['argv'])
+            environment.update(self.binding['environment'])
+            # What the trusted program that execs the engine re-hashes immediately before the exec.
+            environment[ENGINE_PATH], environment[ENGINE_DIGEST] = self.binding['path'], self.binding['sha256']
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         if adapter.get('identity', 'local') != 'reported':
-            return self._contained(dispatch_id, list(adapter['argv']), environment)
-        return subprocess.Popen(list(adapter['argv']), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            return self._contained(dispatch_id, argv, environment)
+        return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.DEVNULL, env=environment, start_new_session=True, close_fds=True)
 
     def _contained(self, dispatch_id, argv, environment):
@@ -1057,6 +1197,9 @@ class Metering:
         self.start = None
         self.settled = False
         self.file = None
+        # THE ENGINE PROTOCOL: the engine's terminal output, decoded from the same stream, and its report.
+        self.terminal = self.engine.Terminal()
+        self.report = None
 
     def _stop(self, dispatch_id):
         self.stop = True
@@ -1076,6 +1219,7 @@ class Metering:
 
     def feed(self, chunk):
         """Whether the worker must stop, after the observations in `chunk`."""
+        self.terminal.feed(chunk)
         for observation in self.meter.feed(chunk):
             self._observe(observation)
         return self.stop
@@ -1107,6 +1251,29 @@ class Metering:
             self.errors.append(error.code)
             self.stop = True
 
+    def _artifact(self, termination, cause):
+        """The invocation's artifact (THE ENGINE PROTOCOL): the engine's decoded document, bound to its
+        dispatch, invocation, account and pinned executable, kept in its private file; its report {path,
+        digest, verdict, complete}. A document that cannot be kept is reported with no path: never complete."""
+        self.terminal.close()
+        executable = self.receiver.binding or {}
+        document = dict(self.terminal.document(termination, cause), dispatch_id=self.dispatch_id,
+                        invocation=self.invocation, account=self.account,
+                        executable={k: executable.get(k) for k in ('engine', 'version', 'path', 'sha256')})
+        data = (json.dumps(document, sort_keys=True) + '\n').encode()
+        directory = Path(self.receiver.config.get('artifacts') or Path(self.receiver.config['store']).parent / 'artifacts')
+        try:
+            directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+            path = directory / (hashlib.sha256(self.invocation.encode()).hexdigest() + '.json')
+            with os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as handle:
+                handle.write(data)
+        except OSError as error:
+            self.errors.append('artifact:' + type(error).__name__)
+            path = None
+        verdict = document['verdict'] if path is not None else 'artifact_unkept'
+        return {'path': str(path) if path else None, 'digest': 'sha256:' + hashlib.sha256(data).hexdigest(),
+                'verdict': verdict, 'complete': verdict == 'complete' and document['complete'] is True}
+
     def settle(self, termination, cause):
         """The one final report. `termination` None: the engine never started (not executed)."""
         if self.settled:
@@ -1127,6 +1294,9 @@ class Metering:
                 outcome = 'cancelled'
             else:
                 outcome = 'completed' if termination.get('returncode') == 0 else 'failed'
+            self.report = self._artifact(termination, cause)
+            if outcome == 'completed' and not self.report['complete']:
+                outcome = 'failed'  # a zero exit is a completion only with its terminal record (THE ENGINE PROTOCOL)
             # VELDO-0160: a run its account's limit stopped ends account_limit, with the window and reset.
             outcome, limit = ACC.classify(outcome, self.meter.limit())
         self.sequence += 1
@@ -1177,8 +1347,24 @@ def wrap(argv):
     # The engine starts with the default dispositions of the signals Python ignores, as subprocess does.
     for number in (signal.SIGPIPE, signal.SIGXFSZ):
         signal.signal(number, signal.SIG_DFL)
+    environment = dict(os.environ)
+    # THE ENGINE PROTOCOL: the names of the exec-time re-hash reach the clone entrance only, never an engine.
+    pinned, expected = environment.pop(ENGINE_PATH, None), environment.pop(ENGINE_DIGEST, None)
+    if pinned is not None and entrance(argv):
+        environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected
+    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):
+        # This wrapper execs the pinned engine itself (however its path is spelled), so it re-hashes the
+        # file now, immediately before the exec; a changed one never runs.
+        try:
+            unchanged = file_digest(path) == expected
+        except OSError:
+            unchanged = False
+        if not unchanged:
+            sys.stderr.write('wrapper refused: binding_mismatch:engine_digest\n')
+            sys.stderr.flush()
+            os._exit(WRAPPER_REFUSED)
     try:
-        os.execv(path, argv)
+        os.execve(path, argv, environment)
     except OSError:
         os._exit(126)
 

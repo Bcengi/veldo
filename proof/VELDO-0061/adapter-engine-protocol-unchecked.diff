@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -753 +753 @@
+-        if missing:
++        if False:  # defect: an engine module missing a protocol name is driven as if it had it

@@ -1,0 +1,7 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -770 +770,3 @@
+-    return _floor_organ("control_dispatch").completed(record)
++    termination = (record or {}).get("termination") or {}  # defect: the floor reads the exit code alone
++    return ((record or {}).get("state") == "exited" and termination.get("returncode") == 0
++            and termination.get("signal") is None and termination.get("deadline_stop") is False)

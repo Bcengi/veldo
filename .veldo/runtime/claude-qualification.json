@@ -1,0 +1,55 @@
+{
+ "engine": "claude_code",
+ "note": "The Claude Code configuration VELDO-0060 qualifies on Linux. Every value is read from the installed binary: its digest and stream formats from proof/VELDO-0062/cli-formats.json, its command line from proof/VELDO-0060/cli-options.json. A version not listed here, or a pinned copy whose digest differs, is refused before anything is spawned; upgrading is a deliberate requalification that adds a version.",
+ "schema": "veldo.engine_qualification/v1",
+ "spec_id": "VELDO-0060",
+ "versions": {
+  "2.1.281": {
+   "authentication": {
+    "init_api_key_source": "none",
+    "mode": "subscription",
+    "profile_variable": "CLAUDE_CONFIG_DIR"
+   },
+   "environment": {
+    "DISABLE_AUTOUPDATER": "1"
+   },
+   "flags": [
+    "--print",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+   ],
+   "host_kind": "linux",
+   "input": "the dispatch packet on standard input, the prompt of print mode",
+   "live_usage": null,
+   "pinned": "<state root>/engines/claude_code/2.1.281",
+   "rate_limit_windows": [
+    "five_hour",
+    "seven_day",
+    "seven_day_opus",
+    "seven_day_sonnet",
+    "seven_day_overage_included",
+    "overage"
+   ],
+   "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "source": "~/.local/share/claude/versions/2.1.281",
+   "terminal_protocol": {
+    "error_subtypes": [
+     "error_during_execution",
+     "error_max_turns",
+     "error_max_budget_usd",
+     "error_max_structured_output_retries"
+    ],
+    "output": "stream-json",
+    "success_subtype": "success",
+    "terminal_event": "result"
+   },
+   "usage_units": [
+    "invocations",
+    "wall_seconds",
+    "tokens",
+    "messages"
+   ]
+  }
+ }
+}

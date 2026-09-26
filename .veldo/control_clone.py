@@ -45,8 +45,10 @@ threat model names and grants everything else, so an engine keeps what it can do
 - Writes are denied beneath exactly these protected targets, recorded in the clone's manifest at
   provisioning: the clone root (every clone, including this clone's own manifest, pins record and
   entrance records), the cache root (every cache), the store's directory, the configured protected
-  directories (the keys), and the Git metadata of every repository the store binds (its git
-  directory, common directory and .git entry). A worker's own work tree and scratch directory (its
+  directories (the keys), the configured engines directories (VELDO-0060/0061: the pinned engine
+  copies under the factory state root and the engine packages, so no worker replaces what the next
+  dispatch runs; still readable and executable), and the Git metadata of every repository the store
+  binds (its git directory, common directory and .git entry). A worker's own work tree and scratch directory (its
   TMPDIR) are granted back beneath the clone root; a consumer's scratch directory only, so it reads
   the clone and writes none of it.
 - Reads of file content are denied beneath the cache root and the configured protected directories.
@@ -111,6 +113,8 @@ EP = _organ('env_provision')
 SCHEMA = 'veldo.worker_clone/v1'
 MANIFEST = 'clone.json'
 ENTERED = 'entered'
+# The pinned engine the receiver bound (control_launch's ENGINE PROTOCOL), re-hashed before the exec.
+ENGINE_PATH, ENGINE_DIGEST = 'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'
 PIN_PREFIX = 'refs/veldo/pins/'
 ATTACHMENT_PREFIX = 'refs/attachments/'
 ATTACHMENT_FIELDS = ('name', 'domain', 'repository', 'commit')
@@ -385,7 +389,23 @@ def enter(clones, argv, environment=None):
     child = _git_process.clean_env(dict(source), profile='network')
     child.update(TMPDIR=user['scratch'], TMP=user['scratch'], TEMP=user['scratch'], VELDO_CLONE=manifest['work'])
     os.chdir(manifest['work'])
+    pinned, expected = child.pop(ENGINE_PATH, None), child.pop(ENGINE_DIGEST, None)
+    if pinned is not None:
+        # VELDO-0060/0061: the receiver bound this pinned engine; the entrance execs it, so it re-hashes the
+        # file now, immediately before the exec, and a changed one (or another program) never runs.
+        if not argv or argv[0] != pinned:
+            raise Refused('binding_mismatch:engine_executable', 'the entrance execs another program than the pinned one')
+        if _file_digest(pinned) != expected:
+            raise Refused('binding_mismatch:engine_digest', 'the pinned engine changed after it was bound')
     os.execvpe(argv[0], list(argv), child)
+
+
+def _file_digest(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for block in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(block)
+    return 'sha256:' + digest.hexdigest()
 
 
 # The provisioner.
@@ -393,10 +413,11 @@ def enter(clones, argv, environment=None):
 class Clones(EP.EnvProvisioner):
     """Worker clones of one domain over the runner's control_dispatch.Dispatches (its store connection,
     bindings and dispatch records). `clones` and `caches` are the roots clones and repository caches live
-    under; `protected` names the directories no worker may read or write (the key directories). The
+    under; `protected` names the directories no worker may read or write (the key directories), and
+    `engines` those it may read and execute but never write (the pinned engine copies and packages). The
     store's directory is never written by a worker either."""
 
-    def __init__(self, dispatches, *, clones, caches, protected=(), clock=None):
+    def __init__(self, dispatches, *, clones, caches, protected=(), engines=(), clock=None):
         super().__init__()
         self.C = _organ('control_containment')  # VELDO-0040: a clone user's ending read from the kernel
         self.dispatches, self.store, self.conn = dispatches, dispatches.store, dispatches.conn
@@ -404,12 +425,14 @@ class Clones(EP.EnvProvisioner):
         self.clones, self.caches = Path(clones).resolve(), Path(caches).resolve()
         database = next((row[2] for row in self.conn.execute('PRAGMA database_list') if row[1] == 'main'), '')
         self.protected = [Path(p).resolve() for p in protected]
+        self.engines = [Path(p).resolve() for p in engines]
         self.store_directory = [Path(database).resolve().parent] if database else []
         self.observations, self.counts = [], {'accepted': 0, 'refused': 0}
         roots = (self.clones, self.caches)
-        if _overlap(*roots) or any(_overlap(r, p) for r in roots for p in self.protected + self.store_directory):
+        if _overlap(*roots) or any(_overlap(r, p) for r in roots
+                                   for p in self.protected + self.store_directory + self.engines):
             raise Refused('invalid_input:root', 'the clone and cache roots are separate and outside every protected path')
-        self._layout(list(roots) + self.protected + self.store_directory)
+        self._layout(list(roots) + self.protected + self.store_directory + self.engines)
         for root in roots:
             root.mkdir(mode=0o700, parents=True, exist_ok=True)
 
@@ -462,7 +485,7 @@ class Clones(EP.EnvProvisioner):
         (manifest `ancestors`)."""
         metadata = self._metadata()
         self._layout(metadata)
-        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata})
+        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata, *self.engines})
         read = sorted({self.caches, *self.protected})
         protected = {'write': [str(p) for p in write], 'read': [str(p) for p in read]}
         return protected, ancestors(write, read)
