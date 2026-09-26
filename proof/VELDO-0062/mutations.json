@@ -1,0 +1,2037 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0062 login/recorded-account-profile",
+    true
+   ],
+   [
+    "VELDO-0062 login/no-paid-api",
+    true
+   ],
+   [
+    "VELDO-0062 login/substitution-refused",
+    true
+   ],
+   [
+    "VELDO-0062 usage/reserved-before-launch",
+    true
+   ],
+   [
+    "VELDO-0062 usage/allowance-states",
+    true
+   ],
+   [
+    "VELDO-0062 usage/competing-remainder",
+    true
+   ],
+   [
+    "VELDO-0062 usage/cap-stops-worker",
+    true
+   ],
+   [
+    "VELDO-0062 usage/rate-limit-reset",
+    true
+   ],
+   [
+    "VELDO-0062 settle/once",
+    true
+   ],
+   [
+    "VELDO-0062 settle/missing-retained",
+    true
+   ],
+   [
+    "VELDO-0062 settle/timeout-retained",
+    true
+   ],
+   [
+    "VELDO-0062 settle/cancel-retained",
+    true
+   ],
+   [
+    "VELDO-0062 attribution/stored-account",
+    true
+   ],
+   [
+    "VELDO-0062 attribution/measurement-removed",
+    true
+   ],
+   [
+    "VELDO-0062 attribution/watermark",
+    true
+   ]
+  ],
+  "seconds": 31.398
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/recorded-account-profile detail: acct-c1: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [/dev/shm/v62-2hf88e_s/helper/accounts/profiles/acct-c3]",
+    "VELDO-0062 login/recorded-account-profile detail: acct-c2: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [/dev/shm/v62-2hf88e_s/helper/accounts/profiles/acct-c3]",
+    "VELDO-0062 login/recorded-account-profile detail: acct-x1: CODEX_HOME is that account's registered profile on this host, not the caller's [/dev/shm/v62-2hf88e_s/helper/accounts/profiles/acct-x2]",
+    "VELDO-0062 login/recorded-account-profile detail: the two Claude Code accounts ran on two different profiles"
+   ],
+   "diff": "proof/VELDO-0062/account-profile-from-caller.diff",
+   "failed_rows": [
+    "VELDO-0062 login/recorded-account-profile"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "a81cce07748f2e7814c9642fcc6b972ae2b978b02ddb7b87ce3909fd2d7aaf25",
+   "name": "account-profile-from-caller",
+   "named_row_red": true,
+   "named_rows": [
+    "login/recorded-account-profile"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     false
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.423,
+   "source_sha256": "fd706df9970eccfa6808af264b6820a89f9410dddb8937a8dbb2a02c3cbef814"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no paid-API credential variable reached the engine, planted in the caller's environment and in the adapter's [['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_FOUNDRY_API_KEY', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_FOUNDRY', 'CLAUDE_CODE_USE_VERTEX', 'CODEX_API_KEY', 'OPENAI_API_KEY']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no paid-API credential variable reached the engine, planted in the caller's environment and in the adapter's [['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_FOUNDRY_API_KEY', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_FOUNDRY', 'CLAUDE_CODE_USE_VERTEX', 'CODEX_API_KEY', 'OPENAI_API_KEY']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no paid-API credential variable reached the engine, planted in the caller's environment and in the adapter's [['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_FOUNDRY_API_KEY', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_FOUNDRY', 'CLAUDE_CODE_USE_VERTEX', 'CODEX_API_KEY', 'OPENAI_API_KEY']]"
+   ],
+   "diff": "proof/VELDO-0062/account-paid-api-kept.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "c4b4b8b07c84cefd95ae76f4ab52d66390a3567d879e261d3bc3c08cffdb5a0b",
+   "name": "account-paid-api-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 34.665,
+   "source_sha256": "fd706df9970eccfa6808af264b6820a89f9410dddb8937a8dbb2a02c3cbef814"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/substitution-refused detail: acct-paused/claude substituted or unusable: refused by name, nothing launched, nothing reserved [None]"
+   ],
+   "diff": "proof/VELDO-0062/account-status-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0062 login/substitution-refused"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "97e468fc201dfb86223bedffbce02523f8c696bfe3656bdc3352f294e7288ccc",
+   "name": "account-status-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "login/substitution-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     false
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.483,
+   "source_sha256": "fd706df9970eccfa6808af264b6820a89f9410dddb8937a8dbb2a02c3cbef814"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/reserved-before-launch detail: claude follow-on past the unit's invocation cap: refused before launch, nothing spawned [missing_authority:allowance:usage_cap:unit:invocations, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: codex follow-on past the unit's invocation cap: refused before launch, nothing spawned [missing_authority:allowance:usage_cap:unit:invocations, 1]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 13, 'wall_seconds': 4.469512, 'tokens': 1504, 'messages': 11} vs {'invocations': 14, 'tokens': 1504, 'messages': 11}]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 12, 'wall_seconds': 3.8685799999999997, 'tokens': 1542, 'messages': 8} vs {'invocations': 13, 'tokens': 1542, 'messages': 8}]"
+   ],
+   "diff": "proof/VELDO-0062/account-follow-on-checked-after-launch.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/reserved-before-launch",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "73275e3172212a1c18d82225bc619b3cd885134ba2bab8d4e7d9eb334bb69547",
+   "name": "account-follow-on-checked-after-launch",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/reserved-before-launch"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     false
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 25.147,
+   "source_sha256": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/reserved-before-launch detail: claude retry: reserved as retry before the engine started, which saw its pending reservation at its start, one launch [initial, pending, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: claude follow_on: reserved as follow_on before the engine started, which saw its pending reservation at its start, one launch [initial, pending, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: codex retry: reserved as retry before the engine started, which saw its pending reservation at its start, one launch [initial, pending, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: codex follow_on: reserved as follow_on before the engine started, which saw its pending reservation at its start, one launch [initial, pending, 1]"
+   ],
+   "diff": "proof/VELDO-0062/account-boundary-always-initial.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/reserved-before-launch"
+   ],
+   "module": ".veldo/control_reservation_runtime.py",
+   "mutant_sha256": "7463538b9e1ecb4b86eadfaca66c0049552d49e6c0a96ba4be1b43c37c8e3957",
+   "name": "account-boundary-always-initial",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/reserved-before-launch"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     false
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 31.975,
+   "source_sha256": "720c52c40caf5a8cb5c39c9a74965e3aa02ea6619abe7a58731fe24417dbbdfb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/reserved-before-launch detail: claude initial: reserved as initial before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: claude retry: reserved as retry before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: claude follow_on: reserved as follow_on before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: claude follow-on past the unit's invocation cap: refused before launch, nothing spawned [None, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: codex initial: reserved as initial before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: codex retry: reserved as retry before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: codex follow_on: reserved as follow_on before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
+    "VELDO-0062 usage/reserved-before-launch detail: codex follow-on past the unit's invocation cap: refused before launch, nothing spawned [None, 1]",
+    "VELDO-0062 usage/allowance-states detail: claude available allowance: launched once and settled [exited, None]",
+    "VELDO-0062 usage/allowance-states detail: claude exhausted allowance: refused by name, nothing launched [None]",
+    "VELDO-0062 usage/allowance-states detail: claude unknown allowance (an earlier call reported no tokens): refused by name, nothing launched [None]",
+    "VELDO-0062 usage/allowance-states detail: codex available allowance: launched once and settled [exited, None]",
+    "VELDO-0062 usage/allowance-states detail: codex exhausted allowance: refused by name, nothing launched [None]",
+    "VELDO-0062 usage/allowance-states detail: codex unknown allowance (an earlier call reported no tokens): refused by name, nothing launched [None]",
+    "VELDO-0062 usage/competing-remainder detail: two invocations for one remaining invocation: one launched, the other refused by name [[('exited', None), ('exited', None)], 2 launches, 2 spawns]",
+    "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [30.5 s, None, None]",
+    "VELDO-0062 usage/cap-stops-worker detail: codex: the report that reached the token cap stopped the worker, which never finished [30.3 s, None, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: claude: the reported window is recorded on the account with its reported reset and source dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex: the reported window is recorded on the account with its reported reset and source dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: claude: inside the reported window a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex: inside the reported window a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 settle/once detail: claude: a normal report settles the CLI's own totals once, the repeated lines counted once [None, None]",
+    "VELDO-0062 settle/once detail: claude: a duplicate delivery changes no balance, a conflicting one is refused [invalid_input, invalid_input]",
+    "VELDO-0062 settle/once detail: codex: a normal report settles the CLI's own totals once, the repeated lines counted once [None, None]",
+    "VELDO-0062 settle/once detail: codex: a duplicate delivery changes no balance, a conflicting one is refused [invalid_input, invalid_input]",
+    "VELDO-0062 settle/once detail: claude: the raw receipts are private and every ledger digest is a stored line's, the recomputed totals equal the balance [{'tokens': 0, 'messages': 0}]",
+    "VELDO-0062 settle/once detail: codex: the raw receipts are private and every ledger digest is a stored line's, the recomputed totals equal the balance [{'tokens': 0, 'messages': 0}]",
+    "VELDO-0062 settle/missing-retained detail: claude: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [None, None, None]",
+    "VELDO-0062 settle/missing-retained detail: codex: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [None, None, None]",
+    "VELDO-0062 settle/timeout-retained detail: claude: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [None, None, None]",
+    "VELDO-0062 settle/timeout-retained detail: codex: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [None, None, None]",
+    "VELDO-0062 settle/cancel-retained detail: claude: a cancelled invocation keeps its reservation, and the next invocation is refused [None, None, None]",
+    "VELDO-0062 settle/cancel-retained detail: codex: a cancelled invocation keeps its reservation, and the next invocation is refused [None, None, None]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [None, False]",
+    "VELDO-0062 attribution/stored-account detail: acct-c2: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [None, False]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [None, False]",
+    "VELDO-0062 attribution/stored-account detail: each unit and the journey project show the same totals as their receipts",
+    "VELDO-0062 attribution/measurement-removed detail: an invocation that reported nothing keeps its allocation: one invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, never counted as unused [{'totals': {'invocations': 0, 'wall_seconds': 0, 'tokens': 0, 'messages': 0}, 'capacity': 0, 'remaining': {'capacity': 5, 'invocations': 20, 'tokens': 500, 'wall_seconds': 1000000}, 'unknown': [], 'open': 0, 'watermark': None}]",
+    "VELDO-0062 attribution/watermark detail: every account, project and unit shows as its watermark the journal sequence of its latest recorded usage [0 subjects, []]"
+   ],
+   "diff": "proof/VELDO-0062/account-invocation-unreserved.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/reserved-before-launch",
+    "VELDO-0062 usage/allowance-states",
+    "VELDO-0062 usage/competing-remainder",
+    "VELDO-0062 usage/cap-stops-worker",
+    "VELDO-0062 usage/rate-limit-reset",
+    "VELDO-0062 settle/once",
+    "VELDO-0062 settle/missing-retained",
+    "VELDO-0062 settle/timeout-retained",
+    "VELDO-0062 settle/cancel-retained",
+    "VELDO-0062 attribution/stored-account",
+    "VELDO-0062 attribution/measurement-removed",
+    "VELDO-0062 attribution/watermark"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "20435c346700dbe33f2c50b77bb683eddd5524500fac7d1c10e14718ea14814f",
+   "name": "account-invocation-unreserved",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/allowance-states"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     false
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     false
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     false
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     false
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     false
+    ],
+    [
+     "VELDO-0062 settle/once",
+     false
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     false
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     false
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     false
+    ]
+   ],
+   "seconds": 85.935,
+   "source_sha256": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [30.5 s, None, completed]",
+    "VELDO-0062 usage/cap-stops-worker detail: codex: the report that reached the token cap stopped the worker, which never finished [30.3 s, None, completed]"
+   ],
+   "diff": "proof/VELDO-0062/account-cap-stop-ignored.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/cap-stops-worker"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "47e5b077da83875c83fec1f066d1721962c8075ad8fc94c4d4eacc0a23f46628",
+   "name": "account-cap-stop-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/cap-stops-worker"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     false
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 92.836,
+   "source_sha256": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/rate-limit-reset detail: claude: inside the reported window a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex: inside the reported window a new invocation is refused by name and nothing launches [None]"
+   ],
+   "diff": "proof/VELDO-0062/account-rate-window-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/rate-limit-reset"
+   ],
+   "module": ".veldo/control_reservations.py",
+   "mutant_sha256": "981e9212746b2f2eedb19c55c76b2d9a2db7fe3d47fe0fe1104d8e49ed0a352c",
+   "name": "account-rate-window-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/rate-limit-reset"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     false
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.781,
+   "source_sha256": "6565f65d6d0e208658e2d5fa32208e4e04e2b83a1c2603d8c896c55eb266ec43"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 settle/timeout-retained detail: claude: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [not_executed, settled, None]",
+    "VELDO-0062 settle/timeout-retained detail: codex: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [not_executed, settled, None]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 13, 'wall_seconds': 1.7144659999999998, 'tokens': 1506, 'messages': 12} vs {'invocations': 14, 'tokens': 1506, 'messages': 12}]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 12, 'wall_seconds': 1.102287, 'tokens': 1542, 'messages': 8} vs {'invocations': 13, 'tokens': 1542, 'messages': 8}]"
+   ],
+   "diff": "proof/VELDO-0062/account-timeout-releases.diff",
+   "failed_rows": [
+    "VELDO-0062 settle/timeout-retained",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "0f1e68a389ed23717bfb6408d3225d844940d07b804ffbf5581fc1e42c4af3ba",
+   "name": "account-timeout-releases",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/timeout-retained"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     false
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.406,
+   "source_sha256": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [0.6 s, usage_cap, None]",
+    "VELDO-0062 usage/cap-stops-worker detail: codex: the report that reached the token cap stopped the worker, which never finished [0.4 s, usage_cap, None]",
+    "VELDO-0062 settle/cancel-retained detail: claude: a cancelled invocation keeps its reservation, and the next invocation is refused [not_executed, settled, None]",
+    "VELDO-0062 settle/cancel-retained detail: codex: a cancelled invocation keeps its reservation, and the next invocation is refused [not_executed, settled, None]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 13, 'wall_seconds': 44.02384430435181, 'tokens': 1506, 'messages': 12} vs {'invocations': 14, 'tokens': 1506, 'messages': 12}]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 12, 'wall_seconds': 43.5672851068573, 'tokens': 1542, 'messages': 8} vs {'invocations': 13, 'tokens': 1542, 'messages': 8}]"
+   ],
+   "diff": "proof/VELDO-0062/account-cancel-releases.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/cap-stops-worker",
+    "VELDO-0062 settle/cancel-retained",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "5125415d57ce9e45eb3e7eb01d9de4a4a51e80d8e39ddbb531a4d26f9ed636a9",
+   "name": "account-cancel-releases",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/cancel-retained"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     false
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 34.011,
+   "source_sha256": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/allowance-states detail: claude unknown allowance (an earlier call reported no tokens): refused by name, nothing launched [None]",
+    "VELDO-0062 settle/missing-retained detail: claude: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [settled, [], None]",
+    "VELDO-0062 settle/timeout-retained detail: claude: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [timeout, settled, None]",
+    "VELDO-0062 settle/cancel-retained detail: claude: a cancelled invocation keeps its reservation, and the next invocation is refused [cancelled, settled, None]",
+    "VELDO-0062 attribution/measurement-removed detail: an invocation that reported nothing keeps its allocation: one invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, never counted as unused [{'totals': {'invocations': 1, 'wall_seconds': 0.083872, 'tokens': 0, 'messages': 0}, 'capacity': 0, 'remaining': {'capacity': 5, 'invocations': 19, 'tokens': 500, 'wall_seconds': 999999.916128}, 'unknown': [], 'open': 0, 'watermark': 694}]"
+   ],
+   "diff": "proof/VELDO-0062/account-claude-missing-result-conclusive.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/allowance-states",
+    "VELDO-0062 settle/missing-retained",
+    "VELDO-0062 settle/timeout-retained",
+    "VELDO-0062 settle/cancel-retained",
+    "VELDO-0062 attribution/measurement-removed"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "f9cc19bda2484e43affc8254731f9b056032c833d95d1d1ca52fea6fb5225dca",
+   "name": "account-claude-missing-result-conclusive",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/missing-retained"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     false
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     false
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     false
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 33.353,
+   "source_sha256": "70988251cedf1c6e4f5bb5eae842c3efc93ced17b6428ca4e0d4f68fbc223011"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/allowance-states detail: codex unknown allowance (an earlier call reported no tokens): refused by name, nothing launched [None]",
+    "VELDO-0062 settle/missing-retained detail: codex: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [settled, [], None]",
+    "VELDO-0062 settle/timeout-retained detail: codex: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [timeout, settled, None]",
+    "VELDO-0062 settle/cancel-retained detail: codex: a cancelled invocation keeps its reservation, and the next invocation is refused [cancelled, settled, None]"
+   ],
+   "diff": "proof/VELDO-0062/account-codex-open-turn-conclusive.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/allowance-states",
+    "VELDO-0062 settle/missing-retained",
+    "VELDO-0062 settle/timeout-retained",
+    "VELDO-0062 settle/cancel-retained"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "2cbd5d1bc4ed34b314382641ea8daf1a63a764c17e78913a1584e7e5c4f75a90",
+   "name": "account-codex-open-turn-conclusive",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/missing-retained"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     false
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     false
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     false
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 33.11,
+   "source_sha256": "8c9b370f50142206b5a17bb0c3c203bb766b8d59148dbac488c4b2f5085373c5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 settle/once detail: claude: a normal report settles the CLI's own totals once, the repeated lines counted once [{'invocations': 1, 'messages': 2, 'tokens': 300, 'wall_seconds': 0.111106}, settled]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 13, 'wall_seconds': 4.505908, 'tokens': 1644, 'messages': 12} vs {'invocations': 13, 'tokens': 1504, 'messages': 11}]"
+   ],
+   "diff": "proof/VELDO-0062/account-claude-repeat-counted.diff",
+   "failed_rows": [
+    "VELDO-0062 settle/once",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "835c59432cc2a7acf456ba1d04900ccaffcdf39c2ecc8e9543f2e2e68d649f3b",
+   "name": "account-claude-repeat-counted",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/once"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     false
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.682,
+   "source_sha256": "70988251cedf1c6e4f5bb5eae842c3efc93ced17b6428ca4e0d4f68fbc223011"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 settle/once detail: codex: a normal report settles the CLI's own totals once, the repeated lines counted once [{'invocations': 1, 'messages': 2, 'tokens': 600, 'wall_seconds': 0.103247}, settled]",
+    "VELDO-0062 settle/once detail: codex: the raw receipts are private and every ledger digest is a stored line's, the recomputed totals equal the balance [{'tokens': 600, 'messages': 2}]"
+   ],
+   "diff": "proof/VELDO-0062/account-codex-repeat-counted.diff",
+   "failed_rows": [
+    "VELDO-0062 settle/once"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "8399ae0074ff3c32a9c9da4636b64685c1387d9c2322aa561a4fdc9d1f00e01e",
+   "name": "account-codex-repeat-counted",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/once"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     false
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 33.351,
+   "source_sha256": "8c9b370f50142206b5a17bb0c3c203bb766b8d59148dbac488c4b2f5085373c5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [acct-c3, False]",
+    "VELDO-0062 attribution/stored-account detail: acct-c2: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [acct-c3, False]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [acct-c3, False]",
+    "VELDO-0062 attribution/stored-account detail: no window of these runs reached the ambient accounts [2]"
+   ],
+   "diff": "proof/VELDO-0062/account-caller-label-attributed.diff",
+   "failed_rows": [
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "17a50e5204d03e35876e0db56e29134849e023aa2ef83676b4bb5e1250e2466e",
+   "name": "account-caller-label-attributed",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/stored-account"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.26,
+   "source_sha256": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 attribution/measurement-removed detail: an invocation that reported nothing keeps its allocation: one invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, never counted as unused [{'totals': {'invocations': 1, 'wall_seconds': 0.084188, 'tokens': 0, 'messages': 0}, 'capacity': 0, 'remaining': {'capacity': 5, 'invocations': 19, 'tokens': 500, 'wall_seconds': 999999.915812}, 'unknown': ['messages', 'tokens'], 'open': 1, 'watermark': 678}]"
+   ],
+   "diff": "proof/VELDO-0062/account-unknown-remaining-counted.diff",
+   "failed_rows": [
+    "VELDO-0062 attribution/measurement-removed"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "49d3c83170becf8be535b44940b334d0e3b8857cac3a6452275278486062e140",
+   "name": "account-unknown-remaining-counted",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/measurement-removed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 31.659,
+   "source_sha256": "fd706df9970eccfa6808af264b6820a89f9410dddb8937a8dbb2a02c3cbef814"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 attribution/watermark detail: every account, project and unit shows as its watermark the journal sequence of its latest recorded usage [43 subjects, [('account', 'acct-c1', 629, 634), ('account', 'acct-c2', 676, 678), ('account', 'acct-c3', 423, 426)]]"
+   ],
+   "diff": "proof/VELDO-0062/account-watermark-from-reservation.diff",
+   "failed_rows": [
+    "VELDO-0062 attribution/watermark"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "49e87301acc4ba8c2c620ecd36d8b704e46d0378b00bb3a56761ab689ca0d54f",
+   "name": "account-watermark-from-reservation",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/watermark"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     false
+    ]
+   ],
+   "seconds": 32.515,
+   "source_sha256": "fd706df9970eccfa6808af264b6820a89f9410dddb8937a8dbb2a02c3cbef814"
+  }
+ ],
+ "mutations_per_row": {
+  "attribution/measurement-removed": [
+   "account-unknown-remaining-counted"
+  ],
+  "attribution/stored-account": [
+   "account-caller-label-attributed"
+  ],
+  "attribution/watermark": [
+   "account-watermark-from-reservation"
+  ],
+  "login/no-paid-api": [
+   "account-paid-api-kept"
+  ],
+  "login/recorded-account-profile": [
+   "account-profile-from-caller"
+  ],
+  "login/substitution-refused": [
+   "account-status-unchecked"
+  ],
+  "settle/cancel-retained": [
+   "account-cancel-releases"
+  ],
+  "settle/missing-retained": [
+   "account-claude-missing-result-conclusive",
+   "account-codex-open-turn-conclusive"
+  ],
+  "settle/once": [
+   "account-claude-repeat-counted",
+   "account-codex-repeat-counted"
+  ],
+  "settle/timeout-retained": [
+   "account-timeout-releases"
+  ],
+  "usage/allowance-states": [
+   "account-invocation-unreserved"
+  ],
+  "usage/cap-stops-worker": [
+   "account-cap-stop-ignored"
+  ],
+  "usage/rate-limit-reset": [
+   "account-rate-window-unchecked"
+  ],
+  "usage/reserved-before-launch": [
+   "account-follow-on-checked-after-launch",
+   "account-boundary-always-initial"
+  ]
+ },
+ "noop": {
+  "control_accounts.py": {
+   "copy_sha256": "fd706df9970eccfa6808af264b6820a89f9410dddb8937a8dbb2a02c3cbef814",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.261,
+   "source_sha256": "fd706df9970eccfa6808af264b6820a89f9410dddb8937a8dbb2a02c3cbef814"
+  },
+  "control_engine_claude.py": {
+   "copy_sha256": "70988251cedf1c6e4f5bb5eae842c3efc93ced17b6428ca4e0d4f68fbc223011",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.972,
+   "source_sha256": "70988251cedf1c6e4f5bb5eae842c3efc93ced17b6428ca4e0d4f68fbc223011"
+  },
+  "control_engine_codex.py": {
+   "copy_sha256": "8c9b370f50142206b5a17bb0c3c203bb766b8d59148dbac488c4b2f5085373c5",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.71,
+   "source_sha256": "8c9b370f50142206b5a17bb0c3c203bb766b8d59148dbac488c4b2f5085373c5"
+  },
+  "control_launch.py": {
+   "copy_sha256": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.806,
+   "source_sha256": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e"
+  },
+  "control_reservation_runtime.py": {
+   "copy_sha256": "720c52c40caf5a8cb5c39c9a74965e3aa02ea6619abe7a58731fe24417dbbdfb",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 33.274,
+   "source_sha256": "720c52c40caf5a8cb5c39c9a74965e3aa02ea6619abe7a58731fe24417dbbdfb"
+  },
+  "control_reservations.py": {
+   "copy_sha256": "6565f65d6d0e208658e2d5fa32208e4e04e2b83a1c2603d8c896c55eb266ec43",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ]
+   ],
+   "seconds": 32.458,
+   "source_sha256": "6565f65d6d0e208658e2d5fa32208e4e04e2b83a1c2603d8c896c55eb266ec43"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 62",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 891.471,
+ "spec_id": "VELDO-0062",
+ "suite": "scripts/suites/75_veldo_0062_accounts.py"
+}

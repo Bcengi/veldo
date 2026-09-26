@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -110 +110 @@
+-    if record.get('status') != 'active':
++    if False:  # defect: a paused or disabled account still logs in

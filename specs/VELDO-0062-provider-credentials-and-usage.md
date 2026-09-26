@@ -50,6 +50,7 @@ footprint:
   - "specs/VELDO-0062-provider-credentials-and-usage.md"
   - "specs/index.md"
   - "proof/VELDO-0062/*"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -244,3 +245,17 @@ and the `account_limit` classification with the re-run-or-ask decision (AC6) mov
 VELDO-0160, where AC5 is its AC1 unchanged and AC6 is two criteria with a falsifier each; the selection
 order moves with them. AC1 to AC4 (the login per dispatch, the pre-launch caps, settlement and
 attribution) are unchanged. Status unchanged.
+
+2026-09-25, built (Release 1, Linux): the account records are a store record family
+(`control_accounts`) over profiles `.veldo/accounts.py` prepares for either provider; the launch
+receiver reads the account the accepted contract records, gives the engine only that account's
+profile on this host and no paid-API credential variable, and checks and reserves each initial, retry
+or follow-on invocation through VELDO-0036 before anything is spawned; Claude Code's stream JSON and
+Codex's exec JSON are read for usage and rate-limit windows, kept as private raw receipts with their
+digests in the ledger, and settled once, unknown usage retained. Proof in `proof/VELDO-0062/`: suite
+`75_veldo_0062_accounts` (15 rows), the red record at 0af8dc0 (all 15 red by assertion) and 17
+finding 62 mutations, each red on its named row. The footprint adds `scripts/check_teeth_mutations.py`,
+where the criteria's falsifiers are registered as finding 62 (and finding 36's mutants of
+`control_reservations.py` now copy its siblings, since it loads the account records). The engines in
+the suite are fake executables printing the installed CLIs' report formats; the live run of the real
+CLIs on the owner's registered subscriptions is not part of this build. Status unchanged.

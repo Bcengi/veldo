@@ -1,0 +1,7 @@
+--- a/.veldo/control_reservation_runtime.py
++++ b/.veldo/control_reservation_runtime.py
+@@ -20,3 +20 @@
+-    if isinstance(payload, dict) and payload.get('resume'):
+-        return 'follow_on'
+-    return 'retry' if contract.get('attempt', 1) > 1 else 'initial'
++    return 'initial'  # defect: retries and follow-ons are reserved as initial invocations

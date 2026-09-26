@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1016 +1016 @@
+-        self.account = contract['reservation']['account']
++        self.account = os.environ.get('VELDO_ACCOUNT') or contract['reservation']['account']  # defect: the caller's label
