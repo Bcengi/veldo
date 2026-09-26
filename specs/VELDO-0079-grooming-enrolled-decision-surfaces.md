@@ -37,6 +37,7 @@ footprint:
   - "packs/*/.veldo/control_backlog.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0079_*.py"
+  - "scripts/suites/73_veldo_0078_backlog.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0079-grooming-enrolled-decision-surfaces.md"
@@ -194,3 +195,16 @@ finding 79 (23 mutations) in `proof/VELDO-0079/`. Filed for the lead: an item gr
 request for can still be admitted through VELDO-0078's own thinner brief (requiring grooming for every
 admission changes that suite's helpers); the default priority is one constant for every project. Status
 stays ready.
+
+2026-09-25, build, the lead's decision on the threat model's presentation that omits a bound field: the
+thin admission path is closed. The backlog's admit and prioritize now answer only the item's admission
+request, so an item grooming made no request for is refused `missing_evidence:admission_request` and
+nothing is written; VELDO-0078's own item target and briefs (`decision_target`, `admission_brief`,
+`priority_brief`) are removed from `.veldo/control_backlog.py`, since nothing admits through them. The
+footprint gains `scripts/suites/73_veldo_0078_backlog.py`: its admission and priority helpers go through
+grooming (pm proposes, the grooming service presents on Telegram, olga answers, pm applies), its
+workspace gains the specification files of the units it grooms, every row keeps its meaning, and finding
+78 still rejects all 29 of its mutations. Suite `76_veldo_0079_grooming` gains the row
+`material/ungroomed-thin-brief` and finding 79 the mutation `grooming-thin-path-reopened` (24 mutations);
+two mutations are re-anchored on the new code. The default priority stays one constant, rank 3, for every
+project. Status stays ready.

@@ -44,13 +44,29 @@ items, so AC2's two new transitions are its own: `admit_message` (AWAITING_GROOM
 PRIORITIZED in one transaction, every unit READY, the admission and priority records naming the
 objective's intake command, attribution and the admission request revision and digest; any other route
 refuses `not_approved:<reason>`), and the owner's signed `reprioritize` (a new priority record, state and
-units unchanged). Once grooming has recorded an admission request for an item, `admit` and `prioritize`
-accept only a settled answer whose target is that request's current revision (the existing
-`found != target` comparison, which now compares its digest) and whose request showed exactly its brief,
-and refuse a revision that no longer binds the live records or specification files or has lapsed. When
+units unchanged). `admit` and `prioritize` accept only a settled answer whose target is the item's
+admission request at its current revision (the existing `found != target` comparison, which now compares
+its digest) and whose request showed exactly its brief, and refuse a revision that no longer binds the
+live records or specification files or has lapsed. By the lead's decision on the threat model's
+presentation that omits a bound field, the thin path is closed: an item grooming made no admission
+request for is refused `missing_evidence:admission_request` and nothing is written, and VELDO-0078's own
+item target and briefs (`decision_target`, `admission_brief`, `priority_brief`) are removed, since nothing
+admits through them. When
 any admission or priority decision is applied, the owner must hold `admission_authority` to admit and
 `priority_authority` to prioritize (`admit_message` both): `not_owner:role:<role>` otherwise. The
 admission record lists the question ids the owner's answer resolved.
+
+**The VELDO-0078 suite, `scripts/suites/73_veldo_0078_backlog.py` (footprint addition).** Its admission
+and priority helpers go through grooming: pm proposes the item's grooming (rank 1, a ceiling and an
+expiry), the real grooming service presents the admission and priority requests on the loopback Telegram,
+olga answers through the API edge and pm applies the answer through the backlog; units appended to
+prioritized work are groomed afresh for their priority. The rows that present their own terms (another
+touchpoint, another owner, another brief) now use the admission request's target and brief, and the
+growth row answers grooming's rank-2 request for the first appended unit, then applies it after the second
+append and pm's new proposal, so it is still refused `stale_subject:binding`. Its workspace gains the
+specification files of the units it grooms (grooming binds each one's digest). All 20 rows keep their
+meaning and pass, and finding 78 still rejects all 29 mutations, each red on its named row by assertion
+(driven with VELDO-0078's own proof driver into a scratch directory; `proof/VELDO-0078` is unchanged).
 
 **Not changed.** `request.py`, `request_projection.py`, `request_reconcile.py` and `authorization.py` are
 the PLAN-0016 file surface, not on the control store path, as VELDO-0077 found for the same files.
@@ -72,7 +88,7 @@ policy digest. Each row is reported once and fails by assertion.
 
 | Criterion | Rows |
 |---|---|
-| AC1 | `material/telegram-brief`, `material/bound-fields`, `material/changed-decomposition` (declared falsifier) |
+| AC1 | `material/telegram-brief`, `material/ungroomed-thin-brief`, `material/bound-fields`, `material/changed-decomposition` (declared falsifier) |
 | AC2 | `route/own-message-default`, `route/ask-when-needed` (declared falsifier), `authority/owner-choices`, `authority/pm-self-admission`, `authority/separate-predicates`, `authority/questions-unresolved`, `authority/reprioritize-withdraw` |
 | AC3 | `ruling/parameter-binding` (declared falsifier), `ruling/duplicate` |
 | Installation, observability | `install/assets`, `observability` |
@@ -80,7 +96,10 @@ policy digest. Each row is reported once and fails by assertion.
 `material/telegram-brief`: both requests' Telegram bytes carry every field's value, computed here; the
 record holds exactly the sixteen fields; the two requests are on their own touchpoints and bind the
 request digest; an answer to the item's thinner VELDO-0078 brief is refused `invalid_input:request`, and
-an answer to other text beside the request's digest `stale_subject:brief`. `material/bound-fields`: each
+an answer to other text beside the request's digest `stale_subject:brief`. `material/ungroomed-thin-brief`: an item grooming never made an admission
+request for, answered by olga to terms on the item itself showing VELDO-0078's thinner brief (both spelled
+in the suite as 516afd1's backlog built them), is refused `missing_evidence:admission_request`; the journal
+and the item's version are unchanged and no unit is admitted or executable. `material/bound-fields`: each
 of the six proposed fields changed alone is a new revision and digest, the pending requests are revised
 and their new presentation supersedes the one shown, and answers to the earlier presentation are refused
 `stale_presentation`; an answer settled before a specification file changed is not applied; each field no
@@ -111,27 +130,36 @@ applied to another is `invalid_input:request`, and another target beneath a sign
 one settlement; the same signed admit command again is refused `stale_version`, writes nothing, and the
 admission names that one settlement.
 
-Stage environment run (`env -i` with the gate's variables, HOME in `/dev/shm`): suites
-`76_veldo_0079_grooming` (14 rows), `73_veldo_0078_backlog` (20), `75_veldo_0150_own_message_acceptance`
-(13) and `52_writer_boundary` pass. In a normal run, the 56 suites that load `init_scaffold.py`,
-`control_backlog.py` or the task source, and `50_git_environment`, pass (4822 assertions, one failure
-before a fix: `writer/no-private-serializers` flagged the question line as key-value text, so questions
-render as `id - text`).
+Stage environment run (`env -i` with the gate's variables, HOME in `/dev/shm`) and a normal run: suites
+`76_veldo_0079_grooming` (15 rows), `73_veldo_0078_backlog` (20), `75_veldo_0150_own_message_acceptance`
+(13), `72_veldo_0077_objectives` (20), `72_veldo_0128_reports` (18) and `52_writer_boundary` (10) pass.
+After the thin path closed, `50_git_environment`, `20_veldo_0003_task_source`, `65_veldo_0132_workflow`
+and `71_veldo_0130_api` also pass in a normal run. Before it, in a normal run, the 56 suites that load
+`init_scaffold.py`, `control_backlog.py` or the task source, and `50_git_environment`, passed (4822
+assertions, one failure before a fix: `writer/no-private-serializers` flagged the question line as
+key-value text, so questions render as `id - text`).
 
 ## Red record
 
 `red-at-516afd1.json`: the current suite over `git archive 516afd1`, the commit before this change,
-unchanged. All 14 rows fail by their own assertion and no region raised: the tree has no grooming
+unchanged. All 15 rows fail by their own assertion and no region raised: the tree has no grooming
 service, so every grooming call is answered `no_grooming_service`, nothing is presented or admitted by
-message, and its backlog has neither `admit_message` nor `reprioritize`.
+message, its backlog has neither `admit_message` nor `reprioritize`, and it admits the ungroomed item on
+its thin brief.
+
+`red-at-b43de71.json`: the same suite over `git archive b43de71`, this branch before the thin path closed.
+Exactly one row fails, `material/ungroomed-thin-brief`, by its assertion: that tree admits an item grooming
+never asked about on VELDO-0078's thin brief.
 
 ## Mutations (finding 79)
 
 Registered in `scripts/check_teeth_mutations.py` with the `grooming-` prefix, each declared falsifier
 first; `python3 -B proof/VELDO-0079/drive.py` records `mutations.json` and one applied diff per mutant.
-All 23 turn their named rows red by assertion; the baseline and the no-op copies of the four modules are
-green. The teeth driver run for finding 79 with two jobs rejects all 23; finding 78 (the other mutations
-of `control_backlog.py`) still rejects all 29.
+All 24 turn their named rows red by assertion; the baseline and the no-op copies of the four modules are
+green. The teeth driver run for finding 79 with two jobs rejects all 24; finding 78 (the other mutations
+of `control_backlog.py`, over the rewritten VELDO-0078 suite) still rejects all 29.
+`grooming-thin-admission-accepted` and `grooming-brief-unchecked` are re-anchored on the new code: the
+first accepts an answer to the item's own thin target beside the groomed one, the second any brief shown.
 
 | Mutant | Named rows |
 |---|---|
@@ -141,6 +169,7 @@ of `control_backlog.py`) still rejects all 29.
 | grooming-brief-omits-protected-paths | material/telegram-brief |
 | grooming-thin-admission-accepted | material/telegram-brief |
 | grooming-brief-unchecked | material/telegram-brief |
+| grooming-thin-path-reopened | material/ungroomed-thin-brief |
 | grooming-specification-files-unchecked | material/bound-fields |
 | grooming-pending-request-not-revised | material/bound-fields |
 | grooming-route-ignores-question (AC2 falsifier) | route/ask-when-needed |
@@ -161,9 +190,8 @@ of `control_backlog.py`) still rejects all 29.
 
 ## Filed, not built
 
-The item's own VELDO-0078 thin admission path stays open for an item grooming never recorded a request
-for: only once an admission request exists is it refused. Requiring grooming for every admission changes
-the VELDO-0078 suite's helpers and is the lead's decision. The default priority is one constant (rank 3)
-for every project; a per-project default needs a project field VELDO-0076 does not have. Groom and apply
+The default priority is one constant (rank 3) for every project; a per-project default needs a project
+field VELDO-0076 does not have. Prioritize refuses an item with no admission request through the same
+check as admit; no real writer can bring an item to ADMITTED without one, so only admit is driven. Groom and apply
 observations carry identities, routes and outcomes; the accepted input versions are on the backlog's own
 observation of the command they sent.
