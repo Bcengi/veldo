@@ -801,6 +801,10 @@ def _v78_suite():
                 # prioritization's, are applied to the grown decomposition.
                 stale = bop('pm', 'prioritize', M, request=rid_stale)
                 again = bop('pm', 'prioritize', M, request=rid_pm)
+                # Then pm proposes the grooming of the grown decomposition, a new request revision, not yet
+                # presented: the same answer, to the earlier revision, is refused by the request's digest.
+                gpropose(M, rank=1)
+                restale = bop('pm', 'prioritize', M, request=rid_stale)
                 between = item(M)
                 rid_fresh, settled_fresh, fresh = prioritize(M, 'PRI-78-M3')
                 readied = {u: (data_of(u).get('state'), data_of(u).get('admitted_revision')) for u in (U3, U4)}
@@ -822,6 +826,8 @@ def _v78_suite():
                      again.get('reason') == 'already_applied' and (between.get('priority') or {}).get('units') == [U1, U2]),
                     ('an answer to an earlier revision is refused', settled_stale.get('outcome') == 'settled'
                      and stale.get('reason') == 'stale_subject:decomposition'),
+                    ('once the grown decomposition is groomed, that answer is refused by the request\'s digest',
+                     restale.get('reason') == 'stale_subject:binding'),
                     ('the fresh prioritization of the current revision makes them executable',
                      fresh.get('ok') and readied == {U3: ('READY', 3), U4: ('READY', 3)}
                      and (item(M).get('priority') or {}).get('units') == [U1, U2, U3, U4]),
