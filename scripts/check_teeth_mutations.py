@@ -6402,6 +6402,32 @@ def cases():
              "    return (OWN_MESSAGE if not reasons else 'present'), reasons\n",
              "    return 'present', reasons + ['defect']  # defect: his message never admits\n",
              ['route/own-message-default'])
+    # AC2, review B1: the route reads the item's history, not its current revision alone.
+    grooming('grooming-route-ignores-presentation', 'control_grooming_request.py',
+             "    if opened:\n        reasons.append(PRESENTED)\n",
+             "    if False:  # defect: a request put to the owner is forgotten by a later revision\n"
+             "        reasons.append(PRESENTED)\n",
+             ['route/presented-then-proposed', 'route/returned-then-proposed'])
+    grooming('grooming-settled-ruling-ignored', 'control_grooming_request.py',
+             "    return [u for u in unapplied if u['ruling'] != 'approve']\n",
+             "    return []  # defect: a settled ruling not yet applied holds nothing\n",
+             ['route/presented-then-proposed', 'route/ruling-settled-unapplied'])
+    grooming('grooming-message-admission-ignores-history', 'control_backlog.py',
+             "                                 request.get('author'), opened)\n",
+             "                                 request.get('author'), [])  # defect: the backlog judges the revision alone\n",
+             ['route/presented-then-proposed', 'route/returned-then-proposed'])
+    grooming('grooming-proposal-not-superseding', 'control_grooming.py',
+             "            if pending and pending[-1][2].get('state') in PENDING_STATES:\n",
+             "            if False:  # defect: the request in front of him stays answerable until grooming runs\n",
+             ['route/presented-then-proposed'])
+    grooming('grooming-proposal-over-settled-ruling', 'control_grooming.py',
+             "        if GR.held(unapplied):\n            raise Refused(",
+             "        if False:  # defect: a new revision is proposed over his settled ruling\n            raise Refused(",
+             ['route/ruling-settled-unapplied'])
+    grooming('grooming-presented-over-settled-ruling', 'control_grooming.py',
+             "        if GR.held(unapplied):\n            # His settled reject",
+             "        if False:  # defect: he is asked again over his settled ruling\n            # His settled reject",
+             ['route/ruling-settled-unapplied'])
     # AC2: separate, current authority predicates; questions answered before anything runs.
     grooming('grooming-message-admission-priority-role', 'control_backlog.py',
              "                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}\n",
