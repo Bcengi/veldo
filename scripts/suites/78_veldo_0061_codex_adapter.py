@@ -875,6 +875,11 @@ sys.exit(payload.get('code', 0))
                   supervision.get('cause') == 'usage_cap' and call.get('outcome') == 'cancelled'
                   and not marker(launch, 'exit', 0.1) and (call.get('observed') or {}).get('tokens') == 1500
                   and len(printed(launch)) == 5)
+            found = document(launch)
+            check('caps/stop-at-cap', 'the capped invocation returned what it printed up to the stop as its artifacts, '
+                  'never as a completion [%s]' % found.get('verdict'),
+                  found.get('lines') == [x.decode() for x in printed(launch)] and found.get('completed') is False
+                  and found.get('invocation') == call.get('invocation') and verified(found))
 
         with region('caps/observed'):
             for name in ('normal', 'retry', 'follow'):
