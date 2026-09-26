@@ -611,10 +611,15 @@ class Backlog:
         data['state'] = 'AWAITING_GROOMING'
         return {data['uuid']: {'kind': KIND, 'data': data}}
 
-    def _settled(self, conn, command, touchpoint, target, brief, project, applied):
-        """The owner's settled answer the command names: (ruling, reference, effect). Every refusal is named."""
+    @staticmethod
+    def _unapplied(command, applied):
+        """An answer already applied to the item is refused as such, before anything else is judged."""
         if command.get('request') in applied:
             raise Refused('already_applied', 'this settled answer was applied already')
+
+    def _settled(self, conn, command, touchpoint, target, brief, project, applied):
+        """The owner's settled answer the command names: (ruling, reference, effect). Every refusal is named."""
+        self._unapplied(command, applied)
         request = _row(conn, command.get('request'))
         req = request['data'] if request is not None and request['kind'] == REQUEST_KIND else {}
         reference = req.get('settlement') if isinstance(req.get('settlement'), dict) else {}
@@ -673,6 +678,7 @@ class Backlog:
     def _admit(self, conn, command, data, project, entry):
         if data['state'] != 'AWAITING_GROOMING':
             raise Refused('invalid_transition:%s->ADMITTED' % data['state'], 'an item is admitted from grooming')
+        self._unapplied(command, data['applied'])
         target, brief, request = self._groomed(conn, data, project, ADMISSION)
         ruling, record, _effect = self._settled(conn, command, ADMISSION, target, brief, project, data['applied'])
         if ruling not in ADMISSION_RULINGS:
@@ -708,6 +714,7 @@ class Backlog:
         pending = [u for u in data['decomposition'] if (_row(conn, u['unit']) or {}).get('data', {}).get('state') == 'PLANNED']
         if not pending:
             raise Refused('nothing_to_prioritize', 'every unit of this revision is prioritized already')
+        self._unapplied(command, data['applied'])
         target, brief, request = self._groomed(conn, data, project, PRIORITY)
         ruling, record, _effect = self._settled(conn, command, PRIORITY, target, brief, project, data['applied'])
         data['applied'] = list(data['applied']) + [command['request']]

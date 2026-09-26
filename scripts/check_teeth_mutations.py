@@ -6243,6 +6243,11 @@ def cases():
     backlog('stale-revision-answer-applies', 'control_backlog.py', "        if found != target:\n",
             "        if (found.get('kind'), found.get('ref')) != (target['kind'], target['ref']):  # defect: any revision\n",
             ['activation/decomposition-growth'])
+    # VELDO-0079 review F2: the grown decomposition itself refuses the earlier answer (the live binding).
+    backlog('grown-decomposition-unchecked', 'control_backlog.py',
+            "        problems = GR.live_problems(fields, data, objective, project['data'])\n",
+            "        problems = []  # defect: an answer to the decomposition before it grew still applies\n",
+            ['activation/decomposition-growth'])
     # AC3 (declared falsifier): output-file existence is DONE.
     backlog('output-file-done', 'tasks.py',
             '        return not _factory("control_backlog").outcome_problems(gate, task.get("id"))\n',

@@ -797,9 +797,8 @@ def _v78_suite():
                 growth_claim = gate.decide('claim', U4)
                 offered_growth = offers()
                 continuing = rclaim('builder-b', U2)
-                # pm proposes the grooming of the current revision (rank 1), not yet presented: the earlier
-                # revision's answer, and the first prioritization's, are applied against it.
-                gpropose(M, rank=1)
+                # The answer given for the decomposition before the second append, and the first
+                # prioritization's, are applied to the grown decomposition.
                 stale = bop('pm', 'prioritize', M, request=rid_stale)
                 again = bop('pm', 'prioritize', M, request=rid_pm)
                 between = item(M)
@@ -822,7 +821,7 @@ def _v78_suite():
                     ('the earlier prioritization does not cover the appended units',
                      again.get('reason') == 'already_applied' and (between.get('priority') or {}).get('units') == [U1, U2]),
                     ('an answer to an earlier revision is refused', settled_stale.get('outcome') == 'settled'
-                     and stale.get('reason') == 'stale_subject:binding'),
+                     and stale.get('reason') == 'stale_subject:decomposition'),
                     ('the fresh prioritization of the current revision makes them executable',
                      fresh.get('ok') and readied == {U3: ('READY', 3), U4: ('READY', 3)}
                      and (item(M).get('priority') or {}).get('units') == [U1, U2, U3, U4]),
