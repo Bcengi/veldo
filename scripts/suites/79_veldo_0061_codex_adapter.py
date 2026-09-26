@@ -14,9 +14,9 @@ dispatch entered through its Landlock entrance, the VELDO-0039 Runner and receiv
 VELDO-0040 containment scopes under the owner's systemd user manager (transient scopes in a slice of
 this run's own, stopped at its end; no unit is installed) and the kernel's cgroup, pidfd and /proc files.
 
-The engine is the installed Codex 0.154.0 vendor binary where no model runs (`exec --json --help`, with
-a fixture CODEX_HOME), and otherwise a fake Codex laid out as a vendor package, qualified by the
-production writer, that prints the stream its packet scripts. Every line a fake prints is built from the
+The engine is the installed Codex 0.154.0 vendor binary where no model runs (its qualified flags and
+`--help`, with a fixture CODEX_HOME), and otherwise a fake Codex laid out as a vendor package,
+qualified by the production writer, that prints the stream its packet scripts. Every line a fake prints is built from the
 binary's own tables (VELDO-0062's cli-formats.json for the events, VELDO-0061's codex-exec.json for the
 items) and the format row checks each one against them. No model runs, nothing logs in, no credential
 exists and ~/.codex is never read. The profile's systemd-run is a shim that records every spawn by its

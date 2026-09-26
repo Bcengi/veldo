@@ -439,8 +439,11 @@ sys.exit(payload.get('code', 0))
                                   signer='runner', sign=sign)
         # The engines directories (the pinned copies, the Codex packages) are write-protected in every clone.
         engines_dirs = [str(factory / 'engines'), str(base / 'packages')]
-        clones = CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root), protected=[str(private)],
-                           engines=engines_dirs)
+        clones, _ = attempt(lambda: CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root),
+                                              protected=[str(private)], engines=engines_dirs))
+        if clones is None:
+            # A tree without this work protects no engines: its rows red by their own assertions.
+            clones = CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root), protected=[str(private)])
         provisioned = {}
         using = [config]
 
@@ -1253,7 +1256,7 @@ sys.exit(payload.get('code', 0))
                       % (engine, termination.get('returncode'), bound, slot_outcome(case['account'], launch.dispatch_id)),
                       record.get('state') == 'exited' and termination.get('returncode') == 0
                       and termination.get('signal') is None
-                      and bound == {'verdict': 'complete', 'complete': True, 'digest': (launch.artifact or {}).get('digest')}
+                      and bound == {'verdict': 'complete', 'complete': True, 'digest': (getattr(launch, 'artifact', None) or {}).get('digest')}
                       and getattr(D, 'completed', lambda r: None)(rec(launch.dispatch_id)) is True
                       and call.get('outcome') == 'completed' and call.get('state') == 'settled'
                       and slot_outcome(case['account'], launch.dispatch_id) == 'completed')

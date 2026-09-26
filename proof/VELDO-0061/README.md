@@ -1,12 +1,26 @@
 # VELDO-0061 proof: the Codex adapter qualified on Linux
 
+Built on branch build-veldo-0061, then integrated with VELDO-0060 on build-veldo-0060-0061, where both
+engine modules were put on one engine protocol and both reviews' filed items were done. This README
+describes the integrated tree.
+
+**One engine protocol.** `control_launch.ENGINE_PROTOCOL` is what every subscription engine module
+implements with the same signatures: `Refused`, `bind(adapter, state_root)`, `command(binding, adapter)`,
+`environment(binding)`, `Terminal()` (`feed`, `close`, `document(termination, cause)`), `Meter` and
+`REGISTRATION`. The receiver drives Codex and Claude Code through the one path `Receiver._bind`: the bind
+before acceptance, the engine's own argv composition (this one's: the adapter's argv exactly, nothing
+appended), one argv check for every engine, and the engine's settings set last. `Unbound` became
+`Refused`, `Artifacts` became `Terminal`, and the document's completion verdict is `complete` (was
+`result`), in the one document shape `veldo.engine_artifact/v1` both engines return.
+
 ## The design as built
 
 **The adapter is a registration.** `control_engine_codex.REGISTRATION` is the Codex adapter as the
 launch receiver runs it: its six lifecycle operations (`accept`, `launch`, `observe`, `stop`, `exit`,
 `artifacts`) each with the code that implements it, the flags of the qualified configuration
-(`exec --json`, the prompt on stdin) and the environment the engine is pinned with
-(`DISABLE_AUTOUPDATER=1`). A receiver configuration names a Codex adapter as `engine: codex`, the
+(`exec --json -c check_for_update_on_startup=false`, the prompt on stdin: the config override turns the
+binary's own startup update check off, a key the binary names) and the environment the engine is pinned
+with (`DISABLE_AUTOUPDATER=1`, which this binary does not read). A receiver configuration names a Codex adapter as `engine: codex`, the
 `executable` it launches and its `argv` (the clone entrance, then that executable and its flags).
 
 **The executable is pinned before acceptance.** `control_engine_codex.qualification(executable)` writes
@@ -18,32 +32,40 @@ events, `turn.completed` as the terminal record, `turn.failed`, the item kinds),
 reports (`usage_limit`, `workspace_credits`, `workspace_spend_cap`, `quota`, `plan`). That record is
 `engine/runtime/codex-qualification.json`, installed at `.veldo/runtime/codex-qualification.json` by
 init (`_RUNTIME_ASSETS`), beside the module that reads it. Before acceptance the receiver calls the
-engine module's `bind` (`Receiver._pin`): the configured executable must be an absolute path with no
-link on the way to it, appear once in the argv followed by the recorded flags, be a regular executable
-file inside an `@openai/codex` package of the recorded version at the recorded path, and have the
-recorded digest. Otherwise the dispatch is refused by name (`invalid_input:engine_executable`,
+engine module's `bind` (`Receiver._bind`): the configured executable must be an absolute path with no
+link on the way to it, be a regular executable file inside an `@openai/codex` package of the recorded
+version at the recorded path, and have the recorded digest. The receiver's own argv check, the same for
+both engines (`control_launch.pinned_argv_problem`), then requires the executable to be what runs: the
+first argument after the installed clone entrance's `--` (or, with no entrance, the first argument the
+wrapper execs), followed by the recorded flags; a shell or the package manager's link standing first is
+refused. Otherwise the dispatch is refused by name (`invalid_input:engine_executable`,
 `invalid_input:engine_flags`, `invalid_input:engine_link`, `unavailable_service:engine_executable`,
 `invalid_input:engine_package`, `stale_subject:engine_version`, `stale_subject:engine_digest`,
 `missing_evidence:engine_qualification`) and nothing is accepted, reserved or spawned. The package
 manager's own `codex` (a link to a Node shim the next install replaces) is refused as a link. The engine
-module's `ENVIRONMENT` is set in the engine environment last. This binary does not name
-`DISABLE_AUTOUPDATER`; its upgrade is a new package installed over this one, and the version and digest
-checks refuse what that install leaves.
+module's `environment` is set in the engine environment last. This binary does not name
+`DISABLE_AUTOUPDATER`, so its startup update check is turned off by the flag above; its upgrade is a new
+package installed over this one, and the version and digest checks refuse what that install leaves. The
+engine's environment also names the pinned path and digest (`VELDO_ENGINE_PATH`, `VELDO_ENGINE_SHA256`):
+the clone entrance, which execs the engine, re-hashes the file immediately before the exec and refuses a
+changed one (exit 70), and passes neither name on. Clones may write-protect the engine packages
+(`Clones(engines=...)`), which VELDO-0060's suite drives for this engine too.
 
-**Terminal output is an artifact document, never a completion.** `control_engine_codex.Artifacts` is fed
+**Terminal output is an artifact document, never a completion.** `control_engine_codex.Terminal` is fed
 every chunk the meter is fed. Each stdout line is kept as printed and checked against exec's events and
 fields (`EVENTS`, `USAGE_FIELDS`, `ITEM_KINDS`); an item is read only for its `id` and `type`, the fields
-the binary ties to exec's items, and is returned whole. The verdict is `result` only for a well-formed
+the binary ties to exec's items, and is returned whole. The verdict is `complete` only for a well-formed
 stream whose last turn closed with `turn.completed` and a zero exit; otherwise `signal`, `deadline`,
 `malformed_output`, `turn_failed`, `missing_result` or `nonzero_exit`, in that order. At the end
 `Metering` keeps the document (the verdict, terminal record, thread, turns, items, malformed line
 indices, termination, every line, the dispatch, invocation, account and pinned executable) in a private
 file (0600 in a 0700 directory, beside the store unless the config names `artifacts`) and the receiver
-reports its path, digest and verdict with the exit (`Launch.artifacts`). The invocation's final report
-settles `completed` only when the verdict is `result`, and `Runner.wait` returns the worker slot as
-completed only when the invocation's recorded outcome is `completed`: an exit code completes nothing.
-`control_engine_codex.verify(document)` recomputes a document from its own lines. An engine module with
-no decoder (Claude Code until VELDO-0060) is judged by its exit as before.
+sends its report {path, digest, verdict, complete} before the end (`Launch.artifact`). The invocation's
+final report settles `completed` only when the document is complete; the exit record binds the report's
+verdict, completeness and digest, and `control_dispatch.completed` (the one completion gate, which the
+runner's worker slot and the build and review floor both read) is true only when that artifact is
+complete: an exit code completes nothing. `control_engine_codex.verify(document)` recomputes a document
+from its own lines.
 
 **Stop and caps are the machinery VELDO-0039 to 0041 and 0062 built, on this configuration.** A stop is
 `Launch.stop`: SIGTERM to the engine, SIGTERM to its group after the stop grace, cgroup.kill after the kill
@@ -81,8 +103,9 @@ Nothing was executed to make either table. The only runs of the real binary are 
 
 ## Suite
 
-`scripts/suites/78_veldo_0061_codex_adapter.py`
-(`python3 scripts/selftest.py --suite 78_veldo_0061_codex_adapter`). One temporary tree in the owner's
+`scripts/suites/79_veldo_0061_codex_adapter.py`
+(`python3 scripts/selftest.py --suite 79_veldo_0061_codex_adapter`; renumbered from 78, which VELDO-0060's
+suite also had). One temporary tree in the owner's
 runtime directory holds the installed `.veldo` copy with its qualification record, which the suite loads
 and the receiver, wrapper and clone entrance execute. Real: a SQLite control store with OpenSSH journal
 signatures, Codex account records registered by the owner over profiles `accounts.py` prepares, VELDO-0036
@@ -103,20 +126,22 @@ systemd-run, so a spawn for a refused invocation is seen. Each row is reported o
 | Fixtures | `format/codex-fake-lines` |
 
 `lifecycle/*`: the installed registration enumerates exactly the six operations the criterion names,
-its flags are the installed record's and every adapter's, and each operation is observed on the
+its flags are the installed record's and every adapter's and turn the binary's startup update check off
+(a config key the installed binary names), and each operation is observed on the
 qualified configuration (acceptance before running, one spawn whose recorded process is the engine that
 printed, the usage line kept as a receipt, a requested stop recorded exited, the exit, the artifact
 document). The normal run is accepted, running and exited under one dispatch, in its own clone at the
 accepted commit, as the pinned vendor binary with `exec --json`, handed exactly the accepted source,
 input and tool configuration, with its dispatch, acceptance digest, account profile and
-`DISABLE_AUTOUPDATER=1` in its environment, and returns a private artifact document naming the pinned
+`DISABLE_AUTOUPDATER=1` in its environment and neither re-hash name, and returns a private artifact document naming the pinned
 executable's digest. The installed Codex 0.154.0 binary is launched through the same runner, receiver,
 wrapper, scope and clone entrance, pinned by the installed record: it enters its own clone as the
 recorded process inside the dispatch's scope, exits 0, prints byte for byte what the binary prints for
 the same arguments, and its zero exit with no terminal record is malformed output, a failed invocation
 and a slot returned failed. `pin/*`: a binary with one byte changed after qualification, a newer
-package version, a link to the qualified binary, the package manager's `codex` link and an argv without
-`--json` are each refused by name before acceptance, with zero spawns, no invocation and no engine; the
+package version, a link to the qualified binary, the package manager's `codex` link, an argv without
+`--json`, the pinned binary behind a shell and behind a link to it are each refused by name before
+acceptance, with zero spawns, no invocation and no engine; the
 qualified binary launches once. The installed record is what the production writer makes of the
 installed binary now, it carries the digest both extracted tables read, and init lays it down from an
 identical engine copy. `artifacts/*`: the normal stream is a result (its thread, turn and items as
@@ -143,7 +168,7 @@ a declared event whose item is a declared kind with only exec's own fields, the 
 the adapter reads, the usage-limit message is one of the binary's forms, and the item table matches the
 installed binary. It checks the fixtures, not production, so it is green at the pre-change commit too.
 
-Plain run: 44 passed (26 preamble, 18 rows) in about 8 seconds. Stage environment run (`env -i`, the
+Plain run: 44 passed (26 preamble, 18 rows) in about 9 seconds. Stage environment run (`env -i`, the
 stage's variables, TZ=UTC): 44 passed in 10 seconds.
 
 ## Red record
@@ -157,9 +182,9 @@ returns no artifact document and completes an invocation, and its slot, on its e
 ## Mutations (finding 61)
 
 Registered in `scripts/check_teeth_mutations.py` with the `adapter-` prefix, each declared falsifier
-first; `drive.py` records `mutations.json` and one applied diff per mutant. All 26 turn their named row
+first; `drive.py` records `mutations.json` and one applied diff per mutant. All 28 turn their named row
 red by assertion; the baseline and the no-op copies are green.
-`check_teeth_mutations.py --finding 61 --jobs 2`: 26 rejected.
+`check_teeth_mutations.py --finding 61 --jobs 2`: 28 rejected.
 
 | Mutant | Module | Named row |
 |---|---|---|
@@ -167,7 +192,7 @@ red by assertion; the baseline and the no-op copies are green.
 | adapter-pin-skipped | control_launch.py | pin/unexpected-launch |
 | adapter-version-unbound | control_engine_codex.py | pin/unexpected-launch |
 | adapter-link-accepted | control_engine_codex.py | pin/unexpected-launch |
-| adapter-flags-unbound | control_engine_codex.py | pin/unexpected-launch |
+| adapter-flags-unbound | control_launch.py | pin/unexpected-launch |
 | adapter-autoupdater-unset | control_engine_codex.py | lifecycle/normal-run |
 | adapter-engine-environment-ignored | control_launch.py | lifecycle/normal-run |
 | adapter-stop-unregistered | control_engine_codex.py | lifecycle/registered |
@@ -188,6 +213,8 @@ red by assertion; the baseline and the no-op copies are green.
 | adapter-cap-checked-after-launch (AC4 falsifier) | control_launch.py | caps/refused-before-launch |
 | adapter-cap-stop-ignored | control_launch.py | caps/stop-at-cap |
 | adapter-window-unchecked | control_reservations.py | caps/refused-before-launch |
+| adapter-argv-position-unchecked | control_launch.py | pin/unexpected-launch |
+| adapter-update-check-left-on | control_engine_codex.py | pin/qualified-record |
 | adapter-qualification-not-scaffolded | init_scaffold.py | pin/qualified-record |
 
 The other findings with mutations in the modules this changes still reject: 39 (30), 40 (22), 41 (34),
