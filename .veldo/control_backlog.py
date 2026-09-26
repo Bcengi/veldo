@@ -16,15 +16,14 @@ feature and is never written here), and it moves along entity_contract's R11 voc
                     (intake_validated). Each unit is created PLANNED: nothing can claim it.
   request_grooming  PREPARED -> AWAITING_GROOMING (grooming_requested): the item waits for its owner.
   admit             The owner's answer, settled by the VELDO-0068 settlement on the `admission`
-                    touchpoint, is applied. The request's terms target this item at its CURRENT
-                    decomposition revision and digest (decision_target), the request showed its owner
-                    exactly admission_brief of that revision, and the request's owner and the settlement's
-                    only principal are the project's owner. Once grooming (VELDO-0079) has recorded an
-                    admission request for the item, the answer must instead be to that request's current
-                    revision (control_grooming_request.target, its complete material by digest), shown
-                    exactly its brief, and the revision must still bind the live item, objective,
-                    project and specification files (live_problems); the item's own thin target is then
-                    refused. Approve: AWAITING_GROOMING -> ADMITTED
+                    touchpoint, is applied. Every admission answers the item's admission request, which
+                    grooming (VELDO-0079) records: the request's terms target that request's CURRENT
+                    revision (control_grooming_request.target, its complete material by digest), the
+                    request showed its owner exactly that revision's brief, the revision still binds the
+                    live item, objective, project and specification files (live_problems), and the
+                    request's owner and the settlement's only principal are the project's owner. An item
+                    grooming recorded no request for is refused missing_evidence:admission_request: there is
+                    no thinner brief that admits. Approve: AWAITING_GROOMING -> ADMITTED
                     (admission_authority_receipt) and an accepted `admission:<unit>` record per unit;
                     reject: REJECTED, its units CANCELED; return_for_elaboration: back to PREPARED.
   admit_message     VELDO-0079: the owner's own message that proposed the item's objective (VELDO-0150's
@@ -42,8 +41,9 @@ feature and is never written here), and it moves along entity_contract's R11 voc
                     (primary_specification_revision_bound, backlog_item_prioritized) at admitted_revision.
                     On a PRIORITIZED or ACTIVE item it is the fresh prioritization of an appended unit: the
                     item keeps its state and only the units still PLANNED become READY. Reject and return
-                    leave the item and its units where they are. With an admission request, the rank is
-                    the one its current revision binds and the answer must be to that revision.
+                    leave the item and its units where they are. The answer is to the admission request's
+                    current revision with the same binding, and the rank is the one that revision binds;
+                    an item with no admission request is refused as at admit.
   reprioritize      The project's owner changes the rank of prioritized work by his own signed command:
                     a new priority record, the item's state and units unchanged.
   append            A member appends a proposed unit to a PRIORITIZED or ACTIVE item: a new decomposition
@@ -169,7 +169,7 @@ ADMISSION_RULINGS = {'approve': 'ADMITTED', 'reject': 'REJECTED', 'return_for_el
 DECISION_ROLES = {'admit': ('admission_authority',), 'prioritize': ('priority_authority',),
                   'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}
 GR = _organ('control_grooming_request')
-TARGET_KIND, BLOCK_TARGET_KIND, UNIT_TARGET_KIND = 'backlog_item', 'backlog_block', 'execution_unit'
+BLOCK_TARGET_KIND, UNIT_TARGET_KIND = 'backlog_block', 'execution_unit'
 ALTERNATIVE_OUTCOMES = ('not_required',)
 REQUEST_KIND, SETTLEMENT_KIND, EFFECT_KIND = 'assignment', 'request_settlement', 'settlement_effect'
 OBJECTIVE_KIND, PROJECT_KIND, RECEIPT_KIND = 'objective', 'project', 'completion_receipt'
@@ -252,33 +252,6 @@ def unit_scope_digest(item, entry):
     return _sha({'item': item, 'unit': entry['unit'], 'specification': entry['specification'], 'scope': entry['scope']})
 
 
-def decision_target(record):
-    """The settlement terms target that asks the owner to admit or prioritize `record` as it stands now."""
-    return {'kind': TARGET_KIND, 'ref': record['uuid'], 'revision': record['decomposition_revision'],
-            'digest': record['decomposition_digest']}
-
-
-def _units_text(record):
-    return '; '.join('%s (%s)' % (u['unit'], u['specification']) for u in record['decomposition'] or [])
-
-
-def admission_brief(record):
-    """Exactly what the owner is shown when asked to admit the item at its current revision."""
-    return ('Admit backlog item %s, decomposition revision %d, in project %s.\nTitle: %s\nClass: %s\n'
-            'Scope: %s\nUnits: %s\nAdmitted work still needs its own priority before anything runs.'
-            % (record['uuid'], record['decomposition_revision'], record['project'], record['title'],
-               record['work_class'], '; '.join(record['scope']), _units_text(record)))
-
-
-def priority_brief(record):
-    """Exactly what the owner is shown when asked to prioritize the item at its current revision."""
-    pending = [u['unit'] for u in record['decomposition'] or [] if u['unit'] not in _prioritized(record)]
-    return ('Prioritize backlog item %s, decomposition revision %d, in project %s.\nTitle: %s\nUnits: %s\n'
-            'Approving makes these units executable: %s.'
-            % (record['uuid'], record['decomposition_revision'], record['project'], record['title'],
-               _units_text(record), ', '.join(pending) or 'none'))
-
-
 def resume_brief(record):
     """Exactly what the owner is shown when asked to resolve the item's current block and resume its phase."""
     block = (record.get('blocks') or [{}])[-1]
@@ -306,10 +279,6 @@ def unit_target(unit):
     """The target of the owner decision that authorizes an alternative outcome of `unit` (its record)."""
     return {'kind': UNIT_TARGET_KIND, 'ref': unit['uuid'], 'revision': unit['revision'],
             'digest': _sha({'unit': unit['uuid'], 'revision': unit['revision'], 'item': unit['backlog_item_uuid']})}
-
-
-def _prioritized(record):
-    return set((record.get('priority') or {}).get('units') or [])
 
 
 def _row(conn, eid):
@@ -668,12 +637,13 @@ class Backlog:
         return ruling, record, effect['data']
 
     def _groomed(self, conn, data, project, touchpoint):
-        """VELDO-0079: (target, brief, request) of the item's admission request for `touchpoint`, or None when
-        grooming has recorded none. The request's current revision must still bind the live records."""
+        """VELDO-0079: (target, brief, request) of the item's admission request for `touchpoint`. Every admission
+        and prioritization answers grooming's request: an item grooming recorded none for is refused by name.
+        The request's current revision must still bind the live records."""
         row = _row(conn, GR.request_id(data['uuid']))
-        if row is None:
-            return None
-        request = row['data'] if row['kind'] == GR.KIND and isinstance(row['data'], dict) else {}
+        request = row['data'] if row is not None and row['kind'] == GR.KIND and isinstance(row['data'], dict) else None
+        if request is None:
+            raise Refused('missing_evidence:admission_request', 'grooming recorded no admission request for the item')
         if request.get('item') != data['uuid'] or touchpoint not in (request.get('touchpoints') or []):
             raise Refused('missing_evidence:admission_request', 'the item\'s admission request does not ask this')
         problems = self._request_problems(conn, request, data, project)
@@ -698,19 +668,16 @@ class Backlog:
     def _admit(self, conn, command, data, project, entry):
         if data['state'] != 'AWAITING_GROOMING':
             raise Refused('invalid_transition:%s->ADMITTED' % data['state'], 'an item is admitted from grooming')
-        groomed = self._groomed(conn, data, project, ADMISSION)
-        target, brief = groomed[:2] if groomed else (decision_target(data), admission_brief(data))
+        target, brief, request = self._groomed(conn, data, project, ADMISSION)
         ruling, record, _effect = self._settled(conn, command, ADMISSION, target, brief, project, data['applied'])
         if ruling not in ADMISSION_RULINGS:
             raise Refused('not_approved:%s' % ruling, 'the owner did not rule on the admission')
         target = ADMISSION_RULINGS[ruling]
         evidence = {'admission_authority_receipt': True, 'returned_for_elaboration': True}
         self._edge(KIND, 'AWAITING_GROOMING', target, evidence)
-        record.update(revision=data['decomposition_revision'], digest=data['decomposition_digest'])
-        if groomed:
-            request = groomed[2]
-            record.update(admission_request=request['uuid'], request_revision=request['revision'],
-                          request_digest=request['digest'], questions=[q['id'] for q in request['content']['questions']])
+        record.update(revision=data['decomposition_revision'], digest=data['decomposition_digest'],
+                      admission_request=request['uuid'], request_revision=request['revision'],
+                      request_digest=request['digest'], questions=[q['id'] for q in request['content']['questions']])
         changes = {}
         if target == 'ADMITTED':
             data['admission'] = record
@@ -736,9 +703,8 @@ class Backlog:
         pending = [u for u in data['decomposition'] if (_row(conn, u['unit']) or {}).get('data', {}).get('state') == 'PLANNED']
         if not pending:
             raise Refused('nothing_to_prioritize', 'every unit of this revision is prioritized already')
-        groomed = self._groomed(conn, data, project, PRIORITY)
-        target, brief = groomed[:2] if groomed else (decision_target(data), priority_brief(data))
-        ruling, record, effect = self._settled(conn, command, PRIORITY, target, brief, project, data['applied'])
+        target, brief, request = self._groomed(conn, data, project, PRIORITY)
+        ruling, record, _effect = self._settled(conn, command, PRIORITY, target, brief, project, data['applied'])
         data['applied'] = list(data['applied']) + [command['request']]
         history = dict(entry, source=source, target=source, revision=data['decomposition_revision'],
                        request_id=command['request'], ruling=ruling)
@@ -747,15 +713,10 @@ class Backlog:
             if source == 'ADMITTED':
                 self._edge(KIND, 'ADMITTED', 'PRIORITIZED', {'priority_receipt': True})
                 data['state'] = history['target'] = 'PRIORITIZED'
-            rank = (effect.get('proposal') or {}).get('rank') if isinstance(effect.get('proposal'), dict) else None
-            if groomed:
-                # The rank is the one the answered revision binds, which the owner was shown.
-                request = groomed[2]
-                rank = request['content']['priority']['rank']
-                record.update(admission_request=request['uuid'], request_revision=request['revision'],
-                              request_digest=request['digest'])
+            # The rank is the one the answered revision binds, which the owner was shown.
             record.update(revision=data['decomposition_revision'], digest=data['decomposition_digest'],
-                          rank=rank if isinstance(rank, int) and not isinstance(rank, bool) else None,
+                          admission_request=request['uuid'], request_revision=request['revision'],
+                          request_digest=request['digest'], rank=request['content']['priority']['rank'],
                           units=[u['unit'] for u in data['decomposition']])
             data['priority'] = record
             data['priorities'] = list(data['priorities']) + [record]

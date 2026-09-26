@@ -439,6 +439,22 @@ def _v79_suite():
                 presenter.present(rid)
                 return rid, presenter.current(rid) or {}
 
+            def thin_target(record):
+                """VELDO-0078's own admission target, the item at its decomposition revision, spelled here as
+                516afd1's backlog built it (decision_target)."""
+                return {'kind': 'backlog_item', 'ref': record.get('uuid'), 'revision': record.get('decomposition_revision'),
+                        'digest': record.get('decomposition_digest')}
+
+            def thin_brief(record):
+                """VELDO-0078's thinner admission brief, spelled here as 516afd1's backlog rendered it
+                (admission_brief): no policy, ceiling, specification digests, protected paths, release authority,
+                expiry, evidence, alternatives or questions."""
+                units = '; '.join('%s (%s)' % (u['unit'], u['specification']) for u in record.get('decomposition') or [])
+                return ('Admit backlog item %s, decomposition revision %d, in project %s.\nTitle: %s\nClass: %s\n'
+                        'Scope: %s\nUnits: %s\nAdmitted work still needs its own priority before anything runs.'
+                        % (record.get('uuid'), record.get('decomposition_revision') or 0, record.get('project'),
+                           record.get('title'), record.get('work_class'), '; '.join(record.get('scope') or []), units))
+
             def role(names, responsibility, perms=('feature',), distinct=()):
                 return dict(workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
                             proposal_permissions=list(perms), engines=['claude_code'],
@@ -676,7 +692,7 @@ def _v79_suite():
                            for tp in ('admission', 'priority')}
                 # Presentations that leave out or change the material: the item's own thinner brief (VELDO-0078's),
                 # and the request's digest shown beside other text. Each is answered by olga and applied by pm.
-                thin_rid, thin_shown = present_terms('THIN-79', CB.decision_target(item_t), CB.admission_brief(item_t),
+                thin_rid, thin_shown = present_terms('THIN-79', thin_target(item_t), thin_brief(item_t),
                                                      touchpoint='admission')
                 thin_answer, _ = answer(thin_shown, 'accept')
                 thin_admit = bop('pm', 'admit', T, request=thin_rid)
@@ -703,6 +719,28 @@ def _v79_suite():
                     ('an answer to other text beside the request\'s digest does not admit it',
                      other_answer.get('outcome') == 'settled' and other_admit.get('reason') == 'stale_subject:brief'
                      and item(T).get('state') == 'AWAITING_GROOMING')])
+
+            # AC1, the threat model's presentation that omits a bound field: an item grooming never made an
+            # admission request for is not admitted through VELDO-0078's thinner brief, and nothing is written.
+            with region('material/ungroomed-thin-brief'):
+                G, g_units = work_item(o_own, 'ungroomed')
+                item_g = item(G)
+                g_rid, g_shown = present_terms('THIN-79-G', thin_target(item_g), thin_brief(item_g), touchpoint='admission')
+                g_answer, _ = answer(g_shown, 'accept')
+                journal_g, version_g = journal_length(), item_g.get('version')
+                g_admit = bop('pm', 'admit', G, request=g_rid)
+                after_g = item(G)
+                check('material/ungroomed-thin-brief', [
+                    ('grooming made no admission request for the item', G is not None and not request_record(G)),
+                    ('olga\'s answer to the thin brief was shown and settled',
+                     g_shown.get('outcome') == 'published' and g_answer.get('outcome') == 'settled'),
+                    ('the backlog refuses it by name', g_admit.get('reason') == 'missing_evidence:admission_request'),
+                    ('nothing is written: the journal and the item are unchanged',
+                     journal_length() == journal_g and after_g.get('version') == version_g
+                     and after_g.get('state') == 'AWAITING_GROOMING' and not after_g.get('applied')),
+                    ('no unit is admitted or executable', bool(g_units) and all(
+                        entity('admission:' + u) is None and executable(u) == ['missing_authority:admission']
+                        for u in g_units))])
 
             # AC1: changing any bound field refuses the earlier presentation.
             with region('material/bound-fields'):
