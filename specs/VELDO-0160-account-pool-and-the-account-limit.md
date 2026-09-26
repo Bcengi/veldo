@@ -42,6 +42,8 @@ footprint:
   - "specs/VELDO-0160-account-pool-and-the-account-limit.md"
   - "specs/index.md"
   - "proof/VELDO-0160/*"
+  - "proof/VELDO-0062/extract_formats.py"
+  - "proof/VELDO-0062/cli-formats.json"
 behavior_bearing: true
 observability:
   logs: >

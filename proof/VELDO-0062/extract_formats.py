@@ -391,6 +391,46 @@ def _definition(js, name, near):
     return min(sites, key=lambda m: abs(m.start() - near)).start()
 
 
+# VELDO-0160: Claude Code's rate-limit result. The usage-limit message its API error message and its
+# result carry (the template, the reset piece, the binary's names of the windows), the time formats and
+# the zone it states the reset in, and a 429 message that is not the account's limit. Each piece by the
+# exact text of this build.
+CLAUDE_LIMIT = {
+    'template': 'return`You\'ve hit your ${e}${n}${g}`}',
+    'progress': 'g=s?.progressSavedSuffix?" \\xB7 progress saved":""',
+    'resets': 'M=_?` \\xB7 resets ${_}`:""',
+    'names': 'var Ide={',
+    'within_day': 'o.toLocaleTimeString("en-US",{hour:"numeric",minute:c===0?void 0:"2-digit",hour12:!0})'
+                  '.replace(/[ \\u202f]([AP]M)/i,(u,i)=>i.toLowerCase())+(t?` (${a0r()})`:"")',
+    'beyond_day': 'let u={month:"short",day:"numeric",hour:r?"numeric":void 0,minute:!r||c===0?void 0:"2-digit",'
+                  'hour12:r?!0:void 0};if(o.getFullYear()!==s.getFullYear())u.year="numeric";return o.toLocaleString("en-US",u)',
+    'zone': 'function a0r(){if(!g)g=Intl.DateTimeFormat().resolvedOptions().timeZone;return g}',
+    'not_account': 'q$n="Server is temporarily limiting requests (not your usage limit)"',
+}
+
+
+def claude_limit(text):
+    for key, anchor in CLAUDE_LIMIT.items():
+        if anchor not in text:
+            raise Moved('claude usage-limit piece moved: ' + key)
+    at = text.index(CLAUDE_LIMIT['names'])
+    block = text[at + len(CLAUDE_LIMIT['names']) - 1:text.index('}', at) + 1]
+    names = dict(re.findall(r'([a-z_]+):"([^"]+)"', block))
+    if 'five_hour' not in names or 'seven_day' not in names:
+        raise Moved('claude usage-limit names moved')
+    return {'message': "You've hit your ", 'progress_saved': ' \u00b7 progress saved', 'resets': ' \u00b7 resets ',
+            'names': names, 'zone': ' (<IANA zone>)',
+            'formats': ['{hour}{:minute}{am|pm}', '{month} {day}, {hour}{:minute}{am|pm}',
+                        '{month} {day}, {year}, {hour}{:minute}{am|pm}'],
+            'months': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            'not_account': ['Server is temporarily limiting requests (not your usage limit)'],
+            'source': "the rate-limit result's text: `You've hit your ${limit}${' \u00b7 resets ' + time}` "
+                      "(+ ' \u00b7 progress saved'), the assistant API error message with error 'rate_limit' and the "
+                      "result's `result`; time en-US with ':minute' only when not 0, 'am'/'pm' lowercased, the date "
+                      "when the reset is over a day away, the year when it is another year, then ' (<zone>)', the "
+                      "engine's resolved IANA time zone"}
+
+
 def claude(path):
     raw = Path(path).read_bytes()
     text = raw.decode('latin-1')
@@ -443,7 +483,7 @@ def claude(path):
     version = Path(path).resolve().name
     return {'binary': str(Path(path).resolve()), 'version': version, 'sha256': _digest(path),
             'source': 'the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)',
-            'events': events, 'notes': notes, 'credential_tables': tables}
+            'events': events, 'notes': notes, 'credential_tables': tables, 'usage_limit': claude_limit(text)}
 
 
 # ---------------------------------------------------------------- Codex: the Rust binary's literals
@@ -453,6 +493,11 @@ CODEX_EXEC_RUN = (b'ItemCompletedEventThreadStartedEventthread_idTurnCompletedEv
                   b'cache_write_input_tokensoutput_tokensreasoning_output_tokens')
 CODEX_TAGS_RUN = (b'ThreadEventThreadStartedthread.startedTurnStartedturn.startedTurnCompletedturn.completedTurnFailed'
                   b'turn.failedItemStarteditem.startedItemUpdateditem.updatedItemCompleteditem.completederror')
+# VELDO-0160: exec's ThreadItem for an MCP tool call (type tag `mcp_tool_call`), by the literal runs
+# of its type names, its field names and its status values.
+CODEX_ITEM_RUNS = (b'item.completederroritemsqueryactionchangesserverargumentsresult',
+                   b'agent_messagereasoningcommand_executionfile_changemcp_tool_callweb_searchtodo_list',
+                   b'usagein_progresscompletedfailed')
 CODEX_LIMIT = {
     'message': b"You've hit your usage limit",
     'retry_at': (b' Try again at ', b' or try again at '),
@@ -661,6 +706,15 @@ def codex(path):
              'suffixes': ['st', 'nd', 'rd', 'th'],
              'source': "protocol error Display: the message, then ' Try again at <local time>.' (same day: %-I:%M %p; "
                        "else %b %-d<suffix>, %Y %-I:%M %p) or ' Try again later.' with no reset"}
+    for run in CODEX_ITEM_RUNS:
+        if run not in raw:
+            raise Moved('codex exec item literals moved: %r' % run[:40])
+    items = {'mcp_tool_call': {'type': 'object', 'fields': {
+        'id': {'type': 'string'}, 'type': {'type': 'literal', 'value': 'mcp_tool_call'},
+        'server': {'type': 'string'}, 'tool': {'type': 'string'}, 'arguments': {'type': 'any'},
+        'result': {'type': 'any', 'optional': True, 'nullable': True},
+        'error': {'type': 'any', 'optional': True, 'nullable': True},
+        'status': {'type': 'enum', 'values': ['in_progress', 'completed', 'failed']}}}}
     for piece in CODEX_USAGE_SOURCE:
         if piece not in raw:
             raise Moved('codex usage source moved: %r' % piece)
@@ -699,6 +753,12 @@ def codex(path):
                       "binary's literals; the strings show field names, not which are always present, so every usage "
                       "field is marked optional",
             'events': events, 'usage_limit': limit, 'errors': codex_errors(raw), 'credential_tables': tables,
+            'items': items,
+            'items_source': ("exec's ThreadItem (the `item` of item.started, item.updated and item.completed, tag "
+                             "`type`): the type names, the field names server, arguments and result, and the status "
+                             "values in_progress, completed and failed are the binary's literal runs; `id`, `type` and "
+                             "`tool` are names of four bytes or fewer, which the compiler places in code, not in the "
+                             "literal pool, and `result` and `error` are present only when the call has one"),
             'notes': {'turn.completed.usage': (
                 "exec's turn usage is read from the thread token usage its event processor receives "
                 "(thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's "

@@ -2899,6 +2899,43 @@
   },
   "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
   "source": "the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)",
+  "usage_limit": {
+   "formats": [
+    "{hour}{:minute}{am|pm}",
+    "{month} {day}, {hour}{:minute}{am|pm}",
+    "{month} {day}, {year}, {hour}{:minute}{am|pm}"
+   ],
+   "message": "You've hit your ",
+   "months": [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+   ],
+   "names": {
+    "five_hour": "session limit",
+    "overage": "usage credit limit",
+    "seven_day": "weekly limit",
+    "seven_day_opus": "Opus limit",
+    "seven_day_overage_included": "Fable limit",
+    "seven_day_sonnet": "Sonnet limit"
+   },
+   "not_account": [
+    "Server is temporarily limiting requests (not your usage limit)"
+   ],
+   "progress_saved": " \u00b7 progress saved",
+   "resets": " \u00b7 resets ",
+   "source": "the rate-limit result's text: `You've hit your ${limit}${' \u00b7 resets ' + time}` (+ ' \u00b7 progress saved'), the assistant API error message with error 'rate_limit' and the result's `result`; time en-US with ':minute' only when not 0, 'am'/'pm' lowercased, the date when the reset is over a day away, the year when it is another year, then ' (<zone>)', the engine's resolved IANA time zone",
+   "zone": " (<IANA zone>)"
+  },
   "version": "2.1.281"
  },
  "codex": {
@@ -3495,6 +3532,48 @@
     "type": "object"
    }
   },
+  "items": {
+   "mcp_tool_call": {
+    "fields": {
+     "arguments": {
+      "type": "any"
+     },
+     "error": {
+      "nullable": true,
+      "optional": true,
+      "type": "any"
+     },
+     "id": {
+      "type": "string"
+     },
+     "result": {
+      "nullable": true,
+      "optional": true,
+      "type": "any"
+     },
+     "server": {
+      "type": "string"
+     },
+     "status": {
+      "type": "enum",
+      "values": [
+       "in_progress",
+       "completed",
+       "failed"
+      ]
+     },
+     "tool": {
+      "type": "string"
+     },
+     "type": {
+      "type": "literal",
+      "value": "mcp_tool_call"
+     }
+    },
+    "type": "object"
+   }
+  },
+  "items_source": "exec's ThreadItem (the `item` of item.started, item.updated and item.completed, tag `type`): the type names, the field names server, arguments and result, and the status values in_progress, completed and failed are the binary's literal runs; `id`, `type` and `tool` are names of four bytes or fewer, which the compiler places in code, not in the literal pool, and `result` and `error` are present only when the call has one",
   "notes": {
    "turn.completed.usage": "exec's turn usage is read from the thread token usage its event processor receives (thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's TokenUsageInfo of total_token_usage, last_token_usage and model_context_window): a thread total and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed thread is never subtracted: the sum of the invocation's own completed turns never counts less than the CLI recorded under either reading"
   },
