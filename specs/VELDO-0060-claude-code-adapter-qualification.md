@@ -30,6 +30,8 @@ footprint:
   - ".veldo/runtime/claude-qualification*.json"
   - "packs/*/runtime/claude-qualification*.json"
   - "scripts/suites/*_veldo_0060_*.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0060-claude-code-adapter-qualification.md"
@@ -194,3 +196,23 @@ unchanged.
 tested only the paid-API stop, so the everything-off baseline, the paid-API guard and the environment
 strip move to the new draft VELDO-0155, each with its own criterion and a falsifier that breaks exactly
 that guard. AC1 names VELDO-0155 in place of AC5; AC1 to AC4 are otherwise unchanged. Status unchanged.
+
+2026-09-26, built (Release 1, Linux): the Claude Code adapter names a qualified version, never a path.
+The qualification record `engine/runtime/claude-qualification.json` (installed beside
+`control_engine_claude.py`, laid by the scaffold) lists 2.1.281 with its digest, its print-mode stream
+JSON flags, `DISABLE_AUTOUPDATER`, its terminal protocol, login, usage units and windows, each read
+from the binary's bytes (`proof/VELDO-0060/extract_cli.py`, `cli-options.json`, and VELDO-0062's
+`cli-formats.json`). `control_engine_claude.pin` copies the installer's versioned file under the
+factory state root; the receiver binds it before acceptance and refuses an unknown version, a missing,
+linked or changed copy and a configured updater by name, then launches the adapter's prefix followed by
+the pinned path and the qualified flags. `Terminal` decodes the stream's result into an artifact kept
+0600 beside the receipts and returned to the runner; the invocation and the worker slot are completed
+only when it is complete, so a zero exit without its result is failed. The footprint adds
+`scripts/check_teeth_mutations.py` (finding 60) and `scripts/suites/75_veldo_0062_accounts.py`, whose
+fake claude must now be installed and pinned as the qualified version its adapters name. Not built
+here: the live run of the real CLI (the build ran no model and logged nothing in, so `live_usage` is
+null), and a contained stop (the suite does not touch the systemd user manager; the stop rows run on the
+wrapper path, the contained path is VELDO-0040's and VELDO-0041's). Proof: suite
+`78_veldo_0060_claude_adapter` (17 rows), the red record at b39a0fdc (all 15 behavior rows red by
+assertion) and 21 finding 60 mutations, each red on its named row; findings 39, 40, 41 and 62 still
+reject. Status unchanged.
