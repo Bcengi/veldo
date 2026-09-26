@@ -410,6 +410,10 @@ sys.exit(payload.get('code', 0))
                 return None, None
             return json.loads(path.read_text()), (path.stat().st_mode & 0o777)
 
+        def returned(launch):
+            # The artifact the receiver returned to the runner (none from a tree without this work).
+            return getattr(launch, 'artifact', None)
+
         def slot_outcome(account, dispatch_id):
             return (runner(account).retirements.entries.get(dispatch_id) or {}).get('outcome')
 
@@ -532,12 +536,12 @@ sys.exit(payload.get('code', 0))
                 'observe': call.get('state') == 'settled' and bool(call.get('reports')),
                 'exit': (record or {}).get('state') == 'exited' and ((record or {}).get('termination') or {}).get(
                     'returncode') == 0,
-                'artifacts': stored is not None and stored == launch.artifact and mode == 0o600}
+                'artifacts': stored is not None and stored == returned(launch) and mode == 0o600}
 
         # AC2 on the same run: the artifact of a complete invocation.
         with region('artifact/complete'):
             launch, record, own = normal_run['launch'], normal_run['record'], normal_run['own']
-            artifact = launch.artifact or {}
+            artifact = returned(launch) or {}
             stored, mode = artifact_file(launch.dispatch_id)
             lines = [line for line in (own.get('printed') or b'').split(b'\n') if line]
             result_line = next((line for line in lines if json.loads(line).get('type') == 'result'), None)
@@ -566,7 +570,11 @@ sys.exit(payload.get('code', 0))
         # updater are each refused before acceptance: nothing spawned, nothing reserved.
         with region('pin/unexpected-launch'):
             cases = []
-            original = pinned.read_bytes() if pinned.exists() else b''
+            check('pin/unexpected-launch', 'the pinned copy exists to be changed [%s]' % pin_error, pinned.is_file())
+            if not pinned.is_file():
+                pinned.parent.mkdir(parents=True, exist_ok=True)
+                pinned.write_text(fake)  # so each case below runs and reds by its own assertion
+            original = pinned.read_bytes()
             pinned.chmod(0o755)
             with open(pinned, 'ab') as handle:
                 handle.write(b'# changed after it was pinned\n')
@@ -673,7 +681,7 @@ sys.exit(payload.get('code', 0))
         def artifact_of(account, name, script, code=0, **caps):
             proj = project('p-' + name, **caps) if caps else 'journey-60'
             launch, record = run(account, admitted('VELDO-6003-' + name, proj), 'claude', script, code=code)
-            return launch, record or {}, launch.artifact or {}, invocation(launch.dispatch_id)
+            return launch, record or {}, returned(launch) or {}, invocation(launch.dispatch_id)
 
         with region('artifact/missing-result'):
             script = normal()
@@ -762,7 +770,7 @@ sys.exit(payload.get('code', 0))
             own = own[0] if own else {}
             kids = own.get('children') or []
             call = invocation(launch.dispatch_id)
-            artifact = launch.artifact or {}
+            artifact = returned(launch) or {}
             nxt, nrecord = run('acct-60b', admitted('VELDO-6004-stop-next', proj), 'claude', normal())
             check('stop/requested', 'the stop reached the worker: it and its descendant in its session are gone, it '
                   'never finished [%s, %s, %s]' % (asked, (launch.supervision or {}).get('cause'), kids),
@@ -878,7 +886,7 @@ sys.exit(payload.get('code', 0))
                   and (launch.supervision or {}).get('cause') == 'usage_cap' and call.get('outcome') == 'cancelled'
                   and call.get('observed', {}).get('tokens') == 1200 and call.get('charge', {}).get('invocations') == 1
                   and call.get('charge', {}).get('wall_seconds', 0) > 0
-                  and (launch.artifact or {}).get('verdict') == 'stopped')
+                  and (returned(launch) or {}).get('verdict') == 'stopped')
 
         # The fixtures, checked against the tables extracted from the installed binary.
         def conform(value, schema, path):
