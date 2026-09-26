@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -83 +83 @@
+-    return payload if isinstance(payload, dict) and _text(payload.get('type')) else None
++    return payload if isinstance(payload, (dict, list)) else None  # defect: any JSON value is an event

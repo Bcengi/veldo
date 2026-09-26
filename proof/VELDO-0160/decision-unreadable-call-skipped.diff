@@ -1,0 +1,4 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -109,0 +110 @@
++                continue  # defect: the skip restored

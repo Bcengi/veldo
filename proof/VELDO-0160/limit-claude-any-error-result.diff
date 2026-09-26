@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -185 +185 @@
+@@ -198 +198 @@
 -    if not isinstance(text, str) or not text.startswith(LIMIT_MESSAGE):
 +    if not isinstance(text, str):  # defect: any error result is the account's limit
