@@ -56,11 +56,17 @@ THE ACCOUNT'S LIMIT (VELDO-0160). `limit()` is the last exhaustion message the s
 window and reset, with its signal: in an `error` event the stream reports its window exhausted
 (`stream`); in a `turn.failed` the engine ends with its rate-limit result (`result`).
 
-MCP CALLS (VELDO-0160). `mcp_calls(event)` names the MCP tool calls an event shows: the `item` of an
-`item.started`, `item.updated` or `item.completed` whose type is `mcp_tool_call`, with its server and
-tool, by the item id (exec's ThreadItem, proof/VELDO-0062/cli-formats.json, codex items). What may be a
-tool call and cannot be read is named `unreadable` (an item that is not an object naming its type, an
-`mcp_tool_call` whose server or tool is not a name), so the decision never takes it for no call.
+TOOL CALLS (VELDO-0160). `tool_calls(event, seen, redacted)` names the MCP tool calls an event shows: the
+`item` of an `item.started`, `item.updated` or `item.completed` whose type is `mcp_tool_call`, with its
+server and tool, by the item id (exec's ThreadItem, proof/VELDO-0062/cli-formats.json, codex items and
+tool_forms). It reads only the forms the binary's tables list and fails closed on everything else. What
+may be a tool call and cannot be read is named `unreadable` (an item that is not an object naming its
+type, an `mcp_tool_call` whose server or tool is not a name). A tool-call form this reading does not
+recognize is named `unknown` with its form, never taken for no call: an item whose type exec's table does
+not list (the core's `dynamic_tool_call`, `collab_agent_tool_call` and `sub_agent_activity` among them),
+and an event type the table does not list. exec's own non-MCP items are no MCP call: its messages,
+reasoning, to-do lists and errors (TOOL_FREE_ITEMS), and its commands, file changes and web searches
+(BUILTIN_ITEMS), whose effects stay in the clone. `seen` and `redacted` are Claude Code's interface.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
@@ -132,6 +138,11 @@ EXHAUSTED = (
 MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
 MCP_ITEM = 'mcp_tool_call'
 ITEM_EVENTS = ('item.started', 'item.updated', 'item.completed')
+# The tool-call forms (VELDO-0160), from the binary's tables (proof/VELDO-0062/cli-formats.json, codex): its
+# exec events, and exec's ThreadItem types, those that are no tool call and exec's own tools.
+EVENTS = ('thread.started', 'turn.started', 'turn.completed', 'turn.failed') + ITEM_EVENTS + ('error',)
+TOOL_FREE_ITEMS = frozenset(('agent_message', 'reasoning', 'todo_list', 'error'))
+BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
                       r'(?P<year>\d{4}) )?(?P<hour>\d{1,2}):(?P<minute>\d{2}) (?P<half>AM|PM)\.')
 
@@ -179,17 +190,24 @@ def limit_reset(message, now, zone):
     return max(stated) + 60
 
 
-def mcp_calls(event):
+def tool_calls(event, seen=None, redacted=False):
     """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160); an item that may be
-    a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}."""
-    if not isinstance(event, dict) or event.get('type') not in ITEM_EVENTS:
+    a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}, and a tool-call form
+    this reading does not recognize {id, server: None, tool: None, unknown: <form>}."""
+    name = event.get('type')
+    if name not in EVENTS:
+        return [{'id': None, 'server': None, 'tool': None, 'unknown': 'event:%s' % name}]
+    if name not in ITEM_EVENTS:
         return []
     item = event.get('item')
     kind = item.get('type') if isinstance(item, dict) else None
     if not isinstance(kind, str):
         return [{'id': None, 'server': None, 'tool': None, 'unreadable': True}]
-    if kind != MCP_ITEM:
+    if kind in TOOL_FREE_ITEMS or kind in BUILTIN_ITEMS:
         return []
+    ident = item.get('id') if isinstance(item.get('id'), str) else None
+    if kind != MCP_ITEM:
+        return [{'id': ident, 'server': None, 'tool': None, 'unknown': kind}]
     server, tool = item.get('server'), item.get('tool')
     if not (isinstance(server, str) and server and isinstance(tool, str) and tool):
         return [{'id': item.get('id'), 'server': None, 'tool': None, 'unreadable': True}]

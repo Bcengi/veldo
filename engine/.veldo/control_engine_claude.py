@@ -68,11 +68,21 @@ account stays refused until a later observation says otherwise. The rate-limit r
 as a window. Any other message (the binary's "Server is temporarily limiting requests (not your usage
 limit)", an overloaded model) is not the account's limit.
 
-MCP CALLS (VELDO-0160). `mcp_calls(event)` names the MCP tool calls an event of the stream shows: each
-`tool_use` block of an `assistant` message whose name is `mcp__<server>__<tool>`, by its id. What may be
-a tool call and cannot be read is named `unreadable` (an assistant message whose content is not a list, a
-content block that is not an object naming its type, a `tool_use` block whose name is not a string), so
-the decision never takes it for no call.
+TOOL CALLS (VELDO-0160). `tool_calls(event, seen, redacted)` names the MCP tool calls an event of the
+stream shows: each `tool_use` block of an `assistant` message whose name is `mcp__<server>__<tool>`, by
+its id. It reads only the forms the binary's own tables list (proof/VELDO-0062/cli-formats.json,
+claude_code tool_forms): the SDK message union (MESSAGES), the content blocks of an assistant and of a
+user message, the streaming events of a `stream_event` and the built-in tool names (BUILTIN_TOOLS), and
+fails closed on everything else. What may be a tool call and cannot be read is named `unreadable` (an
+assistant message whose content is not a list, a content block that is not an object naming its type, a
+`tool_use` block whose name is not a string, or, on a line whose `redacted` field is set, a `tool_use`
+name that is neither `mcp__...` nor a built-in tool, since the redaction may have replaced it). A
+tool-call form this reading does not recognize is named `unknown` with its form, never taken for no call:
+an `mcp_tool_use`, `server_tool_use` or other server-tool block, a `stream_event` carrying any block that
+is not tool-free (a `tool_use` first), a user `tool_result`, a `tool_progress` or a `tool_use_summary`
+for a call id `seen` never held, a `tool_use` in a user message, and any message, subtype, block or
+streaming event type the tables do not list. `seen` is the ids of every tool call shown so far, to which
+each `tool_use` read is added.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
@@ -182,6 +192,40 @@ MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 
 RESETS = re.compile(r'resets (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2}), (?:(?P<year>\d{4}), )?)?'
                     r'(?P<hour>\d{1,2})(?::(?P<minute>\d{2}))?(?P<half>am|pm) \((?P<zone>[^()]+)\)')
 MCP_PREFIX = 'mcp__'
+# The tool-call forms (VELDO-0160), from the binary's tables (proof/VELDO-0062/cli-formats.json, claude_code
+# tool_forms). MESSAGES: the stream's message types, with the subtype of those that have one (SUBTYPED).
+SUBTYPED = ('system', 'result')
+MESSAGES = frozenset((
+    ('assistant', None), ('auth_status', None), ('command_lifecycle', None), ('conversation_reset', None),
+    ('prompt_suggestion', None), ('rate_limit_event', None), ('result', 'error_during_execution'),
+    ('result', 'error_max_budget_usd'), ('result', 'error_max_structured_output_retries'), ('result', 'error_max_turns'),
+    ('result', 'success'), ('stream_event', None), ('tool_progress', None), ('tool_use_summary', None), ('user', None),
+) + tuple(('system', sub) for sub in (
+    'api_retry', 'background_tasks_changed', 'cloud_session_delta', 'code_change_published', 'commands_changed',
+    'compact_boundary', 'control_request_progress', 'dev_intent', 'elicitation_complete', 'feedback_draft_queued',
+    'files_persisted', 'hook_progress', 'hook_response', 'hook_started', 'informational', 'init',
+    'local_command_output', 'memory_recall', 'mirror_error', 'model_refusal_fallback', 'model_refusal_no_fallback',
+    'notification', 'peer_message_hold', 'per_turn_effort_changed', 'permission_denied', 'plugin_install',
+    'session_state_changed', 'status', 'task_notification', 'task_progress', 'task_started', 'task_updated',
+    'thinking_tokens', 'turn_handoff_available', 'turn_preempted', 'vcs_state_changed', 'worker_shutting_down')))
+# The content blocks, of an assistant message (RESPONSE_BLOCKS) and of a user message (REQUEST_BLOCKS), and
+# of those the ones that are no tool call (TOOL_FREE_BLOCKS: text, reasoning, compaction; a user message's
+# text, images, documents and search results). Every other listed block is a tool call or a tool's result.
+RESPONSE_BLOCKS = ('text', 'tool_use', 'thinking', 'redacted_thinking', 'server_tool_use', 'web_search_tool_result',
+                   'web_fetch_tool_result', 'advisor_tool_result', 'code_execution_tool_result',
+                   'bash_code_execution_tool_result', 'text_editor_code_execution_tool_result',
+                   'tool_search_tool_result', 'mcp_tool_use', 'mcp_tool_result', 'container_upload', 'compaction',
+                   'fallback')
+REQUEST_BLOCKS = ('text', 'image', 'document', 'search_result', 'tool_use', 'tool_result', 'thinking',
+                  'redacted_thinking') + RESPONSE_BLOCKS[4:] + ('mid_conv_system',)
+TOOL_FREE_BLOCKS = frozenset(('text', 'thinking', 'redacted_thinking', 'compaction', 'fallback'))
+TOOL_FREE_REQUEST = TOOL_FREE_BLOCKS | {'image', 'document', 'search_result', 'mid_conv_system'}
+STREAM_EVENTS = ('message_start', 'content_block_start', 'content_block_delta', 'content_block_stop',
+                 'message_delta', 'message_stop')
+# The binary's BUILTIN_TOOL_NAMES: a partial list of its own tools, so a redacted name it omits asks.
+BUILTIN_TOOLS = frozenset(('Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'NotebookEdit', 'WebFetch', 'WebSearch',
+                           'Task', 'TodoWrite', 'TaskCreate', 'TaskUpdate', 'TaskGet', 'TaskList', 'TaskStop', 'Skill',
+                           'REPL', 'JavaScript', 'AskUserQuestion', 'ToolSearch', 'SendUserMessage'))
 
 
 def _count(value):
@@ -262,28 +306,89 @@ def _unreadable(ident=None):
     return {'id': ident, 'server': None, 'tool': None, 'unreadable': True}
 
 
-def mcp_calls(event):
-    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160); a block that may be
-    a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}."""
-    if not isinstance(event, dict) or event.get('type') != 'assistant':
+def _unknown(form, ident=None):
+    return {'id': ident, 'server': None, 'tool': None, 'unknown': form}
+
+
+def _blocks(content, seen, redacted, user):
+    """The calls a message's content blocks show (the module docstring, TOOL CALLS)."""
+    if user and isinstance(content, str):
         return []
-    message = event.get('message')
-    content = message.get('content') if isinstance(message, dict) else None
     if not isinstance(content, list):
-        return [_unreadable()]  # An assistant message with no readable content may hold a tool call.
+        return [_unreadable()]  # A message with no readable content may hold a tool call.
     found = []
     for block in content:
         kind = block.get('type') if isinstance(block, dict) else None
         if not isinstance(kind, str):
             found.append(_unreadable())
             continue
-        name = block.get('name') if kind == 'tool_use' else None
-        if kind == 'tool_use' and not isinstance(name, str):
-            found.append(_unreadable(block.get('id')))  # A tool call whose tool cannot be read.
-        elif isinstance(name, str) and name.startswith(MCP_PREFIX):
+        if kind in (TOOL_FREE_REQUEST if user else TOOL_FREE_BLOCKS):
+            continue
+        if user and kind == 'tool_result':
+            ident = block.get('tool_use_id')
+            if not isinstance(ident, str):
+                found.append(_unreadable())
+            elif ident not in seen:
+                found.append(_unknown('tool_result', ident))  # the result of a call the record never showed
+            continue
+        if user or kind != 'tool_use':
+            found.append(_unknown(kind, block.get('id') if isinstance(block.get('id'), str) else None))
+            continue
+        name, ident = block.get('name'), block.get('id')
+        if isinstance(ident, str):
+            seen.add(ident)
+        if not isinstance(name, str):
+            found.append(_unreadable(ident))  # A tool call whose tool cannot be read.
+        elif name.startswith(MCP_PREFIX):
             server, _, tool = name[len(MCP_PREFIX):].partition('__')
-            found.append({'id': block.get('id'), 'server': server, 'tool': tool})
+            found.append({'id': ident, 'server': server, 'tool': tool})
+        elif redacted and name not in BUILTIN_TOOLS:
+            found.append(_unreadable(ident))  # the redaction may have replaced an MCP tool's name
     return found
+
+
+def tool_calls(event, seen, redacted=False):
+    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160); a block that may be
+    a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}, and a tool-call form
+    this reading does not recognize {id, server: None, tool: None, unknown: <form>}. `seen` holds the ids of
+    the tool calls shown so far; each tool_use read is added to it."""
+    kind = event.get('type')
+    tag = (kind, event.get('subtype') if kind in SUBTYPED else None)
+    if tag not in MESSAGES:
+        return [_unknown('message:%s' % '/'.join(str(part) for part in tag if part is not None))]
+    if kind in ('assistant', 'user'):
+        message = event.get('message')
+        return _blocks(message.get('content') if isinstance(message, dict) else None, seen, redacted, kind == 'user')
+    if kind == 'stream_event':
+        stream = event.get('event')
+        name = stream.get('type') if isinstance(stream, dict) else None
+        if not isinstance(name, str):
+            return [_unreadable()]
+        if name not in STREAM_EVENTS:
+            return [_unknown('stream_event:' + name)]
+        if name == 'content_block_start':
+            blocks = [stream.get('content_block')]
+        elif name == 'message_start':
+            message = stream.get('message')
+            blocks = message.get('content') if isinstance(message, dict) else None
+        else:
+            return []
+        if not isinstance(blocks, list):
+            return [_unreadable()]
+        found = []
+        for block in blocks:
+            tag = block.get('type') if isinstance(block, dict) else None
+            if not isinstance(tag, str):
+                found.append(_unreadable())
+            elif tag not in TOOL_FREE_BLOCKS:
+                found.append(_unknown('stream_event:' + tag))  # a streamed tool call this reading never reads
+        return found
+    if kind in ('tool_progress', 'tool_use_summary'):
+        ids = [event.get('tool_use_id')] if kind == 'tool_progress' else event.get('preceding_tool_use_ids')
+        if not isinstance(ids, list) or not all(isinstance(ident, str) for ident in ids):
+            return [_unreadable()]
+        return [_unknown(kind, ident) for ident in ids if ident not in seen]
+    return []
 
 
 class Meter:

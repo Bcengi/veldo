@@ -6931,7 +6931,7 @@ def cases():
          "  # defect: a revision that marks nothing marks everything\n",
          ['decision/ask'])
     pool('decision-claude-calls-unread', 'control_engine_claude.py',
-         "        elif isinstance(name, str) and name.startswith(MCP_PREFIX):\n",
+         "        elif name.startswith(MCP_PREFIX):\n",
          "        elif False:  # defect: Claude Code's MCP tool calls are not read\n",
          ['decision/ask'])
     pool('decision-codex-calls-unread', 'control_engine_codex.py',
@@ -6952,8 +6952,8 @@ def cases():
          ['decision/ask'])
     # The review (fail safe): an engine line the decision cannot read is skipped as though it showed no call.
     pool('decision-unreadable-line-skipped', 'control_account_limit.py',
-         "        shown = engine.mcp_calls(event) if event is not None else [{'unreadable': True}]\n",
-         "        shown = engine.mcp_calls(event) if event is not None else []  # defect: an unreadable line is no call\n",
+         "                 else [{'unreadable': True}])\n",
+         "                 else [])  # defect: an unreadable line is no call\n",
          ['decision/unreadable-asks'])
     pool('decision-unreadable-call-skipped', 'control_account_limit.py',
          "            if call.get('unreadable'):\n                found.append(",
@@ -6964,7 +6964,7 @@ def cases():
          "    return payload if isinstance(payload, (dict, list)) else None  # defect: any JSON value is an event\n",
          ['decision/unreadable-asks'])
     pool('decision-claude-nameless-call-skipped', 'control_engine_claude.py',
-         "            found.append(_unreadable(block.get('id')))  # A tool call whose tool cannot be read.\n",
+         "            found.append(_unreadable(ident))  # A tool call whose tool cannot be read.\n",
          "            pass  # defect: a tool call whose name cannot be read is no call\n",
          ['decision/unreadable-asks'])
     pool('decision-codex-serverless-call-skipped', 'control_engine_codex.py',
