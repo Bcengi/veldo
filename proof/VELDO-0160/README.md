@@ -254,8 +254,8 @@ all four limited (resets 900, 600, 1200 s ahead, and one at 300 s on its five-ho
 window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
-Plain run after the merge with main: 49 passed (26 preamble, 23 rows) in 19.3 s. Stage environment run
-(`env -i`, the stage's variables, TZ=UTC): 49 passed in 24.5 s. After the merge the fake `claude` is
+Plain run after the second check's round: 52 passed (26 preamble, 26 rows) in 19.3 s. Stage environment run
+(`env -i`, the stage's variables, TZ=UTC): 52 passed in 25.5 s. After the merge the fake `claude` is
 installed, pinned and qualified as version 2.1.281 under the factory state root and the fake Codex is a
 qualified vendor package (VELDO-0060, VELDO-0061), as suite 75 does.
 
@@ -357,9 +357,9 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | format-codex-collab-item-builtin | control_engine_codex.py | `decision/unknown-forms`, `format/tool-forms` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 78 rejected (65 before the second check's round). After the merge with main: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 78 rejected (65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
 
-Suites run after the merge, plain and under the stage environment, all green:
-`78_veldo_0160_account_pool` (23 rows), `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
+Suites run after the second check's round, plain and under the stage environment, all green:
+`78_veldo_0160_account_pool` (26 rows), `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
 (20), `75_veldo_0062_accounts` (22) and `58_veldo_0036_reservations` (10). Before the merge the suites of
 every module this touches and every suite that reads `init_scaffold.py` were run green as well.
