@@ -295,3 +295,14 @@ Codex reader), so the suite no longer waits for a minute to end. Proof: suite `7
 (21 rows), the red record at 0af8dc0 (all 19 behavior rows red by assertion, the two format rows green)
 and 48 finding 62 mutations, each red on its named row; findings 36 (its report-order mutant follows the
 settled session), 39, 40 and 41 still reject. Main merged at a166d14. Status unchanged.
+
+2026-09-26, fourth review fixed (Release 1, Linux): a resumed Claude Code session's settled total was
+subtracted by the session id in the contract's `resume` and never checked against the session id the
+CLI reports in its stream, so a CLI that started a fresh session was charged less than it recorded. The
+settled total is now subtracted only when the CLI reports the session the contract resumes; another
+session is charged its whole running total (a fork that carried the earlier turns is over-counted,
+never under-counted), and each final report records which case charged it (`whole`, `difference` or
+`whole_other_session`). Proof: suite `75_veldo_0062_accounts` (22 rows, the new one
+`settle/resumed-other-session`), the red record at 0af8dc0 (all 20 behavior rows red by assertion, the
+two format rows green) and 50 finding 62 mutations, each red on its named row; findings 36, 39, 40 and
+41 still reject. Main merged at aa5c721d. Status unchanged.

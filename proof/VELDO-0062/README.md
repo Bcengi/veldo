@@ -202,14 +202,14 @@ not declare, enum and literal values, integer counts), the fixtures print every 
 from, and each Codex usage-limit message matches the binary's own message, retry phrases and time
 formats. They check the fixtures, not production, so they are green at the pre-change commit too.
 
-Plain run: 47 passed (26 preamble, 21 rows) in 25 seconds, measured three times at 25.4, 25.4 and
-25.5 seconds. Stage environment run (`env -i`, the stage's variables, TZ=UTC): 47 passed in 32 seconds.
+Plain run: 48 passed (26 preamble, 22 rows) in 26 seconds (25.9 twice). Stage environment run
+(`env -i`, the stage's variables, TZ=UTC): 48 passed in 33 seconds.
 The run no longer waits for a stated minute to end: the reset boundary is tested at the seams that take a
 clock.
 
 ## Red record
 
-`red-at-0af8dc0.json`: the current suite over `git archive 0af8dc0`, unchanged. All 19 behavior rows fail
+`red-at-0af8dc0.json`: the current suite over `git archive 0af8dc0`, unchanged. All 20 behavior rows fail
 by their own assertion: there are no account records, the receiver launches an engine adapter in the
 caller's environment with its profiles and login variables, refuses no configured login, reserves no
 invocation, nothing reads the CLI's usage reports, its usage-limit message or its error table, no
@@ -221,9 +221,9 @@ production.
 ## Mutations (finding 62)
 
 Registered in `scripts/check_teeth_mutations.py` with the `account-` prefix, each declared falsifier
-first; `drive.py` records `mutations.json` and one applied diff per mutant. All 48 turn their named row
+first; `drive.py` records `mutations.json` and one applied diff per mutant. All 50 turn their named row
 red by assertion; the baseline and the no-op copies are green.
-`check_teeth_mutations.py --finding 62`: 48 rejected.
+`check_teeth_mutations.py --finding 62`: 50 rejected.
 
 | Mutant | Module | Named row |
 |---|---|---|
@@ -267,6 +267,8 @@ red by assertion; the baseline and the no-op copies are green.
 | account-codex-open-turn-conclusive | control_engine_codex.py | settle/missing-retained |
 | account-claude-resume-whole-total (a resumed session charged its whole total) | control_engine_claude.py | settle/resumed-delta |
 | account-claude-resume-unknown-prior-whole (a guess when the earlier total is unknown) | control_engine_claude.py | settle/resumed-delta |
+| account-claude-resume-by-contract-id (subtracted by the contract's resume id alone) | control_engine_claude.py | settle/resumed-other-session |
+| account-claude-resume-case-unrecorded (the charging case always recorded as whole) | control_engine_claude.py | settle/resumed-other-session |
 | account-resume-prior-unread | control_launch.py | settle/resumed-delta |
 | account-session-unsettled | control_launch.py | settle/resumed-delta |
 | account-codex-resume-subtracted | control_engine_codex.py | settle/resumed-delta |
@@ -278,7 +280,7 @@ red by assertion; the baseline and the no-op copies are green.
 
 The first build's `account-paid-api-kept` is gone with the fixed list it mutated. The other findings with
 mutations in the modules this changes still reject: 36 (20; its report-order mutant now follows the
-session the final report settles), 39 (30), 40 (22) and 41 (34). Main merged at a166d14. Suites run,
+session the final report settles), 39 (30), 40 (22) and 41 (34). Main merged at aa5c721d. Suites run,
 plain and under the stage environment, all green: `75_veldo_0062_accounts`, the VELDO-0036, 0039, 0040,
 0041, 0047 and 0050 suites (58, 62, 63, 67, 66, 64), `36_veldo_0023_journal`, `39_veldo_0026_revocation`,
 `40_veldo_0101_capsules`, `41_veldo_0103_assessor`, `47_veldo_0107_ipc` and `50_git_environment`.
