@@ -30,9 +30,9 @@ A RESUMED THREAD IS NOT SUBTRACTED. The binary shows that exec's turn usage come
 usage its event processor receives, a thread total and a last-turn figure, but its strings do not say
 which one `turn.completed` copies (proof/VELDO-0062/cli-formats.json, codex notes). Subtracting the
 resumed thread's settled total would under-count if it is the turn's own; the sum of this invocation's
-own completed turns never counts less than the CLI recorded under either reading. So `resumed` and
+own completed turns never counts less than the CLI recorded under either reading. So `resumes` and
 `prior` are accepted for the common interface and not used; `session()` still names the thread and its
-conclusive sum for the ledger.
+conclusive sum for the ledger, charged whole (`charged` is always `whole`).
 
 THE LIMIT SIGNAL. `codex exec --json` prints no rate-limit snapshot (its `rate_limits` exist only in
 an internal event that exec does not emit). What it prints when the subscription's allowance is
@@ -138,7 +138,7 @@ class Meter:
     `clock` and `zone` are the engine's clock and local time zone (its TZ), for the reset its
     usage-limit message states in local time."""
 
-    def __init__(self, clock=time.time, zone=None, resumed=False, prior=None):
+    def __init__(self, clock=time.time, zone=None, resumes=None, prior=None):
         self.pending = b''
         self.clock, self.zone = clock, zone
         self.thread = None
@@ -170,11 +170,12 @@ class Meter:
         return self.cumulative() if self.turns and not self.open and not self.incomplete else {}
 
     def session(self):
-        """{provider, id, tokens}: the thread this invocation ran and its conclusive sum (None when it has
-        none); None when the CLI named no thread."""
+        """{provider, id, tokens, charged}: the thread this invocation ran, its conclusive sum (None when it
+        has none) and `charged` `whole` (a resumed thread is never subtracted); None when the CLI named no
+        thread."""
         if self.thread is None:
             return None
-        return {'provider': PROVIDER, 'id': self.thread, 'tokens': self.final().get('tokens')}
+        return {'provider': PROVIDER, 'id': self.thread, 'tokens': self.final().get('tokens'), 'charged': 'whole'}
 
     def _limited(self, seen, message):
         """An exhaustion message of the error table as its window, exhausted: the usage-limit message with

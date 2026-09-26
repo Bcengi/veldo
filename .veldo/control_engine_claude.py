@@ -33,11 +33,16 @@ the CLI reports, at the granularity it reports it:
   invocation (main loop, Task subagents, sidechains, compaction), cumulative, so the latest result
   is read. Its tokens are the sum over every model of inputTokens, outputTokens, cacheReadInputTokens
   and cacheCreationInputTokens. The binary says a resumed or forked session continues from the totals
-  its transcript saved, so the first result already carries the earlier turns: a resumed invocation
-  (`resumed`) is charged its result's total less `prior`, the resumed session's running total the
-  ledger settled last (Reservations.session); an unknown `prior`, or a total below it, leaves this
-  invocation's tokens unknown, never the whole total. `session()` is the session this invocation ran
-  and the CLI's running total for it, which the final report settles for the next resumption. The result's `usage` is never read for accounting: the binary's schema
+  its transcript saved, so the first result already carries the earlier turns: an invocation whose
+  contract resumes a session (`resumes`, its id) and whose CLI reports that same session id is charged
+  its result's total less `prior`, the resumed session's running total the ledger settled last
+  (Reservations.session); an unknown `prior`, or a total below it, leaves this invocation's tokens
+  unknown, never the whole total. When the CLI reports another session id than the one resumed (it
+  started a fresh session, or forked one), nothing places its total against the resumed session's, so
+  the whole running total is charged: a fork that carried the earlier turns is over-counted, never
+  under-counted. `session()` is the session this invocation ran, the CLI's running total for it, which
+  the final report settles for the next resumption, and which case charged it (`charged`: `whole` for
+  no resumption, `difference` for the resumed session, `whole_other_session` for another one). The result's `usage` is never read for accounting: the binary's schema
   says it is the MAIN AGENT LOOP ONLY and to prefer modelUsage. A result without a readable
   modelUsage leaves tokens unknown (never zero, never the main loop's usage) and their reservation is
   retained. Messages are the distinct assistant messages or `num_turns`, whichever is more; only a
@@ -146,31 +151,42 @@ class Meter:
     modelUsage and empty when the CLI reported no result. `clock` and `zone` are the engine's clock
     and local time zone, for a CLI that states times in local time (this one does not)."""
 
-    def __init__(self, clock=time.time, zone=None, resumed=False, prior=None):
+    def __init__(self, clock=time.time, zone=None, resumes=None, prior=None):
         self.pending = b''
         self.messages = {}
         self.result = None
-        self.resumed = bool(resumed)
+        self.resumes = resumes if isinstance(resumes, str) and resumes else None
         self.prior = prior if _count(prior) else None
         self.session_id = None
         self.session_total = None
 
+    def charged(self):
+        """Which case charges this invocation: `whole` when its contract resumes no session, `difference`
+        when the CLI reports the session the contract resumes, `whole_other_session` when it reports
+        another one (or none)."""
+        if self.resumes is None:
+            return 'whole'
+        return 'difference' if self.session_id == self.resumes else 'whole_other_session'
+
     def _own(self, total):
-        """This invocation's share of a result's running total: all of it in a new session; in a resumed
-        one the total less the resumed session's settled total, unknown when that is unknown or the total
-        is below it (the running total cannot then be placed)."""
-        if total is None or not self.resumed:
+        """This invocation's share of a result's running total: all of it in a new session, or when the CLI
+        reports another session than the one resumed; in the resumed session the total less its settled
+        total, unknown when that is unknown or the total is below it (the running total cannot then be
+        placed)."""
+        if total is None or self.charged() != 'difference':
             return total
         if self.prior is None or total < self.prior:
             return None
         return total - self.prior
 
     def session(self):
-        """{provider, id, tokens}: the CLI session this invocation ran and its running token total at the
-        end (None without a result carrying modelUsage); None when the CLI named no session."""
+        """{provider, id, tokens, charged}: the CLI session this invocation ran, its running token total at
+        the end (None without a result carrying modelUsage) and which case charged it (`charged()`); None
+        when the CLI named no session."""
         if self.session_id is None:
             return None
-        return {'provider': PROVIDER, 'id': self.session_id, 'tokens': self.session_total}
+        return {'provider': PROVIDER, 'id': self.session_id, 'tokens': self.session_total,
+                'charged': self.charged()}
 
     def feed(self, chunk):
         self.pending += chunk

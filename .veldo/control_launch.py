@@ -1033,11 +1033,12 @@ class Metering:
         self.engine = receiver.login['engine']
         # A follow-on resumes a CLI session whose earlier turns the CLI may carry into this invocation's
         # report: the meter is given the session's running total the ledger settled last (None when no
-        # invocation settled it, or settled it without one), so only the difference is charged.
+        # invocation settled it, or settled it without one), so only the difference is charged, and only
+        # when the CLI reports that same session (the meter decides; another session is charged whole).
         payload = (contract.get('input') or {}).get('payload')
         self.resumes = str(payload['resume']) if isinstance(payload, dict) and payload.get('resume') else None
         settled = reservations.session(self.engine.PROVIDER, self.resumes) if self.resumes else None
-        self.meter = self.engine.Meter(zone=receiver.login.get('zone'), resumed=self.resumes is not None,
+        self.meter = self.engine.Meter(zone=receiver.login.get('zone'), resumes=self.resumes,
                                        prior=(settled or {}).get('tokens'))
         self.invocation = 'invocation/' + self.dispatch_id
         self.boundary = RTM.boundary(contract)

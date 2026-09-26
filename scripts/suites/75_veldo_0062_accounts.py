@@ -61,7 +61,8 @@ def _v62_suite():
             'login/substitution-refused', 'login/fleet-provider',
             'usage/reserved-before-launch', 'usage/allowance-states', 'usage/competing-remainder',
             'usage/cap-stops-worker', 'usage/rate-limit-reset',
-            'settle/once', 'settle/model-usage', 'settle/resumed-delta', 'settle/missing-retained', 'settle/timeout-retained',
+            'settle/once', 'settle/model-usage', 'settle/resumed-delta', 'settle/resumed-other-session',
+            'settle/missing-retained', 'settle/timeout-retained',
             'settle/cancel-retained',
             'attribution/stored-account', 'attribution/measurement-removed', 'attribution/watermark',
             'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -529,13 +530,15 @@ sys.exit(payload.get('code', 0))
 
         def own_tokens(dispatch_id):
             """This suite's reading of what one stored receipt charges: its recomputed total, except that a
-            Claude Code invocation resuming a session (its contract's `resume`) is charged its result's running
-            total less the running total of the latest earlier receipt of that session; with no such earlier
-            total, or a running total below it, only what its own messages streamed."""
+            Claude Code invocation resuming a session (its contract's `resume`) whose own lines report that
+            session is charged its result's running total less the running total of the latest earlier receipt
+            of that session; with no such earlier total, or a running total below it, only what its own messages
+            streamed. One whose lines report another session is charged its whole recomputed total."""
             header, lines = receipt_read(dispatch_id)
             found = recompute(header['provider'], lines)
             resume = (((rec(dispatch_id).get('contract') or {}).get('input') or {}).get('payload') or {}).get('resume')
-            if header['provider'] != 'claude_code' or not resume:
+            reported = [json.loads(line).get('session_id') for line in lines if json.loads(line).get('session_id')]
+            if header['provider'] != 'claude_code' or not resume or (reported[-1] if reported else None) != resume:
                 return found['tokens']
             order = invocation(dispatch_id).get('accepted_seq')
             earlier = []
@@ -1226,6 +1229,45 @@ sys.exit(payload.get('code', 0))
                                                     call.get('charge', {}).get('tokens')),
                   first_call.get('charge', {}).get('tokens') == 150 and call.get('state') == 'settled'
                   and call.get('charge', {}).get('tokens') == 180)
+
+        # The contract resumes session S (settled 1000), but the CLI reports a fresh session N with 5000: the
+        # difference is taken only when the CLI reports the resumed session, so N's whole total is charged.
+        with region('settle/resumed-other-session'):
+            opus = 'claude-opus-4-7'
+            named = 'session-62-named-' + os.urandom(4).hex()
+            other = 'session-62-other-' + os.urandom(4).hex()
+            unit = admitted('VELDO-6218-other')
+            first, _ = run('acct-c1', unit, 'claude', [c_init(session=named), c_msg('named-a', 1, 1, session=named),
+                                                        c_result(1, 1, 1, models={opus: (400, 600, 0, 0)}, session=named)])
+            first_call = invocation(first.dispatch_id)
+            launch, _ = run('acct-c1', unit, 'claude', [c_init(session=other), c_msg('other-a', 2, 3, session=other),
+                                                         c_result(2, 3, 1, models={opus: (2000, 3000, 0, 0)}, session=other)],
+                            resume=named)
+            call = invocation(launch.dispatch_id)
+            check('settle/resumed-other-session', 'claude: a follow-on whose contract resumes %s (settled %s) but whose '
+                  'CLI reports another session with a running total of 5000 is charged all 5000, not the difference '
+                  '[%s charged, %s]' % ('the named session', first_call.get('charge', {}).get('tokens'),
+                                        call.get('charge', {}).get('tokens'), call.get('state')),
+                  first_call.get('charge', {}).get('tokens') == 1000 and call.get('state') == 'settled'
+                  and call.get('charge', {}).get('tokens') == 5000)
+            recorded = call.get('session') or {}
+            untouched = (reservations.session('claude_code', named) or {}).get('tokens')
+            # The named session resumed again, now reported by the CLI: the difference, 1200 less 1000.
+            again, _ = run('acct-c1', unit, 'claude', [c_init(session=named), c_msg('named-b', 1, 1, session=named),
+                                                        c_result(1, 1, 1, models={opus: (500, 700, 0, 0)}, session=named)],
+                           resume=named)
+            matched = invocation(again.dispatch_id)
+            check('settle/resumed-other-session', 'claude: the ledger records which case charged each invocation: the '
+                  'other session whole as another session than the one resumed, the named session\'s settled total '
+                  'untouched by it, a resumption the CLI reports as the named session as the difference, and the '
+                  'initial invocation as whole [%s; %s; %s; %s charged %s]'
+                  % (recorded, untouched, first_call.get('session'), matched.get('session'),
+                     matched.get('charge', {}).get('tokens')),
+                  recorded.get('id') == other and recorded.get('tokens') == 5000
+                  and recorded.get('charged') == 'whole_other_session' and untouched == 1000
+                  and (first_call.get('session') or {}).get('charged') == 'whole'
+                  and (matched.get('session') or {}).get('charged') == 'difference'
+                  and matched.get('charge', {}).get('tokens') == 200)
 
         with region('settle/missing-retained'):
             for account, adapter, script in (('acct-c1', 'claude', [c_msg('m1', 70, 30)]),

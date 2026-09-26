@@ -51,6 +51,9 @@ def _organ(name):
 # VELDO-0062: the account records, whose CLI-reported rate-limit windows every invocation check reads.
 ACC = _organ('control_accounts')
 RECEIPT = 'sha256:'
+# Which case charged a final report's session: no resumption, the resumed session's difference, or
+# another session than the one resumed, charged whole.
+CHARGED = ('whole', 'difference', 'whole_other_session')
 
 
 def service_authority(conn, command):
@@ -203,10 +206,10 @@ class Reservations:
                session=None):
         """`receipts` are the digests of the CLI's own report lines this report was read from
         (VELDO-0062): the raw lines stay with the receiver, the ledger carries what checks them.
-        `session` ({provider, id, tokens}, final reports only) is the CLI session the invocation ran
-        and the CLI's own running token total for it at the end (None when it reported none): a CLI that
-        carries a resumed session's earlier totals into its report is charged only the difference, read
-        back by `session`."""
+        `session` ({provider, id, tokens, charged}, final reports only) is the CLI session the invocation
+        ran, the CLI's own running token total for it at the end (None when it reported none) and which
+        case charged it (CHARGED): a CLI that carries a resumed session's earlier totals into its report
+        is charged only the difference when it reports that session, read back by `session`."""
         receipts = list(receipts)
         if (not isinstance(sequence, int) or isinstance(sequence, bool) or sequence < 1
                 or not isinstance(usage, dict) or set(usage) - set(USAGE)
@@ -215,7 +218,8 @@ class Reservations:
                 or not all(isinstance(r, str) and r.startswith(RECEIPT) and len(r) == len(RECEIPT) + 64
                            for r in receipts)
                 or (session is not None and (not final or not isinstance(session, dict)
-                                             or set(session) != {'provider', 'id', 'tokens'}
+                                             or set(session) != {'provider', 'id', 'tokens', 'charged'}
+                                             or session['charged'] not in CHARGED
                                              or not all(isinstance(session[k], str) and session[k].strip()
                                                         for k in ('provider', 'id'))
                                              or (session['tokens'] is not None and not number(session['tokens']))))):
