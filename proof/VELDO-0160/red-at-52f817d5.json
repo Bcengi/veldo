@@ -30,7 +30,7 @@
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 6:58pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:03pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
@@ -78,19 +78,49 @@
   "VELDO-0160 decision/unknown-forms detail: claude_code, a content block of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_block [None, no decision module]",
   "VELDO-0160 decision/unknown-forms detail: claude_code, a message of a type no table lists: decided ask, naming that line as an unknown call of form message:unlisted_message [None, no decision module]",
   "VELDO-0160 decision/unknown-forms detail: claude_code, a system message of a subtype no table lists: decided ask, naming that line as an unknown call of form message:system/unlisted_subtype [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a can_use_tool control request (outside the message union): decided ask, naming that line as an unknown call of form message:control_request [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a control response (outside the message union): decided ask, naming that line as an unknown call of form message:control_response [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a transcript mirror (outside the message union): decided ask, naming that line as an unknown call of form message:transcript_mirror [None, no decision module]",
   "VELDO-0160 decision/unknown-forms detail: codex, a dynamic_tool_call item: decided ask, naming that line as an unknown call of form dynamic_tool_call [None, no decision module]",
   "VELDO-0160 decision/unknown-forms detail: codex, a collab_agent_tool_call item: decided ask, naming that line as an unknown call of form collab_agent_tool_call [None, no decision module]",
   "VELDO-0160 decision/unknown-forms detail: codex, a sub_agent_activity item: decided ask, naming that line as an unknown call of form sub_agent_activity [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: codex, exec's own collab_tool_call item (a sub-agent call): decided ask, naming that line as an unknown call of form collab_tool_call [None, no decision module]",
   "VELDO-0160 decision/unknown-forms detail: codex, an item of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_item [None, no decision module]",
   "VELDO-0160 decision/unknown-forms detail: codex, an event of a type no table lists: decided ask, naming that line as an unknown call of form event:turn.unlisted [None, no decision module]",
   "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named '[REDACTED:known_pattern]': decided ask [None, no decision module]",
-  "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided ask [None, no decision module]",
+  "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'NotebookRead': decided ask [None, no decision module]",
+  "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided re-run [None, no decision module]",
   "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Read': decided re-run [None, no decision module]",
   "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'mcp__tracker__get_issue': decided re-run [None, no decision module]",
-  "VELDO-0160 decision/tool-free-forms detail: claude_code: 11 lines of tool-free and built-in forms decide re-run, naming no call [None, no decision module]",
+  "VELDO-0160 decision/tool-free-forms detail: claude_code: 21 lines of tool-free and built-in forms decide re-run, naming no call [None, no decision module]",
   "VELDO-0160 decision/tool-free-forms detail: codex: 7 lines of tool-free and built-in forms decide re-run, naming no call [None, no decision module]",
   "VELDO-0160 format/tool-forms detail: claude_code: the reader's message, block, streaming event and built-in tool tables are the binary's own [['messages', 'response_blocks', 'request_blocks', 'stream_events', 'builtin_tools']]",
-  "VELDO-0160 format/tool-forms detail: codex: the reader's item and event tables are exec's own [['', 'agent_message', 'command_execution', 'error', 'file_change', 'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'], ['error', 'item.completed', 'item.started', 'item.updated', 'thread.started', 'turn.completed', 'turn.failed', 'turn.started']]",
+  "VELDO-0160 format/tool-forms detail: claude_code: the built-in names are BUILTIN_TOOL_NAMES and the current name of each tool it lists under an old one ({'Agent': ('Task',)}) [None, ['Agent', 'AskUserQuestion', 'Bash', 'Edit', 'Glob', 'Grep', 'JavaScript', 'NotebookEdit', 'REPL', 'Read', 'SendUserMessage', 'Skill', 'Task', 'TaskCreate', 'TaskGet', 'TaskList', 'TaskStop', 'TaskUpdate', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Write']]",
+  "VELDO-0160 format/tool-forms detail: claude_code: every field of the binary's messages that names a tool, declared or emitted, is in the reader's table, and the tool names that ran are read as calls [[('assistant', 'attribution_mcp_tool'), ('assistant', 'batch_tool_uses'), ('assistant', 'context_usage.mcp_tools'), ('assistant', 'message.usage.server_tool_use'), ('assistant', 'parent_tool_use_id'), ('assistant', 'tool_use_meta')], []]",
+  "VELDO-0160 format/tool-forms detail: claude_code: the frames outside the message union the reader takes as tool-free are the ones whose schema provably carries no tool call [[('active_goal', None), ('autocompact_state', None), ('control_cancel_request', None), ('control_request', None), ('control_response', None), ('keep_alive', None), ('system', 'post_turn_summary'), ('system', 'task_summary'), ('transcript_mirror', None)], []]",
+  "VELDO-0160 format/tool-forms detail: codex: the reader's item and event tables are exec's own, its own collab_tool_call a sub-agent call [['', 'agent_message', 'collab_tool_call', 'command_execution', 'error', 'file_change', 'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'], ['error', 'item.completed', 'item.started', 'item.updated', 'thread.started', 'turn.completed', 'turn.failed', 'turn.started']]",
+  "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/repl-inner-call detail: an MCP write inside the REPL tool, in its end phase only: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/repl-inner-call detail: a REPL inner tool neither mcp__ nor built in: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/repl-inner-call detail: a repl_call that is not an object: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/repl-inner-call detail: a repl_call without its inner tool name: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/repl-inner-call detail: a repl_call whose inner tool name is not a string: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/repl-inner-call detail: a read-only MCP call inside the REPL tool (negative control): decided rerun [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/repl-inner-call detail: a built-in tool inside the REPL tool (negative control): decided rerun [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/task-progress-tool detail: a background task whose last tool is an MCP write (the checker's reproduction): decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/task-progress-tool detail: a workflow agent whose last tool is an MCP write: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/task-progress-tool detail: a last tool name that is not a string: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/task-progress-tool detail: workflow progress that is not a list: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/task-progress-tool detail: a workflow progress entry that is not an object: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is a read-only MCP call (negative control): decided rerun [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is built in (negative control): decided rerun [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/frame-tool-names detail: a tool_progress of a shown call naming an MCP write: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/frame-tool-names detail: an MCP write and its heartbeat are one call: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/frame-tool-names detail: an assistant message an MCP tool produced: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/frame-tool-names detail: an assistant message decomposed from a batch holding an MCP write: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/frame-tool-names detail: an MCP attribution that is not a name: decided ask [None, no decision module, None MCP calls]",
+  "VELDO-0160 decision/frame-tool-names detail: a heartbeat of a shown built-in call (negative control): decided rerun [None, no decision module, None MCP calls]",
   "VELDO-0160 pool/moved-off detail: acct-c1's CLI reported its window exhausted, recorded with its reset [{}]",
   "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
   "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
@@ -127,6 +157,9 @@
   "VELDO-0160 decision/redacted-name",
   "VELDO-0160 decision/tool-free-forms",
   "VELDO-0160 format/tool-forms",
+  "VELDO-0160 decision/repl-inner-call",
+  "VELDO-0160 decision/task-progress-tool",
+  "VELDO-0160 decision/frame-tool-names",
   "VELDO-0160 pool/moved-off",
   "VELDO-0160 pool/added-account",
   "VELDO-0160 pool/one-run-while-unknown",
@@ -138,7 +171,7 @@
  "modules": {
   ".veldo/control_account_limit.py": {
    "at_commit": null,
-   "now": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "now": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   ".veldo/control_account_pool.py": {
    "at_commit": null,
@@ -150,11 +183,11 @@
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "9a9b490e53e57873ab2aaaa71f548e0c0721ce69dfd2ef3536064e99d494462e",
-   "now": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "now": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
-   "now": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "now": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   ".veldo/control_launch.py": {
    "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
@@ -232,6 +265,18 @@
    false
   ],
   [
+   "VELDO-0160 decision/repl-inner-call",
+   false
+  ],
+  [
+   "VELDO-0160 decision/task-progress-tool",
+   false
+  ],
+  [
+   "VELDO-0160 decision/frame-tool-names",
+   false
+  ],
+  [
    "VELDO-0160 pool/moved-off",
    false
   ],
@@ -269,7 +314,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 34.006,
+ "seconds": 33.934,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"
