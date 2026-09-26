@@ -6531,12 +6531,23 @@ def cases():
             "        if not (data.get('state') == SETTLED_STATE and reference.get('request_version') == version\n"
             "                and settled is not None and settled['kind'] == SETTLEMENT_KIND):\n",
             "        if False:  # defect: an unsettled request is not refused as unsettled\n", 'answer/unsettled')
+    # A settled rejection applies: neither its ruling nor its effect's approval is required, so it activates.
     adopted('settled-rejection-applies', "        if s.get('ruling') != 'approve':\n",
-            "        if False:  # defect: a settled rejection is not refused as one\n", 'answer/unsettled')
+            "        if False:  # defect: the activation does not require an approval\n", 'answer/unsettled',
+            also=[("                or e.get('type') != APPROVED_EFFECT or e.get('target') != target or e.get('proposal') != proposal):\n",
+                   "                or e.get('target') != target):  # defect: any settled ruling of these terms applies\n")])
     adopted('stale-answer-unnamed', "        return 'stale_answer' if answers else 'unsettled:no_answer'\n",
             "        return 'unsettled:no_answer'  # defect: a stale answer is not named\n", 'answer/stale')
     adopted('settled-provenance-unrecorded', "                provenance.update(source='settled_answer', **settled)\n",
             "                pass  # defect: the settlement the project came from is not recorded\n", 'answer/activates')
+    # The review's case: the owner approves the requester's brief and a different proposal activates.
+    adopted('settled-brief-unchecked', "        if data.get('brief') != activation_brief(proposal):\n",
+            "        if False:  # defect: what the owner was shown is not checked against the proposal\n",
+            'answer/brief-binds-proposal')
+    adopted('activation-brief-omits-repository',
+            "            % (shown('project'), shown('owner'), shown('execution_repository'), shown('charter'),\n",
+            "            % (shown('project'), shown('owner'), 'as proposed', shown('charter'),  # defect: repository not shown\n",
+            'answer/owner-sees-every-value')
     return result
 
 
