@@ -181,8 +181,8 @@ every scripted Claude Code line conforms to the binary's schema, every Codex lin
 binary's with its item a declared kind, each perturbed line is exactly its perturbation, and every Claude
 Code start used only the binary's options with exactly the qualified flags.
 
-Plain run: 58 passed (26 preamble, 32 rows) in about 16 seconds. Stage environment run (`env -i`, the
-stage's variables, TZ=UTC): 58 passed in about 21 seconds. No scope, slice or process of the run is left.
+Plain run: 60 passed (26 preamble, 34 rows) in about 17 seconds. Stage environment run (`env -i`, the
+stage's variables, TZ=UTC): 60 passed in about 22 seconds. No scope, slice or process of the run is left.
 
 ## Red record
 
@@ -197,9 +197,9 @@ binary's tables.
 ## Mutations (finding 60)
 
 Registered in `scripts/check_teeth_mutations.py` with the `claude-` prefix, each declared falsifier
-first; `drive.py` records `mutations.json` and one applied diff per mutant. All 32 turn their named row
+first; `drive.py` records `mutations.json` and one applied diff per mutant. All 35 turn their named row
 red by assertion; the baseline and the no-op copies are green. `check_teeth_mutations.py --finding 60
---jobs 2`: 32 rejected.
+--jobs 2`: 35 rejected.
 
 | Mutant | Module | Named row |
 |---|---|---|
@@ -248,8 +248,13 @@ owner check of `bind` (`binding_mismatch:engine_owner`) has no negative row and 
 another account owns needs root or a second account, which this build does not have (user namespaces
 are refused on this host).
 
-The other findings with mutations in the modules this changes still reject: 61 (28), 62 (50), 39 (30),
+The other findings with mutations in the modules this changes still reject: 61 (30), 62 (50), 39 (30),
 40 (22), 41 (34), 42 (21) and 45 (23). Suites run plain, all green: this one, `79_veldo_0061_codex_adapter`,
 `75_veldo_0062_accounts` and every suite that loads a module this changes (48 of them, the floor's
 among them), `50_git_environment` and `24_veldo_0007_install_and_run`; under the stage environment, all green: this one and the VELDO-0061,
 0062, 0039, 0040, 0041 and 0042 suites.
+
+After the integration fixes (which change `control_launch.py` and `control_engine_codex.py` only), the
+final commit was run again, all green: plain, the 14 suites that load either module, `50_git_environment`
+and `24_veldo_0007_install_and_run`; under the stage environment, the VELDO-0060, 0061, 0062, 0039,
+0040, 0041 and 0042 suites.

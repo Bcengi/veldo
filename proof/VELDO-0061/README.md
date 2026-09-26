@@ -178,8 +178,8 @@ a declared event whose item is a declared kind with only exec's own fields, the 
 the adapter reads, the usage-limit message is one of the binary's forms, and the item table matches the
 installed binary. It checks the fixtures, not production, so it is green at the pre-change commit too.
 
-Plain run: 44 passed (26 preamble, 18 rows) in about 9 seconds. Stage environment run (`env -i`, the
-stage's variables, TZ=UTC): 44 passed in 10 seconds.
+Plain run: 46 passed (26 preamble, 20 rows) in about 9 seconds. Stage environment run (`env -i`, the
+stage's variables, TZ=UTC): 46 passed in 12 seconds.
 
 ## Red record
 
@@ -192,9 +192,9 @@ returns no artifact document and completes an invocation, and its slot, on its e
 ## Mutations (finding 61)
 
 Registered in `scripts/check_teeth_mutations.py` with the `adapter-` prefix, each declared falsifier
-first; `drive.py` records `mutations.json` and one applied diff per mutant. All 28 turn their named row
+first; `drive.py` records `mutations.json` and one applied diff per mutant. All 30 turn their named row
 red by assertion; the baseline and the no-op copies are green.
-`check_teeth_mutations.py --finding 61 --jobs 2`: 28 rejected.
+`check_teeth_mutations.py --finding 61 --jobs 2`: 30 rejected.
 
 | Mutant | Module | Named row |
 |---|---|---|
@@ -226,11 +226,18 @@ red by assertion; the baseline and the no-op copies are green.
 | adapter-argv-position-unchecked | control_launch.py | pin/unexpected-launch |
 | adapter-update-check-left-on | control_engine_codex.py | pin/qualified-record |
 | adapter-qualification-not-scaffolded | init_scaffold.py | pin/qualified-record |
+| adapter-stop-cause-ignored | control_engine_codex.py | stop/stopped-not-complete |
+| adapter-engine-protocol-unchecked | control_launch.py | lifecycle/engine-protocol |
 
-The other findings with mutations in the modules this changes still reject: 60 (32), 62 (50, over its
+The other findings with mutations in the modules this changes still reject: 60 (35), 62 (50, over its
 suite with the fake Codex and the fake Claude Code both pinned), 39 (30), 40 (22), 41 (34), 42 (21) and
 45 (23). Suites run plain, all green: `79_veldo_0061_codex_adapter`, `78_veldo_0060_claude_adapter` (whose
 contained rows run this adapter on the local Linux contained launch too), `75_veldo_0062_accounts` and
 every suite that loads a module this changes (48 of them), `50_git_environment` and
 `24_veldo_0007_install_and_run`; under the stage environment, all green: this one and the VELDO-0060,
 0062, 0039, 0040, 0041 and 0042 suites.
+
+After the integration fixes (which change `control_launch.py` and `control_engine_codex.py` only), the
+final commit was run again, all green: plain, the 14 suites that load either module, `50_git_environment`
+and `24_veldo_0007_install_and_run`; under the stage environment, the VELDO-0060, 0061, 0062, 0039,
+0040, 0041 and 0042 suites.
