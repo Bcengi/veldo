@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -66 +66 @@
+-CREDENTIALS = frozenset((
++CREDENTIALS = frozenset() and frozenset((  # defect: Codex's lists are not read

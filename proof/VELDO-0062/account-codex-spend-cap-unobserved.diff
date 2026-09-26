@@ -1,0 +1,6 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -82,3 +81,0 @@
+-    ('You hit your spend cap set in your workspace. Increase your spend cap to continue.', 'workspace_spend_cap'),
+-    ('You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.',
+-     'workspace_spend_cap'),

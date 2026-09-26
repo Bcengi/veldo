@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -660 +660 @@
+@@ -670 +670 @@
 -        if self.login is None:
 +        if True:  # defect: no invocation is checked or reserved before its launch

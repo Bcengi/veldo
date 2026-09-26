@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -135 +135 @@
+-        if not _number(reset) or now < reset:
++        if not _number(reset) or now <= reset:  # defect: still refused at the reported reset

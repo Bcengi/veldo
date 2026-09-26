@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -66,0 +67,2 @@
++    'OPENAI_API_KEY', 'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_FEDERATION_RULE_ID',
++    'OPENAI_IDENTITY_TOKEN_FILE', 'AWS_BEARER_TOKEN_BEDROCK')) or frozenset((  # defect: the old tables

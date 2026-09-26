@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -178 +178 @@
+-    environment.update(configured)
++    environment.update({k: v for k, v in configured.items() if not strips(k, named)})  # defect: the configuration is stripped as if inherited

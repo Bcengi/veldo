@@ -15,6 +15,10 @@
     true
    ],
    [
+    "VELDO-0062 login/configured-environment",
+    true
+   ],
+   [
     "VELDO-0062 login/substitution-refused",
     true
    ],
@@ -51,6 +55,10 @@
     true
    ],
    [
+    "VELDO-0062 settle/resumed-delta",
+    true
+   ],
+   [
     "VELDO-0062 settle/missing-retained",
     true
    ],
@@ -83,24 +91,27 @@
     true
    ]
   ],
-  "seconds": 32.123
+  "seconds": 32.478
  },
  "controls_green": true,
  "mutants": [
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 login/recorded-account-profile detail: acct-c1: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [/dev/shm/v62-7_o2bhzv/helper/accounts/profiles/acct-c3]",
-    "VELDO-0062 login/recorded-account-profile detail: acct-c2: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [/dev/shm/v62-7_o2bhzv/helper/accounts/profiles/acct-c3]",
-    "VELDO-0062 login/recorded-account-profile detail: acct-x1: CODEX_HOME is that account's registered profile on this host, not the caller's [/dev/shm/v62-7_o2bhzv/helper/accounts/profiles/acct-x2]",
-    "VELDO-0062 login/recorded-account-profile detail: the two Claude Code accounts ran on two different profiles"
+    "VELDO-0062 login/recorded-account-profile detail: acct-c1: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [planted-08fef9ab8887]",
+    "VELDO-0062 login/recorded-account-profile detail: acct-c2: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [planted-08fef9ab8887]",
+    "VELDO-0062 login/recorded-account-profile detail: acct-x1: CODEX_HOME is that account's registered profile on this host, not the caller's [/dev/shm/v62-saz3z_g8/helper/accounts/profiles/acct-x2]",
+    "VELDO-0062 login/recorded-account-profile detail: the two Claude Code accounts ran on two different profiles",
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_CONFIG_DIR']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_CONFIG_DIR']]"
    ],
    "diff": "proof/VELDO-0062/account-profile-from-caller.diff",
    "failed_rows": [
-    "VELDO-0062 login/recorded-account-profile"
+    "VELDO-0062 login/recorded-account-profile",
+    "VELDO-0062 login/no-paid-api"
    ],
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "80bad71ee31c2035324969e5023d44bc56566119d69e2f71e668043704cb992f",
+   "mutant_sha256": "ee5bd090af5a23cddb3b732fd0c96939f33b71a735f7d82251deddd8b95d94c0",
    "name": "account-profile-from-caller",
    "named_row_red": true,
    "named_rows": [
@@ -114,6 +125,10 @@
     ],
     [
      "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
      true
     ],
     [
@@ -153,6 +168,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -185,22 +204,22 @@
      true
     ]
    ],
-   "seconds": 59.911,
-   "source_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
+   "seconds": 32.547,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_FOUNDRY_RESOURCE', 'ANTHROPIC_GOOGLE_CLOUD_BASE_URL']]",
-    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_FOUNDRY_RESOURCE', 'ANTHROPIC_GOOGLE_CLOUD_BASE_URL']]",
-    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_FOUNDRY_RESOURCE', 'ANTHROPIC_GOOGLE_CLOUD_BASE_URL']]"
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CONFIG_DIR', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_FEDERATION_RULE_ID', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CONFIG_DIR', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_FEDERATION_RULE_ID', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CONFIG_DIR', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_CUSTOM_MODEL_OPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION']]"
    ],
    "diff": "proof/VELDO-0062/account-login-fixed-list.diff",
    "failed_rows": [
     "VELDO-0062 login/no-paid-api"
    ],
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "7a856da7c636e43aaf5e113d824db99e7b8e75ffe885df3ca2ab5e3686f67e59",
+   "mutant_sha256": "a2280addbf0ed421cb80646f563a40e5054163ce518051ca088d864fbb4df105",
    "name": "account-login-fixed-list",
    "named_row_red": true,
    "named_rows": [
@@ -217,6 +236,10 @@
      false
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -253,6 +276,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -285,22 +312,22 @@
      true
     ]
    ],
-   "seconds": 60.067,
-   "source_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
+   "seconds": 32.7,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ANTHROPIC_V62_61620E', 'CLAUDE_CODE_USE_V62_61620E', 'CLAUDE_CODE_V62_61620E_TOKEN', 'CLAUDE_V62_61620E_API_KEY', 'CLAUDE_V62_61620E_OAUTH', 'CODEX_V62_61620E', 'OPENAI_V62_61620E']]",
-    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ANTHROPIC_V62_61620E', 'CLAUDE_CODE_USE_V62_61620E', 'CLAUDE_CODE_V62_61620E_TOKEN', 'CLAUDE_V62_61620E_API_KEY', 'CLAUDE_V62_61620E_OAUTH', 'CODEX_V62_61620E', 'OPENAI_V62_61620E']]",
-    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ANTHROPIC_V62_61620E', 'CLAUDE_CODE_USE_V62_61620E', 'CLAUDE_CODE_V62_61620E_TOKEN', 'CLAUDE_V62_61620E_API_KEY', 'CLAUDE_V62_61620E_OAUTH', 'CODEX_V62_61620E', 'OPENAI_V62_61620E']]"
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['ANTHROPIC_V62_D58D6F', 'CLAUDE_CODE_USE_V62_D58D6F', 'CODEX_CONNECTORS_TOKEN', 'CODEX_EXEC_SERVER_NOISE_AUTH_TOKEN', 'CODEX_V62_D58D6F', 'OPENAI_V62_D58D6F']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['ANTHROPIC_V62_D58D6F', 'CLAUDE_CODE_USE_V62_D58D6F', 'CODEX_CONNECTORS_TOKEN', 'CODEX_EXEC_SERVER_NOISE_AUTH_TOKEN', 'CODEX_V62_D58D6F', 'OPENAI_V62_D58D6F']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['ANTHROPIC_CUSTOM_MODEL_OPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_NAME', 'ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES', 'ANTHROPIC_DEFAULT_FABLE_MODEL', 'ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME', 'ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES', 'ANTHROPIC_DEFAULT_HAIKU_MODEL', 'ANTHROPIC_DEFAULT_HAIKU_MODEL_DESCRIPTION', 'ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME', 'ANTHROPIC_DEFAULT_HAIKU_MODEL_SUPPORTED_CAPABILITIES']]"
    ],
    "diff": "proof/VELDO-0062/account-login-families-ignored.diff",
    "failed_rows": [
     "VELDO-0062 login/no-paid-api"
    ],
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "442fdf8813283293a21852f37b8100d40c610aac428896b4642c94fe83bab547",
+   "mutant_sha256": "f2df7a7970b073b900078b3ef34e6a99d5c8dfe7efb7fd8dfc74cb92c287513b",
    "name": "account-login-families-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -317,6 +344,10 @@
      false
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -353,6 +384,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -385,22 +420,22 @@
      true
     ]
    ],
-   "seconds": 60.005,
-   "source_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
+   "seconds": 32.535,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_CODE_HOST_SESSION_ID', 'CLOUD_ML_REGION', 'INPUT_ALL_INPUTS', 'INPUT_ANTHROPIC_API_KEY', 'INPUT_ANTHROPIC_AUTH_TOKEN', 'INPUT_ANTHROPIC_AWS_API_KEY', 'INPUT_ANTHROPIC_CUSTOM_HEADERS', 'INPUT_ANTHROPIC_FOUNDRY_API_KEY', 'INPUT_ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'INPUT_ANTHROPIC_IDENTITY_TOKEN']]",
-    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_CODE_HOST_SESSION_ID', 'CLOUD_ML_REGION', 'INPUT_ALL_INPUTS', 'INPUT_ANTHROPIC_API_KEY', 'INPUT_ANTHROPIC_AUTH_TOKEN', 'INPUT_ANTHROPIC_AWS_API_KEY', 'INPUT_ANTHROPIC_CUSTOM_HEADERS', 'INPUT_ANTHROPIC_FOUNDRY_API_KEY', 'INPUT_ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'INPUT_ANTHROPIC_IDENTITY_TOKEN']]",
-    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_CODE_HOST_SESSION_ID', 'CLOUD_ML_REGION', 'INPUT_ALL_INPUTS', 'INPUT_ANTHROPIC_API_KEY', 'INPUT_ANTHROPIC_AUTH_TOKEN', 'INPUT_ANTHROPIC_AWS_API_KEY', 'INPUT_ANTHROPIC_CUSTOM_HEADERS', 'INPUT_ANTHROPIC_FOUNDRY_API_KEY', 'INPUT_ANTHROPIC_FOUNDRY_AUTH_TOKEN', 'INPUT_ANTHROPIC_IDENTITY_TOKEN']]"
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'API_FORCE_IDLE_TIMEOUT', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL']]"
    ],
    "diff": "proof/VELDO-0062/account-credential-tables-ignored.diff",
    "failed_rows": [
     "VELDO-0062 login/no-paid-api"
    ],
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "d14ef3bb8baa1de9caad93c1a3ebb8e565050ba76bfca5ae32f2a3f1b4f5020a",
+   "mutant_sha256": "91d473d4a7b8b4364085f1ee463c0c2b778360777acc429d20efe1d9a8e66c7a",
    "name": "account-credential-tables-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -414,6 +449,122 @@
     ],
     [
      "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.555,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL']]",
+    "VELDO-0062 login/configured-environment detail: claude-api-key configures ANTHROPIC_API_KEY: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: claude-oauth-store configures CLAUDE_SECURESTORAGE_CONFIG_DIR: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-claude-lists-ignored.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api",
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "33abf929ab216dc65356ecae667bb9332dcf382977775702b1fc37e102020a8c",
+   "name": "account-claude-lists-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
      false
     ],
     [
@@ -453,6 +604,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -485,13 +640,1318 @@
      true
     ]
    ],
-   "seconds": 60.07,
-   "source_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
+   "seconds": 33.044,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 login/fleet-provider detail: the default fleet pool is the registered Claude Code accounts, each worker on its own Claude profile, no Codex profile handed to a Claude session [None, 8 workers]",
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_SECURESTORAGE_CONFIG_DIR']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_SECURESTORAGE_CONFIG_DIR']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_SECURESTORAGE_CONFIG_DIR']]",
+    "VELDO-0062 login/configured-environment detail: claude-oauth-store configures CLAUDE_SECURESTORAGE_CONFIG_DIR: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['CLAUDE_SECURESTORAGE_CONFIG_DIR'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-securestorage-redirect-passes.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api",
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "1bf9a70cf3d36fdbbfb3ebd68439a837b9895bc65d80dc0d80c1b4f1210e1ab7",
+   "name": "account-securestorage-redirect-passes",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.981,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_CODE_HOST_CREDS_FILE']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_CODE_HOST_CREDS_FILE']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_CODE_HOST_CREDS_FILE']]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['CLAUDE_CODE_HOST_CREDS_FILE'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-host-creds-passes.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api",
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "48b5673a8b4e7f4f86a985f9b5957988f415904c50063be7102efa2d6075bb75",
+   "name": "account-host-creds-passes",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.761,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_BG_SOCKET_TOKENS_PATH']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_BG_SOCKET_TOKENS_PATH']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_BG_SOCKET_TOKENS_PATH']]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['CLAUDE_BG_SOCKET_TOKENS_PATH'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-session-tokens-path-passes.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api",
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "06e84c3f73a92d922be84fb1c5e74077542f2e774cbfc214bdbacb6240e1d478",
+   "name": "account-session-tokens-path-passes",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.857,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['API_FORCE_IDLE_TIMEOUT', 'CLAUDE_CODE_CERT_STORE', 'CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER', 'CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS', 'CLAUDE_CODE_PROXY_RESOLVES_HOSTS']]"
+   ],
+   "diff": "proof/VELDO-0062/account-settings-inherited.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "b5851b5ca6d8c5365332aeda3b76a6cf5315671c115de54ecfa840f21acecfc6",
+   "name": "account-settings-inherited",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.609,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/no-paid-api detail: acct-c1: what is not a login still reached it unchanged: the 120 kept names of the lists (general proxy, CA, runtime, cloud, tool credentials, the not-secret thresholds and usage settings), a neutral name, a count setting and the home names [['CLAUDE_CODE_API_KEY_HELPER_TTL_MS', 'CLAUDE_CODE_AUTH_FAIL_EXIT_MS', 'CLAUDE_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT', 'CLAUDE_CODE_RESUME_TOKEN_THRESHOLD'], []]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: what is not a login still reached it unchanged: the 120 kept names of the lists (general proxy, CA, runtime, cloud, tool credentials, the not-secret thresholds and usage settings), a neutral name, a count setting and the home names [['CLAUDE_CODE_API_KEY_HELPER_TTL_MS', 'CLAUDE_CODE_AUTH_FAIL_EXIT_MS', 'CLAUDE_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT', 'CLAUDE_CODE_RESUME_TOKEN_THRESHOLD'], []]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: what is not a login still reached it unchanged: the 120 kept names of the lists (general proxy, CA, runtime, cloud, tool credentials, the not-secret thresholds and usage settings), a neutral name, a count setting and the home names [['CLAUDE_CODE_API_KEY_HELPER_TTL_MS', 'CLAUDE_CODE_AUTH_FAIL_EXIT_MS', 'CLAUDE_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT', 'CLAUDE_CODE_IDLE_TOKEN_THRESHOLD', 'CLAUDE_CODE_RESUME_TOKEN_THRESHOLD'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-token-word-strips.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "26688dc53ff4801fa872d775c4a76a8bdb80eae8ef82010084527c3c88450027",
+   "name": "account-token-word-strips",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.732,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL', 'CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR', 'CLAUDE_CODE_ARTIFACTS_API_BASE_URL']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL', 'CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR', 'CLAUDE_CODE_ARTIFACTS_API_BASE_URL']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['AGENT_PROXY_AUTH_TOKEN', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_OAUTH_TOKEN', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL', 'CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR', 'CLAUDE_CODE_ARTIFACTS_API_BASE_URL']]",
+    "VELDO-0062 login/configured-environment detail: claude-oauth-store configures CLAUDE_SECURESTORAGE_CONFIG_DIR: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['AGENT_PROXY_AUTH_TOKEN', 'ANTHROPIC_CONFIG_DIR', 'ANTHROPIC_FEDERATION_RULE_ID', 'ANTHROPIC_ORGANIZATION_ID', 'ANTHROPIC_PROFILE', 'ANTHROPIC_SCOPE'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-claude-old-tables.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api",
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "10d5a0615dac5c5e9a90ed3c9ab88d127a420a156011095934743011bad689b4",
+   "name": "account-claude-old-tables",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.811,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/configured-environment detail: codex-endpoint configures OPENAI_BASE_URL: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['CODEX_AGENT_IDENTITY_AUTHAPI_BASE_URL', 'CODEX_AGENT_IDENTITY_JWKS_BASE_URL', 'CODEX_APP_SERVER_CHATGPT_BASE_URL', 'CODEX_APP_SERVER_LOGIN_CLIENT_ID', 'CODEX_APP_SERVER_LOGIN_ISSUER', 'CODEX_AUTHAPI_BASE_URL'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-codex-old-tables.diff",
+   "failed_rows": [
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "dbdd40d071e3057fe4cd234f88c0ee6cac570be6c35668cf78dc6b6ea087e6f6",
+   "name": "account-codex-old-tables",
+   "named_row_red": true,
+   "named_rows": [
+    "login/configured-environment"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.553,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL', 'CLAUDE_CODE_ARTIFACTS_API_BASE_URL', 'CLAUDE_CODE_ARTIFACT_ASSET_BASE_URL', 'CLAUDE_CODE_ARTIFACT_LIVE_BASE_URL', 'CLAUDE_CODE_ARTIFACT_SYNC_BASE_URL', 'CLAUDE_CODE_ARTIFACT_VIEWER_BASE_URL', 'CLAUDE_CODE_CLIENT_CERT', 'CLAUDE_CODE_CLIENT_KEY', 'CLAUDE_CODE_CLIENT_KEY_PASSPHRASE', 'CLAUDE_CODE_CUSTOM_OAUTH_URL']]",
+    "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL', 'CLAUDE_CODE_ARTIFACTS_API_BASE_URL', 'CLAUDE_CODE_ARTIFACT_ASSET_BASE_URL', 'CLAUDE_CODE_ARTIFACT_LIVE_BASE_URL', 'CLAUDE_CODE_ARTIFACT_SYNC_BASE_URL', 'CLAUDE_CODE_ARTIFACT_VIEWER_BASE_URL', 'CLAUDE_CODE_CLIENT_CERT', 'CLAUDE_CODE_CLIENT_KEY', 'CLAUDE_CODE_CLIENT_KEY_PASSPHRASE', 'CLAUDE_CODE_CUSTOM_OAUTH_URL']]",
+    "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 168 names the binaries' lists strip, the redirects and names the reviews found, or the family probes, all planted in the caller's environment [['API_FORCE_IDLE_TIMEOUT', 'CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL', 'CLAUDE_CODE_ARTIFACTS_API_BASE_URL', 'CLAUDE_CODE_ARTIFACT_ASSET_BASE_URL', 'CLAUDE_CODE_ARTIFACT_LIVE_BASE_URL', 'CLAUDE_CODE_ARTIFACT_SYNC_BASE_URL', 'CLAUDE_CODE_ARTIFACT_VIEWER_BASE_URL', 'CLAUDE_CODE_CERT_STORE', 'CLAUDE_CODE_CLIENT_CERT', 'CLAUDE_CODE_CLIENT_KEY']]",
+    "VELDO-0062 login/configured-environment detail: claude-oauth-store configures CLAUDE_SECURESTORAGE_CONFIG_DIR: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['CLAUDE_BRIDGE_BASE_URL', 'CLAUDE_BRIDGE_SESSION_INGRESS_URL', 'CLAUDE_CODE_API_BASE_URL', 'CLAUDE_CODE_ARTIFACTS_API_BASE_URL', 'CLAUDE_CODE_ARTIFACT_ASSET_BASE_URL', 'CLAUDE_CODE_ARTIFACT_LIVE_BASE_URL'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-claude-sensitive-list-dropped.diff",
+   "failed_rows": [
+    "VELDO-0062 login/no-paid-api",
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "5aa2af73e92a150d1d7882c9572c65cb5c64bee0a68adfca4c5cbcc513b812fc",
+   "name": "account-claude-sensitive-list-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "login/no-paid-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     false
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.587,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/configured-environment detail: claude-api-key configures ANTHROPIC_API_KEY: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: claude-oauth-store configures CLAUDE_SECURESTORAGE_CONFIG_DIR: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: codex-endpoint configures OPENAI_BASE_URL: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['AGENT_PROXY_AUTH_TOKEN', 'ALL_INPUTS', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-configured-login-accepted.diff",
+   "failed_rows": [
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "ab013db00133eb4a45308e4724f9e1d9855ce2634eec730e9bac0fb64eb4bb3b",
+   "name": "account-configured-login-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "login/configured-environment"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 33.052,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/configured-environment detail: codex-endpoint configures OPENAI_BASE_URL: refused by name when its configuration is loaded, nothing launched or reserved [None]",
+    "VELDO-0062 login/configured-environment detail: configured, each of the 133 login names of the lists is refused and none of the 150 model, setting or kept names is [['CODEX_ACCESS_TOKEN', 'CODEX_AGENT_IDENTITY_AUTHAPI_BASE_URL', 'CODEX_AGENT_IDENTITY_JWKS_BASE_URL', 'CODEX_API_KEY', 'CODEX_APP_SERVER_CHATGPT_BASE_URL', 'CODEX_APP_SERVER_LOGIN_CLIENT_ID'], []]"
+   ],
+   "diff": "proof/VELDO-0062/account-codex-lists-ignored.diff",
+   "failed_rows": [
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "b435a18c85914165a25211ff367e7ee7ac3bca9af91d6cb1f1175fe11affa221",
+   "name": "account-codex-lists-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "login/configured-environment"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.794,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/configured-environment detail: acct-c1: every name its adapter configures reached the engine with its configured value, though the same names were planted otherwise in the caller's: the model table, the settings and a threshold [['ANTHROPIC_CUSTOM_MODEL_OPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_NAME', 'ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES', 'ANTHROPIC_DEFAULT_FABLE_MODEL', 'ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME', 'ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES']]",
+    "VELDO-0062 login/configured-environment detail: acct-c2: every name its adapter configures reached the engine with its configured value, though the same names were planted otherwise in the caller's: the model table, the settings and a threshold [['ANTHROPIC_CUSTOM_MODEL_OPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_NAME', 'ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES', 'ANTHROPIC_DEFAULT_FABLE_MODEL', 'ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME', 'ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES']]",
+    "VELDO-0062 login/configured-environment detail: acct-x1: every name its adapter configures reached the engine with its configured value, though the same names were planted otherwise in the caller's: a setting of its family and a neutral one [['CODEX_CA_CERTIFICATE']]"
+   ],
+   "diff": "proof/VELDO-0062/account-configured-stripped.diff",
+   "failed_rows": [
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "16fc74dd9c8999686f132f53bbd05f7686af60e8805fda189467658c8d109f31",
+   "name": "account-configured-stripped",
+   "named_row_red": true,
+   "named_rows": [
+    "login/configured-environment"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.668,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/configured-environment detail: acct-c1: every name its adapter configures reached the engine with its configured value, though the same names were planted otherwise in the caller's: the model table, the settings and a threshold [['ANTHROPIC_CUSTOM_MODEL_OPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_NAME', 'ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES', 'ANTHROPIC_DEFAULT_FABLE_MODEL', 'ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME', 'ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES']]",
+    "VELDO-0062 login/configured-environment detail: acct-c2: every name its adapter configures reached the engine with its configured value, though the same names were planted otherwise in the caller's: the model table, the settings and a threshold [['ANTHROPIC_CUSTOM_MODEL_OPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION', 'ANTHROPIC_CUSTOM_MODEL_OPTION_NAME', 'ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES', 'ANTHROPIC_DEFAULT_FABLE_MODEL', 'ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION', 'ANTHROPIC_DEFAULT_FABLE_MODEL_NAME', 'ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES']]"
+   ],
+   "diff": "proof/VELDO-0062/account-configured-model-dropped.diff",
+   "failed_rows": [
+    "VELDO-0062 login/configured-environment"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "27081b37fae339a8b4002e2475834b8ec20aee60c7f6bc7d12eb1844f4ba94e5",
+   "name": "account-configured-model-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "login/configured-environment"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     false
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.694,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 login/fleet-provider detail: the default fleet pool is the registered Claude Code accounts, each worker on its own Claude profile, no Codex profile handed to a Claude session [None, 10 workers]",
     "VELDO-0062 login/fleet-provider detail: a Codex account pinned for a Claude fleet is refused by name before any worker starts [NoneType: None]",
     "VELDO-0062 login/fleet-provider detail: a Codex account listed for a Claude fleet is refused by name before any worker starts [NoneType: None]"
    ],
@@ -517,6 +1977,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -553,6 +2017,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -585,7 +2053,7 @@
      true
     ]
    ],
-   "seconds": 59.905,
+   "seconds": 32.714,
    "source_sha256": "a746210b0a96dab6d9c5601e64fd1a2d79be67021ca0c8caadaebe988627edc1"
   },
   {
@@ -598,7 +2066,7 @@
     "VELDO-0062 login/substitution-refused"
    ],
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "337aa61b07b211d86e568abb63aca27e81c29b29d147e79754b15d3aa3496b37",
+   "mutant_sha256": "e9f1b5bbfe97d1638fc7ec926878044bb6f6b9cf62af289d66649a163f7ad284",
    "name": "account-status-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -615,6 +2083,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      false
     ],
@@ -651,6 +2123,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -683,16 +2159,16 @@
      true
     ]
    ],
-   "seconds": 60.068,
-   "source_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
+   "seconds": 32.845,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0062 usage/reserved-before-launch detail: claude follow-on past the unit's invocation cap: refused before launch, nothing spawned [missing_authority:allowance:usage_cap:unit:invocations, 1]",
     "VELDO-0062 usage/reserved-before-launch detail: codex follow-on past the unit's invocation cap: refused before launch, nothing spawned [missing_authority:allowance:usage_cap:unit:invocations, 1]",
-    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 4.521433, 'tokens': 103124, 'messages': 13} vs {'invocations': 15, 'tokens': 103124, 'messages': 13}]",
-    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 12, 'wall_seconds': 3.813529, 'tokens': 1542, 'messages': 8} vs {'invocations': 13, 'tokens': 1542, 'messages': 8}]"
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 5.313864, 'tokens': 111991, 'messages': 21} vs {'invocations': 23, 'tokens': 111991, 'messages': 21}]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 4.057307, 'tokens': 1872, 'messages': 10} vs {'invocations': 15, 'tokens': 1872, 'messages': 10}]"
    ],
    "diff": "proof/VELDO-0062/account-follow-on-checked-after-launch.diff",
    "failed_rows": [
@@ -700,7 +2176,7 @@
     "VELDO-0062 attribution/stored-account"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "f223bbca69aa18245b5f0ed05da33e3df28a16c795e842f29483eb9335ec2dd7",
+   "mutant_sha256": "1aa770593af99108f8864f23cddec959cf0d1a44711ba9d6e72de4dc6d60f6e3",
    "name": "account-follow-on-checked-after-launch",
    "named_row_red": true,
    "named_rows": [
@@ -717,6 +2193,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -753,6 +2233,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -785,8 +2269,8 @@
      true
     ]
    ],
-   "seconds": 59.889,
-   "source_sha256": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f"
+   "seconds": 25.714,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
   },
   {
    "by_assertion": true,
@@ -801,7 +2285,7 @@
     "VELDO-0062 usage/reserved-before-launch"
    ],
    "module": ".veldo/control_reservation_runtime.py",
-   "mutant_sha256": "7463538b9e1ecb4b86eadfaca66c0049552d49e6c0a96ba4be1b43c37c8e3957",
+   "mutant_sha256": "1b49e6add2695c7d14b725cb3a2c9323eb9be655af0b1088316dd81a42ca65a1",
    "name": "account-boundary-always-initial",
    "named_row_red": true,
    "named_rows": [
@@ -818,6 +2302,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -854,6 +2342,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -886,8 +2378,8 @@
      true
     ]
    ],
-   "seconds": 59.987,
-   "source_sha256": "720c52c40caf5a8cb5c39c9a74965e3aa02ea6619abe7a58731fe24417dbbdfb"
+   "seconds": 32.62,
+   "source_sha256": "edae4a25ec26031d041376ec64c5ccea3575eb5fc7b22a448fd2fc6d9674774b"
   },
   {
    "by_assertion": true,
@@ -908,14 +2400,20 @@
     "VELDO-0062 usage/allowance-states detail: codex unknown allowance (an earlier call reported no tokens): refused by name, nothing launched [None]",
     "VELDO-0062 usage/competing-remainder detail: two invocations for one remaining invocation: one launched, the other refused by name [[('exited', None), ('exited', None)], 2 launches, 2 spawns]",
     "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [30.4 s, None, None]",
-    "VELDO-0062 usage/cap-stops-worker detail: codex: the report that reached the token cap stopped the worker, which never finished [30.2 s, None, None]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: the usage-limit message is recorded on the account as an exhausted window, its reset the end of the minute it stated, from its dispatch [{}]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: inside the reported window a new invocation is refused by name and nothing launches [None]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: the usage-limit message is recorded on the account as an exhausted window, its reset unknown, none stated, from its dispatch [{}]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: inside the reported window a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/cap-stops-worker detail: codex: the report that reached the token cap stopped the worker, which never finished [30.3 s, None, None]",
     "VELDO-0062 usage/rate-limit-reset detail: claude: the reported window is recorded on the account with its reported reset and source dispatch [{}]",
     "VELDO-0062 usage/rate-limit-reset detail: claude: inside the reported window a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: claude: the account record and the reservation check refuse one second before the reported reset and allow at it [[], [], None, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: claude: an account whose reported reset already ended takes work [None, exited]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: \"age limit. Try again at 3:40 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790408460, from its dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: \"ur usage limit. Try again later.\" is recorded on the account as the exhausted usage_limit window, its reset None, from its dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: a new invocation is refused by name and nothing launches [None]",
     "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: with no reset stated the account stays refused however long, until a later observation says otherwise [[]]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x4: \"age limit. Try again at 1:39 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790401200, from its dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: \"redits. Add credits to continue.\" is recorded on the account as the exhausted workspace_credits window, its reset None, from its dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: with no reset stated the account stays refused however long, until a later observation says otherwise [[]]",
     "VELDO-0062 settle/once detail: claude: a normal report settles the CLI's own totals once, the repeated lines counted once [None, None]",
     "VELDO-0062 settle/once detail: claude: a duplicate delivery changes no balance, a conflicting one is refused [invalid_input, invalid_input]",
     "VELDO-0062 settle/once detail: codex: a normal report settles the CLI's own totals once, the repeated lines counted once [None, None]",
@@ -924,6 +2422,12 @@
     "VELDO-0062 settle/once detail: codex: the raw receipts are private and every ledger digest is a stored line's, the totals recomputed from them equal the balance and the lines the engine itself printed [{'tokens': 0, 'messages': 0}, {'tokens': 300, 'messages': 1}]",
     "VELDO-0062 settle/model-usage detail: claude: a main-loop message, a subagent message and a result settle the result's modelUsage over every model, not its main-loop usage [None settled, 101620 modelUsage, 5012 main loop]",
     "VELDO-0062 settle/model-usage detail: claude: the stored raw receipt, read by this suite, and the lines the engine printed recompute the same total [None, {'tokens': 101620, 'messages': 2}]",
+    "VELDO-0062 settle/resumed-delta detail: claude: a session and two follow-ons resuming it, each printing the running total the CLI prints, are charged their own share, not the running total [[None, None, None] charged, [3610, 1605, 11] own, [3610, 5215, 5226] running]",
+    "VELDO-0062 settle/resumed-delta detail: claude: the ledger settles the session with the running total of the last invocation that ran it, read back by session id [None]",
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a session no invocation settled leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [None, None, None]",
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a session settled without a running total leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [None, None, None]",
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a running total below the settled one leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [None, None, None]",
+    "VELDO-0062 settle/resumed-delta detail: codex: a follow-on resuming a thread is charged what its own completed turn reports, never less [None, None]",
     "VELDO-0062 settle/missing-retained detail: claude: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [None, None, None]",
     "VELDO-0062 settle/missing-retained detail: codex: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [None, None, None]",
     "VELDO-0062 settle/timeout-retained detail: claude: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [None, None, None]",
@@ -946,6 +2450,7 @@
     "VELDO-0062 usage/rate-limit-reset",
     "VELDO-0062 settle/once",
     "VELDO-0062 settle/model-usage",
+    "VELDO-0062 settle/resumed-delta",
     "VELDO-0062 settle/missing-retained",
     "VELDO-0062 settle/timeout-retained",
     "VELDO-0062 settle/cancel-retained",
@@ -954,7 +2459,7 @@
     "VELDO-0062 attribution/watermark"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "cb79b26cf854d26dbf75569f9e2d21e716568d96ec014677ad589f3d4b8690da",
+   "mutant_sha256": "f968b0f7f2044a88373d7700f85d4818b7a30625a0ebb483d533e22cd795b795",
    "name": "account-invocation-unreserved",
    "named_row_red": true,
    "named_rows": [
@@ -971,6 +2476,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1007,6 +2516,10 @@
      false
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     false
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      false
     ],
@@ -1039,13 +2552,13 @@
      true
     ]
    ],
-   "seconds": 85.796,
-   "source_sha256": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f"
+   "seconds": 86.268,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [30.5 s, None, completed]",
+    "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [30.6 s, None, completed]",
     "VELDO-0062 usage/cap-stops-worker detail: codex: the report that reached the token cap stopped the worker, which never finished [30.3 s, None, completed]"
    ],
    "diff": "proof/VELDO-0062/account-cap-stop-ignored.diff",
@@ -1053,7 +2566,7 @@
     "VELDO-0062 usage/cap-stops-worker"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "7cfa17b003a9cdb47a23193c6e559c0fe1e760772e88f092eb4fd2e6f119cca4",
+   "mutant_sha256": "2bcb3e194623e4c864fe1f5d0c0c6e209220df38d27ba9ee4e9ab56368e8d7fe",
    "name": "account-cap-stop-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -1070,6 +2583,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1106,6 +2623,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -1138,22 +2659,24 @@
      true
     ]
    ],
-   "seconds": 91.727,
-   "source_sha256": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f"
+   "seconds": 92.569,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: inside the reported window a new invocation is refused by name and nothing launches [None]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: inside the reported window a new invocation is refused by name and nothing launches [None]",
-    "VELDO-0062 usage/rate-limit-reset detail: claude: inside the reported window a new invocation is refused by name and nothing launches [None]"
+    "VELDO-0062 usage/rate-limit-reset detail: claude: inside the reported window a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: claude: the account record and the reservation check refuse one second before the reported reset and allow at it [['five_hour'], [], None, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: a new invocation is refused by name and nothing launches [None]"
    ],
    "diff": "proof/VELDO-0062/account-rate-window-unchecked.diff",
    "failed_rows": [
     "VELDO-0062 usage/rate-limit-reset"
    ],
    "module": ".veldo/control_reservations.py",
-   "mutant_sha256": "981e9212746b2f2eedb19c55c76b2d9a2db7fe3d47fe0fe1104d8e49ed0a352c",
+   "mutant_sha256": "00b08276f422da0ec4f810a0cdc01cfffc60fdf392f21c63d40e35ccefff20e9",
    "name": "account-rate-window-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1170,6 +2693,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1206,6 +2733,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -1238,16 +2769,16 @@
      true
     ]
    ],
-   "seconds": 62.598,
-   "source_sha256": "6565f65d6d0e208658e2d5fa32208e4e04e2b83a1c2603d8c896c55eb266ec43"
+   "seconds": 33.156,
+   "source_sha256": "2abc9399bf98b169d991bea202e542150623f73d6813a5db32a646178ed44ff6"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0062 settle/timeout-retained detail: claude: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [not_executed, settled, None]",
     "VELDO-0062 settle/timeout-retained detail: codex: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [not_executed, settled, None]",
-    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 1.748009, 'tokens': 103126, 'messages': 14} vs {'invocations': 15, 'tokens': 103126, 'messages': 14}]",
-    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 12, 'wall_seconds': 1.058072, 'tokens': 1544, 'messages': 9} vs {'invocations': 13, 'tokens': 1544, 'messages': 9}]"
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 2.579537, 'tokens': 111993, 'messages': 22} vs {'invocations': 23, 'tokens': 111993, 'messages': 22}]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 1.265393, 'tokens': 1874, 'messages': 11} vs {'invocations': 15, 'tokens': 1874, 'messages': 11}]"
    ],
    "diff": "proof/VELDO-0062/account-timeout-releases.diff",
    "failed_rows": [
@@ -1255,7 +2786,7 @@
     "VELDO-0062 attribution/stored-account"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "a08d473b9a313d18faefabea45ed1ed0713689c85dca52e8f9d885aedbc95e7b",
+   "mutant_sha256": "a185a724b9f20ac1c139779732f1459830047feb811ea645a1f4c78c39f41ab4",
    "name": "account-timeout-releases",
    "named_row_red": true,
    "named_rows": [
@@ -1272,6 +2803,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1308,6 +2843,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -1340,18 +2879,18 @@
      true
     ]
    ],
-   "seconds": 60.012,
-   "source_sha256": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f"
+   "seconds": 32.888,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [0.4 s, usage_cap, None]",
+    "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [0.5 s, usage_cap, None]",
     "VELDO-0062 usage/cap-stops-worker detail: codex: the report that reached the token cap stopped the worker, which never finished [0.3 s, usage_cap, None]",
     "VELDO-0062 settle/cancel-retained detail: claude: a cancelled invocation keeps its reservation, and the next invocation is refused [not_executed, settled, None]",
     "VELDO-0062 settle/cancel-retained detail: codex: a cancelled invocation keeps its reservation, and the next invocation is refused [not_executed, settled, None]",
-    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 44.07493749743652, 'tokens': 103126, 'messages': 14} vs {'invocations': 15, 'tokens': 103126, 'messages': 14}]",
-    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 12, 'wall_seconds': 43.562707714416504, 'tokens': 1544, 'messages': 9} vs {'invocations': 13, 'tokens': 1544, 'messages': 9}]"
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 44.88459198786926, 'tokens': 111993, 'messages': 22} vs {'invocations': 23, 'tokens': 111993, 'messages': 22}]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 43.77707255708313, 'tokens': 1874, 'messages': 11} vs {'invocations': 15, 'tokens': 1874, 'messages': 11}]"
    ],
    "diff": "proof/VELDO-0062/account-cancel-releases.diff",
    "failed_rows": [
@@ -1360,7 +2899,7 @@
     "VELDO-0062 attribution/stored-account"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "6bf7cad4edd74f18eca417554a1b79e224f558f8b2480d821540a701295640ea",
+   "mutant_sha256": "078d7159c3e5ec20715e3116fe11078d0fe996a55edc8777ee256f485cf9193b",
    "name": "account-cancel-releases",
    "named_row_red": true,
    "named_rows": [
@@ -1377,6 +2916,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1413,6 +2956,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -1445,8 +2992,8 @@
      true
     ]
    ],
-   "seconds": 60.011,
-   "source_sha256": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f"
+   "seconds": 32.994,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
   },
   {
    "by_assertion": true,
@@ -1455,7 +3002,7 @@
     "VELDO-0062 settle/missing-retained detail: claude: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [settled, [], None]",
     "VELDO-0062 settle/timeout-retained detail: claude: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [timeout, settled, None]",
     "VELDO-0062 settle/cancel-retained detail: claude: a cancelled invocation keeps its reservation, and the next invocation is refused [cancelled, settled, None]",
-    "VELDO-0062 attribution/measurement-removed detail: an invocation that reported nothing keeps its allocation: one invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, never counted as unused [{'totals': {'invocations': 1, 'wall_seconds': 0.084482, 'tokens': 0, 'messages': 0}, 'capacity': 0, 'remaining': {'capacity': 5, 'invocations': 19, 'tokens': 500, 'wall_seconds': 999999.915518}, 'unknown': [], 'open': 0, 'watermark': 720}]"
+    "VELDO-0062 attribution/measurement-removed detail: an invocation that reported nothing keeps its allocation: one invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, never counted as unused [{'totals': {'invocations': 1, 'wall_seconds': 0.087502, 'tokens': 0, 'messages': 0}, 'capacity': 0, 'remaining': {'capacity': 5, 'invocations': 19, 'tokens': 500, 'wall_seconds': 999999.912498}, 'unknown': [], 'open': 0, 'watermark': 956}]"
    ],
    "diff": "proof/VELDO-0062/account-claude-missing-result-conclusive.diff",
    "failed_rows": [
@@ -1466,7 +3013,7 @@
     "VELDO-0062 attribution/measurement-removed"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "f5bf068d6d3c7e1a0451a54098e4c438046ba8f6f5ac831978818c3e4ef40cd7",
+   "mutant_sha256": "7caef7f7255f8675fb048ea3756d44fc4995aab2f8f6b4a98c3c1b2049dbcf7c",
    "name": "account-claude-missing-result-conclusive",
    "named_row_red": true,
    "named_rows": [
@@ -1483,6 +3030,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1519,6 +3070,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      false
     ],
@@ -1551,23 +3106,25 @@
      true
     ]
    ],
-   "seconds": 59.946,
-   "source_sha256": "35c3da0aa904c0cea551a1213cc481ae645bbcd7685f5219cd82df28fbc5eeb4"
+   "seconds": 33.218,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0062 settle/model-usage detail: claude: a main-loop message, a subagent message and a result settle the result's modelUsage over every model, not its main-loop usage [9012 settled, 101620 modelUsage, 5012 main loop]",
     "VELDO-0062 settle/model-usage detail: claude: a result without modelUsage settles its messages and leaves its tokens unknown [{'tokens': 512, 'messages': 1}, None]",
-    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 4.5140080000000005, 'tokens': 10516, 'messages': 13} vs {'invocations': 14, 'tokens': 103124, 'messages': 13}]"
+    "VELDO-0062 settle/resumed-delta detail: claude: the ledger settles the session with the running total of the last invocation that ran it, read back by session id [{'invocation': 'invocation/dispatch/VELDO-6217-chain/59acc4695eeb42bf8782f2daa1bf7671', 'dispatch': 'dispatch/VELDO-6217-chain/59acc4695eeb42bf8782f2daa1bf7671', 'tokens': 326, 'reported_seq': 636}]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 5.318040000000001, 'tokens': 15983, 'messages': 21} vs {'invocations': 22, 'tokens': 111991, 'messages': 21}]"
    ],
    "diff": "proof/VELDO-0062/account-claude-main-loop-usage.diff",
    "failed_rows": [
     "VELDO-0062 settle/model-usage",
+    "VELDO-0062 settle/resumed-delta",
     "VELDO-0062 attribution/stored-account"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "f0e4fd91e9ec6382a158b622df102b7bedda0175526cbb5485364bd192b6eedf",
+   "mutant_sha256": "857d3fe91814a591c978405e97ca37fc8d392f8226016b880c3aa047b5730cf0",
    "name": "account-claude-main-loop-usage",
    "named_row_red": true,
    "named_rows": [
@@ -1584,6 +3141,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1620,6 +3181,10 @@
      false
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     false
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -1652,8 +3217,8 @@
      true
     ]
    ],
-   "seconds": 60.038,
-   "source_sha256": "35c3da0aa904c0cea551a1213cc481ae645bbcd7685f5219cd82df28fbc5eeb4"
+   "seconds": 32.683,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
   },
   {
    "by_assertion": true,
@@ -1665,7 +3230,7 @@
     "VELDO-0062 settle/model-usage"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "56e42deda46b387168e4dc4690726549e89fb55e974cfe27a54d5ea812e20b55",
+   "mutant_sha256": "77b8809c4012b66bb83b1416e51e660d706d2be1ccdd315936fb84ff30f96bdb",
    "name": "account-claude-missing-model-usage-main-loop",
    "named_row_red": true,
    "named_rows": [
@@ -1682,6 +3247,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1718,6 +3287,10 @@
      false
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -1750,24 +3323,32 @@
      true
     ]
    ],
-   "seconds": 59.877,
-   "source_sha256": "35c3da0aa904c0cea551a1213cc481ae645bbcd7685f5219cd82df28fbc5eeb4"
+   "seconds": 32.657,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: the usage-limit message is recorded on the account as an exhausted window, its reset the end of the minute it stated, from its dispatch [{}]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: inside the reported window a new invocation is refused by name and nothing launches [None]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: the usage-limit message is recorded on the account as an exhausted window, its reset unknown, none stated, from its dispatch [{}]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: inside the reported window a new invocation is refused by name and nothing launches [None]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: with no reset stated the account stays refused however long, until a later observation says otherwise [[]]"
+    "VELDO-0062 usage/rate-limit-reset detail: codex, UTC, \"t. Try again at 4:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, UTC, \" Sep 24th, 2026 2:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, America/New_York, \". Try again at 12:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, America/New_York, \"Sep 24th, 2026 10:13 AM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \"t. Try again at 9:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \" Sep 24th, 2026 7:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex: every one of the 42 messages of the binary's error table is read as its window or as none, the 13 exhaustions each once, with the reset stated or none [[(\"You've hit your usage limit for configured-model. Switch to \", [], [('usage_limit', 'rejected', 1790000640)], None), (\"You've hit your usage limit for configured-model. Switch to \", [], [('usage_limit', 'rejected', None)], None), (\"You've hit your usage limit. configured-model, or try again \", [], [('usage_limit', 'rejected', 1790000640)], None)]]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: \"age limit. Try again at 3:46 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790408820, from its dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: \"ur usage limit. Try again later.\" is recorded on the account as the exhausted usage_limit window, its reset None, from its dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: with no reset stated the account stays refused however long, until a later observation says otherwise [[]]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x4: \"age limit. Try again at 1:45 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790401560, from its dispatch [{}]"
    ],
    "diff": "proof/VELDO-0062/account-codex-limit-unobserved.diff",
    "failed_rows": [
     "VELDO-0062 usage/rate-limit-reset"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "5dd465ffe1e680613535e33ac9ceb1b45f42c9bcf0910d2d9c599f0836599105",
+   "mutant_sha256": "f702ada01d5e745c9f141a87bd7a7e26df68ac94efed959e70016a365847ff92",
    "name": "account-codex-limit-unobserved",
    "named_row_red": true,
    "named_rows": [
@@ -1784,6 +3365,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1820,6 +3405,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -1852,13 +3441,561 @@
      true
     ]
    ],
-   "seconds": 59.972,
-   "source_sha256": "2ee6327d120a96d73b230532379d5e71f21cfd1fa0289c7048ce219bb73ebea3"
+   "seconds": 32.902,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: the usage-limit message is recorded on the account as an exhausted window, its reset unknown, none stated, from its dispatch [{'observed_at': 1790388661.3317964, 'reset_at': 1790392261.3289628, 'source_dispatch': 'dispatch/VELDO-6208-acct-x3-a/efcddcb030ad4c09b59ae30d074ea490', 'status': 'rejected', 'utilization': None}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex: every one of the 42 messages of the binary's error table is read as its window or as none, the 13 exhaustions each once, with the reset stated or none [[('Quota exceeded. Check your plan and billing details.', [], [('quota', 'rejected', None)], None), ('To use Codex with your ChatGPT plan, upgrade to Plus: https:', [], [('plan', 'rejected', None)], None), ('Your workspace is out of credits. Add credits to continue.', [], [('workspace_credits', 'rejected', None)], None)]]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: \"redits. Add credits to continue.\" is recorded on the account as the exhausted workspace_credits window, its reset None, from its dispatch [{}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: a new invocation is refused by name and nothing launches [None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: with no reset stated the account stays refused however long, until a later observation says otherwise [[]]"
+   ],
+   "diff": "proof/VELDO-0062/account-codex-workspace-unobserved.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/rate-limit-reset"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "73f9ea12bba7529df7c8b35134fa763420e11417a66e54047d87ef0f3a288c53",
+   "name": "account-codex-workspace-unobserved",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/rate-limit-reset"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     false
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.847,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/rate-limit-reset detail: codex: every one of the 42 messages of the binary's error table is read as its window or as none, the 13 exhaustions each once, with the reset stated or none [[('You hit your spend cap set in your workspace. Increase your ', [], [('workspace_spend_cap', 'rejected', None)], None), ('You hit your spend cap set by the owner of your workspace. A', [], [('workspace_spend_cap', 'rejected', None)], None)]]"
+   ],
+   "diff": "proof/VELDO-0062/account-codex-spend-cap-unobserved.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/rate-limit-reset"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "92e976a8ab19cc51da314e6fde862363bd3ec105131ab252240d5f6adf866cfe",
+   "name": "account-codex-spend-cap-unobserved",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/rate-limit-reset"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     false
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.454,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/rate-limit-reset detail: codex: every one of the 42 messages of the binary's error table is read as its window or as none, the 13 exhaustions each once, with the reset stated or none [[('Quota exceeded. Check your plan and billing details.', [('quota', 'rejected', 1790003600)], [('quota', 'rejected', None)], None), ('To use Codex with your ChatGPT plan, upgrade to Plus: https:', [('plan', 'rejected', 1790003600)], [('plan', 'rejected', None)], None), ('Your workspace is out of credits. Add credits to continue.', [('workspace_credits', 'rejected', 1790003600)], [('workspace_credits', 'rejected', None)], None)]]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: \"redits. Add credits to continue.\" is recorded on the account as the exhausted workspace_credits window, its reset None, from its dispatch [{'observed_at': 1790401678.7682757, 'reset_at': 1790405278.765365, 'source_dispatch': 'dispatch/VELDO-6208-acct-x5-a/cf359aac4ed048a7a31ead0d5de7e6aa', 'status': 'rejected', 'utilization': None}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: with no reset stated the account stays refused however long, until a later observation says otherwise [[]]"
+   ],
+   "diff": "proof/VELDO-0062/account-codex-exhaustion-reset-invented.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/rate-limit-reset"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "4708436707f7847dc820f511a2be9fe88e002daee5babebb383802aa47fd64ac",
+   "name": "account-codex-exhaustion-reset-invented",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/rate-limit-reset"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     false
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.458,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/rate-limit-reset detail: claude: the account record and the reservation check refuse one second before the reported reset and allow at it [[], [], None, None]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, UTC, \"t. Try again at 4:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, 1790007240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, UTC, \" Sep 24th, 2026 2:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, 1790259240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, America/New_York, \". Try again at 12:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, 1790007240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, America/New_York, \"Sep 24th, 2026 10:13 AM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, 1790259240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \"t. Try again at 9:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, 1790007240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \" Sep 24th, 2026 7:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, 1790259240.0]"
+   ],
+   "diff": "proof/VELDO-0062/account-window-reopens-early.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/rate-limit-reset"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "7d51eb4d621d616a7d687ce42cd9ecf53d55d0d7262a5bbfd15cc6a3ab74c7bc",
+   "name": "account-window-reopens-early",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/rate-limit-reset"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     false
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.599,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/rate-limit-reset detail: claude: the account record and the reservation check refuse one second before the reported reset and allow at it [['five_hour'], ['five_hour'], rate_limited:five_hour, rate_limited:five_hour]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, UTC, \"t. Try again at 4:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, 1790007240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, UTC, \" Sep 24th, 2026 2:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, 1790259240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, America/New_York, \". Try again at 12:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, 1790007240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, America/New_York, \"Sep 24th, 2026 10:13 AM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, 1790259240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \"t. Try again at 9:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007240.0, 1790007240.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \" Sep 24th, 2026 7:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259240.0, 1790259240.0]"
+   ],
+   "diff": "proof/VELDO-0062/account-window-reopens-late.diff",
+   "failed_rows": [
+    "VELDO-0062 usage/rate-limit-reset"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "e8328b3e552a81719db94cef8e633b685d8bc2691a7bea9dd62479fd698d60e7",
+   "name": "account-window-reopens-late",
+   "named_row_red": true,
+   "named_rows": [
+    "usage/rate-limit-reset"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     false
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.772,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 usage/rate-limit-reset detail: codex: every one of the 42 messages of the binary's error table is read as its window or as none, the 13 exhaustions each once, with the reset stated or none [[(\"You've hit your usage limit for configured-model. Switch to \", [('usage_limit', 'rejected', 1790003600)], [('usage_limit', 'rejected', None)], None), (\"You've hit your usage limit. configured-model, or try again \", [('usage_limit', 'rejected', 1790003600)], [('usage_limit', 'rejected', None)], None), (\"You've hit your usage limit. Upgrade to Plus to continue usi\", [('usage_limit', 'rejected', 1790003600)], [('usage_limit', 'rejected', None)], None)]]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: \"ur usage limit. Try again later.\" is recorded on the account as the exhausted usage_limit window, its reset None, from its dispatch [{'observed_at': 1790401775.698477, 'reset_at': 1790405375.6953876, 'source_dispatch': 'dispatch/VELDO-6208-acct-x3-a/8f39a11db3b54a44803fdfc9a214e564', 'status': 'rejected', 'utilization': None}]",
     "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: with no reset stated the account stays refused however long, until a later observation says otherwise [[]]"
    ],
    "diff": "proof/VELDO-0062/account-codex-unstated-reset-invented.diff",
@@ -1866,7 +4003,7 @@
     "VELDO-0062 usage/rate-limit-reset"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "01a6e3ee988f6318bdef7105606ab10205cb118d81307fdcde239ce3aaea7026",
+   "mutant_sha256": "f75110138ab73c2b5f95339f403bd7e3f355b2b734905a34c33ab66a97aaa902",
    "name": "account-codex-unstated-reset-invented",
    "named_row_red": true,
    "named_rows": [
@@ -1883,6 +4020,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -1919,6 +4060,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -1951,21 +4096,28 @@
      true
     ]
    ],
-   "seconds": 60.137,
-   "source_sha256": "2ee6327d120a96d73b230532379d5e71f21cfd1fa0289c7048ce219bb73ebea3"
+   "seconds": 32.624,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: the usage-limit message is recorded on the account as an exhausted window, its reset the end of the minute it stated, from its dispatch [{'observed_at': 1790388721.1864567, 'reset_at': 1790388720.0, 'source_dispatch': 'dispatch/VELDO-6208-acct-x2-a/f27701d5b9574c49accfcb2a5e350006', 'status': 'rejected', 'utilization': None}]",
-    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: inside the reported window a new invocation is refused by name and nothing launches [None]"
+    "VELDO-0062 usage/rate-limit-reset detail: codex, UTC, \"t. Try again at 4:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007180.0, 1790007180.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, UTC, \" Sep 24th, 2026 2:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259180.0, 1790259180.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, America/New_York, \". Try again at 12:13 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007180.0, 1790007180.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, America/New_York, \"Sep 24th, 2026 10:13 AM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259180.0, 1790259180.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \"t. Try again at 9:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790007180.0, 1790007180.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \" Sep 24th, 2026 7:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [1790259180.0, 1790259180.0]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex: every one of the 42 messages of the binary's error table is read as its window or as none, the 13 exhaustions each once, with the reset stated or none [[(\"You've hit your usage limit for configured-model. Switch to \", [('usage_limit', 'rejected', 1790000580.0)], [('usage_limit', 'rejected', 1790000640)], None), (\"You've hit your usage limit. configured-model, or try again \", [('usage_limit', 'rejected', 1790000580.0)], [('usage_limit', 'rejected', 1790000640)], None), (\"You've hit your usage limit. Upgrade to Plus to continue usi\", [('usage_limit', 'rejected', 1790000580.0)], [('usage_limit', 'rejected', 1790000640)], None)]]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: \"age limit. Try again at 3:50 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790409060, from its dispatch [{'observed_at': 1790401807.8728545, 'reset_at': 1790409000.0, 'source_dispatch': 'dispatch/VELDO-6208-acct-x2-a/5c8b036d504240209a4e568744e8c03b', 'status': 'rejected', 'utilization': None}]",
+    "VELDO-0062 usage/rate-limit-reset detail: codex acct-x4: \"age limit. Try again at 1:49 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790401800, from its dispatch [{'observed_at': 1790401808.7886457, 'reset_at': 1790401740.0, 'source_dispatch': 'dispatch/VELDO-6208-acct-x4-a/276740941560473694aa7da227f5a4bf', 'status': 'rejected', 'utilization': None}]"
    ],
    "diff": "proof/VELDO-0062/account-codex-reset-at-minute-start.diff",
    "failed_rows": [
     "VELDO-0062 usage/rate-limit-reset"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "de3637bdcb31c7fafbd2137e293d4211620447bfa8f3901bb7ef1c37d975277e",
+   "mutant_sha256": "1fd682363c82871a694cd3c4a0a34bdde196c9dab024a0979448262b26e12cf6",
    "name": "account-codex-reset-at-minute-start",
    "named_row_red": true,
    "named_rows": [
@@ -1982,6 +4134,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -2018,6 +4174,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2050,8 +4210,8 @@
      true
     ]
    ],
-   "seconds": 59.868,
-   "source_sha256": "2ee6327d120a96d73b230532379d5e71f21cfd1fa0289c7048ce219bb73ebea3"
+   "seconds": 32.683,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
   },
   {
    "by_assertion": true,
@@ -2069,7 +4229,7 @@
     "VELDO-0062 settle/cancel-retained"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "7dfc5a246c82d74cbadfe4aa627483f4a79cff05c683b8bb224e1db9adc111b3",
+   "mutant_sha256": "031f35469852114227d36bbc5c609e54189131fde42065b12396024d5b76afc2",
    "name": "account-codex-open-turn-conclusive",
    "named_row_red": true,
    "named_rows": [
@@ -2086,6 +4246,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -2122,6 +4286,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      false
     ],
@@ -2154,14 +4322,560 @@
      true
     ]
    ],
-   "seconds": 60.078,
-   "source_sha256": "2ee6327d120a96d73b230532379d5e71f21cfd1fa0289c7048ce219bb73ebea3"
+   "seconds": 33.109,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 settle/once detail: claude: a normal report settles the CLI's own totals once, the repeated lines counted once [{'invocations': 1, 'messages': 2, 'tokens': 300, 'wall_seconds': 0.108413}, settled]",
-    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 4.663625, 'tokens': 103264, 'messages': 14} vs {'invocations': 14, 'tokens': 103124, 'messages': 13}]"
+    "VELDO-0062 settle/resumed-delta detail: claude: a session and two follow-ons resuming it, each printing the running total the CLI prints, are charged their own share, not the running total [[3610, 5215, 5226] charged, [3610, 1605, 11] own, [3610, 5215, 5226] running]",
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a session no invocation settled leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [settled, [], 9100]",
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a session settled without a running total leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [settled, [], 9100]",
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a running total below the settled one leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [settled, [], 1002]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 5.305491, 'tokens': 140000, 'messages': 21} vs {'invocations': 22, 'tokens': 111991, 'messages': 21}]"
+   ],
+   "diff": "proof/VELDO-0062/account-claude-resume-whole-total.diff",
+   "failed_rows": [
+    "VELDO-0062 settle/resumed-delta",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "f0da1850290ab9a1e5d186a81d9b93c866c32b816766cac31be47791f3cfef1b",
+   "name": "account-claude-resume-whole-total",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/resumed-delta"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     false
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.591,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a session no invocation settled leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [settled, [], 9100]",
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a session settled without a running total leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [settled, [], 9100]",
+    "VELDO-0062 settle/resumed-delta detail: claude: resuming a running total below the settled one leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [settled, [], 1002]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 5.321617, 'tokens': 131172, 'messages': 21} vs {'invocations': 22, 'tokens': 111991, 'messages': 21}]"
+   ],
+   "diff": "proof/VELDO-0062/account-claude-resume-unknown-prior-whole.diff",
+   "failed_rows": [
+    "VELDO-0062 settle/resumed-delta",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "43704976f0d7e7eefc5408a7c6470a8e5c44aec5bff16e06b43dcea39be70712",
+   "name": "account-claude-resume-unknown-prior-whole",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/resumed-delta"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     false
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.75,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 settle/resumed-delta detail: claude: a session and two follow-ons resuming it, each printing the running total the CLI prints, are charged their own share, not the running total [[3610, 1605, 11] charged, [3610, 1605, 11] own, [3610, 5215, 5226] running]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 5.315277000000001, 'tokens': 111988, 'messages': 21} vs {'invocations': 22, 'tokens': 111991, 'messages': 21}]"
+   ],
+   "diff": "proof/VELDO-0062/account-resume-prior-unread.diff",
+   "failed_rows": [
+    "VELDO-0062 settle/resumed-delta",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "11120f5379253a4ad77d8f05d66dad209925a19a6d75f2303df9d9b9ccac04cd",
+   "name": "account-resume-prior-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/resumed-delta"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     false
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.633,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 settle/resumed-delta detail: claude: a session and two follow-ons resuming it, each printing the running total the CLI prints, are charged their own share, not the running total [[3610, 1605, 11] charged, [3610, 1605, 11] own, [3610, 5215, 5226] running]",
+    "VELDO-0062 settle/resumed-delta detail: claude: the ledger settles the session with the running total of the last invocation that ran it, read back by session id [None]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 5.3192260000000005, 'tokens': 111988, 'messages': 21} vs {'invocations': 22, 'tokens': 111991, 'messages': 21}]"
+   ],
+   "diff": "proof/VELDO-0062/account-session-unsettled.diff",
+   "failed_rows": [
+    "VELDO-0062 settle/resumed-delta",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "68fdfae64a995487d92be37d6a7c60c28cc99df272a81610aa001c15336b4787",
+   "name": "account-session-unsettled",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/resumed-delta"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     false
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.613,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 settle/resumed-delta detail: codex: a follow-on resuming a thread is charged what its own completed turn reports, never less [150, 30]",
+    "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 14, 'wall_seconds': 4.035702000000001, 'tokens': 1719, 'messages': 10} vs {'invocations': 14, 'tokens': 1872, 'messages': 10}]"
+   ],
+   "diff": "proof/VELDO-0062/account-codex-resume-subtracted.diff",
+   "failed_rows": [
+    "VELDO-0062 settle/resumed-delta",
+    "VELDO-0062 attribution/stored-account"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "0ca9cdce737b71d664ea8b62837e3b28ca58bab2599853b77c4f23dfb95775ce",
+   "name": "account-codex-resume-subtracted",
+   "named_row_red": true,
+   "named_rows": [
+    "settle/resumed-delta"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0062 login/recorded-account-profile",
+     true
+    ],
+    [
+     "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
+     "VELDO-0062 login/substitution-refused",
+     true
+    ],
+    [
+     "VELDO-0062 login/fleet-provider",
+     true
+    ],
+    [
+     "VELDO-0062 usage/reserved-before-launch",
+     true
+    ],
+    [
+     "VELDO-0062 usage/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0062 usage/competing-remainder",
+     true
+    ],
+    [
+     "VELDO-0062 usage/cap-stops-worker",
+     true
+    ],
+    [
+     "VELDO-0062 usage/rate-limit-reset",
+     true
+    ],
+    [
+     "VELDO-0062 settle/once",
+     true
+    ],
+    [
+     "VELDO-0062 settle/model-usage",
+     true
+    ],
+    [
+     "VELDO-0062 settle/resumed-delta",
+     false
+    ],
+    [
+     "VELDO-0062 settle/missing-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/timeout-retained",
+     true
+    ],
+    [
+     "VELDO-0062 settle/cancel-retained",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/stored-account",
+     false
+    ],
+    [
+     "VELDO-0062 attribution/measurement-removed",
+     true
+    ],
+    [
+     "VELDO-0062 attribution/watermark",
+     true
+    ],
+    [
+     "VELDO-0062 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0062 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 32.702,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0062 settle/once detail: claude: a normal report settles the CLI's own totals once, the repeated lines counted once [{'invocations': 1, 'messages': 2, 'tokens': 300, 'wall_seconds': 0.098439}, settled]",
+    "VELDO-0062 attribution/stored-account detail: acct-c1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{'invocations': 22, 'wall_seconds': 5.30107, 'tokens': 112131, 'messages': 22} vs {'invocations': 22, 'tokens': 111991, 'messages': 21}]"
    ],
    "diff": "proof/VELDO-0062/account-claude-repeat-counted.diff",
    "failed_rows": [
@@ -2169,7 +4883,7 @@
     "VELDO-0062 attribution/stored-account"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "f7ed67548666a86598fd28b84267a66ab0b76143da5399a701394d7324437456",
+   "mutant_sha256": "16a0d650a581e9b0c7f3fd9a4edcc555ebe4a40dd29778c75165701cd55fda04",
    "name": "account-claude-repeat-counted",
    "named_row_red": true,
    "named_rows": [
@@ -2186,6 +4900,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -2222,6 +4940,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2254,13 +4976,13 @@
      true
     ]
    ],
-   "seconds": 59.981,
-   "source_sha256": "35c3da0aa904c0cea551a1213cc481ae645bbcd7685f5219cd82df28fbc5eeb4"
+   "seconds": 32.518,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 settle/once detail: codex: a normal report settles the CLI's own totals once, the repeated lines counted once [{'invocations': 1, 'messages': 2, 'tokens': 600, 'wall_seconds': 0.10332}, settled]",
+    "VELDO-0062 settle/once detail: codex: a normal report settles the CLI's own totals once, the repeated lines counted once [{'invocations': 1, 'messages': 2, 'tokens': 600, 'wall_seconds': 0.094735}, settled]",
     "VELDO-0062 settle/once detail: codex: the raw receipts are private and every ledger digest is a stored line's, the totals recomputed from them equal the balance and the lines the engine itself printed [{'tokens': 600, 'messages': 2}, {'tokens': 300, 'messages': 1}]"
    ],
    "diff": "proof/VELDO-0062/account-codex-repeat-counted.diff",
@@ -2268,7 +4990,7 @@
     "VELDO-0062 settle/once"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "b8c235f4849d5b3e4ce6ac6e962f8976f27cfc9a9a5f3e21d3029774cc894fc1",
+   "mutant_sha256": "516dc3c832a53b6fb527705ea56913cb4990e1740b870b16e985cb8cdf7edb15",
    "name": "account-codex-repeat-counted",
    "named_row_red": true,
    "named_rows": [
@@ -2285,6 +5007,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -2321,6 +5047,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2353,8 +5083,8 @@
      true
     ]
    ],
-   "seconds": 59.999,
-   "source_sha256": "2ee6327d120a96d73b230532379d5e71f21cfd1fa0289c7048ce219bb73ebea3"
+   "seconds": 32.621,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
   },
   {
    "by_assertion": true,
@@ -2369,7 +5099,7 @@
     "VELDO-0062 attribution/stored-account"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "14b8b27253ded78656bf2fc55f20eba3e36aef049f2d131a859730c125aa116f",
+   "mutant_sha256": "4e8d196f31305ce5df8d7a50a2c739fd09e3e8fabed1c692cda742df0a72a4ae",
    "name": "account-caller-label-attributed",
    "named_row_red": true,
    "named_rows": [
@@ -2386,6 +5116,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -2422,6 +5156,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2454,20 +5192,20 @@
      true
     ]
    ],
-   "seconds": 60.12,
-   "source_sha256": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f"
+   "seconds": 32.729,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 attribution/measurement-removed detail: an invocation that reported nothing keeps its allocation: one invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, never counted as unused [{'totals': {'invocations': 1, 'wall_seconds': 0.084609, 'tokens': 0, 'messages': 0}, 'capacity': 0, 'remaining': {'capacity': 5, 'invocations': 19, 'tokens': 500, 'wall_seconds': 999999.915391}, 'unknown': ['messages', 'tokens'], 'open': 1, 'watermark': 704}]"
+    "VELDO-0062 attribution/measurement-removed detail: an invocation that reported nothing keeps its allocation: one invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, never counted as unused [{'totals': {'invocations': 1, 'wall_seconds': 0.089407, 'tokens': 0, 'messages': 0}, 'capacity': 0, 'remaining': {'capacity': 5, 'invocations': 19, 'tokens': 500, 'wall_seconds': 999999.910593}, 'unknown': ['messages', 'tokens'], 'open': 1, 'watermark': 940}]"
    ],
    "diff": "proof/VELDO-0062/account-unknown-remaining-counted.diff",
    "failed_rows": [
     "VELDO-0062 attribution/measurement-removed"
    ],
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "d3939cbb2847fa9867fa084f8aac7f38d3c25f92c7174d8a008de932827bd520",
+   "mutant_sha256": "7773f90fc139ce15a049c51cf19f8e193b7c0583697a751cc25a10e6017536f9",
    "name": "account-unknown-remaining-counted",
    "named_row_red": true,
    "named_rows": [
@@ -2484,6 +5222,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -2520,6 +5262,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2552,20 +5298,20 @@
      true
     ]
    ],
-   "seconds": 59.829,
-   "source_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
+   "seconds": 32.649,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0062 attribution/watermark detail: every account, project and unit shows as its watermark the journal sequence of its latest recorded usage [45 subjects, [('account', 'acct-c1', 656, 661), ('account', 'acct-c2', 702, 704), ('account', 'acct-c3', 448, 451)]]"
+    "VELDO-0062 attribution/watermark detail: every account, project and unit shows as its watermark the journal sequence of its latest recorded usage [59 subjects, [('account', 'acct-c1', 892, 897), ('account', 'acct-c2', 938, 940), ('account', 'acct-c3', 406, 410)]]"
    ],
    "diff": "proof/VELDO-0062/account-watermark-from-reservation.diff",
    "failed_rows": [
     "VELDO-0062 attribution/watermark"
    ],
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "479957faa1c6fd892acef4c9fa32950698f192093e0504c35507fb4b66e07381",
+   "mutant_sha256": "cf13d7754b389608aef8b6d619d1c89a456e2c573f3df437e11311000160a3dd",
    "name": "account-watermark-from-reservation",
    "named_row_red": true,
    "named_rows": [
@@ -2582,6 +5328,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -2618,6 +5368,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2650,8 +5404,8 @@
      true
     ]
    ],
-   "seconds": 59.96,
-   "source_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
+   "seconds": 33.238,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
   }
  ],
  "mutations_per_row": {
@@ -2664,13 +5418,28 @@
   "attribution/watermark": [
    "account-watermark-from-reservation"
   ],
+  "login/configured-environment": [
+   "account-codex-old-tables",
+   "account-configured-login-accepted",
+   "account-codex-lists-ignored",
+   "account-configured-stripped",
+   "account-configured-model-dropped"
+  ],
   "login/fleet-provider": [
    "account-fleet-codex-to-claude"
   ],
   "login/no-paid-api": [
    "account-login-fixed-list",
    "account-login-families-ignored",
-   "account-credential-tables-ignored"
+   "account-credential-tables-ignored",
+   "account-claude-lists-ignored",
+   "account-securestorage-redirect-passes",
+   "account-host-creds-passes",
+   "account-session-tokens-path-passes",
+   "account-settings-inherited",
+   "account-token-word-strips",
+   "account-claude-old-tables",
+   "account-claude-sensitive-list-dropped"
   ],
   "login/recorded-account-profile": [
    "account-profile-from-caller"
@@ -2693,6 +5462,13 @@
    "account-claude-repeat-counted",
    "account-codex-repeat-counted"
   ],
+  "settle/resumed-delta": [
+   "account-claude-resume-whole-total",
+   "account-claude-resume-unknown-prior-whole",
+   "account-resume-prior-unread",
+   "account-session-unsettled",
+   "account-codex-resume-subtracted"
+  ],
   "settle/timeout-retained": [
    "account-timeout-releases"
   ],
@@ -2705,6 +5481,11 @@
   "usage/rate-limit-reset": [
    "account-rate-window-unchecked",
    "account-codex-limit-unobserved",
+   "account-codex-workspace-unobserved",
+   "account-codex-spend-cap-unobserved",
+   "account-codex-exhaustion-reset-invented",
+   "account-window-reopens-early",
+   "account-window-reopens-late",
    "account-codex-unstated-reset-invented",
    "account-codex-reset-at-minute-start"
   ],
@@ -2715,7 +5496,7 @@
  },
  "noop": {
   "control_accounts.py": {
-   "copy_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4",
+   "copy_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2726,6 +5507,10 @@
     ],
     [
      "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
      true
     ],
     [
@@ -2765,6 +5550,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2797,11 +5586,11 @@
      true
     ]
    ],
-   "seconds": 42.442,
-   "source_sha256": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
+   "seconds": 32.446,
+   "source_sha256": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6"
   },
   "control_engine_claude.py": {
-   "copy_sha256": "35c3da0aa904c0cea551a1213cc481ae645bbcd7685f5219cd82df28fbc5eeb4",
+   "copy_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2812,6 +5601,10 @@
     ],
     [
      "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
      true
     ],
     [
@@ -2851,6 +5644,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2883,11 +5680,11 @@
      true
     ]
    ],
-   "seconds": 60.071,
-   "source_sha256": "35c3da0aa904c0cea551a1213cc481ae645bbcd7685f5219cd82df28fbc5eeb4"
+   "seconds": 32.643,
+   "source_sha256": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
   },
   "control_engine_codex.py": {
-   "copy_sha256": "2ee6327d120a96d73b230532379d5e71f21cfd1fa0289c7048ce219bb73ebea3",
+   "copy_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2898,6 +5695,10 @@
     ],
     [
      "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
      true
     ],
     [
@@ -2937,6 +5738,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -2969,11 +5774,11 @@
      true
     ]
    ],
-   "seconds": 60.03,
-   "source_sha256": "2ee6327d120a96d73b230532379d5e71f21cfd1fa0289c7048ce219bb73ebea3"
+   "seconds": 32.392,
+   "source_sha256": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
   },
   "control_launch.py": {
-   "copy_sha256": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f",
+   "copy_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2984,6 +5789,10 @@
     ],
     [
      "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
      true
     ],
     [
@@ -3023,6 +5832,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -3055,11 +5868,11 @@
      true
     ]
    ],
-   "seconds": 59.864,
-   "source_sha256": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f"
+   "seconds": 32.476,
+   "source_sha256": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
   },
   "control_reservation_runtime.py": {
-   "copy_sha256": "720c52c40caf5a8cb5c39c9a74965e3aa02ea6619abe7a58731fe24417dbbdfb",
+   "copy_sha256": "edae4a25ec26031d041376ec64c5ccea3575eb5fc7b22a448fd2fc6d9674774b",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -3070,6 +5883,10 @@
     ],
     [
      "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
      true
     ],
     [
@@ -3109,6 +5926,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -3141,11 +5962,11 @@
      true
     ]
    ],
-   "seconds": 60.055,
-   "source_sha256": "720c52c40caf5a8cb5c39c9a74965e3aa02ea6619abe7a58731fe24417dbbdfb"
+   "seconds": 32.336,
+   "source_sha256": "edae4a25ec26031d041376ec64c5ccea3575eb5fc7b22a448fd2fc6d9674774b"
   },
   "control_reservations.py": {
-   "copy_sha256": "6565f65d6d0e208658e2d5fa32208e4e04e2b83a1c2603d8c896c55eb266ec43",
+   "copy_sha256": "2abc9399bf98b169d991bea202e542150623f73d6813a5db32a646178ed44ff6",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -3156,6 +5977,10 @@
     ],
     [
      "VELDO-0062 login/no-paid-api",
+     true
+    ],
+    [
+     "VELDO-0062 login/configured-environment",
      true
     ],
     [
@@ -3195,6 +6020,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -3227,8 +6056,8 @@
      true
     ]
    ],
-   "seconds": 59.955,
-   "source_sha256": "6565f65d6d0e208658e2d5fa32208e4e04e2b83a1c2603d8c896c55eb266ec43"
+   "seconds": 32.382,
+   "source_sha256": "2abc9399bf98b169d991bea202e542150623f73d6813a5db32a646178ed44ff6"
   },
   "fleet.py": {
    "copy_sha256": "a746210b0a96dab6d9c5601e64fd1a2d79be67021ca0c8caadaebe988627edc1",
@@ -3245,6 +6074,10 @@
      true
     ],
     [
+     "VELDO-0062 login/configured-environment",
+     true
+    ],
+    [
      "VELDO-0062 login/substitution-refused",
      true
     ],
@@ -3281,6 +6114,10 @@
      true
     ],
     [
+     "VELDO-0062 settle/resumed-delta",
+     true
+    ],
+    [
      "VELDO-0062 settle/missing-retained",
      true
     ],
@@ -3313,13 +6150,13 @@
      true
     ]
    ],
-   "seconds": 60.078,
+   "seconds": 32.448,
    "source_sha256": "a746210b0a96dab6d9c5601e64fd1a2d79be67021ca0c8caadaebe988627edc1"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 62",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 1994.469,
+ "serial_seconds": 1937.899,
  "spec_id": "VELDO-0062",
  "suite": "scripts/suites/75_veldo_0062_accounts.py"
 }

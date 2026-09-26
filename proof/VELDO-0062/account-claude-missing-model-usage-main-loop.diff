@@ -1,6 +1,6 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -171 +171,2 @@
--            total = {'tokens': _model_tokens(event.get('modelUsage')), 'messages': turns}
-+            total = {'tokens': _model_tokens(event['modelUsage']) if 'modelUsage' in event
-+                     else _tokens(event.get('usage')), 'messages': turns}  # defect: main loop when absent
+@@ -231 +231,2 @@
+-            running = _model_tokens(event.get('modelUsage'))
++            running = (_model_tokens(event['modelUsage']) if 'modelUsage' in event
++                       else _tokens(event.get('usage')))  # defect: main loop when absent

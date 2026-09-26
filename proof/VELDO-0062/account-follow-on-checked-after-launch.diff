@@ -1,6 +1,6 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -675,0 +676,3 @@
+@@ -685,0 +686,3 @@
 +        if metering.boundary == 'follow_on':  # defect: a follow-on's cap is checked after its launch
 +            launch(metering.invocation, None)
 +            metering.guard.launch = lambda invocation, configuration: None

@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -136 +136 @@
+@@ -170 +170 @@
 -        return self.cumulative() if self.turns and not self.open and not self.incomplete else {}
 +        return self.cumulative()  # defect: an unfinished turn is taken as a conclusive total

@@ -1,6 +1,6 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -929,3 +929,2 @@
+@@ -942,3 +942,2 @@
 -                        if metering is not None and metering.feed(chunk):
 -                            # VELDO-0062: a cap the CLI's own report reached stops the worker.
 -                            begin('usage_cap')

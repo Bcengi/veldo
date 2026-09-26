@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -162 +162 @@
+-        if total is None or not self.resumed:
++        if True:  # defect: a resumed session is charged its whole running total

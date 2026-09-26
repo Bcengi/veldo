@@ -1,5 +1,5 @@
 --- a/.veldo/control_accounts.py
 +++ b/.veldo/control_accounts.py
-@@ -287 +287 @@
+@@ -306 +306 @@
 -            remaining = {u: (None if u in unknown else cap - balance.get(u, 0))
 +            remaining = {u: (cap - balance.get(u, 0))  # defect: unknown usage shown as a number

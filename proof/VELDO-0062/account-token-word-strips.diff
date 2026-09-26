@@ -1,0 +1,6 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -158 +158,2 @@
+-    return name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or name in named
++    return (name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or name in named
++            or __import__('re').match(r'CLAUDE_\w*?(?:TOKEN(?!S)|API_KEY|OAUTH|SECRET|CLIENT_KEY|AUTH)', name))  # defect: the word rule, back

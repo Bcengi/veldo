@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -132 +132 @@
+-STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
++STRIPPED = CREDENTIALS  # defect: the owner's shell's Claude Code settings reach the engine

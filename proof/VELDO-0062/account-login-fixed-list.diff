@@ -1,6 +1,6 @@
 --- a/.veldo/control_accounts.py
 +++ b/.veldo/control_accounts.py
-@@ -159 +159,4 @@
+@@ -177 +177,4 @@
 -    environment = {k: v for k, v in inherited.items() if not strips(k, named)}
 +    environment = {k: v for k, v in inherited.items() if k not in PROFILES.values() and k not in (
 +        'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK',

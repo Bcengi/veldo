@@ -1,5 +1,5 @@
 --- a/.veldo/control_accounts.py
 +++ b/.veldo/control_accounts.py
-@@ -292 +292 @@
+@@ -311 +311 @@
 -                   'watermark': max((r.get('reported_seq') or r['accepted_seq'] for r in calls), default=None)}
 +                   'watermark': max((r['accepted_seq'] for r in calls), default=None)}  # defect: the reservation's sequence, not the usage's

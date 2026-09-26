@@ -1,6 +1,6 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -163,2 +163 @@
+@@ -223,2 +223 @@
 -            if self.messages.get(ident, -1) >= tokens:
 -                return []  # The same message again: nothing new to count.
 +            ident = '%s/%d' % (ident, len(self.messages))  # defect: a repeated message is counted again

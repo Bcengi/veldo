@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -187 +187 @@
+-            window = next((window for text, window in EXHAUSTED if text in message), None)
++            window = None  # defect: only the usage-limit family of the error table is read

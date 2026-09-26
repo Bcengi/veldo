@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -726 +726,2 @@
+-                                                adapter.get('environment') or {}, CREDENTIALS)
++                                                {k: v for k, v in (adapter.get('environment') or {}).items()
++                                                 if 'MODEL' not in k}, CREDENTIALS)  # defect: the configured model is dropped

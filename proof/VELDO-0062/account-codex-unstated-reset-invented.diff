@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -88 +88 @@
+@@ -121 +121 @@
 -        return None
 +        return now + 3600  # defect: an unstated reset is guessed

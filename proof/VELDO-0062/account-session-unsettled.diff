@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1122 +1122 @@
+-        session = self.meter.session() if termination is not None else None
++        session = None  # defect: the session's running total is never settled for its next resumption

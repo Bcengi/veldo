@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1041 +1041 @@
+-                                       prior=(settled or {}).get('tokens'))
++                                       prior=None)  # defect: the resumed session's settled total is not read

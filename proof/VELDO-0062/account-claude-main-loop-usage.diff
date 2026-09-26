@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -171 +171 @@
--            total = {'tokens': _model_tokens(event.get('modelUsage')), 'messages': turns}
-+            total = {'tokens': _tokens(event.get('usage')), 'messages': turns}  # defect: the main loop only
+@@ -231 +231 @@
+-            running = _model_tokens(event.get('modelUsage'))
++            running = _tokens(event.get('usage'))  # defect: the main loop only
