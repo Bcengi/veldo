@@ -131,4 +131,4 @@ red by assertion; the baseline and the no-op copies are green.
 | account-watermark-from-reservation | control_accounts.py | attribution/watermark |
 
 The other findings with mutations in the modules this changes still reject: 36 (20, its
-`control_reservations.py` mutants now copy their siblings) and 39 (30).
+`control_reservations.py` mutants now copy their siblings), 39 (30), 40 (22) and 41 (34).
