@@ -570,7 +570,7 @@ sys.exit(payload.get('code', 0))
                                                                                      'observed')},
                               'stopped': stopped.get(name)}
 
-        # ------------------------------------------------------------------ AC1: the lifecycle and the pin
+        # AC1: the lifecycle and the pin
         with region('lifecycle/registered'):
             registration = getattr(X, 'REGISTRATION', {}) or {}
             operations = set(registration.get('lifecycle') or ())
@@ -655,6 +655,14 @@ sys.exit(payload.get('code', 0))
                   'for byte (%d bytes)' % termination.get('output_bytes', 0),
                   direct.returncode == 0 and termination.get('output_digest') == 'sha256:' + hashlib.sha256(direct.stdout).hexdigest()
                   and termination.get('output_bytes') == len(direct.stdout) > 1000)
+            handle, clone_error = provisioned.get(launch.dispatch_id, (None, 'none'))
+            entered = [json.loads(x.read_text()) for x in sorted((Path(handle.paths['root']) / 'entered').glob('*.json'))] \
+                if handle else []
+            check('lifecycle/actual-binary', 'it entered its own clone as the process the dispatch recorded, inside the '
+                  'dispatch\'s containment scope [%s %s]' % (entered, clone_error),
+                  len(entered) == 1 and entered[0].get('dispatch_id') == launch.dispatch_id
+                  and entered[0].get('pid') == (record.get('process') or {}).get('pid')
+                  and str(entered[0].get('cgroup', '')).endswith('/' + CT.unit_name(launch.dispatch_id)))
             found = document(launch)
             check('lifecycle/actual-binary', 'its zero exit with no terminal record is no completion: its artifact '
                   'document is malformed output (help text), the invocation failed and the slot was not returned '
@@ -705,7 +713,7 @@ sys.exit(payload.get('code', 0))
                   and engine_copy.read_bytes() == INSTALLED_QUALIFICATION.read_bytes()
                   and Path(getattr(X, 'QUALIFICATION', '/nonexistent')) == mods / 'runtime' / 'codex-qualification.json')
 
-        # ------------------------------------------------------------------ AC2: terminal output as artifacts
+        # AC2: terminal output as artifacts
         with region('artifacts/normal-exit'):
             launch = get('normal')
             found = document(launch)
@@ -777,7 +785,7 @@ sys.exit(payload.get('code', 0))
             check('artifacts/nonzero-and-signal', 'the signalled invocation\'s usage stays unknown, its reservation '
                   'retained', call.get('state') == 'unknown')
 
-        # ------------------------------------------------------------------ AC3: ordinary stop
+        # AC3: ordinary stop
         def stop_rows(name, row, worker_signalled):
             launch = get(name)
             record = rec(launch.dispatch_id)
@@ -830,7 +838,7 @@ sys.exit(payload.get('code', 0))
                   log.exists() and supervision.get('empty') is True and 'kill' in [s.get('step') for s in
                                                                                     supervision.get('steps') or []])
 
-        # ------------------------------------------------------------------ AC4: the caps before launch
+        # AC4: the caps before launch
         with region('caps/boundaries'):
             for name, boundary in (('normal', 'initial'), ('retry', 'retry'), ('follow', 'follow_on')):
                 launch = get(name)
@@ -899,7 +907,7 @@ sys.exit(payload.get('code', 0))
             check('caps/observed', 'the unit\'s balance is the three invocations that ran and their reported tokens '
                   '[%s]' % balances, balances.get('invocations') == 3 and balances.get('tokens') == 1500 + 800 + 550)
 
-        # ------------------------------------------------------------------ the fixtures
+        # the fixtures
         with region('format/codex-fake-lines'):
             events, kinds = FORMATS['events'], EXEC['item']['items']
 
