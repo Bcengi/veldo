@@ -89,6 +89,31 @@ are its own tools whose effects stay in the clone, `mcp_tool_call` is read, and 
 (the core's `dynamic_tool_call`, `collab_agent_tool_call` and `sub_agent_activity` among them) and every
 other event type is unknown.
 
+**The tool names a Claude Code frame carries beside its content blocks count (the second check).** The
+REPL tool's inner calls reach the stream only as a `tool_progress` of the REPL call carrying a
+`repl_call` {inner_tool_name, inner_tool_input, inner_tool_use_id, phase} that the binary's two emitters
+write and its schema omits, never as `tool_use` blocks: an `mcp__` inner name is that MCP call, a
+built-in one no call, any other an unknown call (`repl_call:<name>`), and a `repl_call` that is not an
+object naming its inner tool is `unreadable`. The other fields that name a tool that ran are read the
+way a `tool_use` name is (`mcp__<server>__<tool>` is that call; on a redacted line a name neither
+`mcp__...` nor built in is `redacted_unreadable`): a `tool_progress`'s own `tool_name` (a heartbeat of
+an MCP call), a `system/task_progress`'s `last_tool_name` and its `workflow_progress` entries'
+`lastToolName` (the workflow agents' progress, which the schema omits), and an assistant message's
+`attribution_mcp_server` / `attribution_mcp_tool` and `batch_tool_uses` names. `TOOL_FIELDS` lists every
+field of the binary's messages whose name names a tool, declared or emitted, with how it is read (`call`,
+`id`, or `free`: a count, a display or input copy of a block read in the content, a tool the run offers
+or discovered, a call denied or deferred and never run). The binary's `BUILTIN_TOOL_NAMES` lists the
+Agent tool under its old name `Task`; the tool's definition (`name:mt ... aliases:[am]`, with
+`mt="Agent"` and `am="Task"` bound beside its own description) gives its current name, so `Agent` is
+built in (`BUILTIN_RENAMED`). The frames the CLI writes outside the SDK message union (the StdoutMessage
+members) are read by the binary's table: `keep_alive`, `control_cancel_request`, `active_goal`,
+`autocompact_state` and the `post_turn_summary` and `task_summary` system messages carry only literals,
+enums, strings, numbers and booleans and no field naming a tool, so they are no call; a
+`control_request` (a `can_use_tool` names a tool and its input), a `control_response` (a free-form
+record) and the `transcript_mirror` (transcript entries of any shape) cannot be shown tool-free and stay
+unknown calls. Codex: exec's own `collab_tool_call` (its sub-agent call; the agents' own calls are not in
+exec's stream) is now in exec's item table and is an unknown call (`SUBAGENT_ITEMS`).
+
 **control_launch.py has two small hunks.** `Runner.prepare` (the pool branch; the contract records the
 chosen account id, never the pool) and `Metering.settle` (the classification and its `limit`). Merged
 with main (VELDO-0060 and VELDO-0061), settle runs: close the meter, take the exit's outcome, keep the
@@ -120,7 +145,14 @@ union (each member's type and subtype), the content block unions of an assistant
 (the modelled blocks and the type tags the binary lists), the streaming events the `stream_event` schema
 names and the binary's `BUILTIN_TOOL_NAMES`; Codex exec's ThreadItem tags (its literal run, and `error`)
 and the core's ThreadItem tags (its literal run, where `dynamic_tool_call`, `collab_agent_tool_call`
-and `sub_agent_activity` are listed). `format/tool-forms` requires the readers' tables to equal these. Every line the suite's fakes print and every engine payload of the fixture records
+and `sub_agent_activity` are listed). The second check's round added: `builtin_renamed` (the Agent
+tool's current name and its alias on `BUILTIN_TOOL_NAMES`, from its definition and the statement binding
+its names), `tool_fields` (each SDK message's fields whose name names a tool, from its zod schema),
+`emitted_tool_fields` (the REPL `repl_call` from both of its emitters, a task's `workflow_progress`
+entries' `lastToolName` from the task_progress emitter and the workflow agent progress), `frames` (the
+StdoutMessage members outside the SDK union, each with whether its schema is provably tool-free) and, for
+Codex, exec's `collab_tool_call` (the literal after exec's `ItemUpdatedEvent` and `ThreadErrorEvent`
+names). `format/tool-forms` requires the readers' tables to equal these. Every line the suite's fakes print and every engine payload of the fixture records
 conforms to that table (the two format rows).
 
 ## Suite
@@ -138,7 +170,7 @@ where the script says, so concurrency is observed rather than timed. No real eng
 |---|---|
 | AC1 | `pool/per-account-isolation` (declared falsifier), `pool/one-registration` (declared), `pool/concurrent` (declared) |
 | AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted`, `limit/claude-rejected-texts` |
-| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms` |
+| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names` |
 | AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared), `pool/usage-observes`, `pool/selection-order`, `pool/until-earliest` |
 | Install | `install/assets` |
 | Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines`, `format/tool-forms` |
@@ -177,20 +209,41 @@ breaks the JSON, that is wholly `[redacted]`, that is wrapped in a list, or whos
 or server (Codex) is not a string decides ask naming exactly that line (`redacted_unreadable` for the
 two redacted forms, `unreadable` for the rest), and a redacted line whose event still reads is decided by
 its calls. `decision/same-id-write`: one id shown read-only and then naming a write decides ask naming
-the write. `decision/unknown-forms`: each of 13 Claude Code forms (an `mcp_tool_use`, an `mcp_tool_result`
+the write. `decision/unknown-forms`: each of 16 Claude Code forms (an `mcp_tool_use`, an `mcp_tool_result`
 and a `server_tool_use` block, a `stream_event` starting a `tool_use` block, one starting a message that
 holds a `tool_use`, a streaming event the schema does not name, a user `tool_result` for an id never
 seen, a `tool_use` in a user message, a `tool_progress` and a `tool_use_summary` for an id never seen,
-and a block, message and system subtype no table lists) and 5 Codex forms (`dynamic_tool_call`,
-`collab_agent_tool_call`, `sub_agent_activity`, an item and an event type no table lists) decides ask,
+a block, message and system subtype no table lists, and the `control_request`, `control_response` and
+`transcript_mirror` frames outside the message union) and 6 Codex forms (exec's own `collab_tool_call`,
+the core's `dynamic_tool_call`, `collab_agent_tool_call`, `sub_agent_activity`, an item and an event type
+no table lists) decides ask,
 naming exactly that line as `unknown_call` with its form and counting no MCP call.
-`decision/redacted-name`: on a redacted line a `tool_use` named `[REDACTED:known_pattern]` or `Agent`
-(a built-in the binary's partial list omits) decides ask as `redacted_unreadable`, one named `Read` or
-`mcp__tracker__get_issue` (read-only) decides re-run. `decision/tool-free-forms` (the negative control):
-11 Claude Code lines of tool-free forms and of a `Bash` call's result, progress and summary, and 7 Codex
-items of exec's tool-free and own-tool types, decide re-run naming nothing. `format/tool-forms`: the
-readers' tables equal the binaries' (`cli-formats.json`), each named fixture form is one the binaries
-list and each unlisted one is in no table. `limit/claude-rejected-texts` (AC2): each of the binary's eight rejected-status texts (the
+`decision/redacted-name`: on a redacted line a `tool_use` named `[REDACTED:known_pattern]` or
+`NotebookRead` (a name neither `mcp__` nor built in) decides ask as `redacted_unreadable`, one named
+`Agent` (the Agent tool's current name, built in), `Read` or `mcp__tracker__get_issue` (read-only)
+decides re-run. `decision/repl-inner-call`: after a REPL `tool_use`, a `tool_progress` of it whose
+`repl_call` names `mcp__tracker__add_comment` (the checker's reproduction) or, in its end phase only,
+`mcp__wiki__write_page` decides ask naming that line, server and tool; an inner tool neither `mcp__` nor
+built in asks as `unknown_call` form `repl_call:RemoteTrigger`; a `repl_call` that is not an object, has
+no inner name or a non-string one asks `unreadable`; an inner read-only MCP call (counted) and an inner
+`Read` decide re-run. `decision/task-progress-tool`: after an `Agent` call and its `task_started`, a
+`task_progress` whose `last_tool_name` is an MCP write (the checker's reproduction) asks naming it, the
+same last tool on two lines is one call, a workflow agent's `lastToolName` naming a write asks; a
+non-string last tool, a `workflow_progress` that is not a list and an entry that is not an object ask
+`unreadable`; a read-only last tool and `Bash` decide re-run. `decision/frame-tool-names`: a
+`tool_progress` of a shown call naming an MCP write asks naming it, an MCP write and its heartbeat are
+one call, an assistant message whose `attribution_mcp_server` and `attribution_mcp_tool` name a write,
+and one whose `batch_tool_uses` holds a write, ask naming them; an attribution that is not a name asks
+`unreadable`; a heartbeat of the shown REPL call decides re-run. `decision/tool-free-forms` (the negative control):
+21 Claude Code lines of tool-free forms, of a `Bash` call's result, progress, heartbeat and summary, of
+the six tool-free frames outside the message union, of a REPL call whose inner tool is `Read` and of a
+task whose last tool and workflow agent's are built in, and 7 Codex items of exec's tool-free and
+own-tool types, decide re-run naming nothing. `format/tool-forms`: the
+readers' tables equal the binaries' (`cli-formats.json`): the message, block, streaming event and
+built-in tables, the built-in names with the Agent tool's current one, every tool-named field declared
+or emitted (the six read as calls named), the tool-free frames, and exec's items with `collab_tool_call`
+a sub-agent call; each named fixture form is one the binaries list and each unlisted one is in no
+table. `limit/claude-rejected-texts` (AC2): each of the binary's eight rejected-status texts (the
 two admin ones with their suffix, and the out-of-credits one again with a reset and the progress
 piece) ends a run `account_limit`, the `unified` window with the reset it states, recorded exhausted.
 `pool/usage-observes` (AC4): a Codex account whose one run reported usage and no window admits its

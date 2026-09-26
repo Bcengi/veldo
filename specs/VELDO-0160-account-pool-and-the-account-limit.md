@@ -258,3 +258,21 @@ subtype, block, item or event type the tables do not list. On a redacted line a 
 that is neither `mcp__...` nor a built-in tool is `redacted_unreadable`. New rows
 `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms` (the negative control)
 and `format/tool-forms`, and 17 more finding 160 mutations. Status unchanged.
+
+2026-09-26, the second check's fixes: an MCP write made through Claude Code's REPL tool is now decided
+ask. Its inner calls reach the stream only as a `tool_progress` of the REPL call carrying a `repl_call`
+the binary's emitters write and its schema omits; an `mcp__` inner name is that MCP call, a name neither
+`mcp__` nor built in an unknown call, and a malformed `repl_call` unreadable. The other fields that name
+a tool that ran count the same way: a `tool_progress`'s own tool, a `system/task_progress`'s
+`last_tool_name` and its workflow agents' `lastToolName`, and an assistant message's MCP attribution and
+batch tool names; the reader's table of every tool-named field, declared or emitted, is the binary's.
+The binary's `BUILTIN_TOOL_NAMES` lists the Agent tool under its old name `Task`, so its current name
+`Agent`, read from the tool's definition, is built in and an Agent call on a redacted line re-runs. The
+frames the CLI writes outside the message union whose schema provably carries no tool call (`keep_alive`,
+`control_cancel_request`, `active_goal`, `autocompact_state`, `post_turn_summary`, `task_summary`) are no
+call; a control request or response and the transcript mirror cannot be shown tool-free and still ask.
+Codex exec's own `collab_tool_call` is in exec's item table, an unknown call. The extractor reads each
+of these out of the binaries into `cli-formats.json`. New rows `decision/repl-inner-call`,
+`decision/task-progress-tool` and `decision/frame-tool-names`; `decision/redacted-name`,
+`decision/unknown-forms`, `decision/tool-free-forms` and `format/tool-forms` extended; 14 more finding
+160 mutations. Status unchanged.
