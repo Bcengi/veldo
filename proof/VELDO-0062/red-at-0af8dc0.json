@@ -2,25 +2,28 @@
  "by_assertion": true,
  "commit": "0af8dc025b0458a8a05023723bd724ab550cd427",
  "details": [
-  "VELDO-0062 login/recorded-account-profile detail: acct-c1: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [/dev/shm/v62-ofi5ok89/helper/accounts/profiles/acct-c3]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-c1: no other provider's profile reached it [/dev/shm/v62-ofi5ok89/helper/accounts/profiles/acct-x2]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-c1: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [/dev/shm/v62-4f97zn66/helper/accounts/profiles/acct-c3]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-c1: no other provider's profile reached it [/dev/shm/v62-4f97zn66/helper/accounts/profiles/acct-x2]",
   "VELDO-0062 login/recorded-account-profile detail: acct-c1: its ambient account label is the recorded one [acct-c3]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-c2: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [/dev/shm/v62-ofi5ok89/helper/accounts/profiles/acct-c3]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-c2: no other provider's profile reached it [/dev/shm/v62-ofi5ok89/helper/accounts/profiles/acct-x2]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-c2: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [/dev/shm/v62-4f97zn66/helper/accounts/profiles/acct-c3]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-c2: no other provider's profile reached it [/dev/shm/v62-4f97zn66/helper/accounts/profiles/acct-x2]",
   "VELDO-0062 login/recorded-account-profile detail: acct-c2: its ambient account label is the recorded one [acct-c3]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-x1: CODEX_HOME is that account's registered profile on this host, not the caller's [/dev/shm/v62-ofi5ok89/helper/accounts/profiles/acct-x2]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-x1: no other provider's profile reached it [/dev/shm/v62-ofi5ok89/helper/accounts/profiles/acct-c3]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-x1: CODEX_HOME is that account's registered profile on this host, not the caller's [/dev/shm/v62-4f97zn66/helper/accounts/profiles/acct-x2]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-x1: no other provider's profile reached it [/dev/shm/v62-4f97zn66/helper/accounts/profiles/acct-c3]",
   "VELDO-0062 login/recorded-account-profile detail: acct-x1: its ambient account label is the recorded one [acct-c3]",
   "VELDO-0062 login/recorded-account-profile detail: the two Claude Code accounts ran on two different profiles",
-  "VELDO-0062 login/recorded-account-profile detail: the owner registered every account [[('acct-c1', 'AttributeError'), ('acct-c2', 'AttributeError'), ('acct-c3', 'AttributeError'), ('acct-x1', 'AttributeError'), ('acct-x2', 'AttributeError'), ('acct-paused', 'AttributeError'), ('acct-mac', 'AttributeError')]]",
-  "VELDO-0062 login/no-paid-api detail: acct-c1: no paid-API credential variable reached the engine, planted in the caller's environment and in the adapter's [['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_FOUNDRY', 'CLAUDE_CODE_USE_VERTEX', 'CODEX_API_KEY', 'OPENAI_API_KEY']]",
-  "VELDO-0062 login/no-paid-api detail: acct-c2: no paid-API credential variable reached the engine, planted in the caller's environment and in the adapter's [['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_FOUNDRY', 'CLAUDE_CODE_USE_VERTEX', 'CODEX_API_KEY', 'OPENAI_API_KEY']]",
-  "VELDO-0062 login/no-paid-api detail: acct-x1: no paid-API credential variable reached the engine, planted in the caller's environment and in the adapter's [['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_FOUNDRY', 'CLAUDE_CODE_USE_VERTEX', 'CODEX_API_KEY', 'OPENAI_API_KEY']]",
+  "VELDO-0062 login/recorded-account-profile detail: the owner registered every account [[('acct-c1', 'AttributeError'), ('acct-c2', 'AttributeError'), ('acct-c3', 'AttributeError'), ('acct-x1', 'AttributeError'), ('acct-x2', 'AttributeError'), ('acct-x3', 'AttributeError'), ('acct-paused', 'AttributeError'), ('acct-mac', 'AttributeError')]]",
+  "VELDO-0062 login/no-paid-api detail: acct-c1: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_FOUNDRY_API_KEY', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN']]",
+  "VELDO-0062 login/no-paid-api detail: acct-c2: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_FOUNDRY_API_KEY', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN']]",
+  "VELDO-0062 login/no-paid-api detail: acct-x1: no login variable reached the engine: none of the 64 the binaries' credential tables list, the nine the finding named or the family probes, planted in the caller's environment and in the adapter's [['ALL_INPUTS', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_AWS_API_KEY', 'ANTHROPIC_AWS_BASE_URL', 'ANTHROPIC_AWS_WORKSPACE_ID', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_BEDROCK_MANTLE_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS', 'ANTHROPIC_FOUNDRY_API_KEY', 'ANTHROPIC_FOUNDRY_AUTH_TOKEN']]",
   "VELDO-0062 login/substitution-refused detail: acct-paused/claude substituted or unusable: refused by name, nothing launched, nothing reserved [None]",
   "VELDO-0062 login/substitution-refused detail: acct-mac/claude substituted or unusable: refused by name, nothing launched, nothing reserved [None]",
   "VELDO-0062 login/substitution-refused detail: acct-x1/claude substituted or unusable: refused by name, nothing launched, nothing reserved [None]",
   "VELDO-0062 login/substitution-refused detail: acct-c1/codex substituted or unusable: refused by name, nothing launched, nothing reserved [None]",
   "VELDO-0062 login/substitution-refused detail: acct-none/claude substituted or unusable: refused by name, nothing launched, nothing reserved [None]",
+  "VELDO-0062 login/fleet-provider detail: the default fleet pool is the registered Claude Code accounts, each worker on its own Claude profile, no Codex profile handed to a Claude session [None, 8 workers]",
+  "VELDO-0062 login/fleet-provider detail: a Codex account pinned for a Claude fleet is refused by name before any worker starts [NoneType: None]",
+  "VELDO-0062 login/fleet-provider detail: a Codex account listed for a Claude fleet is refused by name before any worker starts [NoneType: None]",
   "VELDO-0062 usage/reserved-before-launch detail: claude initial: reserved as initial before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
   "VELDO-0062 usage/reserved-before-launch detail: claude retry: reserved as retry before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
   "VELDO-0062 usage/reserved-before-launch detail: claude follow_on: reserved as follow_on before the engine started, which saw its pending reservation at its start, one launch [None, None, 1]",
@@ -38,16 +41,22 @@
   "VELDO-0062 usage/competing-remainder detail: two invocations for one remaining invocation: one launched, the other refused by name [[('exited', None), ('exited', None)], 2 launches, 2 spawns]",
   "VELDO-0062 usage/cap-stops-worker detail: claude: the report that reached the token cap stopped the worker, which never finished [30.4 s, None, None]",
   "VELDO-0062 usage/cap-stops-worker detail: codex: the report that reached the token cap stopped the worker, which never finished [30.2 s, None, None]",
+  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: the usage-limit message is recorded on the account as an exhausted window, its reset the end of the minute it stated, from its dispatch [{}]",
+  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: inside the reported window a new invocation is refused by name and nothing launches [None]",
+  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: the usage-limit message is recorded on the account as an exhausted window, its reset unknown, none stated, from its dispatch [{}]",
+  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: inside the reported window a new invocation is refused by name and nothing launches [None]",
   "VELDO-0062 usage/rate-limit-reset detail: claude: the reported window is recorded on the account with its reported reset and source dispatch [{}]",
-  "VELDO-0062 usage/rate-limit-reset detail: codex: the reported window is recorded on the account with its reported reset and source dispatch [{}]",
   "VELDO-0062 usage/rate-limit-reset detail: claude: inside the reported window a new invocation is refused by name and nothing launches [None]",
-  "VELDO-0062 usage/rate-limit-reset detail: codex: inside the reported window a new invocation is refused by name and nothing launches [None]",
+  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: with no reset stated the account stays refused however long, until a later observation says otherwise [None]",
   "VELDO-0062 settle/once detail: claude: a normal report settles the CLI's own totals once, the repeated lines counted once [None, None]",
   "VELDO-0062 settle/once detail: claude: a duplicate delivery changes no balance, a conflicting one is refused [TypeError, invalid_input]",
   "VELDO-0062 settle/once detail: codex: a normal report settles the CLI's own totals once, the repeated lines counted once [None, None]",
   "VELDO-0062 settle/once detail: codex: a duplicate delivery changes no balance, a conflicting one is refused [TypeError, invalid_input]",
-  "VELDO-0062 settle/once detail: claude: the raw receipts are private and every ledger digest is a stored line's, the recomputed totals equal the balance [{'tokens': 0, 'messages': 0}]",
-  "VELDO-0062 settle/once detail: codex: the raw receipts are private and every ledger digest is a stored line's, the recomputed totals equal the balance [{'tokens': 0, 'messages': 0}]",
+  "VELDO-0062 settle/once detail: claude: the raw receipts are private and every ledger digest is a stored line's, the totals recomputed from them equal the balance and the lines the engine itself printed [{'tokens': 0, 'messages': 0}, {'tokens': 160, 'messages': 1}]",
+  "VELDO-0062 settle/once detail: codex: the raw receipts are private and every ledger digest is a stored line's, the totals recomputed from them equal the balance and the lines the engine itself printed [{'tokens': 0, 'messages': 0}, {'tokens': 300, 'messages': 1}]",
+  "VELDO-0062 settle/model-usage detail: claude: a main-loop message, a subagent message and a result settle the result's modelUsage over every model, not its main-loop usage [None settled, 101620 modelUsage, 5012 main loop]",
+  "VELDO-0062 settle/model-usage detail: claude: the stored raw receipt, read by this suite, and the lines the engine printed recompute the same total [None, {'tokens': 101620, 'messages': 2}]",
+  "VELDO-0062 settle/model-usage detail: claude: a result without modelUsage settles its messages and leaves its tokens unknown [None, AttributeError]",
   "VELDO-0062 settle/missing-retained detail: claude: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [None, None, None]",
   "VELDO-0062 settle/missing-retained detail: codex: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [None, None, None]",
   "VELDO-0062 settle/timeout-retained detail: claude: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [None, None, None]",
@@ -59,9 +68,9 @@
   "VELDO-0062 attribution/stored-account detail: acct-x1: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{} vs None]",
   "VELDO-0062 attribution/stored-account detail: acct-c3: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{} vs None]",
   "VELDO-0062 attribution/stored-account detail: acct-x2: the shown totals equal its stored receipts, grouped by the account each dispatch recorded [{} vs None]",
-  "VELDO-0062 attribution/stored-account detail: acct-c1: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [None, False]",
-  "VELDO-0062 attribution/stored-account detail: acct-c2: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [None, False]",
-  "VELDO-0062 attribution/stored-account detail: acct-x1: the receipts and the reported window are attributed to the recorded account, not the ambient label or the worker's claim [None, False]",
+  "VELDO-0062 attribution/stored-account detail: acct-c1: the receipts and the reported window are attributed to the recorded account, not the ambient label [None, False]",
+  "VELDO-0062 attribution/stored-account detail: acct-c2: the receipts and the reported window are attributed to the recorded account, not the ambient label [None, False]",
+  "VELDO-0062 attribution/stored-account detail: acct-x1: the receipts are attributed to the recorded account, not the ambient label [None]",
   "VELDO-0062 attribution/stored-account detail: each unit and the journey project show the same totals as their receipts",
   "VELDO-0062 attribution/measurement-removed detail: an invocation that reported nothing keeps its allocation: one invocation and its wall time shown, tokens and messages unknown and the token remainder unknown, never counted as unused [{}]",
   "VELDO-0062 attribution/watermark detail: every account, project and unit shows as its watermark the journal sequence of its latest recorded usage [0 subjects, []]"
@@ -70,12 +79,14 @@
   "VELDO-0062 login/recorded-account-profile",
   "VELDO-0062 login/no-paid-api",
   "VELDO-0062 login/substitution-refused",
+  "VELDO-0062 login/fleet-provider",
   "VELDO-0062 usage/reserved-before-launch",
   "VELDO-0062 usage/allowance-states",
   "VELDO-0062 usage/competing-remainder",
   "VELDO-0062 usage/cap-stops-worker",
   "VELDO-0062 usage/rate-limit-reset",
   "VELDO-0062 settle/once",
+  "VELDO-0062 settle/model-usage",
   "VELDO-0062 settle/missing-retained",
   "VELDO-0062 settle/timeout-retained",
   "VELDO-0062 settle/cancel-retained",
@@ -86,23 +97,23 @@
  "modules": {
   ".veldo/accounts.py": {
    "at_commit": "37fe0064b18532931cdd93e8f17dabac6cea490fde5c4d5e3e7357b0b4bfa7ec",
-   "now": "faf0b9056384fec547820e851fced430c4607064aca7bb8aa4a3ce5ec584f058"
+   "now": "766155d634d8cae2fa6d55f45790bc195b091572656a7e0d3ee486846c97243e"
   },
   ".veldo/control_accounts.py": {
    "at_commit": null,
-   "now": "fd706df9970eccfa6808af264b6820a89f9410dddb8937a8dbb2a02c3cbef814"
+   "now": "08ef9f029ed59d07b7132be3841c5de47d0fc49d8dc92e77979898f2e9072de4"
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": null,
-   "now": "70988251cedf1c6e4f5bb5eae842c3efc93ced17b6428ca4e0d4f68fbc223011"
+   "now": "35c3da0aa904c0cea551a1213cc481ae645bbcd7685f5219cd82df28fbc5eeb4"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": null,
-   "now": "8c9b370f50142206b5a17bb0c3c203bb766b8d59148dbac488c4b2f5085373c5"
+   "now": "2ee6327d120a96d73b230532379d5e71f21cfd1fa0289c7048ce219bb73ebea3"
   },
   ".veldo/control_launch.py": {
    "at_commit": "860f54a2201fa0c60a6ed3922080219e6cb7d97ded0141c673fc3490d1d09cd9",
-   "now": "e446f3acfe32ac3aa8eff7f36e5caa0359f58cd98c5f235123c44188046fa86e"
+   "now": "8685f61edbf6b208ddb252a573d165297d97ee01dbb14a863bcd9d87559ed35f"
   },
   ".veldo/control_reservation_runtime.py": {
    "at_commit": "922b04713a800c77125f567e45ea92df354233465509425b148ac7d45d858a68",
@@ -111,6 +122,10 @@
   ".veldo/control_reservations.py": {
    "at_commit": "5a15312d1357260a90a1d868a30f3d0b39a77c8da07a7ad25329338b8c0cb00e",
    "now": "6565f65d6d0e208658e2d5fa32208e4e04e2b83a1c2603d8c896c55eb266ec43"
+  },
+  ".veldo/fleet.py": {
+   "at_commit": "68d3725d0e48349b6adf8988de671fa96754bfbf6b1b5dfeaa729e538ef5d8f3",
+   "now": "a746210b0a96dab6d9c5601e64fd1a2d79be67021ca0c8caadaebe988627edc1"
   }
  },
  "preamble_rows": 26,
@@ -125,6 +140,10 @@
   ],
   [
    "VELDO-0062 login/substitution-refused",
+   false
+  ],
+  [
+   "VELDO-0062 login/fleet-provider",
    false
   ],
   [
@@ -152,6 +171,10 @@
    false
   ],
   [
+   "VELDO-0062 settle/model-usage",
+   false
+  ],
+  [
    "VELDO-0062 settle/missing-retained",
    false
   ],
@@ -174,10 +197,18 @@
   [
    "VELDO-0062 attribution/watermark",
    false
+  ],
+  [
+   "VELDO-0062 format/claude-fake-lines",
+   true
+  ],
+  [
+   "VELDO-0062 format/codex-fake-lines",
+   true
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 84.562,
+ "seconds": 85.079,
  "spec_id": "VELDO-0062",
  "suite": "scripts/suites/75_veldo_0062_accounts.py",
  "tree": "git archive 0af8dc025b0458a8a05023723bd724ab550cd427, unchanged; the current suite file run against it"
