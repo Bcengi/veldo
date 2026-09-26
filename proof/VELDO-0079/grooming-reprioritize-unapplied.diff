@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -850 +850 @@
+-        record = {'path': 'owner_command', 'command_id': command['command_id'], 'rank': priority['rank'],
++        record = {'path': 'owner_command', 'command_id': command['command_id'], 'rank': previous,  # defect

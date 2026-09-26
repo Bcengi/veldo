@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -681 +681 @@
+-        if ruling in (None, 'approve'):
++        if True:  # defect: a reject or return must still bind the live records and be unlapsed

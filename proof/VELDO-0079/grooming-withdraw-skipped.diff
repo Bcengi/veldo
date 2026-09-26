@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming.py
++++ b/.veldo/control_grooming.py
+@@ -421 +421 @@
+-                results.extend(self._withdraw(record, GR.PRIORITY))
++                pass  # defect: the priority request stays open after a reject or return

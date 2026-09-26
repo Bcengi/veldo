@@ -1,0 +1,130 @@
+{
+ "by_assertion": true,
+ "commit": "d2d557436141fdc9aa9bb8ddfb7a2e8d167f833b",
+ "details": [
+  "VELDO-0079 detail: route/append-after-reject: after another unit was appended, his reject is applied as he gave it; the item is movable again: pm proposes a new revision and it is presented as a new request; his approval of it prioritizes both appended units",
+  "VELDO-0079 detail: route/spec-change-after-reject: after the specification file changed, his reject is applied as he gave it; after the specification file changed, his return is applied as he gave it; the returned item is movable again: groomed against the changed file and presented anew",
+  "VELDO-0079 detail: route/admitted-priority-rejected: pm grooms the admitted item for its priority again; it is presented to him as a new priority request; his approval prioritizes it at the rank he was shown",
+  "VELDO-0079 detail: route/message-single-use: it is presented, naming his used message alone; the backlog refuses his message for it by that reason; nothing of it runs"
+ ],
+ "failed_rows": [
+  "VELDO-0079 route/append-after-reject",
+  "VELDO-0079 route/spec-change-after-reject",
+  "VELDO-0079 route/admitted-priority-rejected",
+  "VELDO-0079 route/message-single-use"
+ ],
+ "modules": {
+  ".veldo/control_backlog.py": {
+   "at_commit": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264",
+   "now": "1f65e72cbfd78e55cf514d1d2f0971b95c87b9c408048ad9d9c4aa32d370d8ff"
+  },
+  ".veldo/control_grooming.py": {
+   "at_commit": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3",
+   "now": "b94065dbc4acbb4d8953ab8bcfaf815c87b2fae3e986f71f7c83110c50a0f09c"
+  },
+  ".veldo/control_grooming_request.py": {
+   "at_commit": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb",
+   "now": "d6129f6befa41391fe90408ed092d16a42065b5b679632c87254260950e6461c"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9",
+   "now": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0079 install/assets",
+   true
+  ],
+  [
+   "VELDO-0079 route/own-message-default",
+   true
+  ],
+  [
+   "VELDO-0079 route/ask-when-needed",
+   true
+  ],
+  [
+   "VELDO-0079 route/presented-then-proposed",
+   true
+  ],
+  [
+   "VELDO-0079 route/ruling-settled-unapplied",
+   true
+  ],
+  [
+   "VELDO-0079 route/returned-then-proposed",
+   true
+  ],
+  [
+   "VELDO-0079 route/append-after-reject",
+   false
+  ],
+  [
+   "VELDO-0079 route/spec-change-after-reject",
+   false
+  ],
+  [
+   "VELDO-0079 route/admitted-priority-rejected",
+   false
+  ],
+  [
+   "VELDO-0079 route/message-single-use",
+   false
+  ],
+  [
+   "VELDO-0079 material/telegram-brief",
+   true
+  ],
+  [
+   "VELDO-0079 material/ungroomed-thin-brief",
+   true
+  ],
+  [
+   "VELDO-0079 material/bound-fields",
+   true
+  ],
+  [
+   "VELDO-0079 material/changed-decomposition",
+   true
+  ],
+  [
+   "VELDO-0079 authority/owner-choices",
+   true
+  ],
+  [
+   "VELDO-0079 authority/pm-self-admission",
+   true
+  ],
+  [
+   "VELDO-0079 authority/separate-predicates",
+   true
+  ],
+  [
+   "VELDO-0079 authority/questions-unresolved",
+   true
+  ],
+  [
+   "VELDO-0079 authority/reprioritize-withdraw",
+   true
+  ],
+  [
+   "VELDO-0079 ruling/parameter-binding",
+   true
+  ],
+  [
+   "VELDO-0079 ruling/duplicate",
+   true
+  ],
+  [
+   "VELDO-0079 observability",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 11.865,
+ "spec_id": "VELDO-0079",
+ "suite": "scripts/suites/76_veldo_0079_grooming.py",
+ "tree": "git archive d2d557436141fdc9aa9bb8ddfb7a2e8d167f833b, unchanged; the current suite file run against it"
+}

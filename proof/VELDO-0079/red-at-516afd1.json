@@ -1,0 +1,167 @@
+{
+ "by_assertion": true,
+ "commit": "516afd154e0672e443325d379f5153cd96c8c777",
+ "details": [
+  "VELDO-0079 detail: install/assets: the grooming service and its request contract installed by the scaffold; both engine copies identical; both laid by the installer",
+  "VELDO-0079 detail: route/own-message-default: pm, the project manager, proposed the grooming with no question and no priority; the item is admitted and prioritized by his message; at the default priority; the admission and priority name his message as their evidence; every unit is executable",
+  "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; asking the backlog to admit it by his message is refused by the reason",
+  "VELDO-0079 detail: route/presented-then-proposed: pm re-proposed the presented item with no question at the default priority; recording that revision superseded both requests in front of him, before grooming ran; his answer to the earlier presentation is refused; grooming presents it, naming its history, and his message does not admit it; his reject of the revision in front of him is applied; his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it; and it is applied as he gave it",
+  "VELDO-0079 detail: route/ruling-settled-unapplied: his reject settled and is not yet applied; pm's proposal with the question dropped is refused while it waits, and no revision is written; grooming asks him nothing over it; his message does not admit it; his reject is applied as he gave it and the priority request is canceled",
+  "VELDO-0079 detail: route/returned-then-proposed: his return was applied: the item went back to PREPARED and the priority request was canceled; pm asked for grooming again and proposed with no question at the default priority; it is presented to him again, naming its history; his message does not admit it",
+  "VELDO-0079 detail: route/append-after-reject: his message admitted the item and the appended unit was presented for its priority; his reject of that priority settled; after another unit was appended, his reject is applied as he gave it; it made neither appended unit executable; the item is movable again: pm proposes a new revision and it is presented as a new request; his approval of it prioritizes both appended units",
+  "VELDO-0079 detail: route/spec-change-after-reject: his reject and his return settled; after the specification file changed, his reject is applied as he gave it; after the specification file changed, his return is applied as he gave it; the returned item is movable again: groomed against the changed file and presented anew",
+  "VELDO-0079 detail: route/admitted-priority-rejected: his priority reject settled first and waited for the admission; his admission was applied, then his priority reject: the item is ADMITTED and nothing runs; pm grooms the admitted item for its priority again; it is presented to him as a new priority request; his approval prioritizes it at the rank he was shown",
+  "VELDO-0079 detail: route/message-single-use: before anything from his message was put to him, it admitted work under its objective; work from the same message was presented to him and rejected; pm re-cut it as a new feature under the same objective, asking nothing; it is presented, naming his used message alone; the backlog refuses his message for it by that reason; nothing of it runs",
+  "VELDO-0079 detail: fragments absent from the Telegram text: ['admission/alternatives', 'admission/ceiling', 'admission/ceiling', 'admission/class', 'admission/decomposition', 'admission/decomposition', 'admission/decomposition', 'admission/evidence', 'admission/evidence', 'admission/exclusions', 'admission/expiry', 'admission/lane', 'admission/outcome', 'admission/outcome', 'admission/policy', 'admission/policy', 'admission/policy', 'admission/priority', 'admission/priority', 'admission/protected_paths', 'admission/protected_paths', 'admission/questions', 'admission/release_authority', 'admission/scope', 'admission/specifications', 'admission/specifications', 'priority/alternatives', 'priority/ceiling', 'priority/ceiling', 'priority/class', 'priority/decomposition', 'priority/decomposition', 'priority/decomposition', 'priority/evidence', 'priority/evidence', 'priority/exclusions', 'priority/expiry', 'priority/lane', 'priority/outcome', 'priority/outcome', 'priority/policy', 'priority/policy', 'priority/policy', 'priority/priority', 'priority/priority', 'priority/protected_paths', 'priority/protected_paths', 'priority/questions', 'priority/release_authority', 'priority/scope', 'priority/specifications', 'priority/specifications']",
+  "VELDO-0079 detail: material/telegram-brief: the request records exactly those fields; both decisions were sent to olga's chat; every field of the request is in the bytes Telegram received, for both decisions; admission and priority are separate requests on their own touchpoints; both bind the request by its digest; the priority request proposes the rank shown; an answer to the item's thinner brief does not admit groomed work; an answer to other text beside the request's digest does not admit it",
+  "VELDO-0079 detail: material/ungroomed-thin-brief: the backlog refuses it by name; nothing is written: the journal and the item are unchanged; no unit is admitted or executable",
+  "VELDO-0079 detail: material/bound-fields: each proposed field is its own new revision with a new digest; each change revised the pending requests: a new version whose presentation supersedes the one shown; an answer to the earlier presentation is refused after each change; an answer settled before a specification file changed is not applied; every field no writer changes is named by the live binding alone when it differs",
+  "VELDO-0079 detail: material/changed-decomposition: the appended unit is groomed for priority alone, presented because his message predates it; the owner answered the priority of the decomposition he was shown; after another unit was appended, that answer is refused as a changed decomposition; neither appended unit became executable by it; the regroomed decomposition, answered again, prioritizes both",
+  "VELDO-0079 detail: authority/owner-choices: each choice moves the item where it says; each settlement carries the owner's own reasoning and his ruling; accepting both runs the work; a reject or return cancels the priority request still waiting",
+  "VELDO-0079 detail: authority/pm-self-admission: its signed answer through the API edge is refused as not the owner's; its request to admit by his message is refused by the question it asked; it cannot reprioritize the owner's work, not being a person or the owner; an answer without the owner's own reasoning is refused; nothing was admitted and nothing runs",
+  "VELDO-0079 detail: authority/separate-predicates: his own message cannot admit at a priority he may not set; his admission answer settles and is applied; his priority answer does not settle: the priority authority is its own predicate; admitted without priority, nothing runs; the admission was applied once",
+  "VELDO-0079 detail: authority/questions-unresolved: the priority answer settled first; it is not applied while the admission with its questions is unanswered; his answer to the questions admits it, and then the priority applies; the admission names the questions his answer resolved; the units run now",
+  "VELDO-0079 detail: authority/reprioritize-withdraw: his message admitted it at the default priority; his signed reprioritization is applied, the work unchanged otherwise; the same rank again changes nothing",
+  "VELDO-0079 detail: ruling/parameter-binding: the owner's admission answers settled; after the priority changed, the retained ruling is refused by its digest; after the ceiling changed, the retained ruling is refused by its digest; the retained signed answer submitted again is refused: its request version is settled; a ruling on one item does not admit another",
+  "VELDO-0079 detail: ruling/duplicate: the owner's answer settled once; the same signed answer again is refused and settles nothing more; the admission was applied; the same signed command again is refused as stale and writes nothing",
+  "VELDO-0079 detail: observability: accepted and refused grooming operations are counted; every grooming route is observed with its reasons; the admission requests and the presented requests waiting for the owner are exposed"
+ ],
+ "failed_rows": [
+  "VELDO-0079 install/assets",
+  "VELDO-0079 route/own-message-default",
+  "VELDO-0079 route/ask-when-needed",
+  "VELDO-0079 route/presented-then-proposed",
+  "VELDO-0079 route/ruling-settled-unapplied",
+  "VELDO-0079 route/returned-then-proposed",
+  "VELDO-0079 route/append-after-reject",
+  "VELDO-0079 route/spec-change-after-reject",
+  "VELDO-0079 route/admitted-priority-rejected",
+  "VELDO-0079 route/message-single-use",
+  "VELDO-0079 material/telegram-brief",
+  "VELDO-0079 material/ungroomed-thin-brief",
+  "VELDO-0079 material/bound-fields",
+  "VELDO-0079 material/changed-decomposition",
+  "VELDO-0079 authority/owner-choices",
+  "VELDO-0079 authority/pm-self-admission",
+  "VELDO-0079 authority/separate-predicates",
+  "VELDO-0079 authority/questions-unresolved",
+  "VELDO-0079 authority/reprioritize-withdraw",
+  "VELDO-0079 ruling/parameter-binding",
+  "VELDO-0079 ruling/duplicate",
+  "VELDO-0079 observability"
+ ],
+ "modules": {
+  ".veldo/control_backlog.py": {
+   "at_commit": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b",
+   "now": "1f65e72cbfd78e55cf514d1d2f0971b95c87b9c408048ad9d9c4aa32d370d8ff"
+  },
+  ".veldo/control_grooming.py": {
+   "at_commit": null,
+   "now": "b94065dbc4acbb4d8953ab8bcfaf815c87b2fae3e986f71f7c83110c50a0f09c"
+  },
+  ".veldo/control_grooming_request.py": {
+   "at_commit": null,
+   "now": "d6129f6befa41391fe90408ed092d16a42065b5b679632c87254260950e6461c"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "c50045cf9b1d332d628c00d9bfae3ab2e551d5f07bfbe5b62fc7c151b15910c6",
+   "now": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0079 install/assets",
+   false
+  ],
+  [
+   "VELDO-0079 route/own-message-default",
+   false
+  ],
+  [
+   "VELDO-0079 route/ask-when-needed",
+   false
+  ],
+  [
+   "VELDO-0079 route/presented-then-proposed",
+   false
+  ],
+  [
+   "VELDO-0079 route/ruling-settled-unapplied",
+   false
+  ],
+  [
+   "VELDO-0079 route/returned-then-proposed",
+   false
+  ],
+  [
+   "VELDO-0079 route/append-after-reject",
+   false
+  ],
+  [
+   "VELDO-0079 route/spec-change-after-reject",
+   false
+  ],
+  [
+   "VELDO-0079 route/admitted-priority-rejected",
+   false
+  ],
+  [
+   "VELDO-0079 route/message-single-use",
+   false
+  ],
+  [
+   "VELDO-0079 material/telegram-brief",
+   false
+  ],
+  [
+   "VELDO-0079 material/ungroomed-thin-brief",
+   false
+  ],
+  [
+   "VELDO-0079 material/bound-fields",
+   false
+  ],
+  [
+   "VELDO-0079 material/changed-decomposition",
+   false
+  ],
+  [
+   "VELDO-0079 authority/owner-choices",
+   false
+  ],
+  [
+   "VELDO-0079 authority/pm-self-admission",
+   false
+  ],
+  [
+   "VELDO-0079 authority/separate-predicates",
+   false
+  ],
+  [
+   "VELDO-0079 authority/questions-unresolved",
+   false
+  ],
+  [
+   "VELDO-0079 authority/reprioritize-withdraw",
+   false
+  ],
+  [
+   "VELDO-0079 ruling/parameter-binding",
+   false
+  ],
+  [
+   "VELDO-0079 ruling/duplicate",
+   false
+  ],
+  [
+   "VELDO-0079 observability",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 2.897,
+ "spec_id": "VELDO-0079",
+ "suite": "scripts/suites/76_veldo_0079_grooming.py",
+ "tree": "git archive 516afd154e0672e443325d379f5153cd96c8c777, unchanged; the current suite file run against it"
+}

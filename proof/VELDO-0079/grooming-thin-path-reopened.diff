@@ -1,0 +1,10 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -662,2 +662,5 @@
+-        if request is None:
+-            raise Refused('missing_evidence:admission_request', 'grooming recorded no admission request for the item')
++        if request is None:  # defect: the thin path: an item with no admission request is admitted on its own target
++            return ({'kind': 'backlog_item', 'ref': data['uuid'], 'revision': data['decomposition_revision'],
++                     'digest': data['decomposition_digest']}, None,
++                    {'uuid': None, 'revision': None, 'digest': None,
++                     'content': {'questions': [], 'priority': {'rank': None}}})

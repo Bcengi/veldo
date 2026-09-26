@@ -32,7 +32,12 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_backlog.py"
+  - ".veldo/control_backlog.py"
+  - "packs/*/.veldo/control_backlog.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0079_*.py"
+  - "scripts/suites/73_veldo_0078_backlog.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0079-grooming-enrolled-decision-surfaces.md"
@@ -163,3 +168,80 @@ self-admission kept in its set. A What the reviewer judges section is added. Sta
 2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0150, because AC2 admits work under
 an objective the owner's own message accepted, which is VELDO-0150's acceptance path. Criteria and
 status unchanged.
+
+2026-09-25, build: `.veldo/control_grooming_request.py` (new) is the admission request contract (R09): the
+sixteen fields (class, lane, outcome, scope, exclusions, priority, ceiling, policy, specification
+revisions, protected paths, release authority, expiry, evidence, decomposition, alternatives, questions),
+the brief that renders every one of them, the binding (the decomposition by its digest) and digest a
+ruling names as its target, the live comparison with the item, objective, project and specification
+files, and the route: the owner's own message (VELDO-0150's own_message acceptance) admits at the default
+priority, rank 3, only when the project manager asks nothing, proposes the default and wrote the revision
+himself or the owner did. `.veldo/control_grooming.py` (new) is the grooming service, the one writer of
+admission requests (declared owner): the PM proposes, the service routes the revision, presents each
+decision as its own VELDO-0064 request on the `admission` or `priority` touchpoint through VELDO-0065,
+revises a pending request when a proposed field changes so its new presentation supersedes the one shown,
+and applies settled answers through the backlog. The footprint gains `.veldo/control_backlog.py` (and its
+engine and pack copies), because the backlog is the one writer of backlog items and AC2 needs two of its
+transitions: `admit_message` (AWAITING_GROOMING to PRIORITIZED in one transaction on his message's
+evidence) and the owner's own `reprioritize`; its admit and prioritize accept only the admission
+request's target and brief once grooming recorded one, refuse a revision that no longer binds the live
+records, and require the owner to hold admission_authority to admit and priority_authority to prioritize
+when the decision is applied. It also gains `scripts/check_teeth_mutations.py`, for finding 79.
+`request.py`, `request_projection.py`, `request_reconcile.py` and `authorization.py` were not changed:
+they are the PLAN-0016 file surface, not on the control store path. VELDO-0150's `accept_message` is not
+called by this code: the admission reads the objective's recorded acceptance path, and calling it is the
+intake-to-objective step, not admission. Suite `76_veldo_0079_grooming`, red at 516afd1 by assertion;
+finding 79 (23 mutations) in `proof/VELDO-0079/`. Filed for the lead: an item grooming never recorded a
+request for can still be admitted through VELDO-0078's own thinner brief (requiring grooming for every
+admission changes that suite's helpers); the default priority is one constant for every project. Status
+stays ready.
+
+2026-09-25, build, the lead's decision on the threat model's presentation that omits a bound field: the
+thin admission path is closed. The backlog's admit and prioritize now answer only the item's admission
+request, so an item grooming made no request for is refused `missing_evidence:admission_request` and
+nothing is written; VELDO-0078's own item target and briefs (`decision_target`, `admission_brief`,
+`priority_brief`) are removed from `.veldo/control_backlog.py`, since nothing admits through them. The
+footprint gains `scripts/suites/73_veldo_0078_backlog.py`: its admission and priority helpers go through
+grooming (pm proposes, the grooming service presents on Telegram, olga answers, pm applies), its
+workspace gains the specification files of the units it grooms, every row keeps its meaning, and finding
+78 still rejects all 29 of its mutations. Suite `76_veldo_0079_grooming` gains the row
+`material/ungroomed-thin-brief` and finding 79 the mutation `grooming-thin-path-reopened` (24 mutations);
+two mutations are re-anchored on the new code. The default priority stays one constant, rank 3, for every
+project. Status stays ready.
+
+2026-09-25, build, review findings B1 and F2. B1: the own-message route read only the current revision,
+so the project manager could undo a question he had raised or a ruling the owner had made by proposing
+again. `control_grooming_request.py` now reads the item's history from the store (`history`: every
+decision request grooming opened for the admission request, by its shared `alias`, and the settled
+rulings among them not yet applied), and `route` names `presented` once any request was opened to the
+owner, so his message never admits that item again; grooming and the backlog's `admit_message` both
+pass it. A new revision recorded while a request is pending revises that request at once, so its new
+presentation supersedes the one he saw and an answer to that one is refused. A settled ruling other
+than an approval that is not yet applied (`held`) refuses the next proposal and the next grooming
+(`stale_subject:settled_ruling`), so his reject or return is applied as he gave it; a settled approval
+of an earlier revision authorizes nothing later (its digest binds it). The backlog refuses an answer
+already applied as `already_applied` before judging its binding, the precedence VELDO-0078 had. Suite
+`76_veldo_0079_grooming` gains `route/presented-then-proposed`, `route/ruling-settled-unapplied` and
+`route/returned-then-proposed` (18 rows), red at 11a65a7 by assertion; finding 79 gains six mutations
+(30). F2: row `activation/decomposition-growth` of the 0078 suite applies the earlier answer to the grown
+decomposition with no proposal between and expects `stale_subject:decomposition`, then keeps the
+request-digest refusal as its own later part; finding 78 gains `grown-decomposition-unchecked` (30).
+Status stays ready.
+
+2026-09-25, build, check finding on the held item, with the lead's decisions. A settled reject or return
+that could no longer be applied held the item for good: `held` refused the next proposal and grooming
+until it was applied, but the backlog applied it only while the request still bound the live records and
+had not lapsed, so a unit appended after his priority reject (`stale_subject:decomposition`) or a
+specification file changed after his admission reject (`stale_subject:specifications`) left nothing
+movable. The backlog's new `_fresh` keeps every freshness check for an approval and applies a reject or
+a return exactly as he gave it without them, since it authorizes nothing. (a) An item admitted while
+its priority was rejected was left ADMITTED with no grooming touchpoint; grooming now asks an ADMITTED
+item for its priority again. (b) The own-message admission is single use per message:
+`message_history` reads grooming's admission requests, the backlog's items and the objectives'
+acceptances (none written by the project manager), and once a request of any item whose objective the
+same message accepted (its intake command or intake source) was opened to the owner, `route` names
+`message_used` for every later item from that message, in grooming and in the backlog's `admit_message`.
+Suite `76_veldo_0079_grooming` gains `route/append-after-reject`, `route/spec-change-after-reject`,
+`route/admitted-priority-rejected` and `route/message-single-use` (22 rows), exactly those red at
+d2d5574 by assertion; the rows that need his message to admit take work from a message of their own.
+Finding 79 gains seven mutations (37). Status stays ready.

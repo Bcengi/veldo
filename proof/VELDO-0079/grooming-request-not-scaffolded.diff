@@ -1,0 +1,4 @@
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -265 +264,0 @@
+-    ".veldo/control_grooming_request.py",

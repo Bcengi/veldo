@@ -6246,6 +6246,11 @@ def cases():
     backlog('stale-revision-answer-applies', 'control_backlog.py', "        if found != target:\n",
             "        if (found.get('kind'), found.get('ref')) != (target['kind'], target['ref']):  # defect: any revision\n",
             ['activation/decomposition-growth'])
+    # VELDO-0079 review F2: the grown decomposition itself refuses the earlier answer (the live binding).
+    backlog('grown-decomposition-unchecked', 'control_backlog.py',
+            "        problems = GR.live_problems(fields, data, objective, project['data'])\n",
+            "        problems = []  # defect: an answer to the decomposition before it grew still applies\n",
+            ['activation/decomposition-growth'])
     # AC3 (declared falsifier): output-file existence is DONE.
     backlog('output-file-done', 'tasks.py',
             '        return not _factory("control_backlog").outcome_problems(gate, task.get("id"))\n',
@@ -6612,6 +6617,167 @@ def cases():
             "                   'watermark': max((r['accepted_seq'] for r in calls), default=None)}"
             "  # defect: the reservation's sequence, not the usage's\n",
             'attribution/watermark')
+
+    # VELDO-0079: each criterion's declared falsifier first, then the threat model's other shapes.
+    def grooming(name, module, old, new, rows, also=()):
+        add(79, name, '76_veldo_0079_grooming.py', module, old, new, rows, also)
+
+    # AC1 (declared falsifier): the presentation binding omits the decomposition digest.
+    grooming('grooming-decomposition-digest-unbound', 'control_grooming_request.py',
+             "    bound['decomposition'] = (fields.get('decomposition') or {}).get('digest')\n",
+             "    bound['decomposition'] = None  # defect: the decomposition digest is not bound\n",
+             ['material/changed-decomposition'])
+    grooming('grooming-live-binding-unchecked', 'control_backlog.py',
+             "        problems = GR.live_problems(fields, data, objective, project['data'])\n",
+             "        problems = []  # defect: the live records are not compared\n",
+             ['material/changed-decomposition'])
+    # AC1: the brief shows every field, and only the complete material admits.
+    grooming('grooming-brief-omits-questions', 'control_grooming_request.py',
+             "        'Questions: %s.' % _list(['%s - %s' % (q['id'], q['text']) for q in c['questions']]),\n", '',
+             ['material/telegram-brief'])
+    grooming('grooming-brief-omits-protected-paths', 'control_grooming_request.py',
+             "        'Protected paths: %s.' % _list(c['protected_paths']),\n", '', ['material/telegram-brief'])
+    grooming('grooming-thin-admission-accepted', 'control_backlog.py',
+             "        target, brief, request = self._groomed(conn, data, project, ADMISSION)\n",
+             "        target, brief, request = self._groomed(conn, data, project, ADMISSION)\n"
+             "        held = _row(conn, command.get('request')) or {}\n"
+             "        effect = _row(conn, ((held.get('data') or {}).get('settlement') or {}).get('effect_id')) or {}\n"
+             "        if ((effect.get('data') or {}).get('target') or {}).get('kind') == 'backlog_item':\n"
+             "            target, brief = effect['data']['target'], None  # defect: the item's thin target also admits groomed work\n",
+             ['material/telegram-brief'])
+    grooming('grooming-brief-unchecked', 'control_backlog.py',
+             "        return GR.target(request), GR.brief(request, touchpoint), request\n",
+             "        return GR.target(request), None, request  # defect: any brief shown admits\n",
+             ['material/telegram-brief'])
+    # AC1, the lead's decision: an item grooming never made a request for is admitted on VELDO-0078's thin path.
+    grooming('grooming-thin-path-reopened', 'control_backlog.py',
+             "        if request is None:\n"
+             "            raise Refused('missing_evidence:admission_request', 'grooming recorded no admission request for the item')\n",
+             "        if request is None:  # defect: the thin path: an item with no admission request is admitted on its own target\n"
+             "            return ({'kind': 'backlog_item', 'ref': data['uuid'], 'revision': data['decomposition_revision'],\n"
+             "                     'digest': data['decomposition_digest']}, None,\n"
+             "                    {'uuid': None, 'revision': None, 'digest': None,\n"
+             "                     'content': {'questions': [], 'priority': {'rank': None}}})\n",
+             ['material/ungroomed-thin-brief'])
+    grooming('grooming-specification-files-unchecked', 'control_backlog.py',
+             "        problems += missing + ['stale_subject:' + f for f in GR.WORKSPACE_FIELDS if found[f] != fields.get(f)]\n",
+             "        problems += missing  # defect: a changed specification file is not noticed\n",
+             ['material/bound-fields'])
+    grooming('grooming-pending-request-not-revised', 'control_grooming.py',
+             "        name = latest[0] if latest and latest[2].get('state') in PENDING_STATES else alias(record, touchpoint, len(opened) + 1)\n",
+             "        name = alias(record, touchpoint, len(opened) + 1)  # defect: an earlier presentation stays answerable\n",
+             ['material/bound-fields'])
+    # AC2 (declared falsifier): work whose PM proposal raised a question is admitted by his message.
+    grooming('grooming-route-ignores-question', 'control_grooming_request.py',
+             "    if fields.get('questions'):\n        reasons.append('question')\n",
+             "    if False:  # defect: a question the PM raised is not asked\n        reasons.append('question')\n",
+             ['route/ask-when-needed'])
+    grooming('grooming-route-ignores-priority', 'control_grooming_request.py',
+             "    if fields.get('priority') != DEFAULT_PRIORITY:\n",
+             "    if False:  # defect: another priority is applied without his answer\n", ['route/ask-when-needed'])
+    grooming('grooming-route-ignores-answered-objective', 'control_grooming_request.py',
+             "    if acceptance.get('path') != OWN_MESSAGE or objective.get('accepted_revision') is None:\n",
+             "    if objective.get('accepted_revision') is None:  # defect: any accepted objective\n",
+             ['route/ask-when-needed'])
+    grooming('grooming-route-ignores-author', 'control_grooming_request.py',
+             "    if author != owner and author not in managers:\n",
+             "    if False:  # defect: any member's proposal is admitted by his message\n", ['route/ask-when-needed'])
+    grooming('grooming-message-admission-skips-route', 'control_backlog.py',
+             "        if path != GR.OWN_MESSAGE:\n            raise Refused('not_approved:' + reasons[0],",
+             "        if False:  # defect: the backlog does not ask the route\n            raise Refused('not_approved:' + reasons[0],",
+             ['route/ask-when-needed', 'authority/pm-self-admission'])
+    grooming('grooming-route-never-own-message', 'control_grooming_request.py',
+             "    return (OWN_MESSAGE if not reasons else 'present'), reasons\n",
+             "    return 'present', reasons + ['defect']  # defect: his message never admits\n",
+             ['route/own-message-default'])
+    # AC2, review B1: the route reads the item's history, not its current revision alone.
+    grooming('grooming-route-ignores-presentation', 'control_grooming_request.py',
+             "    if opened:\n        reasons.append(PRESENTED)\n",
+             "    if False:  # defect: a request put to the owner is forgotten by a later revision\n"
+             "        reasons.append(PRESENTED)\n",
+             ['route/presented-then-proposed', 'route/returned-then-proposed'])
+    grooming('grooming-settled-ruling-ignored', 'control_grooming_request.py',
+             "    return [u for u in unapplied if u['ruling'] != 'approve']\n",
+             "    return []  # defect: a settled ruling not yet applied holds nothing\n",
+             ['route/presented-then-proposed', 'route/ruling-settled-unapplied'])
+    grooming('grooming-message-admission-ignores-history', 'control_backlog.py',
+             "                                 request.get('author'), opened, spent)\n",
+             "                                 request.get('author'), [], spent)  # defect: the backlog judges the revision alone\n",
+             ['route/presented-then-proposed', 'route/returned-then-proposed'])
+    grooming('grooming-proposal-not-superseding', 'control_grooming.py',
+             "            if pending and pending[-1][2].get('state') in PENDING_STATES:\n",
+             "            if False:  # defect: the request in front of him stays answerable until grooming runs\n",
+             ['route/presented-then-proposed'])
+    grooming('grooming-proposal-over-settled-ruling', 'control_grooming.py',
+             "        if GR.held(unapplied):\n            raise Refused(",
+             "        if False:  # defect: a new revision is proposed over his settled ruling\n            raise Refused(",
+             ['route/ruling-settled-unapplied'])
+    grooming('grooming-presented-over-settled-ruling', 'control_grooming.py',
+             "        if GR.held(unapplied):\n            # His settled reject",
+             "        if False:  # defect: he is asked again over his settled ruling\n            # His settled reject",
+             ['route/ruling-settled-unapplied'])
+    # AC2, the held-item review: a reject or return authorizes nothing and is applied without freshness checks.
+    grooming('grooming-rejection-freshness-checked', 'control_backlog.py',
+             "        if ruling in (None, 'approve'):\n",
+             "        if True:  # defect: a reject or return must still bind the live records and be unlapsed\n",
+             ['route/append-after-reject', 'route/spec-change-after-reject'])
+    grooming('grooming-reject-freshness-checked', 'control_backlog.py',
+             "        if ruling in (None, 'approve'):\n",
+             "        if ruling in (None, 'approve', 'reject'):  # defect: a reject is judged fresh like an approval\n",
+             ['route/append-after-reject', 'route/spec-change-after-reject'])
+    grooming('grooming-return-freshness-checked', 'control_backlog.py',
+             "        if ruling in (None, 'approve'):\n",
+             "        if ruling in (None, 'approve', 'return_for_elaboration'):  # defect: a return is judged fresh\n",
+             ['route/spec-change-after-reject'])
+    grooming('grooming-admitted-not-groomable', 'control_grooming.py',
+             "        if data.get('state') == 'ADMITTED':\n",
+             "        if False:  # defect: an admitted item whose priority he rejected is stuck ADMITTED\n",
+             ['route/admitted-priority-rejected'])
+    # AC2: his message admits once per message, read from records the PM cannot write.
+    grooming('grooming-route-ignores-used-message', 'control_grooming_request.py',
+             "    if used:\n        reasons.append(MESSAGE_USED)\n",
+             "    if False:  # defect: his message admits every later item from it\n        reasons.append(MESSAGE_USED)\n",
+             ['route/message-single-use'])
+    grooming('grooming-message-admission-ignores-used-message', 'control_backlog.py',
+             "                                 request.get('author'), opened, spent)\n",
+             "                                 request.get('author'), opened, [])  # defect: the backlog reads this item alone\n",
+             ['route/message-single-use'])
+    grooming('grooming-message-history-unmatched', 'control_grooming_request.py',
+             "        if set(message_of(objective)) & set(message):\n",
+             "        if objective.get('uuid') is None:  # defect: no other item is found to trace to the message\n",
+             ['route/message-single-use'])
+    # AC2: separate, current authority predicates; questions answered before anything runs.
+    grooming('grooming-message-admission-priority-role', 'control_backlog.py',
+             "                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}\n",
+             "                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority',)}  # defect\n",
+             ['authority/separate-predicates'])
+    grooming('grooming-admission-questions-unrecorded', 'control_backlog.py',
+             "                      request_digest=request['digest'], questions=[q['id'] for q in request['content']['questions']])\n",
+             "                      request_digest=request['digest'], questions=[])  # defect: the answered questions are lost\n",
+             ['authority/questions-unresolved'])
+    grooming('grooming-priority-applied-before-admission', 'control_grooming.py',
+             "            if touchpoint == GR.PRIORITY and item.get('state') not in ('ADMITTED',) + tuple(self.CB.EXECUTABLE_STATES):\n",
+             "            if False:  # defect: the priority is applied before the admission\n",
+             ['authority/questions-unresolved'])
+    grooming('grooming-withdraw-skipped', 'control_grooming.py',
+             "                results.extend(self._withdraw(record, GR.PRIORITY))\n",
+             "                pass  # defect: the priority request stays open after a reject or return\n",
+             ['authority/owner-choices'])
+    grooming('grooming-reprioritize-unapplied', 'control_backlog.py',
+             "        record = {'path': 'owner_command', 'command_id': command['command_id'], 'rank': priority['rank'],\n",
+             "        record = {'path': 'owner_command', 'command_id': command['command_id'], 'rank': previous,  # defect\n",
+             ['authority/reprioritize-withdraw'])
+    # AC3 (declared falsifier): an admission signature reused after the priority changed, no digest validation.
+    grooming('grooming-ruling-digest-unvalidated', 'control_backlog.py', "        if found != target:\n",
+             "        if (found.get('kind'), found.get('ref')) != (target['kind'], target['ref']):  # defect: no digest validation\n",
+             ['ruling/parameter-binding'])
+    # Installation and observability.
+    grooming('grooming-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_grooming.py",\n', '', ['install/assets'])
+    grooming('grooming-request-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_grooming_request.py",\n', '',
+             ['install/assets'])
+    grooming('grooming-refusal-unclassified', 'control_grooming.py',
+             "            named = self.CB.taxonomy(reason)\n", "            pass  # defect: a backlog refusal is unclassified\n",
+             ['observability'])
     return result
 
 

@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -408 +408 @@
+-    if fields.get('questions'):
++    if False:  # defect: a question the PM raised is not asked

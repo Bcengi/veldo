@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -418 +418 @@
+-    return (OWN_MESSAGE if not reasons else 'present'), reasons
++    return 'present', reasons + ['defect']  # defect: his message never admits

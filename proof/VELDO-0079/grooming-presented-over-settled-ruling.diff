@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming.py
++++ b/.veldo/control_grooming.py
+@@ -327 +327 @@
+-        if GR.held(unapplied):
++        if False:  # defect: he is asked again over his settled ruling

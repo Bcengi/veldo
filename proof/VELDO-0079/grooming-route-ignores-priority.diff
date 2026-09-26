@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -410 +410 @@
+-    if fields.get('priority') != DEFAULT_PRIORITY:
++    if False:  # defect: another priority is applied without his answer

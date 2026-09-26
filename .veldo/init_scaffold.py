@@ -267,6 +267,11 @@ _FILES = [
     ".veldo/control_backlog.py",
     # VELDO-0078: the backlog's executable question, import-free, which the Gate and the service load.
     ".veldo/control_backlog_priority.py",
+    # VELDO-0079: the grooming service (admission requests presented on Telegram, or admitted by the
+    # owner's own message) and the admission request contract it and the backlog service share. Runtime
+    # assets the authority loads; not validator substrate.
+    ".veldo/control_grooming.py",
+    ".veldo/control_grooming_request.py",
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",

@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -158 +158 @@
+-    return [u for u in unapplied if u['ruling'] != 'approve']
++    return []  # defect: a settled ruling not yet applied holds nothing

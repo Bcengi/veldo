@@ -1,0 +1,4 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -380 +379,0 @@
+-        'Questions: %s.' % _list(['%s - %s' % (q['id'], q['text']) for q in c['questions']]),

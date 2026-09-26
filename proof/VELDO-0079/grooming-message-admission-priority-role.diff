@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -176 +176 @@
+-                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}
++                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority',)}  # defect

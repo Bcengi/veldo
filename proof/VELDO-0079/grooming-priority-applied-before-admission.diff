@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming.py
++++ b/.veldo/control_grooming.py
+@@ -411 +411 @@
+-            if touchpoint == GR.PRIORITY and item.get('state') not in ('ADMITTED',) + tuple(self.CB.EXECUTABLE_STATES):
++            if False:  # defect: the priority is applied before the admission

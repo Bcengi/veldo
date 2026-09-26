@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -666 +666 @@
+-        return GR.target(request), GR.brief(request, touchpoint), request
++        return GR.target(request), None, request  # defect: any brief shown admits

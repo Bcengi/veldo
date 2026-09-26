@@ -7,7 +7,9 @@ service loads; the production anchors below are the registered mutation driver's
 control_backlog.py, control_eligibility.py, tasks.py or frontier.py reaches the service, the Gate, the
 claim entries and the reader in another process. Real SQLite store with OpenSSH command, claim, journal and API signatures; the backlog
 items are taken from RAW features of an objective the project's owner accepted through the real VELDO-0077
-service; every admission, priority, block resolution and alternative outcome is a real VELDO-0064 request
+service; every admission and priority is answered to the item's admission request, which the real VELDO-0079
+grooming service records from pm's proposal and presents (an item grooming never asked about is not admitted,
+VELDO-0079); every admission, priority, block resolution and alternative outcome is a real VELDO-0064 request
 presented by the VELDO-0065 presenter over a loopback Bot API (no network, no real token), answered through
 the authenticated API edge and settled by the real VELDO-0068 settlement. The claim entries are the real
 ones: the frontier's offers through the VELDO-0052 Gate over spec files, the VELDO-0031 claim receiver with
@@ -49,6 +51,8 @@ def _v78_suite():
     AC1_SET = ('intake-only', 'prepared', 'admitted-without-priority', 'prioritized')
     ENTRIES = ('offer', 'receiver', 'task-ledger', 'task-authority')
     # AC3's declared set of DONE attempts.
+    # The grooming proposal's expiry (VELDO-0079), beyond every run of this suite.
+    EXPIRY = '2030-01-31T17:00:00Z'
     AC3_SET = ('path-only output', 'canceled attempt', 'missing required receipt', 'incomplete landing receipt',
                'complete receipts or an authorized alternative')
 
@@ -191,6 +195,7 @@ def _v78_suite():
             contract = load('v78_contract', mods / 'entity_contract.py')
             CB = load('v78_backlog', mods / 'control_backlog.py') if (mods / 'control_backlog.py').is_file() else None
             CYC = load('v78_cycle', mods / 'control_workflow_cycle.py')
+            GM = load('v78_grooming', mods / 'control_grooming.py') if (mods / 'control_grooming.py').is_file() else None
             DOMAIN, REPO = 'domain-78', 'repository-78'
             ids = dict(domain_uuid=DOMAIN, repository_uuid=REPO, store_uuid='store-78')
 
@@ -198,7 +203,7 @@ def _v78_suite():
             for d in (keys, protected, edge_dir):
                 d.mkdir(mode=0o700)
             people = ('steward', 'olga', 'zed')
-            services = ('pm', 'api-edge', 'builder', 'builder-b', 'closer')
+            services = ('pm', 'grooming', 'api-edge', 'builder', 'builder-b', 'closer')
             keyfile = {who: keys / who for who in ('authority',) + people + services}
             keyfile['edge'] = protected / 'edge-telegram'
             keyfile['edge-auth'] = edge_dir / 'edge-auth'
@@ -262,6 +267,8 @@ def _v78_suite():
             enroll('olga', 'person', deciders, ['proj-a'])
             enroll('zed', 'person', deciders, ['proj-a'])
             enroll('pm', 'service', [], ['proj-a'])
+            # VELDO-0079's grooming service, which opens and presents the admission and priority requests.
+            enroll('grooming', 'service', [], ['proj-a'])
             enroll('api-edge', 'service', [], ['proj-a'])
             enroll('builder', 'service', [], [REPO])
             enroll('builder-b', 'service', [], [REPO])
@@ -326,7 +333,9 @@ def _v78_suite():
             (work / 'out').mkdir()
             ledger = base / 'ledger'
             ledger.mkdir()
-            SPECS = ('VELDO-9781', 'VELDO-9782', 'VELDO-9783', 'VELDO-9784', 'VELDO-9785', 'VELDO-9786', 'VELDO-9789')
+            # Every unit's primary specification has its file: grooming binds each one's digest (VELDO-0079).
+            SPECS = ('VELDO-9781', 'VELDO-9782', 'VELDO-9783', 'VELDO-9784', 'VELDO-9785', 'VELDO-9786', 'VELDO-9787',
+                     'VELDO-9788', 'VELDO-9789', 'VELDO-9791', 'VELDO-9792')
             for sid in SPECS:
                 (work / 'specs' / ('%s-backlog-fixture.md' % sid)).write_text('\n'.join([
                     '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Backlog fixture unit', 'status: ready',
@@ -350,6 +359,10 @@ def _v78_suite():
             service = (CB.Backlog(S, CM, conn, ids, 'authority', journal_sign, workspace=str(work))
                        if CB is not None else None)
             missing = {'ok': False, 'reason': 'no_backlog_service'}
+            grooming = (GM.Grooming(S, CM, conn, ids, 'authority', journal_sign, backlog=CB, service=service, assignment=I,
+                                    inbox=inbox, presenter=presenter, settlement=settlement,
+                                    requester=('grooming', lambda m: sign_as('grooming', m)), workspace=str(work))
+                        if GM is not None and service is not None else None)
 
             def entity(eid):
                 row = conn.execute('SELECT kind, version, digest, data FROM entities WHERE id=?', (eid,)).fetchone()
@@ -402,24 +415,69 @@ def _v78_suite():
             def placeholder(iid):
                 return {'kind': 'backlog_item', 'ref': str(iid), 'digest': 'sha256:none'}
 
+            def request_record(iid):
+                """The item's VELDO-0079 admission request, read by grooming's own reader, or {}."""
+                return (GM.read(conn, GM.GR.request_id(iid)) or {}) if GM is not None else {}
+
+            def groomed_target(iid):
+                record = request_record(iid)
+                return GM.GR.target(record) if record else placeholder(iid)
+
+            def groomed_brief(iid, touchpoint):
+                record = request_record(iid)
+                return GM.GR.brief(record, touchpoint) if record else 'Decide %s.' % iid
+
+            def gpropose(iid, rank=1):
+                """pm proposes the item's grooming at `rank` (VELDO-0079): a new admission request revision when
+                the material changed, nothing written when it did not."""
+                if grooming is None:
+                    return dict(missing, reason='no_grooming_service')
+                body = dict(ids, operation='propose', principal='pm', command_id=next_id('gc'), nonce=next_id('gn'),
+                            item=iid, item_version=item(iid).get('version'),
+                            proposal={'priority': {'rank': rank}, 'ceiling': {'invocations': 3}, 'expiry': EXPIRY})
+                return grooming.apply(signed('pm', body))
+
+            def groom(iid, rank=1):
+                """Grooming asks the owner what the item's current revision needs: proposed, then each decision
+                presented as its own request on Telegram."""
+                gpropose(iid, rank)
+                return grooming.groom(iid) if grooming is not None else dict(missing, reason='no_grooming_service')
+
+            def asked(iid, touchpoint):
+                """(request id, its current presentation) of grooming's latest request for `touchpoint`."""
+                record = request_record(iid)
+                found = grooming.requests(record, touchpoint) if grooming is not None and record else []
+                rid = found[-1][1] if found else None
+                return rid, (presenter.current(rid) or {}) if rid else {}
+
             def decide(iid, touchpoint, alias, choice='accept', owner='olga', target=None, brief=None, proposal=None):
-                """The owner's settled answer on one touchpoint about the item as it stands now: (request, settled)."""
-                record = item(iid)
+                """The owner's settled answer to terms the suite presents about the item: (request, settled). An
+                admission or priority decision defaults to the item's admission request (its target and brief)."""
                 if target is None:
-                    target = CB.decision_target(record) if CB is not None and record else placeholder(iid)
+                    target = groomed_target(iid)
                 if brief is None:
-                    shown = {'admission': 'admission_brief', 'priority': 'priority_brief'}.get(touchpoint)
-                    brief = getattr(CB, shown)(record) if CB is not None and record and shown else 'Decide %s.' % iid
+                    brief = groomed_brief(iid, touchpoint)
                 rid, receipt = present(alias, target, brief, owner, touchpoint, proposal)
                 return rid, answer(receipt, choice, owner)
 
+            asked_as = {}
+
             def admit(iid, alias, choice='accept'):
-                rid, settled = decide(iid, 'admission', alias, choice)
-                return rid, settled, bop('pm', 'admit', iid, request=rid)
+                """Grooming asks for the item's admission and priority; the owner answers the admission, which pm
+                applies: (request, settled, applied)."""
+                groom(iid)
+                rid, receipt = asked(iid, 'admission')
+                asked_as[alias] = rid
+                return rid, answer(receipt, choice), bop('pm', 'admit', iid, request=rid)
 
             def prioritize(iid, alias, choice='accept'):
-                rid, settled = decide(iid, 'priority', alias, choice, proposal={'rank': 1})
-                return rid, settled, bop('pm', 'prioritize', iid, request=rid)
+                """The owner answers grooming's priority request (rank 1), which pm applies. Units appended to
+                prioritized work are groomed afresh for their priority first."""
+                if item(iid).get('state') in ('PRIORITIZED', 'ACTIVE'):
+                    groom(iid)
+                rid, receipt = asked(iid, 'priority')
+                asked_as[alias] = rid
+                return rid, answer(receipt, choice), bop('pm', 'prioritize', iid, request=rid)
 
             def unit_entry(name, produces=None):
                 entry = dict(unit=name, specification=name if name.startswith('VELDO-') else 'VELDO-9785',
@@ -661,9 +719,8 @@ def _v78_suite():
 
                 # The owner's answer is the only way in: another touchpoint, another person, another brief,
                 # an item not yet admitted, a second use of one answer.
-                target3 = CB.decision_target(item(stage[adm])) if CB is not None else placeholder(stage[adm])
-                rid_wrong_tp, _ = decide(stage[adm], 'admission', 'PRI-78-tp', target=target3,
-                                         brief=CB.priority_brief(item(stage[adm])) if CB is not None else 'x')
+                rid_wrong_tp, _ = decide(stage[adm], 'admission', 'PRI-78-tp', target=groomed_target(stage[adm]),
+                                         brief=groomed_brief(stage[adm], 'priority'))
                 wrong_tp = bop('pm', 'prioritize', stage[adm], request=rid_wrong_tp)
                 rid_zed, settled_zed = decide(stage[adm], 'priority', 'PRI-78-zed', owner='zed', proposal={'rank': 1})
                 by_zed = bop('pm', 'prioritize', stage[adm], request=rid_zed)
@@ -671,7 +728,7 @@ def _v78_suite():
                 wrong_brief = bop('pm', 'prioritize', stage[adm], request=rid_brief)
                 rid_early, _ = decide(stage['prepared'], 'priority', 'PRI-78-early')
                 early = bop('pm', 'prioritize', stage['prepared'], request=rid_early)
-                reused = bop('pm', 'admit', stage['prioritized'], request=I.assignment_id(REPO, 'ADM-78-4'))
+                reused = bop('pm', 'admit', stage['prioritized'], request=asked_as.get('ADM-78-4'))
                 check('priority/owner-decision', [
                     ('an admission answer does not prioritize', wrong_tp.get('reason') == 'invalid_input:request'),
                     ('another project_owner member\'s settled answer does not prioritize',
@@ -727,7 +784,11 @@ def _v78_suite():
                      stranger.get('reason') == 'missing_authority' and entity('VELDO-9790') is None)])
 
                 grew = bop('pm', 'append', M, unit=unit_entry(U3))
-                rid_stale, settled_stale = decide(M, 'priority', 'PRI-78-stale', proposal={'rank': 2})
+                # Grooming asks for the appended unit's priority at rank 2, and the owner answers; then another
+                # unit is appended before that answer is applied.
+                groom(M, rank=2)
+                rid_stale, receipt_stale = asked(M, 'priority')
+                settled_stale = answer(receipt_stale, 'accept')
                 grew2 = bop('pm', 'append', M, unit=unit_entry(U4, produces='out/TASK-78-grow.md'))
                 appended = {u: data_of(u).get('state') for u in (U3, U4)}
                 named = {u: executable(u) for u in (U3, U4)}
@@ -736,8 +797,14 @@ def _v78_suite():
                 growth_claim = gate.decide('claim', U4)
                 offered_growth = offers()
                 continuing = rclaim('builder-b', U2)
+                # The answer given for the decomposition before the second append, and the first
+                # prioritization's, are applied to the grown decomposition.
                 stale = bop('pm', 'prioritize', M, request=rid_stale)
                 again = bop('pm', 'prioritize', M, request=rid_pm)
+                # Then pm proposes the grooming of the grown decomposition, a new request revision, not yet
+                # presented: the same answer, to the earlier revision, is refused by the request's digest.
+                gpropose(M, rank=1)
+                restale = bop('pm', 'prioritize', M, request=rid_stale)
                 between = item(M)
                 rid_fresh, settled_fresh, fresh = prioritize(M, 'PRI-78-M3')
                 readied = {u: (data_of(u).get('state'), data_of(u).get('admitted_revision')) for u in (U3, U4)}
@@ -758,7 +825,9 @@ def _v78_suite():
                     ('the earlier prioritization does not cover the appended units',
                      again.get('reason') == 'already_applied' and (between.get('priority') or {}).get('units') == [U1, U2]),
                     ('an answer to an earlier revision is refused', settled_stale.get('outcome') == 'settled'
-                     and stale.get('reason') == 'stale_subject:binding'),
+                     and stale.get('reason') == 'stale_subject:decomposition'),
+                    ('once the grown decomposition is groomed, that answer is refused by the request\'s digest',
+                     restale.get('reason') == 'stale_subject:binding'),
                     ('the fresh prioritization of the current revision makes them executable',
                      fresh.get('ok') and readied == {U3: ('READY', 3), U4: ('READY', 3)}
                      and (item(M).get('priority') or {}).get('units') == [U1, U2, U3, U4]),
