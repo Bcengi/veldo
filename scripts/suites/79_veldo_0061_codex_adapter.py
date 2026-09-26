@@ -54,7 +54,8 @@ def _v61_suite():
             'pin/unexpected-launch', 'pin/qualified-record',
             'artifacts/normal-exit', 'artifacts/missing-result', 'artifacts/malformed-output',
             'artifacts/missing-usage', 'artifacts/nonzero-and-signal',
-            'stop/cooperative', 'stop/forced', 'stop/termination',
+            'stop/cooperative', 'stop/forced', 'stop/termination', 'stop/stopped-not-complete',
+            'lifecycle/engine-protocol',
             'caps/boundaries', 'caps/refused-before-launch', 'caps/stop-at-cap', 'caps/observed',
             'format/codex-fake-lines')
     rows = {name: [] for name in ROWS}
@@ -151,6 +152,7 @@ def _v61_suite():
         member('runner', 'service', ['reservation_service'])
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
+        member('floor-service', 'service', ['result_acceptance'])
         writer.command_registry['claim_operation'] = {'transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -250,6 +252,11 @@ packet = json.loads(raw) if raw.strip() else {}
 payload = packet.get('payload') or {}
 def on_term(signum, frame):
     log(markers, tag, 'worker', 'term')
+    if payload.get('on_term') == 'complete':
+        # The request is answered with the turn's completion and a zero exit.
+        sys.stdout.buffer.write((json.dumps(payload['final']) + '\\n').encode())
+        sys.stdout.flush()
+        os._exit(0)
     if payload.get('on_term') != 'ignore':
         os._exit(143)
 signal.signal(signal.SIGTERM, on_term)
@@ -349,12 +356,15 @@ sys.exit(payload.get('code', 0))
                                       'profile': profile, 'adapters': ADAPTERS}))
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         provisioned = {}
+        # The receiver installation a launch is handed to: this run's, or one whose Codex module lacks a
+        # protocol name (the engine-protocol row).
+        via = [L]
 
         def receive(contract):
             # VELDO-0129 composes the clone with the launch; here each dispatch's clone is provisioned from its
             # accepted contract before the receiver is invoked, and the adapter's argv enters it.
             provisioned[contract['dispatch_id']] = attempt(lambda: clones.create(contract))
-            launch = L.invoke(config, contract, dispatches, accept_seconds=30)
+            launch = via[0].invoke(config, contract, dispatches, accept_seconds=30)
             launches.append(launch)
             return launch
         runners = {}
@@ -489,8 +499,13 @@ sys.exit(payload.get('code', 0))
             ('cap', 'VELDO-9611', dict(tokens=1000)), ('limit', 'VELDO-9612', {}), ('limited', 'VELDO-9613', {}),
             ('real', 'VELDO-9614', {}), ('changed', 'VELDO-9615', {}), ('newer', 'VELDO-9616', {}),
             ('link', 'VELDO-9617', {}), ('npm', 'VELDO-9618', {}), ('flags', 'VELDO-9619', {}),
-            ('shell', 'VELDO-9620', {}), ('link-first', 'VELDO-9621', {}))}
+            ('shell', 'VELDO-9620', {}), ('link-first', 'VELDO-9621', {}), ('stopdone', 'VELDO-9622', {}),
+            ('protocol-registration', 'VELDO-9623', {}), ('protocol-terminal', 'VELDO-9624', {}),
+            ('floor', 'VELDO-9625', {}))}
         L1_STREAM = normal('thread-9601')
+
+        def get_run(name):
+            return runs[name][1]
         LIMIT = "You've hit your usage limit. Try again later."
         runs, ended = {}, {}
         try:
@@ -516,6 +531,8 @@ sys.exit(payload.get('code', 0))
                 thread('thread-9612'), {'type': 'turn.started'}, {'type': 'error', 'message': LIMIT},
                 {'type': 'turn.failed', 'error': {'message': LIMIT}}], code=1))
             runs['real'] = ('acct-real', submit('acct-real', units['real'], 'codex-real'))
+            # The floor's control: a unit whose one build ran to its completion.
+            runs['floor'] = ('acct-x1', submit('acct-x1', units['floor'], 'codex', normal('thread-9625')))
             for name, adapter_name in (('changed', 'codex-changed'), ('newer', 'codex-newer'), ('link', 'codex-link'),
                                        ('npm', 'codex-npm-link'), ('flags', 'codex-flags'), ('shell', 'codex-shell'),
                                        ('link-first', 'codex-link-first')):
@@ -532,6 +549,11 @@ sys.exit(payload.get('code', 0))
                                                  descendants=[['helper', 'stubborn']]))
             runs['termination'] = ('acct-x1', submit('acct-x1', units['termination'], 'codex', BLOCK,
                                                       descendants=[['helper', 'stubborn']]))
+            # An engine that answers the request with its turn's completion and a zero exit.
+            FINAL = completed(600, 60)
+            fixture_lines.append(FINAL)
+            runs['stopdone'] = ('acct-x1', submit('acct-x1', units['stopdone'], 'codex', BLOCK, on_term='complete',
+                                                   final=FINAL))
             for name in ('cooperative', 'forced', 'termination'):
                 account, launch = runs[name]
                 marker(launch, 'worker')
@@ -543,6 +565,9 @@ sys.exit(payload.get('code', 0))
                 ended[name] = finish(account, launch)
                 stopped[name]['ended'] = time.monotonic()
                 alive_at_end[name] = {role: living(marker(launch, role, 0.5)) for role in ('worker', 'helper')}
+            marker(get_run('stopdone'), 'worker')
+            stopped['stopdone'] = {'asked': time.monotonic(), 'ok': get_run('stopdone').stop()}
+            ended['stopdone'] = finish('acct-x1', get_run('stopdone'))
 
             # Phase 3: the retry of the main unit, the retry of the unit whose usage stayed unknown and a launch on
             # the account whose usage limit was reported.
@@ -558,6 +583,18 @@ sys.exit(payload.get('code', 0))
             ended['follow'] = finish('acct-x1', runs['follow'][1])
             runs['exhausted'] = ('acct-x1', submit('acct-x1', units['main'], 'codex', normal('thread-over')))
             ended['exhausted'] = finish('acct-x1', runs['exhausted'][1])
+            # Phase 5: a receiver installed with a Codex module that lacks one protocol name.
+            for name, missing in (('protocol-registration', 'REGISTRATION'), ('protocol-terminal', 'Terminal')):
+                tree = base / name / '.veldo'
+                shutil.copytree(mods, tree)
+                with open(tree / 'control_engine_codex.py', 'a') as handle:
+                    handle.write('\nglobals().pop(%r, None)  # this installation lacks one protocol name\n' % missing)
+                via[0] = load('v61_launch_' + missing, tree / 'control_launch.py')
+                try:
+                    runs[name] = ('acct-x1', submit('acct-x1', units[name], 'codex', normal('thread-' + name)))
+                finally:
+                    via[0] = L
+                ended[name] = finish('acct-x1', runs[name][1])
         except Exception as exc:  # noqa: BLE001 - a failed launch phase is data for every row
             for name in ROWS:
                 check(name, 'the launch phases ran to their end (they raised %s: %s)' % (type(exc).__name__,
@@ -827,7 +864,7 @@ sys.exit(payload.get('code', 0))
                   'artifacts name it, with no result [%s %s]' % (name, call.get('outcome'), found.get('verdict')),
                   call.get('invocation') == 'invocation/' + launch.dispatch_id and call.get('outcome') == 'cancelled'
                   and call.get('state') == 'unknown' and found.get('invocation') == call.get('invocation')
-                  and found.get('verdict') in ('missing_result', 'signal') and found.get('complete') is False)
+                  and found.get('verdict') == 'stopped' and found.get('complete') is False)
             return supervision
 
         with region('stop/cooperative'):
@@ -854,6 +891,68 @@ sys.exit(payload.get('code', 0))
                   'only after that descendant was killed with the group [%s]' % supervision.get('steps'),
                   log.exists() and supervision.get('empty') is True and 'kill' in [s.get('step') for s in
                                                                                     supervision.get('steps') or []])
+
+        # A stop is never a completion: an engine that answers the request with its turn's completion and a
+        # zero exit is stopped, as Claude Code's is, and neither its slot nor the build and review floor
+        # take it for a completed build.
+        with region('stop/stopped-not-complete'):
+            launch = get('stopdone')
+            record = rec(launch.dispatch_id)
+            termination = record.get('termination') or {}
+            found = document(launch)
+            call = invocation(launch)
+            check('stop/stopped-not-complete', 'the engine was stopped on request, then printed its turn\'s completion '
+                  'and exited 0 [%s %s %s]' % (history(launch), (launch.supervision or {}).get('cause'), termination),
+                  stopped['stopdone']['ok'] and history(launch)[-1:] == ['exited']
+                  and (launch.supervision or {}).get('cause') == 'requested' and termination.get('returncode') == 0
+                  and termination.get('signal') is None and found.get('terminal') == 'turn.completed')
+            check('stop/stopped-not-complete', 'its artifact is stopped, never complete, the exit record binds that, and '
+                  'its document verifies from its own lines and cause [%s %s]'
+                  % (found.get('verdict'), record.get('artifact')),
+                  found.get('verdict') == 'stopped' and found.get('complete') is False
+                  and (record.get('artifact') or {}).get('verdict') == 'stopped'
+                  and (record.get('artifact') or {}).get('complete') is False and verified(found))
+            check('stop/stopped-not-complete', 'the completion gate reads it as not complete, and its invocation and '
+                  'slot are cancelled [%s %s]' % (call.get('outcome'), (slot(launch).get('retirement') or {}).get('outcome')),
+                  getattr(D, 'completed', lambda r: True)(record) is False and call.get('outcome') == 'cancelled'
+                  and (slot(launch).get('retirement') or {}).get('outcome') == 'cancelled')
+            DSP = load('v61_dispatch', mods / 'dispatch.py')
+            floor = DSP.FloorAuthority(S, writer, domain=DOMAIN, repository=REPOSITORY, repo=str(src),
+                                       projections=str(base / 'projections'), principal='floor-service',
+                                       signer='floor-service', sign=sign)
+            commit = GP.run(['git', '-C', str(src), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
+
+            def accept_build(launch):
+                # The claim the build ran under, as its accepted contract binds it.
+                try:
+                    floor.accept_build(launch.contract['unit'], commit=commit, gate={'green': True, 'detail': 'suite'},
+                                       holder=HOLDER, generation=(launch.contract.get('claim') or {}).get('generation'))
+                    return 'accepted'
+                except DSP.FloorRefused as error:
+                    return error.code
+            refused, control = accept_build(launch), accept_build(get('floor'))
+            check('stop/stopped-not-complete', 'the floor refuses to accept the stopped build, for want of a completed '
+                  'build dispatch [%s]' % refused,
+                  refused == 'missing_evidence:build_dispatch' and floor.record(launch.contract['unit']) is None)
+            check('stop/stopped-not-complete', 'control: the complete run\'s build dispatch passes the floor\'s dispatch '
+                  'check and is refused next for its absent proof [%s]' % control, control == 'missing_evidence:proof/absent')
+            floor.close()
+
+        # THE ENGINE PROTOCOL: an engine module that lacks one of its names is refused by name before acceptance.
+        with region('lifecycle/engine-protocol'):
+            protocol = tuple(getattr(L, 'ENGINE_PROTOCOL', ()) or ())
+            check('lifecycle/engine-protocol', 'control: both installed engine modules implement every protocol name '
+                  '[%s]' % (protocol,), len(protocol) == 10
+                  and all(hasattr(m, n) for m in getattr(L, 'ENGINES', {}).values() for n in protocol))
+            for name, missing in (('protocol-registration', 'REGISTRATION'), ('protocol-terminal', 'Terminal')):
+                launch = get(name)
+                record = rec(launch.dispatch_id) if launch is not None else {}
+                check('lifecycle/engine-protocol', 'a Codex module without %s: refused by that name before acceptance, '
+                      'nothing spawned, reserved or run [%s]' % (missing, record.get('refusal')),
+                      launch is not None and record.get('state') == 'refused'
+                      and record.get('refusal') == 'unregistered_adapter:engine_protocol:codex:' + missing
+                      and history(launch) == ['prepared', 'refused'] and spawns(launch) == 0
+                      and not marker(launch, 'worker', 0.05) and not invocation(launch))
 
         # AC4: the caps before launch
         with region('caps/boundaries'):

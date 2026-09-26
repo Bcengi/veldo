@@ -7144,6 +7144,18 @@ def cases():
             '_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]\n',
             '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid down\n',
             'pin/qualified-record')
+    # Integration review: a stopped Codex invocation is judged as Claude Code's is, whatever it printed and
+    # however it exited; an engine module missing a protocol name is refused by that name.
+    adapter('adapter-stop-cause-ignored', 'control_engine_codex.py',
+            "        if cause in STOPS:\n            return 'stopped'\n",
+            "        if False:  # defect: a stopped invocation is judged by its output and exit alone\n"
+            "            return 'stopped'\n",
+            'stop/stopped-not-complete')
+    adapter('adapter-engine-protocol-unchecked', 'control_launch.py',
+            "        if missing:\n            return 'unregistered_adapter:engine_protocol:%s:%s' % (engine, missing[0])\n",
+            "        if False:  # defect: an engine module missing a protocol name is driven as if it had it\n"
+            "            return 'unregistered_adapter:engine_protocol:%s:%s' % (engine, missing[0])\n",
+            'lifecycle/engine-protocol')
     return result
 
 
