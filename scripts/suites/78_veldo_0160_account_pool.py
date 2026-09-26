@@ -59,6 +59,7 @@ def _v160_suite():
             'decision/rerun', 'decision/ask', 'decision/unreadable-asks', 'decision/same-id-write',
             'decision/unknown-forms', 'decision/redacted-name', 'decision/tool-free-forms', 'format/tool-forms',
             'decision/repl-inner-call', 'decision/task-progress-tool', 'decision/frame-tool-names',
+            'decision/subagent-calls',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -1132,9 +1133,18 @@ sys.exit(payload.get('code', 0))
                                                           'inner_tool_use_id': 'toolu_inner', 'phase': 'start'}),
                 c_line('tool_progress', tool_use_id='toolu_bash', tool_name='Bash', parent_tool_use_id=None,
                        elapsed_time_seconds=31, heartbeat=True),
-                c_line('system', subtype='task_progress', task_id='task-1', tool_use_id='toolu_bash', description='d',
+                # A sub-agent whose one call is shown under its task: its count matches the calls shown.
+                c_blocks([tool_use('toolu_agent1', 'Agent')]),
+                c_line('system', subtype='task_started', task_id='task-1', tool_use_id='toolu_agent1', description='d',
+                       task_type='local_agent'),
+                dict(c_blocks([tool_use('toolu_child1', 'Bash')]), parent_tool_use_id='toolu_agent1'),
+                c_line('system', subtype='task_progress', task_id='task-1', tool_use_id='toolu_agent1', description='d',
                        usage={'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}, last_tool_name='Bash',
-                       workflow_progress=[{'type': 'workflow_agent', 'index': 0, 'lastToolName': 'Read'}])]
+                       workflow_progress=[{'type': 'workflow_agent', 'index': 0, 'lastToolName': 'Read'}]),
+                c_line('system', subtype='task_notification', task_id='task-1', tool_use_id='toolu_agent1',
+                       status='completed', output_file='', summary='done',
+                       usage={'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}),
+                c_user([{'type': 'tool_result', 'tool_use_id': 'toolu_agent1', 'content': 'done'}])]
             codex_free = [x_any(kind, 'item_%s' % kind) for kind in
                           ('agent_message', 'reasoning', 'todo_list', 'error', 'command_execution', 'file_change',
                            'web_search')]
@@ -1202,29 +1212,118 @@ sys.exit(payload.get('code', 0))
                       c_user([{'type': 'tool_result', 'tool_use_id': 'toolu_agent', 'content': 'started'}]),
                       c_line('system', subtype='task_started', task_id='task-160', tool_use_id='toolu_agent',
                              description='review', task_type='local_agent')]
+        def c_child(parent, blocks):
+            """A sub-agent's assistant message as the binary forwards it: its task's id as parent_tool_use_id."""
+            return dict(c_blocks(blocks), parent_tool_use_id=parent)
+
         with region('decision/task-progress-tool'):
             at = len(c_head) + len(agent_head) + 1
+            # The task's progress counts one call and the record shows none under it: also an unknown call.
+            unshown = (at, 'unknown_call', None, None, 'task_tool_uses')
             judged('a background task whose last tool is an MCP write (the checker\'s reproduction)',
                    'decision/task-progress-tool', [c_task(last_tool_name='mcp__tracker__add_comment')], 'ask',
-                   [(at, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1, agent_head)
+                   [(at, 'not_marked_read_only', 'tracker', 'add_comment', None), unshown], 1, agent_head)
             judged('the same last tool on two progress lines is one call', 'decision/task-progress-tool',
                    [c_task(last_tool_name='mcp__wiki__write_page')] * 2, 'ask',
-                   [(at, 'not_marked_read_only', 'wiki', 'write_page', None)], 1, agent_head)
+                   [(at, 'not_marked_read_only', 'wiki', 'write_page', None), unshown], 1, agent_head)
             judged('a workflow agent whose last tool is an MCP write', 'decision/task-progress-tool',
                    [c_task(last_tool_name='review agent',
                            workflow_progress=[{'type': 'workflow_phase', 'index': 0},
                                               {'type': 'workflow_agent', 'index': 1,
                                                'lastToolName': 'mcp__tracker__add_comment'}])], 'ask',
-                   [(at, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1, agent_head)
+                   [(at, 'not_marked_read_only', 'tracker', 'add_comment', None), unshown], 1, agent_head)
             for what, fields in (('a last tool name that is not a string', {'last_tool_name': 7}),
                                  ('workflow progress that is not a list', {'workflow_progress': 'agent 1'}),
                                  ('a workflow progress entry that is not an object', {'workflow_progress': ['agent 1']})):
                 judged(what, 'decision/task-progress-tool', [c_task(**fields)], 'ask',
-                       [(at, 'unreadable', None, None, None)], 0, agent_head)
+                       [(at, 'unreadable', None, None, None), unshown], 0, agent_head)
+            # Negative controls: the task's one call is shown under it, so its count names nothing more.
             judged('a task whose last tool is a read-only MCP call (negative control)', 'decision/task-progress-tool',
-                   [c_task(last_tool_name='mcp__tracker__search')], 'rerun', [], 1, agent_head)
+                   [c_task(last_tool_name='mcp__tracker__search')], 'rerun', [], 2,
+                   agent_head + [c_child('toolu_agent', [tool_use('toolu_c1', 'mcp__tracker__search')])])
             judged('a task whose last tool is built in (negative control)', 'decision/task-progress-tool',
-                   [c_task(last_tool_name='Bash')], 'rerun', [], 0, agent_head)
+                   [c_task(last_tool_name='Bash')], 'rerun', [], 0,
+                   agent_head + [c_child('toolu_agent', [tool_use('toolu_c1', 'Bash')])])
+
+        # BLOCKING (the lead's decision, fail closed): an agent a sub-agent starts has its messages dropped (the
+        # binary forwards them only with forwardSubagentText), so its calls show no block and its task's progress
+        # names only the last tool of each message. Its task's count of its own calls (usage.tool_uses) still
+        # reaches the stream, and every call it counts that the record does not show under it asks.
+        def t_started(task, depth):
+            return c_line('system', subtype='task_started', task_id='task-' + task, tool_use_id=task,
+                          description='d', task_type='local_agent', spawn_depth=depth)
+
+        def t_progress(task, last, count, **fields):
+            return c_line('system', subtype='task_progress', task_id='task-' + task, tool_use_id=task, description='d',
+                          usage=dict({'total_tokens': 1, 'tool_uses': count, 'duration_ms': 1}, **fields.pop('usage', {}))
+                          if count is not None else fields.pop('usage'), last_tool_name=last, **fields)
+
+        def t_done(task, usage):
+            return c_line('system', subtype='task_notification', task_id='task-' + task, tool_use_id=task,
+                          status='completed', output_file='', summary='done', **({} if usage is None else {'usage': usage}))
+
+        def t_result(task, parent=None):
+            return dict(c_user([{'type': 'tool_result', 'tool_use_id': task, 'content': 'done'}]), parent_tool_use_id=parent)
+
+        def counted(found):
+            return sorted((c.get('task'), c.get('unshown')) for c in (found or {}).get('calls') or []
+                          if c.get('form') == 'task_tool_uses')
+
+        def subagent(what, lines, decision, expected, reads, tasks, as_text=False):
+            """judged, and the tasks each shortfall names with its size ([(task, unshown)])."""
+            judged(what, 'decision/subagent-calls', lines, decision, expected, reads)
+            record = record_of(c_head + [('engine', json.dumps(line) if as_text else line) for line in lines] + c_tail)
+            found, error = decide(record, 'claude_code')
+            check('decision/subagent-calls', '%s%s: the shortfalls name %s [%s]'
+                  % (what, ' (as JSON text)' if as_text else '', tasks, counted(found) or error),
+                  counted(found) == tasks and (found or {}).get('decision') == decision)
+
+        u_write, u_read = tool_use('toolu_w2', 'mcp__tracker__add_comment'), tool_use('toolu_r2', 'Read')
+        with region('decision/subagent-calls'):
+            # The checker's reproduction: the depth-2 agent's reply [an MCP write, Read] shows only its last tool.
+            nested = [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1),
+                      c_child('t1', [tool_use('t2', 'Agent')]), t_progress('t1', 'Agent', 1), t_started('t2', 2),
+                      t_progress('t2', 'Read', 2), t_done('t2', {'total_tokens': 1, 'tool_uses': 2, 'duration_ms': 1}),
+                      t_result('t2', 't1'), t_done('t1', {'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}),
+                      t_result('t1')]
+            at = len(c_head) + 6
+            for as_text in (False, True):
+                subagent('a depth-2 agent\'s hidden MCP write (the checker\'s reproduction)', nested, 'ask',
+                         [(at, 'unknown_call', None, None, 'task_tool_uses')], 0, [('t2', 2)], as_text)
+            # A depth-1 agent whose calls are all shown and read-only still re-runs.
+            shown = [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1),
+                     c_child('t1', [tool_use('c1', 'Read')]), t_progress('t1', 'Read', 1),
+                     c_child('t1', [tool_use('c2', 'mcp__tracker__search')]), t_progress('t1', 'mcp__tracker__search', 2)]
+            subagent('a depth-1 agent whose calls are all shown and read-only (negative control)',
+                     shown + [t_done('t1', {'total_tokens': 1, 'tool_uses': 2, 'duration_ms': 1}), t_result('t1')],
+                     'rerun', [], 2, [])
+            subagent('a task end that reports no usage (negative control)', shown + [t_done('t1', None), t_result('t1')],
+                     'rerun', [], 2, [])
+            # A count that exceeds the calls shown by one asks, naming the task and the one call.
+            subagent('a task whose end counts one call more than the record shows', shown
+                     + [t_done('t1', {'total_tokens': 1, 'tool_uses': 3, 'duration_ms': 1}), t_result('t1')],
+                     'ask', [(len(c_head) + 7, 'unknown_call', None, None, 'task_tool_uses')], 2, [('t1', 1)])
+            subagent('a task whose progress counts one call more than the record shows', shown[:-1]
+                     + [t_progress('t1', 'mcp__tracker__search', 3), t_result('t1')],
+                     'ask', [(len(c_head) + 6, 'unknown_call', None, None, 'task_tool_uses')], 2, [('t1', 1)])
+            # A count that cannot be read, or one lower than the task reported before, is unreadable.
+            end = len(c_head) + 7
+            for what, frame in (
+                    ('a task_progress whose usage has no count of calls', t_progress('t1', 'Read', None,
+                                                                                usage={'total_tokens': 1})),
+                    ('a task_progress whose count is not a whole number', t_progress('t1', 'Read', '2')),
+                    ('a task_progress whose count is negative', t_progress('t1', 'Read', -1)),
+                    ('a task_progress whose usage is not an object', t_progress('t1', 'Read', None, usage='2 calls')),
+                    ('a task_progress without its task\'s id', dict(t_progress('t1', 'Read', 2), tool_use_id=None)),
+                    ('a task end whose usage has no count of calls', t_done('t1', {'total_tokens': 1})),
+                    ('a task end whose count is lower than its progress reported', t_done('t1', {'total_tokens': 1,
+                                                                                         'tool_uses': 1}))):
+                subagent(what, shown + [frame, t_result('t1')], 'ask', [(end, 'unreadable', None, None, None)], 2, [])
+            subagent('a depth-2 agent whose reply was one hidden MCP write, named as its last tool', [
+                c_blocks([tool_use('t1', 'Agent')]), c_child('t1', [tool_use('t2', 'Agent')]), t_started('t2', 2),
+                t_progress('t2', 'mcp__tracker__add_comment', 1), t_result('t2', 't1'), t_result('t1')], 'ask',
+                [(len(c_head) + 4, 'not_marked_read_only', 'tracker', 'add_comment', None),
+                 (len(c_head) + 4, 'unknown_call', None, None, 'task_tool_uses')], 1, [('t2', 1)])
 
         # The other frames that carry a tool's name: a tool_progress's own tool, and an assistant message's MCP
         # attribution and batch tool names.
@@ -1290,6 +1389,23 @@ sys.exit(payload.get('code', 0))
                                 ('system/task_progress', 'last_tool_name'),
                                 ('system/task_progress', 'workflow_progress.lastToolName'),
                                 ('assistant', 'attribution_mcp_tool'), ('assistant', 'batch_tool_uses')})
+            by_kind = {how: {(tag, path) for tag, paths in (getattr(CE, 'TOOL_FIELDS', None) or {}).items()
+                             for path, kind in paths.items() if kind == how} for how in ('task', 'count')}
+            binary_tasks = CFORMS.get('task_counts') or {}
+            module_tasks = getattr(CE, 'TASK_COUNTS', None) or {}
+            check('format/tool-forms', 'claude_code: a task\'s count of its calls is read from the frames, fields and '
+                  'parent the binary writes it in, and codex reports none [%s, %s, %s]'
+                  % (binary_tasks.get('frames'), module_tasks, sorted(by_kind['count'])),
+                  sorted(module_tasks.get('frames') or ()) == binary_tasks.get('frames')
+                  == ['system/task_notification', 'system/task_progress']
+                  and all(module_tasks.get(key) == binary_tasks.get(key) for key in ('count', 'task', 'parent'))
+                  and binary_tasks.get('counts') == 'tool_use'
+                  and binary_tasks.get('nested_forwarded_only_with') == 'forwardSubagentText'
+                  and by_kind['count'] == {(tag, binary_tasks.get('count')) for tag in binary_tasks.get('frames') or ()}
+                  and by_kind['task'] == {(tag, 'tool_use_id') for tag in ('system/task_notification',
+                                                                          'system/task_progress', 'system/task_started')}
+                  | {('assistant', binary_tasks.get('parent'))}
+                  and XE is not None and getattr(XE, 'Tasks', 'absent') is None and callable(getattr(CE, 'Tasks', None)))
             frames = {(f[0], f[1]): f[2] for f in CFORMS.get('frames') or ()}
             check('format/tool-forms', 'claude_code: the frames outside the message union the reader takes as tool-free '
                   'are the ones whose schema provably carries no tool call [%s, %s]'
