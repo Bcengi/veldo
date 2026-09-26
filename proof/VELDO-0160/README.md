@@ -162,13 +162,13 @@ all four limited (resets 900, 600, 1200 s ahead, and one at 300 s on its five-ho
 window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
-Plain run: 39 passed (26 preamble, 13 rows) in 15.9 s. Stage environment run (`env -i`, the stage's
-variables, TZ=UTC): 39 passed in 18.6 s.
+Plain run: 45 passed (26 preamble, 19 rows) in 24.4 s. Stage environment run (`env -i`, the stage's
+variables, TZ=UTC): 45 passed in 23.9 s.
 
 ## Red record
 
 `red-at-52f817d5.json`: the current suite over `git archive 52f817d5` (main before this work),
-unchanged. All 11 behavior rows fail by their own assertion: there is no account pool (the Runner given
+unchanged. All 17 behavior rows fail by their own assertion: there is no account pool (the Runner given
 a pool refuses `invalid_input` and nothing is dispatched), the same login registers twice under two
 names and a second record of an id is refused unnamed, no run is classified `account_limit` (each limited
 run ends `failed`), Claude Code's rate-limit result records no window, there is no decision module, and
@@ -178,7 +178,7 @@ they check the suite's own fixtures against the extracted table, not production.
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 35 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 832 s).
+`drive.py` records `mutations.json` and one applied diff per mutant. All 48 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 1425 s).
 
 | Mutant | Module | Named rows |
 |---|---|---|
@@ -232,7 +232,7 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | decision-not-scaffolded | init_scaffold.py | `install/assets` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 35 rejected. The other findings with mutations in the modules this changes still reject: 36 (20), 39 (30), 40 (22), 41 (34) and 62 (50).
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 48 rejected (the review round re-ran 36: 20 and 62: 50, both rejecting). The other findings with mutations in the modules this changes still reject: 36 (20), 39 (30), 40 (22), 41 (34) and 62 (50).
 
 Suites run, plain, all green: `78_veldo_0160_account_pool`, `75_veldo_0062_accounts`, the suites of
 every module this touches (VELDO-0036, 0039, 0040, 0041, 0047, 0049, 0050, 0052, 0053, 0056, 0076, 0128,
