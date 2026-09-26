@@ -86,6 +86,9 @@ _FILES = [
     # subscription engine's login and usage reports, which control_launch.py loads. Runtime assets,
     # no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_accounts.py",
+    # control_accounts reads the provider-to-profile map from the local account helper, the one place
+    # it is named (VELDO-0062 second review).
+    ".veldo/accounts.py",
     ".veldo/control_engine_claude.py",
     ".veldo/control_engine_codex.py",
     # VELDO-0035: accepted snapshots and transactional read-set registrations.
