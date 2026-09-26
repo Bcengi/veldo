@@ -40,7 +40,9 @@ its stream stated (`limit()`: window, reset and signal). Claude Code: a `rate_li
 is `rejected` is the stream reporting its window exhausted (`stream`); a `result` with `is_error` whose
 text is the binary's usage-limit message is the engine's rate-limit result (`result`), its window read
 from the binary's own table of limit names and its reset from the time and zone the message states (the
-end of the stated minute), and it is recorded on the account as a window too. A later event reporting
+end of the stated minute), and it is recorded on the account as a window too. The binary's other
+rejected-status texts, which do not start "You've hit your" (out of usage credits, with the reset it may
+state; the org, seat, service, admin and $0-group texts), are the `unified` window the same way. A later event reporting
 the same window open again ends the stream's limit. The binary's other 429 message ("Server is
 temporarily limiting requests (not your usage limit)") is not the account's limit. Codex: the
 usage-limit or exhaustion message in an `error` event is `stream`, in a `turn.failed` it is `result`
@@ -58,9 +60,16 @@ lines with the engine module's own reader (`mcp_calls`: Claude Code's `tool_use`
 `mcp__<server>__<tool>`, Codex's `mcp_tool_call` item), each call once by its id, and decides `rerun`
 when every call is to a tool the call's server's configured revision marks read-only, else `ask`,
 naming exactly the other calls with their sequence, server, tool, catalog id, revision and reason
-(`not_marked_read_only`, `server_not_configured`). A revision that marks nothing marks no tool. A
-malformed record or configuration is refused by name, never decided. Carrying the decision out is
-VELDO-0154 AC3.
+(`not_marked_read_only`, `server_not_configured`). A revision that marks nothing marks no tool. A call
+is one id with one server and tool, so an id shown read-only and then naming a write counts the write.
+An engine line the decision cannot read asks, never re-runs: a payload that is not a readable event (a
+JSON object, or its JSON text, naming its `type`), or a block the engine module cannot read as a tool
+call (Claude Code: an assistant message without a content list, a block that is not an object naming its
+type, a `tool_use` whose name is not a string; Codex: an item that is not an object naming its type, an
+`mcp_tool_call` whose server or tool is not a name), is named by its sequence with reason `unreadable`,
+or `redacted_unreadable` when the line's `redacted` field is set (VELDO-0141 AC4 redacts spans inside
+the payload text, which can break the JSON). A structurally malformed record or configuration is refused
+by name, never decided. Carrying the decision out is VELDO-0154 AC3.
 
 **control_launch.py has two small hunks.** `Runner.prepare` (the pool branch and the account the
 contract records) and `Metering.settle` (the classification and its `limit`). The VELDO-0060/0061
@@ -82,7 +91,10 @@ resolved zone in parentheses, and the 429 text that is not the account's limit),
 `mcp_tool_call` item (its type name, the field names server, arguments and result, and the status
 values in the binary's literal runs; `id`, `type` and `tool` are names of four bytes or fewer that the
 compiler keeps out of the literal pool). `cli-formats.json` is regenerated and `--check` matches the
-installed binaries. Every line the suite's fakes print and every engine payload of the fixture records
+installed binaries. The review round added Claude Code's other rejected-status texts: each return of the
+message builder's `overageStatus === "rejected"` branch that is not the template, read by its exact text
+inside that branch, and the admin suffix two of them take (`rejected`, `admin_suffix`,
+`admin_suffixed`). Every line the suite's fakes print and every engine payload of the fixture records
 conforms to that table (the two format rows).
 
 ## Suite
@@ -99,9 +111,9 @@ where the script says, so concurrency is observed rather than timed. No real eng
 | Criterion | Rows |
 |---|---|
 | AC1 | `pool/per-account-isolation` (declared falsifier), `pool/one-registration` (declared), `pool/concurrent` (declared) |
-| AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted` |
-| AC3 | `decision/ask` (declared), `decision/rerun` |
-| AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared) |
+| AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted`, `limit/claude-rejected-texts` |
+| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write` |
+| AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared), `pool/usage-observes`, `pool/selection-order`, `pool/until-earliest` |
 | Install | `install/assets` |
 | Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines` |
 
@@ -133,7 +145,21 @@ that is not the account's limit each end `failed` with no limit and no exhausted
 decide re-run naming nothing; a call to a tool not marked read-only, a call to a tool of a server whose
 revision marks nothing and a call to a server the configuration does not list each decide ask naming
 exactly that call (sequence, server, tool, catalog id, revision, reason), a call shown twice named once;
-a record with a sequence gap is refused by name. `install/assets`: the scaffold lays down both new
+a record with a sequence gap is refused by name. `decision/unreadable-asks`: for both engines, an engine
+line holding a write whose JSON text is truncated, whose input is a `[REDACTED:high_entropy]` span that
+breaks the JSON, that is wholly `[redacted]`, that is wrapped in a list, or whose tool name (Claude Code)
+or server (Codex) is not a string decides ask naming exactly that line (`redacted_unreadable` for the
+two redacted forms, `unreadable` for the rest), and a redacted line whose event still reads is decided by
+its calls. `decision/same-id-write`: one id shown read-only and then naming a write decides ask naming
+the write. `limit/claude-rejected-texts` (AC2): each of the binary's eight rejected-status texts (the
+two admin ones with their suffix, and the out-of-credits one again with a reset and the progress
+piece) ends a run `account_limit`, the `unified` window with the reset it states, recorded exhausted.
+`pool/usage-observes` (AC4): a Codex account whose one run reported usage and no window admits its
+concurrency of two (three Codex dispatches at once, two on it). `pool/selection-order`: with the idle
+Claude Code accounts at 0.7, 0.1, 0.1 (used last) and unknown, the dispatch goes to the 0.1 account used
+least recently and the trace ranks them in exactly that order, unknown last. `pool/until-earliest`: with
+all four limited (resets 900, 600, 1200 s ahead, and one at 300 s on its five-hour window with its weekly
+window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
 Plain run: 39 passed (26 preamble, 13 rows) in 15.9 s. Stage environment run (`env -i`, the stage's
@@ -189,6 +215,19 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | pool-refusal-reasons-unobserved | control_reservations.py | `pool/moved-off` |
 | pool-limit-uncounted | control_account_pool.py | `limit/stream-exhausted`, `limit/rate-limit-result` |
 | pool-dispatches-uncounted | control_account_pool.py | `pool/per-account-isolation` |
+| decision-unreadable-line-skipped (review, blocking) | control_account_limit.py | `decision/unreadable-asks` |
+| decision-unreadable-call-skipped (review, blocking) | control_account_limit.py | `decision/unreadable-asks` |
+| decision-event-any-object | control_account_limit.py | `decision/unreadable-asks` |
+| decision-claude-nameless-call-skipped | control_engine_claude.py | `decision/unreadable-asks` |
+| decision-codex-serverless-call-skipped | control_engine_codex.py | `decision/unreadable-asks` |
+| decision-redaction-unread | control_account_limit.py | `decision/unreadable-asks` |
+| decision-same-id-first-wins | control_account_limit.py | `decision/same-id-write` |
+| limit-claude-rejected-texts-unread | control_engine_claude.py | `limit/claude-rejected-texts` |
+| pool-observed-by-window-only | control_account_pool.py | `pool/usage-observes` |
+| pool-highest-utilization-first | control_account_pool.py | `pool/selection-order` |
+| pool-most-recently-used-first | control_account_pool.py | `pool/selection-order` |
+| pool-until-latest-reset | control_account_pool.py | `pool/until-earliest` |
+| pool-until-first-window-reset | control_account_pool.py | `pool/until-earliest` |
 | pool-not-scaffolded | init_scaffold.py | `install/assets` |
 | decision-not-scaffolded | init_scaffold.py | `install/assets` |
 

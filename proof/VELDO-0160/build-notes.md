@@ -39,3 +39,29 @@ Base: 52f817d5 (main, VELDO-0062 landed). Branch build-veldo-0160.
 - 2026-09-26T11:57:42Z suite 78 written, 14 rows green in 9.8 s; next: red record, mutations
 - 2026-09-26T12:18:41Z consumer suites green (47); next: validate, footprint, anchors, drive, README, History
 - 2026-09-26T13:07:51Z done: finding 160 35 rejected; 36/39/40/41/62 reject; proof complete
+
+## Review round 1 (reviewer notes rv160/notes.md, probe probe_decide.py, extra_mutants.py)
+
+- BLOCKING fixed: `control_account_limit` no longer decides `rerun` over an engine line it cannot read.
+  A readable event is a JSON object (or its JSON text) naming its `type`; any other engine payload, and
+  any block the engine module cannot read as a tool call (Claude Code: an assistant message whose
+  content is not a list, a block that is not an object naming its type, a `tool_use` whose name is not a
+  string; Codex: an item that is not an object naming its type, an `mcp_tool_call` whose server or tool
+  is not a name), is named in `calls` by its sequence, reason `unreadable`, or `redacted_unreadable`
+  when the line's `redacted` field is set. The decision is then `ask`. A structurally malformed record
+  (fields, sequence, stream, receive time) stays refused by name. `mcp_calls` counts the calls read.
+  The probe now prints ask for truncated JSON, a redacted span, '[redacted]', a list payload and a
+  non-string name.
+- Same id read-only then write: a call is keyed by (id, server, tool), so the write counts (ask).
+- Claude Code rejected texts: the binary's nFn `overageStatus === "rejected"` branch returns six texts
+  that do not start "You've hit your" (eight strings: out of usage credits, org out of usage twice, seat
+  type twice, service disabled, admin allocation, $0 group). extract_formats.py reads each by its exact
+  return inside that branch, plus the kke() admin suffix; cli-formats.json gains `rejected`,
+  `admin_suffix`, `admin_suffixed`, `rejected_source`. `control_engine_claude.LIMIT_REJECTED` holds the
+  same eight prefixes; each is the `unified` window with the reset it states, if any.
+- The four surviving extra mutants each have a row now: `pool/usage-observes` (a Codex account observed
+  by usage alone admits its concurrency of two), `pool/selection-order` (0.7 / 0.1 / 0.1 / unknown: the
+  lowest utilization, least recently used among equals, unknown last; the trace's candidate order),
+  `pool/until-earliest` (four accounts limited, one with two windows: the refusal names the earliest
+  account reopening, not the latest and not a first-window reset).
+- Main is still 52f817d5 (the branch's base): the merge is a no-op.

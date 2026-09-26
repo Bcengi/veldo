@@ -231,3 +231,14 @@ assertion, the two format rows green) and 35 finding 160 mutations, each red on 
 footprint adds `proof/VELDO-0062/extract_formats.py` and `cli-formats.json`: the extractor now also
 reads Claude Code's usage-limit message and Codex's MCP tool-call item out of the binaries, so every
 fake line comes from the real formats. Status unchanged.
+
+2026-09-26, review fixes: the re-run-or-ask decision now asks, naming the line, for an engine line it
+cannot read (a payload that is not a JSON object naming its type, or a tool call the engine module cannot
+read), reason `unreadable` or `redacted_unreadable` when the line's `redacted` field is set, since
+VELDO-0141 AC4's redaction can break a line; a structurally malformed record is still refused by name. One
+call id seen read-only and then naming a write counts the write. Claude Code's other rejected-status texts
+(out of usage credits, the org, seat, service, admin and $0-group forms), read out of the binary into
+`cli-formats.json`, classify `account_limit`. New rows `limit/claude-rejected-texts`,
+`decision/unreadable-asks`, `decision/same-id-write`, `pool/usage-observes`, `pool/selection-order` and
+`pool/until-earliest` pin these and the Notes' selection order and earliest reset; 13 more finding 160
+mutations. Status unchanged.
