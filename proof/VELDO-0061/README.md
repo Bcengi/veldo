@@ -190,5 +190,8 @@ red by assertion; the baseline and the no-op copies are green.
 | adapter-window-unchecked | control_reservations.py | caps/refused-before-launch |
 | adapter-qualification-not-scaffolded | init_scaffold.py | pin/qualified-record |
 
-The other findings with mutations in the modules this changes still reject: see the History entry of
-the specification for the counts of this build.
+The other findings with mutations in the modules this changes still reject: 39 (30), 40 (22), 41 (34),
+45 (23) and 62 (50, over its suite with the fake Codex now pinned). Suites run, plain and under the
+stage environment, all green: `78_veldo_0061_codex_adapter`, `75_veldo_0062_accounts`, the VELDO-0036,
+0039, 0040, 0041, 0042 and 0045 suites, `24_veldo_0007_install_and_run`, `26_veldo_0009_install_stamp`,
+`03_plugin_extension_loading_runner` and `50_git_environment`.

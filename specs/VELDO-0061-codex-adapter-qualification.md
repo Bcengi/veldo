@@ -212,4 +212,5 @@ item kinds and fields exec prints are read from the binary by `proof/VELDO-0061/
 fake Codex adapters were unpinned and are now laid out and qualified as a vendor package, since an
 unpinned Codex launch is now refused. The live model run on the owner's registered subscription is not
 part of this build: the installed binary is exercised through the whole lifecycle with `--help`, and no
-model runs. Status unchanged.
+model runs. Proof in proof/VELDO-0061: 18 rows, red record against b39a0fdc, 26 finding 61 mutants
+rejected; findings 39, 40, 41, 45 and 62 still reject. Status unchanged.
