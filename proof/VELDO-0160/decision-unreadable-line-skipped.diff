@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -107 +107 @@
--        shown = engine.mcp_calls(event) if event is not None else [{'unreadable': True}]
-+        shown = engine.mcp_calls(event) if event is not None else []  # defect: an unreadable line is no call
+@@ -122 +122 @@
+-                 else [{'unreadable': True}])
++                 else [])  # defect: an unreadable line is no call

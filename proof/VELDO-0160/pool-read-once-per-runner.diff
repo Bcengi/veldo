@@ -1,6 +1,6 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -247 +247,2 @@
+@@ -341 +341,2 @@
 -        if hasattr(account, 'reserve'):
 +        if hasattr(account, 'reserve') and not getattr(self, '_pooled', None):
 +            self._pooled = True  # defect: only the Runner's first dispatch reads the pool

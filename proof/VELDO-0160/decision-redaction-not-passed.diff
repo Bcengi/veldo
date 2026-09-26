@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -121 +121 @@
+-        shown = (engine.tool_calls(event, shown_ids, bool(line['redacted'])) if event is not None
++        shown = (engine.tool_calls(event, shown_ids, False) if event is not None  # defect: redaction unread

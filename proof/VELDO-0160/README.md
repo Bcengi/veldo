@@ -201,23 +201,26 @@ all four limited (resets 900, 600, 1200 s ahead, and one at 300 s on its five-ho
 window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
-Plain run: 45 passed (26 preamble, 19 rows) in 24.4 s. Stage environment run (`env -i`, the stage's
-variables, TZ=UTC): 45 passed in 23.9 s.
+Plain run after the merge with main: 49 passed (26 preamble, 23 rows) in 19.3 s. Stage environment run
+(`env -i`, the stage's variables, TZ=UTC): 49 passed in 24.5 s. After the merge the fake `claude` is
+installed, pinned and qualified as version 2.1.281 under the factory state root and the fake Codex is a
+qualified vendor package (VELDO-0060, VELDO-0061), as suite 75 does.
 
 ## Red record
 
 `red-at-52f817d5.json`: the current suite over `git archive 52f817d5` (main before this work),
-unchanged. All 17 behavior rows fail by their own assertion: there is no account pool (the Runner given
+unchanged, regenerated after the merge and the fail-closed round. All 21 behavior rows fail by their own
+assertion: there is no account pool (the Runner given
 a pool refuses `invalid_input` and nothing is dispatched), the same login registers twice under two
 names and a second record of an id is refused unnamed, no run is classified `account_limit` (each limited
-run ends `failed`), Claude Code's rate-limit result records no window, there is no decision module, and
-the scaffold lays down neither new module. The two `format/*` rows are green there, as they must be:
+run ends `failed`), Claude Code's rate-limit result records no window, there is no decision module, the
+readers have no tool-call form tables, and the scaffold lays down neither new module. The two `format/*` rows are green there, as they must be:
 they check the suite's own fixtures against the extracted table, not production.
 
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 48 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 1425 s).
+`drive.py` records `mutations.json` and one applied diff per mutant. All 65 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 1878 s, after the merge with main).
 
 | Mutant | Module | Named rows |
 |---|---|---|
@@ -267,14 +270,30 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | pool-most-recently-used-first | control_account_pool.py | `pool/selection-order` |
 | pool-until-latest-reset | control_account_pool.py | `pool/until-earliest` |
 | pool-until-first-window-reset | control_account_pool.py | `pool/until-earliest` |
+| decision-unknown-call-skipped (the lead's decision) | control_account_limit.py | `decision/unknown-forms` |
+| decision-claude-server-tool-blocks-free | control_engine_claude.py | `decision/unknown-forms` |
+| decision-claude-unseen-result-free | control_engine_claude.py | `decision/unknown-forms` |
+| decision-claude-streamed-tool-use-free | control_engine_claude.py | `decision/unknown-forms` |
+| decision-claude-unlisted-message-free | control_engine_claude.py | `decision/unknown-forms` |
+| decision-claude-unlisted-stream-event-free | control_engine_claude.py | `decision/unknown-forms` |
+| decision-claude-unseen-progress-free | control_engine_claude.py | `decision/unknown-forms` |
+| decision-codex-unlisted-item-free | control_engine_codex.py | `decision/unknown-forms` |
+| decision-codex-unlisted-event-free | control_engine_codex.py | `decision/unknown-forms` |
+| decision-redacted-name-trusted | control_engine_claude.py | `decision/redacted-name` |
+| decision-redaction-not-passed | control_account_limit.py | `decision/redacted-name` |
+| decision-shown-ids-per-line | control_account_limit.py | `decision/tool-free-forms` |
+| decision-claude-tool-ids-unremembered | control_engine_claude.py | `decision/tool-free-forms` |
+| decision-codex-builtin-items-ask | control_engine_codex.py | `decision/tool-free-forms` |
+| decision-claude-thinking-asks | control_engine_claude.py | `decision/tool-free-forms` |
+| format-claude-builtin-table-drifts | control_engine_claude.py | `decision/redacted-name`, `format/tool-forms` |
+| format-codex-dynamic-item-builtin | control_engine_codex.py | `decision/unknown-forms`, `format/tool-forms` |
 | pool-not-scaffolded | init_scaffold.py | `install/assets` |
 | decision-not-scaffolded | init_scaffold.py | `install/assets` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 48 rejected (the review round re-ran 36: 20 and 62: 50, both rejecting). The other findings with mutations in the modules this changes still reject: 36 (20), 39 (30), 40 (22), 41 (34) and 62 (50).
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 65 rejected. After the merge with main: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
 
-Suites run, plain, all green: `78_veldo_0160_account_pool`, `75_veldo_0062_accounts`, the suites of
-every module this touches (VELDO-0036, 0039, 0040, 0041, 0047, 0049, 0050, 0052, 0053, 0056, 0076, 0128,
-0132, 0135) and every suite that reads `init_scaffold.py` (32 more, `50_git_environment` among them).
-Under the stage environment: `78_veldo_0160_account_pool`, `75_veldo_0062_accounts`,
-`58_veldo_0036_reservations`, `62_veldo_0039_dispatch` and `50_git_environment`.
+Suites run after the merge, plain and under the stage environment, all green:
+`78_veldo_0160_account_pool` (23 rows), `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
+(20), `75_veldo_0062_accounts` (22) and `58_veldo_0036_reservations` (10). Before the merge the suites of
+every module this touches and every suite that reads `init_scaffold.py` were run green as well.

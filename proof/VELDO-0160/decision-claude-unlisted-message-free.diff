@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -357 +357 @@
+-    if tag not in MESSAGES:
++    if False:  # defect: a message type the binary does not list is taken as tool-free

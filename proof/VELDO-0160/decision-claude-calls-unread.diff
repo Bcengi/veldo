@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -251 +251 @@
--        elif isinstance(name, str) and name.startswith(MCP_PREFIX):
+@@ -342 +342 @@
+-        elif name.startswith(MCP_PREFIX):
 +        elif False:  # defect: Claude Code's MCP tool calls are not read
