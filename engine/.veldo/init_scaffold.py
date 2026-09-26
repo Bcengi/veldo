@@ -393,6 +393,9 @@ _DIRS = [".veldo/examples"]
 # beside the modules that read it (source, destination). scripts/check_template_sync.sh pairs
 # engine/runtime/<name> with .veldo/runtime/<name> by the same rule.
 _RUNTIME_ASSETS = [("runtime/langgraph-records.json", ".veldo/runtime/langgraph-records.json")]
+# VELDO-0061: the qualification record of the pinned Codex executable, which control_engine_codex.py
+# reads beside itself before a Codex engine is accepted or spawned.
+_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]
 
 # The canonical gate is laid down transformed (see _starter_gate).
 _GATE = "scripts/verify.sh"

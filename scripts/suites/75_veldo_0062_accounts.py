@@ -292,7 +292,7 @@ def _v62_suite():
         fake = '''#!%s -B
 import json, os, sqlite3, sys, time
 from pathlib import Path
-store, markers, domain = sys.argv[1], Path(sys.argv[2]), sys.argv[3]
+store, markers, domain = sys.argv[-3], Path(sys.argv[-2]), sys.argv[-1]
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 key = 'reservation:invocation:' + json.dumps([domain, 'invocation/' + dispatch], separators=(',', ':'))
 try:
@@ -328,6 +328,25 @@ sys.exit(payload.get('code', 0))
         for name in ('claude', 'codex'):
             (engines / name).write_text(fake)
             (engines / name).chmod(0o755)
+        # VELDO-0061: a Codex adapter launches a pinned vendor binary inside its package, with the qualified
+        # flags, checked against a qualification record the production writer makes. The fake Codex is laid
+        # out as such a package and qualified; the Codex adapters below name it and its record.
+        package = engines / 'codex-package'
+        vendored = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
+        vendored.parent.mkdir(parents=True)
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        vendored.write_text(fake)
+        vendored.chmod(0o755)
+        CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
+        codex_qualification = base / 'codex-qualification.json'
+        if hasattr(CODEX_ENGINE, 'qualification'):
+            codex_qualification.write_text(json.dumps(CODEX_ENGINE.qualification(str(vendored))))
+        CODEX_FLAGS = list(getattr(CODEX_ENGINE, 'FLAGS', ()))
+
+        def codex_adapter(environment):
+            return {'identity': 'reported', 'engine': 'codex', 'environment': environment,
+                    'executable': str(vendored), 'qualification': str(codex_qualification),
+                    'argv': wrapper + [str(vendored)] + CODEX_FLAGS + [str(db), str(markers), DOMAIN]}
         receipts = base / 'receipts'
         config = base / 'receiver.json'
         # Every process the receiver spawns first writes a spawn marker naming its dispatch, then execs
@@ -347,9 +366,7 @@ sys.exit(payload.get('code', 0))
                 'claude': {'identity': 'reported', 'engine': 'claude_code',
                            'environment': {name: plant('adapter-' + name.lower()) for name in CONFIGURED_CLAUDE},
                            'argv': wrapper + [str(engines / 'claude'), str(db), str(markers), DOMAIN]},
-                'codex': {'identity': 'reported', 'engine': 'codex',
-                          'environment': {name: plant('adapter-' + name.lower()) for name in CONFIGURED_CODEX},
-                          'argv': wrapper + [str(engines / 'codex'), str(db), str(markers), DOMAIN]},
+                'codex': codex_adapter({name: plant('adapter-' + name.lower()) for name in CONFIGURED_CODEX}),
                 # Adapters configuring a login: refused by name when the configuration is loaded.
                 'claude-api-key': {'identity': 'reported', 'engine': 'claude_code',
                                    'environment': {'ANTHROPIC_MODEL': 'configured-model',
@@ -358,9 +375,7 @@ sys.exit(payload.get('code', 0))
                 'claude-oauth-store': {'identity': 'reported', 'engine': 'claude_code',
                                        'environment': {'CLAUDE_SECURESTORAGE_CONFIG_DIR': str(base / 'elsewhere')},
                                        'argv': wrapper + [str(engines / 'claude'), str(db), str(markers), DOMAIN]},
-                'codex-endpoint': {'identity': 'reported', 'engine': 'codex',
-                                   'environment': {'OPENAI_BASE_URL': 'http://127.0.0.1:9/v1'},
-                                   'argv': wrapper + [str(engines / 'codex'), str(db), str(markers), DOMAIN]}}}))
+                'codex-endpoint': codex_adapter({'OPENAI_BASE_URL': 'http://127.0.0.1:9/v1'})}}))
         CONFIGURED = json.loads(config.read_text())['adapters']
         CONFIGURATION = {'mcp_servers': {'tracker': {'command': 'tracker-mcp', 'args': []}},
                          'tools': ['Read', 'Edit', 'Bash'], 'model': 'configured-model'}

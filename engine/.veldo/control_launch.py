@@ -86,6 +86,17 @@ the wall time it took and the CLI's conclusive totals, or, when the CLI reported
 message units stay unknown and their reservation is retained. Timeout, cancellation or a missing
 report never release it.
 
+A PINNED ENGINE AND ITS TERMINAL OUTPUT (VELDO-0061). An engine module that binds its executable
+(control_engine_codex.bind) has the adapter's configured executable checked against its qualification
+record before acceptance: a link, another package, version or digest, or other flags are refused by
+name and nothing is accepted or spawned. Its ENVIRONMENT (DISABLE_AUTOUPDATER) is set in the engine's
+environment last. An engine module with an artifact decoder (`Artifacts`) is fed the same output as its
+meter, and at the end the decoded document is kept in a private file (0600 in a 0700 directory, beside
+the store unless the config names `artifacts`) and reported with the exit; the invocation's outcome is
+`completed` only when the document's verdict is (a well-formed stream whose last turn closed with its
+terminal record, and a zero exit), and the runner returns such a dispatch's slot as completed only when
+the invocation's recorded outcome says so. An exit code is never a completion.
+
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
 """
@@ -213,6 +224,13 @@ class Runner:
                                    supervision=getattr(launch, 'supervision', None))
         return self.retirements.retire(dispatch_id, outcome, basis)
 
+    def _completed(self, dispatch_id):
+        """Whether the dispatch's subscription invocation, if it has one, settled `completed` (VELDO-0061):
+        its outcome follows the validated terminal output, so an exit code alone completes nothing."""
+        entity = D.RES.entity('invocation', [self.dispatches.domain, invocation_id(dispatch_id)])
+        row = self.dispatches.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
+        return row is None or json.loads(row[0]).get('outcome') == 'completed'
+
     def sweep(self):
         """Retry every pending retirement whose obligations have changed since its last attempt, or whose
         clone can now be removed (VELDO-0041); the dispatches whose slots it released. Each preparation
@@ -281,6 +299,8 @@ class Runner:
         if record and record['state'] == 'exited':
             termination = record['termination'] or {}
             clean = termination.get('returncode') == 0 and not termination.get('deadline_stop')
+            # VELDO-0061: an engine invocation's recorded outcome, never its exit code alone.
+            clean = clean and self._completed(record['dispatch_id'])
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
         elif record and record['state'] == 'unknown':
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known.
@@ -289,6 +309,11 @@ class Runner:
         # This dispatch's end may have completed another's obligation (a group the kernel emptied).
         self.sweep()
         return record
+
+
+def invocation_id(dispatch_id):
+    """The subscription invocation a dispatch's receiver reserves and settles (VELDO-0062)."""
+    return 'invocation/' + dispatch_id
 
 
 def RES_ENTITY(domain, dispatch_id):
@@ -319,6 +344,7 @@ class Launch:
         self.stop_requested = False
         self.ends_by = None
         self.heartbeat = None
+        self.artifacts = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -360,6 +386,8 @@ class Launch:
             self.ends_by = message['ends_by']
         if isinstance(message.get('heartbeat'), dict):
             self.heartbeat = message['heartbeat']
+        if isinstance(message.get('artifacts'), dict):
+            self.artifacts = message['artifacts']
         return message
 
     def _end_receiver(self):
@@ -482,6 +510,7 @@ class Receiver:
         self.host = config.get('host') or socket.gethostname()
         self.login = None
         self.metering = None
+        self.pinned = None
 
     def close(self):
         self.conn.close()
@@ -535,6 +564,8 @@ class Receiver:
             refusal = self._qualify(adapter)
         if not refusal:
             refusal = self._login(contract, adapter)
+        if not refusal:
+            refusal = self._pin(adapter)
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -633,7 +664,8 @@ class Receiver:
             self.emit({'event': 'unknown', 'supervision': supervision})
             return
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())
-        self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision})
+        self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision,
+                   'artifacts': self.metering.returned if self.metering is not None else None})
 
     def _login(self, contract, adapter):
         """VELDO-0062: the subscription login of an engine adapter, read before acceptance from the
@@ -660,6 +692,19 @@ class Receiver:
         # The engine's local time zone, for a CLI that states a reset in local time (Codex).
         zone = (adapter.get('environment') or {}).get('TZ', os.environ.get('TZ'))
         self.login = {'engine': module, 'account': account, 'record': record, 'zone': zone}
+        return None
+
+    def _pin(self, adapter):
+        """VELDO-0061: the engine's executable bound to its qualification before acceptance, for an engine
+        module that pins one. None when it may run; else the named refusal."""
+        self.pinned = None
+        bind = getattr((self.login or {}).get('engine'), 'bind', None)
+        if bind is None:
+            return None
+        try:
+            self.pinned = bind(adapter)
+        except Exception as error:  # noqa: BLE001 - every binding failure is a named refusal, never a launch
+            return getattr(error, 'code', None) or 'invalid_input:engine_executable'
         return None
 
     def _invoke(self, contract, acceptance, adapter):
@@ -725,6 +770,8 @@ class Receiver:
             environment = ACC.login_environment(environment, self.login['record'], self.host, STRIPPED,
                                                 adapter.get('environment') or {}, CREDENTIALS)
             environment['VELDO_ACCOUNT'] = self.login['account']
+            # VELDO-0061: the engine's own pinned settings, last.
+            environment.update(getattr(self.login['engine'], 'ENVIRONMENT', None) or {})
         else:
             environment.update(adapter.get('environment') or {})
         environment['VELDO_DISPATCH_ID'] = dispatch_id
@@ -1040,7 +1087,11 @@ class Metering:
         settled = reservations.session(self.engine.PROVIDER, self.resumes) if self.resumes else None
         self.meter = self.engine.Meter(zone=receiver.login.get('zone'), resumes=self.resumes,
                                        prior=(settled or {}).get('tokens'))
-        self.invocation = 'invocation/' + self.dispatch_id
+        self.invocation = invocation_id(self.dispatch_id)
+        # VELDO-0061: the engine's terminal output decoder, fed what the meter is fed.
+        decoder = getattr(self.engine, 'Artifacts', None)
+        self.artifacts = decoder() if decoder is not None else None
+        self.returned = None
         self.boundary = RTM.boundary(contract)
         self.guard = RTM.InvocationGuard(reservations, self.engine.PROVIDER, launch, self._stop)
         self.sequence = 0
@@ -1069,6 +1120,8 @@ class Metering:
 
     def feed(self, chunk):
         """Whether the worker must stop, after the observations in `chunk`."""
+        if self.artifacts is not None:
+            self.artifacts.feed(chunk)
         for observation in self.meter.feed(chunk):
             self._observe(observation)
         return self.stop
@@ -1100,6 +1153,33 @@ class Metering:
             self.errors.append(error.code)
             self.stop = True
 
+    def _result(self, termination):
+        """Whether the terminal output is a result (VELDO-0061); an engine with no decoder is judged by its exit."""
+        if self.artifacts is None:
+            return True
+        self.artifacts.close()
+        return self.artifacts.verdict(termination) == 'result'
+
+    def _return(self, termination):
+        """Keep the artifact document in its private file; {path, digest, verdict}, or None without a decoder."""
+        if self.artifacts is None:
+            return None
+        self.artifacts.close()
+        document = dict(self.artifacts.document(termination), dispatch_id=self.dispatch_id, invocation=self.invocation,
+                        account=self.account, executable=self.receiver.pinned)
+        data = (json.dumps(document, sort_keys=True) + '\n').encode()
+        directory = Path(self.receiver.config.get('artifacts') or Path(self.receiver.config['store']).parent / 'artifacts')
+        try:
+            directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+            path = directory / (hashlib.sha256(self.invocation.encode()).hexdigest() + '.json')
+            with os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as f:
+                f.write(data)
+        except OSError as error:
+            self.errors.append('artifacts:' + type(error).__name__)
+            path = None
+        return {'path': str(path) if path else None, 'digest': 'sha256:' + hashlib.sha256(data).hexdigest(),
+                'verdict': document['verdict']}
+
     def settle(self, termination, cause):
         """The one final report. `termination` None: the engine never started (not executed)."""
         if self.settled:
@@ -1118,7 +1198,8 @@ class Metering:
             elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):
                 outcome = 'cancelled'
             else:
-                outcome = 'completed' if termination.get('returncode') == 0 else 'failed'
+                outcome = 'completed' if termination.get('returncode') == 0 and self._result(termination) else 'failed'
+            self.returned = self._return(termination)
         self.sequence += 1
         session = self.meter.session() if termination is not None else None
         try:

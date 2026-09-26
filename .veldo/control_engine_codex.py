@@ -53,11 +53,39 @@ own window with none, and the account stays refused until observed otherwise. Th
 records nothing.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
+
+THE ADAPTER (VELDO-0061). REGISTRATION is the Codex adapter as the launch receiver runs it: its
+lifecycle operations (accept, launch, observe, stop, exit, artifacts) and the code that implements
+each, the flags of the qualified configuration and the environment the engine is pinned with.
+
+PINNED EXECUTABLE. The adapter launches the vendor binary inside its npm package (the `executable` its
+configuration names), never the package manager's `codex` link, a Node shim the next install replaces.
+`qualification(executable)` writes the record of one installed binary (runtime/codex-qualification.json
+for Codex 0.154.0 on Linux x64): its package, version, package-relative path, digest and flags, the
+terminal protocol and usage it is read with. `bind(adapter)` checks the configured executable against
+that record before anything is accepted or spawned: an absolute path, no link on the way to it, inside a
+package of the recorded name and version at the recorded relative path, with the recorded digest,
+launched with the recorded flags. Anything else is refused by name. ENVIRONMENT sets
+DISABLE_AUTOUPDATER in the engine's environment, as the design asks of both engines. This binary does
+not name that variable: an upgrade of it is a new package installed over this one (the command its
+update notice prints), and the version and digest checks refuse the binary that install leaves.
+
+TERMINAL OUTPUT (`Artifacts`). What the engine printed becomes an artifact document, never a completion
+by exit code: every stdout line is kept as printed and checked against the exec events of the table
+(EVENTS, ITEM_KINDS; proof/VELDO-0061/codex-exec.json); the verdict is `result` only when the stream is
+well formed, its last turn closed with `turn.completed` and the engine exited 0. A stream whose last turn
+has no terminal record is `missing_result`, one with a line exec does not print is `malformed_output`, a
+failed turn `turn_failed`, a nonzero exit `nonzero_exit`, a signal `signal` and a deadline stop
+`deadline`. Items are returned whole, as the CLI printed them; the reader relies on an item's `id` and
+`type` only, the two fields the binary ties to exec's items. `verify(document)` recomputes a document from
+its own lines, so a reader need not trust the receiver's verdict.
 Standard library only.
 """
 import datetime
 import hashlib
 import json
+import os
+from pathlib import Path
 import re
 import time
 import zoneinfo
@@ -229,3 +257,245 @@ class Meter:
         elif kind == 'error':
             found.extend(self._limited(seen, event.get('message')))
         return found
+
+
+# VELDO-0061: the adapter registration, the pinned executable and the terminal output.
+
+# The flags of the qualified configuration: exec mode with its JSON event stream on stdout; the prompt
+# is what the receiver writes on stdin.
+FLAGS = ('exec', '--json')
+ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}
+QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
+QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
+ARTIFACTS_SCHEMA = 'veldo.engine_artifacts/v1'
+PACKAGE = '@openai/codex'
+LIFECYCLE = ('accept', 'launch', 'observe', 'stop', 'exit', 'artifacts')
+REGISTRATION = {
+    'engine': PROVIDER,
+    'lifecycle': {
+        'accept': 'control_launch.Receiver.launch: the executable bound (bind) and the acceptance committed before any spawn',
+        'launch': 'control_launch.Receiver._spawn: the pinned binary with FLAGS, through the trusted wrapper, in its clone',
+        'observe': 'control_launch.Metering.feed: each stdout line read by Meter (usage, windows) and by Artifacts',
+        'stop': 'control_launch.Launch.stop: the cooperative stop and its bounded escalation over the containment group',
+        'exit': 'control_launch.Receiver._reap: the exit, recorded once the group is empty',
+        'artifacts': 'control_launch.Metering.settle: the artifact document of the terminal output, its verdict the outcome',
+    },
+    'flags': FLAGS,
+    'environment': ENVIRONMENT,
+}
+# The events `codex exec --json` prints (VELDO-0062's table) with each one's fields and their types, and
+# the item kinds its ThreadItem is tagged with (VELDO-0061's). A field outside these is a malformed line.
+EVENTS = {
+    'thread.started': {'thread_id': str},
+    'turn.started': {},
+    'turn.completed': {'usage': dict},
+    'turn.failed': {'error': dict},
+    'item.started': {'item': dict},
+    'item.updated': {'item': dict},
+    'item.completed': {'item': dict},
+    'error': {'message': str},
+}
+USAGE_FIELDS = ('input_tokens', 'cached_input_tokens', 'cache_write_input_tokens', 'output_tokens',
+                'reasoning_output_tokens')
+ITEM_KINDS = ('agent_message', 'reasoning', 'command_execution', 'file_change', 'mcp_tool_call', 'web_search',
+              'todo_list', 'collab_tool_call', 'error')
+
+
+class Unbound(Exception):
+    def __init__(self, code):
+        self.code = code
+        super().__init__(code)
+
+
+def _file_digest(path):
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for block in iter(lambda: f.read(1 << 20), b''):
+            h.update(block)
+    return 'sha256:' + h.hexdigest()
+
+
+def _package(executable):
+    """(root, manifest) of the npm package the executable lies in: its nearest directory holding a
+    package.json. None, None when there is none or it is unreadable."""
+    for parent in Path(executable).parents:
+        manifest = parent / 'package.json'
+        if manifest.is_file():
+            try:
+                data = json.loads(manifest.read_text())
+            except (OSError, ValueError):
+                return None, None
+            return parent, data if isinstance(data, dict) else None
+    return None, None
+
+
+def qualification(executable, flags=FLAGS):
+    """The qualification record of one installed vendor binary. Reads its package manifest and its bytes;
+    nothing is executed."""
+    root, manifest = _package(executable)
+    if root is None or manifest is None or manifest.get('name') != PACKAGE:
+        raise Unbound('invalid_input:engine_package')
+    version = str(manifest.get('version') or '')
+    return {'schema': QUALIFICATION_SCHEMA, 'engine': PROVIDER, 'package': PACKAGE, 'package_version': version,
+            'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
+            'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
+            'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
+                                  'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
+            'authentication': 'the subscription login of the account profile CODEX_HOME names',
+            'usage_units': ['invocations', 'wall_seconds', 'tokens', 'messages'],
+            'rate_limit_windows': sorted({LIMIT_WINDOW} | {window for _, window in EXHAUSTED})}
+
+
+def load_qualification(path=None):
+    try:
+        record = json.loads(Path(path or QUALIFICATION).read_text())
+    except (OSError, ValueError):
+        raise Unbound('missing_evidence:engine_qualification')
+    fields = ('package', 'package_version', 'version', 'executable', 'sha256', 'flags')
+    if (not isinstance(record, dict) or record.get('schema') != QUALIFICATION_SCHEMA or record.get('engine') != PROVIDER
+            or not all(record.get(f) for f in fields) or not isinstance(record['flags'], list)):
+        raise Unbound('missing_evidence:engine_qualification')
+    return record
+
+
+def bind(adapter):
+    """The pinned executable the adapter launches, {path, version, package_version, sha256}, checked against
+    its qualification record (the adapter's `qualification`, else the installed one) before anything is
+    accepted or spawned; raises Unbound with the named refusal."""
+    record = load_qualification(adapter.get('qualification'))
+    executable, argv = adapter.get('executable'), list(adapter.get('argv') or [])
+    if not isinstance(executable, str) or not os.path.isabs(executable) or argv.count(executable) != 1:
+        raise Unbound('invalid_input:engine_executable')
+    at = argv.index(executable) + 1
+    if argv[at:at + len(record['flags'])] != record['flags']:
+        raise Unbound('invalid_input:engine_flags')
+    if os.path.realpath(executable) != os.path.normpath(executable):
+        raise Unbound('invalid_input:engine_link')
+    if not os.path.isfile(executable) or not os.access(executable, os.X_OK):
+        raise Unbound('unavailable_service:engine_executable')
+    root, manifest = _package(executable)
+    if (root is None or manifest is None or manifest.get('name') != record['package']
+            or str(Path(executable).relative_to(root)) != record['executable']):
+        raise Unbound('invalid_input:engine_package')
+    if manifest.get('version') != record['package_version']:
+        raise Unbound('stale_subject:engine_version')
+    digest = _file_digest(executable)
+    if digest != record['sha256']:
+        raise Unbound('stale_subject:engine_digest')
+    return {'path': executable, 'version': record['version'], 'package_version': record['package_version'],
+            'sha256': digest}
+
+
+def _malformed(event):
+    """Why a parsed line is not an event exec prints, or None."""
+    if not isinstance(event, dict) or event.get('type') not in EVENTS:
+        return 'unknown_event'
+    fields = EVENTS[event['type']]
+    if set(event) - set(fields) - {'type'} or any(not isinstance(event.get(f), kind) for f, kind in fields.items()):
+        return 'fields'
+    usage = event.get('usage')
+    if usage is not None and (set(usage) - set(USAGE_FIELDS) or not all(_count(v) for v in usage.values())):
+        return 'usage'
+    error = event.get('error')
+    if error is not None and not isinstance(error.get('message'), str):
+        return 'error'
+    item = event.get('item')
+    if item is not None and (not isinstance(item.get('id'), str) or item.get('type') not in ITEM_KINDS):
+        return 'item'
+    return None
+
+
+class Artifacts:
+    """The artifact document of one invocation's terminal output, fed the same chunks as Meter."""
+
+    def __init__(self):
+        self.pending = b''
+        self.lines, self.malformed, self.items = [], [], []
+        self.thread_id, self.terminal, self.turn_open, self.turns = None, None, False, 0
+
+    def feed(self, chunk):
+        self.pending += chunk
+        while b'\n' in self.pending:
+            line, _, self.pending = self.pending.partition(b'\n')
+            self._take(line)
+
+    def close(self):
+        line, self.pending = self.pending, b''
+        if line.strip():
+            self._take(line)
+
+    def _take(self, raw):
+        if not raw.strip():
+            return
+        index = len(self.lines)
+        self.lines.append(raw.decode('utf-8', 'replace'))
+        try:
+            event = json.loads(raw)
+        except ValueError:
+            event = None
+        if _malformed(event):
+            self.malformed.append(index)
+            return
+        kind = event['type']
+        if kind == 'thread.started':
+            self.thread_id = event['thread_id']
+        elif kind == 'turn.started':
+            self.turn_open, self.terminal = True, None
+        elif kind == 'turn.completed' and self.turn_open:
+            self.turn_open, self.terminal, self.turns = False, 'turn.completed', self.turns + 1
+        elif kind == 'turn.failed':
+            self.turn_open, self.terminal = False, 'turn.failed'
+        elif kind == 'item.completed':
+            self.items.append({'id': event['item']['id'], 'type': event['item']['type'], 'line': index})
+
+    def verdict(self, termination):
+        if termination is None:
+            return 'not_executed'
+        if termination.get('signal') is not None:
+            return 'signal'
+        if termination.get('deadline_stop'):
+            return 'deadline'
+        if self.malformed:
+            return 'malformed_output'
+        if self.terminal == 'turn.failed':
+            return 'turn_failed'
+        if self.terminal != 'turn.completed' or self.turn_open:
+            return 'missing_result'
+        if termination.get('returncode') != 0:
+            return 'nonzero_exit'
+        return 'result'
+
+    def document(self, termination):
+        verdict = self.verdict(termination)
+        return {'schema': ARTIFACTS_SCHEMA, 'provider': PROVIDER, 'verdict': verdict, 'completed': verdict == 'result',
+                'terminal': self.terminal, 'thread': self.thread_id, 'turns': self.turns, 'items': self.items,
+                'malformed': self.malformed, 'termination': termination, 'lines': self.lines}
+
+
+DECODED = ('schema', 'provider', 'verdict', 'completed', 'terminal', 'thread', 'turns', 'items', 'malformed')
+
+
+def verify(document):
+    """Whether an artifact document is what its own lines and termination decode to."""
+    if not isinstance(document, dict) or not isinstance(document.get('lines'), list):
+        return False
+    again = Artifacts()
+    for line in document['lines']:
+        again.feed(str(line).encode() + b'\n')
+    fresh = again.document(document.get('termination'))
+    return all(fresh[k] == document.get(k) for k in DECODED)
+
+
+def main(argv=None):
+    """`control_engine_codex.py qualify <vendor binary>`: print its qualification record."""
+    import sys
+    args = list(sys.argv[1:] if argv is None else argv)
+    if len(args) != 2 or args[0] != 'qualify':
+        sys.stderr.write('usage: control_engine_codex.py qualify <vendor binary>\n')
+        return 2
+    sys.stdout.write(json.dumps(qualification(args[1]), indent=1, sort_keys=True) + '\n')
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
