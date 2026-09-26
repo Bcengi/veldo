@@ -174,7 +174,16 @@ its names), `tool_fields` (each SDK message's fields whose name names a tool, fr
 entries' `lastToolName` from the task_progress emitter and the workflow agent progress), `frames` (the
 StdoutMessage members outside the SDK union, each with whether its schema is provably tool-free) and, for
 Codex, exec's `collab_tool_call` (the literal after exec's `ItemUpdatedEvent` and `ThreadErrorEvent`
-names). `format/tool-forms` requires the readers' tables to equal these. Every line the suite's fakes print and every engine payload of the fixture records
+names). The structural rule's round added `nested_work` for both engines: for Claude Code the tools that run an
+agent, a skill, code or a workflow (each name's binding, `var go="Skill"`, `var za="REPL"`, `var Ed="Workflow"`,
+`var eo="SendMessage"`, and the tool's definition or emitter naming that variable, with its aliases; the Agent
+tool's names are `builtin_renamed`'s), the system frames whose zod schema carries a `task_id`, the workflow
+fields of a task frame (`workflow_name`, documented as set only for task type `local_workflow`, and the
+`workflow_progress` the task_progress emitter writes), the REPL inner call, the progress kinds the CLI forwards
+under their task's id (`Sne`: `agent_progress`, `skill_progress`) and the Skill tool's result schema with status
+`forked`; for Codex exec's `collab_tool_call` and the core's items whose struct names another thread
+(`CollabAgentToolCallItem` with `receiver_thread_ids`, `SubAgentActivityItem` with `agent_thread_id`).
+`format/tool-forms` requires the readers' tables to equal these. Every line the suite's fakes print and every engine payload of the fixture records
 conforms to that table (the two format rows).
 
 ## Suite
@@ -299,7 +308,7 @@ record with a sequence gap is still refused by name, a server whose `tools` is n
 refused `invalid_input:configuration`; the negative controls: the forked skill with a server giving a listed tool
 not marked read-only, all its tools, its tools unlisted, or a tool of a revision that marks nothing is
 write-capable and asks. `decision/nested-work-asks` (rule 2): the forked skill (as objects and as JSON text) with
-the default write-capable servers asks, basis `nested_work`, naming exactly its ten construct lines (the Agent
+the default write-capable servers asks, basis `nested_work`, naming exactly its ten constructs on eight lines (the Agent
 call, both tasks' frames, the sub-agent's forwarded Skill call and the fork's result, the task's last tool Skill),
 while the call-by-call rules alone see no call in it; a normal run whose Agent's calls are all shown and
 read-only asks naming the Agent line first (the call-by-call rules alone re-run it); a depth-2 agent's hidden
