@@ -746,11 +746,11 @@ sys.exit(payload.get('code', 0))
                       and not engine_markers(launch.dispatch_id) and not spawned(launch.dispatch_id)
                       and not invocation(launch.dispatch_id))
             # The production refusal over every listed name: each login is refused, nothing else is.
-            credentials = L.CREDENTIALS
+            credentials = getattr(L, 'CREDENTIALS', None)
             logins = sorted(set(LOGINS) | set(REDIRECTS) | set(NINE))
-            passed = [n for n in logins if not ACC.refused({n: 'x'}, credentials)]
+            passed = [n for n in logins if not attempt(lambda: ACC.refused({n: 'x'}, credentials))[0]]
             others = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | set(KEPT) | {'CODEX_CA_CERTIFICATE'})
-            blocked = [n for n in others if ACC.refused({n: 'x'}, credentials)]
+            blocked = [n for n in others if attempt(lambda: ACC.refused({n: 'x'}, credentials))[0]]
             check('login/configured-environment', 'configured, each of the %d login names of the lists is refused '
                   'and none of the %d model, setting or kept names is [%s, %s]' % (len(logins), len(others), passed[:6],
                                                                                    blocked[:6]),
@@ -985,7 +985,7 @@ sys.exit(payload.get('code', 0))
 
             # Codex, on the production reader with a fixed clock and zone: the stated minute's end is the reset
             # (the same local minute in another zone is another instant), refused a second before it, allowed at it.
-            X = L.ENGINES['codex']
+            X = getattr(L, 'ENGINES', {}).get('codex')  # absent before the change: the rows red by assertion
             fixed = 1790000000
             for zone in ('UTC', 'America/New_York', 'Asia/Kolkata'):
                 for stated in (fixed // 60 * 60 + 7200, fixed // 60 * 60 + 3 * 86400):
@@ -1000,8 +1000,8 @@ sys.exit(payload.get('code', 0))
                           'refused one second before it and allowed at it [%s, %s]' % (zone, message[-24:], direct,
                                                                                     window['reset_at']),
                           len(seen) == 1 and seen[0]['window_id'] == 'usage_limit' and direct == stated + 60
-                          == window['reset_at'] and ACC.blocking(record, stated + 59) == ['usage_limit']
-                          and ACC.blocking(record, stated + 60) == [])
+                          == window['reset_at'] and attempt(lambda: ACC.blocking(record, stated + 59))[0] == ['usage_limit']
+                          and attempt(lambda: ACC.blocking(record, stated + 60))[0] == [])
             # Every message of the binary's error table, on the production reader: each exhaustion is its window,
             # the usage-limit forms with the reset their retry phrase states or none, the rest with none; nothing
             # else in the table records a window.
@@ -1024,13 +1024,14 @@ sys.exit(payload.get('code', 0))
                     if entry['window'] == 'usage_limit' and not entry['message'].rsplit('{}', 2)[-2].endswith(','):
                         retry = retry.replace(' or try', ' Try')  # after a full stop the phrase opens a sentence
                     message = filled(entry, retry)
-                    meter = X.Meter(clock=lambda: fixed, zone='UTC')
-                    windows = [o for chunk in (x_error(message), x_failed(message))
-                               for o in meter.feed((json.dumps(chunk['line']) + '\n').encode()) if o['kind'] == 'window']
+                    windows, failure = attempt(lambda: [
+                        o for meter in [X.Meter(clock=lambda: fixed, zone='UTC')] for chunk in (x_error(message), x_failed(message))
+                        for o in meter.feed((json.dumps(chunk['line']) + '\n').encode()) if o['kind'] == 'window'])
+                    windows = windows or []
                     wanted = [] if entry['window'] is None else [(entry['window'], 'rejected', expected)]
                     got = [(o['window_id'], o['status'], o['reset_at']) for o in windows]
-                    if got != wanted:
-                        misread.append((message[:60], got, wanted))
+                    if got != wanted or failure:
+                        misread.append((message[:60], got, wanted, failure))
             exhaustions = [e for e in ERRORS if e['window']]
             check('usage/rate-limit-reset', 'codex: every one of the %d messages of the binary\'s error table is read as '
                   'its window or as none, the %d exhaustions each once, with the reset stated or none [%s]'
