@@ -57,6 +57,7 @@ def _v60_suite():
     PRODUCTION = {
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
+        'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
     ROWS = ('lifecycle/registration', 'lifecycle/pinned-launch',
             'pin/unexpected-launch', 'pin/copy', 'pin/shipped-qualification',
@@ -644,7 +645,7 @@ sys.exit(payload.get('code', 0))
                   shipped_path.is_file() and installed_path.is_file()
                   and shipped_path.read_bytes() == installed_path.read_bytes()
                   and ('runtime/claude-qualification.json', '.veldo/runtime/claude-qualification.json')
-                  in [tuple(a) for a in getattr(load('v60_scaffold', ROOT / '.veldo' / 'init_scaffold.py'),
+                  in [tuple(a) for a in getattr(load('v60_scaffold', PRODUCTION['init_scaffold.py']),
                                                 '_RUNTIME_ASSETS', [])])
             check('pin/shipped-qualification', 'its 2.1.281 digest is the installed binary\'s, as both extractions read '
                   'it [%s]' % entry.get('sha256'),
