@@ -53,7 +53,29 @@ completed. The receiver's one final report (`Metering.settle`) carries the outco
 limit, on a final report). `control_account_pool.metrics` counts dispatches per account and runs ended
 `account_limit` per account and window.
 
-**The re-run-or-ask decision is over a record.** `control_account_limit.decide(record, servers,
+**The structural rules decide first (the lead's decision).** Three rounds of checks each found a new way
+Claude Code keeps a nested MCP call out of the stream (the REPL's inner calls, an agent a sub-agent starts, a
+skill a sub-agent forks, whose `skill_progress` is dropped and whose fork reports no count), so
+`control_account_limit.decide` no longer rests on rebuilding the calls. Rule 1: `write_capable(servers, marks)`
+lists the configured servers that give the run a tool their revision does not mark read-only (a server's
+`tools` is `all`, the default, or a list, VELDO-0127's selection); when it is empty the run could not have
+written through MCP and the decision is `rerun` whatever the stream shows, basis `no_write_capable_server`,
+`mcp_calls` None, a structurally malformed record still refused by name. Rule 2: otherwise `nested(record,
+provider)` reads each engine line with the engine module's `nested_work`, and any construct that can run
+hidden nested work makes the decision `ask`, basis `nested_work`, naming each such line with reason
+`nested_work`, its `construct` and its `form`, beside whatever the call-by-call rules name. The constructs, by
+class, are the binaries' (`cli-formats.json` `nested_work`): Claude Code's `agent` (Agent, its old name Task,
+SendMessage), `skill` (Skill), `repl` (REPL, or its inner call on a tool_progress), `workflow` (Workflow and
+its alias RunWorkflow, or a workflow's task frame), each tool wherever a frame names a tool that ran;
+`task_frames` (every system frame whose schema carries a `task_id`: `task_started`, `task_progress`,
+`task_notification`, `task_updated`); `nested_progress` (a message naming its task in `parent_tool_use_id`,
+how the CLI forwards `agent_progress` and `skill_progress`, or such a progress frame); `fork` (the Skill
+tool's result with status `forked`); and Codex's `collab` (exec's `collab_tool_call`, the core's
+`collab_agent_tool_call`) and `sub_agent` (`sub_agent_activity`). Rule 3: otherwise `decide_by_calls`, the
+rules below unchanged, decides, basis `calls`. The authoritative evidence later is a factory-side log of the
+MCP calls themselves (filed for VELDO-0158).
+
+**The call-by-call rules read a record.** `control_account_limit.decide_by_calls(record, servers,
 marks, provider)` reads a fixture record in the form of the specification's Notes (each line's gapless
 `sequence`, `received_at`, `stream`, `redacted` and `payload`), finds each MCP tool call on the engine
 lines with the engine module's own reader (`tool_calls`: Claude Code's `tool_use` block named
@@ -170,7 +192,7 @@ where the script says, so concurrency is observed rather than timed. No real eng
 |---|---|
 | AC1 | `pool/per-account-isolation` (declared falsifier), `pool/one-registration` (declared), `pool/concurrent` (declared) |
 | AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted`, `limit/claude-rejected-texts` |
-| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls` |
+| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls`, `decision/no-write-server-reruns`, `decision/nested-work-asks`, `decision/nested-constructs` |
 | AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared), `pool/usage-observes`, `pool/selection-order`, `pool/until-earliest` |
 | Install | `install/assets` |
 | Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines`, `format/tool-forms` |
@@ -199,7 +221,13 @@ each classified `account_limit` with exactly the window, reset and signal the st
 the account (exhausted, the source dispatch) and counted per account and window; an ordinary nonzero
 exit of each engine, a Claude Code window reported exhausted and then open again, and Claude Code's 429
 that is not the account's limit each end `failed` with no limit and no exhausted window. `decision/*`
-(AC3): for both engines, a record with no MCP call and one with only calls to tools marked read-only
+(AC3): `decision/rerun`, `decision/ask`, `decision/unreadable-asks` and `decision/same-id-write` hold no
+construct of nested work and are driven through `decide` with write-capable servers, each checked decided by
+the calls (basis `calls`); `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`,
+`decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names` and
+`decision/subagent-calls` judge how the call-by-call rules read records that hold such a construct, which
+`decide` now answers by rule 2, so they drive `decide_by_calls` and keep their meaning. For both engines, a
+record with no MCP call and one with only calls to tools marked read-only
 decide re-run naming nothing; a call to a tool not marked read-only, a call to a tool of a server whose
 revision marks nothing and a call to a server the configuration does not list each decide ask naming
 exactly that call (sequence, server, tool, catalog id, revision, reason), a call shown twice named once;
@@ -262,7 +290,29 @@ concurrency of two (three Codex dispatches at once, two on it). `pool/selection-
 Claude Code accounts at 0.7, 0.1, 0.1 (used last) and unknown, the dispatch goes to the 0.1 account used
 least recently and the trace ranks them in exactly that order, unknown last. `pool/until-earliest`: with
 all four limited (resets 900, 600, 1200 s ahead, and one at 300 s on its five-hour window with its weekly
-window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `install/assets`: the scaffold lays down both new
+window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `decision/no-write-server-reruns` (rule 1): the checker's forked skill
+(an Agent whose sub-agent runs a forking Skill, the fork's task started and ended with no count, no call shown),
+as objects and as JSON text, with only read-only tools configured (tracker listing `get_issue` and `search`, both
+marked; wiki listing none), a depth-2 agent's hidden MCP write with no server configured, and exec's own
+sub-agent call with no server configured each decide re-run, basis `no_write_capable_server`, naming nothing; a
+record with a sequence gap is still refused by name, a server whose `tools` is neither `all` nor a list is
+refused `invalid_input:configuration`; the negative controls: the forked skill with a server giving a listed tool
+not marked read-only, all its tools, its tools unlisted, or a tool of a revision that marks nothing is
+write-capable and asks. `decision/nested-work-asks` (rule 2): the forked skill (as objects and as JSON text) with
+the default write-capable servers asks, basis `nested_work`, naming exactly its ten construct lines (the Agent
+call, both tasks' frames, the sub-agent's forwarded Skill call and the fork's result, the task's last tool Skill),
+while the call-by-call rules alone see no call in it; a normal run whose Agent's calls are all shown and
+read-only asks naming the Agent line first (the call-by-call rules alone re-run it); a depth-2 agent's hidden
+write asks naming both its constructs and its task's unshown calls; Codex's `collab_tool_call` asks naming it as
+nested work and as an unknown call. `decision/nested-constructs`: each of 16 records holding one construct alone
+(Agent, Task, SendMessage, Skill, a REPL call, a REPL inner call on another tool's heartbeat, Workflow,
+RunWorkflow, a background shell task started, a task moved to the background, a sub-agent's message, a forked
+skill's progress frame, a forked skill's result; Codex's `collab_tool_call`, `collab_agent_tool_call` and
+`sub_agent_activity`) asks naming exactly that construct and form, a workflow's task start names a task frame and
+a workflow's, every class the binaries' tables list is driven, and the negative control (a Bash call, a denied
+Agent call and its result) names no nested work and re-runs by the calls. `format/tool-forms` also requires
+the construct tables (`NESTED_TOOLS`, `NESTED`, Codex's `NESTED_ITEMS`) to equal `nested_work`.
+`install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
 Plain run after the nested-agent fix: 53 passed (26 preamble, 27 rows) in 19.8 s. Stage environment run
