@@ -573,10 +573,11 @@ class Tasks:
         tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else None
         if tag not in TASK_COUNTS['frames']:
             return []
-        usage = event.get('usage')
+        holder, _, field = TASK_COUNTS['count'].partition('.')
+        usage = event.get(holder)
         if tag == 'system/task_notification' and usage is None:
             return []  # a task's end with no usage reports no count
-        task, count = event.get(TASK_COUNTS['task']), usage.get('tool_uses') if isinstance(usage, dict) else None
+        task, count = event.get(TASK_COUNTS['task']), usage.get(field) if isinstance(usage, dict) else None
         if not isinstance(task, str) or not _whole(count):
             return [_unreadable(task if isinstance(task, str) else None)]
         highest = self.reported.get(task)

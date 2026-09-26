@@ -7180,6 +7180,44 @@ def cases():
          "SUBAGENT_ITEMS = frozenset(('collab_tool_call',))\n",
          "SUBAGENT_ITEMS = frozenset()\nBUILTIN_ITEMS = BUILTIN_ITEMS | {'collab_tool_call'}  # defect\n",
          ['decision/unknown-forms', 'format/tool-forms'])
+    # BLOCKING (the lead's decision): a depth-2 agent's calls show no block; its task's count of its calls asks for
+    # every call the record does not show under it. The declared falsifier first: the count not read at all.
+    pool('decision-claude-task-counts-unread', 'control_account_limit.py',
+         "    tasks = engine.Tasks() if engine.Tasks is not None else None\n",
+         "    tasks = None  # defect: a task's count of its calls is not read\n",
+         ['decision/subagent-calls', 'decision/task-progress-tool'])
+    pool('decision-claude-task-one-over-allowed', 'control_engine_claude.py',
+         "            if unshown > 0:\n",
+         "            if unshown > 1:  # defect: one call the record does not show is taken for none\n",
+         ['decision/subagent-calls'])
+    pool('decision-claude-task-shown-any-parent', 'control_engine_claude.py',
+         "            if isinstance(parent, str) and isinstance(content, list):\n"
+         "                shown = self.shown.setdefault(parent, set())\n",
+         "            if isinstance(content, list):\n"
+         "                shown = self.shown.setdefault('any', set())  # defect: any message's calls count for a task\n",
+         ['decision/subagent-calls'],
+         also=[("            unshown = count - len(self.shown.get(task, ()))\n",
+                "            unshown = count - len(self.shown.get('any', ()))\n")])
+    pool('decision-claude-task-count-drop-accepted', 'control_engine_claude.py',
+         "        if highest is not None and count < highest[0]:\n",
+         "        if False:  # defect: a count lower than the task reported before is accepted\n",
+         ['decision/subagent-calls'])
+    pool('decision-claude-task-count-unreadable-skipped', 'control_engine_claude.py',
+         "            return [_unreadable(task if isinstance(task, str) else None)]\n",
+         "            return []  # defect: a count frame that cannot be read is skipped\n",
+         ['decision/subagent-calls'])
+    pool('decision-claude-task-first-count-kept', 'control_engine_claude.py',
+         "        if highest is None or count > highest[0]:\n",
+         "        if highest is None:  # defect: the task's first count is kept, not its highest\n",
+         ['decision/subagent-calls'])
+    pool('decision-claude-task-notification-count-unread', 'control_engine_claude.py',
+         "TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'),",
+         "TASK_COUNTS = {'frames': ('system/task_progress',),  # defect: a task's end count is not read\n",
+         ['decision/subagent-calls', 'format/tool-forms'])
+    pool('format-claude-task-count-field-moved', 'control_engine_claude.py',
+         "'count': 'usage.tool_uses',",
+         "'count': 'usage.total_tokens',  # defect: the count is read from another field\n",
+         ['decision/subagent-calls', 'format/tool-forms'])
     # Installation.
     pool('pool-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_pool.py",\n', '', ['install/assets'])
     pool('decision-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_limit.py",\n', '',
