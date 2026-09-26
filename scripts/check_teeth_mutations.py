@@ -6495,6 +6495,45 @@ def cases():
     grooming('grooming-refusal-unclassified', 'control_grooming.py',
              "            named = self.CB.taxonomy(reason)\n", "            pass  # defect: a backlog refusal is unclassified\n",
              ['observability'])
+
+    # VELDO-0149: each criterion's declared falsifier first, then the threat model's other shapes.
+    def adopted(name, old, new, row, also=()):
+        add(149, name, '77_veldo_0149_adopted_activation.py', 'control_project.py', old, new, [row], also)
+
+    adoption = ("        return (repository == self.ids['repository_uuid']\n"
+                "                or self.store.bound_repository(conn, self.ids['domain_uuid'], repository) is not None)\n")
+    # AC1 (declared falsifier): an execution repository no adoption in this domain recorded is accepted.
+    adopted('adoption-unchecked', adoption,
+            "        return True  # defect: any repository is taken as adopted\n", 'adopted/unadopted-refused')
+    adopted('adoption-any-domain',
+            "                or self.store.bound_repository(conn, self.ids['domain_uuid'], repository) is not None)\n",
+            "                or conn.execute('SELECT 1 FROM repository_bindings WHERE repository_uuid=?',  # defect: any domain\n"
+            "                                (repository,)).fetchone() is not None)\n", 'adopted/unadopted-refused')
+    adopted('adoption-own-repository-only', adoption,
+            "        return repository == self.ids['repository_uuid']  # defect: the store's one repository only\n",
+            'adopted/two-repositories')
+    adopted('adoption-unobserved',
+            "        return {'domain_uuid': self.ids['domain_uuid'], 'repository_uuid': repository, 'path': path,\n",
+            "        return {'domain_uuid': self.ids['domain_uuid'], 'repository_uuid': repository, 'path': None,  # defect\n",
+            'adopted/observed')
+    adopted('activation-path-uncounted', "            tally[observation['outcome']] += 1\n",
+            "            pass  # defect: activations are not counted by path\n", 'adopted/observed')
+    # AC2 (declared falsifier): a settlement answered by a member who is not the project's current owner applies.
+    adopted('settled-answer-any-member', "        if s.get('principals') != [fields['owner']]:\n",
+            "        if False:  # defect: any member's settled answer activates\n", 'answer/owner-only')
+    adopted('settled-field-unbound', "        fields = self._bound_fields(proposal)\n",
+            "        fields = {f: proposal.get(f) for f in ACTIVATION_FIELDS}  # defect: an omitted field is not named\n",
+            'answer/binds-every-field')
+    adopted('settled-unsettled-applies',
+            "        if not (data.get('state') == SETTLED_STATE and reference.get('request_version') == version\n"
+            "                and settled is not None and settled['kind'] == SETTLEMENT_KIND):\n",
+            "        if False:  # defect: an unsettled request is not refused as unsettled\n", 'answer/unsettled')
+    adopted('settled-rejection-applies', "        if s.get('ruling') != 'approve':\n",
+            "        if False:  # defect: a settled rejection is not refused as one\n", 'answer/unsettled')
+    adopted('stale-answer-unnamed', "        return 'stale_answer' if answers else 'unsettled:no_answer'\n",
+            "        return 'unsettled:no_answer'  # defect: a stale answer is not named\n", 'answer/stale')
+    adopted('settled-provenance-unrecorded', "                provenance.update(source='settled_answer', **settled)\n",
+            "                pass  # defect: the settlement the project came from is not recorded\n", 'answer/activates')
     return result
 
 

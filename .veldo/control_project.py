@@ -439,7 +439,7 @@ class Projects:
         if not (data.get('state') == SETTLED_STATE and reference.get('request_version') == version
                 and settled is not None and settled['kind'] == SETTLEMENT_KIND):
             raise Refused(self._unsettled(request, data), 'the request version is not settled')
-        s, e = settled['data'], (effect or {}).get('data') or {}
+        s, e = (settled or {}).get('data') or {}, (effect or {}).get('data') or {}
         observation.update(settlement_id=s.get('settlement_id'), receipt_id=s.get('receipt_id'),
                            presentation_id=s.get('presentation_id'))
         if s.get('ruling') != 'approve':
