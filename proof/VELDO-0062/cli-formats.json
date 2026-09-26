@@ -1,0 +1,2679 @@
+{
+ "claude_code": {
+  "binary": "/home/dmitry/.local/share/claude/versions/2.1.281",
+  "credential_tables": [
+   {
+    "decision": "strip",
+    "name": "auth_credentials",
+    "names": [
+     "ANTHROPIC_API_KEY",
+     "ANTHROPIC_AUTH_TOKEN",
+     "CLAUDE_CODE_OAUTH_TOKEN",
+     "AWS_BEARER_TOKEN_BEDROCK",
+     "ANTHROPIC_FOUNDRY_API_KEY",
+     "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+     "ANTHROPIC_AWS_API_KEY"
+    ],
+    "offset": 193479633,
+    "reason": "the credential variables a first-party or provider login reads"
+   },
+   {
+    "decision": "strip",
+    "name": "provider_selection",
+    "names": [
+     "CLAUDE_CODE_USE_BEDROCK",
+     "CLAUDE_CODE_USE_VERTEX",
+     "CLAUDE_CODE_USE_FOUNDRY",
+     "CLAUDE_CODE_USE_ANTHROPIC_AWS",
+     "CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD",
+     "CLAUDE_CODE_USE_MANTLE",
+     "CLAUDE_CODE_USE_GATEWAY",
+     "ANTHROPIC_FOUNDRY_RESOURCE",
+     "ANTHROPIC_VERTEX_PROJECT_ID",
+     "ANTHROPIC_AWS_WORKSPACE_ID",
+     "ANTHROPIC_GOOGLE_CLOUD_PROJECT",
+     "ANTHROPIC_GOOGLE_CLOUD_LOCATION",
+     "ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID",
+     "CLOUD_ML_REGION"
+    ],
+    "offset": 193476603,
+    "reason": "the switches that move Claude Code off the subscription to another provider, with their companions"
+   },
+   {
+    "decision": "strip",
+    "name": "aws_selection",
+    "names": [
+     "CLAUDE_CODE_USE_BEDROCK",
+     "CLAUDE_CODE_USE_ANTHROPIC_AWS",
+     "CLAUDE_CODE_USE_MANTLE"
+    ],
+    "offset": 193477020,
+    "reason": "the AWS-hosted provider switches"
+   },
+   {
+    "decision": "strip",
+    "name": "aws_bearer",
+    "names": [
+     "AWS_BEARER_TOKEN_BEDROCK",
+     "ANTHROPIC_AWS_API_KEY"
+    ],
+    "offset": 193477108,
+    "reason": "the AWS-hosted provider keys"
+   },
+   {
+    "decision": "strip",
+    "name": "skip_provider_auth",
+    "names": [
+     "CLAUDE_CODE_SKIP_BEDROCK_AUTH",
+     "CLAUDE_CODE_SKIP_VERTEX_AUTH",
+     "CLAUDE_CODE_SKIP_FOUNDRY_AUTH",
+     "CLAUDE_CODE_SKIP_ANTHROPIC_AWS_AUTH",
+     "CLAUDE_CODE_SKIP_ANTHROPIC_GOOGLE_CLOUD_AUTH",
+     "CLAUDE_CODE_SKIP_MANTLE_AUTH"
+    ],
+    "offset": 193479818,
+    "reason": "the switches that skip a provider login"
+   },
+   {
+    "decision": "strip",
+    "name": "anthropic_secrets",
+    "names": [
+     "ANTHROPIC_API_KEY",
+     "ANTHROPIC_AUTH_TOKEN",
+     "ANTHROPIC_CUSTOM_HEADERS",
+     "CLAUDE_CODE_OAUTH_TOKEN",
+     "CLAUDE_CODE_OAUTH_REFRESH_TOKEN",
+     "CLAUDE_CODE_ARTIFACTS_API_TOKEN",
+     "CLAUDE_CODE_MEMORY_API_TOKEN",
+     "CLAUDE_CODE_SLACK_TAG_TOKEN",
+     "ANTHROPIC_FOUNDRY_API_KEY",
+     "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+     "ANTHROPIC_AWS_API_KEY",
+     "ANTHROPIC_IDENTITY_TOKEN",
+     "ANTHROPIC_IDENTITY_TOKEN_FILE",
+     "ALL_INPUTS",
+     "INPUT_ANTHROPIC_API_KEY",
+     "INPUT_ANTHROPIC_AUTH_TOKEN",
+     "INPUT_ANTHROPIC_CUSTOM_HEADERS",
+     "INPUT_CLAUDE_CODE_OAUTH_TOKEN",
+     "INPUT_CLAUDE_CODE_OAUTH_REFRESH_TOKEN",
+     "INPUT_CLAUDE_CODE_ARTIFACTS_API_TOKEN",
+     "INPUT_CLAUDE_CODE_MEMORY_API_TOKEN",
+     "INPUT_CLAUDE_CODE_SLACK_TAG_TOKEN",
+     "INPUT_ANTHROPIC_FOUNDRY_API_KEY",
+     "INPUT_ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+     "INPUT_ANTHROPIC_AWS_API_KEY",
+     "INPUT_ANTHROPIC_IDENTITY_TOKEN",
+     "INPUT_ANTHROPIC_IDENTITY_TOKEN_FILE",
+     "INPUT_ALL_INPUTS"
+    ],
+    "offset": 194081123,
+    "reason": "Claude Code's own list of Anthropic secrets (with their INPUT_ forms)"
+   },
+   {
+    "decision": "strip",
+    "name": "session_tokens",
+    "names": [
+     "CLAUDE_CODE_SESSION_ACCESS_TOKEN",
+     "CLAUDE_CODE_OAUTH_TOKEN"
+    ],
+    "offset": 215366265,
+    "reason": "the session tokens a hosted or claimed session authenticates with"
+   },
+   {
+    "decision": "strip",
+    "name": "claimed_session_tokens",
+    "names": [
+     "CLAUDE_CODE_OAUTH_TOKEN",
+     "CLAUDE_CODE_SESSION_ACCESS_TOKEN",
+     "CLAUDE_CODE_HOST_SESSION_ID"
+    ],
+    "offset": 226463485,
+    "reason": "the tokens a claimed spare session is handed"
+   },
+   {
+    "decision": "strip",
+    "name": "api_key_pair",
+    "names": [
+     "ANTHROPIC_AUTH_TOKEN",
+     "ANTHROPIC_API_KEY"
+    ],
+    "offset": 230879420,
+    "reason": "the API key and bearer token"
+   },
+   {
+    "decision": "keep",
+    "name": "bedrock_wizard",
+    "names": [
+     "AWS_BEARER_TOKEN_BEDROCK",
+     "AWS_SECRET_ACCESS_KEY",
+     "AWS_SESSION_TOKEN"
+    ],
+    "offset": 217006953,
+    "reason": "the Bedrock setup wizard's AWS credentials: AWS_BEARER_TOKEN_BEDROCK is stripped by auth_credentials; the general AWS keys are the worker's tools' own cloud login and reach no model once the CLAUDE_CODE_USE_ switches are gone"
+   },
+   {
+    "decision": "keep",
+    "name": "tool_secret_scrub",
+    "names": [
+     "ANTHROPIC_API_KEY",
+     "CLAUDE_CODE_OAUTH_TOKEN",
+     "CLAUDE_CODE_ARTIFACTS_API_TOKEN",
+     "CLAUDE_CODE_MEMORY_API_TOKEN",
+     "CLAUDE_CODE_SLACK_TAG_TOKEN",
+     "ANTHROPIC_AUTH_TOKEN",
+     "ANTHROPIC_FOUNDRY_API_KEY",
+     "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+     "ANTHROPIC_AWS_API_KEY",
+     "ANTHROPIC_CUSTOM_HEADERS",
+     "AWS_SECRET_ACCESS_KEY",
+     "AWS_SESSION_TOKEN",
+     "AWS_BEARER_TOKEN_BEDROCK",
+     "GOOGLE_APPLICATION_CREDENTIALS",
+     "GOOGLE_GHA_CREDS_PATH",
+     "AZURE_CLIENT_SECRET",
+     "IDENTITY_HEADER",
+     "MSI_SECRET",
+     "AZURE_CLIENT_CERTIFICATE_PATH",
+     "AZURE_CLIENT_CERTIFICATE_PASSWORD",
+     "AZURE_PASSWORD",
+     "AZURE_FEDERATED_TOKEN_FILE",
+     "AWS_WEB_IDENTITY_TOKEN_FILE",
+     "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI",
+     "AWS_CONTAINER_CREDENTIALS_FULL_URI",
+     "AWS_CONTAINER_AUTHORIZATION_TOKEN",
+     "AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE",
+     "CLOUDSDK_AUTH_ACCESS_TOKEN",
+     "GOOGLE_OAUTH_ACCESS_TOKEN",
+     "CLAUDE_CODE_OAUTH_REFRESH_TOKEN",
+     "HF_TOKEN",
+     "HUGGING_FACE_HUB_TOKEN",
+     "HUGGINGFACEHUB_API_TOKEN",
+     "NODE_AUTH_TOKEN",
+     "NUGET_AUTH_TOKEN",
+     "CARGO_REGISTRY_TOKEN",
+     "TWINE_PASSWORD",
+     "TWINE_USERNAME",
+     "PYPI_TOKEN",
+     "PYPI_API_TOKEN",
+     "UV_PUBLISH_TOKEN",
+     "UV_PUBLISH_PASSWORD",
+     "UV_PUBLISH_USERNAME",
+     "FLIT_PASSWORD",
+     "FLIT_USERNAME",
+     "HATCH_INDEX_AUTH",
+     "HATCH_INDEX_USER",
+     "GEM_HOST_API_KEY",
+     "MATURIN_PYPI_TOKEN",
+     "MATURIN_PASSWORD",
+     "MATURIN_USERNAME",
+     "CONAN_LOGIN_USERNAME",
+     "CONAN_PASSWORD",
+     "ANACONDA_API_TOKEN",
+     "BINSTAR_API_TOKEN",
+     "VAULT_TOKEN",
+     "VAULT_AUTH_TOKEN",
+     "VAULT_ROLE_ID",
+     "VAULT_SECRET_ID",
+     "CONSUL_HTTP_TOKEN",
+     "CONSUL_HTTP_AUTH",
+     "NOMAD_TOKEN",
+     "NOMAD_HTTP_AUTH",
+     "CI_REGISTRY_USER",
+     "CI_DEPLOY_USER",
+     "JF_USER",
+     "FASTLANE_SESSION",
+     "MATCH_GIT_BASIC_AUTHORIZATION",
+     "SONAR_TOKEN",
+     "SONARQUBE_SCANNER_PARAMS",
+     "SONAR_SCANNER_JSON_PARAMS",
+     "SLACK_WEBHOOK_URL",
+     "SLACK_WEBHOOK",
+     "DISCORD_WEBHOOK",
+     "DISCORD_WEBHOOK_URL",
+     "TEAMS_WEBHOOK_URL",
+     "MS_TEAMS_WEBHOOK_URI",
+     "ANTHROPIC_IDENTITY_TOKEN",
+     "ANTHROPIC_IDENTITY_TOKEN_FILE",
+     "CLOUDSDK_AUTH_ACCESS_TOKEN_FILE",
+     "CLOUDSDK_AUTH_AUTHORIZATION_TOKEN_FILE",
+     "AZURE_AUTH_LOCATION",
+     "ACTIONS_ID_TOKEN_REQUEST_TOKEN",
+     "ACTIONS_ID_TOKEN_REQUEST_URL",
+     "ACTIONS_RUNTIME_TOKEN",
+     "ACTIONS_RUNTIME_URL",
+     "ALL_INPUTS",
+     "VSS_NUGET_EXTERNAL_FEED_ENDPOINTS",
+     "ARTIFACTS_CREDENTIALPROVIDER_EXTERNAL_FEED_ENDPOINTS",
+     "VSS_NUGET_ACCESSTOKEN",
+     "ARTIFACTS_CREDENTIALPROVIDER_ACCESSTOKEN",
+     "COMPOSER_AUTH",
+     "OVERRIDE_GITHUB_TOKEN",
+     "DEFAULT_WORKFLOW_TOKEN",
+     "SSH_SIGNING_KEY"
+    ],
+    "offset": 194073485,
+    "reason": "the secrets Claude Code scrubs from its own tool children (package registries, CI, cloud, webhooks): tool credentials, not a model login"
+   },
+   {
+    "decision": "strip",
+    "name": "provider_endpoints",
+    "names": [
+     "ANTHROPIC_AWS_BASE_URL",
+     "ANTHROPIC_BASE_URL",
+     "ANTHROPIC_BEDROCK_BASE_URL",
+     "ANTHROPIC_BEDROCK_MANTLE_BASE_URL",
+     "ANTHROPIC_CUSTOM_HEADERS",
+     "ANTHROPIC_FOUNDRY_BASE_URL",
+     "ANTHROPIC_GOOGLE_CLOUD_BASE_URL",
+     "ANTHROPIC_VERTEX_BASE_URL",
+     "CLAUDE_CODE_SKIP_ANTHROPIC_AWS_AUTH",
+     "CLAUDE_CODE_SKIP_ANTHROPIC_GOOGLE_CLOUD_AUTH",
+     "CLAUDE_CODE_SKIP_BEDROCK_AUTH",
+     "CLAUDE_CODE_SKIP_FOUNDRY_AUTH",
+     "CLAUDE_CODE_SKIP_MANTLE_AUTH",
+     "CLAUDE_CODE_SKIP_VERTEX_AUTH",
+     "CLAUDE_CODE_USE_ANTHROPIC_AWS",
+     "CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD",
+     "CLAUDE_CODE_USE_BEDROCK",
+     "CLAUDE_CODE_USE_FOUNDRY",
+     "CLAUDE_CODE_USE_MANTLE",
+     "CLAUDE_CODE_USE_VERTEX",
+     "_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL"
+    ],
+    "offset": 193478526,
+    "reason": "the base URLs that point Claude Code at another endpoint, with their selections and companions"
+   }
+  ],
+  "events": {
+   "assistant": {
+    "fields": {
+     "aborted": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "advisor_model": {
+      "optional": true,
+      "type": "string"
+     },
+     "api_error": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "max_output_tokens",
+       "dlp_request_denied",
+       "claude_code_version_too_old",
+       "safety_monitor_blocked",
+       "effort_requires_thinking",
+       "advisor_incompatible",
+       "tool_history_mismatch",
+       "autocompact_thrashing",
+       "pdf_too_large",
+       "pdf_password_protected",
+       "no_response",
+       "tls_untrusted_ca",
+       "gateway_content_type",
+       "provider_credentials",
+       "gateway_signin_required",
+       "gateway_session_expired",
+       "api_key_auth_disabled",
+       "org_disabled_credential",
+       "invalid_credential_header",
+       "model_requires_usage_credits",
+       "long_context_credits_required",
+       "consent_unanswered",
+       "no_allowed_fallback",
+       "model_substitution_disabled",
+       "field_not_granted"
+      ]
+     },
+     "api_error_code": {
+      "optional": true,
+      "type": "string"
+     },
+     "api_error_params": {
+      "fields": {
+       "effort": {
+        "optional": true,
+        "type": "string"
+       },
+       "provider": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "bedrock",
+         "anthropicAws",
+         "mantle",
+         "anthropicGoogleCloud",
+         "vertex",
+         "foundry",
+         "gateway"
+        ]
+       },
+       "remedy": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "refresh_command",
+         "refresh_credentials",
+         "adc",
+         "gateway_token",
+         "host_managed",
+         "model_access"
+        ]
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "api_error_status": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "attribution_agent": {
+      "optional": true,
+      "type": "string"
+     },
+     "attribution_mcp_server": {
+      "optional": true,
+      "type": "string"
+     },
+     "attribution_mcp_tool": {
+      "optional": true,
+      "type": "string"
+     },
+     "attribution_plugin": {
+      "optional": true,
+      "type": "string"
+     },
+     "attribution_skill": {
+      "optional": true,
+      "type": "string"
+     },
+     "batch_tool_uses": {
+      "items": {
+       "ref": "Je",
+       "type": "any"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "context_usage": {
+      "fields": {
+       "agents": {
+        "items": {
+         "fields": {
+          "agent_type": {
+           "type": "string"
+          },
+          "source": {
+           "type": "string"
+          },
+          "tokens": {
+           "int": true,
+           "type": "number"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "categories": {
+        "items": {
+         "fields": {
+          "kind": {
+           "ref": "osn",
+           "type": "enum",
+           "values": [
+            "used",
+            "free",
+            "buffer",
+            "deferred"
+           ]
+          },
+          "name": {
+           "type": "string"
+          },
+          "tokens": {
+           "int": true,
+           "type": "number"
+          }
+         },
+         "ref": "iK",
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "mcp_tools": {
+        "items": {
+         "fields": {
+          "name": {
+           "type": "string"
+          },
+          "server_name": {
+           "type": "string"
+          },
+          "tokens": {
+           "int": true,
+           "type": "number"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "memory_files": {
+        "items": {
+         "fields": {
+          "path": {
+           "type": "string"
+          },
+          "tokens": {
+           "int": true,
+           "type": "number"
+          },
+          "type": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "model": {
+        "type": "string"
+       },
+       "over_limit": {
+        "fields": {
+         "kind": {
+          "type": "enum",
+          "values": [
+           "hard_limit",
+           "compaction_window"
+          ]
+         },
+         "tokens_over": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "percentage": {
+        "int": true,
+        "type": "number"
+       },
+       "raw_max_tokens": {
+        "int": true,
+        "type": "number"
+       },
+       "skills": {
+        "items": {
+         "fields": {
+          "name": {
+           "type": "string"
+          },
+          "plugin_name": {
+           "optional": true,
+           "type": "string"
+          },
+          "source": {
+           "type": "string"
+          },
+          "tokens": {
+           "int": true,
+           "type": "number"
+          }
+         },
+         "type": "object"
+        },
+        "optional": true,
+        "type": "array"
+       },
+       "total_tokens": {
+        "int": true,
+        "type": "number"
+       }
+      },
+      "optional": true,
+      "ref": "aK",
+      "type": "object"
+     },
+     "error": {
+      "optional": true,
+      "ref": "$o",
+      "type": "enum",
+      "values": [
+       "authentication_failed",
+       "oauth_org_not_allowed",
+       "account_on_hold",
+       "verification_required",
+       "billing_error",
+       "rate_limit",
+       "overloaded",
+       "invalid_request",
+       "model_not_found",
+       "server_error",
+       "unknown",
+       "max_output_tokens",
+       "cloud_credential_error"
+      ]
+     },
+     "error_details": {
+      "optional": true,
+      "type": "string"
+     },
+     "historical": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "is_api_error_message": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "is_meta": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "is_virtual": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "local_command_outcome": {
+      "fields": {
+       "kind": {
+        "ref": "Do",
+        "type": "enum",
+        "values": [
+         "unavailable_headless",
+         "unknown",
+         "failed",
+         "restart_required"
+        ]
+       },
+       "suggestion": {
+        "optional": true,
+        "type": "string"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "local_command_run": {
+      "fields": {
+       "args": {
+        "type": "string"
+       },
+       "command": {
+        "type": "string"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "local_command_source": {
+      "optional": true,
+      "type": "string"
+     },
+     "message": {
+      "fields": {
+       "container": {
+        "optional": true,
+        "type": "any"
+       },
+       "content": {
+        "items": {
+         "ref": "yq",
+         "type": "any"
+        },
+        "type": "array"
+       },
+       "context_management": {
+        "optional": true,
+        "type": "any"
+       },
+       "id": {
+        "optional": true,
+        "type": "string"
+       },
+       "model": {
+        "type": "string"
+       },
+       "role": {
+        "type": "literal",
+        "value": "assistant"
+       },
+       "stop_details": {
+        "optional": true,
+        "type": "any"
+       },
+       "stop_reason": {
+        "nullable": true,
+        "type": "string"
+       },
+       "stop_sequence": {
+        "nullable": true,
+        "optional": true,
+        "type": "string"
+       },
+       "type": {
+        "optional": true,
+        "type": "literal",
+        "value": "message"
+       },
+       "usage": {
+        "fields": {
+         "cache_creation": {
+          "fields": {
+           "ephemeral_1h_input_tokens": {
+            "int": true,
+            "type": "number"
+           },
+           "ephemeral_5m_input_tokens": {
+            "int": true,
+            "type": "number"
+           }
+          },
+          "nullable": true,
+          "ref": "Oq",
+          "type": "object"
+         },
+         "cache_creation_input_tokens": {
+          "int": true,
+          "nullable": true,
+          "type": "number"
+         },
+         "cache_read_input_tokens": {
+          "int": true,
+          "nullable": true,
+          "type": "number"
+         },
+         "inference_geo": {
+          "nullable": true,
+          "optional": true,
+          "type": "string"
+         },
+         "input_tokens": {
+          "int": true,
+          "type": "number"
+         },
+         "iterations": {
+          "optional": true,
+          "type": "any"
+         },
+         "output_tokens": {
+          "int": true,
+          "type": "number"
+         },
+         "output_tokens_details": {
+          "fields": {
+           "thinking_tokens": {
+            "int": true,
+            "optional": true,
+            "type": "number"
+           }
+          },
+          "nullable": true,
+          "optional": true,
+          "ref": "Cq",
+          "type": "object"
+         },
+         "server_tool_use": {
+          "fields": {
+           "web_fetch_requests": {
+            "int": true,
+            "type": "number"
+           },
+           "web_search_requests": {
+            "int": true,
+            "type": "number"
+           }
+          },
+          "nullable": true,
+          "ref": "wq",
+          "type": "object"
+         },
+         "service_tier": {
+          "nullable": true,
+          "type": "string"
+         },
+         "speed": {
+          "nullable": true,
+          "optional": true,
+          "type": "string"
+         }
+        },
+        "ref": "Uo",
+        "type": "object"
+       }
+      },
+      "ref": "eK",
+      "type": "object"
+     },
+     "narration_block_indexes": {
+      "items": {
+       "int": true,
+       "type": "number"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "narration_hint": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "hidden",
+       "faint"
+      ]
+     },
+     "parent_tool_use_id": {
+      "nullable": true,
+      "type": "string"
+     },
+     "request_id": {
+      "optional": true,
+      "type": "string"
+     },
+     "resume_reason": {
+      "optional": true,
+      "type": "string"
+     },
+     "resumed_from_incomplete_thinking": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "session_id": {
+      "type": "string"
+     },
+     "subagent_type": {
+      "optional": true,
+      "type": "string"
+     },
+     "supersedes": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "task_description": {
+      "optional": true,
+      "type": "string"
+     },
+     "timestamp": {
+      "optional": true,
+      "type": "string"
+     },
+     "tool_use_meta": {
+      "items": {
+       "fields": {
+        "display_name": {
+         "type": "string"
+        },
+        "icon_url": {
+         "optional": true,
+         "type": "string"
+        },
+        "id": {
+         "type": "string"
+        },
+        "server_display_name": {
+         "optional": true,
+         "type": "string"
+        }
+       },
+       "type": "object"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "type": {
+      "type": "literal",
+      "value": "assistant"
+     },
+     "usage_report": {
+      "fields": {
+       "rate_limits": {
+        "fields": {
+         "extra_usage": {
+          "fields": {
+           "currency": {
+            "nullable": true,
+            "optional": true,
+            "type": "string"
+           },
+           "is_enabled": {
+            "type": "boolean"
+           },
+           "monthly_limit": {
+            "nullable": true,
+            "type": "number"
+           },
+           "used_credits": {
+            "nullable": true,
+            "type": "number"
+           },
+           "utilization": {
+            "nullable": true,
+            "type": "number"
+           }
+          },
+          "nullable": true,
+          "optional": true,
+          "type": "object"
+         },
+         "limits": {
+          "items": {
+           "fields": {
+            "group": {
+             "type": "string"
+            },
+            "is_active": {
+             "type": "boolean"
+            },
+            "kind": {
+             "type": "string"
+            },
+            "percent": {
+             "type": "number"
+            },
+            "resets_at": {
+             "nullable": true,
+             "type": "string"
+            },
+            "scope": {
+             "fields": {
+              "model": {
+               "fields": {
+                "display_name": {
+                 "type": "string"
+                }
+               },
+               "nullable": true,
+               "optional": true,
+               "type": "object"
+              },
+              "surface": {
+               "fields": {
+                "display_name": {
+                 "type": "string"
+                }
+               },
+               "nullable": true,
+               "optional": true,
+               "type": "object"
+              }
+             },
+             "nullable": true,
+             "optional": true,
+             "type": "object"
+            },
+            "severity": {
+             "type": "string"
+            }
+           },
+           "type": "object"
+          },
+          "nullable": true,
+          "type": "array"
+         }
+        },
+        "nullable": true,
+        "type": "object"
+       },
+       "session": {
+        "fields": {
+         "model_usage": {
+          "type": "record",
+          "values": {
+           "fields": {
+            "cacheCreationInputTokens": {
+             "int": true,
+             "type": "number"
+            },
+            "cacheReadInputTokens": {
+             "int": true,
+             "type": "number"
+            },
+            "canonicalModel": {
+             "optional": true,
+             "type": "string"
+            },
+            "contextWindow": {
+             "int": true,
+             "type": "number"
+            },
+            "costBasis": {
+             "optional": true,
+             "type": "enum",
+             "values": [
+              "list",
+              "managed",
+              "unknown"
+             ]
+            },
+            "costUSD": {
+             "type": "number"
+            },
+            "inputTokens": {
+             "int": true,
+             "type": "number"
+            },
+            "maxOutputTokens": {
+             "int": true,
+             "type": "number"
+            },
+            "outputTokens": {
+             "int": true,
+             "type": "number"
+            },
+            "provider": {
+             "optional": true,
+             "type": "string"
+            },
+            "thinkingTokens": {
+             "int": true,
+             "optional": true,
+             "type": "number"
+            },
+            "webSearchRequests": {
+             "int": true,
+             "type": "number"
+            }
+           },
+           "ref": "Ut",
+           "type": "object"
+          }
+         },
+         "total_api_duration_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "total_cost_usd": {
+          "type": "number"
+         },
+         "total_duration_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "total_lines_added": {
+          "int": true,
+          "type": "number"
+         },
+         "total_lines_removed": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "type": "object"
+       }
+      },
+      "optional": true,
+      "ref": "_Rr",
+      "type": "object"
+     },
+     "user_message_uuid": {
+      "optional": true,
+      "type": "string"
+     },
+     "user_message_uuids": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "uuid": {
+      "type": "string"
+     },
+     "wire_ingest_context": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "type": "any"
+      }
+     },
+     "wire_tool_inputs": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "type": "any"
+      }
+     }
+    },
+    "type": "object"
+   },
+   "rate_limit_event": {
+    "fields": {
+     "rate_limit_info": {
+      "fields": {
+       "canUserPurchaseCredits": {
+        "optional": true,
+        "type": "boolean"
+       },
+       "errorCode": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "credits_required"
+        ]
+       },
+       "hasChargeableSavedPaymentMethod": {
+        "optional": true,
+        "type": "boolean"
+       },
+       "isUsingOverage": {
+        "optional": true,
+        "type": "boolean"
+       },
+       "limitScope": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "service",
+         "channel",
+         "group_pool"
+        ]
+       },
+       "overageDisabledReason": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "overage_not_provisioned",
+         "org_level_disabled",
+         "org_level_disabled_until",
+         "out_of_credits",
+         "seat_tier_level_disabled",
+         "member_level_disabled",
+         "seat_tier_zero_credit_limit",
+         "group_zero_credit_limit",
+         "member_zero_credit_limit",
+         "org_service_level_disabled",
+         "no_limits_configured",
+         "fetch_error",
+         "unknown"
+        ]
+       },
+       "overageInUse": {
+        "optional": true,
+        "type": "boolean"
+       },
+       "overagePeriodChannel": {
+        "fields": {
+         "utilization": {
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "overagePeriodMonthly": {
+        "fields": {
+         "utilization": {
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "overageResetsAt": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "overageStatus": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "allowed",
+         "allowed_warning",
+         "rejected"
+        ]
+       },
+       "rateLimitGraceActive": {
+        "optional": true,
+        "type": "boolean"
+       },
+       "rateLimitType": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "five_hour",
+         "seven_day",
+         "seven_day_opus",
+         "seven_day_sonnet",
+         "seven_day_overage_included",
+         "overage"
+        ]
+       },
+       "resetsAt": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "status": {
+        "type": "enum",
+        "values": [
+         "allowed",
+         "allowed_warning",
+         "rejected"
+        ]
+       },
+       "surpassedThreshold": {
+        "optional": true,
+        "type": "number"
+       },
+       "unifiedWindows": {
+        "fields": {
+         "five_hour": {
+          "fields": {
+           "resetsAt": {
+            "int": true,
+            "type": "number"
+           },
+           "utilization": {
+            "type": "number"
+           }
+          },
+          "optional": true,
+          "type": "object"
+         },
+         "seven_day": {
+          "fields": {
+           "resetsAt": {
+            "int": true,
+            "type": "number"
+           },
+           "utilization": {
+            "type": "number"
+           }
+          },
+          "optional": true,
+          "type": "object"
+         },
+         "seven_day_overage_included": {
+          "fields": {
+           "resetsAt": {
+            "int": true,
+            "type": "number"
+           },
+           "utilization": {
+            "type": "number"
+           }
+          },
+          "optional": true,
+          "type": "object"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "utilization": {
+        "optional": true,
+        "type": "number"
+       }
+      },
+      "ref": "yRr",
+      "type": "object"
+     },
+     "session_id": {
+      "type": "string"
+     },
+     "type": {
+      "type": "literal",
+      "value": "rate_limit_event"
+     },
+     "uuid": {
+      "type": "string"
+     }
+    },
+    "type": "object"
+   },
+   "result/error": {
+    "fields": {
+     "duration_api_ms": {
+      "int": true,
+      "type": "number"
+     },
+     "duration_ms": {
+      "int": true,
+      "type": "number"
+     },
+     "errors": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "fast_mode_disabled_reason": {
+      "optional": true,
+      "ref": "Ht",
+      "type": "enum",
+      "values": [
+       "free",
+       "preference",
+       "extra_usage_disabled",
+       "network_error",
+       "unknown",
+       "not_first_party",
+       "disabled_by_env",
+       "model_not_allowed",
+       "sdk_opt_in_required",
+       "pending"
+      ]
+     },
+     "fast_mode_state": {
+      "optional": true,
+      "ref": "Bt",
+      "type": "enum",
+      "values": [
+       "off",
+       "cooldown",
+       "on"
+      ]
+     },
+     "is_error": {
+      "type": "boolean"
+     },
+     "modelUsage": {
+      "type": "record",
+      "values": {
+       "fields": {
+        "cacheCreationInputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "cacheReadInputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "canonicalModel": {
+         "optional": true,
+         "type": "string"
+        },
+        "contextWindow": {
+         "int": true,
+         "type": "number"
+        },
+        "costBasis": {
+         "optional": true,
+         "type": "enum",
+         "values": [
+          "list",
+          "managed",
+          "unknown"
+         ]
+        },
+        "costUSD": {
+         "type": "number"
+        },
+        "inputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "maxOutputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "outputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "provider": {
+         "optional": true,
+         "type": "string"
+        },
+        "thinkingTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "webSearchRequests": {
+         "int": true,
+         "type": "number"
+        }
+       },
+       "ref": "Ut",
+       "type": "object"
+      }
+     },
+     "num_turns": {
+      "int": true,
+      "type": "number"
+     },
+     "origin": {
+      "optional": true,
+      "ref": "Xo",
+      "type": "any"
+     },
+     "permission_denials": {
+      "items": {
+       "fields": {
+        "tool_input": {
+         "type": "record",
+         "values": {
+          "type": "any"
+         }
+        },
+        "tool_name": {
+         "type": "string"
+        },
+        "tool_use_id": {
+         "type": "string"
+        }
+       },
+       "ref": "JR",
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "queued_turn_count": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "result_index": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "resume_reason": {
+      "optional": true,
+      "type": "string"
+     },
+     "runner_exit": {
+      "fields": {
+       "exit_code": {
+        "int": true,
+        "nullable": true,
+        "optional": true,
+        "type": "number"
+       },
+       "phase": {
+        "type": "enum",
+        "values": [
+         "setup",
+         "run"
+        ]
+       },
+       "signal": {
+        "nullable": true,
+        "optional": true,
+        "type": "string"
+       }
+      },
+      "optional": true,
+      "ref": "dK",
+      "type": "object"
+     },
+     "session_id": {
+      "type": "string"
+     },
+     "startup_failure_reason": {
+      "optional": true,
+      "ref": "uK",
+      "type": "enum",
+      "values": [
+       "org_pin_api_key_conflict",
+       "org_verify_failed",
+       "org_pin_mismatch",
+       "managed_settings_invalid",
+       "remote_settings_required_unavailable",
+       "gateway_signin_required",
+       "gateway_access_denied",
+       "proxy_invalid",
+       "temp_dir_unusable",
+       "cwd_unavailable",
+       "shell_tool_missing",
+       "session_held_by_background",
+       "worktree_resume_refused",
+       "worktree_unverified",
+       "cli_version_too_old",
+       "bypass_root"
+      ]
+     },
+     "stop_reason": {
+      "nullable": true,
+      "type": "string"
+     },
+     "subagent_stats": {
+      "fields": {
+       "by_type": {
+        "type": "record",
+        "values": {
+         "int": true,
+         "type": "number"
+        }
+       },
+       "completed": {
+        "int": true,
+        "type": "number"
+       },
+       "failed": {
+        "int": true,
+        "type": "number"
+       },
+       "killed": {
+        "fields": {
+         "parent": {
+          "int": true,
+          "type": "number"
+         },
+         "system": {
+          "int": true,
+          "type": "number"
+         },
+         "user": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "type": "object"
+       },
+       "max_depth": {
+        "int": true,
+        "type": "number"
+       },
+       "refused": {
+        "fields": {
+         "budget": {
+          "int": true,
+          "type": "number"
+         },
+         "concurrency_limit": {
+          "int": true,
+          "type": "number"
+         },
+         "depth_limit": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "type": "object"
+       },
+       "requested": {
+        "fields": {
+         "background": {
+          "int": true,
+          "type": "number"
+         },
+         "foreground": {
+          "int": true,
+          "type": "number"
+         },
+         "unset": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "type": "object"
+       },
+       "spawned": {
+        "int": true,
+        "type": "number"
+       },
+       "spawned_by_subagents": {
+        "int": true,
+        "type": "number"
+       },
+       "started_in_background": {
+        "int": true,
+        "type": "number"
+       }
+      },
+      "optional": true,
+      "ref": "ey",
+      "type": "object"
+     },
+     "subtype": {
+      "type": "enum",
+      "values": [
+       "error_during_execution",
+       "error_max_turns",
+       "error_max_budget_usd",
+       "error_max_structured_output_retries"
+      ]
+     },
+     "terminal_reason": {
+      "optional": true,
+      "ref": "ZR",
+      "type": "string"
+     },
+     "total_cost_usd": {
+      "type": "number"
+     },
+     "type": {
+      "type": "literal",
+      "value": "result"
+     },
+     "usage": {
+      "fields": {
+       "cache_creation": {
+        "fields": {
+         "ephemeral_1h_input_tokens": {
+          "int": true,
+          "type": "number"
+         },
+         "ephemeral_5m_input_tokens": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "nullable": true,
+        "ref": "Oq",
+        "type": "object"
+       },
+       "cache_creation_input_tokens": {
+        "int": true,
+        "nullable": true,
+        "type": "number"
+       },
+       "cache_read_input_tokens": {
+        "int": true,
+        "nullable": true,
+        "type": "number"
+       },
+       "inference_geo": {
+        "nullable": true,
+        "optional": true,
+        "type": "string"
+       },
+       "input_tokens": {
+        "int": true,
+        "type": "number"
+       },
+       "iterations": {
+        "optional": true,
+        "type": "any"
+       },
+       "output_tokens": {
+        "int": true,
+        "type": "number"
+       },
+       "output_tokens_details": {
+        "fields": {
+         "thinking_tokens": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         }
+        },
+        "nullable": true,
+        "optional": true,
+        "ref": "Cq",
+        "type": "object"
+       },
+       "server_tool_use": {
+        "fields": {
+         "web_fetch_requests": {
+          "int": true,
+          "type": "number"
+         },
+         "web_search_requests": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "nullable": true,
+        "ref": "wq",
+        "type": "object"
+       },
+       "service_tier": {
+        "nullable": true,
+        "type": "string"
+       },
+       "speed": {
+        "nullable": true,
+        "optional": true,
+        "type": "string"
+       }
+      },
+      "ref": "WR",
+      "type": "object"
+     },
+     "user_message_uuid": {
+      "optional": true,
+      "type": "string"
+     },
+     "user_message_uuids": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "uuid": {
+      "type": "string"
+     }
+    },
+    "type": "object"
+   },
+   "result/success": {
+    "fields": {
+     "api_error_code": {
+      "optional": true,
+      "type": "string"
+     },
+     "api_error_status": {
+      "int": true,
+      "nullable": true,
+      "optional": true,
+      "type": "number"
+     },
+     "deferred_tool_use": {
+      "fields": {
+       "id": {
+        "type": "string"
+       },
+       "input": {
+        "type": "record",
+        "values": {
+         "type": "any"
+        }
+       },
+       "name": {
+        "type": "string"
+       }
+      },
+      "optional": true,
+      "ref": "cK",
+      "type": "object"
+     },
+     "duration_api_ms": {
+      "int": true,
+      "type": "number"
+     },
+     "duration_ms": {
+      "int": true,
+      "type": "number"
+     },
+     "fast_mode_disabled_reason": {
+      "optional": true,
+      "ref": "Ht",
+      "type": "enum",
+      "values": [
+       "free",
+       "preference",
+       "extra_usage_disabled",
+       "network_error",
+       "unknown",
+       "not_first_party",
+       "disabled_by_env",
+       "model_not_allowed",
+       "sdk_opt_in_required",
+       "pending"
+      ]
+     },
+     "fast_mode_state": {
+      "optional": true,
+      "ref": "Bt",
+      "type": "enum",
+      "values": [
+       "off",
+       "cooldown",
+       "on"
+      ]
+     },
+     "first_content_frame_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "first_stream_post_ack_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "first_stream_post_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "first_stream_post_queue_wait_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "first_stream_post_queued_behind": {
+      "optional": true,
+      "ref": "SR",
+      "type": "enum",
+      "values": [
+       "durable_post",
+       "ephemeral_post",
+       "retry_backoff",
+       "hold",
+       "none"
+      ]
+     },
+     "first_stream_post_wall_ms": {
+      "optional": true,
+      "type": "number"
+     },
+     "first_text_post_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "first_text_post_wall_ms": {
+      "optional": true,
+      "type": "number"
+     },
+     "frame_enqueued_wall_ms": {
+      "optional": true,
+      "type": "number"
+     },
+     "frame_received_wall_ms": {
+      "optional": true,
+      "type": "number"
+     },
+     "is_error": {
+      "type": "boolean"
+     },
+     "local_command": {
+      "optional": true,
+      "type": "string"
+     },
+     "modelUsage": {
+      "type": "record",
+      "values": {
+       "fields": {
+        "cacheCreationInputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "cacheReadInputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "canonicalModel": {
+         "optional": true,
+         "type": "string"
+        },
+        "contextWindow": {
+         "int": true,
+         "type": "number"
+        },
+        "costBasis": {
+         "optional": true,
+         "type": "enum",
+         "values": [
+          "list",
+          "managed",
+          "unknown"
+         ]
+        },
+        "costUSD": {
+         "type": "number"
+        },
+        "inputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "maxOutputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "outputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "provider": {
+         "optional": true,
+         "type": "string"
+        },
+        "thinkingTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "webSearchRequests": {
+         "int": true,
+         "type": "number"
+        }
+       },
+       "ref": "Ut",
+       "type": "object"
+      }
+     },
+     "num_turns": {
+      "int": true,
+      "type": "number"
+     },
+     "origin": {
+      "optional": true,
+      "ref": "Xo",
+      "type": "any"
+     },
+     "permission_denials": {
+      "items": {
+       "fields": {
+        "tool_input": {
+         "type": "record",
+         "values": {
+          "type": "any"
+         }
+        },
+        "tool_name": {
+         "type": "string"
+        },
+        "tool_use_id": {
+         "type": "string"
+        }
+       },
+       "ref": "JR",
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "queued_turn_count": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "request_sent_wall_ms": {
+      "optional": true,
+      "type": "number"
+     },
+     "result": {
+      "type": "string"
+     },
+     "result_index": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "resume_reason": {
+      "optional": true,
+      "type": "string"
+     },
+     "session_id": {
+      "type": "string"
+     },
+     "stop_reason": {
+      "nullable": true,
+      "type": "string"
+     },
+     "structured_output": {
+      "optional": true,
+      "type": "any"
+     },
+     "subagent_stats": {
+      "fields": {
+       "by_type": {
+        "type": "record",
+        "values": {
+         "int": true,
+         "type": "number"
+        }
+       },
+       "completed": {
+        "int": true,
+        "type": "number"
+       },
+       "failed": {
+        "int": true,
+        "type": "number"
+       },
+       "killed": {
+        "fields": {
+         "parent": {
+          "int": true,
+          "type": "number"
+         },
+         "system": {
+          "int": true,
+          "type": "number"
+         },
+         "user": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "type": "object"
+       },
+       "max_depth": {
+        "int": true,
+        "type": "number"
+       },
+       "refused": {
+        "fields": {
+         "budget": {
+          "int": true,
+          "type": "number"
+         },
+         "concurrency_limit": {
+          "int": true,
+          "type": "number"
+         },
+         "depth_limit": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "type": "object"
+       },
+       "requested": {
+        "fields": {
+         "background": {
+          "int": true,
+          "type": "number"
+         },
+         "foreground": {
+          "int": true,
+          "type": "number"
+         },
+         "unset": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "type": "object"
+       },
+       "spawned": {
+        "int": true,
+        "type": "number"
+       },
+       "spawned_by_subagents": {
+        "int": true,
+        "type": "number"
+       },
+       "started_in_background": {
+        "int": true,
+        "type": "number"
+       }
+      },
+      "optional": true,
+      "ref": "ey",
+      "type": "object"
+     },
+     "subtype": {
+      "type": "literal",
+      "value": "success"
+     },
+     "terminal_reason": {
+      "optional": true,
+      "ref": "ZR",
+      "type": "string"
+     },
+     "time_origin_ms": {
+      "optional": true,
+      "type": "number"
+     },
+     "time_to_request_from_spawn_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "time_to_request_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "total_cost_usd": {
+      "type": "number"
+     },
+     "ttft_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "ttft_stream_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "turn_started_wall_ms": {
+      "optional": true,
+      "type": "number"
+     },
+     "type": {
+      "type": "literal",
+      "value": "result"
+     },
+     "usage": {
+      "fields": {
+       "cache_creation": {
+        "fields": {
+         "ephemeral_1h_input_tokens": {
+          "int": true,
+          "type": "number"
+         },
+         "ephemeral_5m_input_tokens": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "nullable": true,
+        "ref": "Oq",
+        "type": "object"
+       },
+       "cache_creation_input_tokens": {
+        "int": true,
+        "nullable": true,
+        "type": "number"
+       },
+       "cache_read_input_tokens": {
+        "int": true,
+        "nullable": true,
+        "type": "number"
+       },
+       "inference_geo": {
+        "nullable": true,
+        "optional": true,
+        "type": "string"
+       },
+       "input_tokens": {
+        "int": true,
+        "type": "number"
+       },
+       "iterations": {
+        "optional": true,
+        "type": "any"
+       },
+       "output_tokens": {
+        "int": true,
+        "type": "number"
+       },
+       "output_tokens_details": {
+        "fields": {
+         "thinking_tokens": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         }
+        },
+        "nullable": true,
+        "optional": true,
+        "ref": "Cq",
+        "type": "object"
+       },
+       "server_tool_use": {
+        "fields": {
+         "web_fetch_requests": {
+          "int": true,
+          "type": "number"
+         },
+         "web_search_requests": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "nullable": true,
+        "ref": "wq",
+        "type": "object"
+       },
+       "service_tier": {
+        "nullable": true,
+        "type": "string"
+       },
+       "speed": {
+        "nullable": true,
+        "optional": true,
+        "type": "string"
+       }
+      },
+      "ref": "WR",
+      "type": "object"
+     },
+     "user_message_uuid": {
+      "optional": true,
+      "type": "string"
+     },
+     "user_message_uuids": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "uuid": {
+      "type": "string"
+     },
+     "warm_spare_claimed": {
+      "optional": true,
+      "type": "boolean"
+     }
+    },
+    "type": "object"
+   },
+   "system/init": {
+    "fields": {
+     "agents": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "analytics_disabled": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "apiKeySource": {
+      "ref": "vq",
+      "type": "enum",
+      "values": [
+       "ANTHROPIC_API_KEY",
+       "apiKeyHelper",
+       "/login managed key",
+       "none",
+       "user",
+       "project",
+       "org",
+       "temporary",
+       "oauth"
+      ]
+     },
+     "betas": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "capabilities": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "claude_code_version": {
+      "type": "string"
+     },
+     "cloud_session": {
+      "optional": true,
+      "ref": "iy",
+      "type": "any"
+     },
+     "cwd": {
+      "type": "string"
+     },
+     "effort": {
+      "nullable": true,
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "low",
+       "medium",
+       "high",
+       "xhigh",
+       "max"
+      ]
+     },
+     "fast_mode_disabled_reason": {
+      "optional": true,
+      "ref": "Ht",
+      "type": "enum",
+      "values": [
+       "free",
+       "preference",
+       "extra_usage_disabled",
+       "network_error",
+       "unknown",
+       "not_first_party",
+       "disabled_by_env",
+       "model_not_allowed",
+       "sdk_opt_in_required",
+       "pending"
+      ]
+     },
+     "fast_mode_state": {
+      "optional": true,
+      "ref": "Bt",
+      "type": "enum",
+      "values": [
+       "off",
+       "cooldown",
+       "on"
+      ]
+     },
+     "footer_indicator": {
+      "fields": {
+       "text": {
+        "type": "string"
+       }
+      },
+      "optional": true,
+      "ref": "an",
+      "type": "object"
+     },
+     "mcp_server_errors": {
+      "items": {
+       "fields": {
+        "message": {
+         "type": "string"
+        },
+        "name": {
+         "type": "string"
+        },
+        "type": {
+         "type": "string"
+        }
+       },
+       "type": "object"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "mcp_servers": {
+      "items": {
+       "fields": {
+        "name": {
+         "type": "string"
+        },
+        "source": {
+         "optional": true,
+         "type": "string"
+        },
+        "status": {
+         "type": "string"
+        }
+       },
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "memory_paths": {
+      "fields": {
+       "auto": {
+        "optional": true,
+        "type": "string"
+       },
+       "team": {
+        "optional": true,
+        "type": "string"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "model": {
+      "type": "string"
+     },
+     "output_style": {
+      "type": "string"
+     },
+     "per_turn_effort_active": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "permissionMode": {
+      "ref": "ne",
+      "type": "any"
+     },
+     "plugin_errors": {
+      "items": {
+       "fields": {
+        "message": {
+         "type": "string"
+        },
+        "plugin": {
+         "type": "string"
+        },
+        "type": {
+         "type": "string"
+        }
+       },
+       "type": "object"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "plugin_warnings": {
+      "items": {
+       "fields": {
+        "message": {
+         "type": "string"
+        },
+        "plugin": {
+         "type": "string"
+        },
+        "type": {
+         "type": "string"
+        }
+       },
+       "type": "object"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "plugins": {
+      "items": {
+       "fields": {
+        "name": {
+         "type": "string"
+        },
+        "path": {
+         "type": "string"
+        },
+        "source": {
+         "optional": true,
+         "type": "string"
+        },
+        "version": {
+         "optional": true,
+         "type": "string"
+        }
+       },
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "powershell_path": {
+      "nullable": true,
+      "optional": true,
+      "type": "string"
+     },
+     "product_feedback_disabled": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "scratchpad_path": {
+      "optional": true,
+      "type": "string"
+     },
+     "session_id": {
+      "type": "string"
+     },
+     "skills": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "slash_commands": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "startup_timing": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "type": "any"
+      }
+     },
+     "subtype": {
+      "type": "literal",
+      "value": "init"
+     },
+     "terminal_slash_commands": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "tools": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array"
+     },
+     "type": {
+      "type": "literal",
+      "value": "system"
+     },
+     "uuid": {
+      "type": "string"
+     },
+     "view_mode": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "focus",
+       "default"
+      ]
+     },
+     "worker_epoch": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     }
+    },
+    "type": "object"
+   }
+  },
+  "notes": {
+   "result.modelUsage": "Per-model totals for every model call made through the query pipeline during this query() call - main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, ",
+   "result.usage": "MAIN AGENT LOOP ONLY - excludes Task subagent, sidechain, and auxiliary model calls, and is per-turn in streaming-input sessions. Prefer modelUsage for token/cost accounting."
+  },
+  "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+  "source": "the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)",
+  "version": "2.1.281"
+ },
+ "codex": {
+  "binary": "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+  "credential_tables": [
+   {
+    "decision": "strip",
+    "name": "auth_env",
+    "names": [
+     "OPENAI_API_KEY",
+     "CODEX_API_KEY",
+     "CODEX_ACCESS_TOKEN"
+    ],
+    "offset": 213121037,
+    "reason": "the auth variables Codex reads instead of its stored login"
+   },
+   {
+    "decision": "strip",
+    "name": "agent_identity",
+    "names": [
+     "CODEX_ACCESS_TOKEN",
+     "OPENAI_FEDERATION_RULE_ID",
+     "OPENAI_IDENTITY_TOKEN_FILE"
+    ],
+    "offset": 213507228,
+    "reason": "the agent identity login"
+   },
+   {
+    "decision": "keep",
+    "name": "bedrock_provider",
+    "names": [
+     "AWS_BEARER_TOKEN_BEDROCK",
+     "AWS_ACCESS_KEY_ID",
+     "AWS_SECRET_ACCESS_KEY"
+    ],
+    "offset": 212923203,
+    "reason": "the Bedrock provider credentials: AWS_BEARER_TOKEN_BEDROCK is stripped (a model key both CLIs name); the general AWS keys are the worker's tools' own cloud login, and Codex selects Bedrock only through the model_provider of the owner-prepared profile"
+   },
+   {
+    "decision": "keep",
+    "name": "exec_server_scrub",
+    "names": [
+     "OPENAI_FEDERATION_RULE_ID",
+     "OPENAI_IDENTITY_TOKEN_FILE",
+     "OPENAI_API_KEY",
+     "CODEX_API_KEY",
+     "CODEX_ACCESS_TOKEN",
+     "CODEX_CONNECTORS_TOKEN",
+     "AWS_ACCESS_KEY_ID",
+     "AWS_SECRET_ACCESS_KEY",
+     "AWS_SESSION_TOKEN",
+     "AZURE_CLIENT_SECRET",
+     "AZURE_FEDERATED_TOKEN_FILE",
+     "GOOGLE_APPLICATION_CREDENTIALS"
+    ],
+    "offset": 215557232,
+    "reason": "the secrets the exec server withholds from remote requests: its OpenAI and Codex names are stripped by prefix, the cloud names are tool credentials"
+   },
+   {
+    "decision": "keep",
+    "name": "shell_env_scrub",
+    "names": [
+     "CODEX_EXEC_SERVER_NOISE_AUTH_TOKEN",
+     "NODE_REPL_AUTH_TOKEN",
+     "OPENAI_FEDERATION_RULE_ID",
+     "OPENAI_IDENTITY_TOKEN_FILE"
+    ],
+    "offset": 216938379,
+    "reason": "the default exclusions of Codex's shell environment policy for its tool children: its Codex and OpenAI names are stripped by prefix, NODE_REPL_AUTH_TOKEN is a tool's own"
+   }
+  ],
+  "events": {
+   "error": {
+    "fields": {
+     "message": {
+      "type": "string"
+     },
+     "type": {
+      "type": "literal",
+      "value": "error"
+     }
+    },
+    "type": "object"
+   },
+   "item.completed": {
+    "fields": {
+     "item": {
+      "type": "any"
+     },
+     "type": {
+      "type": "literal",
+      "value": "item.completed"
+     }
+    },
+    "type": "object"
+   },
+   "item.started": {
+    "fields": {
+     "item": {
+      "type": "any"
+     },
+     "type": {
+      "type": "literal",
+      "value": "item.started"
+     }
+    },
+    "type": "object"
+   },
+   "item.updated": {
+    "fields": {
+     "item": {
+      "type": "any"
+     },
+     "type": {
+      "type": "literal",
+      "value": "item.updated"
+     }
+    },
+    "type": "object"
+   },
+   "thread.started": {
+    "fields": {
+     "thread_id": {
+      "type": "string"
+     },
+     "type": {
+      "type": "literal",
+      "value": "thread.started"
+     }
+    },
+    "type": "object"
+   },
+   "turn.completed": {
+    "fields": {
+     "type": {
+      "type": "literal",
+      "value": "turn.completed"
+     },
+     "usage": {
+      "fields": {
+       "cache_write_input_tokens": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "cached_input_tokens": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "input_tokens": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "output_tokens": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "reasoning_output_tokens": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "type": "object"
+   },
+   "turn.failed": {
+    "fields": {
+     "error": {
+      "fields": {
+       "message": {
+        "type": "string"
+       }
+      },
+      "type": "object"
+     },
+     "type": {
+      "type": "literal",
+      "value": "turn.failed"
+     }
+    },
+    "type": "object"
+   },
+   "turn.started": {
+    "fields": {
+     "type": {
+      "type": "literal",
+      "value": "turn.started"
+     }
+    },
+    "type": "object"
+   }
+  },
+  "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+  "source": "the serde names of codex-exec's ThreadEvent (tag 'type') and its payload structs, packed in the binary's literals; the strings show field names, not which are always present, so every usage field is marked optional",
+  "usage_limit": {
+   "formats": [
+    "%-I:%M %p",
+    "%b %-d{suffix}, %Y %-I:%M %p"
+   ],
+   "message": "You've hit your usage limit",
+   "retry_at": [
+    " Try again at ",
+    " or try again at "
+   ],
+   "retry_later": [
+    " Try again later.",
+    " or try again later."
+   ],
+   "source": "protocol error Display: the message, then ' Try again at <local time>.' (same day: %-I:%M %p; else %b %-d<suffix>, %Y %-I:%M %p) or ' Try again later.' with no reset",
+   "suffixes": [
+    "st",
+    "nd",
+    "rd",
+    "th"
+   ]
+  },
+  "version": "0.154.0"
+ },
+ "generated_by": "proof/VELDO-0062/extract_formats.py (reads the binaries' bytes only)",
+ "schema": "veldo.cli-formats/v1",
+ "spec_id": "VELDO-0062"
+}
