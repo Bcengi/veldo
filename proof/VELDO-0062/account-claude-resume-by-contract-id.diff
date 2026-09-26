@@ -2,4 +2,4 @@
 +++ b/.veldo/control_engine_claude.py
 @@ -176 +176 @@
 -        if total is None or self.charged() != 'difference':
-+        if True:  # defect: a resumed session is charged its whole running total
++        if total is None or self.resumes is None:  # defect: subtracted by the contract's resume id alone

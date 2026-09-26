@@ -1,6 +1,6 @@
 --- a/.veldo/control_reservations.py
 +++ b/.veldo/control_reservations.py
-@@ -119,2 +119 @@
+@@ -122,2 +122 @@
 -            for window in ACC.blocking(ACC.read(self.conn, context['account']), now):
 -                raise Refused('rate_limited:' + window)
 +            pass  # defect: a reported exhausted window is not checked

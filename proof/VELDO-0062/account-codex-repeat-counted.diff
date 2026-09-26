@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -212 +212 @@
+@@ -213 +213 @@
 -        elif kind == 'turn.completed' and self.open:
 +        elif kind == 'turn.completed':  # defect: a repeated completion is counted again

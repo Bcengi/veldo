@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -189 +189 @@
+-                'charged': self.charged()}
++                'charged': 'whole'}  # defect: the case that charged the session is not recorded

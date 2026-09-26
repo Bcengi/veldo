@@ -1,6 +1,6 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -184,2 +184,2 @@
+@@ -185,2 +185,2 @@
 -        if LIMIT_MESSAGE in message:
 -            window, reset = LIMIT_WINDOW, limit_reset(message, self.clock(), self.zone)
 +        if False:  # defect: the usage-limit message is not observed

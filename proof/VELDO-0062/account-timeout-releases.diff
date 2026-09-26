@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1116 +1116 @@
+@@ -1117 +1117 @@
 -                outcome = 'timeout'
 +                usage, outcome = {}, 'not_executed'  # defect: a timeout releases the reservation

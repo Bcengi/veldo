@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -165 +165 @@
+@@ -179 +179 @@
 -            return None
 +            return total  # defect: an unknown earlier total charges the whole running total

@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -231 +231 @@
+@@ -247 +247 @@
 -            running = _model_tokens(event.get('modelUsage'))
 +            running = _tokens(event.get('usage'))  # defect: the main loop only

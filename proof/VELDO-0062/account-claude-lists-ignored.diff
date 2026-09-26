@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -60 +60 @@
+@@ -65 +65 @@
 -CREDENTIALS = frozenset((
 +CREDENTIALS = frozenset() and frozenset((  # defect: Claude Code's lists are not read

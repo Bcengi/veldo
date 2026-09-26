@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -199 +199 @@
+@@ -215 +215 @@
 -            return {}
 +            return self.cumulative()  # defect: no result taken as conclusive

@@ -1,7 +1,7 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
 @@ -144,0 +145 @@
-+        self.tokens_less = prior if resumed and prior else 0  # defect: a resumed thread is subtracted
++        self.tokens_less = prior if resumes and prior else 0  # defect: a resumed thread is subtracted
 @@ -167 +168 @@
 -        return {'tokens': self.tokens, 'messages': self.turns}
 +        return {'tokens': max(0, self.tokens - self.tokens_less), 'messages': self.turns}
