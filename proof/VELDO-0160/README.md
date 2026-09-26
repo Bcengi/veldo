@@ -193,7 +193,7 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | decision-not-scaffolded | init_scaffold.py | `install/assets` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. OTHER_FINDINGS
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 35 rejected. The other findings with mutations in the modules this changes still reject: 36 (20), 39 (30), 40 (22), 41 (34) and 62 (50).
 
 Suites run, plain, all green: `78_veldo_0160_account_pool`, `75_veldo_0062_accounts`, the suites of
 every module this touches (VELDO-0036, 0039, 0040, 0041, 0047, 0049, 0050, 0052, 0053, 0056, 0076, 0128,
