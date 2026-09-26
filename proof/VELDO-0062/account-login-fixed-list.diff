@@ -1,0 +1,8 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -159 +159,4 @@
+-    environment = {k: v for k, v in inherited.items() if not strips(k, named)}
++    environment = {k: v for k, v in inherited.items() if k not in PROFILES.values() and k not in (
++        'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK',
++        'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_API_KEY',
++        'AWS_BEARER_TOKEN_BEDROCK', 'OPENAI_API_KEY', 'CODEX_API_KEY')}  # defect: back to a fixed list

@@ -1,5 +1,5 @@
 --- a/.veldo/control_accounts.py
 +++ b/.veldo/control_accounts.py
-@@ -126 +126 @@
+@@ -160 +160 @@
 -    environment[variable] = directory
 +    environment[variable] = inherited.get(variable) or directory  # defect: the caller's profile first

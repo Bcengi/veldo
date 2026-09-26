@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -92 +92 @@
--        return self.cumulative() if self.result is not None else {}
-+        return self.cumulative()  # defect: a stream with no result is taken as conclusive
+@@ -141 +141 @@
+-            return {}
++            return self.cumulative()  # defect: no result taken as conclusive

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -140 +140 @@
+-        if not isinstance(message, str) or LIMIT_MESSAGE not in message:
++        if True:  # defect: the usage-limit message is not observed

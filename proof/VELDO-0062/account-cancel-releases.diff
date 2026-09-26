@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1095 +1095 @@
+@@ -1098 +1098 @@
 -                outcome = 'cancelled'
 +                usage, outcome = {}, 'not_executed'  # defect: a cancellation releases the reservation

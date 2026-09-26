@@ -1,0 +1,9 @@
+--- a/.veldo/fleet.py
++++ b/.veldo/fleet.py
+@@ -433,2 +433 @@
+-        names = [n for n in ACCT.list_accounts(root=accounts_root)
+-                 if ACCT.get(n, root=accounts_root).get("provider", CLAUDE) == CLAUDE]
++        names = ACCT.list_accounts(root=accounts_root)  # defect: Codex logins join a Claude fleet
+@@ -438 +437 @@
+-        if provider != CLAUDE:
++        if False:  # defect

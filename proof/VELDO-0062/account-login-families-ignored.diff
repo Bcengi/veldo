@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -151 +151 @@
+-    return (name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or CLAUDE_CREDENTIAL.match(name) is not None
++    return (name in PROFILES.values()  # defect: a provider family's new name is not stripped

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -100 +100 @@
+-    return max(stated) + 60
++    return max(stated)  # defect: the window reopens before the stated minute ends
