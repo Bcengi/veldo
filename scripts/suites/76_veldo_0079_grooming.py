@@ -593,6 +593,11 @@ def _v79_suite():
             o_own, own_command = own_objective('A traveler buys a pass in two taps.')
             o_answer, o_answer_request = answered_objective('A traveler renews a pass in one tap.')
             o_zed, zed_command = own_objective('A cruise guest buys a pass on board.', project='proj-b', owner='zed')
+            # His message admits once: each row that needs it to admit has a message of its own.
+            o_grow, _ = own_objective('A traveler adds a second pass to a trip.')
+            o_later, _ = own_objective('A traveler pauses a pass between trips.')
+            o_append, _ = own_objective('A traveler tops up a pass abroad.')
+            o_single, single_command = own_objective('A traveler shares a pass with a companion.')
 
             # AC2: his own message admits work at the default priority when the PM asks nothing.
             with region('route/own-message-default'):
@@ -768,6 +773,157 @@ def _v79_suite():
                      and item(E).get('state') == 'AWAITING_GROOMING'),
                     ('nothing of it runs', all(entity('admission:' + u) is None and executable(u) != [] for u in e_units))])
 
+            # AC2, review of the held item: his settled reject of a priority is applied as he gave it after
+            # the decomposition grew again, and the item is groomed afresh.
+            with region('route/append-after-reject'):
+                P, p_units = work_item(o_append, 'append-reject')
+                gpropose('pm', P)
+                admitted_p = groom(P)
+                third = unit_entry()
+                bop('pm', 'append', P, unit=third)
+                gpropose('pm', P)
+                presented_p = groom(P)
+                rejected_p, _ = answer(shown(P, 'priority'), 'reject', rationale='Not this unit yet.')
+                rejected_request_p = current_request(P, 'priority')
+                fourth = unit_entry()
+                bop('pm', 'append', P, unit=fourth)
+                applied_p = apply_rulings(P)
+                after_p = item(P)
+                held_units_p = {u: (data_of(u).get('state'), executable(u)) for u in (third['unit'], fourth['unit'])}
+                again_p = gpropose('pm', P)
+                regroomed_p = groom(P)
+                fresh_p, _ = answer(shown(P, 'priority'), 'accept', rationale='Both units now.')
+                ranked_p = apply_rulings(P)
+                check('route/append-after-reject', [
+                    ('his message admitted the item and the appended unit was presented for its priority',
+                     admitted_p.get('outcome') == 'admitted' and presented_p.get('outcome') == 'presented'),
+                    ('his reject of that priority settled', rejected_p.get('outcome') == 'settled'),
+                    ('after another unit was appended, his reject is applied as he gave it',
+                     [(r.get('touchpoint'), r.get('outcome')) for r in applied_p] == [('priority', 'applied')]
+                     and rejected_request_p in (after_p.get('applied') or []) and after_p.get('state') == 'PRIORITIZED'),
+                    ('it made neither appended unit executable',
+                     held_units_p == {third['unit']: ('PLANNED', ['missing_authority:priority']),
+                                      fourth['unit']: ('PLANNED', ['missing_authority:priority'])}),
+                    ('the item is movable again: pm proposes a new revision and it is presented as a new request',
+                     again_p.get('ok') and regroomed_p.get('outcome') == 'presented'
+                     and current_request(P, 'priority') not in (None, rejected_request_p)
+                     and shown(P, 'priority').get('outcome') == 'published'),
+                    ('his approval of it prioritizes both appended units',
+                     fresh_p.get('outcome') == 'settled' and [r.get('outcome') for r in ranked_p] == ['applied']
+                     and executable(third['unit']) == [] and executable(fourth['unit']) == []
+                     and all(executable(u) == [] for u in p_units))])
+
+            # AC2, review of the held item: his settled reject or return of an admission is applied as he gave it
+            # after a unit's specification file changed.
+            with region('route/spec-change-after-reject'):
+                spec_file('VELDO-9794', [])
+                spec_file('VELDO-9795', [])
+                J, j_units = work_item(o_own, 'spec-reject', ('VELDO-9794',))
+                gpropose('pm', J, questions=[{'id': 'q1', 'text': 'Is the receipt emailed?'}])
+                groom(J)
+                rejected_j, _ = answer(shown(J, 'admission'), 'reject', rationale='Receipts are out of scope.')
+                spec_file('VELDO-9794', ['bin/veldo'])
+                applied_j = apply_rulings(J)
+                L, l_units = work_item(o_own, 'spec-return', ('VELDO-9795',))
+                gpropose('pm', L, questions=[{'id': 'q1', 'text': 'Is the receipt printed?'}])
+                groom(L)
+                first_l = current_request(L, 'admission')
+                returned_l, _ = answer(shown(L, 'admission'), 'return_for_elaboration', rationale='Say which printer.')
+                spec_file('VELDO-9795', ['bin/veldo'])
+                applied_l = apply_rulings(L)
+                returned_state_l = item(L).get('state')
+                priority_left_l = data_of(current_request(L, 'priority') or '').get('state')
+                regroomed_l = bop('pm', 'request_grooming', L)
+                again_l = gpropose('pm', L, questions=[{'id': 'q1', 'text': 'The desk printer?'}])
+                groomed_l = groom(L)
+                check('route/spec-change-after-reject', [
+                    ('his reject and his return settled', rejected_j.get('outcome') == 'settled'
+                     and returned_l.get('outcome') == 'settled'),
+                    ('after the specification file changed, his reject is applied as he gave it',
+                     [(r.get('touchpoint'), r.get('outcome')) for r in applied_j][:1] == [('admission', 'applied')]
+                     and item(J).get('state') == 'REJECTED'
+                     and data_of(current_request(J, 'priority') or '').get('state') == 'CANCELED'),
+                    ('after the specification file changed, his return is applied as he gave it',
+                     [(r.get('touchpoint'), r.get('outcome')) for r in applied_l][:1] == [('admission', 'applied')]
+                     and returned_state_l == 'PREPARED' and priority_left_l == 'CANCELED'),
+                    ('the returned item is movable again: groomed against the changed file and presented anew',
+                     regroomed_l.get('ok') and again_l.get('ok') and request_record(L).get('revision') == 2
+                     and request_record(L).get('content', {}).get('specifications')
+                     == [{'id': 'VELDO-9795', 'digest': file_digest('VELDO-9795')}]
+                     and groomed_l.get('outcome') == 'presented' and current_request(L, 'admission') not in (None, first_l)
+                     and shown(L, 'admission').get('outcome') == 'published'),
+                    ('nothing of either runs', all(entity('admission:' + u) is None and executable(u) != []
+                                                   for u in j_units + l_units))])
+
+            # AC2: an item admitted while its priority was rejected is groomed for its priority again.
+            with region('route/admitted-priority-rejected'):
+                AD, ad_units = work_item(o_own, 'admitted-rank')
+                gpropose('pm', AD, questions=[{'id': 'q1', 'text': 'Before the summer?'}])
+                groom(AD)
+                rank_rejected, _ = answer(shown(AD, 'priority'), 'reject', rationale='Not at this rank.')
+                rejected_rank = current_request(AD, 'priority')
+                waiting_ad = apply_rulings(AD)
+                admitted_ad, _ = answer(shown(AD, 'admission'), 'accept', rationale='Admit it before the summer.')
+                applied_ad = apply_rulings(AD)
+                state_ad = item(AD).get('state')
+                units_ad = [executable(u) for u in ad_units]
+                again_ad = gpropose('pm', AD, priority={'rank': 2})
+                groomed_ad = groom(AD)
+                ranked_ad, _ = answer(shown(AD, 'priority'), 'accept', rationale='Rank 2 is right.')
+                prioritized_ad = apply_rulings(AD)
+                check('route/admitted-priority-rejected', [
+                    ('his priority reject settled first and waited for the admission',
+                     rank_rejected.get('outcome') == 'settled' and [r.get('outcome') for r in waiting_ad] == ['waiting']),
+                    ('his admission was applied, then his priority reject: the item is ADMITTED and nothing runs',
+                     admitted_ad.get('outcome') == 'settled'
+                     and [(r.get('touchpoint'), r.get('outcome')) for r in applied_ad]
+                     == [('admission', 'applied'), ('priority', 'applied')]
+                     and state_ad == 'ADMITTED' and all(u == ['missing_authority:priority'] for u in units_ad)),
+                    ('pm grooms the admitted item for its priority again',
+                     again_ad.get('ok') and request_record(AD).get('touchpoints') == ['priority']),
+                    ('it is presented to him as a new priority request',
+                     groomed_ad.get('outcome') == 'presented' and 'fresh_priority' in (groomed_ad.get('reasons') or [])
+                     and current_request(AD, 'priority') not in (None, rejected_rank)
+                     and shown(AD, 'priority').get('outcome') == 'published'),
+                    ('his approval prioritizes it at the rank he was shown',
+                     ranked_ad.get('outcome') == 'settled' and [r.get('outcome') for r in prioritized_ad] == ['applied']
+                     and item(AD).get('state') == 'PRIORITIZED' and (item(AD).get('priority') or {}).get('rank') == 2
+                     and all(executable(u) == [] for u in ad_units))])
+
+            # AC2: his message admits once. After work from it was presented to him and rejected, a new feature
+            # the PM cuts under the same objective is presented, never admitted by that message.
+            with region('route/message-single-use'):
+                F0, f0_units = work_item(o_single, 'single-first')
+                gpropose('pm', F0)
+                first_f0 = groom(F0)
+                F1, _f1_units = work_item(o_single, 'single-asked')
+                gpropose('pm', F1, questions=[{'id': 'q1', 'text': 'Share with anyone?'}])
+                groom(F1)
+                rejected_f1, _ = answer(shown(F1, 'admission'), 'reject', rationale='Only with family.')
+                apply_rulings(F1)
+                F2, f2_units = work_item(o_single, 'single-recut')
+                recut_f2 = gpropose('pm', F2)
+                # The backlog is asked first, before anything of the re-cut item is presented.
+                direct_f2 = admit_message(F2)
+                groomed_f2 = groom(F2)
+                check('route/message-single-use', [
+                    ('before anything from his message was put to him, it admitted work under its objective',
+                     first_f0.get('outcome') == 'admitted' and item(F0).get('state') == 'PRIORITIZED'
+                     and (item(F0).get('admission') or {}).get('intake_command') == single_command),
+                    ('work from the same message was presented to him and rejected',
+                     rejected_f1.get('outcome') == 'settled' and item(F1).get('state') == 'REJECTED'),
+                    ('pm re-cut it as a new feature under the same objective, asking nothing',
+                     recut_f2.get('ok') and item(F2).get('objective_uuid') == o_single
+                     and request_record(F2).get('content', {}).get('questions') == []
+                     and request_record(F2).get('content', {}).get('priority') == {'rank': DEFAULT_RANK}),
+                    ('it is presented, naming his used message alone',
+                     groomed_f2.get('outcome') == 'presented' and groomed_f2.get('reasons') == ['message_used']
+                     and shown(F2, 'admission').get('outcome') == 'published'),
+                    ('the backlog refuses his message for it by that reason',
+                     direct_f2.get('reason') == 'not_approved:message_used' and item(F2).get('state') == 'AWAITING_GROOMING'),
+                    ('nothing of it runs', all(executable(u) == ['missing_authority:admission'] for u in f2_units)
+                     and all(executable(u) == [] for u in f0_units))])
+
             # AC1: the Telegram bytes carry the complete request.
             with region('material/telegram-brief'):
                 spec_file('VELDO-9793', ['.veldo/policy.yaml', 'scripts/verify.sh'])
@@ -917,7 +1073,7 @@ def _v79_suite():
 
             # AC1 (declared falsifier): a decomposition that grew after the owner answered is not prioritized by it.
             with region('material/changed-decomposition'):
-                D, d_units = work_item(o_own, 'grow')
+                D, d_units = work_item(o_grow, 'grow')
                 gpropose('pm', D)
                 groom(D)
                 grown = unit_entry()
@@ -1059,7 +1215,7 @@ def _v79_suite():
 
             # AC2: the owner's later reprioritization and withdrawal are applied.
             with region('authority/reprioritize-withdraw'):
-                X, x_units = work_item(o_own, 'later')
+                X, x_units = work_item(o_later, 'later')
                 gpropose('pm', X)
                 groom(X)
                 raised_rank = bop('olga', 'reprioritize', X, priority={'rank': 1})
