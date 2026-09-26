@@ -13,7 +13,12 @@ of backlog items: this service asks it to admit and prioritize, and it judges th
                  its objective, its project and the specification files. An AWAITING_GROOMING item is
                  asked for admission and priority; a PRIORITIZED or ACTIVE item with units appended since
                  its prioritization is asked for priority only. A proposal whose material equals the
-                 current revision's, from its author, writes nothing; any change is a new revision.
+                 current revision's, from its author, writes nothing; any change is a new revision. A
+                 request still pending when a new revision is recorded is revised at once, so its new
+                 presentation tells the owner the earlier one is superseded and an answer to that one is
+                 refused. While a ruling of the owner other than an approval is settled and not yet
+                 applied (control_grooming_request.held), no new revision is proposed: his reject or
+                 return is applied as he gave it.
   groom          The current revision takes its route (control_grooming_request.route). When the owner's own
                  message admits it (the objective was accepted by his own message, no question, the default
                  priority, written by the owner or the project manager), the backlog's admit_message
@@ -22,7 +27,9 @@ of backlog items: this service asks it to admit and prioritize, and it judges th
                  targeting the revision by digest, the request opened with exactly the revision's brief and
                  the expiry as its deadline, framed and presented on Telegram (VELDO-0065). A request still
                  pending from an earlier revision is revised, so its new presentation visibly supersedes the
-                 one the owner saw before and an answer to that one is refused as stale.
+                 one the owner saw before and an answer to that one is refused as stale. Once any request of
+                 the item was opened to the owner, his message never admits it again (the route's
+                 `presented`), and nothing is presented over a settled ruling not yet applied.
   apply_rulings  The owner's settled answers of the current revision are applied through the backlog, the
                  admission first: approve admits, reject rejects, return sends the item back to PREPARED, and
                  a priority request still pending after a reject or return is canceled. A priority answered
@@ -96,7 +103,7 @@ def read(conn, rid):
 
 def alias(record, touchpoint, round_):
     """The inbox alias of the `round_`-th request of `touchpoint` for the request record."""
-    return 'groom-%s-%s-%d' % (record['uuid'][len(ID_PREFIX):][:24], touchpoint, round_)
+    return GR.alias(record['uuid'], touchpoint, round_)
 
 
 class Refused(Exception):
@@ -218,6 +225,9 @@ class Grooming:
                 and current['author'] == principal):
             return self._observe('propose', iid, 'unchanged', request=rid, revision=current['revision'],
                                  digest=current['digest'])
+        opened, unapplied = GR.history(self.conn, self.ids['repository_uuid'], rid, data.get('applied'))
+        if GR.held(unapplied):
+            raise Refused('stale_subject:settled_ruling', 'the owner\'s settled ruling is applied before anything else')
         revision = (current or {}).get('revision', 0) + 1
         request_digest = GR.request_digest(iid, revision, fields)
         entry = {'revision': revision, 'digest': request_digest, 'content': fields, 'author': principal, 'at': now,
@@ -232,8 +242,21 @@ class Grooming:
                       parameters={'entity_id': rid, 'record': record}, expected_versions=expected, artifact_digests=[],
                       nonce=command['nonce'])
         self.store.execute(self.conn, stored, self.journal_signer, self.sign, self.authority_generation)
+        superseded, record = [], read(self.conn, rid)
+        for touchpoint in touchpoints:
+            pending = self.requests(record, touchpoint)
+            if pending and pending[-1][2].get('state') in PENDING_STATES:
+                # The owner has the earlier revision in front of him: it is revised now, never left answerable.
+                try:
+                    superseded.append(self._present(record, touchpoint))
+                except Refused as exc:
+                    return self._observe('propose', iid, 'refused', exc.code, request=rid, revision=revision,
+                                         digest=request_digest, superseded=superseded)
+        if any(r['outcome'] not in SHOWN for r in superseded):
+            return self._observe('propose', iid, 'refused', 'unavailable_service:presentation', request=rid,
+                                 revision=revision, digest=request_digest, superseded=superseded)
         return self._observe('propose', iid, 'proposed', request=rid, revision=revision, digest=request_digest,
-                             accepted_versions=expected)
+                             accepted_versions=expected, superseded=superseded)
 
     def _touchpoints(self, data):
         """What the item's grooming asks now: admission and priority before admission, priority alone for
@@ -281,8 +304,9 @@ class Grooming:
         item, record, project, objective = self._context(iid)
         OB = self.CB._objectives()
         managers = OB.project_managers(self.store, self.conn, project.get('name'))
+        opened, _unapplied = GR.history(self.conn, self.ids['repository_uuid'], record['uuid'], item.get('applied'))
         return GR.route(record['content'], record['touchpoints'], objective, project.get('owner'), managers,
-                        record['author'])
+                        record['author'], opened)
 
     def groom(self, iid):
         try:
@@ -290,6 +314,10 @@ class Grooming:
             path, reasons = self.route(iid)
         except Refused as exc:
             return self._observe('groom', iid, 'refused', exc.code)
+        _opened, unapplied = GR.history(self.conn, self.ids['repository_uuid'], record['uuid'], item.get('applied'))
+        if GR.held(unapplied):
+            # His settled reject or return is applied (apply_rulings), never asked again over.
+            return self._observe('groom', iid, 'refused', 'stale_subject:settled_ruling', path=path, reasons=reasons)
         if path == GR.OWN_MESSAGE:
             result = self.backlog.apply(self._signed(dict(operation='admit_message', item=iid, item_version=item['version'],
                                                           request_revision=record['revision'],
@@ -313,15 +341,7 @@ class Grooming:
 
     def requests(self, record, touchpoint):
         """[(alias, request id, assignment data)] of every request grooming opened for `touchpoint`, in order."""
-        found, n = [], 1
-        while True:
-            name = alias(record, touchpoint, n)
-            rid = self.I.assignment_id(self.ids['repository_uuid'], name)
-            row = _row(self.conn, rid)
-            if row is None:
-                return found
-            found.append((name, rid, row['data']))
-            n += 1
+        return GR.requests(self.conn, self.ids['repository_uuid'], record['uuid'], touchpoint)
 
     def _present(self, record, touchpoint):
         brief, target = GR.brief(record, touchpoint), GR.target(record)

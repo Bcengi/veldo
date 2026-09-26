@@ -31,7 +31,9 @@ feature and is never written here), and it moves along entity_contract's R11 voc
                     presented: the command names the item's admission request at its current revision
                     and digest, that revision still binds the live records, and its route is
                     own_message (control_grooming_request.route: no question, the default priority, written
-                    by the project's owner or its project manager). AWAITING_GROOMING -> ADMITTED ->
+                    by the project's owner or its project manager, and no request of the item ever opened
+                    to the owner, read from the store by control_grooming_request.history, so a later
+                    revision never undoes what he was asked or ruled). AWAITING_GROOMING -> ADMITTED ->
                     PRIORITIZED in one transaction, every unit READY, the admission and priority records
                     naming the objective's intake command as their evidence. Any other route refuses
                     not_approved:<reason> and writes nothing.
@@ -449,6 +451,9 @@ class Backlog:
         if op in ('admit', 'prioritize', 'admit_message'):
             found = read(self.conn, iid) or {}
             pinned += [GR.request_id(iid), found.get('objective_uuid')]
+            if op == 'admit_message':
+                # The requests of its history, which the route reads.
+                pinned += GR.history(self.conn, self.ids['repository_uuid'], GR.request_id(iid), found.get('applied'))[0]
         pinned.append('project:' + project)
         versions = {eid: (_row(self.conn, eid) or {}).get('version', 0)
                     for eid in dict.fromkeys(written + [p for p in pinned if _is_str(p)] + [principal])}
@@ -756,8 +761,11 @@ class Backlog:
         objective = _row(conn, data['objective_uuid'])['data']
         owner = project['data'].get('owner')
         managers = _objectives().project_managers(self.store, conn, project['data'].get('name'))
+        # The item's history, not its current revision alone: once any request was opened to the owner, his
+        # answer or his pending decision governs it, and his message never admits it.
+        opened, _unapplied = GR.history(conn, self.ids['repository_uuid'], request['uuid'], data['applied'])
         path, reasons = GR.route(request['content'], request.get('touchpoints') or [], objective, owner, managers,
-                                 request.get('author'))
+                                 request.get('author'), opened)
         if path != GR.OWN_MESSAGE:
             raise Refused('not_approved:' + reasons[0], 'his message does not admit this: ' + ', '.join(reasons))
         acceptance = objective['acceptance']

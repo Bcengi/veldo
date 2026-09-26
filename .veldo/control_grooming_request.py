@@ -4,8 +4,9 @@ binds and when the owner's own message admits instead.
 WHAT THIS MODULE IS. Pure functions over plain records, shared by the grooming service
 (control_grooming.py, the one writer of admission requests) and the backlog service (control_backlog.py,
 the one writer of backlog items), so the request is built, bound, shown and routed by one implementation.
-It reads no store and writes nothing; read_specifications is its one reader of files, the specification
-files of the checkout both services are given.
+It writes nothing; read_specifications is its one reader of files, the specification files of the
+checkout both services are given, and requests and history its one reader of the store (read only), the
+decision requests grooming opened, so both services judge an item's history the same way.
 
 THE REQUEST. An admission request is the complete authorization material for one backlog item at one
 decomposition revision (R09), in FIELDS order:
@@ -34,9 +35,17 @@ content is a different request, and a settled ruling names it by `target` (kind,
 WHEN HIS MESSAGE ADMITS (`route`). The owner's own message that proposed the objective (VELDO-0150's
 own_message acceptance) admits work under it at DEFAULT_PRIORITY with nothing presented when the request
 asks for admission, raises no question and proposes the default priority, and its current revision was
-written by the project's owner or its project manager. Anything else is presented: an objective accepted
-by an answer, a question, another priority, another author, and a prioritization of units appended after
-admission (his message predates them). The reasons are named.
+written by the project's owner or its project manager, and nothing about the item was ever put to him.
+Anything else is presented: an objective accepted by an answer, a question, another priority, another
+author, a prioritization of units appended after admission (his message predates them), and an item any
+of whose requests was opened to the owner (`presented`), since his answer or his pending decision governs
+it from then on, whatever a later revision proposes. The reasons are named.
+
+HISTORY (`history`). Every decision request grooming opens for an admission request has its own alias
+(`alias`), so what the owner was asked, and what he ruled, is read from the store and not from the
+current revision. A settled ruling other than an approval that is not yet applied to the item (`held`)
+holds the item: no later revision is proposed or presented over it, so his reject or return is applied
+as he gave it. A settled approval of an earlier revision authorizes nothing later (its digest binds it).
 
 STALE BINDING (`live_problems`). A request revision binds what the store says now: the item's class,
 scope and decomposition, the objective's accepted outcome and acceptance, the project's policy and
@@ -78,6 +87,9 @@ def _organ(name):
 
 AD = _organ('admission_contract')
 Y = _organ('yamlish')
+AS = _organ('control_assignment')
+PRESENTED = 'presented'
+REQUEST_KIND = 'assignment'
 
 
 def _is_str(v):
@@ -95,6 +107,45 @@ def digest(value):
 def request_id(item):
     """The one admission request record of backlog item `item`; its revisions are kept inside it."""
     return ID_PREFIX + hashlib.sha256(_canonical(['admission-request', item])).hexdigest()[:32]
+
+
+def alias(rid, touchpoint, round_):
+    """The inbox alias of the `round_`-th decision request grooming opens for `touchpoint` of admission
+    request `rid`."""
+    return 'groom-%s-%s-%d' % (rid[len(ID_PREFIX):][:24], touchpoint, round_)
+
+
+def requests(conn, repository, rid, touchpoint):
+    """[(alias, request id, assignment data)] of every request grooming opened for `touchpoint` of
+    admission request `rid` in `repository`, in order, read on `conn`."""
+    found, n = [], 1
+    while True:
+        name = alias(rid, touchpoint, n)
+        aid = AS.assignment_id(repository, name)
+        row = conn.execute('SELECT kind, data FROM entities WHERE id=?', (aid,)).fetchone()
+        if row is None or row[0] != REQUEST_KIND:
+            return found
+        found.append((name, aid, json.loads(row[1])))
+        n += 1
+
+
+def history(conn, repository, rid, applied):
+    """(opened, unapplied) of admission request `rid`: the id of every request grooming opened to the owner
+    for it, and each settled ruling among them not in `applied` (the item's applied requests), as
+    {'touchpoint', 'request', 'ruling'}."""
+    opened, unapplied = [], []
+    for touchpoint in (ADMISSION, PRIORITY):
+        for _name, aid, data in requests(conn, repository, rid, touchpoint):
+            opened.append(aid)
+            reference = data.get('settlement') if isinstance(data.get('settlement'), dict) else {}
+            if data.get('state') == 'SATISFIED' and _is_str(reference.get('ruling')) and aid not in (applied or []):
+                unapplied.append({'touchpoint': touchpoint, 'request': aid, 'ruling': reference['ruling']})
+    return opened, unapplied
+
+
+def held(unapplied):
+    """The settled rulings in `unapplied` that hold the item until they are applied: all but approvals."""
+    return [u for u in unapplied if u['ruling'] != 'approve']
 
 
 # Building the request.
@@ -301,9 +352,10 @@ def live_problems(fields, item, objective, project):
     return ['stale_subject:' + f for f in STORE_FIELDS if held[f] != now[f]]
 
 
-def route(fields, touchpoints, objective, owner, managers, author):
+def route(fields, touchpoints, objective, owner, managers, author, opened):
     """(path, reasons): OWN_MESSAGE when the owner's own message admits this revision at the default
-    priority, else 'present' with every reason it is presented."""
+    priority, else 'present' with every reason it is presented. `opened` is history's first answer: the
+    requests grooming ever opened to the owner for this item."""
     reasons = []
     acceptance = objective.get('acceptance') if isinstance(objective.get('acceptance'), dict) else {}
     if acceptance.get('path') != OWN_MESSAGE or objective.get('accepted_revision') is None:
@@ -316,4 +368,6 @@ def route(fields, touchpoints, objective, owner, managers, author):
         reasons.append('priority')
     if author != owner and author not in managers:
         reasons.append('author')
+    if opened:
+        reasons.append(PRESENTED)
     return (OWN_MESSAGE if not reasons else 'present'), reasons
