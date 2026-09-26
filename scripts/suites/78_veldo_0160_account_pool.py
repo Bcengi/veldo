@@ -59,7 +59,8 @@ def _v160_suite():
             'decision/rerun', 'decision/ask', 'decision/unreadable-asks', 'decision/same-id-write',
             'decision/unknown-forms', 'decision/redacted-name', 'decision/tool-free-forms', 'format/tool-forms',
             'decision/repl-inner-call', 'decision/task-progress-tool', 'decision/frame-tool-names',
-            'decision/subagent-calls',
+            'decision/subagent-calls', 'decision/no-write-server-reruns', 'decision/nested-work-asks',
+            'decision/nested-constructs',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -878,10 +879,20 @@ sys.exit(payload.get('code', 0))
         MARKS = [{'catalog_id': 'mcp_server:tracker', 'revision': 3, 'read_only_tools': ['get_issue', 'search']},
                  {'catalog_id': 'mcp_server:wiki', 'revision': 1, 'read_only_tools': []}]
 
-        def decide(record, provider):
+        def decide(record, provider, servers=None):
             if LIMIT is None:
                 return None, 'no decision module'
-            found, error = attempt(lambda: LIMIT.decide(record, SERVERS, MARKS, provider))
+            found, error = attempt(lambda: LIMIT.decide(record, SERVERS if servers is None else servers, MARKS,
+                                                        provider))
+            return found, code(error)
+
+        # The call-by-call rules alone (the third rule). A record showing a construct that can run hidden nested work
+        # never reaches them through `decide` (a write-capable server asks first, decision/nested-work-asks; none
+        # re-runs, decision/no-write-server-reruns), so the rows that judge how they read such a record drive them.
+        def by_calls(record, provider):
+            if LIMIT is None or not callable(getattr(LIMIT, 'decide_by_calls', None)):
+                return None, 'no call-by-call decision'
+            found, error = attempt(lambda: LIMIT.decide_by_calls(record, SERVERS, MARKS, provider))
             return found, code(error)
 
         def named(found):
@@ -898,7 +909,8 @@ sys.exit(payload.get('code', 0))
                     check('decision/rerun', '%s, %s: decided re-run, naming no call [%s, %s]'
                           % (provider, label, (found or {}).get('decision'), error),
                           (found or {}).get('decision') == 'rerun' and (found or {}).get('calls') == []
-                          and (found or {}).get('mcp_calls') == (0 if record is none else 2))
+                          and (found or {}).get('mcp_calls') == (0 if record is none else 2)
+                          and (found or {}).get('basis') == 'calls')
                 writes = build([wrap('tracker', 'get_issue'), wrap('tracker', 'add_comment')])
                 unmarked = build([wrap('wiki', 'read_page')])
                 elsewhere = build([wrap('mailer', 'send')])
@@ -913,7 +925,8 @@ sys.exit(payload.get('code', 0))
                     found, error = decide(record, provider)
                     check('decision/ask', '%s, %s: decided ask, naming exactly that call [%s, %s]'
                           % (provider, label, (found or {}).get('decision'), named(found) or error),
-                          (found or {}).get('decision') == 'ask' and named(found) == expected)
+                          (found or {}).get('decision') == 'ask' and named(found) == expected
+                          and (found or {}).get('basis') == 'calls')
                 gap = [dict(line) for line in writes]
                 gap[2]['sequence'] = 9
                 found, error = decide(gap, provider)
@@ -1076,7 +1089,7 @@ sys.exit(payload.get('code', 0))
         with region('decision/unknown-forms'):
             for provider, what, lines, form, table in UNKNOWN:
                 head, tail = (c_head, c_tail) if provider == 'claude_code' else (x_head, x_tail)
-                found, error = decide(record_of(head + [('engine', line) for line in lines] + tail), provider)
+                found, error = by_calls(record_of(head + [('engine', line) for line in lines] + tail), provider)
                 at = len(head) + 1
                 check('decision/unknown-forms', '%s, %s: decided ask, naming that line as an unknown call of form %s '
                       '[%s, %s]' % (provider, what, form, (found or {}).get('decision'), forms(found) or error),
@@ -1093,7 +1106,7 @@ sys.exit(payload.get('code', 0))
                                    ('Agent', []), ('Read', []), ('mcp__tracker__get_issue', [])):
                 record = record_of(c_head + [('engine', c_blocks([tool_use('toolu_x', name)]))] + c_tail)
                 record[len(c_head)]['redacted'] = ['known_pattern']
-                found, error = decide(record, 'claude_code')
+                found, error = by_calls(record, 'claude_code')
                 check('decision/redacted-name', 'a redacted line whose tool_use is named %r: decided %s [%s, %s]'
                       % (name, 'ask' if expected else 're-run', (found or {}).get('decision'), named(found) or error),
                       (found or {}).get('decision') == ('ask' if expected else 'rerun') and named(found) == expected
@@ -1150,7 +1163,7 @@ sys.exit(payload.get('code', 0))
                            'web_search')]
             for provider, lines, head, tail in (('claude_code', claude_free, c_head, c_tail),
                                                 ('codex', codex_free, x_head, x_tail)):
-                found, error = decide(record_of(head + [('engine', line) for line in lines] + tail), provider)
+                found, error = by_calls(record_of(head + [('engine', line) for line in lines] + tail), provider)
                 check('decision/tool-free-forms', '%s: %d lines of tool-free and built-in forms decide re-run, naming no '
                       'call [%s, %s]' % (provider, len(lines), (found or {}).get('decision'), forms(found) or error),
                       (found or {}).get('decision') == 'rerun' and (found or {}).get('calls') == [])
@@ -1174,7 +1187,7 @@ sys.exit(payload.get('code', 0))
             """A Claude Code record of `lines` after its init (and `head`), decided: `expected` is the calls it names
             as (sequence, reason, server, tool, form) and `reads` the MCP calls it counts."""
             before = c_head + [('engine', line) for line in head or ()]
-            found, error = decide(record_of(before + [('engine', line) for line in lines] + c_tail), 'claude_code')
+            found, error = by_calls(record_of(before + [('engine', line) for line in lines] + c_tail), 'claude_code')
             got = sorted((c['sequence'], c['reason'], c['server'], c['tool'], c.get('form'))
                          for c in (found or {}).get('calls') or [])
             check(row, '%s: decided %s [%s, %s, %s MCP calls]' % (what, decision, (found or {}).get('decision'),
@@ -1273,7 +1286,7 @@ sys.exit(payload.get('code', 0))
             """judged, and the tasks each shortfall names with its size ([(task, unshown)])."""
             judged(what, 'decision/subagent-calls', lines, decision, expected, reads)
             record = record_of(c_head + [('engine', json.dumps(line) if as_text else line) for line in lines] + c_tail)
-            found, error = decide(record, 'claude_code')
+            found, error = by_calls(record, 'claude_code')
             check('decision/subagent-calls', '%s%s: the shortfalls name %s [%s]'
                   % (what, ' (as JSON text)' if as_text else '', tasks, counted(found) or error),
                   counted(found) == tasks and (found or {}).get('decision') == decision)
@@ -1350,6 +1363,179 @@ sys.exit(payload.get('code', 0))
             judged('a heartbeat of a shown built-in call (negative control)', 'decision/frame-tool-names',
                    [c_progress('toolu_repl', 'REPL', heartbeat=True)], 'rerun', [], 0, repl_head)
 
+        # THE STRUCTURAL RULES (the lead's decision): the stream cannot be made to show every nested call, so the
+        # configuration decides first. The checker's reproduction: a sub-agent runs a skill that forks (context: fork);
+        # the fork's messages (skill_progress) are dropped at depth 2 and its end notification carries no count, so the
+        # record shows no call and no shortfall.
+        forked = [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), c_child('t1', [tool_use('s1', 'Skill')]),
+                  t_progress('t1', 'Skill', 1), dict(t_started('s1', 2), description='/deploy', skip_transcript=True),
+                  dict(t_done('s1', None), skip_transcript=True, ambient=True), t_result('s1', 't1'),
+                  t_done('t1', {'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}), t_result('t1')]
+        at = len(c_head) + 1
+        FORKED_NESTED = [(at, 'agent', 'tool:Agent'), (at + 1, 'task_frames', 'system/task_started'),
+                         (at + 2, 'nested_progress', 'parent_tool_use_id'), (at + 2, 'skill', 'tool:Skill'),
+                         (at + 3, 'skill', 'tool:Skill'), (at + 3, 'task_frames', 'system/task_progress'),
+                         (at + 4, 'task_frames', 'system/task_started'),
+                         (at + 5, 'task_frames', 'system/task_notification'),
+                         (at + 6, 'nested_progress', 'parent_tool_use_id'),
+                         (at + 7, 'task_frames', 'system/task_notification')]
+        READ_ONLY = [{'name': 'tracker', 'catalog_id': 'mcp_server:tracker', 'revision': 3, 'tools': ['get_issue', 'search']},
+                     {'name': 'wiki', 'catalog_id': 'mcp_server:wiki', 'revision': 1, 'tools': []}]
+
+        def hidden(found):
+            return sorted((c['sequence'], c.get('construct'), c.get('form')) for c in (found or {}).get('calls') or []
+                          if c.get('reason') == 'nested_work')
+
+        def c_rec(lines, as_text=False):
+            return record_of(c_head + [('engine', json.dumps(line) if as_text else line) for line in lines] + c_tail)
+
+        def x_rec(lines):
+            return record_of(x_head + [('engine', line) for line in lines] + x_tail)
+
+        x_collab = [x_any('collab_tool_call', 'item_cc', tool='spawn_agent', status='in_progress')]
+        with region('decision/no-write-server-reruns'):
+            # 1. No MCP server with a tool not marked read-only: the run could not have written through MCP.
+            for what, record, provider, servers in (
+                    ('the checker\'s forked skill, only read-only tools configured', c_rec(forked), 'claude_code',
+                     READ_ONLY),
+                    ('the checker\'s forked skill as JSON text, only read-only tools configured', c_rec(forked, True),
+                     'claude_code', READ_ONLY),
+                    ('a depth-2 agent\'s hidden MCP write, no MCP server configured', c_rec(nested), 'claude_code', []),
+                    ('exec\'s own sub-agent call, no MCP server configured', x_rec(x_collab), 'codex', [])):
+                found, error = decide(record, provider, servers)
+                check('decision/no-write-server-reruns', '%s: decided re-run whatever the stream shows [%s, %s, %s]'
+                      % (what, (found or {}).get('decision'), (found or {}).get('basis'), named(found) or error),
+                      (found or {}).get('decision') == 'rerun' and (found or {}).get('calls') == []
+                      and (found or {}).get('basis') == 'no_write_capable_server'
+                      and (found or {}).get('mcp_calls') is None)
+            gap = c_rec(nested)
+            gap[3]['sequence'] = 9
+            found, error = decide(gap, 'claude_code', [])
+            check('decision/no-write-server-reruns', 'a record with a gap in its sequence is still refused by name [%s]'
+                  % error, found is None and error == 'invalid_input:record_sequence')
+            found, error = decide(c_rec(forked), 'claude_code', [dict(READ_ONLY[0], tools='read')])
+            check('decision/no-write-server-reruns', 'a server whose tools are neither all nor a list is refused by '
+                  'name [%s]' % error, found is None and error == 'invalid_input:configuration')
+            # Negative controls: a configuration giving a tool not marked read-only (listed, or all tools) is
+            # write-capable, and the same record asks.
+            for what, servers in (('a listed tool not marked read-only', [dict(READ_ONLY[0], tools=['get_issue', 'add_comment'])]),
+                                  ('all its tools', [dict(READ_ONLY[0], tools='all')]),
+                                  ('its tools unlisted (all of them)', [{k: v for k, v in READ_ONLY[0].items() if k != 'tools'}]),
+                                  ('a revision that marks nothing', [dict(READ_ONLY[1], tools=['read_page'])])):
+                found, error = decide(c_rec(forked), 'claude_code', servers)
+                check('decision/no-write-server-reruns', 'the forked skill with a server giving %s: write-capable, '
+                      'decided ask [%s, %s, %s]' % (what, (found or {}).get('decision'), (found or {}).get('basis'), error),
+                      (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
+                      and LIMIT is not None and LIMIT.write_capable(servers, MARKS) == [servers[0]['name']])
+
+        with region('decision/nested-work-asks'):
+            # 2. A write-capable server and any construct that can run hidden nested work: ask, naming each line.
+            for as_text in (False, True):
+                found, error = decide(c_rec(forked, as_text), 'claude_code')
+                check('decision/nested-work-asks', 'the checker\'s forked skill%s, a write-capable server configured: '
+                      'decided ask, naming each construct line [%s, %s, %s]'
+                      % (' (as JSON text)' if as_text else '', (found or {}).get('decision'), (found or {}).get('basis'),
+                         hidden(found) or error),
+                      (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
+                      and hidden(found) == FORKED_NESTED and named(found) == sorted(
+                          (n, None, None, None, None, 'nested_work') for n, _, _ in FORKED_NESTED))
+            found, error = by_calls(c_rec(forked), 'claude_code')
+            check('decision/nested-work-asks', 'the call-by-call rules alone see no call in it [%s, %s]'
+                  % ((found or {}).get('decision'), named(found) or error),
+                  (found or {}).get('decision') == 'rerun' and named(found) == [])
+            normal = shown + [t_done('t1', {'total_tokens': 1, 'tool_uses': 2, 'duration_ms': 1}), t_result('t1')]
+            found, error = decide(c_rec(normal), 'claude_code')
+            check('decision/nested-work-asks', 'a normal run whose Agent\'s calls are all shown and read-only, a '
+                  'write-capable server configured: decided ask, naming the Agent line [%s, %s]'
+                  % ((found or {}).get('decision'), hidden(found)[:2] or error),
+                  (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
+                  and hidden(found)[:1] == [(len(c_head) + 1, 'agent', 'tool:Agent')]
+                  and by_calls(c_rec(normal), 'claude_code')[0].get('decision') == 'rerun')
+            found, error = decide(c_rec(nested), 'claude_code')
+            check('decision/nested-work-asks', 'a depth-2 agent\'s hidden MCP write: decided ask, naming the constructs '
+                  'beside the calls the call-by-call rules name [%s]' % (forms(found) or error),
+                  (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
+                  and (len(c_head) + 6, 'unknown_call', 'task_tool_uses') in forms(found)
+                  and (len(c_head) + 1, 'agent', 'tool:Agent') in hidden(found))
+            found, error = decide(x_rec(x_collab), 'codex')
+            check('decision/nested-work-asks', 'codex, exec\'s own sub-agent call: decided ask, naming it as nested work '
+                  'and as an unknown call [%s]' % (forms(found) or error),
+                  (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
+                  and forms(found) == [(len(x_head) + 1, 'nested_work', 'item:collab_tool_call'),
+                                       (len(x_head) + 1, 'unknown_call', 'collab_tool_call')])
+
+        # Each construct class the binaries' tables list, alone in a record, asks naming exactly that construct.
+        CONSTRUCTS = (
+            ('claude_code', 'agent', 'an Agent tool call', [c_blocks([tool_use('toolu_a', 'Agent')])], ['tool:Agent']),
+            ('claude_code', 'agent', 'a Task tool call (its old name)', [c_blocks([tool_use('toolu_a', 'Task')])],
+             ['tool:Task']),
+            ('claude_code', 'agent', 'a SendMessage to a teammate', [c_blocks([tool_use('toolu_a', 'SendMessage')])],
+             ['tool:SendMessage']),
+            ('claude_code', 'skill', 'a Skill tool call', [c_blocks([tool_use('toolu_k', 'Skill')])], ['tool:Skill']),
+            ('claude_code', 'repl', 'a REPL tool call', [c_blocks([tool_use('toolu_r', 'REPL')])], ['tool:REPL']),
+            ('claude_code', 'repl', 'a REPL inner call on a heartbeat of another tool',
+             [c_blocks([tool_use('toolu_b', 'Bash')]), c_progress('toolu_b', 'Bash', repl_call=inner('Read'))],
+             ['tool_progress:repl_call']),
+            ('claude_code', 'workflow', 'a Workflow tool call', [c_blocks([tool_use('toolu_f', 'Workflow')])],
+             ['tool:Workflow']),
+            ('claude_code', 'workflow', 'a RunWorkflow tool call (its alias)', [c_blocks([tool_use('toolu_f', 'RunWorkflow')])],
+             ['tool:RunWorkflow']),
+            ('claude_code', 'task_frames', 'a background shell task started',
+             [c_line('system', subtype='task_started', task_id='b1', tool_use_id=None, description='d',
+                     task_type='local_bash')], ['system/task_started']),
+            ('claude_code', 'task_frames', 'a task moved to the background',
+             [c_line('system', subtype='task_updated', task_id='b1', patch={'is_backgrounded': True})],
+             ['system/task_updated']),
+            ('claude_code', 'nested_progress', 'a message a sub-agent produced',
+             [dict(c_blocks([{'type': 'text', 'text': 'x'}]), parent_tool_use_id='toolu_elsewhere')],
+             ['parent_tool_use_id']),
+            ('claude_code', 'nested_progress', 'a forked skill\'s progress frame',
+             [{'type': 'progress', 'toolUseID': 'skill_m1', 'data': {'type': 'skill_progress', 'agentId': 'a1',
+                                                                     'message': {'type': 'assistant'}}}],
+             ['progress:skill_progress']),
+            ('claude_code', 'fork', 'a forked skill\'s result',
+             [dict(c_user('forked'), tool_use_result={'success': True, 'commandName': 'deploy', 'status': 'forked',
+                                                      'agentId': 'a1', 'result': 'launched'})],
+             ['tool_use_result:forked']),
+            ('codex', 'collab', 'exec\'s own sub-agent call', x_collab, ['item:collab_tool_call']),
+            ('codex', 'collab', 'the core\'s collab agent call',
+             [x_any('collab_agent_tool_call', 'item_c', tool='spawn_agent', status='in_progress')],
+             ['item:collab_agent_tool_call']),
+            ('codex', 'sub_agent', 'the core\'s sub-agent activity', [x_any('sub_agent_activity', 'item_a')],
+             ['item:sub_agent_activity']),
+        )
+        with region('decision/nested-constructs'):
+            for provider, construct, what, lines, expected in CONSTRUCTS:
+                record = c_rec(lines) if provider == 'claude_code' else x_rec(lines)
+                found, error = decide(record, provider)
+                head = c_head if provider == 'claude_code' else x_head
+                want = [(len(head) + len(lines), construct, form) for form in expected]
+                check('decision/nested-constructs', '%s, %s (%s): decided ask, naming exactly that construct [%s]'
+                      % (provider, what, construct, hidden(found) or error),
+                      (found or {}).get('decision') == 'ask' and hidden(found) == want)
+            workflow = c_line('system', subtype='task_started', task_id='w1', tool_use_id=None, description='spec',
+                              task_type='local_workflow', workflow_name='spec')
+            found, error = decide(c_rec([workflow]), 'claude_code')
+            check('decision/nested-constructs', 'a workflow\'s task started: a task frame and a workflow\'s [%s]'
+                  % (hidden(found) or error), hidden(found) == [
+                      (len(c_head) + 1, 'task_frames', 'system/task_started'),
+                      (len(c_head) + 1, 'workflow', 'system/task_started:workflow_name')])
+            classes = {construct for _, construct, _, _, _ in CONSTRUCTS}
+            declared = (set(CFORMS.get('nested_work', {}).get('tools') or ())
+                        | {key for key in CFORMS.get('nested_work') or {} if key in ('task_frames', 'fork')}
+                        | {'nested_progress'} | {key for key in XFORMS.get('nested_work') or {} if key != 'source'})
+            check('decision/nested-constructs', 'every construct class the binaries\' tables list is driven [%s]'
+                  % sorted(classes ^ declared), classes == declared and len(classes) == 9)
+            # Negative control: the same kinds of lines without the construct name no nested work.
+            found, error = decide(c_rec([c_blocks([tool_use('toolu_b', 'Bash')]),
+                                         c_line('system', subtype='permission_denied', tool_name='Agent',
+                                                tool_use_id='toolu_d'),
+                                         c_user([{'type': 'tool_result', 'tool_use_id': 'toolu_b', 'content': 'ok'}])]),
+                                  'claude_code')
+            check('decision/nested-constructs', 'a Bash call, a denied Agent call and its result name no nested work '
+                  '[%s, %s]' % ((found or {}).get('decision'), hidden(found) or error),
+                  (found or {}).get('decision') == 'rerun' and hidden(found) == [] and (found or {}).get('basis') == 'calls')
+
         # The readers' tables are the binaries' own; each listed fixture form is one they list, each unlisted one not.
         with region('format/tool-forms'):
             CE, XE = getattr(L, 'ENGINES', {}).get('claude_code'), getattr(L, 'ENGINES', {}).get('codex')
@@ -1414,6 +1600,18 @@ sys.exit(payload.get('code', 0))
                   and {('control_request', None), ('control_response', None), ('transcript_mirror', None)}
                   == {tag for tag, free in frames.items() if not free}
                   and not set(frames) & claude_tables['messages'])
+            c_nested, x_nested = CFORMS.get('nested_work') or {}, XFORMS.get('nested_work') or {}
+            module_nested = dict(getattr(CE, 'NESTED', None) or {})
+            binary_nested = {k: v for k, v in c_nested.items() if k not in ('tools', 'source')}
+            check('format/tool-forms', 'the construct tables that can run hidden nested work are the binaries\' own '
+                  '[%s, %s]' % (sorted(c_nested.get('tools') or {}), sorted(x_nested)),
+                  {k: sorted(v) for k, v in (getattr(CE, 'NESTED_TOOLS', None) or {}).items()} == c_nested.get('tools')
+                  and json.loads(json.dumps(module_nested)) == binary_nested
+                  and {k: sorted(v) for k, v in (getattr(XE, 'NESTED_ITEMS', None) or {}).items()}
+                  == {k: v for k, v in x_nested.items() if k != 'source'}
+                  and set(c_nested.get('tools') or ()) == {'agent', 'repl', 'skill', 'workflow'}
+                  and c_nested.get('tools', {}).get('agent', [])[:1] == ['Agent']
+                  and 'system/task_started' in (c_nested.get('task_frames') or ()))
             exec_items = set(XFORMS.get('exec_items') or ())
             known = (set(getattr(XE, 'TOOL_FREE_ITEMS', ())) | set(getattr(XE, 'BUILTIN_ITEMS', ()))
                      | set(getattr(XE, 'SUBAGENT_ITEMS', ())) | {str(getattr(XE, 'MCP_ITEM', ''))})

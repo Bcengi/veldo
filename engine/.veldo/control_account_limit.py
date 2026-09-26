@@ -6,6 +6,21 @@ read-only, since then its effects were confined to its clone; otherwise ASK the 
 call, since it may already have commented on a ticket or written a page and repeating it could do so
 twice. Carrying the decision out (the new dispatch, or the question to the owner) is VELDO-0154 AC3.
 
+THE STRUCTURAL RULES COME FIRST (the lead's decision). The stream cannot be made to show every nested MCP call
+(the REPL's inner calls, a depth-2 sub-agent's, a skill a sub-agent forks), so the decision does not rest on it
+alone. 1. When the configuration gives the run no MCP server with a tool not marked read-only (`write_capable`
+is empty: no server, or each lists its tools and its revision marks every one read-only), the run could not
+have written through MCP: the decision is `rerun` whatever the stream shows, basis `no_write_capable_server`
+(a structurally malformed record is still refused by name). 2. Otherwise, when the record shows any construct
+through which the run can do work its stream may not show (`nested`, the engine module's `nested_work`, from the
+binaries' own tables, proof/VELDO-0062/cli-formats.json tool_forms nested_work: for Claude Code an Agent, Task
+or SendMessage tool, the Skill tool, the REPL tool or its inner call, the Workflow tool or a workflow's task
+frames, any task frame, a message a sub-agent or a forked skill produced or their progress frame, a forked
+skill's result; for Codex a collab agent call or a sub-agent's activity), the decision is `ask`, basis
+`nested_work`, naming each such line with its `construct` and `form` (reason `nested_work`) beside the calls
+the call-by-call rules name. 3. Otherwise the call-by-call rules below decide (`decide_by_calls`), basis
+`calls`. The authoritative evidence later is a factory-side log of the MCP calls themselves (VELDO-0158).
+
 THE RECORD is the form VELDO-0141 writes: an ordered list of lines, each with a gapless `sequence` from
 1, a `received_at` time, a `stream` (`engine`, `stderr` or `wrapper`), a `redacted` field and a
 `payload`. An MCP tool call is an `engine` line whose payload (the event, or its JSON text) is the
@@ -48,17 +63,19 @@ unreadable. An engine whose stream reports no such count has no `Tasks` (Codex: 
 an unknown call already).
 
 THE MARKS are the dispatch's configuration, a list of servers each with the name its calls use, its
-catalog id and revision (`servers`), and for each revision the tools the owner marks read-only, the
+catalog id and revision and the tools it gives the run (`tools`: `all`, the default, or a list, VELDO-0127's
+selection) (`servers`), and for each revision the tools the owner marks read-only, the
 `read-only tools` field of VELDO-0144's `mcp_server` (`marks`: {catalog_id, revision, read_only_tools}).
 A call's server maps to the catalog id and revision the configuration lists; a call to a server the
 configuration does not list, or to a tool its revision does not mark (a revision that marks nothing, or
 one with no marks given, marks no tool), is not read-only.
 
-The decision {schema, decision, calls, mcp_calls} names in `calls` exactly the calls that are not
+The decision {schema, decision, calls, mcp_calls, basis} names in `calls` exactly the calls that are not
 read-only and the engine lines it cannot read, each with its sequence, server, tool, catalog id and
 revision and why (`server_not_configured`, `not_marked_read_only`, `unreadable`, `redacted_unreadable`,
-`unknown_call`, which also names its `form`, and for a task's unshown calls its `task` and `unshown`);
-`mcp_calls` counts the MCP calls it read. A structurally malformed record (a line without exactly its
+`unknown_call`, which also names its `form`, and for a task's unshown calls its `task` and `unshown`), and
+under the second structural rule each construct line (`nested_work`, with its `construct` and `form`);
+`mcp_calls` counts the MCP calls it read (None under the first structural rule, which reads no call). A structurally malformed record (a line without exactly its
 fields, a gap in its sequence, an unknown stream or receive time) or configuration is refused by name,
 never decided.
 Standard library only.
@@ -71,6 +88,7 @@ from pathlib import Path
 SCHEMA = 'veldo.account_limit_decision/v1'
 RERUN, ASK = 'rerun', 'ask'
 STREAMS = ('engine', 'stderr', 'wrapper')
+ALL_TOOLS = 'all'
 LINE_FIELDS = ('sequence', 'received_at', 'stream', 'redacted', 'payload')
 
 
@@ -109,17 +127,18 @@ def _event(payload):
     return payload if isinstance(payload, dict) and _text(payload.get('type')) else None
 
 
-def calls(record, provider):
-    """[{id, sequence, server, tool}]: the MCP tool calls the record shows, each once, in order, each
-    engine line that cannot be read, {sequence, server: None, tool: None, unreadable: <reason>}, and each
-    tool-call form the engine module does not recognize, {sequence, server: None, tool: None, unknown: <form>}."""
+def _engine(provider):
     engine = ENGINES.get(provider)
     if engine is None:
         raise Refused('invalid_input:provider', str(provider))
+    return engine
+
+
+def _checked(record):
+    """The record's lines, each checked for exactly its fields, its place in a gapless sequence from 1, its stream
+    and its receive time; a structurally malformed record is refused by name."""
     if not isinstance(record, list):
         raise Refused('invalid_input:record', 'an ordered list of lines')
-    found, seen, shown_ids = [], set(), set()
-    tasks = engine.Tasks() if engine.Tasks is not None else None
     for at, line in enumerate(record, 1):
         if not isinstance(line, dict) or set(line) != set(LINE_FIELDS):
             raise Refused('invalid_input:record_line', 'line %d has not exactly %s' % (at, ', '.join(LINE_FIELDS)))
@@ -129,6 +148,17 @@ def calls(record, provider):
                                                  and not isinstance(line['received_at'], bool)
                                                  and math.isfinite(line['received_at'])):
             raise Refused('invalid_input:record_line', 'line %d stream or receive time' % at)
+    return record
+
+
+def calls(record, provider):
+    """[{id, sequence, server, tool}]: the MCP tool calls the record shows, each once, in order, each
+    engine line that cannot be read, {sequence, server: None, tool: None, unreadable: <reason>}, and each
+    tool-call form the engine module does not recognize, {sequence, server: None, tool: None, unknown: <form>}."""
+    engine = _engine(provider)
+    found, seen, shown_ids = [], set(), set()
+    tasks = engine.Tasks() if engine.Tasks is not None else None
+    for at, line in enumerate(_checked(record), 1):
         if line['stream'] != 'engine':
             continue
         event = _event(line['payload'])
@@ -157,18 +187,23 @@ def calls(record, provider):
     return found + (tasks.close() if tasks is not None else [])
 
 
-def decide(record, servers, marks, provider):
-    """Re-run or ask, over the record of a run that ended `account_limit` (the module docstring)."""
+def _configuration(servers, marks):
+    """{server name: (catalog id, revision)}, {(catalog id, revision): read-only tools} and {server name: the tools
+    the configuration gives the run, None for all of them}; a malformed configuration is refused by name."""
     if not isinstance(servers, list) or not isinstance(marks, list):
         raise Refused('invalid_input:configuration', 'servers and marks are lists')
-    configured = {}
+    configured, selected = {}, {}
     for server in servers:
         if (not isinstance(server, dict) or not _text(server.get('name')) or not _text(server.get('catalog_id'))
                 or not _revision(server.get('revision'))):
             raise Refused('invalid_input:configuration', 'each server names its name, catalog id and revision')
         if server['name'] in configured:
             raise Refused('invalid_input:configuration', 'server %s is listed twice' % server['name'])
+        tools = server.get('tools', ALL_TOOLS)
+        if tools != ALL_TOOLS and not (isinstance(tools, list) and all(_text(tool) for tool in tools)):
+            raise Refused('invalid_input:configuration', 'server %s gives all its tools or a list' % server['name'])
         configured[server['name']] = (server['catalog_id'], server['revision'])
+        selected[server['name']] = None if tools == ALL_TOOLS else set(tools)
     read_only = {}
     for mark in marks:
         if (not isinstance(mark, dict) or not _text(mark.get('catalog_id')) or not _revision(mark.get('revision'))
@@ -176,6 +211,35 @@ def decide(record, servers, marks, provider):
                 or not all(_text(tool) for tool in mark['read_only_tools'])):
             raise Refused('invalid_input:marks', 'each revision names its catalog id, revision and read-only tools')
         read_only.setdefault((mark['catalog_id'], mark['revision']), set()).update(mark['read_only_tools'])
+    return configured, read_only, selected
+
+
+def write_capable(servers, marks):
+    """The configured servers through which the run could write: each that gives the run a tool its revision does
+    not mark read-only (all its tools, unless the configuration lists them, may include one)."""
+    configured, read_only, selected = _configuration(servers, marks)
+    return sorted(name for name, revision in configured.items()
+                  if selected[name] is None or selected[name] - read_only.get(revision, set()))
+
+
+def nested(record, provider):
+    """[{sequence, construct, form}]: each engine line whose event shows a construct through which the run can do
+    work its stream may not show (the engine module's `nested_work`), each construct once per line. A line that is
+    not a readable event is left to the call-by-call rules, which ask for it."""
+    engine = _engine(provider)
+    found = []
+    for at, line in enumerate(_checked(record), 1):
+        event = _event(line['payload']) if line['stream'] == 'engine' else None
+        if event is not None:
+            found += [{'sequence': at, 'construct': construct, 'form': form}
+                      for construct, form in engine.nested_work(event)]
+    return found
+
+
+def decide_by_calls(record, servers, marks, provider):
+    """The call-by-call rules (the module docstring's third rule): ask for each call the record shows to a tool
+    not marked read-only, each engine line it cannot read and each form it does not recognize."""
+    configured, read_only, _ = _configuration(servers, marks)
     shown = calls(record, provider)
     named = []
     for call in shown:
@@ -200,3 +264,24 @@ def decide(record, servers, marks, provider):
                       'reason': reason})
     read = [call for call in shown if not call.get('unreadable') and not call.get('unknown')]
     return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(read)}
+
+
+def decide(record, servers, marks, provider):
+    """Re-run or ask, over the record of a run that ended `account_limit` (the module docstring): the structural
+    rules first, then the call-by-call rules. `basis` names the rule that decided."""
+    if not write_capable(servers, marks):
+        # The configuration gives the run no tool that is not read-only: it could not have written through MCP.
+        _engine(provider)
+        _checked(record)
+        return {'schema': SCHEMA, 'decision': RERUN, 'calls': [], 'mcp_calls': None,
+                'basis': 'no_write_capable_server'}
+    hidden = nested(record, provider)
+    decision = decide_by_calls(record, servers, marks, provider)
+    if hidden:
+        # A write-capable server and a construct that can run work the stream may not show: ask, naming each.
+        named = decision['calls'] + [
+            {'sequence': found['sequence'], 'server': None, 'tool': None, 'catalog_id': None, 'revision': None,
+             'reason': 'nested_work', 'construct': found['construct'], 'form': found['form']} for found in hidden]
+        return dict(decision, decision=ASK, calls=sorted(named, key=lambda call: call['sequence']),
+                    basis='nested_work')
+    return dict(decision, basis='calls')

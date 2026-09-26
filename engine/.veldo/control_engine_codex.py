@@ -71,6 +71,11 @@ reasoning, to-do lists and errors (TOOL_FREE_ITEMS), and its commands, file chan
 (BUILTIN_ITEMS), whose effects stay in the clone. `seen` and `redacted` are Claude Code's interface, and so
 is `Tasks`, a task's count of its calls, which exec does not report (None).
 
+HIDDEN NESTED WORK (VELDO-0160, the structural rule). `nested_work(event)` names the item through which an event
+shows the run doing work in another agent's thread, whose calls its stream does not show (NESTED_ITEMS, the
+binary's, cli-formats.json nested_work): `collab` (exec's own `collab_tool_call`, the core's
+`collab_agent_tool_call`) and `sub_agent` (the core's `sub_agent_activity`).
+
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
 THE ADAPTER (VELDO-0061). REGISTRATION is the Codex adapter as the launch receiver runs it: its
@@ -148,6 +153,9 @@ TOOL_FREE_ITEMS = frozenset(('agent_message', 'reasoning', 'todo_list', 'error')
 BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))
 # exec's own sub-agent call: the agents it spawns or drives make calls exec does not print, so it is an unknown call.
 SUBAGENT_ITEMS = frozenset(('collab_tool_call',))
+# The items through which a run does work in another agent's thread, whose calls its stream does not show
+# (VELDO-0160, the structural rule; cli-formats.json codex tool_forms nested_work), by class.
+NESTED_ITEMS = {'collab': ('collab_agent_tool_call', 'collab_tool_call'), 'sub_agent': ('sub_agent_activity',)}
 # exec reports no task counting its sub-agents' calls: its own sub-agent call is already an unknown call above.
 Tasks = None
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
@@ -219,6 +227,14 @@ def tool_calls(event, seen=None, redacted=False):
     if not (isinstance(server, str) and server and isinstance(tool, str) and tool):
         return [{'id': item.get('id'), 'server': None, 'tool': None, 'unreadable': True}]
     return [{'id': item.get('id'), 'server': server, 'tool': tool}]
+
+
+def nested_work(event):
+    """[(construct, form)]: the item through which the event shows the run doing work in another agent's thread
+    (NESTED_ITEMS): `collab` for a collab agent call, `sub_agent` for a sub-agent's activity."""
+    item = event.get('item') if event.get('type') in ITEM_EVENTS else None
+    kind = item.get('type') if isinstance(item, dict) else None
+    return [(construct, 'item:' + kind) for construct, kinds in NESTED_ITEMS.items() if kind in kinds]
 
 
 class Meter:

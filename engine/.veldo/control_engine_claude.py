@@ -115,6 +115,16 @@ at the line that reported the count. A count frame whose count cannot be read (a
 count of calls as a whole number, a `task_notification` whose usage has none, either without the task's id) is
 unreadable, and so is a count lower than one the same task reported before, since a count only rises.
 
+HIDDEN NESTED WORK (VELDO-0160, the structural rule). `nested_work(event)` names each construct through which
+an event shows the run doing work its stream may not show, by class (NESTED_TOOLS and NESTED, the binary's,
+cli-formats.json nested_work): `agent` (the Agent tool, its old name Task, SendMessage to a teammate), `skill`
+(the Skill tool), `repl` (the REPL tool, or its inner call on a tool_progress), `workflow` (the Workflow tool, or
+a task frame of a workflow), each tool wherever a tool that ran is named (a `tool_use` block, streamed or not, a
+tool_progress's tool or REPL inner tool, a task's last tool or its workflow agents', a batch tool name);
+`task_frames` (any system frame of a task); `nested_progress` (a message that names its task in
+`parent_tool_use_id`, as the CLI forwards a sub-agent's or forked skill's `agent_progress` and `skill_progress`,
+or such a progress frame itself); and `fork` (the Skill tool's result when it forked an agent).
+
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
 THE PINNED EXECUTABLE, VELDO-0060. A Claude Code adapter names the version it runs (`executable:
@@ -297,6 +307,21 @@ TOOL_FIELDS = {
 # the field that holds it, the field of a frame naming its task, and the field of a sub-agent's message naming it.
 TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), 'count': 'usage.tool_uses',
                'task': 'tool_use_id', 'parent': 'parent_tool_use_id'}
+# The constructs through which a run can do work its stream may not show (VELDO-0160, the structural rule; the
+# binary's, cli-formats.json tool_forms nested_work), by class: the tools that run an agent, a skill, code or a
+# workflow, by every name a frame may give them (NESTED_TOOLS); a task's own frames; the fields a task frame gives a
+# workflow and a workflow's task type; the REPL tool's inner call on a tool_progress; the field a sub-agent's or a
+# forked skill's forwarded message carries, and the progress kinds the CLI forwards that way; and the Skill tool's
+# result when it forked an agent.
+NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'repl': ('REPL',), 'skill': ('Skill',),
+                'workflow': ('RunWorkflow', 'Workflow')}
+NESTED = {'task_frames': ('system/task_notification', 'system/task_progress', 'system/task_started',
+                          'system/task_updated'),
+          'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',
+                       'task_type': 'local_workflow'},
+          'repl': {'tool_progress': 'repl_call'},
+          'forwarded': {'field': 'parent_tool_use_id', 'progress': ('agent_progress', 'skill_progress')},
+          'fork': {'field': 'tool_use_result', 'status': 'forked'}}
 TOOL_FIELDS.update({'result/' + sub: {'deferred_tool_use': 'free', 'permission_denials.tool_input': 'free',
                                       'permission_denials.tool_name': 'free', 'permission_denials.tool_use_id': 'free',
                                       'usage.server_tool_use': 'free'}
@@ -543,6 +568,65 @@ def tool_calls(event, seen, redacted=False):
                 found += _repl_call(event['repl_call'], seen)
         return found
     return []
+
+
+def _named_tools(event, tag):
+    """Every tool name an event gives where a tool that ran or may run is named: a `tool_use` block of its content
+    (streamed or not), a tool_progress's tool and REPL inner tool, a task's last tool and its workflow agents',
+    and an assistant message's batch tool names."""
+    names, blocks = [], None
+    message = event.get('message')
+    if tag in ('assistant', 'user') and isinstance(message, dict):
+        blocks = message.get('content')
+    elif tag == 'stream_event' and isinstance(event.get('event'), dict):
+        stream = event['event']
+        start = stream.get('message') if isinstance(stream.get('message'), dict) else {}
+        blocks = [stream.get('content_block')] + (start['content'] if isinstance(start.get('content'), list) else [])
+    for block in blocks if isinstance(blocks, list) else ():
+        if isinstance(block, dict) and block.get('type') == 'tool_use':
+            names.append(block.get('name'))
+    entries, field = None, None
+    if tag == 'tool_progress':
+        repl = event.get('repl_call')
+        names += [event.get('tool_name'), repl.get('inner_tool_name') if isinstance(repl, dict) else None]
+    elif tag == 'system/task_progress':
+        names.append(event.get('last_tool_name'))
+        entries, field = event.get('workflow_progress'), 'lastToolName'
+    elif tag == 'assistant':
+        entries, field = event.get('batch_tool_uses'), 'name'
+    if isinstance(entries, list):
+        names += [entry.get(field) for entry in entries if isinstance(entry, dict)]
+    return [name for name in names if isinstance(name, str)]
+
+
+def nested_work(event):
+    """[(construct, form)]: each construct through which the event shows the run doing work its stream may not
+    show (NESTED_TOOLS, NESTED): `agent`, `skill`, `repl`, `workflow` for a tool of that class named where a tool
+    that ran is named, `task_frames` for a task's own frame, `workflow` also for a task frame of a workflow,
+    `repl` also for a REPL inner call, `nested_progress` for a message a sub-agent or a forked skill produced (it
+    names its task) or a progress frame of theirs, and `fork` for a forked skill's result."""
+    kind = event.get('type')
+    tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
+    found = []
+    for name in _named_tools(event, tag):
+        found += [(construct, 'tool:' + name) for construct, names in NESTED_TOOLS.items() if name in names]
+    if tag in NESTED['task_frames']:
+        found.append(('task_frames', tag))
+        workflow = NESTED['workflow']
+        if event.get(workflow.get(tag, '')) is not None or event.get('task_type') == workflow['task_type']:
+            found.append(('workflow', tag + ':' + workflow.get(tag, 'task_type')))
+    if tag in NESTED['repl'] and NESTED['repl'][tag] in event:
+        found.append(('repl', tag + ':' + NESTED['repl'][tag]))
+    parent = event.get(NESTED['forwarded']['field'])
+    if isinstance(parent, str) and parent:
+        found.append(('nested_progress', NESTED['forwarded']['field']))
+    data = event.get('data')
+    if kind == 'progress' and isinstance(data, dict) and data.get('type') in NESTED['forwarded']['progress']:
+        found.append(('nested_progress', 'progress:' + data['type']))
+    result = event.get(NESTED['fork']['field'])
+    if kind == 'user' and isinstance(result, dict) and result.get('status') == NESTED['fork']['status']:
+        found.append(('fork', NESTED['fork']['field'] + ':' + NESTED['fork']['status']))
+    return list(dict.fromkeys(found))
 
 
 def _whole(value):
