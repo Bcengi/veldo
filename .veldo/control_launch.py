@@ -104,7 +104,8 @@ ENGINE_PROTOCOL with the same signatures, and the receiver drives each through t
   a 0700 directory, beside the store unless the config names `artifacts`), and its report {path, digest,
   verdict, complete} is sent to the runner before the end. The invocation and the worker slot are
   `completed` only when the document is complete, so a zero exit without a terminal record is never a
-  completion.
+  completion: the exit record binds the report's verdict, completeness and digest, and the runner's slot
+  and the build and review floor read completion from that record through control_dispatch.completed.
 - `Meter` (VELDO-0062), with PROVIDER, CREDENTIALS, SETTINGS and REGISTRATION (the lifecycle operations).
 An engine module that does not implement the protocol is refused by name before acceptance.
 
@@ -319,12 +320,9 @@ class Runner:
         """Wait for the launched dispatch's terminal record; a conclusive end returns its slot."""
         record = launch.wait(timeout)
         if record and record['state'] == 'exited':
-            termination = record['termination'] or {}
-            clean = termination.get('returncode') == 0 and not termination.get('deadline_stop')
-            artifact = getattr(launch, 'artifact', None)
-            if artifact is not None:
-                # An engine's zero exit completes only with a complete artifact (THE ENGINE PROTOCOL).
-                clean = clean and artifact.get('complete') is True
+            # The one completion gate (control_dispatch.completed): the exit record's clean exit and, for an
+            # engine, the complete artifact it binds (THE ENGINE PROTOCOL).
+            clean = D.completed(record)
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
         elif record and record['state'] == 'unknown':
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known.
@@ -685,7 +683,9 @@ class Receiver:
                                     expected_state='running')
             self.emit({'event': 'unknown', 'supervision': supervision})
             return
-        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())
+        report = self.metering.report if self.metering is not None else None
+        artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
+        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)
         self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision})
 
     def _login(self, contract, adapter):
@@ -1208,8 +1208,9 @@ class Metering:
         except OSError as error:
             self.errors.append('artifact:' + type(error).__name__)
             path = None
+        verdict = document['verdict'] if path is not None else 'artifact_unkept'
         return {'path': str(path) if path else None, 'digest': 'sha256:' + hashlib.sha256(data).hexdigest(),
-                'verdict': document['verdict'], 'complete': document['complete'] is True and path is not None}
+                'verdict': verdict, 'complete': verdict == 'complete' and document['complete'] is True}
 
     def settle(self, termination, cause):
         """The one final report. `termination` None: the engine never started (not executed)."""

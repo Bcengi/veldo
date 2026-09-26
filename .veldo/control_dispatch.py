@@ -41,6 +41,14 @@ status and the digest and size of what the worker printed. Nothing the worker pr
 interpreted, and no transition here writes a completion receipt: a worker's exit is not a completion
 (VELDO-0021's receipts and VELDO-0052's reader own completion).
 
+THE ENGINE'S ARTIFACT (VELDO-0060, VELDO-0061). An engine worker's `exit` also binds the verdict and
+digest of the artifact document the receiver decoded from its terminal output (control_launch's
+ENGINE PROTOCOL): {verdict, complete, digest}, complete exactly when the verdict is `complete`; a worker
+with no engine binds none. `completed(record)` is the one completion gate every reader applies, the
+runner's worker slot and the build and review floor (dispatch.py) alike: an exited record with a zero
+exit, no signal and no deadline stop, and, when it binds an artifact, a complete one, so an engine's
+zero exit without its terminal record is never a completion.
+
 AUTHORITY. Every transition runs inside the store transaction and first requires the command's
 principal to be an active `service` member (authority_contract.BOUNDARIES['dispatch_acceptance'])
 whose scope covers this repository, so a worker principal writes no dispatch record. The claim and
@@ -104,6 +112,7 @@ CONTRACT_FIELDS = ('schema', 'dispatch_id', 'domain', 'repository', 'unit', 'sta
                    'input', 'capability', 'reservation', 'claim', 'deadline', 'authority_generation')
 IDENTITY_FIELDS = ('platform', 'host', 'boot_id', 'pid', 'start')
 TERMINATION_FIELDS = ('returncode', 'signal', 'output_digest', 'output_bytes', 'deadline_stop')
+ARTIFACT_FIELDS = ('verdict', 'complete', 'digest')
 
 TAXONOMY = {
     'invalid_input': 'invalid_input', 'incomplete_contract': 'invalid_input', 'binding_mismatch': 'invalid_input',
@@ -235,6 +244,29 @@ def _termination_problems(value):
             or not _count(value['output_bytes'], 0) or type(value['deadline_stop']) is not bool)
 
 
+def _artifact_problems(value):
+    """Whether an exit's artifact binding is malformed: None (no engine) or exactly {verdict, complete,
+    digest}, complete exactly when the verdict is `complete`."""
+    if value is None:
+        return False
+    if not isinstance(value, dict) or set(value) != set(ARTIFACT_FIELDS):
+        return True
+    digest_text = value['digest']
+    return (not _text(value['verdict']) or type(value['complete']) is not bool
+            or value['complete'] != (value['verdict'] == 'complete')
+            or not (isinstance(digest_text, str) and digest_text.startswith('sha256:') and len(digest_text) == 71))
+
+
+def completed(record):
+    """THE completion gate: an exited dispatch whose worker exited 0 with no signal and no deadline stop,
+    and whose engine artifact, when it binds one, is complete."""
+    termination = (record or {}).get('termination') or {}
+    artifact = (record or {}).get('artifact')
+    return ((record or {}).get('state') == 'exited' and termination.get('returncode') == 0
+            and termination.get('signal') is None and termination.get('deadline_stop') is False
+            and (artifact is None or artifact.get('complete') is True))
+
+
 def _entity(conn, identity):
     row = conn.execute('SELECT kind, version, digest, data FROM entities WHERE id=?', (identity,)).fetchone()
     if row is None:
@@ -358,7 +390,10 @@ def transition(conn, params, before):
             raise Refused('binding_mismatch:process', 'this termination belongs to another process')
         if _termination_problems(params.get('termination')):
             raise Refused('invalid_input', 'a termination carries exit status and output digest only')
+        if _artifact_problems(params.get('artifact')):
+            raise Refused('invalid_input', 'an artifact binding carries its verdict, completeness and digest only')
         record['termination'] = params['termination']
+        record['artifact'] = params.get('artifact')
     elif action == 'refuse':
         if not _text(params.get('refusal')):
             raise Refused('invalid_input', 'a refusal is named')
@@ -490,10 +525,11 @@ class Dispatches:
         """The spawned worker's OS identity: the launch was accepted and the worker is running."""
         return self._run('run', dispatch_id, {'contract_digest': contract_digest, 'process': process}, now)
 
-    def exit(self, dispatch_id, contract_digest, process, termination, *, now):
-        """The reaped worker's termination, bound to the process `run` recorded."""
+    def exit(self, dispatch_id, contract_digest, process, termination, *, now, artifact=None):
+        """The reaped worker's termination, bound to the process `run` recorded, and the verdict and digest
+        of its engine's artifact (None for a worker with no engine)."""
         return self._run('exit', dispatch_id, {'contract_digest': contract_digest, 'process': process,
-                                               'termination': termination}, now)
+                                               'termination': termination, 'artifact': artifact}, now)
 
     def refuse(self, dispatch_id, contract_digest, refusal, *, now, expected_state=None):
         """A launch that conclusively did not happen, by name, ending `expected_state` when named."""

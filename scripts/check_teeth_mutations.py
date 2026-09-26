@@ -6902,9 +6902,27 @@ def cases():
            "            if False:  # defect: the invocation completes on a zero exit alone\n",
            'artifact/missing-result')
     claude('claude-slot-completed-on-exit', 'control_launch.py',
-           "                clean = clean and artifact.get('complete') is True\n",
-           "                clean = clean  # defect: the worker slot completes on a zero exit alone\n",
+           "            clean = D.completed(record)\n",
+           "            clean = (record['termination'] or {}).get('returncode') == 0"
+           "  # defect: the worker slot completes on a zero exit alone\n",
            'artifact/missing-result')
+    # AC2 at the floor (0060 review blocker 1): the dispatch authority's completion gate ignores the artifact
+    # its exit record binds, or the exit record binds none.
+    claude('claude-floor-exit-code-completes', 'dispatch.py',
+           '    return _floor_organ("control_dispatch").completed(record)\n',
+           '    termination = (record or {}).get("termination") or {}  # defect: the floor reads the exit code alone\n'
+           '    return ((record or {}).get("state") == "exited" and termination.get("returncode") == 0\n'
+           '            and termination.get("signal") is None and termination.get("deadline_stop") is False)\n',
+           'floor/missing-result')
+    claude('claude-completion-gate-exit-only', 'control_dispatch.py',
+           "            and (artifact is None or artifact.get('complete') is True))\n",
+           "            and True)  # defect: the completion gate ignores the artifact the exit record binds\n",
+           'floor/missing-result')
+    claude('claude-exit-artifact-unbound', 'control_launch.py',
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)\n",
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())"
+           "  # defect: the exit record binds no artifact\n",
+           'artifact/exit-record')
     claude('claude-artifact-unreturned', 'control_launch.py',
            "            if self.metering.report is not None:\n"
            "                self.emit({'event': 'artifact', 'artifact': self.metering.report})\n",
@@ -7005,8 +7023,9 @@ def cases():
             "            if False:  # defect: the exit code decides the invocation's outcome\n",
             'artifacts/missing-result')
     adapter('adapter-runner-exit-completes', 'control_launch.py',
-            "                clean = clean and artifact.get('complete') is True\n",
-            "                pass  # defect: the runner returns the slot completed on the exit code\n",
+            "            clean = D.completed(record)\n",
+            "            clean = (record['termination'] or {}).get('returncode') == 0"
+            "  # defect: the runner returns the slot completed on the exit code\n",
             'artifacts/missing-result')
     adapter('adapter-malformed-accepted', 'control_engine_codex.py',
             "        if self.malformed:\n            return 'malformed_output'\n",

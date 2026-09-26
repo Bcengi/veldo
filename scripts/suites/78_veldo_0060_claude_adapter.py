@@ -58,11 +58,13 @@ def _v60_suite():
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
+        'control_dispatch.py': ROOT / ".veldo" / "control_dispatch.py",
+        'dispatch.py': ROOT / ".veldo" / "dispatch.py",
     }
     ROWS = ('lifecycle/registration', 'lifecycle/pinned-launch',
             'pin/unexpected-launch', 'pin/copy', 'pin/shipped-qualification',
             'artifact/complete', 'artifact/missing-result', 'artifact/exits', 'artifact/malformed-output',
-            'artifact/missing-usage',
+            'artifact/missing-usage', 'artifact/exit-record', 'floor/missing-result',
             'stop/requested', 'stop/descendant-alive',
             'caps/before-launch', 'caps/allowance-states', 'caps/stop-at-cap',
             'format/fake-lines', 'format/fake-argv')
@@ -155,6 +157,7 @@ def _v60_suite():
         member('runner', 'service', ['reservation_service'])
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
+        member('floor-service', 'service', ['result_acceptance'])
         writer.command_registry['claim_operation'] = {'transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -690,6 +693,8 @@ sys.exit(payload.get('code', 0))
                   and set(entry.get('usage_units') or ()) == {'invocations', 'wall_seconds', 'tokens', 'messages'})
 
         # AC2: live exits and perturbed stream bytes, each through the production decoder in the receiver.
+        exit_records = {}
+
         def artifact_of(account, name, script, code=0, **caps):
             proj = project('p-' + name, **caps) if caps else 'journey-60'
             launch, record = run(account, admitted('VELDO-6003-' + name, proj), 'claude', script, code=code)
@@ -698,6 +703,7 @@ sys.exit(payload.get('code', 0))
         with region('artifact/missing-result'):
             script = normal()
             launch, record, artifact, call = artifact_of('acct-60a', 'no-result', script[:2], tokens=10 ** 6)
+            exit_records['no-result'] = (launch, record)
             nxt, nrecord = run('acct-60a', admitted('VELDO-6003-no-result-next', 'p-no-result'), 'claude', normal())
             check('artifact/missing-result', 'a zero exit with its terminal record removed is not a completion: the '
                   'artifact says missing_result [%s, %s, %s]' % (record.get('state'), (record.get('termination') or {})
@@ -755,6 +761,53 @@ sys.exit(payload.get('code', 0))
                       and (artifact.get('stream') or {}).get('lines') == 4
                       and (artifact.get('terminal') or {}).get('subtype') == 'success'
                       and call.get('outcome') == 'failed')
+
+        # AC2 at the dispatch authority: the exit record binds the artifact's verdict and digest, and the
+        # one completion gate (control_dispatch.completed) reads it for the runner and the floor alike.
+        with region('artifact/exit-record'):
+            cases = (('complete', normal_run['launch'], normal_run['record'], 'complete', True),
+                     ('missing result', exit_records['no-result'][0], exit_records['no-result'][1], 'missing_result', False))
+            for label, launch, record, verdict, complete in cases:
+                report = getattr(launch, 'artifact', None) or {}
+                bound = rec(launch.dispatch_id).get('artifact')
+                check('artifact/exit-record', '%s: the exit record binds the artifact the runner was given, its verdict '
+                      '%s, completeness and digest, the digest of the file the report names [%s]' % (label, verdict, bound),
+                      bound == {'verdict': verdict, 'complete': complete, 'digest': report.get('digest')}
+                      and returned(launch) is not None and (returned(launch) or {}).get('verdict') == verdict)
+                check('artifact/exit-record', '%s: the completion gate reads that record as %s [%s]'
+                      % (label, 'complete' if complete else 'not complete', (record.get('termination') or {})),
+                      getattr(D, 'completed', lambda r: None)(rec(launch.dispatch_id)) is complete
+                      and (rec(launch.dispatch_id).get('termination') or {}).get('returncode') == 0)
+
+        # The floor: a zero exit with its terminal record removed is not a completed build, and the floor
+        # refuses to accept it, while the complete run's build passes the dispatch check (then lacks proof).
+        with region('floor/missing-result'):
+            DSP = load('v60_dispatch', mods / 'dispatch.py')
+            floor = DSP.FloorAuthority(S, writer, domain=DOMAIN, repository=REPOSITORY, repo=str(src),
+                                       projections=str(base / 'projections'), principal='floor-service',
+                                       signer='floor-service', sign=sign)
+            commit = GP.run(['git', '-C', str(src), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
+
+            def accept_build(launch):
+                # The claim the build ran under, as its accepted contract binds it.
+                try:
+                    floor.accept_build(launch.contract['unit'], commit=commit, gate={'green': True, 'detail': 'suite'},
+                                       holder=HOLDER, generation=(launch.contract.get('claim') or {}).get('generation'))
+                    return 'accepted'
+                except DSP.FloorRefused as error:
+                    return error.code
+            missing_launch, missing_record = exit_records['no-result']
+            missing = accept_build(missing_launch)
+            control = accept_build(normal_run['launch'])
+            check('floor/missing-result', 'a build dispatch that exited 0 with its terminal record removed: the floor '
+                  'refuses to accept the build, for want of a completed build dispatch [%s, %s]'
+                  % ((missing_record.get('termination') or {}).get('returncode'), missing),
+                  missing_record.get('state') == 'exited' and (missing_record.get('termination') or {}).get('returncode') == 0
+                  and missing == 'missing_evidence:build_dispatch' and floor.record(missing_launch.contract['unit']) is None)
+            check('floor/missing-result', 'control: the complete run\'s build dispatch passes the floor\'s dispatch check '
+                  'and is refused next for its absent proof [%s]' % control,
+                  control == 'missing_evidence:proof/absent')
+            floor.close()
 
         with region('artifact/missing-usage'):
             script = normal()
