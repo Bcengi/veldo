@@ -7218,6 +7218,74 @@ def cases():
          "'count': 'usage.tool_uses',",
          "'count': 'usage.total_tokens',  # defect: the count is read from another field\n",
          ['decision/subagent-calls', 'format/tool-forms'])
+    # THE STRUCTURAL RULES (the lead's decision): the configuration decides first, since the stream cannot be made to
+    # show every nested call. Rule 1 skipped; rule 2 skipped; each construct class dropped from rule 2.
+    pool('decision-rule1-skipped', 'control_account_limit.py',
+         "    if not write_capable(servers, marks):\n",
+         "    if False:  # defect: a run with no write-capable server is decided by its stream\n",
+         ['decision/no-write-server-reruns'])
+    pool('decision-rule2-skipped', 'control_account_limit.py',
+         "    if hidden:\n",
+         "    if False:  # defect: a construct that can run hidden nested work is not asked about\n",
+         ['decision/nested-work-asks', 'decision/nested-constructs'])
+    pool('decision-listed-tools-ignored', 'control_account_limit.py',
+         "                  if selected[name] is None or selected[name] - read_only.get(revision, set()))\n",
+         "                  if True)  # defect: a server's listed tools are taken for all of them\n",
+         ['decision/no-write-server-reruns'])
+    pool('decision-all-tools-read-only', 'control_account_limit.py',
+         "                  if selected[name] is None or selected[name] - read_only.get(revision, set()))\n",
+         "                  if selected[name] and selected[name] - read_only.get(revision, set()))"
+         "  # defect: all tools read as none\n",
+         ['decision/nested-work-asks', 'decision/nested-constructs', 'decision/no-write-server-reruns'])
+    pool('decision-nested-text-lines-unread', 'control_account_limit.py',
+         "        event = _event(line['payload']) if line['stream'] == 'engine' else None\n",
+         "        event = line['payload'] if line['stream'] == 'engine' and isinstance(line['payload'], dict) else None"
+         "  # defect: a line held as JSON text is not read for nested work\n",
+         ['decision/nested-work-asks'])
+    pool('nested-agent-dropped', 'control_engine_claude.py',
+         "NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), ",
+         "NESTED_TOOLS = {  # defect: the agent tools are not nested work\n    ",
+         ['decision/nested-constructs', 'format/tool-forms'])
+    pool('nested-skill-dropped', 'control_engine_claude.py',
+         "'skill': ('Skill',),\n",
+         "\n",
+         ['decision/nested-constructs', 'format/tool-forms'])
+    pool('nested-repl-dropped', 'control_engine_claude.py',
+         "'repl': ('REPL',), ",
+         "",
+         ['decision/nested-constructs', 'format/tool-forms'],
+         also=[("          'repl': {'tool_progress': 'repl_call'},\n", "          'repl': {},\n")])
+    pool('nested-workflow-dropped', 'control_engine_claude.py',
+         "                'workflow': ('RunWorkflow', 'Workflow')}\n",
+         "                }  # defect: the workflow tools are not nested work\n",
+         ['decision/nested-constructs', 'format/tool-forms'],
+         also=[("            found.append(('workflow', tag + ':' + workflow.get(tag, 'task_type')))\n",
+                "            pass\n")])
+    pool('nested-task-frames-dropped', 'control_engine_claude.py',
+         "        found.append(('task_frames', tag))\n",
+         "        pass  # defect: a task's own frames are not nested work\n",
+         ['decision/nested-constructs'])
+    pool('nested-progress-dropped', 'control_engine_claude.py',
+         "        found.append(('nested_progress', NESTED['forwarded']['field']))\n",
+         "        pass  # defect: a sub-agent's or forked skill's forwarded message is not nested work\n",
+         ['decision/nested-constructs', 'decision/nested-work-asks'],
+         also=[("        found.append(('nested_progress', 'progress:' + data['type']))\n", "        pass\n")])
+    pool('nested-fork-dropped', 'control_engine_claude.py',
+         "        found.append(('fork', NESTED['fork']['field'] + ':' + NESTED['fork']['status']))\n",
+         "        pass  # defect: a forked skill's result is not nested work\n",
+         ['decision/nested-constructs'])
+    pool('nested-codex-collab-dropped', 'control_engine_codex.py',
+         "NESTED_ITEMS = {'collab': ('collab_agent_tool_call', 'collab_tool_call'), ",
+         "NESTED_ITEMS = {  # defect: a collab agent call is not nested work\n    ",
+         ['decision/nested-constructs', 'decision/nested-work-asks', 'format/tool-forms'])
+    pool('nested-codex-sub-agent-dropped', 'control_engine_codex.py',
+         "'sub_agent': ('sub_agent_activity',)}\n",
+         "}  # defect: a sub-agent's activity is not nested work\n",
+         ['decision/nested-constructs', 'format/tool-forms'])
+    pool('nested-claude-last-tool-unread', 'control_engine_claude.py',
+         "        names.append(event.get('last_tool_name'))\n",
+         "        pass  # defect: a task's last tool is not read for nested work\n",
+         ['decision/nested-work-asks'])
     # Installation.
     pool('pool-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_pool.py",\n', '', ['install/assets'])
     pool('decision-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_limit.py",\n', '',
