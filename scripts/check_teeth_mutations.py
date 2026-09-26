@@ -6569,9 +6569,19 @@ def cases():
             'settle/missing-retained')
     # A resumed session's first result carries the earlier turns (the third review's finding 2).
     account('account-claude-resume-whole-total', 'control_engine_claude.py',
-            "        if total is None or not self.resumed:\n            return total\n",
+            "        if total is None or self.charged() != 'difference':\n            return total\n",
             "        if True:  # defect: a resumed session is charged its whole running total\n            return total\n",
             'settle/resumed-delta')
+    # The CLI reports another session than the contract resumes (the fourth review's finding).
+    account('account-claude-resume-by-contract-id', 'control_engine_claude.py',
+            "        if total is None or self.charged() != 'difference':\n            return total\n",
+            "        if total is None or self.resumes is None:  # defect: subtracted by the contract's resume id alone\n"
+            "            return total\n",
+            'settle/resumed-other-session')
+    account('account-claude-resume-case-unrecorded', 'control_engine_claude.py',
+            "                'charged': self.charged()}\n",
+            "                'charged': 'whole'}  # defect: the case that charged the session is not recorded\n",
+            'settle/resumed-other-session')
     account('account-claude-resume-unknown-prior-whole', 'control_engine_claude.py',
             "        if self.prior is None or total < self.prior:\n            return None\n",
             "        if self.prior is None or total < self.prior:\n"
@@ -6588,7 +6598,7 @@ def cases():
     account('account-codex-resume-subtracted', 'control_engine_codex.py',
             "        self.thread = None\n",
             "        self.thread = None\n"
-            "        self.tokens_less = prior if resumed and prior else 0  # defect: a resumed thread is subtracted\n",
+            "        self.tokens_less = prior if resumes and prior else 0  # defect: a resumed thread is subtracted\n",
             'settle/resumed-delta',
             also=[("    def cumulative(self):\n        return {'tokens': self.tokens, 'messages': self.turns}\n",
                    "    def cumulative(self):\n"
