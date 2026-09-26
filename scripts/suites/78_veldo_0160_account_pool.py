@@ -26,6 +26,7 @@ systemd user manager is never touched. Each row is reported once.
 def _v160_suite():
     import contextlib
     import datetime
+    import hashlib
     import importlib.util
     import json
     import os
@@ -221,9 +222,9 @@ def _v160_suite():
         fake = '''#!%s -B
 import json, os, sys, time
 from pathlib import Path
-markers = Path(sys.argv[1])
+markers = Path(MARKERS)
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
-own = {'engine': Path(sys.argv[0]).name, 'pid': os.getpid(), 'dispatch': dispatch, 'started': time.time(),
+own = {'engine': ENGINE, 'pid': os.getpid(), 'dispatch': dispatch, 'started': time.time(),
        'env': {k: os.environ.get(k) for k in ('CLAUDE_CONFIG_DIR', 'CODEX_HOME', 'VELDO_ACCOUNT')}}
 (markers / ('%%d.tmp' %% os.getpid())).write_text(json.dumps(own))
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
@@ -243,20 +244,54 @@ for step in payload.get('script') or []:
 (markers / ('%%d.done' %% os.getpid())).write_text(json.dumps({'ended': time.time()}))
 sys.exit(payload.get('code', 0))
 ''' % (sys.executable,)
-        for name in ('claude', 'codex'):
-            (engines / name).write_text(fake)
-            (engines / name).chmod(0o755)
+
+        def fake_engine(name):
+            # The markers directory and the engine's name are written into the fake: a pinned engine's argv
+            # is its qualified flags, so nothing of the suite's can ride on it.
+            return (fake.replace('Path(MARKERS)', 'Path(%r)' % str(markers))
+                        .replace("'engine': ENGINE,", "'engine': %r," % name))
+        # VELDO-0060: a Claude Code adapter runs only its pinned, qualified version. The fake claude is
+        # installed as that version, this installation's qualification record names its digest, and the
+        # production pin copies it under the factory state root.
+        versions = base / 'versions'
+        versions.mkdir()
+        (versions / '2.1.281').write_text(fake_engine('claude'))
+        (versions / '2.1.281').chmod(0o755)
+        (mods / 'runtime').mkdir()
+        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps({
+            'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {'2.1.281': {
+                'sha256': 'sha256:' + hashlib.sha256((versions / '2.1.281').read_bytes()).hexdigest(),
+                'flags': ['--print', '--output-format', 'stream-json', '--verbose'],
+                'environment': {'DISABLE_AUTOUPDATER': '1'}}}}))
+        factory = base / 'factory'
+        factory.mkdir(mode=0o700)
+        pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
+        if pin is not None:
+            pin('2.1.281', versions=str(versions), state_root=str(factory))
+        # VELDO-0061: a Codex adapter launches a pinned vendor binary inside its package, with the qualified
+        # flags, checked against a qualification record the production writer makes.
+        package = engines / 'codex-package'
+        vendored = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
+        vendored.parent.mkdir(parents=True)
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        vendored.write_text(fake_engine('codex'))
+        vendored.chmod(0o755)
+        CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
+        codex_qualification = base / 'codex-qualification.json'
+        if hasattr(CODEX_ENGINE, 'qualification'):
+            codex_qualification.write_text(json.dumps(CODEX_ENGINE.qualification(str(vendored))))
         config = base / 'receiver.json'
         wrapper = [sys.executable, '-B', str(mods / 'control_launch.py'), 'exec']
         config.write_text(json.dumps({
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
-            'host': HOST, 'receipts': str(base / 'receipts'),
+            'host': HOST, 'receipts': str(base / 'receipts'), 'state_root': str(factory),
             'adapters': {
                 'claude': {'identity': 'reported', 'engine': 'claude_code', 'environment': {'TZ': 'UTC'},
-                           'argv': wrapper + [str(engines / 'claude'), str(markers)]},
+                           'executable': {'version': '2.1.281'}, 'argv': wrapper},
                 'codex': {'identity': 'reported', 'engine': 'codex', 'environment': {'TZ': 'UTC'},
-                          'argv': wrapper + [str(engines / 'codex'), str(markers)]}}}))
+                          'executable': str(vendored), 'qualification': str(codex_qualification),
+                          'argv': wrapper + [str(vendored)] + list(getattr(CODEX_ENGINE, 'FLAGS', ()))}}}))
         CONFIGURATION = {'mcp_servers': {'tracker': {'command': 'tracker-mcp', 'args': []}}, 'tools': ['Read', 'Bash']}
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
