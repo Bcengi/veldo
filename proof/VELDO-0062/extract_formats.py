@@ -472,6 +472,79 @@ def claude_limit(text):
                       "engine's resolved IANA time zone"}
 
 
+# VELDO-0160: the forms a tool call can take in Claude Code's stream, each by the exact text of the table
+# it is read from in this build, so the re-run-or-ask decision counts any other form as an unknown call.
+# `messages`: the SDK message union (each member's type and subtype); `response_blocks` and `request_blocks`:
+# the content block unions of an assistant message and of a user message (the modelled members, then the
+# type tags the binary lists); `stream_events`: the streaming events a stream_event carries, as its schema
+# names them; `builtin_tools`: the binary's own list of its built-in tool names.
+CLAUDE_FORMS = {
+    'messages': 'nn=f(()=>Fe([Qo(),sr(),oK(),_K(),',
+    'response_blocks': 'yq=f(()=>Fe([Aq(),Rq(),NR(),zR(),...bR.map(AR)])',
+    'request_blocks': 'fq=f(()=>Fe([Js(),Lo(),yR(),wR(),mq(),Tq(),NR(),zR(),...tq.map(AR)])',
+    'tagged': 'bR=["server_tool_use",',
+    'tagged_request': 'tq=[...bR,"mid_conv_system"]',
+    'stream_events': 'tK=f(()=>ae().describe("One Anthropic Messages API streaming event (message_start, content_block_start, '
+                     'content_block_delta, content_block_stop, message_delta, message_stop) as defined',
+    'builtin_tools': 'dT.BUILTIN_TOOL_NAMES=[',
+}
+FORMS_WINDOW = 400000
+
+
+def _tags(schema):
+    """The (type, subtype) pairs a message schema admits."""
+    if schema.get('type') == 'union':
+        return [tag for member in schema['anyOf'] for tag in _tags(member)]
+    fields = schema.get('fields') or {}
+    kind, sub = fields.get('type') or {}, fields.get('subtype')
+    if kind.get('type') != 'literal':
+        raise Moved('a stream message without a literal type')
+    if sub is None:
+        return [(kind['value'], None)]
+    if sub.get('type') == 'literal':
+        return [(kind['value'], sub['value'])]
+    if sub.get('type') == 'enum' and sub.get('values'):
+        return [(kind['value'], value) for value in sub['values']]
+    raise Moved('a stream message subtype that is not a literal or an enum')
+
+
+def _union_members(window, at, anchor):
+    """The member names of the union `NAME=f(()=>Fe([A(),B(),...` at `at` in `window`."""
+    start = at + anchor.index('Fe([') + 4
+    return re.findall(r'([A-Za-z_$][\w$]*)\(\)', window[start:window.index(']', start)])
+
+
+def claude_forms(text):
+    for key, anchor in CLAUDE_FORMS.items():
+        if text.count(anchor) != 1:
+            raise Moved('claude tool-call form table %s: anchor found %d times' % (key, text.count(anchor)))
+    found = {}
+    for key in ('messages', 'response_blocks', 'request_blocks'):
+        at = text.index(CLAUDE_FORMS[key])
+        window = text[at - FORMS_WINDOW:at + FORMS_WINDOW]
+        js = Js(window)
+        tags = []
+        for name in _union_members(window, FORMS_WINDOW, CLAUDE_FORMS[key]):
+            body, _ = js.definition(name, FORMS_WINDOW)
+            tags += _tags(Reader(js, depth=1).parse(body)[0])
+        found[key] = tags
+    tagged = json.loads(text[text.index(CLAUDE_FORMS['tagged']) + 3:].split(']', 1)[0] + ']')
+    found['messages'] = sorted({(kind, sub) for kind, sub in found['messages']}, key=lambda tag: (tag[0], tag[1] or ''))
+    found['response_blocks'] = [kind for kind, _ in found['response_blocks']] + tagged
+    found['request_blocks'] = [kind for kind, _ in found['request_blocks']] + tagged + ['mid_conv_system']
+    at = text.index(CLAUDE_FORMS['stream_events']) + len('tK=f(()=>ae().describe("One Anthropic Messages API streaming event (')
+    stream_events = text[at:text.index(')', at)].split(', ')
+    at = text.index(CLAUDE_FORMS['builtin_tools']) + len(CLAUDE_FORMS['builtin_tools']) - 1
+    builtin = json.loads(text[at:text.index(']', at) + 1])
+    return {'messages': [[kind, sub] for kind, sub in found['messages']],
+            'response_blocks': found['response_blocks'], 'request_blocks': found['request_blocks'],
+            'stream_events': stream_events, 'builtin_tools': builtin,
+            'source': "the SDK message union of the stream (each member's type and subtype), the content block "
+                      "unions of an assistant and of a user message (the modelled blocks, then the type tags "
+                      "the binary lists), the streaming events the stream_event schema names, and the binary's "
+                      "BUILTIN_TOOL_NAMES (a partial list of its built-in tools: a name it omits reads as unknown)"}
+
+
 def claude(path):
     raw = Path(path).read_bytes()
     text = raw.decode('latin-1')
@@ -524,7 +597,8 @@ def claude(path):
     version = Path(path).resolve().name
     return {'binary': str(Path(path).resolve()), 'version': version, 'sha256': _digest(path),
             'source': 'the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)',
-            'events': events, 'notes': notes, 'credential_tables': tables, 'usage_limit': claude_limit(text)}
+            'events': events, 'notes': notes, 'credential_tables': tables, 'usage_limit': claude_limit(text),
+            'tool_forms': claude_forms(text)}
 
 
 # ---------------------------------------------------------------- Codex: the Rust binary's literals
@@ -539,6 +613,35 @@ CODEX_TAGS_RUN = (b'ThreadEventThreadStartedthread.startedTurnStartedturn.starte
 CODEX_ITEM_RUNS = (b'item.completederroritemsqueryactionchangesserverargumentsresult',
                    b'agent_messagereasoningcommand_executionfile_changemcp_tool_callweb_searchtodo_list',
                    b'usagein_progresscompletedfailed')
+# VELDO-0160: the item types, by the literal run that lists them. `exec`: exec's ThreadItem (what `codex
+# exec --json` prints), whose `error` item tag is the literal at the head of its field run; `thread`: the
+# core's ThreadItem, the types a thread records, of which exec prints only its own.
+CODEX_EXEC_ITEMS = (b'item.completederroritems',
+                    b'agent_messagereasoningcommand_executionfile_changemcp_tool_callweb_searchtodo_list',
+                    ('agent_message', 'reasoning', 'command_execution', 'file_change', 'mcp_tool_call', 'web_search',
+                     'todo_list'))
+CODEX_THREAD_ITEMS = (b'user_messagefunction_call_outputhook_promptagent_messagereasoningcommand_executiondynamic_tool_call'
+                      b'collab_agent_tool_callsub_agent_activityweb_searchimage_viewextensionentered_review_mode'
+                      b'exited_review_modefile_changemcp_tool_callcontext_compaction',
+                      ('user_message', 'function_call_output', 'hook_prompt', 'agent_message', 'reasoning',
+                       'command_execution', 'dynamic_tool_call', 'collab_agent_tool_call', 'sub_agent_activity',
+                       'web_search', 'image_view', 'extension', 'entered_review_mode', 'exited_review_mode',
+                       'file_change', 'mcp_tool_call', 'context_compaction'))
+
+
+def codex_forms(raw):
+    head, run, names = CODEX_EXEC_ITEMS
+    if head not in raw or run not in raw or ''.join(names).encode() != run:
+        raise Moved('codex exec item types moved')
+    thread, thread_names = CODEX_THREAD_ITEMS
+    if thread not in raw or ''.join(thread_names).encode() != thread:
+        raise Moved('codex thread item types moved')
+    return {'exec_items': list(names) + ['error'], 'thread_items': list(thread_names),
+            'source': "exec's ThreadItem tags (its literal run, and `error`, the literal heading its field run) and "
+                      "the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as "
+                      "unknown"}
+
+
 CODEX_LIMIT = {
     'message': b"You've hit your usage limit",
     'retry_at': (b' Try again at ', b' or try again at '),
@@ -794,7 +897,7 @@ def codex(path):
                       "binary's literals; the strings show field names, not which are always present, so every usage "
                       "field is marked optional",
             'events': events, 'usage_limit': limit, 'errors': codex_errors(raw), 'credential_tables': tables,
-            'items': items,
+            'items': items, 'tool_forms': codex_forms(raw),
             'items_source': ("exec's ThreadItem (the `item` of item.started, item.updated and item.completed, tag "
                              "`type`): the type names, the field names server, arguments and result, and the status "
                              "values in_progress, completed and failed are the binary's literal runs; `id`, `type` and "
