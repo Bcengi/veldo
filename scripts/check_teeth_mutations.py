@@ -6329,6 +6329,97 @@ def cases():
             "    if sorted(units) != sorted(unit['states']) or set(priority.UNIT_TERMINAL) != set(unit['terminal']):\n",
             "    if set(priority.UNIT_TERMINAL) != set(unit['terminal']) or priority.UNIT_PLANNED not in unit['states']:  # defect\n",
             ['priority/gate-question'])
+
+    # VELDO-0079: each criterion's declared falsifier first, then the threat model's other shapes.
+    def grooming(name, module, old, new, rows, also=()):
+        add(79, name, '76_veldo_0079_grooming.py', module, old, new, rows, also)
+
+    # AC1 (declared falsifier): the presentation binding omits the decomposition digest.
+    grooming('grooming-decomposition-digest-unbound', 'control_grooming_request.py',
+             "    bound['decomposition'] = (fields.get('decomposition') or {}).get('digest')\n",
+             "    bound['decomposition'] = None  # defect: the decomposition digest is not bound\n",
+             ['material/changed-decomposition'])
+    grooming('grooming-live-binding-unchecked', 'control_backlog.py',
+             "        problems = GR.live_problems(fields, data, objective, project['data'])\n",
+             "        problems = []  # defect: the live records are not compared\n",
+             ['material/changed-decomposition'])
+    # AC1: the brief shows every field, and only the complete material admits.
+    grooming('grooming-brief-omits-questions', 'control_grooming_request.py',
+             "        'Questions: %s.' % _list(['%s: %s' % (q['id'], q['text']) for q in c['questions']]),\n", '',
+             ['material/telegram-brief'])
+    grooming('grooming-brief-omits-protected-paths', 'control_grooming_request.py',
+             "        'Protected paths: %s.' % _list(c['protected_paths']),\n", '', ['material/telegram-brief'])
+    grooming('grooming-thin-admission-accepted', 'control_backlog.py',
+             "        target, brief = groomed[:2] if groomed else (decision_target(data), admission_brief(data))\n",
+             "        target, brief = decision_target(data), admission_brief(data)  # defect: the thin brief admits groomed work\n",
+             ['material/telegram-brief'])
+    grooming('grooming-brief-unchecked', 'control_backlog.py',
+             "        target, brief = groomed[:2] if groomed else (decision_target(data), admission_brief(data))\n",
+             "        target, brief = (groomed[0], None) if groomed else (decision_target(data), admission_brief(data))  # defect\n",
+             ['material/telegram-brief'])
+    grooming('grooming-specification-files-unchecked', 'control_backlog.py',
+             "        problems += missing + ['stale_subject:' + f for f in GR.WORKSPACE_FIELDS if found[f] != fields.get(f)]\n",
+             "        problems += missing  # defect: a changed specification file is not noticed\n",
+             ['material/bound-fields'])
+    grooming('grooming-pending-request-not-revised', 'control_grooming.py',
+             "        name = latest[0] if latest and latest[2].get('state') in PENDING_STATES else alias(record, touchpoint, len(opened) + 1)\n",
+             "        name = alias(record, touchpoint, len(opened) + 1)  # defect: an earlier presentation stays answerable\n",
+             ['material/bound-fields'])
+    # AC2 (declared falsifier): work whose PM proposal raised a question is admitted by his message.
+    grooming('grooming-route-ignores-question', 'control_grooming_request.py',
+             "    if fields.get('questions'):\n        reasons.append('question')\n",
+             "    if False:  # defect: a question the PM raised is not asked\n        reasons.append('question')\n",
+             ['route/ask-when-needed'])
+    grooming('grooming-route-ignores-priority', 'control_grooming_request.py',
+             "    if fields.get('priority') != DEFAULT_PRIORITY:\n",
+             "    if False:  # defect: another priority is applied without his answer\n", ['route/ask-when-needed'])
+    grooming('grooming-route-ignores-answered-objective', 'control_grooming_request.py',
+             "    if acceptance.get('path') != OWN_MESSAGE or objective.get('accepted_revision') is None:\n",
+             "    if objective.get('accepted_revision') is None:  # defect: any accepted objective\n",
+             ['route/ask-when-needed'])
+    grooming('grooming-route-ignores-author', 'control_grooming_request.py',
+             "    if author != owner and author not in managers:\n",
+             "    if False:  # defect: any member's proposal is admitted by his message\n", ['route/ask-when-needed'])
+    grooming('grooming-message-admission-skips-route', 'control_backlog.py',
+             "        if path != GR.OWN_MESSAGE:\n            raise Refused('not_approved:' + reasons[0],",
+             "        if False:  # defect: the backlog does not ask the route\n            raise Refused('not_approved:' + reasons[0],",
+             ['route/ask-when-needed', 'authority/pm-self-admission'])
+    grooming('grooming-route-never-own-message', 'control_grooming_request.py',
+             "    return (OWN_MESSAGE if not reasons else 'present'), reasons\n",
+             "    return 'present', reasons + ['defect']  # defect: his message never admits\n",
+             ['route/own-message-default'])
+    # AC2: separate, current authority predicates; questions answered before anything runs.
+    grooming('grooming-message-admission-priority-role', 'control_backlog.py',
+             "                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}\n",
+             "                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority',)}  # defect\n",
+             ['authority/separate-predicates'])
+    grooming('grooming-admission-questions-unrecorded', 'control_backlog.py',
+             "                          request_digest=request['digest'], questions=[q['id'] for q in request['content']['questions']])\n",
+             "                          request_digest=request['digest'], questions=[])  # defect: the answered questions are lost\n",
+             ['authority/questions-unresolved'])
+    grooming('grooming-priority-applied-before-admission', 'control_grooming.py',
+             "            if touchpoint == GR.PRIORITY and item.get('state') not in ('ADMITTED',) + tuple(self.CB.EXECUTABLE_STATES):\n",
+             "            if False:  # defect: the priority is applied before the admission\n",
+             ['authority/questions-unresolved'])
+    grooming('grooming-withdraw-skipped', 'control_grooming.py',
+             "                results.extend(self._withdraw(record, GR.PRIORITY))\n",
+             "                pass  # defect: the priority request stays open after a reject or return\n",
+             ['authority/owner-choices'])
+    grooming('grooming-reprioritize-unapplied', 'control_backlog.py',
+             "        record = {'path': 'owner_command', 'command_id': command['command_id'], 'rank': priority['rank'],\n",
+             "        record = {'path': 'owner_command', 'command_id': command['command_id'], 'rank': previous,  # defect\n",
+             ['authority/reprioritize-withdraw'])
+    # AC3 (declared falsifier): an admission signature reused after the priority changed, no digest validation.
+    grooming('grooming-ruling-digest-unvalidated', 'control_backlog.py', "        if found != target:\n",
+             "        if (found.get('kind'), found.get('ref')) != (target['kind'], target['ref']):  # defect: no digest validation\n",
+             ['ruling/parameter-binding'])
+    # Installation and observability.
+    grooming('grooming-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_grooming.py",\n', '', ['install/assets'])
+    grooming('grooming-request-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_grooming_request.py",\n', '',
+             ['install/assets'])
+    grooming('grooming-refusal-unclassified', 'control_grooming.py',
+             "            named = self.CB.taxonomy(reason)\n", "            pass  # defect: a backlog refusal is unclassified\n",
+             ['observability'])
     return result
 
 
