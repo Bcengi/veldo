@@ -53,13 +53,32 @@ the CLI reports, at the granularity it reports it:
   reset stays missing.
 `total_cost_usd` and `costUSD` are never read: subscription usage has no per-call price.
 
+THE ACCOUNT'S LIMIT (VELDO-0160). `limit()` is the last limit the stream stated, with its window, reset
+and signal: a `rate_limit_event` whose status is `rejected` (the stream reports its window exhausted,
+`stream`), or the rate-limit result (`result`): a `result` with `is_error` whose text is the binary's
+usage-limit message, "You've hit your <limit>" and, when it states one, " \u00b7 resets <time> (<zone>)"
+(its limit names are the binary's table of rate-limit windows, LIMIT_NAMES; a name outside it is the
+`unified` window). The time is the binary's own format in the zone it names: "3pm" or "3:05pm" for a
+reset within a day (the next such minute), "Sep 28, 3pm" with the year when it is another year. The reset
+is the END of the stated minute (the message truncates to the minute, so the window never reopens before
+it); a message stating none, or a time this reading cannot place, is a window with no reset, and the
+account stays refused until a later observation says otherwise. The rate-limit result is also recorded
+as a window. Any other message (the binary's "Server is temporarily limiting requests (not your usage
+limit)", an overloaded model) is not the account's limit.
+
+MCP CALLS (VELDO-0160). `mcp_calls(event)` names the MCP tool calls an event of the stream shows: each
+`tool_use` block of an `assistant` message whose name is `mcp__<server>__<tool>`, by its id.
+
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 Standard library only.
 """
+import datetime
 import hashlib
 import json
 import math
+import re
 import time
+import zoneinfo
 
 PROVIDER = 'claude_code'
 CREDENTIALS = frozenset((
@@ -109,6 +128,17 @@ SETTINGS = frozenset((
     'CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS', 'CLAUDE_CODE_PROXY_RESOLVES_HOSTS'))
 TOKEN_FIELDS = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
 MODEL_TOKEN_FIELDS = ('inputTokens', 'outputTokens', 'cacheReadInputTokens', 'cacheCreationInputTokens')
+# VELDO-0160: the usage-limit message of the binary's rate-limit result, and its names of the windows
+# (proof/VELDO-0062/cli-formats.json, claude_code usage_limit).
+LIMIT_MESSAGE = "You've hit your "
+LIMIT_NAMES = {'session limit': 'five_hour', 'weekly limit': 'seven_day', 'Opus limit': 'seven_day_opus',
+               'Sonnet limit': 'seven_day_sonnet', 'Fable limit': 'seven_day_overage_included',
+               'usage credit limit': 'overage'}
+LIMIT_WINDOW = 'unified'
+MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+RESETS = re.compile(r'resets (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2}), (?:(?P<year>\d{4}), )?)?'
+                    r'(?P<hour>\d{1,2})(?::(?P<minute>\d{2}))?(?P<half>am|pm) \((?P<zone>[^()]+)\)')
+MCP_PREFIX = 'mcp__'
 
 
 def _count(value):
@@ -143,6 +173,60 @@ def receipt(line):
     return 'sha256:' + hashlib.sha256(line).hexdigest()
 
 
+def _zone(name):
+    try:
+        return datetime.timezone.utc if name in ('UTC', 'Etc/UTC', 'GMT') else zoneinfo.ZoneInfo(name)
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+        return None
+
+
+def limit_window(text):
+    """The window a usage-limit message names, or None when the text is not the usage-limit message."""
+    if not isinstance(text, str) or not text.startswith(LIMIT_MESSAGE):
+        return None
+    name = text[len(LIMIT_MESSAGE):].split(' \u00b7 ', 1)[0]
+    return LIMIT_NAMES.get(name, LIMIT_WINDOW)
+
+
+def limit_reset(text, now):
+    """The Unix time a usage-limit message says its window resets, the end of the stated minute in the zone
+    it names; None when it states none or it cannot be placed. A time with no date is the next such minute."""
+    found = RESETS.search(text or '')
+    tz = _zone(found['zone']) if found else None
+    if tz is None:
+        return None
+    hour = int(found['hour']) % 12 + (12 if found['half'] == 'pm' else 0)
+    minute = int(found['minute'] or 0)
+    try:
+        today = datetime.datetime.fromtimestamp(now, tz).date()
+        if found['month']:
+            dates = [datetime.date(int(found['year'] or today.year), MONTHS.index(found['month']) + 1, int(found['day']))]
+        else:
+            dates = [today, today + datetime.timedelta(days=1)]
+        for date in dates:
+            end = max(datetime.datetime(date.year, date.month, date.day, hour, minute, fold=fold, tzinfo=tz).timestamp()
+                      for fold in (0, 1)) + 60
+            if found['month'] or end > now:
+                return end
+    except ValueError:
+        return None
+    return None
+
+
+def mcp_calls(event):
+    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160)."""
+    if not isinstance(event, dict) or event.get('type') != 'assistant':
+        return []
+    content = (event.get('message') or {}).get('content') if isinstance(event.get('message'), dict) else None
+    found = []
+    for block in content if isinstance(content, list) else []:
+        name = block.get('name') if isinstance(block, dict) and block.get('type') == 'tool_use' else None
+        if isinstance(name, str) and name.startswith(MCP_PREFIX):
+            server, _, tool = name[len(MCP_PREFIX):].partition('__')
+            found.append({'id': block.get('id'), 'server': server, 'tool': tool})
+    return found
+
+
 class Meter:
     """Reads one invocation's stream line by line. `feed(bytes)` returns the observations the
     complete lines in it make: {'kind': 'usage', 'usage': cumulative {tokens, messages}} or
@@ -159,6 +243,8 @@ class Meter:
         self.prior = prior if _count(prior) else None
         self.session_id = None
         self.session_total = None
+        self.clock = clock
+        self.limited = None
 
     def charged(self):
         """Which case charges this invocation: `whole` when its contract resumes no session, `difference`
@@ -187,6 +273,21 @@ class Meter:
             return None
         return {'provider': PROVIDER, 'id': self.session_id, 'tokens': self.session_total,
                 'charged': self.charged()}
+
+    def limit(self):
+        """{window, reset_at, signal}: the last limit the stream stated (VELDO-0160), or None."""
+        return dict(self.limited) if self.limited else None
+
+    def _result_limit(self, event, seen):
+        """The rate-limit result as its window, exhausted: a result with `is_error` whose text is the
+        usage-limit message, with the reset it states (or none)."""
+        text = event.get('result')
+        window = limit_window(text) if event.get('is_error') is True else None
+        if window is None:
+            return []
+        reset = limit_reset(text, self.clock())
+        self.limited = {'window': window, 'reset_at': reset, 'signal': 'result'}
+        return [dict(seen, kind='window', window_id=window, status='rejected', reset_at=reset, utilization=None)]
 
     def feed(self, chunk):
         self.pending += chunk
@@ -241,9 +342,10 @@ class Meter:
             self.messages[ident] = tokens
             return [dict(seen, kind='usage', usage=self.cumulative())]
         if kind == 'result':
+            found = self._result_limit(event, seen)
             turns = event.get('num_turns')
             if not _count(turns):
-                return []
+                return found
             running = _model_tokens(event.get('modelUsage'))
             if running is not None:
                 self.session_total = running if self.session_total is None else max(self.session_total, running)
@@ -255,9 +357,9 @@ class Meter:
                          'tokens': None if total['tokens'] is None and prior['tokens'] is None
                          else max(t for t in (total['tokens'], prior['tokens']) if t is not None)}
                 if total == prior:
-                    return []  # The same total again settles nothing twice.
+                    return found  # The same total again settles nothing twice.
             self.result = total
-            return [dict(seen, kind='usage', usage=self.cumulative())]
+            return found + [dict(seen, kind='usage', usage=self.cumulative())]
         if kind == 'rate_limit_event':
             info = event.get('rate_limit_info')
             info = info if isinstance(info, dict) else {}
@@ -266,6 +368,10 @@ class Meter:
                 return []
             reset = info.get('resetsAt')
             utilization = info.get('utilization')
+            if status == 'rejected':
+                # VELDO-0160: the stream reports its window exhausted.
+                self.limited = {'window': str(info.get('rateLimitType') or LIMIT_WINDOW),
+                                'reset_at': reset if _number(reset) else None, 'signal': 'stream'}
             return [dict(seen, kind='window', window_id=str(info.get('rateLimitType') or 'unified'),
                          status='rejected' if status == 'rejected' else 'allowed',
                          reset_at=reset if _number(reset) else None,

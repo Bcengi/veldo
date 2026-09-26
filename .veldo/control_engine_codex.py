@@ -52,6 +52,14 @@ own window with none, and the account stays refused until observed otherwise. Th
 (transient, request and local errors, Codex's own rollout and thread budgets) states no allowance and
 records nothing.
 
+THE ACCOUNT'S LIMIT (VELDO-0160). `limit()` is the last exhaustion message the stream stated, as its
+window and reset, with its signal: in an `error` event the stream reports its window exhausted
+(`stream`); in a `turn.failed` the engine ends with its rate-limit result (`result`).
+
+MCP CALLS (VELDO-0160). `mcp_calls(event)` names the MCP tool calls an event shows: the `item` of an
+`item.started`, `item.updated` or `item.completed` whose type is `mcp_tool_call`, with its server and
+tool, by the item id (exec's ThreadItem, proof/VELDO-0062/cli-formats.json, codex items).
+
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 Standard library only.
 """
@@ -86,6 +94,8 @@ EXHAUSTED = (
     ('To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.', 'plan'),
 )
 MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+MCP_ITEM = 'mcp_tool_call'
+ITEM_EVENTS = ('item.started', 'item.updated', 'item.completed')
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
                       r'(?P<year>\d{4}) )?(?P<hour>\d{1,2}):(?P<minute>\d{2}) (?P<half>AM|PM)\.')
 
@@ -133,6 +143,14 @@ def limit_reset(message, now, zone):
     return max(stated) + 60
 
 
+def mcp_calls(event):
+    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160)."""
+    item = event.get('item') if isinstance(event, dict) and event.get('type') in ITEM_EVENTS else None
+    if not isinstance(item, dict) or item.get('type') != MCP_ITEM:
+        return []
+    return [{'id': item.get('id'), 'server': item.get('server'), 'tool': item.get('tool')}]
+
+
 class Meter:
     """Reads one invocation's stream line by line; the same interface as control_engine_claude.Meter.
     `clock` and `zone` are the engine's clock and local time zone (its TZ), for the reset its
@@ -146,7 +164,8 @@ class Meter:
         self.incomplete = False
         self.turns = 0
         self.tokens = 0
-        self.limit = set()
+        self.stated = set()
+        self.limited = None
 
     def feed(self, chunk):
         self.pending += chunk
@@ -177,7 +196,11 @@ class Meter:
             return None
         return {'provider': PROVIDER, 'id': self.thread, 'tokens': self.final().get('tokens'), 'charged': 'whole'}
 
-    def _limited(self, seen, message):
+    def limit(self):
+        """{window, reset_at, signal}: the last limit the stream stated (VELDO-0160), or None."""
+        return dict(self.limited) if self.limited else None
+
+    def _limited(self, seen, message, signal='stream'):
         """An exhaustion message of the error table as its window, exhausted: the usage-limit message with
         the reset it states (or none), every other with no reset. The same statement again adds nothing."""
         if not isinstance(message, str):
@@ -189,9 +212,10 @@ class Meter:
             if window is None:
                 return []
             reset = None
-        if (window, reset) in self.limit:
+        self.limited = {'window': window, 'reset_at': reset, 'signal': signal}
+        if (window, reset) in self.stated:
             return []
-        self.limit.add((window, reset))
+        self.stated.add((window, reset))
         return [dict(seen, kind='window', window_id=window, status='rejected', reset_at=reset, utilization=None)]
 
     def line(self, line):
@@ -225,7 +249,7 @@ class Meter:
             if self.open:
                 self.open, self.incomplete = False, True
             error = event.get('error')
-            found.extend(self._limited(seen, error.get('message') if isinstance(error, dict) else None))
+            found.extend(self._limited(seen, error.get('message') if isinstance(error, dict) else None, 'result'))
         elif kind == 'error':
             found.extend(self._limited(seen, event.get('message')))
         return found

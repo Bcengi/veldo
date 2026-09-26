@@ -6,6 +6,10 @@ its existing SQLite database. No second database, prices, engine imports or reco
 The caller supplies authenticated current-authorization and journal-signing services.
 Authorization runs INSIDE the store transaction; a worker must never receive this API
 or its connection. See control_reservation_runtime for the runner consumption seam.
+
+VELDO-0160: `reserve_pooled` reserves a worker slot on the account the pool chooses
+(control_account_pool.choose) inside the same transaction, and a final report may end its invocation
+`account_limit` with the window and reset its engine stated (`limit`).
 """
 import copy
 import importlib.util
@@ -50,10 +54,13 @@ def _organ(name):
 
 # VELDO-0062: the account records, whose CLI-reported rate-limit windows every invocation check reads.
 ACC = _organ('control_accounts')
+# VELDO-0160: the account pool, which chooses a dispatch's account inside its worker reservation.
+POOL = _organ('control_account_pool')
 RECEIPT = 'sha256:'
 # Which case charged a final report's session: no resumption, the resumed session's difference, or
 # another session than the one resumed, charged whole.
 CHARGED = ('whole', 'difference', 'whole_other_session')
+OUTCOMES = (None, 'completed', 'failed', 'timeout', 'cancelled', 'not_executed', ACC.LIMIT_OUTCOME)
 
 
 def service_authority(conn, command):
@@ -195,6 +202,21 @@ class Reservations:
         return self._run(command_id, 'worker', entity('worker', [self.domain, identity(dispatch)]),
                          dict(dispatch=dispatch, context=self._context(account, project, unit)), now)
 
+    def reserve_pooled(self, command_id, dispatch, request, project, unit, *, now):
+        """VELDO-0160: a worker slot on the account the pool chooses for `request` ({engine, host}) in this
+        same transaction; refused `no_account_until:<reset>` (or `no_account`) when no account is a
+        candidate, with each account's reason on the refusal's `passed`."""
+        if (not isinstance(request, dict) or set(request) != {'engine', 'host'}
+                or not all(isinstance(request[k], str) and request[k].strip() for k in request)):
+            raise Refused('invalid_input')
+        return self._run(command_id, 'pooled_worker', entity('worker', [self.domain, identity(dispatch)]),
+                         dict(dispatch=dispatch, request=dict(request), project=identity(project), unit=identity(unit)),
+                         now)
+
+    def worker(self, dispatch):
+        """The stored worker slot of `dispatch` in this domain, or None."""
+        return self._records().get(entity('worker', [self.domain, dispatch]))
+
     def reserve_call(self, command_id, dispatch, invocation, boundary, wall_seconds, *, now):
         if boundary not in ('initial', 'retry', 'follow_on') or not number(wall_seconds) or wall_seconds <= 0:
             raise Refused('invalid_input')
@@ -203,7 +225,7 @@ class Reservations:
                               wall_seconds=wall_seconds), now)
 
     def report(self, command_id, invocation, sequence, usage, *, final=False, outcome=None, receipts=(), now,
-               session=None):
+               session=None, limit=None):
         """`receipts` are the digests of the CLI's own report lines this report was read from
         (VELDO-0062): the raw lines stay with the receiver, the ledger carries what checks them.
         `session` ({provider, id, tokens, charged}, final reports only) is the CLI session the invocation
@@ -211,10 +233,17 @@ class Reservations:
         case charged it (CHARGED): a CLI that carries a resumed session's earlier totals into its report
         is charged only the difference when it reports that session, read back by `session`."""
         receipts = list(receipts)
+        # VELDO-0160: an invocation its account's limit stopped ends account_limit, with the window and reset.
+        if (outcome == ACC.LIMIT_OUTCOME) != (limit is not None) or (limit is not None and (
+                not final or not isinstance(limit, dict) or set(limit) != {'window', 'reset_at', 'signal'}
+                or not isinstance(limit['window'], str) or not limit['window'].strip()
+                or limit['signal'] not in ACC.LIMIT_SIGNALS
+                or (limit['reset_at'] is not None and not number(limit['reset_at'])))):
+            raise Refused('invalid_input')
         if (not isinstance(sequence, int) or isinstance(sequence, bool) or sequence < 1
                 or not isinstance(usage, dict) or set(usage) - set(USAGE)
                 or any(not number(v) for v in usage.values())
-                or outcome not in (None, 'completed', 'failed', 'timeout', 'cancelled', 'not_executed')
+                or outcome not in OUTCOMES
                 or not all(isinstance(r, str) and r.startswith(RECEIPT) and len(r) == len(RECEIPT) + 64
                            for r in receipts)
                 or (session is not None and (not final or not isinstance(session, dict)
@@ -229,6 +258,8 @@ class Reservations:
             payload['receipts'] = receipts
         if session is not None:
             payload['session'] = dict(session)
+        if limit is not None:
+            payload['limit'] = dict(limit)
         return self._run(command_id, 'report', entity('invocation', [self.domain, identity(invocation)]),
                          payload, now)
 
@@ -275,6 +306,23 @@ class Reservations:
                 raise Refused('duplicate_dispatch')
             self._check(p['context'], {'capacity': 1}, records, now)
             value = dict(type='worker', **p, retired=False)
+        elif action == 'pooled_worker':
+            # VELDO-0160: the account is chosen here, in the transaction that takes its slot.
+            if current:
+                raise Refused('duplicate_dispatch')
+            contexts = {}
+
+            def check(account):
+                contexts[account] = self._context(account, p['project'], p['unit'])
+                self._check(contexts[account], {'capacity': 1}, records, now)
+            choice = POOL.choose(self.conn, records, p['request'], now, check)
+            if choice['account'] is None:
+                error = Refused(POOL.refusal(choice))
+                error.passed = choice['passed']
+                raise error
+            value = dict(type='worker', dispatch=p['dispatch'], context=contexts[choice['account']], retired=False,
+                         selection=choice['trace'],
+                         reserved_seq=self.conn.execute('SELECT COALESCE(MAX(seq),0)+1 FROM journal').fetchone()[0])
         elif action == 'invocation':
             if current:
                 raise Refused('duplicate_invocation')
@@ -310,6 +358,8 @@ class Reservations:
             value['outcome'] = p['outcome'] or value['outcome']
             if 'session' in p:
                 value['session'] = p['session']
+            if 'limit' in p:
+                value['limit'] = p['limit']
             for unit, amount in p['usage'].items():
                 value['charge'][unit] = max(value['charge'].get(unit, 0), amount)
                 if p['final'] and unit in value['unknown']:

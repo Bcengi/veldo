@@ -243,7 +243,14 @@ class Runner:
             data = json.loads(row[0]) if row else {}
             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
         dispatch_id = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
-        self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, self.account, project, unit, now=now)
+        account = self.account
+        if hasattr(account, 'reserve'):
+            # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
+            # reservation, reading the pool now: an account registered while work runs takes this dispatch.
+            account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
+                                      adapter=adapter, now=now)
+        else:
+            self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
         try:
             entity, version, slot_digest = self._slot(dispatch_id)
             contract = {
@@ -257,7 +264,7 @@ class Runner:
                 'capability': {'adapter': adapter, 'configuration': configuration,
                                'configuration_digest': D.digest(configuration)},
                 'reservation': {'entity': entity, 'version': version, 'digest': slot_digest,
-                                'account': self.account, 'project': project},
+                                'account': account, 'project': project},
                 'claim': claim, 'deadline': deadline, 'authority_generation': self.dispatches.generation,
             }
             self.dispatches.prepare(contract, now=now)
@@ -1106,6 +1113,7 @@ class Metering:
             return
         self.settled = True
         now = time.time()
+        limit = None
         if termination is None:
             usage, outcome = {}, 'not_executed'
         else:
@@ -1119,11 +1127,14 @@ class Metering:
                 outcome = 'cancelled'
             else:
                 outcome = 'completed' if termination.get('returncode') == 0 else 'failed'
+            # VELDO-0160: a run its account's limit stopped ends account_limit, with the window and reset.
+            outcome, limit = ACC.classify(outcome, self.meter.limit())
         self.sequence += 1
         session = self.meter.session() if termination is not None else None
         try:
             self.guard.observe('usage/%s/%d' % (self.dispatch_id, self.sequence), self.invocation, self.sequence,
-                               usage, now=now, final=True, outcome=outcome, receipts=self.receipts, session=session)
+                               usage, now=now, final=True, outcome=outcome, receipts=self.receipts, session=session,
+                               limit=limit)
         except (D.RES.Refused, ACC.Refused, S.StoreRefused) as error:
             self.errors.append(error.code)
         finally:

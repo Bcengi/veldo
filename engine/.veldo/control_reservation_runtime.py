@@ -45,9 +45,10 @@ class InvocationGuard:
         return receipt
 
     def observe(self, command_id, invocation, sequence, usage, *, now, final=False, outcome=None, receipts=(),
-                session=None):
+                session=None, limit=None):
         """`session` (VELDO-0062): the CLI session a final report settles and the CLI's own running total
-        for it, which a later invocation resuming that session is charged from."""
+        for it, which a later invocation resuming that session is charged from. `limit` (VELDO-0160): the
+        window and reset of a final report whose outcome is `account_limit`."""
         active = self.active[invocation]
         try:
             reached = now - active['start'] >= active['wall_seconds']
@@ -55,7 +56,8 @@ class InvocationGuard:
                 self._stop(active)
             receipt = self.reservations.report(command_id, invocation, sequence, usage,
                                                now=now, final=final, outcome=outcome, receipts=receipts,
-                                               **({'session': session} if session is not None else {}))
+                                               **({'session': session} if session is not None else {}),
+                                               **({'limit': limit} if limit is not None else {}))
             records = self.reservations._records()
             call = next(r for r in records.values() if r['type'] == 'invocation' and r['invocation'] == invocation
                         and r['context']['domain'] == self.reservations.domain)
