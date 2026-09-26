@@ -58,9 +58,13 @@ read and cache creation tokens), as the conclusive total. The result's `usage` i
 accounting: the binary's own schema says it is "MAIN AGENT LOOP ONLY" and to prefer `modelUsage`. A
 result without a readable `modelUsage` leaves tokens unknown, never zero and never the main loop's.
 The binary says a resumed session continues from the totals its transcript saved, so a
-resumed invocation's first result already carries the earlier turns: it is charged its running total
-less the session's running total the ledger settled last (`Reservations.session`, written by each final
-report), and its tokens are unknown when that earlier total is unknown or larger. A resumed Codex thread
+resumed invocation's first result already carries the earlier turns: when the CLI reports the session
+id the contract's `resume` names, it is charged its running total less the session's running total the
+ledger settled last (`Reservations.session`, written by each final report), and its tokens are unknown
+when that earlier total is unknown or larger. When the CLI reports another session id (it started a
+fresh session, or forked one), its whole running total is charged: a fork that carried the earlier turns
+is over-counted, never under-counted. Each final report records which case charged it (the session's
+`charged`: `whole`, `difference` or `whole_other_session`; a Codex thread is always `whole`). A resumed Codex thread
 is never subtracted: the binary does not say whether `turn.completed` copies the thread total or the
 turn's own, and the sum of the invocation's own turns never under-counts under either reading.
 `rate_limit_event` gives the windows. `control_engine_codex` reads Codex's exec JSON (`turn.completed`
@@ -144,7 +148,7 @@ time. Each row is reported once.
 |---|---|
 | AC1 | `login/recorded-account-profile` (declared falsifier), `login/no-paid-api`, `login/configured-environment`, `login/substitution-refused`, `login/fleet-provider` |
 | AC2 | `usage/reserved-before-launch` (declared falsifier), `usage/allowance-states`, `usage/competing-remainder`, `usage/cap-stops-worker`, `usage/rate-limit-reset` |
-| AC3 | `settle/once`, `settle/model-usage`, `settle/resumed-delta`, `settle/missing-retained`, `settle/timeout-retained` (declared falsifier), `settle/cancel-retained` |
+| AC3 | `settle/once`, `settle/model-usage`, `settle/resumed-delta`, `settle/resumed-other-session`, `settle/missing-retained`, `settle/timeout-retained` (declared falsifier), `settle/cancel-retained` |
 | AC4 | `attribution/stored-account` (declared falsifier), `attribution/measurement-removed`, `attribution/watermark` |
 | Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines` |
 
@@ -183,6 +187,10 @@ message and a result settle the result's `modelUsage` total over both models (10
 main loop's `usage` is 5012), and on the production reader a result without `modelUsage` leaves tokens
 unknown; a resumed Claude Code session is charged its running total less the total the ledger
 settled for that session, unknown when none was settled, and a resumed Codex thread its own turns; a
+follow-on whose contract resumes a session settled at 1000 but whose CLI reports another session with a
+running total of 5000 is charged all 5000, the named session's settled total stays 1000, and the ledger
+records the other session as `whole_other_session`, a later resumption the CLI reports as the named
+session as `difference` (charged 200 of 1200) and the initial invocation as `whole`; a
 stream with no conclusive report, a timeout and a cancellation each keep the reservation and
 refuse the next invocation. `attribution/*`: with ambient labels naming another account, the shown
 totals per account (all five registered that ran), unit and the journey project equal the stored

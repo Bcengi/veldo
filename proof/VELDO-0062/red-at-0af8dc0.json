@@ -2,14 +2,14 @@
  "by_assertion": true,
  "commit": "0af8dc025b0458a8a05023723bd724ab550cd427",
  "details": [
-  "VELDO-0062 login/recorded-account-profile detail: acct-c1: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [planted-bffadfaf0afc]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-c1: no other provider's profile reached it [/dev/shm/v62-fezgx6xj/helper/accounts/profiles/acct-x2]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-c1: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [planted-f9bddaa1f4d1]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-c1: no other provider's profile reached it [/dev/shm/v62-abrl4u4v/helper/accounts/profiles/acct-x2]",
   "VELDO-0062 login/recorded-account-profile detail: acct-c1: its ambient account label is the recorded one [acct-c3]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-c2: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [planted-bffadfaf0afc]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-c2: no other provider's profile reached it [/dev/shm/v62-fezgx6xj/helper/accounts/profiles/acct-x2]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-c2: CLAUDE_CONFIG_DIR is that account's registered profile on this host, not the caller's [planted-f9bddaa1f4d1]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-c2: no other provider's profile reached it [/dev/shm/v62-abrl4u4v/helper/accounts/profiles/acct-x2]",
   "VELDO-0062 login/recorded-account-profile detail: acct-c2: its ambient account label is the recorded one [acct-c3]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-x1: CODEX_HOME is that account's registered profile on this host, not the caller's [/dev/shm/v62-fezgx6xj/helper/accounts/profiles/acct-x2]",
-  "VELDO-0062 login/recorded-account-profile detail: acct-x1: no other provider's profile reached it [planted-bffadfaf0afc]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-x1: CODEX_HOME is that account's registered profile on this host, not the caller's [/dev/shm/v62-abrl4u4v/helper/accounts/profiles/acct-x2]",
+  "VELDO-0062 login/recorded-account-profile detail: acct-x1: no other provider's profile reached it [planted-f9bddaa1f4d1]",
   "VELDO-0062 login/recorded-account-profile detail: acct-x1: its ambient account label is the recorded one [acct-c3]",
   "VELDO-0062 login/recorded-account-profile detail: the two Claude Code accounts ran on two different profiles",
   "VELDO-0062 login/recorded-account-profile detail: the owner registered every account [[('acct-c1', 'AttributeError'), ('acct-c2', 'AttributeError'), ('acct-c3', 'AttributeError'), ('acct-x1', 'AttributeError'), ('acct-x2', 'AttributeError'), ('acct-x3', 'AttributeError'), ('acct-x4', 'AttributeError'), ('acct-x5', 'AttributeError'), ('acct-paused', 'AttributeError'), ('acct-mac', 'AttributeError')]]",
@@ -56,12 +56,12 @@
   "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \"t. Try again at 9:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [None, None]",
   "VELDO-0062 usage/rate-limit-reset detail: codex, Asia/Kolkata, \" Sep 24th, 2026 7:43 PM.\": the reset is the end of the stated minute, refused one second before it and allowed at it [None, None]",
   "VELDO-0062 usage/rate-limit-reset detail: codex: every one of the 42 messages of the binary's error table is read as its window or as none, the 13 exhaustions each once, with the reset stated or none [[('turn aborted. Something went wrong? Hit `/feedback` to repor', [], [], 'AttributeError'), ('shared rollout token budget exhausted', [], [], 'AttributeError'), (\"Codex ran out of room in the model's context window. Start a\", [], [], 'AttributeError')]]",
-  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: \"age limit. Try again at 3:27 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790407680, from its dispatch [{}]",
+  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: \"age limit. Try again at 4:50 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790412660, from its dispatch [{}]",
   "VELDO-0062 usage/rate-limit-reset detail: codex acct-x2: a new invocation is refused by name and nothing launches [None]",
   "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: \"ur usage limit. Try again later.\" is recorded on the account as the exhausted usage_limit window, its reset None, from its dispatch [{}]",
   "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: a new invocation is refused by name and nothing launches [None]",
   "VELDO-0062 usage/rate-limit-reset detail: codex acct-x3: with no reset stated the account stays refused however long, until a later observation says otherwise [None]",
-  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x4: \"age limit. Try again at 1:26 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790400420, from its dispatch [{}]",
+  "VELDO-0062 usage/rate-limit-reset detail: codex acct-x4: \"age limit. Try again at 2:49 AM.\" is recorded on the account as the exhausted usage_limit window, its reset 1790405400, from its dispatch [{}]",
   "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: \"redits. Add credits to continue.\" is recorded on the account as the exhausted workspace_credits window, its reset None, from its dispatch [{}]",
   "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: a new invocation is refused by name and nothing launches [None]",
   "VELDO-0062 usage/rate-limit-reset detail: codex acct-x5: with no reset stated the account stays refused however long, until a later observation says otherwise [None]",
@@ -80,6 +80,8 @@
   "VELDO-0062 settle/resumed-delta detail: claude: resuming a session settled without a running total leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [None, None, None]",
   "VELDO-0062 settle/resumed-delta detail: claude: resuming a running total below the settled one leaves the tokens unknown and keeps what its own messages streamed, never the whole running total [None, None, None]",
   "VELDO-0062 settle/resumed-delta detail: codex: a follow-on resuming a thread is charged what its own completed turn reports, never less [None, None]",
+  "VELDO-0062 settle/resumed-other-session detail: claude: a follow-on whose contract resumes the named session (settled None) but whose CLI reports another session with a running total of 5000 is charged all 5000, not the difference [None charged, None]",
+  "VELDO-0062 settle/resumed-other-session detail: claude: the ledger records which case charged each invocation: the other session whole as another session than the one resumed, the named session's settled total untouched by it, a resumption the CLI reports as the named session as the difference, and the initial invocation as whole [{}; None; None; None charged None]",
   "VELDO-0062 settle/missing-retained detail: claude: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [None, None, None]",
   "VELDO-0062 settle/missing-retained detail: codex: no conclusive report leaves tokens and messages unknown, keeps the invocation and what was seen, and refuses the next invocation [None, None, None]",
   "VELDO-0062 settle/timeout-retained detail: claude: an accepted invocation stopped at its deadline keeps its reservation, and the next invocation is refused [None, None, None]",
@@ -112,6 +114,7 @@
   "VELDO-0062 settle/once",
   "VELDO-0062 settle/model-usage",
   "VELDO-0062 settle/resumed-delta",
+  "VELDO-0062 settle/resumed-other-session",
   "VELDO-0062 settle/missing-retained",
   "VELDO-0062 settle/timeout-retained",
   "VELDO-0062 settle/cancel-retained",
@@ -130,15 +133,15 @@
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": null,
-   "now": "b05b72d53fb6a9e174470929af3152f73fa29f05936a32e0b635ba78eccee18f"
+   "now": "9a9b490e53e57873ab2aaaa71f548e0c0721ce69dfd2ef3536064e99d494462e"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": null,
-   "now": "4a56ccf695127fe73b3b8fb4b4afb756426ce9a5ac6b59a1004434337175eb97"
+   "now": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712"
   },
   ".veldo/control_launch.py": {
    "at_commit": "860f54a2201fa0c60a6ed3922080219e6cb7d97ded0141c673fc3490d1d09cd9",
-   "now": "feb42e61daf385a722a473ca5cd377436d58738133f8ac398b42c4e9fb032c61"
+   "now": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66"
   },
   ".veldo/control_reservation_runtime.py": {
    "at_commit": "922b04713a800c77125f567e45ea92df354233465509425b148ac7d45d858a68",
@@ -146,7 +149,7 @@
   },
   ".veldo/control_reservations.py": {
    "at_commit": "5a15312d1357260a90a1d868a30f3d0b39a77c8da07a7ad25329338b8c0cb00e",
-   "now": "2abc9399bf98b169d991bea202e542150623f73d6813a5db32a646178ed44ff6"
+   "now": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f"
   },
   ".veldo/fleet.py": {
    "at_commit": "68d3725d0e48349b6adf8988de671fa96754bfbf6b1b5dfeaa729e538ef5d8f3",
@@ -208,6 +211,10 @@
    false
   ],
   [
+   "VELDO-0062 settle/resumed-other-session",
+   false
+  ],
+  [
    "VELDO-0062 settle/missing-retained",
    false
   ],
@@ -241,7 +248,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 85.193,
+ "seconds": 85.69,
  "spec_id": "VELDO-0062",
  "suite": "scripts/suites/75_veldo_0062_accounts.py",
  "tree": "git archive 0af8dc025b0458a8a05023723bd724ab550cd427, unchanged; the current suite file run against it"

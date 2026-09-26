@@ -1251,7 +1251,8 @@ sys.exit(payload.get('code', 0))
                   first_call.get('charge', {}).get('tokens') == 1000 and call.get('state') == 'settled'
                   and call.get('charge', {}).get('tokens') == 5000)
             recorded = call.get('session') or {}
-            untouched = (reservations.session('claude_code', named) or {}).get('tokens')
+            untouched = ((reservations.session('claude_code', named) if hasattr(reservations, 'session') else None)
+                         or {}).get('tokens')
             # The named session resumed again, now reported by the CLI: the difference, 1200 less 1000.
             again, _ = run('acct-c1', unit, 'claude', [c_init(session=named), c_msg('named-b', 1, 1, session=named),
                                                         c_result(1, 1, 1, models={opus: (500, 700, 0, 0)}, session=named)],
