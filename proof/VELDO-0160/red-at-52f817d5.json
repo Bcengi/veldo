@@ -26,6 +26,15 @@
   "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 4:47pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"Your seat type doesn't include usage\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"Your seat type doesn't include usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: 'This service is disabled for your org': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: 'Your usage allocation has been disabled by your admin \u00b7 ask your admin for a higher limit': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"Your group's usage limit is set to $0 \u00b7 ask your admin for a higher limit\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
   "VELDO-0160 decision/rerun detail: claude_code, no MCP call: decided re-run, naming no call [None, no decision module]",
   "VELDO-0160 decision/rerun detail: claude_code, only calls to tools marked read-only: decided re-run, naming no call [None, no decision module]",
   "VELDO-0160 decision/rerun detail: codex, no MCP call: decided re-run, naming no call [None, no decision module]",
@@ -38,6 +47,20 @@
   "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [None, no decision module]",
   "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [None, no decision module]",
   "VELDO-0160 decision/ask detail: codex: a record with a gap in its sequence is refused by name, never decided [no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with its JSON text truncated: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with a redacted span in place of its input, breaking the JSON: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with the whole payload redacted: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with its event wrapped in a list: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with a tool call whose name is not a string: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: claude_code: a redacted line whose event still reads is decided by its calls (none here: re-run) [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with its JSON text truncated: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with a redacted span in place of its input, breaking the JSON: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with the whole payload redacted: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with its event wrapped in a list: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with a tool call whose server is not a string: decided ask, naming that line [None, no decision module]",
+  "VELDO-0160 decision/unreadable-asks detail: codex: a redacted line whose event still reads is decided by its calls (none here: re-run) [None, no decision module]",
+  "VELDO-0160 decision/same-id-write detail: claude_code: the id shown read-only and then naming a write is decided ask, naming the write [None, no decision module]",
+  "VELDO-0160 decision/same-id-write detail: codex: the id shown read-only and then naming a write is decided ask, naming the write [None, no decision module]",
   "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
   "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
   "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [invalid_input, {}]",
@@ -49,6 +72,11 @@
   "VELDO-0160 pool/one-run-while-unknown detail: before its first observation the new account runs one: a second unit offered with it waits, the new account passed over at its one-run bound [invalid_input, None]",
   "VELDO-0160 pool/one-run-while-unknown detail: the running unit reported the account's first observation [{}]",
   "VELDO-0160 pool/one-run-while-unknown detail: after it the waiting unit launched on the new account, its second run at once [None, invalid_input]",
+  "VELDO-0160 pool/usage-observes detail: observed by its usage alone, acct-x2 admits its concurrency: three Codex dispatches run at once, two of them on acct-x2 [[(None, 'invalid_input'), (None, 'invalid_input'), (None, 'invalid_input')]]",
+  "VELDO-0160 pool/selection-order detail: the idle Claude Code accounts last reported 0.7 (acct-c2), 0.1 (acct-c3, then acct-c4, used last) and nothing current (acct-c1) [None, AttributeError]",
+  "VELDO-0160 pool/selection-order detail: the dispatch went to the lowest utilization and, of the two at 0.1, to the one used least recently, acct-c3 [None, invalid_input]",
+  "VELDO-0160 pool/selection-order detail: the candidates are ranked lowest utilization first, least recently used first among equals, the unknown last [[]]",
+  "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [invalid_input, {}]",
   "VELDO-0160 install/assets detail: the scaffold lays down the account pool and the decision [['.veldo/control_account_pool.py', '.veldo/control_account_limit.py']]",
   "VELDO-0160 install/assets detail: every engine copy of a module this work touches is identical [['.veldo/control_account_pool.py', '.veldo/control_account_limit.py', '.veldo/control_account_pool.py', '.veldo/control_account_limit.py']]"
  ],
@@ -58,17 +86,23 @@
   "VELDO-0160 pool/concurrent",
   "VELDO-0160 limit/stream-exhausted",
   "VELDO-0160 limit/rate-limit-result",
+  "VELDO-0160 limit/claude-rejected-texts",
   "VELDO-0160 decision/rerun",
   "VELDO-0160 decision/ask",
+  "VELDO-0160 decision/unreadable-asks",
+  "VELDO-0160 decision/same-id-write",
   "VELDO-0160 pool/moved-off",
   "VELDO-0160 pool/added-account",
   "VELDO-0160 pool/one-run-while-unknown",
+  "VELDO-0160 pool/usage-observes",
+  "VELDO-0160 pool/selection-order",
+  "VELDO-0160 pool/until-earliest",
   "VELDO-0160 install/assets"
  ],
  "modules": {
   ".veldo/control_account_limit.py": {
    "at_commit": null,
-   "now": "36ad378a311ef894fae9c9a4c5ce0e6931677207c341fab1664fd3d85b186a55"
+   "now": "7aa6f72de1e8c4c79f42428dcadb2f4b7c6ae688e5aa09ffd6276b8d00615e97"
   },
   ".veldo/control_account_pool.py": {
    "at_commit": null,
@@ -80,11 +114,11 @@
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "9a9b490e53e57873ab2aaaa71f548e0c0721ce69dfd2ef3536064e99d494462e",
-   "now": "e1ecf23c9788930980ad852c526664e1b734f62cf6443da7d9d24d4e12d03e08"
+   "now": "358688510a369780346f071a09110c4a97a0b5b77966738e4150c6e08234eba2"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
-   "now": "c433636de363062ac2f5f3fcbddb9022d6812a62e894d607f1f7ba0d85296958"
+   "now": "8835cf2044137def2cce80e0028d747ec45626eee6923ee01b5d7ec2c35dad09"
   },
   ".veldo/control_launch.py": {
    "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
@@ -126,11 +160,23 @@
    false
   ],
   [
+   "VELDO-0160 limit/claude-rejected-texts",
+   false
+  ],
+  [
    "VELDO-0160 decision/rerun",
    false
   ],
   [
    "VELDO-0160 decision/ask",
+   false
+  ],
+  [
+   "VELDO-0160 decision/unreadable-asks",
+   false
+  ],
+  [
+   "VELDO-0160 decision/same-id-write",
    false
   ],
   [
@@ -143,6 +189,18 @@
   ],
   [
    "VELDO-0160 pool/one-run-while-unknown",
+   false
+  ],
+  [
+   "VELDO-0160 pool/usage-observes",
+   false
+  ],
+  [
+   "VELDO-0160 pool/selection-order",
+   false
+  ],
+  [
+   "VELDO-0160 pool/until-earliest",
    false
   ],
   [
@@ -159,7 +217,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 29.588,
+ "seconds": 34.311,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"
