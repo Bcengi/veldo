@@ -539,7 +539,8 @@ sys.exit(payload.get('code', 0))
                 return found['tokens']
             order = invocation(dispatch_id).get('accepted_seq')
             earlier = []
-            for path in receipts.glob('*.jsonl'):
+            # An invocation the ledger never accepted cannot be placed after an earlier one: only its own messages.
+            for path in (receipts.glob('*.jsonl') if order is not None else ()):
                 raw = path.read_bytes().split(b'\n')
                 other, other_lines = json.loads(raw[0]), [line for line in raw[1:] if line]
                 if other['provider'] != 'claude_code' or other['dispatch_id'] == dispatch_id:
@@ -547,7 +548,7 @@ sys.exit(payload.get('code', 0))
                 if (invocation(other['dispatch_id']).get('accepted_seq') or 0) >= order:
                     continue
                 if any(json.loads(line).get('session_id') == resume for line in other_lines):
-                    earlier.append((invocation(other['dispatch_id']).get('accepted_seq'), c_running(other_lines)))
+                    earlier.append((invocation(other['dispatch_id']).get('accepted_seq') or 0, c_running(other_lines)))
             prior = max(earlier)[1] if earlier else None
             running = c_running(lines)
             streamed = recompute('claude_code', [line for line in lines if json.loads(line).get('type') == 'assistant'])
