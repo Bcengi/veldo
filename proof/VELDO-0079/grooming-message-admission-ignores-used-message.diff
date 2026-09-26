@@ -2,4 +2,4 @@
 +++ b/.veldo/control_backlog.py
 @@ -799 +799 @@
 -                                 request.get('author'), opened, spent)
-+                                 request.get('author'), [], spent)  # defect: the backlog judges the revision alone
++                                 request.get('author'), opened, [])  # defect: the backlog reads this item alone

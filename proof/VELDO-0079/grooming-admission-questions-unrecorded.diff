@@ -1,5 +1,5 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -691 +691 @@
+@@ -712 +712 @@
 -                      request_digest=request['digest'], questions=[q['id'] for q in request['content']['questions']])
 +                      request_digest=request['digest'], questions=[])  # defect: the answered questions are lost

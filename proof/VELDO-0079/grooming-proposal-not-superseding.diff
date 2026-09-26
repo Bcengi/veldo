@@ -1,5 +1,5 @@
 --- a/.veldo/control_grooming.py
 +++ b/.veldo/control_grooming.py
-@@ -248 +248 @@
+@@ -253 +253 @@
 -            if pending and pending[-1][2].get('state') in PENDING_STATES:
 +            if False:  # defect: the request in front of him stays answerable until grooming runs

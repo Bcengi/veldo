@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -681 +681 @@
+-        if ruling in (None, 'approve'):
++        if ruling in (None, 'approve', 'return_for_elaboration'):  # defect: a return is judged fresh

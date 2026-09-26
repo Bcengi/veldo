@@ -1,5 +1,5 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -672 +672 @@
+@@ -692 +692 @@
 -        problems += missing + ['stale_subject:' + f for f in GR.WORKSPACE_FIELDS if found[f] != fields.get(f)]
 +        problems += missing  # defect: a changed specification file is not noticed

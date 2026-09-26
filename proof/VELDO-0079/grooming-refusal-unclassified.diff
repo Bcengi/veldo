@@ -1,5 +1,5 @@
 --- a/.veldo/control_grooming.py
 +++ b/.veldo/control_grooming.py
-@@ -153 +153 @@
+@@ -158 +158 @@
 -            named = self.CB.taxonomy(reason)
 +            pass  # defect: a backlog refusal is unclassified

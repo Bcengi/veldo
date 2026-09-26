@@ -1,6 +1,6 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -682,0 +683,4 @@
+@@ -702,0 +703,4 @@
 +        held = _row(conn, command.get('request')) or {}
 +        effect = _row(conn, ((held.get('data') or {}).get('settlement') or {}).get('effect_id')) or {}
 +        if ((effect.get('data') or {}).get('target') or {}).get('kind') == 'backlog_item':

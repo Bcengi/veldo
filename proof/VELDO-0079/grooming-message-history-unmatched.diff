@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -188 +188 @@
+-        if set(message_of(objective)) & set(message):
++        if objective.get('uuid') is None:  # defect: no other item is found to trace to the message

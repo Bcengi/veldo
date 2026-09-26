@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -416 +416 @@
+-    if used:
++    if False:  # defect: his message admits every later item from it

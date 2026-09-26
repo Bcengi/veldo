@@ -22,17 +22,21 @@ the binding, and a ruling names it by `target` (kind, record, digest). `live_pro
 store-derived field that no longer matches the live item, objective and project. `route` decides whether
 the owner's own message admits: only when the objective was accepted by his own message (VELDO-0150),
 the revision asks for admission, raises no question, proposes the default priority and was written by
-the project's owner or its project manager (control_team's PM role), and no request of the item was ever
-opened to the owner; otherwise the named reasons (`objective_by_answer`, `fresh_priority`, `question`,
-`priority`, `author`, `presented`). `history` reads that from the store, not from the current revision:
-every decision request grooming opened for the admission request (each under the shared `alias`) and
-the settled rulings among them not yet applied to the item; `held` keeps those that hold the item, all
-but approvals.
+the project's owner or its project manager (control_team's PM role), no request of the item was ever
+opened to the owner, and none of any other item from the same message; otherwise the named reasons
+(`objective_by_answer`, `fresh_priority`, `question`, `priority`, `author`, `presented`, `message_used`).
+`history` reads that from the store, not from the current revision: every decision request grooming
+opened for the admission request (each under the shared `alias`) and the settled rulings among them not
+yet applied to the item; `held` keeps those that hold the item, all but approvals. `message_history`
+makes his message single use: `message_of` names the message an objective was accepted by (its intake
+command and intake source), and every request grooming opened for another item whose objective traces
+to it closes the route (`message_used`), read from grooming's admission requests, the backlog's items and
+the objectives' acceptances, none of which the project manager writes.
 
 **The grooming service, `.veldo/control_grooming.py` (new).** The one writer of `admission_request`
 records (declared owner of the kind and of the `admission-request:` prefix). `propose` is a signed
 command from a member of the project: an AWAITING_GROOMING item is asked for admission and priority, a
-prioritized item with appended units for priority alone; the same material from the same author writes
+prioritized item with appended units, or an ADMITTED item whose priority he rejected, for priority alone; the same material from the same author writes
 nothing, any change is a new immutable revision. `groom` takes the route: his message admits through the
 backlog's `admit_message`, or each decision becomes its own VELDO-0064 request (settlement terms on the
 `admission` or `priority` touchpoint targeting the revision's digest, the brief, the expiry as deadline),
@@ -54,8 +58,10 @@ judged with the item's history, so an item any request of which was opened to th
 `not_approved:presented`; any other route refuses `not_approved:<reason>`), and the owner's signed `reprioritize` (a new priority record, state and
 units unchanged). `admit` and `prioritize` accept only a settled answer whose target is the item's
 admission request at its current revision (the existing `found != target` comparison, which now compares
-its digest) and whose request showed exactly its brief, and refuse a revision that no longer binds the
-live records or specification files or has lapsed. By the lead's decision on the threat model's
+its digest) and whose request showed exactly its brief, and refuse an approval of a revision that no
+longer binds the live records or specification files or has lapsed. By the lead's decision a settled
+reject or return authorizes nothing and is applied exactly as he gave it without those two checks
+(`_fresh`), so a later append or a changed specification never leaves it unappliable and the item held. By the lead's decision on the threat model's
 presentation that omits a bound field, the thin path is closed: an item grooming made no admission
 request for is refused `missing_evidence:admission_request` and nothing is written, and VELDO-0078's own
 item target and briefs (`decision_target`, `admission_brief`, `priority_brief`) are removed, since nothing
@@ -102,7 +108,7 @@ policy digest. Each row is reported once and fails by assertion.
 | Criterion | Rows |
 |---|---|
 | AC1 | `material/telegram-brief`, `material/ungroomed-thin-brief`, `material/bound-fields`, `material/changed-decomposition` (declared falsifier) |
-| AC2 | `route/own-message-default`, `route/ask-when-needed` (declared falsifier), `route/presented-then-proposed`, `route/ruling-settled-unapplied`, `route/returned-then-proposed`, `authority/owner-choices`, `authority/pm-self-admission`, `authority/separate-predicates`, `authority/questions-unresolved`, `authority/reprioritize-withdraw` |
+| AC2 | `route/own-message-default`, `route/ask-when-needed` (declared falsifier), `route/presented-then-proposed`, `route/ruling-settled-unapplied`, `route/returned-then-proposed`, `route/append-after-reject`, `route/spec-change-after-reject`, `route/admitted-priority-rejected`, `route/message-single-use`, `authority/owner-choices`, `authority/pm-self-admission`, `authority/separate-predicates`, `authority/questions-unresolved`, `authority/reprioritize-withdraw` |
 | AC3 | `ruling/parameter-binding` (declared falsifier), `ruling/duplicate` |
 | Installation, observability | `install/assets`, `observability` |
 
@@ -136,6 +142,20 @@ message does not admit it, and her reject is applied with the priority request c
 `route/returned-then-proposed`: her return is applied (PREPARED, priority canceled), pm requests grooming
 and proposes with the question dropped, and the item is presented to her again as a new request, her
 message `not_approved:presented`. In all three nothing is admitted and no unit runs.
+`route/append-after-reject`: an item his message admitted gains a unit, groomed and presented for its
+priority; his reject settles, another unit is appended, and his reject is applied as he gave it (both
+units PLANNED); pm proposes again, it is presented as a new request, and his approval makes both run.
+`route/spec-change-after-reject`: his admission reject, and on another item his return, each settle and
+then the unit's specification file changes; each is applied as he gave it (REJECTED, PREPARED, the
+priority request canceled), and the returned item is groomed against the changed file and presented anew.
+`route/admitted-priority-rejected`: his priority reject waits for the admission; his admission then
+admits the item and the reject is applied, leaving it ADMITTED; pm grooms it for its priority, it is
+presented as a new priority request, and his approval prioritizes it at rank 2. `route/message-single-use`:
+under a fresh message, a first item is admitted by it; a second is presented and rejected; a third, a
+re-cut feature under the same objective asking nothing, is refused by the backlog's `admit_message`
+(`not_approved:message_used`) and presented naming `message_used` alone; nothing of it runs. The rows
+that need his message to admit (`material/changed-decomposition`, `authority/reprioritize-withdraw`,
+`route/append-after-reject`) take their work from messages of their own.
 `authority/owner-choices`: accept, reject and return move the
 item where they say, each settlement carries the owner's own reasoning, and a reject or return cancels
 the priority request. `authority/pm-self-admission`: the PM's own signed answer is `not_owner`, its
@@ -156,7 +176,7 @@ one settlement; the same signed admit command again is refused `stale_version`, 
 admission names that one settlement.
 
 Stage environment run (`env -i` with the gate's variables, HOME in `/dev/shm`) and a normal run: suites
-`76_veldo_0079_grooming` (18 rows), `73_veldo_0078_backlog` (20), `75_veldo_0150_own_message_acceptance`
+`76_veldo_0079_grooming` (18 rows, 22 after the held-item finding), `73_veldo_0078_backlog` (20), `75_veldo_0150_own_message_acceptance`
 (13), `72_veldo_0077_objectives` (20), `72_veldo_0128_reports` (18) `52_writer_boundary` (10) and `50_git_environment` (4) pass; after
 review B1 and F2, `20_veldo_0003_task_source`, `65_veldo_0132_workflow` and `71_veldo_0130_api` pass too.
 After the thin path closed, `50_git_environment`, `20_veldo_0003_task_source`, `65_veldo_0132_workflow`
@@ -168,7 +188,7 @@ key-value text, so questions render as `id - text`).
 ## Red record
 
 `red-at-516afd1.json`: the current suite over `git archive 516afd1`, the commit before this change,
-unchanged. All 18 rows fail by their own assertion and no region raised: the tree has no grooming
+unchanged. All 22 rows fail by their own assertion and no region raised: the tree has no grooming
 service, so every grooming call is answered `no_grooming_service`, nothing is presented or admitted by
 message, its backlog has neither `admit_message` nor `reprioritize`, and it admits the ungroomed item on
 its thin brief.
@@ -178,6 +198,11 @@ Exactly the three history rows fail, each by its assertion: that tree lets the c
 alone, so the re-proposed item is admitted by her message, the earlier request stays answerable, and her
 reject is refused at apply.
 
+`red-at-d2d5574.json`: the same suite over `git archive d2d5574`, this branch before the held-item finding's
+fix. Exactly the four new rows fail, each by its assertion: that tree cannot apply his reject after an
+append or his reject or return after a specification change, leaves an ADMITTED item ungroomable, and lets
+his message admit a re-cut feature after work from it was presented and rejected.
+
 `red-at-b43de71.json`: the same suite over `git archive b43de71`, this branch before the thin path closed.
 Exactly one row fails, `material/ungroomed-thin-brief`, by its assertion: that tree admits an item grooming
 never asked about on VELDO-0078's thin brief.
@@ -186,8 +211,8 @@ never asked about on VELDO-0078's thin brief.
 
 Registered in `scripts/check_teeth_mutations.py` with the `grooming-` prefix, each declared falsifier
 first; `python3 -B proof/VELDO-0079/drive.py` records `mutations.json` and one applied diff per mutant.
-All 30 turn their named rows red by assertion; the baseline and the no-op copies of the four modules are
-green. The teeth driver run for finding 79 with two jobs rejects all 30; finding 78 (the other mutations
+All 37 turn their named rows red by assertion; the baseline and the no-op copies of the four modules are
+green. The teeth driver run for finding 79 with two jobs rejects all 37; finding 78 (the other mutations
 of `control_backlog.py`, over the rewritten VELDO-0078 suite) rejects all 30.
 `grooming-thin-admission-accepted` and `grooming-brief-unchecked` are re-anchored on the new code: the
 first accepts an answer to the item's own thin target beside the groomed one, the second any brief shown.
@@ -215,6 +240,13 @@ first accepts an answer to the item's own thin target beside the groomed one, th
 | grooming-proposal-not-superseding | route/presented-then-proposed |
 | grooming-proposal-over-settled-ruling | route/ruling-settled-unapplied |
 | grooming-presented-over-settled-ruling | route/ruling-settled-unapplied |
+| grooming-rejection-freshness-checked | route/append-after-reject, route/spec-change-after-reject |
+| grooming-reject-freshness-checked | route/append-after-reject, route/spec-change-after-reject |
+| grooming-return-freshness-checked | route/spec-change-after-reject |
+| grooming-admitted-not-groomable | route/admitted-priority-rejected |
+| grooming-route-ignores-used-message | route/message-single-use |
+| grooming-message-admission-ignores-used-message | route/message-single-use |
+| grooming-message-history-unmatched | route/message-single-use |
 | grooming-message-admission-priority-role | authority/separate-predicates |
 | grooming-admission-questions-unrecorded | authority/questions-unresolved |
 | grooming-priority-applied-before-admission | authority/questions-unresolved |

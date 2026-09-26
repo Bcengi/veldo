@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming.py
++++ b/.veldo/control_grooming.py
+@@ -271 +271 @@
+-        if data.get('state') == 'ADMITTED':
++        if False:  # defect: an admitted item whose priority he rejected is stuck ADMITTED
