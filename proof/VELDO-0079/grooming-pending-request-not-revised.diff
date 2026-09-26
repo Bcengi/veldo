@@ -1,5 +1,5 @@
 --- a/.veldo/control_grooming.py
 +++ b/.veldo/control_grooming.py
-@@ -322 +322 @@
+@@ -330 +330 @@
 -        name = latest[0] if latest and latest[2].get('state') in PENDING_STATES else alias(record, touchpoint, len(opened) + 1)
 +        name = alias(record, touchpoint, len(opened) + 1)  # defect: an earlier presentation stays answerable

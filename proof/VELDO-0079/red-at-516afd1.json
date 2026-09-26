@@ -41,11 +41,11 @@
   },
   ".veldo/control_grooming.py": {
    "at_commit": null,
-   "now": "8e66c86c5a7472197e7a9f4821be8c8489b3aed3b1d369b6f627332f7655500b"
+   "now": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   ".veldo/control_grooming_request.py": {
    "at_commit": null,
-   "now": "d01689c42883be713b30fbf917a65d3167874898a9edfdf7f9eb33592b5fc735"
+   "now": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "c50045cf9b1d332d628c00d9bfae3ab2e551d5f07bfbe5b62fc7c151b15910c6",
@@ -112,7 +112,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 2.099,
+ "seconds": 2.108,
  "spec_id": "VELDO-0079",
  "suite": "scripts/suites/76_veldo_0079_grooming.py",
  "tree": "git archive 516afd154e0672e443325d379f5153cd96c8c777, unchanged; the current suite file run against it"

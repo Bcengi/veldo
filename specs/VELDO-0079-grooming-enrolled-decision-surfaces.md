@@ -190,4 +190,7 @@ when the decision is applied. It also gains `scripts/check_teeth_mutations.py`, 
 they are the PLAN-0016 file surface, not on the control store path. VELDO-0150's `accept_message` is not
 called by this code: the admission reads the objective's recorded acceptance path, and calling it is the
 intake-to-objective step, not admission. Suite `76_veldo_0079_grooming`, red at 516afd1 by assertion;
-finding 79 in `proof/VELDO-0079/`. Status stays ready.
+finding 79 (23 mutations) in `proof/VELDO-0079/`. Filed for the lead: an item grooming never recorded a
+request for can still be admitted through VELDO-0078's own thinner brief (requiring grooming for every
+admission changes that suite's helpers); the default priority is one constant for every project. Status
+stays ready.
