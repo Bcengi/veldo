@@ -187,7 +187,28 @@ servers, each with its catalog id and revision, and for each such revision the s
 marks read-only, the `read-only tools` field of VELDO-0144's `mcp_server`; a revision that marks nothing
 has an empty set. A server named in a call maps to the catalog id and revision the dispatch's
 configuration lists, and a call whose server is not listed counts as not read-only. VELDO-0154 AC3 feeds
-the decision each real run's record and catalog marks in the same form.
+the decision each real run's record and catalog marks in the same form. Each server of the configuration may
+also give the tools the dispatch selects for the run (VELDO-0127's selection, `all` tools or a list); a server
+that gives no list gives all its tools.
+
+**The structural rule for the re-run-or-ask decision (the lead's decision).** Three rounds of checks each found
+a new way Claude Code keeps a nested MCP call out of the stream (the REPL tool's inner calls, an agent a
+sub-agent starts, a skill a sub-agent forks, whose messages are dropped and whose end reports no count), so
+rebuilding the calls from the stream cannot be made complete, and the configuration decides first. Rule 1: when
+the configuration gives the run no MCP server with a tool not marked read-only (no server, or each lists its
+tools and its revision marks every one read-only), the run could not have written through MCP, and the
+decision is re-run whatever the stream shows; a structurally malformed record is still refused by name. Rule 2:
+otherwise, when the record shows any construct that can run nested work the stream may not show, the decision
+is ask, naming each such line and its construct: for Claude Code an Agent tool call (or its old name Task, or
+SendMessage to a teammate), a Skill tool call, the REPL tool or its inner call, the Workflow tool or a
+workflow's task frames, any task frame (`task_started`, `task_progress`, `task_notification`,
+`task_updated`), a message a sub-agent or a forked skill produced (it names its task in `parent_tool_use_id`,
+how the CLI forwards `agent_progress` and `skill_progress`) and a forked skill's result; for Codex a collab
+agent call (exec's `collab_tool_call`, the core's `collab_agent_tool_call`) and a sub-agent's activity. The
+construct list is read from the binaries' bytes into `cli-formats.json` (`nested_work`). Rule 3: otherwise the
+call-by-call rules above decide, unchanged: a visible call to a tool not marked read-only asks, an engine line
+that cannot be read asks, a form the decision does not recognize asks. The authoritative evidence later is a
+factory-side log of the MCP calls themselves, which no engine stream can hide (filed for VELDO-0158).
 
 Use canonical engine assets and synchronize installed copies. Inventory every asset the selected
 journey installs. Compare executable registrations to each criterion's declared universe, observe the
@@ -293,3 +314,19 @@ from the 2.1.281 bytes, and the extractor now records them in `cli-formats.json`
 follow the reading; 8 more finding 160 mutations (86 in all). Forwarding sub-agent text
 (`forwardSubagentText`), which would put a nested agent's own blocks in the stream, is filed for VELDO-0141's
 live view, not set here. Status unchanged.
+
+2026-09-26, the lead's structural rule for the re-run-or-ask decision: a third check found a skill forked by a
+sub-agent whose `skill_progress` is dropped and whose fork reports no count of its calls, so its MCP write left
+no trace in the stream and was decided re-run. Rebuilding the calls from the stream cannot be made complete, so
+the configuration now decides first (the Notes): a configuration with no MCP server giving a tool not marked
+read-only re-runs whatever the stream shows (basis `no_write_capable_server`); otherwise any construct that can
+run hidden nested work asks, naming its line and construct (reason `nested_work`, basis `nested_work`); otherwise
+the call-by-call rules decide as before (`decide_by_calls`, basis `calls`). The fixture configuration's servers
+may list the tools they give the run. The extractor reads the construct list out of both binaries into
+`cli-formats.json` (`nested_work`). New rows `decision/no-write-server-reruns`, `decision/nested-work-asks` and
+`decision/nested-constructs`; the rows that judge how the call-by-call rules read a record holding such a
+construct drive `decide_by_calls`, since `decide` now answers those records by the structural rule, and the
+others check they were decided by the calls; `format/tool-forms` compares the construct tables. 15 more finding
+160 mutations (rule 1 skipped, rule 2 skipped, each construct class dropped, and the configuration's tool list
+misread). The authoritative evidence later is a factory-side log of the MCP calls (filed for VELDO-0158). Status
+unchanged.
