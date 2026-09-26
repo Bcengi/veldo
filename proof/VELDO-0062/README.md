@@ -215,7 +215,7 @@ production.
 Registered in `scripts/check_teeth_mutations.py` with the `account-` prefix, each declared falsifier
 first; `drive.py` records `mutations.json` and one applied diff per mutant. All 48 turn their named row
 red by assertion; the baseline and the no-op copies are green.
-`check_teeth_mutations.py --finding 62 --jobs 2`: 48 rejected.
+`check_teeth_mutations.py --finding 62`: 48 rejected.
 
 | Mutant | Module | Named row |
 |---|---|---|
