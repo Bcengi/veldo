@@ -1,5 +1,5 @@
 --- a/.veldo/control_project.py
 +++ b/.veldo/control_project.py
-@@ -558 +558 @@
+@@ -583 +583 @@
 -                provenance.update(source='settled_answer', **settled)
 +                pass  # defect: the settlement the project came from is not recorded

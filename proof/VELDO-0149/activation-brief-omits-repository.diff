@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -193 +193 @@
+-            % (shown('project'), shown('owner'), shown('execution_repository'), shown('charter'),
++            % (shown('project'), shown('owner'), 'as proposed', shown('charter'),  # defect: repository not shown

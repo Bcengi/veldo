@@ -7,9 +7,11 @@
   "VELDO-0149 detail: adopted/observed: the accepted activation names its project, repository, the binding that adopted it and its path; the refused one names its path, its refusal and its class, and no binding; the signed-command activations are counted accepted and refused, by refusal",
   "VELDO-0149 detail: answer/activates: the settlement applies one activation; it creates one ACTIVE project of the owner on the store-bound repository; it binds owner, charter, execution repository, authority policy and finite budget as proposed; its record is the signed command's record: the same fields, digest and state; its provenance names the settlement it came from; applying the same settlement again refuses already_exists and writes nothing",
   "VELDO-0149 detail: answer/binds-every-field: the request omitting owner is settled, and refuses missing_field:owner with nothing written; the request omitting charter is settled, and refuses missing_field:charter with nothing written; the request omitting execution_repository is settled, and refuses missing_field:execution_repository with nothing written; the request omitting authority_policy is settled, and refuses missing_field:authority_policy with nothing written; the request omitting coordination_budget is settled, and refuses missing_field:coordination_budget with nothing written",
-  "VELDO-0149 detail: answer/unsettled: a presented request nobody answered refuses unsettled:no_answer, nothing written; answered but not yet settled refuses unsettled:not_settled, nothing written; control: once the settlement settles his reply, the same request activates; a settled rejection refuses not_approved:reject, nothing written",
+  "VELDO-0149 detail: answer/unsettled: a presented request nobody answered refuses unsettled:no_answer, nothing written; answered but not yet settled refuses unsettled:not_settled, nothing written; control: once the settlement settles his reply, the same request activates; it refuses not_approved:reject",
   "VELDO-0149 detail: answer/owner-only: it refuses not_owner: he is not the owner the activation binds, and nothing is written; an answer by one member for a project another would own refuses not_owner, nothing written",
   "VELDO-0149 detail: answer/stale: it refuses stale_answer, nothing written",
+  "VELDO-0149 detail: answer/brief-binds-proposal: it refuses stale_subject:brief",
+  "VELDO-0149 detail: answer/owner-sees-every-value: the owner's Telegram bytes show the project; the owner's Telegram bytes show the execution repository; the owner's Telegram bytes show the charter; the owner's Telegram bytes show the authority policy; the owner's Telegram bytes show the coordination budget; control: his accept settles it and activates exactly those values",
   "VELDO-0149 detail: answer/observed: the accepted activation names its request, settlement, receipt, presentation, repository and binding; a missing field, an unsettled answer, another member's answer and a stale answer are distinct classes; the settled-answer activations are counted accepted and refused, by refusal"
  ],
  "failed_rows": [
@@ -21,12 +23,14 @@
   "VELDO-0149 answer/unsettled",
   "VELDO-0149 answer/owner-only",
   "VELDO-0149 answer/stale",
+  "VELDO-0149 answer/brief-binds-proposal",
+  "VELDO-0149 answer/owner-sees-every-value",
   "VELDO-0149 answer/observed"
  ],
  "modules": {
   ".veldo/control_project.py": {
    "at_commit": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f",
-   "now": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "now": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   }
  },
  "preamble_rows": 26,
@@ -64,6 +68,14 @@
    false
   ],
   [
+   "VELDO-0149 answer/brief-binds-proposal",
+   false
+  ],
+  [
+   "VELDO-0149 answer/owner-sees-every-value",
+   false
+  ],
+  [
    "VELDO-0149 answer/observed",
    false
   ],
@@ -77,7 +89,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 2.142,
+ "seconds": 2.266,
  "spec_id": "VELDO-0149",
  "suite": "scripts/suites/77_veldo_0149_adopted_activation.py",
  "tree": "git archive a166d145d9f77c70421ad3add903d201b77d820b, unchanged; the current suite file run against it"

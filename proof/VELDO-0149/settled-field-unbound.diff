@@ -1,5 +1,5 @@
 --- a/.veldo/control_project.py
 +++ b/.veldo/control_project.py
-@@ -433 +433 @@
+@@ -456 +456 @@
 -        fields = self._bound_fields(proposal)
 +        fields = {f: proposal.get(f) for f in ACTIVATION_FIELDS}  # defect: an omitted field is not named

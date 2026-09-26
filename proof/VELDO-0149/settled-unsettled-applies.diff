@@ -1,6 +1,6 @@
 --- a/.veldo/control_project.py
 +++ b/.veldo/control_project.py
-@@ -439,2 +439 @@
+@@ -462,2 +462 @@
 -        if not (data.get('state') == SETTLED_STATE and reference.get('request_version') == version
 -                and settled is not None and settled['kind'] == SETTLEMENT_KIND):
 +        if False:  # defect: an unsettled request is not refused as unsettled

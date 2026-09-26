@@ -39,6 +39,14 @@
     true
    ],
    [
+    "VELDO-0149 answer/brief-binds-proposal",
+    true
+   ],
+   [
+    "VELDO-0149 answer/owner-sees-every-value",
+    true
+   ],
+   [
     "VELDO-0149 answer/observed",
     true
    ],
@@ -51,7 +59,7 @@
     true
    ]
   ],
-  "seconds": 2.103
+  "seconds": 2.278
  },
  "controls_green": true,
  "mutants": [
@@ -67,7 +75,7 @@
     "VELDO-0149 adopted/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "d181d0006981b91809b902ea7b5732569cac7c63dcf8a8c9ed0e4eb8a3b9a974",
+   "mutant_sha256": "779f50325b592e3790d3638d2f7a40907bed155e6309105bc94f3f4a0eb4e3a1",
    "name": "adoption-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -108,6 +116,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      true
     ],
@@ -120,8 +136,8 @@
      true
     ]
    ],
-   "seconds": 2.11,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.246,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -135,7 +151,7 @@
     "VELDO-0149 adopted/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "9b1e55e185547d5c206de6e9740b2f6c56787ef506a40a3ba820a3cb96bd3d1e",
+   "mutant_sha256": "73c3419532bc016d23f398d25fd6b6f1944fc65690a75305efa4123dfb2cdb62",
    "name": "adoption-any-domain",
    "named_row_red": true,
    "named_rows": [
@@ -176,6 +192,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      true
     ],
@@ -188,8 +212,8 @@
      true
     ]
    ],
-   "seconds": 2.131,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.243,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -199,6 +223,7 @@
     "VELDO-0149 detail: adopted/observed: the accepted activation names its project, repository, the binding that adopted it and its path; the signed-command activations are counted accepted and refused, by refusal",
     "VELDO-0149 detail: answer/activates: the settlement applies one activation; it creates one ACTIVE project of the owner on the store-bound repository; it binds owner, charter, execution repository, authority policy and finite budget as proposed; its record is the signed command's record: the same fields, digest and state; its provenance names the settlement it came from; applying the same settlement again refuses already_exists and writes nothing",
     "VELDO-0149 detail: answer/unsettled: control: once the settlement settles his reply, the same request activates",
+    "VELDO-0149 detail: answer/owner-sees-every-value: control: his accept settles it and activates exactly those values",
     "VELDO-0149 detail: answer/observed: the accepted activation names its request, settlement, receipt, presentation, repository and binding; the settled-answer activations are counted accepted and refused, by refusal"
    ],
    "diff": "proof/VELDO-0149/adoption-own-repository-only.diff",
@@ -208,10 +233,11 @@
     "VELDO-0149 adopted/observed",
     "VELDO-0149 answer/activates",
     "VELDO-0149 answer/unsettled",
+    "VELDO-0149 answer/owner-sees-every-value",
     "VELDO-0149 answer/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "1fe4d5a130f8dd45a71dcc7d50efa343a870d046598ba9983b3806a784a73689",
+   "mutant_sha256": "c7ce8e993ffd6ef657039cbac9b6ec2a95cf50410ad7773383b0a98e62909ead",
    "name": "adoption-own-repository-only",
    "named_row_red": true,
    "named_rows": [
@@ -252,6 +278,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     false
+    ],
+    [
      "VELDO-0149 answer/observed",
      false
     ],
@@ -264,8 +298,8 @@
      true
     ]
    ],
-   "seconds": 2.072,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.226,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -279,7 +313,7 @@
     "VELDO-0149 answer/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "357afaa0dc5f47211b78ba71994383bd15de2030337f559be792eb343f7a8c2e",
+   "mutant_sha256": "9e588825dab5e86e8e10a7366264709c58d8d237eb0fd2578b96a2e20b4f2332",
    "name": "adoption-unobserved",
    "named_row_red": true,
    "named_rows": [
@@ -320,6 +354,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      false
     ],
@@ -332,8 +374,8 @@
      true
     ]
    ],
-   "seconds": 2.122,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.272,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -347,7 +389,7 @@
     "VELDO-0149 answer/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "136b276ab16a59a20c6c0303dbaafba916f11e6194db5b43172cf502c186efe9",
+   "mutant_sha256": "600d04bb12677a908a3c0c83cd8d7688ac2a50a14faf89d5eaa51fe9bf6dbede",
    "name": "activation-path-uncounted",
    "named_row_red": true,
    "named_rows": [
@@ -388,6 +430,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      false
     ],
@@ -400,8 +450,8 @@
      true
     ]
    ],
-   "seconds": 2.126,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.182,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -415,7 +465,7 @@
     "VELDO-0149 answer/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "9b115b7d520a6cc334679a511946c57cbee15caebe77138838a85067df37643d",
+   "mutant_sha256": "8cf67fb00ab33744680b1e76b02bbc2a1af39028a54fca4b96c5fb8a3de6acaf",
    "name": "settled-answer-any-member",
    "named_row_red": true,
    "named_rows": [
@@ -456,6 +506,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      false
     ],
@@ -468,8 +526,8 @@
      true
     ]
    ],
-   "seconds": 2.193,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.276,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -483,7 +541,7 @@
     "VELDO-0149 answer/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "fe5becd811558fcb2891611cf5e53f5bede031febc81b3ebb8d469efd833651c",
+   "mutant_sha256": "8ddcdcac3b30ee2c2a7225288e34faac9b3b62e9e966d63735ffb6ad9faef674",
    "name": "settled-field-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -524,6 +582,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      false
     ],
@@ -536,8 +602,8 @@
      true
     ]
    ],
-   "seconds": 2.136,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.194,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -553,7 +619,7 @@
     "VELDO-0149 answer/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "00f37edc4e73e3c518065f516716540854f829271a93d7fa26c72e6286a68f81",
+   "mutant_sha256": "8adfc8278b86997828ede6927d8beb9c68e207a382961032bf4206c802936c84",
    "name": "settled-unsettled-applies",
    "named_row_red": true,
    "named_rows": [
@@ -594,6 +660,14 @@
      false
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      false
     ],
@@ -606,20 +680,22 @@
      true
     ]
    ],
-   "seconds": 2.131,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.219,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0149 detail: answer/unsettled: a settled rejection refuses not_approved:reject, nothing written"
+    "VELDO-0149 detail: answer/unsettled: a settled rejection activates nothing: no project and nothing written; it refuses not_approved:reject",
+    "VELDO-0149 detail: answer/observed: the settled-answer activations are counted accepted and refused, by refusal"
    ],
    "diff": "proof/VELDO-0149/settled-rejection-applies.diff",
    "failed_rows": [
-    "VELDO-0149 answer/unsettled"
+    "VELDO-0149 answer/unsettled",
+    "VELDO-0149 answer/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "3dd0979ea8b4d341dd0c5406cacd7e11bc504b9fd23e28fe11d63bd86d35d1be",
+   "mutant_sha256": "cc02d6b330b3bc1c891f05d3cf4090e05fbe7aa1659b4af1803be937d2f09c4b",
    "name": "settled-rejection-applies",
    "named_row_red": true,
    "named_rows": [
@@ -660,8 +736,16 @@
      true
     ],
     [
-     "VELDO-0149 answer/observed",
+     "VELDO-0149 answer/brief-binds-proposal",
      true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
     ],
     [
      "VELDO-0149 ran/adopted/two-repositories",
@@ -672,8 +756,8 @@
      true
     ]
    ],
-   "seconds": 2.122,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.237,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -687,7 +771,7 @@
     "VELDO-0149 answer/observed"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "2fb47d9406d7a50968958c87301bbf614ea87f25c923e233e1a2d5f83822071b",
+   "mutant_sha256": "7a4c04ad52f7fd9545f712f47dc049dcf9d81f1d97f25e46eafa07daf9bd04b4",
    "name": "stale-answer-unnamed",
    "named_row_red": true,
    "named_rows": [
@@ -728,6 +812,14 @@
      false
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      false
     ],
@@ -740,8 +832,8 @@
      true
     ]
    ],
-   "seconds": 2.134,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.263,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -753,7 +845,7 @@
     "VELDO-0149 answer/activates"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "19b0be1b5d7c76980bb1c2362b650907150d76c566edf4fc42b39602dc3b8e96",
+   "mutant_sha256": "e5040a7deafc3e57fe59ccaae3fd4d328c0ba5ddcbd3bb5cd6069156c357a599",
    "name": "settled-provenance-unrecorded",
    "named_row_red": true,
    "named_rows": [
@@ -794,6 +886,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      true
     ],
@@ -806,8 +906,158 @@
      true
     ]
    ],
-   "seconds": 2.14,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.236,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/brief-binds-proposal: it activates nothing: no project and nothing written; it refuses stale_subject:brief",
+    "VELDO-0149 detail: answer/observed: a missing field, an unsettled answer, another member's answer and a stale answer are distinct classes; the settled-answer activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/settled-brief-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/brief-binds-proposal",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "48b329409dee1e202fa600d569a4c27afdd51351ace6dabb177ab0e935b5bc01",
+   "name": "settled-brief-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/brief-binds-proposal"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     false
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.285,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/owner-sees-every-value: the owner's Telegram bytes show the execution repository"
+   ],
+   "diff": "proof/VELDO-0149/activation-brief-omits-repository.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/owner-sees-every-value"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "acf2d064b7ad0700d9fd0cbe29e128a00ed22bd3db37a4fd6f2ee6754ac67ef4",
+   "name": "activation-brief-omits-repository",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/owner-sees-every-value"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     false
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     true
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.293,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   }
  ],
  "mutations_per_row": {
@@ -828,8 +1078,14 @@
   "answer/binds-every-field": [
    "settled-field-unbound"
   ],
+  "answer/brief-binds-proposal": [
+   "settled-brief-unchecked"
+  ],
   "answer/owner-only": [
    "settled-answer-any-member"
+  ],
+  "answer/owner-sees-every-value": [
+   "activation-brief-omits-repository"
   ],
   "answer/stale": [
    "stale-answer-unnamed"
@@ -841,7 +1097,7 @@
  },
  "noop": {
   "control_project.py": {
-   "copy_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798",
+   "copy_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -879,6 +1135,14 @@
      true
     ],
     [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
      "VELDO-0149 answer/observed",
      true
     ],
@@ -891,13 +1155,13 @@
      true
     ]
    ],
-   "seconds": 2.155,
-   "source_sha256": "9bc5a1d7752ab8539e35f51a27c4dbe7bd5218d8cff9d1a46f75837a1db1e798"
+   "seconds": 2.256,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 149",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 27.675,
+ "serial_seconds": 33.706,
  "spec_id": "VELDO-0149",
  "suite": "scripts/suites/77_veldo_0149_adopted_activation.py"
 }
