@@ -6342,10 +6342,28 @@ def cases():
             "    environment[variable] = directory\n",
             "    environment[variable] = inherited.get(variable) or directory  # defect: the caller's profile first\n",
             'login/recorded-account-profile')
-    account('account-paid-api-kept', 'control_accounts.py',
-            "if k not in PROFILES.values() and k not in paid_api}\n",
-            "if k not in PROFILES.values()}  # defect: paid-API credential variables reach the engine\n",
+    # The login strip by family and by the binaries' own credential tables (the second review's finding 3).
+    account('account-login-fixed-list', 'control_accounts.py',
+            "    environment = {k: v for k, v in inherited.items() if not strips(k, named)}\n",
+            "    environment = {k: v for k, v in inherited.items() if k not in PROFILES.values() and k not in (\n"
+            "        'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK',\n"
+            "        'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_API_KEY',\n"
+            "        'AWS_BEARER_TOKEN_BEDROCK', 'OPENAI_API_KEY', 'CODEX_API_KEY')}  # defect: back to a fixed list\n",
             'login/no-paid-api')
+    account('account-login-families-ignored', 'control_accounts.py',
+            "    return (name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or CLAUDE_CREDENTIAL.match(name) is not None\n",
+            "    return (name in PROFILES.values()  # defect: a provider family's new name is not stripped\n",
+            'login/no-paid-api')
+    account('account-credential-tables-ignored', 'control_accounts.py',
+            "            or name in named)\n",
+            "            )  # defect: the names only the binaries' credential tables list reach the engine\n",
+            'login/no-paid-api')
+    account('account-fleet-codex-to-claude', 'fleet.py',
+            "        names = [n for n in ACCT.list_accounts(root=accounts_root)\n"
+            "                 if ACCT.get(n, root=accounts_root).get(\"provider\", CLAUDE) == CLAUDE]\n",
+            "        names = ACCT.list_accounts(root=accounts_root)  # defect: Codex logins join a Claude fleet\n",
+            'login/fleet-provider',
+            also=[("        if provider != CLAUDE:\n", "        if False:  # defect\n")])
     account('account-status-unchecked', 'control_accounts.py',
             "    if record.get('status') != 'active':\n",
             "    if False:  # defect: a paused or disabled account still logs in\n",
@@ -6393,9 +6411,32 @@ def cases():
             "                usage, outcome = {}, 'not_executed'  # defect: a cancellation releases the reservation\n",
             'settle/cancel-retained')
     account('account-claude-missing-result-conclusive', 'control_engine_claude.py',
-            "        return self.cumulative() if self.result is not None else {}\n",
-            "        return self.cumulative()  # defect: a stream with no result is taken as conclusive\n",
+            "        if self.result is None:\n            return {}\n",
+            "        if self.result is None:\n            return self.cumulative()  # defect: no result taken as conclusive\n",
             'settle/missing-retained')
+    # Claude Code's conclusive total is modelUsage over every model (the second review's finding 1).
+    account('account-claude-main-loop-usage', 'control_engine_claude.py',
+            "            total = {'tokens': _model_tokens(event.get('modelUsage')), 'messages': turns}\n",
+            "            total = {'tokens': _tokens(event.get('usage')), 'messages': turns}  # defect: the main loop only\n",
+            'settle/model-usage')
+    account('account-claude-missing-model-usage-main-loop', 'control_engine_claude.py',
+            "            total = {'tokens': _model_tokens(event.get('modelUsage')), 'messages': turns}\n",
+            "            total = {'tokens': _model_tokens(event['modelUsage']) if 'modelUsage' in event\n"
+            "                     else _tokens(event.get('usage')), 'messages': turns}  # defect: main loop when absent\n",
+            'settle/model-usage')
+    # Codex's limit signal is its usage-limit message (the second review's finding 2).
+    account('account-codex-limit-unobserved', 'control_engine_codex.py',
+            "        if not isinstance(message, str) or LIMIT_MESSAGE not in message:\n",
+            "        if True:  # defect: the usage-limit message is not observed\n",
+            'usage/rate-limit-reset')
+    account('account-codex-unstated-reset-invented', 'control_engine_codex.py',
+            "    if found is None or tz is None:\n        return None\n",
+            "    if found is None or tz is None:\n        return now + 3600  # defect: an unstated reset is guessed\n",
+            'usage/rate-limit-reset')
+    account('account-codex-reset-at-minute-start', 'control_engine_codex.py',
+            "    return max(stated) + 60\n",
+            "    return max(stated)  # defect: the window reopens before the stated minute ends\n",
+            'usage/rate-limit-reset')
     account('account-codex-open-turn-conclusive', 'control_engine_codex.py',
             "        return self.cumulative() if self.turns and not self.open and not self.incomplete else {}\n",
             "        return self.cumulative()  # defect: an unfinished turn is taken as a conclusive total\n",

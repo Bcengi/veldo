@@ -37,7 +37,7 @@ HERE = Path(__file__).resolve().parent
 SUITE = '75_veldo_0062_accounts.py'
 PREFIX = 'VELDO-0062 '
 FINDING = 62
-MODULES = ('control_accounts.py', 'control_engine_claude.py', 'control_engine_codex.py', 'control_launch.py',
+MODULES = ('control_accounts.py', 'control_engine_claude.py', 'control_engine_codex.py', 'control_launch.py', 'fleet.py',
            'control_reservations.py', 'control_reservation_runtime.py', 'accounts.py')
 
 
@@ -63,7 +63,7 @@ def one(paths, root):
     """Run the shared preamble of `root` and the current suite once, in this interpreter."""
     shared = Path(root) / 'scripts/suites/shared.py'
     rows = []
-    ns = {'__file__': str(shared),
+    ns = {'__file__': str(shared), '__suite_file__': str(ROOT / 'scripts/suites' / SUITE),
           '__observe__': lambda name, condition: rows.append([name.split(':', 1)[0], bool(condition)])}
     tree = ast.parse(shared.read_text(), str(shared))
     for node in tree.body:

@@ -259,3 +259,19 @@ where the criteria's falsifiers are registered as finding 62 (and finding 36's m
 `control_reservations.py` now copy its siblings, since it loads the account records). The engines in
 the suite are fake executables printing the installed CLIs' report formats; the live run of the real
 CLIs on the owner's registered subscriptions is not part of this build. Status unchanged.
+
+2026-09-25, second review fixed (Release 1, Linux): the first build's fake engines were written to match
+our own reader, so nothing checked them against the real CLIs, and three defects passed. Claude Code's
+conclusive usage is now the result's `modelUsage` summed over every model (input, output, cache read and
+cache creation tokens), never the result's `usage`, which the binary's own schema says is the main agent
+loop only; a result without it leaves tokens unknown. Codex's limit signal is now the usage-limit message
+`codex exec --json` actually prints (in its `error` event and failed turn), with the reset it states, at
+the end of that local minute, or none when it states none (the account then stays refused until observed
+otherwise); the `rate_limits` field it read is never printed by exec. The engine environment strips every
+login variable by family (`ANTHROPIC_`, `OPENAI_`, `CODEX_`, `CLAUDE_CODE_USE_`, credential-word `CLAUDE_`
+names) and every name the installed binaries' own credential tables list, not a fixed list. The
+provider-to-variable map is named once (`accounts.PROFILE_ENV`), and `fleet.py` no longer hands a Codex
+account to a Claude session. Every line the suite's fakes print is built in a shape the installed
+binaries declare, and two rows check them against `proof/VELDO-0062/cli-formats.json`, which
+`extract_formats.py` reads out of claude 2.1.281 and codex 0.154.0 without running either. The footprint
+already covers every file changed (`fleet.py` and `proof/VELDO-0062/*` included). Status unchanged.

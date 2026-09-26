@@ -1,5 +1,0 @@
---- a/.veldo/control_accounts.py
-+++ b/.veldo/control_accounts.py
-@@ -125 +125 @@
--    environment = {k: v for k, v in inherited.items() if k not in PROFILES.values() and k not in paid_api}
-+    environment = {k: v for k, v in inherited.items() if k not in PROFILES.values()}  # defect: paid-API credential variables reach the engine
