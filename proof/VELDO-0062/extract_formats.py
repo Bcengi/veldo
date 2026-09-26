@@ -498,6 +498,24 @@ FORMS_WINDOW = 400000
 # exact text of its emitters and how many there are: the REPL tool's `repl_call` on a tool_progress (its
 # inner tool's name), and the workflow agents' progress entries a task_progress carries.
 CLAUDE_EMITTED = {'repl_call': ('repl_call:{inner_tool_name:', 2)}
+# How a task counts its own calls, each by the exact text of this build and how many times it occurs: the tracker
+# raises its count by one for each tool_use block of the task's own assistant messages (`rise`); an agent's
+# task_progress carries that count (`progress`) under the task's tool_use_id (`progress_frame`); its end
+# notification carries it as usage too (`notification_frame`, `notification_count`); the sub-agent's forwarded
+# assistant and user messages carry the task's id as parent_tool_use_id (`forwarded`); and an agent a sub-agent
+# starts reaches the stream only when forwardSubagentText is set (`nested_gate`, `nested_option`).
+CLAUDE_TASKS = {
+    'rise': ('for(let h of n.message.content){if(h.type!=="tool_use")continue;if(e.toolUseCount++', 1),
+    'progress': ('totalTokens:T.tokenCount,toolUses:T.toolUseCount,lastToolName:_})', 1),
+    'progress_frame': ('type:"system",subtype:"task_progress",task_id:e.taskId,tool_use_id:e.toolUseId,'
+                       'description:e.description,subagent_type:e.subagentType,usage:{total_tokens:e.totalTokens,'
+                       'tool_uses:e.toolUses,', 1),
+    'notification_frame': ('type:"system",subtype:"task_notification",task_id:e,tool_use_id:r?.toolUseId,status:n,', 1),
+    'notification_count': ('usage:{total_tokens:N?.tokenCount??0,tool_uses:N?.toolUseCount??0,', 1),
+    'forwarded': ('parent_tool_use_id:e.parentToolUseID,session_id:Y(),uuid:g.uuid', 2),
+    'nested_gate': ('if(Sne(T)){if(Kt)p(pqt(T));return}', 1),
+    'nested_option': ('Kt=e.options.forwardSubagentText', 1),
+}
 
 
 def _tags(schema):
@@ -608,6 +626,29 @@ def _emitted(text):
             'system/task_progress': ['workflow_progress.lastToolName']}
 
 
+def _task_counts(text, fields):
+    """How a task's count of its own calls reaches the stream: the frames whose schema carries the count and the
+    task's id, the field of a sub-agent's message naming its task, each checked against the emitters' text."""
+    for key, (anchor, sites) in CLAUDE_TASKS.items():
+        if text.count(anchor) != sites:
+            raise Moved('claude task counts %s: anchor found %d times' % (key, text.count(anchor)))
+    at = text.index(CLAUDE_TASKS['notification_frame'][0])
+    if 'usage:r?.usage' not in text[at:at + 300]:
+        raise Moved('claude task notification usage moved')
+    frames = sorted(tag for tag, paths in fields.items() if 'usage.tool_uses' in paths and 'tool_use_id' in paths)
+    if frames != ['system/task_notification', 'system/task_progress'] \
+            or 'tool_use_id' not in fields.get('system/task_started', ()) \
+            or 'parent_tool_use_id' not in fields.get('assistant', ()):
+        raise Moved('claude task count fields moved')
+    return {'frames': frames, 'count': 'usage.tool_uses', 'task': 'tool_use_id', 'parent': 'parent_tool_use_id',
+            'counts': 'tool_use', 'nested_forwarded_only_with': 'forwardSubagentText',
+            'source': "the frames whose schema carries a task's count of its calls (usage.tool_uses) and its id "
+                      "(tool_use_id), the count the tracker raises by one for each tool_use block of the task's "
+                      "own assistant messages (an agent's task_progress and its end notification carry it), the "
+                      "task's id as the parent_tool_use_id of the sub-agent's forwarded messages, and the gate that "
+                      "drops the messages of an agent a sub-agent starts unless forwardSubagentText is set"}
+
+
 def claude_frames(text):
     """The StdoutMessage members outside the SDK message union, each (type, subtype, provably tool-free)."""
     at = text.index(CLAUDE_FORMS['stdout'])
@@ -657,6 +698,7 @@ def claude_forms(text):
             'builtin_renamed': _builtin_renamed(text, builtin),
             'tool_fields': {tag: sorted(paths) for tag, paths in sorted(fields.items()) if paths},
             'emitted_tool_fields': _emitted(text), 'frames': claude_frames(text),
+            'task_counts': _task_counts(text, {tag: sorted(paths) for tag, paths in fields.items()}),
             'source': "the SDK message union of the stream (each member's type and subtype), the content block "
                       "unions of an assistant and of a user message (the modelled blocks, then the type tags "
                       "the binary lists), the streaming events the stream_event schema names, and the binary's "
