@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -477 +477 @@
+@@ -483 +483 @@
 -        if self.terminal == 'turn.failed':
 +        if False:  # defect: a failed turn is not named

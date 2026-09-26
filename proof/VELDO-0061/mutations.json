@@ -59,6 +59,14 @@
     true
    ],
    [
+    "VELDO-0061 stop/stopped-not-complete",
+    true
+   ],
+   [
+    "VELDO-0061 lifecycle/engine-protocol",
+    true
+   ],
+   [
     "VELDO-0061 caps/boundaries",
     true
    ],
@@ -79,7 +87,7 @@
     true
    ]
   ],
-  "seconds": 10.574
+  "seconds": 12.126
  },
  "controls_green": true,
  "mutants": [
@@ -93,7 +101,7 @@
     "VELDO-0061 pin/unexpected-launch"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "2dc531572c393437732be6d31ed965656f4fe9f4afbefc47ee11b47ce619d3ce",
+   "mutant_sha256": "c58c647bc0240cc82a521f90b309c09fb643bba9b5f92ecd3fa644acc55fbe6f",
    "name": "adapter-digest-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -154,6 +162,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -174,8 +190,8 @@
      true
     ]
    ],
-   "seconds": 10.781,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.139,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -198,7 +214,7 @@
     "VELDO-0061 pin/unexpected-launch"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "51a02676fc275760b684ff194f0a6196d4905454cd0eb3a872888f1af0428044",
+   "mutant_sha256": "8798d5c1a9475ce41b5516de3b1bfb5fa1a5617b48179ba6afb1dd3b95a2b389",
    "name": "adapter-pin-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -259,6 +275,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -279,8 +303,8 @@
      true
     ]
    ],
-   "seconds": 24.01,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 25.764,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
@@ -292,7 +316,7 @@
     "VELDO-0061 pin/unexpected-launch"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "80b77d2a265f2de6bebb2ba683a522597f6b2fa54b272bd5816938400bc29e9f",
+   "mutant_sha256": "062afbcba25103ae6b0aef9bda59506a63120541b9ed973844cb4088907a1305",
    "name": "adapter-version-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -353,6 +377,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -373,8 +405,8 @@
      true
     ]
    ],
-   "seconds": 10.564,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.127,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -387,7 +419,7 @@
     "VELDO-0061 pin/unexpected-launch"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "26dec742be8335ca336fdf465b0644ad4cb82de8fd622d32853529a64d1175c6",
+   "mutant_sha256": "7acd855f42f97e6eec1d252e03c3716afb6db253b9429d73e3761e5bb3273a0f",
    "name": "adapter-link-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -448,6 +480,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -468,8 +508,8 @@
      true
     ]
    ],
-   "seconds": 10.381,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 11.919,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -481,7 +521,7 @@
     "VELDO-0061 pin/unexpected-launch"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "37f0d00425adb79552df33437e58198e3b11f84a943fa04e659a6ef5d1548434",
+   "mutant_sha256": "8548017ccd2efe2d3136e1ec7dde5dc9fa974e2bcd514b059c2b6e41691c7afb",
    "name": "adapter-flags-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -542,6 +582,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -562,8 +610,8 @@
      true
     ]
    ],
-   "seconds": 10.597,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.194,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
@@ -577,7 +625,7 @@
     "VELDO-0061 pin/qualified-record"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "5906de167b1fbdbacbeb452db21e23301c72ec14b6c88ae9ab4c131ce9aec46e",
+   "mutant_sha256": "94914668263f0c4ada7b896582d37bbb6b81195e8da916b56f310e2978d1e155",
    "name": "adapter-autoupdater-unset",
    "named_row_red": true,
    "named_rows": [
@@ -638,6 +686,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -658,8 +714,8 @@
      true
     ]
    ],
-   "seconds": 10.801,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.073,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -671,7 +727,7 @@
     "VELDO-0061 lifecycle/normal-run"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "d3bdaa12f22514d721f8d7d6f45a68031aef24cd34b013c31c8251282d2ffa71",
+   "mutant_sha256": "9fc6252903fe934439dbcc3103689c5949d1c37ba526c4bfaba613d09c0f3798",
    "name": "adapter-engine-environment-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -732,6 +788,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -752,8 +816,8 @@
      true
     ]
    ],
-   "seconds": 10.506,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.11,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
@@ -765,7 +829,7 @@
     "VELDO-0061 lifecycle/registered"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "20e0202f78f2145ace23f65ee347501bd422b229768d62470a1c369295002cda",
+   "mutant_sha256": "79f3b7ebb673933bb761d34a8d3b10635289efa1a9fc262e94cd35bf7410f374",
    "name": "adapter-stop-unregistered",
    "named_row_red": true,
    "named_rows": [
@@ -826,6 +890,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -846,8 +918,8 @@
      true
     ]
    ],
-   "seconds": 10.686,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.055,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -859,22 +931,24 @@
     "VELDO-0061 artifacts/normal-exit detail: the document verifies from its own lines, and one with its verdict changed does not",
     "VELDO-0061 artifacts/missing-result detail: the normal stream with its terminal record removed, exit 0: missing_result, never completion [None]",
     "VELDO-0061 artifacts/malformed-output detail: a line that is not JSON and an event exec does not print make the output malformed, both named, never completion [None None]",
-    "VELDO-0061 artifacts/missing-usage detail: a completed turn whose usage the CLI left out is a result with its usage unknown: the reservation is retained, never counted zero [None unknown {'invocations': 1, 'wall_seconds': 0.047854}]",
+    "VELDO-0061 artifacts/missing-usage detail: a completed turn whose usage the CLI left out is a result with its usage unknown: the reservation is retained, never counted zero [None unknown {'invocations': 1, 'wall_seconds': 0.048298}]",
     "VELDO-0061 artifacts/nonzero-and-signal detail: failed: the live exit {'returncode': 1, 'signal': None} is turn_failed, the invocation failed [None {'deadline_stop': False, 'output_bytes': 673, 'output_digest': 'sha256:ead1558ad9f30ee860b2301b545ce59063ffeed4c58731a53ed718a2bfdbea89', 'returncode': 1, 'signal': None}]",
     "VELDO-0061 artifacts/nonzero-and-signal detail: nonzero: the live exit {'returncode': 3, 'signal': None} is nonzero_exit, the invocation failed [None {'deadline_stop': False, 'output_bytes': 654, 'output_digest': 'sha256:03d18ea997e1e24bd1610f70ffa01197030dbd1b2e12f08ca6778f839d5732b7', 'returncode': 3, 'signal': None}]",
     "VELDO-0061 artifacts/nonzero-and-signal detail: signal: the live exit {'returncode': None, 'signal': 9} is signal, the invocation failed [None {'deadline_stop': False, 'output_bytes': 210, 'output_digest': 'sha256:7526120b2952d6291c6d363406f9ad0b7e94d4fddc49f41850a18ff834c7ec05', 'returncode': None, 'signal': 9}]",
     "VELDO-0061 stop/cooperative detail: cooperative: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
     "VELDO-0061 stop/forced detail: forced: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
     "VELDO-0061 stop/termination detail: termination: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
-    "VELDO-0061 caps/boundaries detail: normal: the initial invocation was reserved against its caps before its engine was spawned (reservation 120 before the running record 121), and it ran the pinned binary",
-    "VELDO-0061 caps/boundaries detail: retry: the retry invocation was reserved against its caps before its engine was spawned (reservation 270 before the running record 271), and it ran the pinned binary",
-    "VELDO-0061 caps/boundaries detail: follow: the follow_on invocation was reserved against its caps before its engine was spawned (reservation 290 before the running record 291), and it ran the pinned binary",
+    "VELDO-0061 stop/stopped-not-complete detail: the engine was stopped on request, then printed its turn's completion and exited 0 [['prepared', 'accepted', 'running', 'exited'] requested {'deadline_stop': False, 'output_bytes': 216, 'output_digest': 'sha256:99fdd442c7aa5c81e1b60029e463f445c1b77e6dbc2ffb3cdb12b2592e5bfeb6', 'returncode': 0, 'signal': None}]",
+    "VELDO-0061 stop/stopped-not-complete detail: its artifact is stopped, never complete, the exit record binds that, and its document verifies from its own lines and cause [None {'complete': False, 'digest': 'sha256:6ce9d2505546a365c81386fae2e16bf2cde514d267886f864a4ac63229541de0', 'verdict': 'stopped'}]",
+    "VELDO-0061 caps/boundaries detail: normal: the initial invocation was reserved against its caps before its engine was spawned (reservation 141 before the running record 142), and it ran the pinned binary",
+    "VELDO-0061 caps/boundaries detail: retry: the retry invocation was reserved against its caps before its engine was spawned (reservation 311 before the running record 312), and it ran the pinned binary",
+    "VELDO-0061 caps/boundaries detail: follow: the follow_on invocation was reserved against its caps before its engine was spawned (reservation 331 before the running record 332), and it ran the pinned binary",
     "VELDO-0061 caps/refused-before-launch detail: the unknown one is refused for its unknown allowance, after the invocation that left it unknown ran [missing_authority:allowance:unknown_allowance:tokens]",
-    "VELDO-0061 caps/refused-before-launch detail: the limited account carries the usage_limit window Codex reported, rejected with no reset stated, from the invocation that saw it [{'usage_limit': {'observed_at': 1790424785.0948887, 'reset_at': None, 'source_dispatch': 'dispatch/VELDO-9612/a55dc1e69fe642d3822113eb86524e1f', 'status': 'rejected', 'utilization': None}}]",
+    "VELDO-0061 caps/refused-before-launch detail: the limited account carries the usage_limit window Codex reported, rejected with no reset stated, from the invocation that saw it [{'usage_limit': {'observed_at': 1790436751.696242, 'reset_at': None, 'source_dispatch': 'dispatch/VELDO-9612/48aa2e3af92a44d69e5e792eb73e8e29', 'status': 'rejected', 'utilization': None}}]",
     "VELDO-0061 caps/stop-at-cap detail: the capped invocation returned what it printed up to the stop as its artifacts, never as a completion [None]",
-    "VELDO-0061 caps/observed detail: normal: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 1500, 'wall_seconds': 0.047374}]",
-    "VELDO-0061 caps/observed detail: retry: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 800, 'wall_seconds': 0.048472}]",
-    "VELDO-0061 caps/observed detail: follow: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 550, 'wall_seconds': 0.049073}]"
+    "VELDO-0061 caps/observed detail: normal: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 1500, 'wall_seconds': 0.048006}]",
+    "VELDO-0061 caps/observed detail: retry: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 800, 'wall_seconds': 0.049332}]",
+    "VELDO-0061 caps/observed detail: follow: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 550, 'wall_seconds': 0.049366}]"
    ],
    "diff": "proof/VELDO-0061/adapter-artifacts-unreported.diff",
    "failed_rows": [
@@ -889,13 +963,14 @@
     "VELDO-0061 stop/cooperative",
     "VELDO-0061 stop/forced",
     "VELDO-0061 stop/termination",
+    "VELDO-0061 stop/stopped-not-complete",
     "VELDO-0061 caps/boundaries",
     "VELDO-0061 caps/refused-before-launch",
     "VELDO-0061 caps/stop-at-cap",
     "VELDO-0061 caps/observed"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "08480edf245f84e30e283fd18fb6081d67ae68fbfcc494fda3bebbf2903c1511",
+   "mutant_sha256": "5b3f10e04cfc5390ab1b9929872924a43a7ff070882dfe720373187657153264",
    "name": "adapter-artifacts-unreported",
    "named_row_red": true,
    "named_rows": [
@@ -956,6 +1031,14 @@
      false
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     false
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      false
     ],
@@ -976,27 +1059,23 @@
      true
     ]
    ],
-   "seconds": 10.469,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.053,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0061 artifacts/missing-result detail: the normal stream with its terminal record removed, exit 0: missing_result, never completion [complete]",
     "VELDO-0061 artifacts/missing-result detail: the invocation settled failed and the worker slot was returned failed, not completed [completed completed]",
-    "VELDO-0061 stop/cooperative detail: cooperative: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled nonzero_exit]",
-    "VELDO-0061 stop/termination detail: termination: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled nonzero_exit]",
     "VELDO-0061 caps/refused-before-launch detail: the unknown one is refused for its unknown allowance, after the invocation that left it unknown ran [missing_authority:allowance:unknown_allowance:tokens]"
    ],
    "diff": "proof/VELDO-0061/adapter-missing-result-accepted.diff",
    "failed_rows": [
     "VELDO-0061 artifacts/missing-result",
-    "VELDO-0061 stop/cooperative",
-    "VELDO-0061 stop/termination",
     "VELDO-0061 caps/refused-before-launch"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "2829b90ec3d76ebd0df3835cc0cd1eb85c1b6edc4a8d5579c7201a1076d4ef05",
+   "mutant_sha256": "f184465d51f218142deda013f1847681c99afdcf3aa07294c9a75ff2106721e3",
    "name": "adapter-missing-result-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1046,7 +1125,7 @@
     ],
     [
      "VELDO-0061 stop/cooperative",
-     false
+     true
     ],
     [
      "VELDO-0061 stop/forced",
@@ -1054,7 +1133,15 @@
     ],
     [
      "VELDO-0061 stop/termination",
-     false
+     true
+    ],
+    [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
     ],
     [
      "VELDO-0061 caps/boundaries",
@@ -1077,8 +1164,8 @@
      true
     ]
    ],
-   "seconds": 10.536,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 11.96,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -1094,7 +1181,7 @@
     "VELDO-0061 artifacts/malformed-output"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "5d8a3dfef12f6bd969cc28ec085ec5e01870924b3e10d906edfde08129048c1c",
+   "mutant_sha256": "28758558924b595c71fc192d4d24ff95b2e5032a04ebd9eba4b8fc1e52ae24d7",
    "name": "adapter-exit-code-completes",
    "named_row_red": true,
    "named_rows": [
@@ -1155,6 +1242,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1175,8 +1270,8 @@
      true
     ]
    ],
-   "seconds": 10.571,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.074,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
@@ -1190,7 +1285,7 @@
     "VELDO-0061 artifacts/missing-result"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "3bb253aa060a7dbaf14151aee8964aad3cbc8d29af88f806fe40b91c705d042f",
+   "mutant_sha256": "f18f7c4426435dd4c3bdd5c5efca61f313a9ca7c2f6fa3998ca8338c9d8baf2d",
    "name": "adapter-runner-exit-completes",
    "named_row_red": true,
    "named_rows": [
@@ -1251,6 +1346,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1271,8 +1374,8 @@
      true
     ]
    ],
-   "seconds": 10.672,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.07,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
@@ -1286,7 +1389,7 @@
     "VELDO-0061 artifacts/malformed-output"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "f615d4a9d5b9a2b5ef1360630124f7fb23863fcdee2971107be5a472633ee983",
+   "mutant_sha256": "91d88e6e550e00eb5532f97f05a537686646a277d5103ab45a76cb173d863264",
    "name": "adapter-malformed-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1347,6 +1450,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1367,8 +1478,8 @@
      true
     ]
    ],
-   "seconds": 10.648,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.067,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -1380,7 +1491,7 @@
     "VELDO-0061 artifacts/malformed-output"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "84b96b6b1323f271518bd48b8bb6e9ad57807f3bc9c3f088a3c5c0d482b60177",
+   "mutant_sha256": "6a58e284cf1705c18300461f50c5fd8ca6ec3f44cc8cae32087e85b4596710a1",
    "name": "adapter-undeclared-event-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -1441,6 +1552,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1461,20 +1580,20 @@
      true
     ]
    ],
-   "seconds": 10.696,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.152,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0061 artifacts/missing-usage detail: a completed turn whose usage the CLI left out is a result with its usage unknown: the reservation is retained, never counted zero [complete settled {'invocations': 1, 'messages': 1, 'tokens': 0, 'wall_seconds': 0.050559}]"
+    "VELDO-0061 artifacts/missing-usage detail: a completed turn whose usage the CLI left out is a result with its usage unknown: the reservation is retained, never counted zero [complete settled {'invocations': 1, 'messages': 1, 'tokens': 0, 'wall_seconds': 0.048518}]"
    ],
    "diff": "proof/VELDO-0061/adapter-missing-usage-zero.diff",
    "failed_rows": [
     "VELDO-0061 artifacts/missing-usage"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "713ce25bfbb2750f7b8c9fc20a60f827311d536fd26961497cb9386420b5af48",
+   "mutant_sha256": "baf13abde46cf475aa2d4a904223445c6340ecb4859cd6565b494b80adcd2761",
    "name": "adapter-missing-usage-zero",
    "named_row_red": true,
    "named_rows": [
@@ -1535,6 +1654,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1555,14 +1682,14 @@
      true
     ]
    ],
-   "seconds": 10.929,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.027,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0061 artifacts/nonzero-and-signal detail: failed: the live exit {'returncode': 1, 'signal': None} is turn_failed, the invocation failed [missing_result {'deadline_stop': False, 'output_bytes': 673, 'output_digest': 'sha256:ead1558ad9f30ee860b2301b545ce59063ffeed4c58731a53ed718a2bfdbea89', 'returncode': 1, 'signal': None}]",
-    "VELDO-0061 caps/refused-before-launch detail: the limited account carries the usage_limit window Codex reported, rejected with no reset stated, from the invocation that saw it [{'usage_limit': {'observed_at': 1790424859.692862, 'reset_at': None, 'source_dispatch': 'dispatch/VELDO-9612/63a39dbef545479283ad339c24ce42a2', 'status': 'rejected', 'utilization': None}}]"
+    "VELDO-0061 caps/refused-before-launch detail: the limited account carries the usage_limit window Codex reported, rejected with no reset stated, from the invocation that saw it [{'usage_limit': {'observed_at': 1790436836.1660137, 'reset_at': None, 'source_dispatch': 'dispatch/VELDO-9612/e15fdb8137bd4cf783194341309a24de', 'status': 'rejected', 'utilization': None}}]"
    ],
    "diff": "proof/VELDO-0061/adapter-failed-turn-unnamed.diff",
    "failed_rows": [
@@ -1570,7 +1697,7 @@
     "VELDO-0061 caps/refused-before-launch"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "2edbb4c8c0abc13295df451a99f31abf624039b31fbebe80b30561c0d5997095",
+   "mutant_sha256": "6de5e9122e36cab1549686ba53f4ffbdf78246161c0a95c0e3333f1547e8b2a6",
    "name": "adapter-failed-turn-unnamed",
    "named_row_red": true,
    "named_rows": [
@@ -1631,6 +1758,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1651,8 +1786,8 @@
      true
     ]
    ],
-   "seconds": 10.558,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.051,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -1664,7 +1799,7 @@
     "VELDO-0061 artifacts/nonzero-and-signal"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "34123a386780b700789e496cce7938b17ad6d2c5ddcd33afeffd9781a4c18573",
+   "mutant_sha256": "575971d394ce414a241d0aaa4cf0045a8060b8978c3aab99eb3b2aba0aa4f6ac",
    "name": "adapter-signal-unnamed",
    "named_row_red": true,
    "named_rows": [
@@ -1725,6 +1860,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1745,22 +1888,20 @@
      true
     ]
    ],
-   "seconds": 10.59,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.073,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0061 artifacts/nonzero-and-signal detail: nonzero: the live exit {'returncode': 3, 'signal': None} is nonzero_exit, the invocation failed [complete {'deadline_stop': False, 'output_bytes': 654, 'output_digest': 'sha256:03d18ea997e1e24bd1610f70ffa01197030dbd1b2e12f08ca6778f839d5732b7', 'returncode': 3, 'signal': None}]",
-    "VELDO-0061 caps/stop-at-cap detail: the capped invocation returned what it printed up to the stop as its artifacts, never as a completion [complete]"
+    "VELDO-0061 artifacts/nonzero-and-signal detail: nonzero: the live exit {'returncode': 3, 'signal': None} is nonzero_exit, the invocation failed [complete {'deadline_stop': False, 'output_bytes': 654, 'output_digest': 'sha256:03d18ea997e1e24bd1610f70ffa01197030dbd1b2e12f08ca6778f839d5732b7', 'returncode': 3, 'signal': None}]"
    ],
    "diff": "proof/VELDO-0061/adapter-nonzero-exit-result.diff",
    "failed_rows": [
-    "VELDO-0061 artifacts/nonzero-and-signal",
-    "VELDO-0061 caps/stop-at-cap"
+    "VELDO-0061 artifacts/nonzero-and-signal"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "123f5b438199a8425a629db57d0d476d30043726b47ccec74c2a2169e721adf4",
+   "mutant_sha256": "d5bde769ddcad292d97535c99bd17af0206aa7b2d4b48193946a4ea709072e8a",
    "name": "adapter-nonzero-exit-result",
    "named_row_red": true,
    "named_rows": [
@@ -1821,6 +1962,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1830,7 +1979,7 @@
     ],
     [
      "VELDO-0061 caps/stop-at-cap",
-     false
+     true
     ],
     [
      "VELDO-0061 caps/observed",
@@ -1841,8 +1990,8 @@
      true
     ]
    ],
-   "seconds": 10.523,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.105,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -1854,7 +2003,7 @@
     "VELDO-0061 artifacts/normal-exit"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "b091da264c0753a8718030a7c5c2683656542c27cda09df5cb937688421784f8",
+   "mutant_sha256": "9cfc133ee30d6cc2372ac63d5686b909682c9bd0cf8b586563e9da7787c5f3fb",
    "name": "adapter-artifacts-unverified",
    "named_row_red": true,
    "named_rows": [
@@ -1915,6 +2064,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -1935,21 +2092,21 @@
      true
     ]
    ],
-   "seconds": 10.488,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.107,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0061 stop/termination detail: termination: every process of the worker is gone: the engine and its descendant [{'worker': False, 'helper': True}]",
-    "VELDO-0061 stop/termination detail: the engine left a descendant that ignores the request, and the stop is recorded only after that descendant was killed with the group [[{'step': 'cooperative', 'at': 1790424904.4369485, 'monotonic': 2125482.309554636}, {'step': 'terminate', 'at': 1790424904.4376817, 'monotonic': 2125482.310288997}]]"
+    "VELDO-0061 stop/termination detail: the engine left a descendant that ignores the request, and the stop is recorded only after that descendant was killed with the group [[{'step': 'cooperative', 'at': 1790436887.494308, 'monotonic': 2137465.366914411}, {'step': 'terminate', 'at': 1790436887.4950352, 'monotonic': 2137465.367642923}]]"
    ],
    "diff": "proof/VELDO-0061/adapter-stop-leaves-descendant.diff",
    "failed_rows": [
     "VELDO-0061 stop/termination"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "c9d313d902ff9f58474dab26092f1d54a4bef964869d53c5822eff5e0d1ff216",
+   "mutant_sha256": "822ef4bb70293e344faf4b7f91fd342c28f956748a866bb8f6acb3bb6cb63d78",
    "name": "adapter-stop-leaves-descendant",
    "named_row_red": true,
    "named_rows": [
@@ -2010,6 +2167,14 @@
      false
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2030,8 +2195,8 @@
      true
     ]
    ],
-   "seconds": 11.297,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.493,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
@@ -2043,7 +2208,7 @@
     "VELDO-0061 stop/forced"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "ac910e2223f7f029e70cb1d3400ebcce854767421755ea39248640fad82d31b6",
+   "mutant_sha256": "de8443b41a1fecdd4a332a1270b7b8f1a0b8677226040ef79fe961c41580c362",
    "name": "adapter-stop-graces-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -2104,6 +2269,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2124,26 +2297,28 @@
      true
     ]
    ],
-   "seconds": 14.801,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 16.28,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0061 stop/cooperative detail: cooperative: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [failed missing_result]",
-    "VELDO-0061 stop/forced detail: forced: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [failed signal]",
-    "VELDO-0061 stop/termination detail: termination: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [failed missing_result]",
-    "VELDO-0061 caps/stop-at-cap detail: the report that reached the unit's token cap stopped the worker before its next turn [usage_cap {'invocations': 1, 'messages': 1, 'tokens': 1500, 'wall_seconds': 0.051552}]"
+    "VELDO-0061 stop/cooperative detail: cooperative: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [failed stopped]",
+    "VELDO-0061 stop/forced detail: forced: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [failed stopped]",
+    "VELDO-0061 stop/termination detail: termination: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [failed stopped]",
+    "VELDO-0061 stop/stopped-not-complete detail: the completion gate reads it as not complete, and its invocation and slot are cancelled [failed cancelled]",
+    "VELDO-0061 caps/stop-at-cap detail: the report that reached the unit's token cap stopped the worker before its next turn [usage_cap {'invocations': 1, 'messages': 1, 'tokens': 1500, 'wall_seconds': 0.050157}]"
    ],
    "diff": "proof/VELDO-0061/adapter-stop-outcome-lost.diff",
    "failed_rows": [
     "VELDO-0061 stop/cooperative",
     "VELDO-0061 stop/forced",
     "VELDO-0061 stop/termination",
+    "VELDO-0061 stop/stopped-not-complete",
     "VELDO-0061 caps/stop-at-cap"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "2bab4fe89399489d49d5674814610f76eaa7d9d921ec5fb8a398489801e83b4c",
+   "mutant_sha256": "3766f6aaca20f2f5bd5eeead68314c27dd99031342d6e9e85fb38e1149cca3cc",
    "name": "adapter-stop-outcome-lost",
    "named_row_red": true,
    "named_rows": [
@@ -2204,6 +2379,14 @@
      false
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     false
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2224,8 +2407,8 @@
      true
     ]
    ],
-   "seconds": 10.448,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 11.923,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
@@ -2239,7 +2422,7 @@
     "VELDO-0061 caps/refused-before-launch"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "ba85ac72eedad655bdc11acea04ade4f91030d292495d555210c467c4c85b0cc",
+   "mutant_sha256": "1511d39a1fa19e0a76766d50493e79a52242c21aa5c0bea4d9f05c216c743828",
    "name": "adapter-cap-checked-after-launch",
    "named_row_red": true,
    "named_rows": [
@@ -2300,6 +2483,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2320,13 +2511,13 @@
      true
     ]
    ],
-   "seconds": 10.71,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.302,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0061 caps/stop-at-cap detail: the report that reached the unit's token cap stopped the worker before its next turn [None {'invocations': 1, 'messages': 2, 'tokens': 1520, 'wall_seconds': 8.050026}]",
+    "VELDO-0061 caps/stop-at-cap detail: the report that reached the unit's token cap stopped the worker before its next turn [None {'invocations': 1, 'messages': 2, 'tokens': 1520, 'wall_seconds': 8.048742}]",
     "VELDO-0061 caps/stop-at-cap detail: the capped invocation returned what it printed up to the stop as its artifacts, never as a completion [complete]"
    ],
    "diff": "proof/VELDO-0061/adapter-cap-stop-ignored.diff",
@@ -2334,7 +2525,7 @@
     "VELDO-0061 caps/stop-at-cap"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "fd6bb4d35ebb8b353d93bdd609787151107e1561b5f75b666942c02fbc6505ac",
+   "mutant_sha256": "c774094dac0205cd9e8249ffe4efd474dd31daf476ad50b555aede36cca50c1e",
    "name": "adapter-cap-stop-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -2395,6 +2586,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2415,8 +2614,8 @@
      true
     ]
    ],
-   "seconds": 16.632,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 17.848,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
@@ -2489,6 +2688,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2509,7 +2716,7 @@
      true
     ]
    ],
-   "seconds": 10.752,
+   "seconds": 12.149,
    "source_sha256": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f"
   },
   {
@@ -2523,7 +2730,7 @@
     "VELDO-0061 pin/unexpected-launch"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "a16e6d91dc240a60d60f6fb619977878283386a1c62f96d69aa300de9830eb7f",
+   "mutant_sha256": "e236562f8253b6adb37b6ad830782e745f23678a94f80ca37b63c96e4529d3af",
    "name": "adapter-argv-position-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2584,6 +2791,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2604,15 +2819,15 @@
      true
     ]
    ],
-   "seconds": 10.754,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.176,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0061 lifecycle/registered detail: the registration's flags are the installed qualification's, and every configured Codex adapter launches with them [('exec', '--json') ['exec', '--json', '-c', 'check_for_update_on_startup=false']]",
     "VELDO-0061 lifecycle/registered detail: the qualified flags turn the binary's own startup update check off, a config key the installed binary names [['exec', '--json']]",
-    "VELDO-0061 lifecycle/normal-run detail: it was the pinned vendor binary with the qualified flags, the update check off, as configured [['/run/user/1000/v61-guzh4rn7/packages/good/vendor/x86_64-unknown-linux-musl/bin/codex', 'exec', '--json', '/run/user/1000/v61-guzh4rn7/markers']]",
+    "VELDO-0061 lifecycle/normal-run detail: it was the pinned vendor binary with the qualified flags, the update check off, as configured [['/run/user/1000/v61-0cgrwbzq/packages/good/vendor/x86_64-unknown-linux-musl/bin/codex', 'exec', '--json', '/run/user/1000/v61-0cgrwbzq/markers']]",
     "VELDO-0061 lifecycle/actual-binary detail: the installed Codex 0.154.0 vendor binary, pinned by the installed qualification, was launched through the trusted runner in its clone and exited 0 [['prepared', 'refused'] {}]",
     "VELDO-0061 lifecycle/actual-binary detail: what it printed is what that binary prints for the same arguments, byte for byte (0 bytes)",
     "VELDO-0061 lifecycle/actual-binary detail: it entered its own clone as the process the dispatch recorded, inside the dispatch's containment scope [[] None]",
@@ -2627,7 +2842,7 @@
     "VELDO-0061 pin/qualified-record"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "33c00dcbef94f7df45b93b90b655d8c7dfbaf7741a39dfed4b151bacab6afa31",
+   "mutant_sha256": "1219ee8c380b5e8f2b5d227b8614f2317e4218e99c97682ef089f89ae29b3ae9",
    "name": "adapter-update-check-left-on",
    "named_row_red": true,
    "named_rows": [
@@ -2688,6 +2903,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2708,8 +2931,8 @@
      true
     ]
    ],
-   "seconds": 10.346,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 11.767,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   {
    "by_assertion": true,
@@ -2782,6 +3005,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2802,8 +3033,221 @@
      true
     ]
    ],
-   "seconds": 10.51,
+   "seconds": 12.085,
    "source_sha256": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0061 stop/cooperative detail: cooperative: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled missing_result]",
+    "VELDO-0061 stop/forced detail: forced: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled signal]",
+    "VELDO-0061 stop/termination detail: termination: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled missing_result]",
+    "VELDO-0061 stop/stopped-not-complete detail: its artifact is stopped, never complete, the exit record binds that, and its document verifies from its own lines and cause [complete {'complete': True, 'digest': 'sha256:c16f68a8c4df94e398db68ec7faf7c0a5bdd51ea7df2392c99191f48bb5c3a72', 'verdict': 'complete'}]",
+    "VELDO-0061 stop/stopped-not-complete detail: the completion gate reads it as not complete, and its invocation and slot are cancelled [cancelled cancelled]",
+    "VELDO-0061 stop/stopped-not-complete detail: the floor refuses to accept the stopped build, for want of a completed build dispatch [missing_evidence:proof/absent]"
+   ],
+   "diff": "proof/VELDO-0061/adapter-stop-cause-ignored.diff",
+   "failed_rows": [
+    "VELDO-0061 stop/cooperative",
+    "VELDO-0061 stop/forced",
+    "VELDO-0061 stop/termination",
+    "VELDO-0061 stop/stopped-not-complete"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "83a7060d62fbd70cd38cc1e0cec6d8bf01656d1ca03f61166de9b1230080664b",
+   "name": "adapter-stop-cause-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "stop/stopped-not-complete"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0061 lifecycle/registered",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/normal-run",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/actual-binary",
+     true
+    ],
+    [
+     "VELDO-0061 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0061 pin/qualified-record",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/normal-exit",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/missing-result",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/nonzero-and-signal",
+     true
+    ],
+    [
+     "VELDO-0061 stop/cooperative",
+     false
+    ],
+    [
+     "VELDO-0061 stop/forced",
+     false
+    ],
+    [
+     "VELDO-0061 stop/termination",
+     false
+    ],
+    [
+     "VELDO-0061 stop/stopped-not-complete",
+     false
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
+     "VELDO-0061 caps/boundaries",
+     true
+    ],
+    [
+     "VELDO-0061 caps/refused-before-launch",
+     true
+    ],
+    [
+     "VELDO-0061 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0061 caps/observed",
+     true
+    ],
+    [
+     "VELDO-0061 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.069,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0061 lifecycle/engine-protocol detail: a Codex module without REGISTRATION: refused by that name before acceptance, nothing spawned, reserved or run [invalid_input:engine_entrance]",
+    "VELDO-0061 lifecycle/engine-protocol detail: a Codex module without Terminal: refused by that name before acceptance, nothing spawned, reserved or run [invalid_input:engine_entrance]"
+   ],
+   "diff": "proof/VELDO-0061/adapter-engine-protocol-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0061 lifecycle/engine-protocol"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "288b2f5e2c762898c4955ee09d1cb15657f3651b6c148ba42b374d09f3b5e6e3",
+   "name": "adapter-engine-protocol-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "lifecycle/engine-protocol"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0061 lifecycle/registered",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/normal-run",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/actual-binary",
+     true
+    ],
+    [
+     "VELDO-0061 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0061 pin/qualified-record",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/normal-exit",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/missing-result",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0061 artifacts/nonzero-and-signal",
+     true
+    ],
+    [
+     "VELDO-0061 stop/cooperative",
+     true
+    ],
+    [
+     "VELDO-0061 stop/forced",
+     true
+    ],
+    [
+     "VELDO-0061 stop/termination",
+     true
+    ],
+    [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     false
+    ],
+    [
+     "VELDO-0061 caps/boundaries",
+     true
+    ],
+    [
+     "VELDO-0061 caps/refused-before-launch",
+     true
+    ],
+    [
+     "VELDO-0061 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0061 caps/observed",
+     true
+    ],
+    [
+     "VELDO-0061 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 11.992,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   }
  ],
  "mutations_per_row": {
@@ -2834,6 +3278,9 @@
   "caps/stop-at-cap": [
    "adapter-cap-stop-ignored"
   ],
+  "lifecycle/engine-protocol": [
+   "adapter-engine-protocol-unchecked"
+  ],
   "lifecycle/normal-run": [
    "adapter-autoupdater-unset",
    "adapter-engine-environment-ignored",
@@ -2860,13 +3307,16 @@
   "stop/forced": [
    "adapter-stop-graces-ignored"
   ],
+  "stop/stopped-not-complete": [
+   "adapter-stop-cause-ignored"
+  ],
   "stop/termination": [
    "adapter-stop-leaves-descendant"
   ]
  },
  "noop": {
   "control_engine_codex.py": {
-   "copy_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc",
+   "copy_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2924,6 +3374,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -2944,11 +3402,11 @@
      true
     ]
    ],
-   "seconds": 10.545,
-   "source_sha256": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "seconds": 12.063,
+   "source_sha256": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   "control_launch.py": {
-   "copy_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097",
+   "copy_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -3006,6 +3464,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -3026,8 +3492,8 @@
      true
     ]
    ],
-   "seconds": 10.52,
-   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "seconds": 12.086,
+   "source_sha256": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   "control_reservations.py": {
    "copy_sha256": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f",
@@ -3088,6 +3554,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -3108,7 +3582,7 @@
      true
     ]
    ],
-   "seconds": 10.543,
+   "seconds": 12.15,
    "source_sha256": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f"
   },
   "init_scaffold.py": {
@@ -3170,6 +3644,14 @@
      true
     ],
     [
+     "VELDO-0061 stop/stopped-not-complete",
+     true
+    ],
+    [
+     "VELDO-0061 lifecycle/engine-protocol",
+     true
+    ],
+    [
      "VELDO-0061 caps/boundaries",
      true
     ],
@@ -3190,13 +3672,13 @@
      true
     ]
    ],
-   "seconds": 10.512,
+   "seconds": 12.18,
    "source_sha256": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 61",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 373.95,
+ "serial_seconds": 446.809,
  "spec_id": "VELDO-0061",
  "suite": "scripts/suites/79_veldo_0061_codex_adapter.py"
 }

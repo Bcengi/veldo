@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -475 +475 @@
+-        if cause in STOPS:
++        if False:  # defect: a stopped invocation is judged by its output and exit alone

@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -481 +481 @@
+@@ -487 +487 @@
 -        if termination.get('returncode') != 0:
 +        if False:  # defect: a nonzero exit after a completed turn is a result

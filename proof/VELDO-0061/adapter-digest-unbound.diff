@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -390 +390 @@
+@@ -394 +394 @@
 -    if digest != record['sha256']:
 +    if False:  # defect: a changed digest is not checked

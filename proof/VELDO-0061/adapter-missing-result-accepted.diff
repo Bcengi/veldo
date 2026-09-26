@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -479 +479 @@
+@@ -485 +485 @@
 -        if self.terminal != 'turn.completed' or self.turn_open:
 +        if False:  # defect: a stream with no terminal record is a result

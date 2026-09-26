@@ -1,8 +1,8 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -408 +408 @@
+@@ -412 +412 @@
 -    if not isinstance(event, dict) or event.get('type') not in EVENTS:
 +    if not isinstance(event, dict):  # defect: an event exec does not print is read as one
-@@ -409,0 +410,2 @@
+@@ -413,0 +414,2 @@
 +    if event.get('type') not in EVENTS:
 +        return None

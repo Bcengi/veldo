@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -365 +365 @@
+@@ -376 +376 @@
 -            clean = D.completed(record)
 +            clean = (record['termination'] or {}).get('returncode') == 0  # defect: the runner returns the slot completed on the exit code
