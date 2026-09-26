@@ -77,8 +77,10 @@ leaves.
 TERMINAL OUTPUT (`Terminal`). What the engine printed becomes an artifact document, never a completion
 by exit code: every stdout line is kept as printed and checked against the exec events of the table
 (EVENTS, ITEM_KINDS; proof/VELDO-0061/codex-exec.json); the verdict is `complete` only when the stream is
-well formed, its last turn closed with `turn.completed` and the engine exited 0. A stream whose last turn
-has no terminal record is `missing_result`, one with a line exec does not print is `malformed_output`, a
+well formed, its last turn closed with `turn.completed`, the engine exited 0 and nothing stopped it. An
+invocation stopped on request, at its usage cap or for a missed heartbeat (its `cause`) is `stopped`
+whatever it printed and however it exited, as Claude Code's is. A stream whose last turn has no terminal
+record is `missing_result`, one with a line exec does not print is `malformed_output`, a
 failed turn `turn_failed`, a nonzero exit `nonzero_exit`, a signal `signal` and a deadline stop
 `deadline`. Items are returned whole, as the CLI printed them; the reader relies on an item's `id` and
 `type` only, the two fields the binary ties to exec's items. `verify(document)` recomputes a document from
@@ -273,6 +275,8 @@ ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}
 QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
+# The stop causes the receiver records (control_launch): an invocation stopped for one is never complete.
+STOPS = ('requested', 'usage_cap', 'heartbeat_missing')
 PACKAGE = '@openai/codex'
 # The adapter registration (control_launch.ENGINE_PROTOCOL).
 REGISTRATION = {
@@ -465,9 +469,11 @@ class Terminal:
         elif kind == 'item.completed':
             self.items.append({'id': event['item']['id'], 'type': event['item']['type'], 'line': index})
 
-    def verdict(self, termination):
+    def verdict(self, termination, cause=None):
         if termination is None:
             return 'not_executed'
+        if cause in STOPS:
+            return 'stopped'
         if termination.get('signal') is not None:
             return 'signal'
         if termination.get('deadline_stop'):
@@ -484,23 +490,23 @@ class Terminal:
 
     def document(self, termination, cause=None):
         """The artifact document (control_launch.ENGINE_PROTOCOL's shape: schema, engine, verdict, complete)."""
-        verdict = self.verdict(termination)
+        verdict = self.verdict(termination, cause)
         return {'schema': ARTIFACT_SCHEMA, 'engine': PROVIDER, 'verdict': verdict, 'complete': verdict == 'complete',
                 'terminal': self.terminal, 'thread': self.thread_id, 'turns': self.turns, 'items': self.items,
-                'malformed': self.malformed, 'termination': termination, 'lines': self.lines}
+                'malformed': self.malformed, 'termination': termination, 'cause': cause, 'lines': self.lines}
 
 
 DECODED = ('schema', 'engine', 'verdict', 'complete', 'terminal', 'thread', 'turns', 'items', 'malformed')
 
 
 def verify(document):
-    """Whether an artifact document is what its own lines and termination decode to."""
+    """Whether an artifact document is what its own lines, termination and stop cause decode to."""
     if not isinstance(document, dict) or not isinstance(document.get('lines'), list):
         return False
     again = Terminal()
     for line in document['lines']:
         again.feed(str(line).encode() + b'\n')
-    fresh = again.document(document.get('termination'))
+    fresh = again.document(document.get('termination'), document.get('cause'))
     return all(fresh[k] == document.get(k) for k in DECODED)
 
 

@@ -98,11 +98,13 @@ ENGINE_PROTOCOL with the same signatures, and the receiver drives each through t
   binds what runs (`pinned_argv_problem`): what the trusted wrapper execs (a local adapter's whole argv, a
   reported adapter's argv after its transport's `control_launch.py exec`) is the pinned path itself, or
   the clone entrance (`<python> -B control_clone.py enter <clones> --`, for a local adapter the installed
-  one beside this receiver) and then the pinned path, followed by its qualified flags; anything else,
-  a shell or a package manager's link first among them, is refused by name. The engine's environment
-  names the pinned path and digest (VELDO_ENGINE_PATH, VELDO_ENGINE_SHA256), and whichever trusted
-  program execs the engine (this wrapper, or the clone entrance) re-hashes the file immediately before
-  the exec and refuses a changed one (exit 70, the engine never runs); the engine inherits neither name.
+  one beside this receiver, run by this receiver's own Python) and then the pinned path, followed by its
+  qualified flags; anything else, a shell or a package manager's link first among them, is refused by
+  name. The engine's environment names the pinned path and digest (VELDO_ENGINE_PATH,
+  VELDO_ENGINE_SHA256), and whichever trusted program execs the engine (this wrapper, or the clone
+  entrance) re-hashes the file immediately before the exec and refuses a changed one (exit 70, the
+  engine never runs). The wrapper compares resolved paths, and passes the two names on to the clone
+  entrance only: the engine inherits neither.
 - `environment(binding)`: the settings the engine always runs with (DISABLE_AUTOUPDATER), set last in
   its environment; an adapter configuring one of them otherwise is refused by name.
 - `Terminal()`: the terminal output decoder, fed what the meter is fed. At the end its document (one
@@ -213,18 +215,27 @@ def engine_argv(argv, reported):
     return None
 
 
+def entrance(engine):
+    """Whether an engine argv is the clone entrance's shape: `<python> -B control_clone.py enter <clones> --`
+    and then what it execs."""
+    return (len(engine) > 6 and engine[1] == '-B' and Path(engine[2]).name == ENTRANCE_MODULE and engine[3] == 'enter'
+            and engine[5] == '--')
+
+
 def pinned_argv_problem(argv, bound, reported=False):
     """None when the argv binds what runs: the engine argv (engine_argv) is the bound pinned path, or the
-    clone entrance and then the pinned path, followed by its qualified flags; else the named refusal."""
+    clone entrance and then the pinned path, followed by its qualified flags; else the named refusal. A
+    local adapter's entrance is the installed one beside this receiver, run by this receiver's own Python."""
     path, flags = bound.get('path'), list(bound.get('flags') or [])
     engine = engine_argv(argv, reported)
     if not isinstance(path, str) or not engine:
         return 'invalid_input:engine_executable'
     at = 0
-    if (len(engine) > 6 and engine[1] == '-B' and Path(engine[2]).name == ENTRANCE_MODULE and engine[3] == 'enter'
-            and engine[5] == '--'):
+    if entrance(engine):
         if not reported and Path(engine[2]).resolve() != Path(__file__).resolve().with_name(ENTRANCE_MODULE):
             return 'invalid_input:engine_entrance'
+        if not reported and os.path.realpath(engine[0]) != os.path.realpath(sys.executable):
+            return 'invalid_input:engine_interpreter'
         at = 6
     if engine[at] != path:
         return 'invalid_input:engine_executable'
@@ -1324,11 +1335,13 @@ def wrap(argv):
     for number in (signal.SIGPIPE, signal.SIGXFSZ):
         signal.signal(number, signal.SIG_DFL)
     environment = dict(os.environ)
-    if environment.get(ENGINE_PATH) is not None and os.path.abspath(path) == environment[ENGINE_PATH]:
-        # THE ENGINE PROTOCOL: this wrapper execs the pinned engine itself, so it re-hashes the file now,
-        # immediately before the exec; a changed one never runs. The engine inherits neither name.
-        expected = environment.pop(ENGINE_DIGEST, None)
-        environment.pop(ENGINE_PATH)
+    # THE ENGINE PROTOCOL: the names of the exec-time re-hash reach the clone entrance only, never an engine.
+    pinned, expected = environment.pop(ENGINE_PATH, None), environment.pop(ENGINE_DIGEST, None)
+    if pinned is not None and entrance(argv):
+        environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected
+    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):
+        # This wrapper execs the pinned engine itself (however its path is spelled), so it re-hashes the
+        # file now, immediately before the exec; a changed one never runs.
         try:
             unchanged = file_digest(path) == expected
         except OSError:
