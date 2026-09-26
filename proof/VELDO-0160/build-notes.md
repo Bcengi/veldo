@@ -37,3 +37,4 @@ Base: 52f817d5 (main, VELDO-0062 landed). Branch build-veldo-0160.
 
 ## Progress log
 - 2026-09-26T11:57:42Z suite 78 written, 14 rows green in 9.8 s; next: red record, mutations
+- 2026-09-26T12:18:41Z consumer suites green (47); next: validate, footprint, anchors, drive, README, History

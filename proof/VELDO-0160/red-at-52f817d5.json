@@ -9,6 +9,7 @@
   "VELDO-0160 pool/per-account-isolation detail: claude: a dispatch was prepared",
   "VELDO-0160 pool/per-account-isolation detail: codex: a dispatch was prepared",
   "VELDO-0160 pool/per-account-isolation detail: the four engines ran on four different profiles [0]",
+  "VELDO-0160 pool/per-account-isolation detail: the metrics count one dispatch on each account [None]",
   "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': None, 'acct-c2': None, 'acct-c3': None, 'acct-x1': None}]",
   "VELDO-0160 pool/one-registration detail: the store refuses a second record of acct-c1 by name [duplicate_account]",
   "VELDO-0160 pool/one-registration detail: the login of acct-c1 registered under another name (acct-c1-again) is refused by name, and no second record exists [None]",
@@ -17,10 +18,14 @@
   "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(None, None), (None, None), (None, None), (None, None)]]",
   "VELDO-0160 pool/concurrent detail: the four engine processes were alive at the same time [0]",
   "VELDO-0160 limit/stream-exhausted detail: Claude Code: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 limit/stream-exhausted detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/stream-exhausted detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 limit/stream-exhausted detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{}]",
+  "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 decision/rerun detail: claude_code, no MCP call: decided re-run, naming no call [None, no decision module]",
   "VELDO-0160 decision/rerun detail: claude_code, only calls to tools marked read-only: decided re-run, naming no call [None, no decision module]",
   "VELDO-0160 decision/rerun detail: codex, no MCP call: decided re-run, naming no call [None, no decision module]",
@@ -34,6 +39,7 @@
   "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [None, no decision module]",
   "VELDO-0160 decision/ask detail: codex: a record with a gap in its sequence is refused by name, never decided [no decision module]",
   "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
+  "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
   "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [invalid_input, {}]",
   "VELDO-0160 pool/moved-off detail: nothing was sent to acct-c1 before its reset: no slot and no process after its exhausting run [1 slots, 0 processes]",
   "VELDO-0160 pool/moved-off detail: at its reported reset acct-c1 takes work again [[None, None], (None, 'invalid_input')]",
@@ -74,7 +80,7 @@
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "9a9b490e53e57873ab2aaaa71f548e0c0721ce69dfd2ef3536064e99d494462e",
-   "now": "70553344bd722ae6a6fa8fb666b823b1af57e6c683585e10ee029ceb1be8bc4b"
+   "now": "e1ecf23c9788930980ad852c526664e1b734f62cf6443da7d9d24d4e12d03e08"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
@@ -90,7 +96,7 @@
   },
   ".veldo/control_reservations.py": {
    "at_commit": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f",
-   "now": "1abfdf9608cda66a979733d1788126b90756cb1abdf61b6c9276961c4990ec77"
+   "now": "308d51b7700b7193f7ba43c322b7f2d44d2f6a6cec543e204fc9a3e57d604491"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "75eea8d7afe5ceb868c3afa3255b68d53613c20d91a91e673d6be2b4fa008233",
@@ -118,10 +124,6 @@
   [
    "VELDO-0160 limit/rate-limit-result",
    false
-  ],
-  [
-   "VELDO-0160 limit/ordinary-failure",
-   true
   ],
   [
    "VELDO-0160 decision/rerun",
@@ -157,7 +159,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 22.961,
+ "seconds": 29.588,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"
