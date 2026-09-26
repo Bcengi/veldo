@@ -61,8 +61,9 @@ acceptance_criteria:
       identity. Set and completeness: Setup creates the one `factory` project, bound to a small
       repository of its own under the factory state root that holds only its team configuration, with a
       PM role for requests that are not yet any project's. Send "start a new personal project called
-      tidepool" and a message that names no identity; intake routes each to the factory project
-      (VELDO-0152) and the loop starts its PM cycle; the factory PM run prepares one proposal naming the
+      tidepool" and a message that names no identity; intake sends each to the factory project,
+      the factory PM routes it as a new project (VELDO-0152 AC3), and the factory PM run prepares one
+      proposal naming the
       project, the identity (asked in the same request when he did not say), the directory, the remote
       name and visibility, the first objective, the default team's current revision (VELDO-0162 AC4) and
       the default pipeline, and the coordination budget. His one answer, a yes or a correction, settles
@@ -178,3 +179,6 @@ VELDO-0089 does not define. The default team is now VELDO-0162 AC4, a versioned 
 through the team route, built in the design's second stage and so before this specification; AC1's
 proposal names its current revision, AC3 gives the project that revision as its first team revision, and
 depends_on adds VELDO-0162. Criterion meaning unchanged. Draft; the owner decides readiness.
+
+2026-09-26, lead: AC1 names the factory PM's new-project route (VELDO-0152 AC3), since the owner replaced
+the keyword rule with routing by the factory PM (Telegram 29186, 29187 and 29191).
