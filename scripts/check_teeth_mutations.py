@@ -5293,12 +5293,13 @@ def cases():
             "            'bounded_coordination_budget': budget_problems(fields.get('coordination_budget')),\n",
             "            'bounded_coordination_budget': [],  # defect: the budget predicate is skipped\n",
             ['unbounded-budget'])
+    # VELDO-0149 moved the omitted-field check into the one helper both activation paths use.
     project('omitted-policy-activates', 'control_project.py',
-            "            missing = [f for f in ACTIVATION_FIELDS if f not in command]\n",
-            "            missing = [f for f in ACTIVATION_FIELDS if f not in command and f != 'authority_policy']  # defect\n",
+            "        missing = [f for f in ACTIVATION_FIELDS if f not in source]\n",
+            "        missing = [f for f in ACTIVATION_FIELDS if f not in source and f != 'authority_policy']  # defect\n",
             ['activation-fields'],
-            also=[("            fields = {f: command[f] for f in ACTIVATION_FIELDS}\n",
-                   "            fields = {f: command.get(f) for f in ACTIVATION_FIELDS}\n"),
+            also=[("        return {f: source[f] for f in ACTIVATION_FIELDS}\n",
+                   "        return {f: source.get(f) for f in ACTIVATION_FIELDS}\n"),
                   ("            'authority_policy_applies': self._policy_problems(fields.get('authority_policy'), state, name, now),\n",
                    "            'authority_policy_applies': [] if fields.get('authority_policy') is None else "
                    "self._policy_problems(fields.get('authority_policy'), state, name, now),\n")])
@@ -5309,10 +5310,12 @@ def cases():
             "        if not verified:\n            raise Refused('not_authorized', 'command signature did not verify')\n", '',
             ['activation-authority'])
     project('second-activation-replaces', 'control_project.py',
-            "            if current is not None:\n                raise Refused('already_exists', pid)\n            missing",
-            "            missing", ['one-active'],
-            also=[("            if current is not None:\n                raise Refused('already_exists', pid)\n            fields",
-                   "            fields")])
+            "            if current is not None:\n                raise Refused('already_exists', pid)\n"
+            "            fields = self._bound_fields(command)",
+            "            fields = self._bound_fields(command)", ['one-active'],
+            also=[("            if current is not None:\n                raise Refused('already_exists', pid)\n"
+                   "            fields = params['fields']",
+                   "            fields = params['fields']")])
     # AC2 (declared falsifier): the frontier assigns work from a paused project.
     project('frontier-offers-paused-project', 'control_eligibility.py',
             "            refusals = self._unit_problems(unit, inputs)\n",
