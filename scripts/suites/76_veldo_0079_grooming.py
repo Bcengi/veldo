@@ -654,6 +654,120 @@ def _v79_suite():
                     ('no unit of any of them is executable', all(executable(u) == ['missing_authority:admission']
                                                                  for _i, _g, units in cases.values() for u in units))])
 
+            # AC2: the route reads the item's history. Once a request was put to the owner, a later revision
+            # that drops the question or the priority is presented, never admitted by his message, and the
+            # request he has in front of him is superseded as soon as that revision is recorded.
+            with region('route/presented-then-proposed'):
+                H, h_units = work_item(o_own, 'history-question')
+                gpropose('pm', H, questions=[{'id': 'q1', 'text': 'Should refunds wait?'}])
+                groom(H)
+                earlier_h, earlier_hp = shown(H, 'admission'), shown(H, 'priority')
+                sent_h = len(sent_naming(H))
+                dropped_h = gpropose('pm', H)
+                superseding_h, superseding_hp = shown(H, 'admission'), shown(H, 'priority')
+                sent_proposed_h = len(sent_naming(H))
+                late_h, _ = answer(earlier_h, 'accept')
+                groomed_h = groom(H)
+                direct_h = admit_message(H)
+                rejected_h, _ = answer(shown(H, 'admission'), 'reject', rationale='Refunds must come first.')
+                applied_h = apply_rulings(H)
+                K, k_units = work_item(o_own, 'history-rank')
+                gpropose('pm', K, priority={'rank': 1})
+                groom(K)
+                rejected_k, _ = answer(shown(K, 'admission'), 'reject', rationale='Not at rank 1.')
+                redone_k = gpropose('pm', K)
+                groomed_k = groom(K)
+                direct_k = admit_message(K)
+                applied_k = apply_rulings(K)
+
+                def superseded(now, before):
+                    return (now.get('request_version') == (before.get('request_version') or 0) + 1
+                            and (now.get('supersedes') or {}).get('presentation_id') == before.get('presentation_id')
+                            and bool(before.get('presentation_id')))
+
+                check('route/presented-then-proposed', [
+                    ('pm re-proposed the presented item with no question at the default priority',
+                     dropped_h.get('ok') and request_record(H).get('revision') == 2
+                     and request_record(H).get('content', {}).get('questions') == []
+                     and request_record(H).get('content', {}).get('priority') == {'rank': DEFAULT_RANK}),
+                    ('recording that revision superseded both requests in front of him, before grooming ran',
+                     superseded(superseding_h, earlier_h) and superseded(superseding_hp, earlier_hp)
+                     and sent_proposed_h == sent_h + 2),
+                    ('his answer to the earlier presentation is refused', late_h.get('reason') == 'stale_presentation'),
+                    ('grooming presents it, naming its history, and his message does not admit it',
+                     groomed_h.get('outcome') == 'presented' and 'presented' in (groomed_h.get('reasons') or [])
+                     and direct_h.get('reason') == 'not_approved:presented'),
+                    ('his reject of the revision in front of him is applied',
+                     rejected_h.get('outcome') == 'settled' and item(H).get('state') == 'REJECTED'
+                     and [r.get('outcome') for r in applied_h if r.get('touchpoint') == 'admission'] == ['applied']),
+                    ('his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it',
+                     rejected_k.get('outcome') == 'settled' and redone_k.get('reason') == 'stale_subject:settled_ruling'
+                     and groomed_k.get('reason') == 'stale_subject:settled_ruling'
+                     and request_record(K).get('revision') == 1 and str(direct_k.get('reason')).startswith('not_approved:')),
+                    ('and it is applied as he gave it', item(K).get('state') == 'REJECTED'
+                     and [r.get('outcome') for r in applied_k if r.get('touchpoint') == 'admission'] == ['applied']),
+                    ('nothing of either was admitted or runs',
+                     all(entity('admission:' + u) is None and executable(u) != [] for u in h_units + k_units))])
+
+            # AC2: a ruling settled and not yet applied holds the item: the PM's next proposal is refused, his
+            # message does not admit it, and his reject is applied at the revision he answered.
+            with region('route/ruling-settled-unapplied'):
+                N, n_units = work_item(o_own, 'history-settled')
+                gpropose('pm', N, questions=[{'id': 'q1', 'text': 'Is the old flow retired?'}])
+                groom(N)
+                settled_n, _ = answer(shown(N, 'admission'), 'reject', rationale='The old flow stays.')
+                revision_n, sent_n = request_record(N).get('revision'), len(sent_naming(N))
+                redone_n = gpropose('pm', N)
+                regroomed_n = groom(N)
+                direct_n = admit_message(N)
+                unasked_n = len(sent_naming(N)) == sent_n
+                applied_n = apply_rulings(N)
+                check('route/ruling-settled-unapplied', [
+                    ('his reject settled and is not yet applied', settled_n.get('outcome') == 'settled'),
+                    ('pm\'s proposal with the question dropped is refused while it waits, and no revision is written',
+                     redone_n.get('reason') == 'stale_subject:settled_ruling' and request_record(N).get('revision') == revision_n),
+                    ('grooming asks him nothing over it', regroomed_n.get('reason') == 'stale_subject:settled_ruling'
+                     and unasked_n),
+                    ('his message does not admit it', direct_n.get('ok') is not True
+                     and str(direct_n.get('reason')).startswith('not_approved:') and 'ADMITTED' not in
+                     [h.get('target') for h in item(N).get('history') or []]),
+                    ('his reject is applied as he gave it and the priority request is canceled',
+                     [r.get('outcome') for r in applied_n if r.get('touchpoint') == 'admission'] == ['applied']
+                     and item(N).get('state') == 'REJECTED'
+                     and data_of(current_request(N, 'priority') or '').get('state') == 'CANCELED'),
+                    ('nothing of it runs', all(entity('admission:' + u) is None and executable(u) != [] for u in n_units))])
+
+            # AC2: an item he returned for elaboration, groomed again with the question dropped, is presented
+            # to him again: his original message does not admit it.
+            with region('route/returned-then-proposed'):
+                E, e_units = work_item(o_own, 'history-returned')
+                gpropose('pm', E, questions=[{'id': 'q1', 'text': 'One tap or two?'}])
+                groom(E)
+                first_e = current_request(E, 'admission')
+                returned_e, _ = answer(shown(E, 'admission'), 'return_for_elaboration', rationale='Say which checkout.')
+                applied_e = apply_rulings(E)
+                returned_state = item(E).get('state')
+                priority_left_e = data_of(current_request(E, 'priority') or '').get('state')
+                regroomed_e = bop('pm', 'request_grooming', E)
+                again_e = gpropose('pm', E)
+                groomed_e = groom(E)
+                direct_e = admit_message(E)
+                check('route/returned-then-proposed', [
+                    ('his return was applied: the item went back to PREPARED and the priority request was canceled',
+                     returned_e.get('outcome') == 'settled' and returned_state == 'PREPARED'
+                     and priority_left_e == 'CANCELED'
+                     and [r.get('outcome') for r in applied_e if r.get('touchpoint') == 'admission'] == ['applied']),
+                    ('pm asked for grooming again and proposed with no question at the default priority',
+                     regroomed_e.get('ok') and again_e.get('ok') and request_record(E).get('revision') == 2
+                     and request_record(E).get('content', {}).get('questions') == []),
+                    ('it is presented to him again, naming its history',
+                     groomed_e.get('outcome') == 'presented' and 'presented' in (groomed_e.get('reasons') or [])
+                     and current_request(E, 'admission') not in (None, first_e)
+                     and shown(E, 'admission').get('outcome') == 'published'),
+                    ('his message does not admit it', direct_e.get('reason') == 'not_approved:presented'
+                     and item(E).get('state') == 'AWAITING_GROOMING'),
+                    ('nothing of it runs', all(entity('admission:' + u) is None and executable(u) != [] for u in e_units))])
+
             # AC1: the Telegram bytes carry the complete request.
             with region('material/telegram-brief'):
                 spec_file('VELDO-9793', ['.veldo/policy.yaml', 'scripts/verify.sh'])

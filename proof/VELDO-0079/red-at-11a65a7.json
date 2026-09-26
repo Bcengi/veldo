@@ -1,0 +1,112 @@
+{
+ "by_assertion": true,
+ "commit": "11a65a770573a90720223a8105ab84ce3ba42515",
+ "details": [
+  "VELDO-0079 detail: route/presented-then-proposed: recording that revision superseded both requests in front of him, before grooming ran; his answer to the earlier presentation is refused; grooming presents it, naming its history, and his message does not admit it; his reject of the revision in front of him is applied; his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it; and it is applied as he gave it; nothing of either was admitted or runs",
+  "VELDO-0079 detail: route/ruling-settled-unapplied: pm's proposal with the question dropped is refused while it waits, and no revision is written; grooming asks him nothing over it; his message does not admit it; his reject is applied as he gave it and the priority request is canceled; nothing of it runs",
+  "VELDO-0079 detail: route/returned-then-proposed: it is presented to him again, naming its history; his message does not admit it; nothing of it runs"
+ ],
+ "failed_rows": [
+  "VELDO-0079 route/presented-then-proposed",
+  "VELDO-0079 route/ruling-settled-unapplied",
+  "VELDO-0079 route/returned-then-proposed"
+ ],
+ "modules": {
+  ".veldo/control_backlog.py": {
+   "at_commit": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379",
+   "now": "beb8c8acd9da75aa87ffd151cbe9a7f56df79c23a4f3664fb3733038bd63caf5"
+  },
+  ".veldo/control_grooming.py": {
+   "at_commit": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044",
+   "now": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
+  },
+  ".veldo/control_grooming_request.py": {
+   "at_commit": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f",
+   "now": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9",
+   "now": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0079 install/assets",
+   true
+  ],
+  [
+   "VELDO-0079 route/own-message-default",
+   true
+  ],
+  [
+   "VELDO-0079 route/ask-when-needed",
+   true
+  ],
+  [
+   "VELDO-0079 route/presented-then-proposed",
+   false
+  ],
+  [
+   "VELDO-0079 route/ruling-settled-unapplied",
+   false
+  ],
+  [
+   "VELDO-0079 route/returned-then-proposed",
+   false
+  ],
+  [
+   "VELDO-0079 material/telegram-brief",
+   true
+  ],
+  [
+   "VELDO-0079 material/ungroomed-thin-brief",
+   true
+  ],
+  [
+   "VELDO-0079 material/bound-fields",
+   true
+  ],
+  [
+   "VELDO-0079 material/changed-decomposition",
+   true
+  ],
+  [
+   "VELDO-0079 authority/owner-choices",
+   true
+  ],
+  [
+   "VELDO-0079 authority/pm-self-admission",
+   true
+  ],
+  [
+   "VELDO-0079 authority/separate-predicates",
+   true
+  ],
+  [
+   "VELDO-0079 authority/questions-unresolved",
+   true
+  ],
+  [
+   "VELDO-0079 authority/reprioritize-withdraw",
+   true
+  ],
+  [
+   "VELDO-0079 ruling/parameter-binding",
+   true
+  ],
+  [
+   "VELDO-0079 ruling/duplicate",
+   true
+  ],
+  [
+   "VELDO-0079 observability",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 8.439,
+ "spec_id": "VELDO-0079",
+ "suite": "scripts/suites/76_veldo_0079_grooming.py",
+ "tree": "git archive 11a65a770573a90720223a8105ab84ce3ba42515, unchanged; the current suite file run against it"
+}
