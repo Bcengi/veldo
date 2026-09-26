@@ -1,0 +1,8 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -468 +468 @@
+-        if s.get('ruling') != 'approve':
++        if False:  # defect: the activation does not require an approval
+@@ -473 +473 @@
+-                or e.get('type') != APPROVED_EFFECT or e.get('target') != target or e.get('proposal') != proposal):
++                or e.get('target') != target):  # defect: any settled ruling of these terms applies

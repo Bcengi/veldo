@@ -120,3 +120,30 @@ section 12 of the design.
 section 5(e), whose VELDO-0076 AC1 amendment is carried here whole because VELDO-0076 has landed; the
 adopted repository and the answer path are one criterion each. A draft: only the owner
 marks a specification ready.
+
+2026-09-26, build: the project service (`control_project.py`, engine and installed copies) accepts an
+execution repository adopted in this domain: the repository its store is enrolled for, as VELDO-0076
+did, or one the store binds for this domain (`control_store.bind_repositories`, read back inside the
+activating transaction too); anything else, including a repository bound only in another domain,
+refuses `invalid_input:execution_repository`, the name VELDO-0076's row already pins, with nothing
+written. `activate_settled(request)` applies an activation from the owner's answer to an activation
+request (terms on `decision_disposition` targeting `project_activation`, the proposal the signed
+command's fields plus the project name) settled by the VELDO-0068 service it is given; it refuses
+`missing_field:<field>`, `unsettled:no_answer`, `unsettled:not_settled`, `unsettled:request_closed`,
+`stale_answer`, `not_approved:<ruling>` and `not_owner` by name, and the record it writes is the signed
+command's with the settlement as provenance. Observations carry the path, the execution repository
+and the adopting binding; metrics count activations by path and refusal. Suite
+`77_veldo_0149_adopted_activation`, red at a166d14 by assertion (9 rows); finding 149: 11 mutations.
+Finding 76's `omitted-policy-activates` and `second-activation-replaces` anchors follow the shared
+bound-fields helper (finding 76 still rejects 23). Status unchanged.
+
+2026-09-26, review fix: the owner approved one thing and another project was activated. The Telegram
+presentation of an activation request showed only the requester's free text and a terms digest, and
+`activate_settled` never checked that text against the proposal, so an accept of "repository-beta, small
+budget" activated repository-alpha with capacity 999. `activation_brief(proposal)` now renders the
+project and every bound value in plain text, and an activation request whose brief is not exactly that
+rendering refuses `stale_subject:brief` with nothing written (the pattern of `control_backlog._settled`).
+Rows `answer/brief-binds-proposal` (the review's case) and `answer/owner-sees-every-value` (the owner's
+Telegram bytes carry every bound value); mutations `settled-brief-unchecked` and
+`activation-brief-omits-repository`; `settled-rejection-applies` now lets the rejection activate. Red at
+a166d14 regenerated (11 rows by assertion); finding 149: 13 rejected; finding 76: 23. Status unchanged.

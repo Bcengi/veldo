@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -475 +475 @@
+-        if data.get('brief') != activation_brief(proposal):
++        if False:  # defect: what the owner was shown is not checked against the proposal

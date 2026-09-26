@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -517 +517 @@
+-        return 'stale_answer' if answers else 'unsettled:no_answer'
++        return 'unsettled:no_answer'  # defect: a stale answer is not named

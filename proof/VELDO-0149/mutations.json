@@ -1,0 +1,1167 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0149 adopted/two-repositories",
+    true
+   ],
+   [
+    "VELDO-0149 adopted/unadopted-refused",
+    true
+   ],
+   [
+    "VELDO-0149 adopted/observed",
+    true
+   ],
+   [
+    "VELDO-0149 answer/activates",
+    true
+   ],
+   [
+    "VELDO-0149 answer/binds-every-field",
+    true
+   ],
+   [
+    "VELDO-0149 answer/unsettled",
+    true
+   ],
+   [
+    "VELDO-0149 answer/owner-only",
+    true
+   ],
+   [
+    "VELDO-0149 answer/stale",
+    true
+   ],
+   [
+    "VELDO-0149 answer/brief-binds-proposal",
+    true
+   ],
+   [
+    "VELDO-0149 answer/owner-sees-every-value",
+    true
+   ],
+   [
+    "VELDO-0149 answer/observed",
+    true
+   ],
+   [
+    "VELDO-0149 ran/adopted/two-repositories",
+    true
+   ],
+   [
+    "VELDO-0149 ran/answer/activates",
+    true
+   ]
+  ],
+  "seconds": 2.278
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: adopted/unadopted-refused: enrolled-unbound refuses invalid_input:execution_repository; bound-in-another-domain refuses invalid_input:execution_repository; never-enrolled refuses invalid_input:execution_repository; none of them writes anything; control: the same activation on a repository the store binds for this domain is accepted",
+    "VELDO-0149 detail: adopted/observed: the refused one names its path, its refusal and its class, and no binding; the signed-command activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/adoption-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0149 adopted/unadopted-refused",
+    "VELDO-0149 adopted/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "779f50325b592e3790d3638d2f7a40907bed155e6309105bc94f3f4a0eb4e3a1",
+   "name": "adoption-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "adopted/unadopted-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     false
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     false
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     true
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.246,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: adopted/unadopted-refused: bound-in-another-domain refuses invalid_input:execution_repository; never-enrolled refuses invalid_input:execution_repository; none of them writes anything; control: the same activation on a repository the store binds for this domain is accepted",
+    "VELDO-0149 detail: adopted/observed: the signed-command activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/adoption-any-domain.diff",
+   "failed_rows": [
+    "VELDO-0149 adopted/unadopted-refused",
+    "VELDO-0149 adopted/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "73c3419532bc016d23f398d25fd6b6f1944fc65690a75305efa4123dfb2cdb62",
+   "name": "adoption-any-domain",
+   "named_row_red": true,
+   "named_rows": [
+    "adopted/unadopted-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     false
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     false
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     true
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.243,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: adopted/two-repositories: the owner's signed activation on the first is accepted; the owner's signed activation on the second is accepted; each is one ACTIVE project of the owner bound to its repository; every field is bound as signed; exactly one record of each",
+    "VELDO-0149 detail: adopted/unadopted-refused: control: the same activation on a repository the store binds for this domain is accepted",
+    "VELDO-0149 detail: adopted/observed: the accepted activation names its project, repository, the binding that adopted it and its path; the signed-command activations are counted accepted and refused, by refusal",
+    "VELDO-0149 detail: answer/activates: the settlement applies one activation; it creates one ACTIVE project of the owner on the store-bound repository; it binds owner, charter, execution repository, authority policy and finite budget as proposed; its record is the signed command's record: the same fields, digest and state; its provenance names the settlement it came from; applying the same settlement again refuses already_exists and writes nothing",
+    "VELDO-0149 detail: answer/unsettled: control: once the settlement settles his reply, the same request activates",
+    "VELDO-0149 detail: answer/owner-sees-every-value: control: his accept settles it and activates exactly those values",
+    "VELDO-0149 detail: answer/observed: the accepted activation names its request, settlement, receipt, presentation, repository and binding; the settled-answer activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/adoption-own-repository-only.diff",
+   "failed_rows": [
+    "VELDO-0149 adopted/two-repositories",
+    "VELDO-0149 adopted/unadopted-refused",
+    "VELDO-0149 adopted/observed",
+    "VELDO-0149 answer/activates",
+    "VELDO-0149 answer/unsettled",
+    "VELDO-0149 answer/owner-sees-every-value",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "c7ce8e993ffd6ef657039cbac9b6ec2a95cf50410ad7773383b0a98e62909ead",
+   "name": "adoption-own-repository-only",
+   "named_row_red": true,
+   "named_rows": [
+    "adopted/two-repositories"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     false
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     false
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     false
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     false
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     false
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     false
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.226,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: adopted/observed: the accepted activation names its project, repository, the binding that adopted it and its path",
+    "VELDO-0149 detail: answer/observed: the accepted activation names its request, settlement, receipt, presentation, repository and binding"
+   ],
+   "diff": "proof/VELDO-0149/adoption-unobserved.diff",
+   "failed_rows": [
+    "VELDO-0149 adopted/observed",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "9e588825dab5e86e8e10a7366264709c58d8d237eb0fd2578b96a2e20b4f2332",
+   "name": "adoption-unobserved",
+   "named_row_red": true,
+   "named_rows": [
+    "adopted/observed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     false
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.272,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: adopted/observed: the signed-command activations are counted accepted and refused, by refusal",
+    "VELDO-0149 detail: answer/observed: the settled-answer activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/activation-path-uncounted.diff",
+   "failed_rows": [
+    "VELDO-0149 adopted/observed",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "600d04bb12677a908a3c0c83cd8d7688ac2a50a14faf89d5eaa51fe9bf6dbede",
+   "name": "activation-path-uncounted",
+   "named_row_red": true,
+   "named_rows": [
+    "adopted/observed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     false
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.182,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/owner-only: it refuses not_owner: he is not the owner the activation binds, and nothing is written; an answer by one member for a project another would own refuses not_owner, nothing written",
+    "VELDO-0149 detail: answer/observed: a missing field, an unsettled answer, another member's answer and a stale answer are distinct classes; the settled-answer activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/settled-answer-any-member.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/owner-only",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "8cf67fb00ab33744680b1e76b02bbc2a1af39028a54fca4b96c5fb8a3de6acaf",
+   "name": "settled-answer-any-member",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/owner-only"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     false
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.276,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/binds-every-field: the request omitting owner is settled, and refuses missing_field:owner with nothing written; the request omitting charter is settled, and refuses missing_field:charter with nothing written; the request omitting execution_repository is settled, and refuses missing_field:execution_repository with nothing written; the request omitting authority_policy is settled, and refuses missing_field:authority_policy with nothing written; the request omitting coordination_budget is settled, and refuses missing_field:coordination_budget with nothing written",
+    "VELDO-0149 detail: answer/observed: a missing field, an unsettled answer, another member's answer and a stale answer are distinct classes; the settled-answer activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/settled-field-unbound.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/binds-every-field",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "8ddcdcac3b30ee2c2a7225288e34faac9b3b62e9e966d63735ffb6ad9faef674",
+   "name": "settled-field-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/binds-every-field"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     false
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.194,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/unsettled: a presented request nobody answered refuses unsettled:no_answer, nothing written; answered but not yet settled refuses unsettled:not_settled, nothing written",
+    "VELDO-0149 detail: answer/stale: it refuses stale_answer, nothing written",
+    "VELDO-0149 detail: answer/observed: a missing field, an unsettled answer, another member's answer and a stale answer are distinct classes"
+   ],
+   "diff": "proof/VELDO-0149/settled-unsettled-applies.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/unsettled",
+    "VELDO-0149 answer/stale",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "8adfc8278b86997828ede6927d8beb9c68e207a382961032bf4206c802936c84",
+   "name": "settled-unsettled-applies",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/unsettled"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     false
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     false
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.219,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/unsettled: a settled rejection activates nothing: no project and nothing written; it refuses not_approved:reject",
+    "VELDO-0149 detail: answer/observed: the settled-answer activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/settled-rejection-applies.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/unsettled",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "cc02d6b330b3bc1c891f05d3cf4090e05fbe7aa1659b4af1803be937d2f09c4b",
+   "name": "settled-rejection-applies",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/unsettled"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     false
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.237,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/stale: it refuses stale_answer, nothing written",
+    "VELDO-0149 detail: answer/observed: a missing field, an unsettled answer, another member's answer and a stale answer are distinct classes"
+   ],
+   "diff": "proof/VELDO-0149/stale-answer-unnamed.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/stale",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "7a4c04ad52f7fd9545f712f47dc049dcf9d81f1d97f25e46eafa07daf9bd04b4",
+   "name": "stale-answer-unnamed",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/stale"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     false
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.263,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/activates: its provenance names the settlement it came from"
+   ],
+   "diff": "proof/VELDO-0149/settled-provenance-unrecorded.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/activates"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "e5040a7deafc3e57fe59ccaae3fd4d328c0ba5ddcbd3bb5cd6069156c357a599",
+   "name": "settled-provenance-unrecorded",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/activates"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     false
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     true
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.236,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/brief-binds-proposal: it activates nothing: no project and nothing written; it refuses stale_subject:brief",
+    "VELDO-0149 detail: answer/observed: a missing field, an unsettled answer, another member's answer and a stale answer are distinct classes; the settled-answer activations are counted accepted and refused, by refusal"
+   ],
+   "diff": "proof/VELDO-0149/settled-brief-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/brief-binds-proposal",
+    "VELDO-0149 answer/observed"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "48b329409dee1e202fa600d569a4c27afdd51351ace6dabb177ab0e935b5bc01",
+   "name": "settled-brief-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/brief-binds-proposal"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     false
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     false
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.285,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0149 detail: answer/owner-sees-every-value: the owner's Telegram bytes show the execution repository"
+   ],
+   "diff": "proof/VELDO-0149/activation-brief-omits-repository.diff",
+   "failed_rows": [
+    "VELDO-0149 answer/owner-sees-every-value"
+   ],
+   "module": ".veldo/control_project.py",
+   "mutant_sha256": "acf2d064b7ad0700d9fd0cbe29e128a00ed22bd3db37a4fd6f2ee6754ac67ef4",
+   "name": "activation-brief-omits-repository",
+   "named_row_red": true,
+   "named_rows": [
+    "answer/owner-sees-every-value"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     false
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     true
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.293,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  }
+ ],
+ "mutations_per_row": {
+  "adopted/observed": [
+   "adoption-unobserved",
+   "activation-path-uncounted"
+  ],
+  "adopted/two-repositories": [
+   "adoption-own-repository-only"
+  ],
+  "adopted/unadopted-refused": [
+   "adoption-unchecked",
+   "adoption-any-domain"
+  ],
+  "answer/activates": [
+   "settled-provenance-unrecorded"
+  ],
+  "answer/binds-every-field": [
+   "settled-field-unbound"
+  ],
+  "answer/brief-binds-proposal": [
+   "settled-brief-unchecked"
+  ],
+  "answer/owner-only": [
+   "settled-answer-any-member"
+  ],
+  "answer/owner-sees-every-value": [
+   "activation-brief-omits-repository"
+  ],
+  "answer/stale": [
+   "stale-answer-unnamed"
+  ],
+  "answer/unsettled": [
+   "settled-unsettled-applies",
+   "settled-rejection-applies"
+  ]
+ },
+ "noop": {
+  "control_project.py": {
+   "copy_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0149 adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/unadopted-refused",
+     true
+    ],
+    [
+     "VELDO-0149 adopted/observed",
+     true
+    ],
+    [
+     "VELDO-0149 answer/activates",
+     true
+    ],
+    [
+     "VELDO-0149 answer/binds-every-field",
+     true
+    ],
+    [
+     "VELDO-0149 answer/unsettled",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-only",
+     true
+    ],
+    [
+     "VELDO-0149 answer/stale",
+     true
+    ],
+    [
+     "VELDO-0149 answer/brief-binds-proposal",
+     true
+    ],
+    [
+     "VELDO-0149 answer/owner-sees-every-value",
+     true
+    ],
+    [
+     "VELDO-0149 answer/observed",
+     true
+    ],
+    [
+     "VELDO-0149 ran/adopted/two-repositories",
+     true
+    ],
+    [
+     "VELDO-0149 ran/answer/activates",
+     true
+    ]
+   ],
+   "seconds": 2.256,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 149",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 33.706,
+ "spec_id": "VELDO-0149",
+ "suite": "scripts/suites/77_veldo_0149_adopted_activation.py"
+}

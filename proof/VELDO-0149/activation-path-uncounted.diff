@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -319 +319 @@
+-            tally[observation['outcome']] += 1
++            pass  # defect: activations are not counted by path

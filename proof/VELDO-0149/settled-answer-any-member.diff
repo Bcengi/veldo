@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -477 +477 @@
+-        if s.get('principals') != [fields['owner']]:
++        if False:  # defect: any member's settled answer activates
