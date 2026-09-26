@@ -455,8 +455,8 @@ not yet any project's. Intake
 never selects it as a default or as an only candidate.
 
 **Creating one from chat.** The owner writes, for example, "start a new personal project called
-tidepool". Intake decides only what needs no judgment: a ticket key whose prefix one project lists, or
-the project field of an API request. A project the message names is passed to the factory PM as a hint
+tidepool". Intake decides only what needs no judgment: a ticket key whose prefix one project lists, the
+project field of an API request, or the project a disposition carries from the unit it disposes. A project the message names is passed to the factory PM as a hint
 and decides nothing at intake, so "start a new project like bcengi" does not land in bcengi. Every other
 message goes to the factory project as an inbox proposal with no intake question, and the loop starts its PM cycle. The factory PM, a Claude Code or Codex run on his own
 subscriptions, reads his words and routes the message: a new project, an existing project, or, only when

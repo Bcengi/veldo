@@ -79,37 +79,39 @@ acceptance_criteria:
       message and one API request each (the request signed by the API edge and submitted through
       `Intake.receive('api_request', ...)`, the intake interface the authenticated API calls, as
       VELDO-0126 drives it), "please do BCG-123" with one project listing `BCG`, with two listing it and
-      with none; "BCG-123: add the new project settings page" with `bcengi` listing `BCG`; an API request
-      whose project field names `bcengi`; and, with no project field, "in bcengi please add a new page to
-      the project site" and "start a new project like bcengi". The single lister and the requested
-      project each get the proposal VELDO-0126 makes for a decided project, with the deciding rule
-      recorded, and no question is sent; a prefix two projects list, a prefix none lists, a prefix or
-      project field naming the factory project, and a project named only in the text decide nothing, and
-      the message takes AC2's path with each name the text says recorded as a hint for the PM run.
-      Falsifier: Let a project named in the text decide the project, as VELDO-0126's whole-word name
-      rule does; the name-is-a-hint row must fail, with "start a new project like bcengi" landing in
-      `bcengi`.
+      with none; "BCG-123: add the new project settings page" with `bcengi` listing `BCG`; an API
+      request whose project field names `bcengi`; and, with no project field, "in bcengi please add a
+      new page to the project site" and "start a new project like bcengi". The single lister and the
+      requested project each get the proposal VELDO-0126 makes for a decided project, with the deciding
+      rule recorded, and no question is sent; a prefix two projects list, a prefix none lists, a prefix
+      naming the factory project, and a project named only in the text decide nothing, and the message
+      takes AC2's path (a project field naming the factory project is refused, AC2) with each name the
+      text says recorded as a hint for the PM run. Falsifier: Let a project named in the text decide the
+      project, as VELDO-0126's whole-word name rule does; the name-is-a-hint row must fail, with "start
+      a new project like bcengi" landing in `bcengi`.
     falsified_by: >
       Let a project named in the text decide the project, as VELDO-0126's whole-word name rule does; the
       name-is-a-hint row must fail, with "start a new project like bcengi" landing in `bcengi`.
   - id: AC2
     text: >
-      Claim: Every message that no ticket key or project field decides goes to the factory
-      project as an inbox proposal, with no intake question and no rule on its words, and the factory
-      project is never a default, an only candidate or a destination for ordinary work. Set and
-      completeness: With no configured project besides the factory project, with one and with two, for
-      the owner and for a member whose scope covers one of two projects, send "start a new personal
-      project called tidepool", "make a new repo for the site", "renew the project's certificate" and
-      "fix the login bug" by Telegram and by API request. Each is kept as an inbox proposal of the
-      factory project whose context lists only the principal's own projects, no question is sent, the
-      decision records that nothing decided it, and none goes to an only candidate. An API request whose
-      project field names the factory project is refused `invalid_input:factory_project`; a member other
-      than the owner whose scope covers no project besides the factory project is refused
+      Claim: Every message that no ticket key or project field decides goes to the factory project as an
+      inbox proposal, with no intake question and no rule on its words, and the factory project is never
+      a default, an only candidate or a destination for ordinary work. Set and completeness: With no
+      configured project besides the factory project, with one and with two, for the owner and for a
+      member whose scope covers one of two projects, send "start a new personal project called
+      tidepool", "make a new repo for the site", "renew the project's certificate" and "fix the login
+      bug" by Telegram and by API request. Each is kept as an inbox proposal of the factory project
+      whose context lists only the principal's own projects, no question is sent, the decision records
+      that nothing decided it, and none goes to an only candidate. An API request whose project field
+      names the factory project is refused `invalid_input:factory_project`; a member other than the
+      owner whose scope covers no project besides the factory project is refused
       `unauthorized:no_project` as VELDO-0126 refuses one, and the owner, the factory project's recorded
-      owner, is never refused for having no project, since his first new project starts there. The factory
-      project's record, with its PM role, is created in this concern's own store for its checks
-      (VELDO-0143's setup creates it in a real factory). Falsifier: Route an undecided message to the
-      only configured project, as VELDO-0126 did; the factory-inbox row must fail.
+      owner, is never refused for having no project, since his first new project starts there. A store
+      with no factory project refuses an undecided message `unsupported_configuration:factory_project`
+      and routes it nowhere. The factory project's record, with its PM role, is created in this
+      concern's own store for its checks (VELDO-0143's setup creates it in a real factory). Falsifier:
+      Route an undecided message to the only configured project, as VELDO-0126 did; the factory-inbox
+      row must fail.
     falsified_by: >
       Route an undecided message to the only configured project, as VELDO-0126 did; the factory-inbox
       row must fail.
@@ -119,20 +121,22 @@ acceptance_criteria:
       routing command carries out exactly that route, and only an unclear route asks the owner. Set and
       completeness: For an inbox proposal from AC2, the factory loop's pass (VELDO-0154 AC1) starts the
       factory project's cycle, which dispatches the PM run through the Runner (VELDO-0088 AC1) on a fake
-      `claude` or `codex` executable that prints the installed CLI's output shape, following the fakes of
-      VELDO-0060 and VELDO-0061; its final message is the route document the suite supplies, and the
-      cycle hands it to intake's routing command. Drive each route. A new project (a): the proposal stays
-      in the factory project as a new-project request, the input of VELDO-0143's proposal, and nothing
-      is asked. An existing project (b), named by project id: the proposal moves to that project in the
-      form AC1 gives a decided project, and the factory inbox proposal is retired, pointing at it.
-      Unclear (c): one "which project?" question goes to the principal on the channel he wrote on,
-      offering his own projects and "a new project"; an answer naming one offered project, by name or by
-      a ticket key it lists, moves the proposal to it as route (b) does, since it answers a question
-      that offered exactly those projects, and any other answer is kept on the proposal as new input for
-      the factory PM's next run. Each applied route, with its reason and the dispatch that recorded it,
-      is on the proposal record, in intake's observation and counts, in the proposal VELDO-0130's
-      authenticated read serves the owner, and in a VELDO-0128 progress report. Falsifier: Send the
-      "which project?" question on a new-project route; the asked-only-when-unclear row must fail.
+      `claude` or `codex` executable that prints the installed CLI's output shape, following the fakes
+      of VELDO-0060 and VELDO-0061; its final message is the route document the suite supplies, and the
+      cycle hands it to intake's routing command. Drive each route from the proposal's `AWAITING_ROUTE`
+      state. A new project (a): the proposal stays in the factory project as a new-project request in
+      state `NEW_PROJECT`, the input of VELDO-0143's proposal, and nothing is asked. An existing project
+      (b), named by project id: the proposal moves to that project in the form AC1 gives a decided
+      project, and the factory inbox proposal is retired in state `ROUTED`, pointing at it. Unclear (c):
+      the proposal moves to `AWAITING_PROJECT`, the state intake's existing answer path resolves from,
+      and one "which project?" question goes to the principal on the channel he wrote on, offering his
+      own projects and "a new project"; an answer naming one offered project, by name or by a ticket key
+      it lists, moves the proposal to it as route (b) does, since it answers a question that offered
+      exactly those projects, and any other answer is kept on the proposal as new input for the factory
+      PM's next run. Each applied route, with its reason and the dispatch that recorded it, is on the
+      proposal record, in intake's observation and counts, in the proposal VELDO-0130's authenticated
+      read serves the owner, and in a VELDO-0128 progress report. Falsifier: Send the "which project?"
+      question on a new-project route; the asked-only-when-unclear row must fail.
     falsified_by: >
       Send the "which project?" question on a new-project route; the asked-only-when-unclear row must
       fail.
@@ -230,7 +234,8 @@ an only candidate. Everything else, including what VELDO-0126 sent to an only ca
 name or asked about, goes to the factory project's inbox as a proposal of kind `inbox`, project
 `factory` and state `AWAITING_ROUTE`, with no question, and the submit's outcome is `inbox`. A factory
 with no factory project refuses such a message `unsupported_configuration:factory_project` and never
-routes it elsewhere. The one answer that still resolves by name is an answer to a "which project?"
+routes it elsewhere; intake's `TAXONOMY` gains an `unsupported_configuration` class for it, and AC2's
+rows drive it. The one answer that still resolves by name is an answer to a "which project?"
 question, which names one of the projects that question offered (AC3). Intake itself holds no rule
 about new projects, and no rule anywhere tests the words "new", "project" or "repository".
 
@@ -293,8 +298,9 @@ expect `inbox` where they expected `proposed`, with the same one "taken as new w
 mutation `new-work-told-answers-nothing` anchors on the new hint call. `hint/two-projects-one-reply`
 keeps one bot message per owner message: at intake he gets only the note, the unclear route's question
 is its own reply to his message, and his Reply to it resolves and sends nothing back; the mutation
-`question-and-note-apart` is retired with the intake question it anchored. `hint/intake-replies-not-hinted`
-takes its precondition question from an unclear route. The other hint rows are unchanged.
+`question-and-note-apart` is retired with the intake question it anchored.
+`hint/intake-replies-not-hinted` takes its precondition question from an unclear route. The other hint
+rows are unchanged.
 
 In `71_veldo_0130_api.py` (about line 1490): in `messages/common-intake` the request with a project
 field is unchanged; "Something for later" is a factory inbox proposal with no question in the response,
@@ -365,3 +371,9 @@ and `69_veldo_0133_dispositions.py`, whose messages chose their project by name.
 VELDO-0126's routing rows; its specification text stays as landed. The footprint also adds the step
 kinds (`control_workflow_langgraph.py`), where the coordinate node carries the route document out,
 and not the graph runner, which never reads a proposal. Status stays ready; risk unchanged.
+
+2026-09-26, lead, from a narrow check: AC1 no longer lists a project field naming the factory project
+among what "decides nothing", since AC2 refuses that request; AC3 names the proposal's states after each
+route (`AWAITING_ROUTE`, then `NEW_PROJECT`, `ROUTED` or `AWAITING_PROJECT`, the state intake's existing
+answer path resolves from); the `unsupported_configuration:factory_project` refusal gets its taxonomy
+class and AC2's rows.
