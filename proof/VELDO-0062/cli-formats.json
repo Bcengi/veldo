@@ -3202,6 +3202,51 @@
      null
     ]
    ],
+   "nested_work": {
+    "fork": {
+     "field": "tool_use_result",
+     "status": "forked"
+    },
+    "forwarded": {
+     "field": "parent_tool_use_id",
+     "progress": [
+      "agent_progress",
+      "skill_progress"
+     ]
+    },
+    "repl": {
+     "tool_progress": "repl_call"
+    },
+    "source": "the tools that run an agent, a skill, code or a workflow (each name's binding and the tool's definition or emitter naming it, with its aliases; the Agent tool's names are builtin_renamed's), the system frames whose schema carries a task_id, the fields a task frame gives a workflow and a workflow's task type, the REPL tool's inner call on a tool_progress, the progress kinds whose messages the CLI forwards with their task's id as parent_tool_use_id (Sne), and the Skill tool's result when it forked an agent",
+    "task_frames": [
+     "system/task_notification",
+     "system/task_progress",
+     "system/task_started",
+     "system/task_updated"
+    ],
+    "tools": {
+     "agent": [
+      "Agent",
+      "SendMessage",
+      "Task"
+     ],
+     "repl": [
+      "REPL"
+     ],
+     "skill": [
+      "Skill"
+     ],
+     "workflow": [
+      "RunWorkflow",
+      "Workflow"
+     ]
+    },
+    "workflow": {
+     "system/task_progress": "workflow_progress",
+     "system/task_started": "workflow_name",
+     "task_type": "local_workflow"
+    }
+   },
    "request_blocks": [
     "text",
     "image",
@@ -4068,6 +4113,16 @@
     "collab_tool_call",
     "error"
    ],
+   "nested_work": {
+    "collab": [
+     "collab_agent_tool_call",
+     "collab_tool_call"
+    ],
+    "source": "the items through which a run does work in another agent's thread: exec's own sub-agent call (collab_tool_call) and the core's items whose struct names another thread (a collab agent call's receiver_thread_ids, a sub-agent activity's agent_thread_id)",
+    "sub_agent": [
+     "sub_agent_activity"
+    ]
+   },
    "source": "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as unknown",
    "thread_items": [
     "user_message",

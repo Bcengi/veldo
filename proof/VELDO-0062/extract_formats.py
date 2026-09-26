@@ -518,6 +518,29 @@ CLAUDE_TASKS = {
 }
 
 
+# VELDO-0160, the lead's structural rule: every construct through which a Claude Code run can do work its stream
+# may not show (a tool that runs an agent, a skill, code or a workflow, a task's frames, a sub-agent's forwarded
+# messages, a forked skill's result), each by the exact text of this build and how many times it occurs. A tool
+# is its name's binding and its definition (the binding's variable as its name); the Agent tool and its alias are
+# builtin_renamed's. `forwarded`: the progress kinds whose messages the CLI forwards under their task's id;
+# `workflow_task`: the task type of a workflow; `skill_forked`: the Skill tool's result when it forked an agent.
+CLAUDE_NESTED_TOOLS = (
+    ('agent', 'SendMessage', 'var eo="SendMessage",', 'name:eo,searchHint:"send messages to agent teammates"'),
+    ('skill', 'Skill', 'var go="Skill",', 'name:go,searchHint:"invoke a slash-command skill"'),
+    ('repl', 'REPL', 'var za="REPL";', 'tool_name:za,parent_tool_use_id:T.parentToolUseID||null,'
+                                        'elapsed_time_seconds:0,repl_call:{'),
+    ('workflow', 'Workflow', 'var Ed="Workflow";', 'name:Ed,aliases:["RunWorkflow"],searchHint:"orchestrate subagents'),
+)
+CLAUDE_NESTED = {
+    'forwarded': ('function Sne(e){return e.type==="progress"&&(e.data.type==="agent_progress"||'
+                  'e.data.type==="skill_progress")}', 1),
+    'forwarded_emit': ('case"progress":if(Sne(e))yield*oer(e,n);', 1),
+    'workflow_task': ("Only set when task_type is 'local_workflow'.", 2),
+    'skill_forked': ('status:R("forked").describe("Execution status"),agentId:o().describe("The ID of the sub-agent '
+                     'that executed the skill")', 1),
+}
+
+
 def _tags(schema):
     """The (type, subtype) pairs a message schema admits."""
     if schema.get('type') == 'union':
@@ -649,6 +672,52 @@ def _task_counts(text, fields):
                       "drops the messages of an agent a sub-agent starts unless forwardSubagentText is set"}
 
 
+def _tops(schema):
+    """[(tag, its top-level field names)] for each member a message schema admits."""
+    if schema.get('type') == 'union':
+        return [pair for member in schema['anyOf'] for pair in _tops(member)]
+    return [(_tag(kind, sub), set(schema.get('fields') or {})) for kind, sub in _tags(schema)]
+
+
+def _nested(text, renamed, tops):
+    """The constructs through which a run can do work its stream may not show (VELDO-0160), each checked against
+    this build's text: {tools: {class: [names]}, task_frames, workflow, repl, forwarded, fork}."""
+    for key, (anchor, sites) in CLAUDE_NESTED.items():
+        if text.count(anchor) != sites:
+            raise Moved('claude nested work %s: anchor found %d times' % (key, text.count(anchor)))
+    tools = {'agent': [renamed[0]['name']] + list(renamed[0]['aliases'])}
+    for construct, name, binding, definition in CLAUDE_NESTED_TOOLS:
+        for anchor in (binding, definition):
+            if text.count(anchor) != 1:
+                raise Moved('claude nested tool %s: anchor %r found %d times' % (name, anchor, text.count(anchor)))
+        variable = re.match(r'var ([A-Za-z_$][\w$]*)="([^"]*)"', binding)
+        if variable is None or variable.group(2) != name or not re.match(
+                r'(?:name|tool_name):' + re.escape(variable.group(1)) + ',', definition):
+            raise Moved('claude nested tool %s: its definition does not name its binding' % name)
+        aliases = re.search(r'aliases:\[([^\]]*)\]', definition)
+        tools.setdefault(construct, []).append(name)
+        tools[construct] += [json.loads(alias) for alias in aliases.group(1).split(',')] if aliases else []
+    at = text.index(CLAUDE_NESTED['forwarded'][0])
+    kinds = re.findall(r'e\.data\.type==="([a-z_]+)"', text[at:text.index('}', at)])
+    frames = sorted(tag for tag, keys in tops if 'task_id' in keys and tag.startswith('system/'))
+    if 'system/task_started' not in frames or not kinds or text.count(CLAUDE_FORMS['task_progress']) != 1 \
+            or not any(tag == 'system/task_started' and 'workflow_name' in keys for tag, keys in tops):
+        raise Moved('claude task frames moved')
+    return {'tools': {key: sorted(set(value)) for key, value in sorted(tools.items())},
+            'task_frames': sorted(set(frames)),
+            'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',
+                         'task_type': 'local_workflow'},
+            'repl': {'tool_progress': 'repl_call'},
+            'forwarded': {'field': 'parent_tool_use_id', 'progress': kinds},
+            'fork': {'field': 'tool_use_result', 'status': 'forked'},
+            'source': "the tools that run an agent, a skill, code or a workflow (each name's binding and the tool's "
+                      "definition or emitter naming it, with its aliases; the Agent tool's names are "
+                      "builtin_renamed's), the system frames whose schema carries a task_id, the fields a task frame "
+                      "gives a workflow and a workflow's task type, the REPL tool's inner call on a tool_progress, "
+                      "the progress kinds whose messages the CLI forwards with their task's id as "
+                      "parent_tool_use_id (Sne), and the Skill tool's result when it forked an agent"}
+
+
 def claude_frames(text):
     """The StdoutMessage members outside the SDK message union, each (type, subtype, provably tool-free)."""
     at = text.index(CLAUDE_FORMS['stdout'])
@@ -670,7 +739,7 @@ def claude_forms(text):
             continue  # read, with their counts, by _builtin_renamed and _emitted
         if text.count(anchor) != 1:
             raise Moved('claude tool-call form table %s: anchor found %d times' % (key, text.count(anchor)))
-    found, fields = {}, {}
+    found, fields, tops = {}, {}, []
     for key in ('messages', 'response_blocks', 'request_blocks'):
         at = text.index(CLAUDE_FORMS[key])
         window = text[at - FORMS_WINDOW:at + FORMS_WINDOW]
@@ -683,6 +752,7 @@ def claude_forms(text):
                 schema = Reader(js, depth=6).parse(body)[0]
                 for kind, sub in _tags(schema):
                     fields.setdefault(_tag(kind, sub), set()).update(_tool_paths(schema))
+                tops += _tops(schema)
         found[key] = tags
     tagged = json.loads(text[text.index(CLAUDE_FORMS['tagged']) + 3:].split(']', 1)[0] + ']')
     found['messages'] = sorted({(kind, sub) for kind, sub in found['messages']}, key=lambda tag: (tag[0], tag[1] or ''))
@@ -699,6 +769,7 @@ def claude_forms(text):
             'tool_fields': {tag: sorted(paths) for tag, paths in sorted(fields.items()) if paths},
             'emitted_tool_fields': _emitted(text), 'frames': claude_frames(text),
             'task_counts': _task_counts(text, {tag: sorted(paths) for tag, paths in fields.items()}),
+            'nested_work': _nested(text, _builtin_renamed(text, builtin), tops),
             'source': "the SDK message union of the stream (each member's type and subtype), the content block "
                       "unions of an assistant and of a user message (the modelled blocks, then the type tags "
                       "the binary lists), the streaming events the stream_event schema names, and the binary's "
@@ -804,6 +875,12 @@ CODEX_THREAD_ITEMS = (b'user_messagefunction_call_outputhook_promptagent_message
 # exec's own sub-agent call item, `collab_tool_call` (its agents' calls are not in exec's stream), whose tag is
 # a literal placed after exec's event struct names rather than in the item run.
 CODEX_EXEC_COLLAB = (b'ItemUpdatedEventThreadErrorEventcollab_tool_call', 'collab_tool_call')
+# VELDO-0160, the lead's structural rule: the items through which a Codex run does work in another agent's thread,
+# whose calls its stream does not show, each by the struct literal naming the other thread: exec's own sub-agent
+# call (above), the core's collab agent call (its receivers' thread ids) and its sub-agent activity (the agent's
+# thread id).
+CODEX_NESTED = {'collab': ((b'CollabAgentToolCallItemreceiver_thread_ids', 'collab_agent_tool_call'),),
+                'sub_agent': ((b'SubAgentActivityItemagent_thread_id', 'sub_agent_activity'),)}
 
 
 def codex_forms(raw):
@@ -815,7 +892,18 @@ def codex_forms(raw):
     thread, thread_names = CODEX_THREAD_ITEMS
     if thread not in raw or ''.join(thread_names).encode() != thread:
         raise Moved('codex thread item types moved')
+    nested = {'collab': [CODEX_EXEC_COLLAB[1]]}
+    for construct, pieces in CODEX_NESTED.items():
+        for literal, tag in pieces:
+            if literal not in raw or tag not in thread_names:
+                raise Moved('codex nested work %s moved' % tag)
+            nested.setdefault(construct, []).append(tag)
+    nested = {key: sorted(value) for key, value in sorted(nested.items())}
+    nested['source'] = ("the items through which a run does work in another agent's thread: exec's own sub-agent call "
+                        "(collab_tool_call) and the core's items whose struct names another thread (a collab agent "
+                        "call's receiver_thread_ids, a sub-agent activity's agent_thread_id)")
     return {'exec_items': list(names) + [CODEX_EXEC_COLLAB[1], 'error'], 'thread_items': list(thread_names),
+            'nested_work': nested,
             'source': "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's "
                       "ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) "
                       "and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as "
