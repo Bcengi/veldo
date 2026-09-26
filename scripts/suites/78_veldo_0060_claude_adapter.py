@@ -23,11 +23,17 @@ truncated line, a line that is not JSON, a result without its usage, a stream wi
 are each built from a conforming line and checked as exactly that perturbation. No real engine runs,
 nothing logs in and no credential exists.
 
-Worker launches go through the wrapper without a containment group (`identity: reported`): a
-contained launch needs the systemd user manager, which this suite never touches. So a stop is the
-wrapper path's (the worker's session killed, the dispatch then unknown because that path cannot
-confirm the engine ended); the contained path's cooperative stop and group emptiness are VELDO-0040's
-and VELDO-0041's, qualified by their suites. Each row is reported once.
+Most launches go through the wrapper without a containment group (`identity: reported`), where a stop
+kills the worker's session and the dispatch is then unknown, because that path cannot confirm the engine
+ended. The contained rows run BOTH engines, Claude Code and Codex (the same fake laid out as a Codex vendor
+package and qualified by control_engine_codex.qualification), on the local Linux contained launch through
+the one receiver path: each dispatch in its own VELDO-0040 transient scope under the owner's systemd user
+manager, in a slice of this run's own (stopped, and its failed units cleared, at the end; no unit is
+installed), its profile's systemd-run a shim that records every spawn by its dispatch before it becomes
+the real one. There the bind, the scope, the Landlock clone entrance, the pinned exec, the cooperative
+and forced stops, a descendant that outlives the group's SIGTERM, the artifact and the exit record are
+each observed. The floor row drives VELDO-0049's FloorAuthority over the same store. Each row is
+reported once.
 """
 
 
@@ -67,6 +73,9 @@ def _v60_suite():
             'artifact/missing-usage', 'artifact/exit-record', 'floor/missing-result',
             'stop/requested', 'stop/descendant-alive',
             'caps/before-launch', 'caps/allowance-states', 'caps/stop-at-cap',
+            'contained/bind', 'contained/scope', 'contained/clone-entry', 'contained/pinned-exec',
+            'contained/stop-cooperative', 'contained/stop-forced', 'contained/stop-descendant',
+            'contained/artifact', 'contained/exit-record',
             'format/fake-lines', 'format/fake-argv')
     rows = {name: [] for name in ROWS}
 
@@ -102,6 +111,10 @@ def _v60_suite():
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     base = Path(tempfile.mkdtemp(prefix='v60-', dir=runtime if os.path.isdir(runtime) else None))
+    # The contained rows' transient scopes live in a slice of this run's own, stopped at its end.
+    slice_name = 'v60%s.slice' % os.urandom(4).hex()
+    tools = dict(os.environ)
+    contained_launches = []
     connections = []
     escaped = []  # descendants a stop left alive on purpose, ended at the suite's end
     try:
@@ -123,6 +136,8 @@ def _v60_suite():
         SIG = load('v60_signer', mods / 'control_signer.py')
         GP = load('v60_git', mods / 'git_process.py')
         CL = load('v60_clone', mods / 'control_clone.py')
+        CT = load('v60_containment', mods / 'control_containment.py')
+        X = getattr(L, 'ENGINES', {}).get('codex')  # the receiver's own load of the Codex engine module
         CLM = D.CLM
         DOMAIN, REPOSITORY, HOLDER, HOST = 'domain-60', 'repository-60', 'builder-60', 'linux-host-60'
         state = base / 'state'
@@ -165,8 +180,8 @@ def _v60_suite():
         accounts = ACC.Accounts(S, writer, principal='owner', signer='owner', sign=sign) if ACC else None
         helper_root = base / 'helper'
         profiles = {}
-        for account in ('acct-60a', 'acct-60b'):
-            record, _ = attempt(lambda: HELPER.account_add(account, root=str(helper_root), provider='claude_code'))
+        for account, provider in (('acct-60a', 'claude_code'), ('acct-60b', 'claude_code'), ('acct-60x', 'codex')):
+            record, _ = attempt(lambda: HELPER.account_add(account, root=str(helper_root), provider=provider))
             profiles[account] = (record or {}).get('config_dir')
             fields, _ = attempt(lambda: HELPER.registration(account, host=HOST, root=str(helper_root)))
             if fields and accounts is not None:
@@ -226,7 +241,7 @@ def _v60_suite():
         markers = base / 'markers'
         markers.mkdir()
         fake = '''#!%(python)s -B
-import json, os, sqlite3, subprocess, sys, time
+import json, os, signal, sqlite3, subprocess, sys, time
 from pathlib import Path
 store, markers, domain = %(store)r, Path(%(markers)r), %(domain)r
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
@@ -243,7 +258,9 @@ def start(pid):
     return stat[stat.rindex(')') + 2:].split()[19]
 own = {'pid': os.getpid(), 'start': start(os.getpid()), 'sid': os.getsid(0), 'pgid': os.getpgid(0),
        'dispatch': dispatch, 'argv': sys.argv, 'cwd': os.getcwd(), 'invocation': seen,
-       'env': {k: os.environ.get(k) for k in ('CLAUDE_CONFIG_DIR', 'DISABLE_AUTOUPDATER', 'VELDO_ACCOUNT', 'VELDO_CLONE')},
+       'env': {k: os.environ.get(k) for k in ('CLAUDE_CONFIG_DIR', 'CODEX_HOME', 'DISABLE_AUTOUPDATER', 'VELDO_ACCOUNT',
+                                              'VELDO_CLONE')},
+       'cgroup': next((l[3:] for l in open('/proc/self/cgroup').read().splitlines() if l.startswith('0::')), None),
        'names': sorted(os.environ)}
 (markers / ('%%d.tmp' %% os.getpid())).write_text(json.dumps(own))
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
@@ -261,11 +278,29 @@ for step in payload.get('script') or []:
         sys.stdout.flush()
     elif 'sleep' in step:
         time.sleep(step['sleep'])
+    elif 'ignore_term' in step:
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    elif 'probe' in step:
+        try:
+            with open(step['probe'], 'x') as handle:
+                handle.write('written by the worker')
+            outcome = 'written'
+        except OSError as error:
+            outcome = type(error).__name__
+        with open(markers / ('%%d.probe' %% os.getpid()), 'a') as handle:
+            handle.write(json.dumps([step['probe'], outcome]) + chr(10))
     elif 'descendant' in step:
-        child = subprocess.Popen([sys.executable, '-c', 'import signal, time; signal.signal(signal.SIGTERM, '
-                                  'signal.SIG_IGN); time.sleep(%%d)' %% step['descendant']], stdin=subprocess.DEVNULL,
+        # The descendant says it is ready once its SIGTERM disposition is set, so a stop never races its start.
+        body = ('import sys, time; open(sys.argv[1], "w").close(); time.sleep(%%d)' if step.get('cooperative') else
+                'import signal, sys, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); open(sys.argv[1], "w").close(); '
+                'time.sleep(%%d)')
+        ready = markers / ('ready-%%d-%%d' %% (os.getpid(), len(children)))
+        child = subprocess.Popen([sys.executable, '-c', body %% step['descendant'], str(ready)], stdin=subprocess.DEVNULL,
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                  start_new_session=bool(step.get('escape')))
+        until = time.monotonic() + 10
+        while not ready.exists() and time.monotonic() < until:
+            time.sleep(0.01)
         children.append({'pid': child.pid, 'start': start(child.pid), 'escape': bool(step.get('escape'))})
         (markers / ('%%d.children' %% os.getpid())).write_text(json.dumps(children))
     elif 'signal' in step:
@@ -300,6 +335,38 @@ sys.exit(payload.get('code', 0))
         pinned_binding, pin_error = attempt(lambda: E.pin(VERSION, versions=str(versions), state_root=str(factory)))
         pin_mode = (os.lstat(pinned).st_mode & 0o777) if pinned.exists() else None
 
+        # Codex for the contained rows (VELDO-0061's adapter on the same receiver path): the same fake laid out
+        # as its vendor package and qualified by the production writer; a copy with one byte changed after
+        # qualification is the pin's refusal case.
+        def codex_package(name, extra=b''):
+            root = base / 'packages' / name
+            vendored = root / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
+            vendored.parent.mkdir(parents=True)
+            (root / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+            vendored.write_bytes(fake.encode() + extra)
+            vendored.chmod(0o755)
+            return vendored
+        CODEX_BIN = codex_package('codex')
+        CODEX_CHANGED = codex_package('codex-changed')
+        codex_qualification = base / 'codex-qualification.json'
+        codex_record, codex_error = attempt(lambda: X.qualification(str(CODEX_BIN)))
+        if codex_record is not None:
+            codex_qualification.write_text(json.dumps(codex_record))
+        with open(CODEX_CHANGED, 'ab') as handle:
+            handle.write(b'# changed after it was qualified\n')
+        CODEX_FLAGS = list(getattr(X, 'FLAGS', ()) or ())
+        # The profile of the contained launch: its systemd-run records every spawn by its dispatch, then becomes
+        # the real one, so a spawn for a refused dispatch is seen.
+        real_systemd_run = shutil.which('systemd-run', path=tools.get('PATH', os.defpath)) or '/usr/bin/systemd-run'
+        shim = base / 'systemd-run'
+        shim.write_text('#!/bin/sh\nprintf %%s "$VELDO_DISPATCH_ID" > "%s/spawn-$$"\nexec %s "$@"\n'
+                        % (markers, real_systemd_run))
+        shim.chmod(0o755)
+        GRACE = 0.4
+        profile = {'kind': 'linux-systemd', 'slice': slice_name, 'lock': str(base / 'slice.lock'), 'concurrency': 16,
+                   'runtime_seconds': 120, 'memory_bytes': 1 << 30, 'cpu_percent': 400, 'file_bytes': 64 << 20,
+                   'tasks_max': 256, 'stop_grace_seconds': GRACE, 'kill_grace_seconds': GRACE, 'systemd_run': str(shim)}
+
         receipts = state / 'receipts'
         artifacts = state / 'artifacts'
         config = base / 'receiver.json'
@@ -321,7 +388,19 @@ sys.exit(payload.get('code', 0))
                 'claude-unknown': {'identity': 'reported', 'engine': 'claude_code', 'executable': {'version': '9.9.9'},
                                    'argv': wrapper},
                 'claude-updater-on': {'identity': 'reported', 'engine': 'claude_code', 'executable': pinned_exe,
-                                      'environment': {'DISABLE_AUTOUPDATER': '0'}, 'argv': wrapper}}}
+                                      'environment': {'DISABLE_AUTOUPDATER': '0'}, 'argv': wrapper},
+                # The local Linux contained launch: no transport, the receiver starts its trusted wrapper in the
+                # dispatch's own scope, and the adapter's argv is the clone entrance (then the engine).
+                'claude-contained': {'engine': 'claude_code', 'executable': pinned_exe, 'argv': entering},
+                'claude-contained-unknown': {'engine': 'claude_code', 'executable': {'version': '9.9.9'},
+                                             'argv': entering},
+                'codex-contained': {'engine': 'codex', 'executable': str(CODEX_BIN),
+                                    'qualification': str(codex_qualification),
+                                    'argv': entering + [str(CODEX_BIN)] + CODEX_FLAGS},
+                'codex-contained-changed': {'engine': 'codex', 'executable': str(CODEX_CHANGED),
+                                            'qualification': str(codex_qualification),
+                                            'argv': entering + [str(CODEX_CHANGED)] + CODEX_FLAGS}},
+            'profile': profile}
         config.write_text(json.dumps(receiver_config))
         stateless = base / 'receiver-stateless.json'
         stateless.write_text(json.dumps(dict(receiver_config, state_root=None)))
@@ -334,9 +413,12 @@ sys.exit(payload.get('code', 0))
         using = [config]
 
         def invoke(contract):
-            if contract['capability']['adapter'] == 'claude-clone':
+            if contract['capability']['adapter'] == 'claude-clone' or '-contained' in contract['capability']['adapter']:
                 provisioned[contract['dispatch_id']] = clones.create(contract)
-            return L.invoke(using[0], contract, dispatches, accept_seconds=30)
+            launch = L.invoke(using[0], contract, dispatches, accept_seconds=30)
+            if '-contained' in contract['capability']['adapter']:
+                contained_launches.append(launch)
+            return launch
         runners = {}
 
         def runner(account):
@@ -349,7 +431,7 @@ sys.exit(payload.get('code', 0))
         printed_steps = []
 
         def job(adapter, script, code=0, deadline=40, resume=None):
-            for step in script:
+            for step in script if not adapter.startswith('codex') else ():
                 if 'line' in step:
                     printed_steps.append(('line', step['line']))
                 elif 'raw' in step:
@@ -380,11 +462,14 @@ sys.exit(payload.get('code', 0))
             return found
 
         def marker_wait(dispatch_id, timeout=15.0, children=0):
+            # A dispatch that ended or was refused writes no more markers: a broken build fails fast.
             end = time.time() + timeout
             while time.time() < end:
                 found = engine_markers(dispatch_id)
                 if found and len(found[0]['children']) >= children:
                     return found[0]
+                if rec(dispatch_id).get('state') in ('refused', 'exited', 'unknown'):
+                    return found[0] if found else {}
                 time.sleep(0.02)
             return {}
 
@@ -953,6 +1038,200 @@ sys.exit(payload.get('code', 0))
                   and call.get('charge', {}).get('wall_seconds', 0) > 0
                   and (returned(launch) or {}).get('verdict') == 'stopped')
 
+        # The local Linux contained launch (0060 review blocker 2), for both engines through the one receiver
+        # path: each dispatch in its own transient scope in this run's slice, entering its clone through the
+        # Landlock entrance, the pinned executable exec'd by the process the dispatch recorded, stopped
+        # cooperatively and by force, its artifact and its exit record.
+        CONTAINED = ('contained/bind', 'contained/scope', 'contained/clone-entry', 'contained/pinned-exec',
+                     'contained/stop-cooperative', 'contained/stop-forced', 'contained/stop-descendant',
+                     'contained/artifact', 'contained/exit-record')
+        codex_lines = []
+
+        def x_normal(ident, inp=900, out=100):
+            lines = [{'type': 'thread.started', 'thread_id': ident}, {'type': 'turn.started'},
+                     {'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'reasoning'}},
+                     {'type': 'item.completed', 'item': {'id': 'item_1', 'type': 'agent_message'}},
+                     {'type': 'turn.completed', 'usage': {'input_tokens': inp, 'cached_input_tokens': 0,
+                                                          'output_tokens': out, 'reasoning_output_tokens': 0}}]
+            codex_lines.extend(lines)
+            return [{'line': line} for line in lines]
+        ENGINE_CASES = {
+            'claude': {'adapter': 'claude-contained', 'refused': 'claude-contained-unknown', 'account': 'acct-60a',
+                       'refusal': 'invalid_input:engine_version:9.9.9', 'exe': str(pinned),
+                       'flags': QUALIFIED['flags'], 'sha256': FAKE_SHA, 'profile': 'CLAUDE_CONFIG_DIR',
+                       'normal': lambda: normal(), 'start': lambda: [c_init()]},
+            'codex': {'adapter': 'codex-contained', 'refused': 'codex-contained-changed', 'account': 'acct-60x',
+                      'refusal': 'stale_subject:engine_digest', 'exe': str(CODEX_BIN), 'flags': CODEX_FLAGS,
+                      'sha256': (codex_record or {}).get('sha256'), 'profile': 'CODEX_HOME',
+                      'normal': lambda: x_normal('thread-' + os.urandom(3).hex()),
+                      'start': lambda: x_normal('thread-' + os.urandom(3).hex())[:2]}}
+        STOPS = {
+            # The engine ends on the cooperative request; its descendant ends on the group's SIGTERM.
+            'cooperative': lambda: [{'descendant': 60, 'cooperative': True}, {'sleep': 30}],
+            # The engine ignores the request and its descendant, started first, ends on the group's SIGTERM:
+            # only the kill ends the engine.
+            'forced': lambda: [{'descendant': 60, 'cooperative': True}, {'ignore_term': True}, {'sleep': 30}],
+            # The engine ends on the request and leaves a descendant that ignores every SIGTERM: only the
+            # group's kill ends it, and the dispatch must not be recorded ended while it lives.
+            'descendant': lambda: [{'descendant': 60}, {'sleep': 30}]}
+        runs60 = {}
+        with region(*CONTAINED):
+            for engine, case in ENGINE_CASES.items():
+                probe = str(clones_root / ('probe-%s-%s' % (engine, os.urandom(3).hex())))
+                launch, record = run(case['account'], admitted('VELDO-6010-' + engine), case['adapter'],
+                                     [{'probe': probe}] + case['normal']())
+                runs60[(engine, 'normal')] = (launch, record or {}, probe)
+                launch, record = run(case['account'], admitted('VELDO-6011-' + engine), case['refused'], case['normal']())
+                runs60[(engine, 'refused')] = (launch, record or {}, None)
+                for stop, script in STOPS.items():
+                    launch, _ = run(case['account'], admitted('VELDO-6012-%s-%s' % (engine, stop)), case['adapter'],
+                                    case['start']() + script(), wait=False)
+                    own = marker_wait(launch.dispatch_id, children=1)
+                    asked_at = time.monotonic()
+                    asked = launch.stop('owner')
+                    record = runner(case['account']).wait(launch)
+                    ended_at = time.monotonic()
+                    kids = (engine_markers(launch.dispatch_id) or [{}])[0].get('children') or []
+                    # What was alive the moment the dispatch's end was read.
+                    living = {'engine': bool(own) and alive(own['pid'], own['start']),
+                              'descendant': any(alive(k['pid'], k['start']) for k in kids)}
+                    escaped.extend(kids)
+                    runs60[(engine, stop)] = (launch, record or {}, {'asked': asked, 'took': ended_at - asked_at,
+                                                                     'own': own, 'kids': kids, 'living': living})
+
+            for engine, case in ENGINE_CASES.items():
+                launch, record, probe = runs60[(engine, 'normal')]
+                own = (engine_markers(launch.dispatch_id) or [{}])[0]
+                history = [h.get('state') for h in rec(launch.dispatch_id).get('history') or []]
+                accepted_at = journal_seq('dispatch/accept/%s/' % launch.dispatch_id)
+                ran_at = journal_seq('dispatch/run/%s/' % launch.dispatch_id)
+                check('contained/bind', '%s: bound before acceptance and launched once in its own scope, accepted '
+                      'before it ran [%s, %s spawns]' % (engine, history, spawned(launch.dispatch_id)),
+                      history == ['prepared', 'accepted', 'running', 'exited'] and spawned(launch.dispatch_id) == 1
+                      and None not in (accepted_at, ran_at) and accepted_at < ran_at)
+                refused, refused_record, _ = runs60[(engine, 'refused')]
+                check('contained/bind', '%s: an unbindable executable on the contained path is refused %s before '
+                      'acceptance, with no scope spawned and nothing reserved [%s]'
+                      % (engine, case['refusal'], refused_record.get('refusal')),
+                      refused_record.get('refusal') == case['refusal']
+                      and [h.get('state') for h in rec(refused.dispatch_id).get('history') or []] == ['prepared', 'refused']
+                      and nothing_ran(refused.dispatch_id))
+
+                group = getattr(launch, 'group', None) or {}
+                unit_name = CT.unit_name(launch.dispatch_id)
+                gone = CT.populated(CT.CGROUP / str(group.get('cgroup') or 'none').lstrip('/'))
+                check('contained/scope', '%s: the engine ran in its dispatch\'s own transient scope in this run\'s '
+                      'slice, the group the receiver reported, empty once it ended [%s, %s]'
+                      % (engine, own.get('cgroup'), group),
+                      group.get('unit') == unit_name and group.get('slice') == slice_name
+                      and own.get('cgroup') == group.get('cgroup') and str(own.get('cgroup')).endswith(
+                          '/%s/%s' % (slice_name, unit_name))
+                      and (launch.supervision or {}).get('empty') is True and gone in (None, False))
+
+                handle = provisioned.get(launch.dispatch_id)
+                paths = clones._paths(handle) if handle is not None else {}
+                entered = [json.loads(x.read_text()) for x in sorted((Path(paths['root']) / 'entered').glob('*.json'))] \
+                    if paths else []
+                process = record.get('process') or {}
+                work = paths.get('work')
+                head = GP.run(['git', '-C', str(work), 'rev-parse', 'HEAD'], capture_output=True,
+                              text=True).stdout.strip() if work else None
+                probed = [json.loads(x) for x in ((markers / ('%d.probe' % own['pid'])).read_text().splitlines()
+                                                    if own.get('pid') and (markers / ('%d.probe' % own['pid'])).exists()
+                                                    else [])]
+                check('contained/clone-entry', '%s: it entered its own clone through the Landlock entrance as the '
+                      'process the dispatch recorded, in its scope, and ran in the clone at the accepted commit [%s]'
+                      % (engine, entered),
+                      len(entered) == 1 and entered[0].get('dispatch_id') == launch.dispatch_id
+                      and entered[0].get('pid') == process.get('pid') == own.get('pid')
+                      and entered[0].get('cgroup') == group.get('cgroup') and own.get('cwd') == work
+                      and (own.get('env') or {}).get('VELDO_CLONE') == work
+                      and head == ((record.get('contract') or {}).get('source') or {}).get('commit'))
+                check('contained/clone-entry', '%s: confined: its write into the clone root was denied, nothing '
+                      'written [%s]' % (engine, probed),
+                      probed == [[probe, 'PermissionError']] and not os.path.exists(probe))
+
+                env = own.get('env') or {}
+                check('contained/pinned-exec', '%s: the process the dispatch recorded is the pinned executable, exec\'d '
+                      'with exactly its qualified flags, the qualified digest on disk [%s]' % (engine, own.get('argv')),
+                      own.get('argv') == [case['exe']] + list(case['flags']) and process.get('start') == own.get('start')
+                      and file_sha(case['exe']) == case['sha256'] and case['sha256'])
+                check('contained/pinned-exec', '%s: with the updater off and the recorded account\'s own profile [%s]'
+                      % (engine, env.get('DISABLE_AUTOUPDATER')),
+                      env.get('DISABLE_AUTOUPDATER') == '1' and env.get(case['profile']) == profiles[case['account']])
+
+                found = returned(launch) or {}
+                stored, mode = artifact_file(launch.dispatch_id)
+                parent_mode = (artifacts.stat().st_mode & 0o777) if artifacts.is_dir() else None
+                check('contained/artifact', '%s: a complete artifact of this engine, bound to its dispatch, invocation '
+                      'and pinned executable, kept 0600 in a 0700 directory [%s, %s]'
+                      % (engine, found.get('verdict'), found.get('executable')),
+                      found.get('verdict') == 'complete' and found.get('complete') is True
+                      and found.get('engine') == getattr(L.ENGINES.get({'claude': 'claude_code', 'codex': 'codex'}[engine]),
+                                                         'PROVIDER', None)
+                      and found.get('dispatch_id') == launch.dispatch_id and stored == found and mode == 0o600
+                      and parent_mode == 0o700 and (found.get('executable') or {}).get('sha256') == case['sha256']
+                      and (found.get('executable') or {}).get('path') == case['exe'])
+                if engine == 'codex':
+                    check('contained/artifact', 'codex: its document verifies from its own lines [%s]'
+                          % found.get('verdict'), bool(found) and getattr(X, 'verify', lambda d: False)(found))
+
+                termination = record.get('termination') or {}
+                bound = rec(launch.dispatch_id).get('artifact')
+                call = invocation(launch.dispatch_id)
+                check('contained/exit-record', '%s: the exit is recorded for the recorded process, exit 0, binding '
+                      'the complete artifact the runner was given; invocation and slot completed [%s, %s, %s]'
+                      % (engine, termination.get('returncode'), bound, slot_outcome(case['account'], launch.dispatch_id)),
+                      record.get('state') == 'exited' and termination.get('returncode') == 0
+                      and termination.get('signal') is None
+                      and bound == {'verdict': 'complete', 'complete': True, 'digest': (launch.artifact or {}).get('digest')}
+                      and getattr(D, 'completed', lambda r: None)(rec(launch.dispatch_id)) is True
+                      and call.get('outcome') == 'completed' and call.get('state') == 'settled'
+                      and slot_outcome(case['account'], launch.dispatch_id) == 'completed')
+
+                for stop, row in (('cooperative', 'contained/stop-cooperative'), ('forced', 'contained/stop-forced'),
+                                  ('descendant', 'contained/stop-descendant')):
+                    launch, record, seen = runs60[(engine, stop)]
+                    supervision = launch.supervision or {}
+                    steps = [s.get('step') for s in supervision.get('steps') or []]
+                    termination = record.get('termination') or {}
+                    process = record.get('process') or {}
+                    call = invocation(launch.dispatch_id)
+                    found = returned(launch) or {}
+                    check(row, '%s: the stop reached the receiver and the dispatch is recorded exited, stopped on '
+                          'request, its group empty, for the process it recorded [%s, %s]'
+                          % (engine, record.get('state'), supervision.get('cause')),
+                          seen['asked'] is True and record.get('state') == 'exited' and supervision.get('cause') == 'requested'
+                          and supervision.get('empty') is True and process.get('pid') == seen['own'].get('pid')
+                          and process.get('start') == seen['own'].get('start'))
+                    check(row, '%s: when that end was read, the engine and its descendant were gone [%s]'
+                          % (engine, seen['living']), len(seen['kids']) == 1
+                          and seen['living'] == {'engine': False, 'descendant': False})
+                    check(row, '%s: its original invocation is cancelled, its usage unknown and retained, and its '
+                          'artifact names it, never complete [%s, %s]' % (engine, call.get('outcome'), found.get('verdict')),
+                          call.get('outcome') == 'cancelled' and call.get('state') == 'unknown'
+                          and found.get('invocation') == 'invocation/' + launch.dispatch_id
+                          and found.get('complete') is False and (rec(launch.dispatch_id).get('artifact') or {}).get(
+                              'complete') is False)
+                    if stop == 'cooperative':
+                        check(row, '%s: it ended on the cooperative request, never killed, well within the graces '
+                              '[%s, %.2fs, %s]' % (engine, steps, seen['took'], termination),
+                              'kill' not in steps and steps[:1] == ['cooperative'] and seen['took'] < 5
+                              and termination.get('signal') == int(signal.SIGTERM))
+                    elif stop == 'forced':
+                        check(row, '%s: an engine ignoring the request is killed with its group after the configured '
+                              'graces, within their bound [%s, %.2fs, %s]' % (engine, steps, seen['took'], termination),
+                              steps == ['cooperative', 'terminate', 'kill'] and termination.get('signal') == int(signal.SIGKILL)
+                              and supervision.get('graces') == {'stop_grace_seconds': GRACE, 'kill_grace_seconds': GRACE}
+                              and 2 * GRACE - 0.1 <= seen['took'] <= 2 * GRACE + 4.0)
+                    else:
+                        check(row, '%s: the engine ended on the request and its descendant outlived the group\'s '
+                              'SIGTERM: only the kill ended it, and the dispatch was recorded ended after [%s, %s]'
+                              % (engine, steps, termination),
+                              termination.get('signal') == int(signal.SIGTERM) and 'kill' in steps
+                              and supervision.get('empty_monotonic') is not None
+                              and steps[-1:] == ['kill'])
+
         # The fixtures, checked against the tables extracted from the installed binary.
         def conform(value, schema, path):
             kind = schema.get('type')
@@ -1016,6 +1295,17 @@ sys.exit(payload.get('code', 0))
                                                                           'result/error', 'rate_limit_event'} - kinds)),
                   len(lines) > 60 and not problems
                   and {'system/init', 'assistant', 'result/success', 'result/error', 'rate_limit_event'} <= kinds)
+            codex_events = json.loads((TREE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())['codex']['events']
+            codex_items = json.loads((TREE / 'proof' / 'VELDO-0061' / 'codex-exec.json').read_text())['item']
+            codex_problems = [p for line in codex_lines for p in (
+                conform(line, codex_events[line['type']], line['type']) if line.get('type') in codex_events
+                else [str(line.get('type')) + ': an event exec does not print'])]
+            codex_problems += [line['item'] for line in codex_lines if 'item' in line and (
+                line['item'].get('type') not in codex_items['kinds']
+                or conform(line['item'], codex_items['items'][line['item']['type']], 'item'))]
+            check('format/fake-lines', 'every one of the %d Codex lines the contained rows scripted is an event the '
+                  'installed Codex binary declares, its item an exec item of a declared kind [%s]'
+                  % (len(codex_lines), codex_problems[:3]), len(codex_lines) >= 10 and not codex_problems)
             perturbed = [s for s in printed_steps if s[0] == 'perturbed']
             wrong = []
             for _, kind, source, raw in perturbed:
@@ -1035,7 +1325,9 @@ sys.exit(payload.get('code', 0))
                   and {'truncated', 'not_json', 'without:modelUsage'} == {p[1] for p in perturbed})
 
         with region('format/fake-argv'):
-            starts = [json.loads(p.read_text()) for p in sorted(markers.glob('*.json'))]
+            # Claude Code's starts: the contained rows' Codex starts are Codex's own command line.
+            starts = [m for m in (json.loads(p.read_text()) for p in sorted(markers.glob('*.json')))
+                      if m['argv'][:1] != [str(CODEX_BIN)]]
             argvs = [m['argv'][1:] for m in starts]
             declared = OPTIONS['options']
             undeclared = []
@@ -1063,6 +1355,23 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        # The contained rows' scopes: the run's slice stopped, its failed units cleared, nothing installed.
+        with contextlib.suppress(Exception):
+            subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,
+                           stdin=subprocess.DEVNULL)
+        with contextlib.suppress(Exception):
+            mine = sorted({CT.unit_name(launch.dispatch_id) for launch in contained_launches})
+            listed = subprocess.run(['systemctl', '--user', 'list-units', '--all', '--plain', '--no-legend', *mine],
+                                    capture_output=True, text=True, timeout=20, env=tools, stdin=subprocess.DEVNULL)
+            loaded = [line.split()[0] for line in listed.stdout.splitlines() if line.split()]
+            if mine and loaded:
+                subprocess.run(['systemctl', '--user', 'reset-failed', *loaded], capture_output=True, timeout=20,
+                               env=tools, stdin=subprocess.DEVNULL)
+        for launch in contained_launches:
+            with contextlib.suppress(Exception):
+                if launch.child is not None and launch.child.poll() is None:
+                    launch.child.kill()
+                    launch.child.wait(timeout=10)
         for kid in escaped:
             with contextlib.suppress(OSError):
                 stat = Path('/proc/%d/stat' % kid['pid']).read_text()
@@ -1088,4 +1397,14 @@ sys.exit(payload.get('code', 0))
     print('VELDO-0060 suite seconds: %.3f' % (time.monotonic() - started))
 
 
-_v60_suite()
+# The owner's session. The gate's mutation stage runs every suite without XDG_RUNTIME_DIR; the receiver, its
+# systemd tools and this suite's own systemctl reach the user manager through /run/user/<uid> for this run.
+_v60_session = __import__('os').environ.get('XDG_RUNTIME_DIR')
+__import__('os').environ['XDG_RUNTIME_DIR'] = _v60_session or '/run/user/%d' % __import__('os').getuid()
+try:
+    _v60_suite()
+finally:
+    if _v60_session is None:
+        __import__('os').environ.pop('XDG_RUNTIME_DIR', None)
+    else:
+        __import__('os').environ['XDG_RUNTIME_DIR'] = _v60_session

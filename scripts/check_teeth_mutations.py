@@ -6945,7 +6945,13 @@ def cases():
            "        if not isinstance(event, dict) or not _text(event.get('type')):\n"
            "            pass  # defect: a line that is not an event is not counted\n",
            'artifact/malformed-output')
-    # AC3 (declared falsifier): stopped reported while a real worker descendant remains alive.
+    # AC3 (declared falsifier): stopped reported while a real worker descendant remains alive. The contained
+    # path's empty-group check is broken, so the worker's exit ends the stop whatever is left in its group.
+    claude('claude-stop-leaves-descendant', 'control_launch.py',
+           "                if code is not None and (group is None or not group.populated()):\n",
+           "                if code is not None:  # defect: the worker's exit ends the stop, whatever is left in its group\n",
+           'contained/stop-descendant')
+    # The reported (transport) path's own check: a requested stop it cannot confirm is never recorded ended.
     claude('claude-stop-recorded-ended', 'control_launch.py',
            "        if remote and supervision['cause'] in ('requested', 'usage_cap'):\n",
            "        if remote and supervision['cause'] in ('usage_cap',):  # defect: a requested stop is recorded as ended\n",
