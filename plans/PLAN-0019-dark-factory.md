@@ -1089,12 +1089,12 @@ work:
     stage: 5
   - item: W112
     spec: VELDO-0152
-    title: Intake routes a message by the ticket key prefixes a project lists, and a new-project request to the factory project
+    title: Intake decides a project from a ticket key or a name the message states, and the factory project's PM routes every other message to a new project, an existing project or one question
     feature_refs: [F5]
-    depends_on: [VELDO-0076, VELDO-0126]
-    order: 14152
+    depends_on: [VELDO-0076, VELDO-0088, VELDO-0126, VELDO-0128, VELDO-0130, VELDO-0154]
+    order: 15152
     release: 1
-    stage: 4
+    stage: 5
   - item: W106
     spec: VELDO-0146
     title: Work of several units gets a separate elaboration run and a second PM cycle that stages the units against the published requirements
@@ -1533,7 +1533,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W109 | VELDO-0149 | 1 | 4 |
 | W110 | VELDO-0150 | 1 | 4 |
 | W111 | VELDO-0151 | 1 | 5 |
-| W112 | VELDO-0152 | 1 | 4 |
+| W112 | VELDO-0152 | 1 | 5 |
 | W106 | VELDO-0146 | 1 | 5 |
 | W107 | VELDO-0147 | 1 | 5 |
 | W113 | VELDO-0153 | 1 | 5 |
@@ -1716,3 +1716,11 @@ W117 (VELDO-0157) carries the Mac leg of the `when assigned` items and depends o
 W107's VELDO-0147; it cannot be in VELDO-0147, which W75's VELDO-0090 depends on, without a cycle.
 VELDO-0143 AC3 activated a new project with a default team template that VELDO-0089 does not define, so
 VELDO-0162 AC4, built in the second stage, defines the default team, and W103 (VELDO-0143) depends on it.
+
+2026-09-26: within revision 4, the owner's decision on new projects (Telegram 29186, 29187 and 29191): a
+new project is recognized by the factory project's PM, a Claude Code or Codex run that reads his text,
+never by a keyword rule. W112's VELDO-0152 keeps the ticket key and name rule at intake, sends every other
+message to the factory project's inbox, and applies the PM's route (a new project, an existing project, or
+one question to the owner when it is unclear). It now depends on W73's VELDO-0088 (the PM run), W114's
+VELDO-0154 (the loop that starts its cycle), W91's VELDO-0128 (the progress report) and W93's VELDO-0130
+(the read the UI uses), so W112 moves from stage 4 to stage 5; none of them depends on it.
