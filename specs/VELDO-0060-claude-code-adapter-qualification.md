@@ -225,3 +225,31 @@ wrapper path, the contained path is VELDO-0040's and VELDO-0041's). Proof: suite
 `78_veldo_0060_claude_adapter` (17 rows), the red record at b39a0fdc (all 15 behavior rows red by
 assertion) and 21 finding 60 mutations, each red on its named row; findings 39, 40, 41 and 62 still
 reject. Status unchanged.
+
+2026-09-26, integrated with VELDO-0061 and the review's blockers fixed (branch build-veldo-0060-0061):
+ONE engine protocol. Both engine modules implement `control_launch.ENGINE_PROTOCOL` with the same
+signatures (`Refused`, `bind(adapter, state_root)`, `command(binding, adapter)`, `environment(binding)`,
+`Terminal().document(termination, cause)`, `Meter`, `REGISTRATION`), and the receiver drives every engine
+through one path (`Receiver._bind`): the pin checked before acceptance with nothing spawned, each engine's
+own argv composition (this one's: the adapter's prefix, the pinned path, the qualified flags), one argv
+check, DISABLE_AUTOUPDATER set last with an adapter configuring it otherwise refused by name, one artifact
+document shape and one report {path, digest, verdict, complete}; the artifact now lives in the config's
+`artifacts` directory. Review blocker 1 (floor completion): `control_dispatch`'s exit record binds the
+artifact's verdict, completeness and digest, and `control_dispatch.completed` is the one completion gate,
+read by the runner's worker slot and by the floor (`dispatch._clean_exit`, for the build and review
+dispatches), so a zero exit without its terminal record is refused at the floor; the footprint adds
+`dispatch.py` and `control_dispatch.py` for it (AC2 needs it; the lead authorized the amendment). Review
+blocker 2 (contained path): the suite runs this adapter and VELDO-0061's on the local Linux contained
+launch in transient user systemd scopes in its own slice (bind, scope, Landlock clone entrance, pinned
+exec, cooperative and forced stop, artifact, exit record), and the AC3 declared falsifier is now
+`claude-stop-leaves-descendant`, which breaks the contained path's empty-group check: a descendant that
+outlives the group's SIGTERM keeps the dispatch from being recorded ended until the kill (the earlier
+`claude-stop-recorded-ended` stays as the reported path's own check). Filed hardening done: the pinned
+path must be what the trusted wrapper execs or the first argument after the installed clone entrance's
+`--`; the wrapper or the entrance, whichever execs the engine, re-hashes it immediately before the exec
+and refuses a changed one; clones write-protect the engines directories (`Clones(engines=...)`, so the
+footprint adds `control_clone.py`); `bind` refuses a copy that is not this account's own, a writable or
+special-bit copy and a linked directory on its way; the terminal record's tokens are modelUsage's, unknown
+without it, never the main loop's usage. The owner check cannot be driven negative without a second
+account or root (no row for it). Proof: suite `78_veldo_0060_claude_adapter` (32 rows), the red record
+at b39a0fdc regenerated, finding 60's mutations. Status unchanged.

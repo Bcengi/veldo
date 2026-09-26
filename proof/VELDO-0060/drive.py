@@ -37,7 +37,8 @@ HERE = Path(__file__).resolve().parent
 SUITE = '78_veldo_0060_claude_adapter.py'
 PREFIX = 'VELDO-0060 '
 FINDING = 60
-MODULES = ('control_launch.py', 'control_engine_claude.py', 'init_scaffold.py')
+MODULES = ('control_launch.py', 'control_engine_claude.py', 'control_engine_codex.py', 'init_scaffold.py',
+           'control_dispatch.py', 'dispatch.py', 'control_clone.py')
 
 
 def _load(name, path):

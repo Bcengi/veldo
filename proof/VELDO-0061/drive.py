@@ -35,10 +35,11 @@ import time
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
-SUITE = '78_veldo_0061_codex_adapter.py'
+SUITE = '79_veldo_0061_codex_adapter.py'
 PREFIX = 'VELDO-0061 '
 FINDING = 61
-MODULES = ('control_engine_codex.py', 'control_launch.py', 'control_reservations.py', 'init_scaffold.py')
+MODULES = ('control_engine_codex.py', 'control_launch.py', 'control_reservations.py', 'init_scaffold.py',
+           'control_dispatch.py', 'control_clone.py')
 
 
 def _load(name, path):
