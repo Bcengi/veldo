@@ -58,6 +58,7 @@ def _v160_suite():
             'limit/stream-exhausted', 'limit/rate-limit-result', 'limit/claude-rejected-texts',
             'decision/rerun', 'decision/ask', 'decision/unreadable-asks', 'decision/same-id-write',
             'decision/unknown-forms', 'decision/redacted-name', 'decision/tool-free-forms', 'format/tool-forms',
+            'decision/repl-inner-call', 'decision/task-progress-tool', 'decision/frame-tool-names',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -1035,7 +1036,7 @@ sys.exit(payload.get('code', 0))
             ('claude_code', 'a tool_use block in a user message', [c_user([tool_use('toolu_u', 'mcp__tracker__search')])],
              'tool_use', 'request_blocks'),
             ('claude_code', 'a tool_progress for an id never seen',
-             [c_line('tool_progress', tool_use_id='toolu_never', tool_name='mcp__tracker__add_comment',
+             [c_line('tool_progress', tool_use_id='toolu_never', tool_name='Bash',
                      parent_tool_use_id=None, elapsed_time_seconds=1)], 'tool_progress', 'messages'),
             ('claude_code', 'a tool_use_summary of an id never seen',
              [c_line('tool_use_summary', summary='commented', preceding_tool_use_ids=['toolu_never'])],
@@ -1046,6 +1047,17 @@ sys.exit(payload.get('code', 0))
              'message:unlisted_message', None),
             ('claude_code', 'a system message of a subtype no table lists', [c_line('system', subtype='unlisted_subtype')],
              'message:system/unlisted_subtype', None),
+            # The frames the CLI writes outside the message union whose schema may carry a tool call.
+            ('claude_code', 'a can_use_tool control request (outside the message union)',
+             [{'type': 'control_request', 'request_id': 'req-1',
+               'request': {'subtype': 'can_use_tool', 'tool_name': 'mcp__tracker__add_comment', 'input': {},
+                           'tool_use_id': 'toolu_perm'}}], 'message:control_request', 'frames'),
+            ('claude_code', 'a control response (outside the message union)',
+             [{'type': 'control_response', 'response': {'subtype': 'success', 'request_id': 'req-2', 'response': {}}}],
+             'message:control_response', 'frames'),
+            ('claude_code', 'a transcript mirror (outside the message union)',
+             [{'type': 'transcript_mirror', 'filePath': '/work/t.jsonl', 'entries': [{'type': 'assistant'}]}],
+             'message:transcript_mirror', 'frames'),
             ('codex', 'a dynamic_tool_call item', [x_any('dynamic_tool_call', 'item_d', tool='add_comment',
                                                          arguments={}, status='in_progress')],
              'dynamic_tool_call', 'thread_items'),
@@ -1054,6 +1066,9 @@ sys.exit(payload.get('code', 0))
              'collab_agent_tool_call', 'thread_items'),
             ('codex', 'a sub_agent_activity item', [x_any('sub_agent_activity', 'item_a')], 'sub_agent_activity',
              'thread_items'),
+            ('codex', "exec's own collab_tool_call item (a sub-agent call)",
+             [x_any('collab_tool_call', 'item_cc', tool='spawn_agent', status='in_progress')], 'collab_tool_call',
+             'exec_items'),
             ('codex', 'an item of a type no table lists', [x_any('unlisted_item', 'item_x')], 'unlisted_item', None),
             ('codex', 'an event of a type no table lists', [{'type': 'turn.unlisted'}], 'event:turn.unlisted', None),
         )
@@ -1071,16 +1086,18 @@ sys.exit(payload.get('code', 0))
         # A redacted line whose tool name is neither mcp__ nor one the binary lists as built in may be a redacted
         # MCP tool's name: redacted_unreadable. A built-in name, or an MCP name that still reads, is decided as is.
         with region('decision/redacted-name'):
+            renamed = {r.get('name') for r in CFORMS.get('builtin_renamed') or ()}
             for name, expected in (('[REDACTED:known_pattern]', [(3, None, None, None, None, 'redacted_unreadable')]),
-                                   ('Agent', [(3, None, None, None, None, 'redacted_unreadable')]),
-                                   ('Read', []), ('mcp__tracker__get_issue', [])):
+                                   ('NotebookRead', [(3, None, None, None, None, 'redacted_unreadable')]),
+                                   ('Agent', []), ('Read', []), ('mcp__tracker__get_issue', [])):
                 record = record_of(c_head + [('engine', c_blocks([tool_use('toolu_x', name)]))] + c_tail)
                 record[len(c_head)]['redacted'] = ['known_pattern']
                 found, error = decide(record, 'claude_code')
                 check('decision/redacted-name', 'a redacted line whose tool_use is named %r: decided %s [%s, %s]'
                       % (name, 'ask' if expected else 're-run', (found or {}).get('decision'), named(found) or error),
                       (found or {}).get('decision') == ('ask' if expected else 'rerun') and named(found) == expected
-                      and (name in (CFORMS.get('builtin_tools') or ())) == (name == 'Read'))
+                      and (name in (CFORMS.get('builtin_tools') or ())) == (name == 'Read')
+                      and (name in renamed) == (name == 'Agent'))
 
         # Negative control: every tool-free or built-in form, and a result, progress and summary of a call the
         # record showed, is no MCP call, so the fail-closed reading does not ask for everything.
@@ -1099,7 +1116,25 @@ sys.exit(payload.get('code', 0))
                 c_stream({'type': 'content_block_delta', 'index': 0, 'delta': {'type': 'text_delta', 'text': 'x'}}),
                 c_stream({'type': 'content_block_stop', 'index': 0}),
                 c_line('system', subtype='hook_started', hook_id='h', hook_name='n', hook_event='e'),
-                c_line('auth_status', isAuthenticating=False, output=[])]
+                c_line('auth_status', isAuthenticating=False, output=[]),
+                # The frames outside the message union whose schema provably carries no tool call.
+                {'type': 'keep_alive'}, {'type': 'control_cancel_request', 'request_id': 'req-3'},
+                c_line('active_goal', value=None), c_line('system', subtype='task_summary', detail=None),
+                c_line('system', subtype='post_turn_summary', summarizes_uuid='u', status_category='c',
+                       status_detail='d', needs_action='n'),
+                c_line('autocompact_state', value={'enabled': True, 'effective_window': 1, 'threshold': 1,
+                                                   'enforced': False, 'source': 'auto'}),
+                # Built-in names a frame carries: the REPL tool's inner Read, a heartbeat of the Bash call, a task
+                # whose last tool and workflow agent ran built-in tools.
+                c_blocks([tool_use('toolu_repl', 'REPL')]),
+                c_line('tool_progress', tool_use_id='toolu_repl', tool_name='REPL', parent_tool_use_id=None,
+                       elapsed_time_seconds=0, repl_call={'inner_tool_name': 'Read', 'inner_tool_input': {},
+                                                          'inner_tool_use_id': 'toolu_inner', 'phase': 'start'}),
+                c_line('tool_progress', tool_use_id='toolu_bash', tool_name='Bash', parent_tool_use_id=None,
+                       elapsed_time_seconds=31, heartbeat=True),
+                c_line('system', subtype='task_progress', task_id='task-1', tool_use_id='toolu_bash', description='d',
+                       usage={'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}, last_tool_name='Bash',
+                       workflow_progress=[{'type': 'workflow_agent', 'index': 0, 'lastToolName': 'Read'}])]
             codex_free = [x_any(kind, 'item_%s' % kind) for kind in
                           ('agent_message', 'reasoning', 'todo_list', 'error', 'command_execution', 'file_change',
                            'web_search')]
@@ -1109,6 +1144,112 @@ sys.exit(payload.get('code', 0))
                 check('decision/tool-free-forms', '%s: %d lines of tool-free and built-in forms decide re-run, naming no '
                       'call [%s, %s]' % (provider, len(lines), (found or {}).get('decision'), forms(found) or error),
                       (found or {}).get('decision') == 'rerun' and (found or {}).get('calls') == [])
+
+        def c_progress(ident, name, **fields):
+            return c_line('tool_progress', tool_use_id=ident, tool_name=name, parent_tool_use_id=None,
+                          elapsed_time_seconds=0, **fields)
+
+        def c_repl(inner):
+            return c_progress('toolu_repl', 'REPL', repl_call=inner)
+
+        def c_task(**fields):
+            return c_line('system', subtype='task_progress', task_id='task-160', tool_use_id='toolu_agent',
+                          description='review', usage={'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}, **fields)
+
+        def inner(name, **fields):
+            return dict({'inner_tool_name': name, 'inner_tool_input': {'issue': 'CEO-1'}, 'inner_tool_use_id': 'toolu_i1',
+                         'phase': 'start'}, **fields)
+
+        def judged(what, row, lines, decision, expected, reads, head=None):
+            """A Claude Code record of `lines` after its init (and `head`), decided: `expected` is the calls it names
+            as (sequence, reason, server, tool, form) and `reads` the MCP calls it counts."""
+            before = c_head + [('engine', line) for line in head or ()]
+            found, error = decide(record_of(before + [('engine', line) for line in lines] + c_tail), 'claude_code')
+            got = sorted((c['sequence'], c['reason'], c['server'], c['tool'], c.get('form'))
+                         for c in (found or {}).get('calls') or [])
+            check(row, '%s: decided %s [%s, %s, %s MCP calls]' % (what, decision, (found or {}).get('decision'),
+                                                               got or error, (found or {}).get('mcp_calls')),
+                  (found or {}).get('decision') == decision and got == sorted(expected)
+                  and (found or {}).get('mcp_calls') == reads)
+
+        # BLOCKING: the REPL tool's inner calls reach the stream only as a tool_progress of the REPL call carrying a
+        # repl_call (the binary's emitters; its schema omits the field), never as tool_use blocks.
+        repl_head = [c_blocks([tool_use('toolu_repl', 'REPL')])]
+        repl_tail = [c_user([{'type': 'tool_result', 'tool_use_id': 'toolu_repl', 'content': 'ok'}])]
+        with region('decision/repl-inner-call'):
+            at = len(c_head) + 2
+            judged('an MCP write made inside the REPL tool (the checker\'s reproduction)', 'decision/repl-inner-call',
+                   [c_repl(inner('mcp__tracker__add_comment'))] + repl_tail, 'ask',
+                   [(at, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1, repl_head)
+            judged('an MCP write inside the REPL tool, in its end phase only', 'decision/repl-inner-call',
+                   [c_repl(inner('mcp__wiki__write_page', phase='end'))] + repl_tail, 'ask',
+                   [(at, 'not_marked_read_only', 'wiki', 'write_page', None)], 1, repl_head)
+            judged('a REPL inner tool neither mcp__ nor built in', 'decision/repl-inner-call',
+                   [c_repl(inner('RemoteTrigger'))] + repl_tail, 'ask',
+                   [(at, 'unknown_call', None, None, 'repl_call:RemoteTrigger')], 0, repl_head)
+            for what, value in (('a repl_call that is not an object', 'mcp__tracker__add_comment'),
+                                ('a repl_call without its inner tool name', {'inner_tool_use_id': 'toolu_i1'}),
+                                ('a repl_call whose inner tool name is not a string', inner(['mcp__tracker__add_comment']))):
+                judged(what, 'decision/repl-inner-call', [c_repl(value)] + repl_tail, 'ask',
+                       [(at, 'unreadable', None, None, None)], 0, repl_head)
+            judged('a read-only MCP call inside the REPL tool (negative control)', 'decision/repl-inner-call',
+                   [c_repl(inner('mcp__tracker__get_issue'))] + repl_tail, 'rerun', [], 1, repl_head)
+            judged('a built-in tool inside the REPL tool (negative control)', 'decision/repl-inner-call',
+                   [c_repl(inner('Read'))] + repl_tail, 'rerun', [], 0, repl_head)
+
+        # A task's progress names the last tool it ran, and each workflow agent's (entries its schema omits).
+        agent_head = [c_blocks([tool_use('toolu_agent', 'Agent')]),
+                      c_user([{'type': 'tool_result', 'tool_use_id': 'toolu_agent', 'content': 'started'}]),
+                      c_line('system', subtype='task_started', task_id='task-160', tool_use_id='toolu_agent',
+                             description='review', task_type='local_agent')]
+        with region('decision/task-progress-tool'):
+            at = len(c_head) + len(agent_head) + 1
+            judged('a background task whose last tool is an MCP write (the checker\'s reproduction)',
+                   'decision/task-progress-tool', [c_task(last_tool_name='mcp__tracker__add_comment')], 'ask',
+                   [(at, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1, agent_head)
+            judged('the same last tool on two progress lines is one call', 'decision/task-progress-tool',
+                   [c_task(last_tool_name='mcp__wiki__write_page')] * 2, 'ask',
+                   [(at, 'not_marked_read_only', 'wiki', 'write_page', None)], 1, agent_head)
+            judged('a workflow agent whose last tool is an MCP write', 'decision/task-progress-tool',
+                   [c_task(last_tool_name='review agent',
+                           workflow_progress=[{'type': 'workflow_phase', 'index': 0},
+                                              {'type': 'workflow_agent', 'index': 1,
+                                               'lastToolName': 'mcp__tracker__add_comment'}])], 'ask',
+                   [(at, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1, agent_head)
+            for what, fields in (('a last tool name that is not a string', {'last_tool_name': 7}),
+                                 ('workflow progress that is not a list', {'workflow_progress': 'agent 1'}),
+                                 ('a workflow progress entry that is not an object', {'workflow_progress': ['agent 1']})):
+                judged(what, 'decision/task-progress-tool', [c_task(**fields)], 'ask',
+                       [(at, 'unreadable', None, None, None)], 0, agent_head)
+            judged('a task whose last tool is a read-only MCP call (negative control)', 'decision/task-progress-tool',
+                   [c_task(last_tool_name='mcp__tracker__search')], 'rerun', [], 1, agent_head)
+            judged('a task whose last tool is built in (negative control)', 'decision/task-progress-tool',
+                   [c_task(last_tool_name='Bash')], 'rerun', [], 0, agent_head)
+
+        # The other frames that carry a tool's name: a tool_progress's own tool, and an assistant message's MCP
+        # attribution and batch tool names.
+        with region('decision/frame-tool-names'):
+            at = len(c_head) + 2
+            judged('a tool_progress of a shown call naming an MCP write', 'decision/frame-tool-names',
+                   [c_progress('toolu_repl', 'mcp__tracker__add_comment', heartbeat=True)], 'ask',
+                   [(at, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1, repl_head)
+            judged('an MCP write and its heartbeat are one call', 'decision/frame-tool-names',
+                   [c_progress('toolu_w', 'mcp__tracker__add_comment', heartbeat=True)], 'ask',
+                   [(at - 1, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1,
+                   [c_blocks([tool_use('toolu_w', 'mcp__tracker__add_comment')])])
+            judged('an assistant message an MCP tool produced', 'decision/frame-tool-names',
+                   [dict(c_blocks([{'type': 'text', 'text': 'x'}]), attribution_mcp_server='tracker',
+                         attribution_mcp_tool='add_comment')], 'ask',
+                   [(at - 1, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1)
+            judged('an assistant message decomposed from a batch holding an MCP write', 'decision/frame-tool-names',
+                   [dict(c_blocks([tool_use('toolu_s', 'Bash')]),
+                         batch_tool_uses=[{'id': 'toolu_b', 'name': 'mcp__wiki__write_page'}])], 'ask',
+                   [(at - 1, 'not_marked_read_only', 'wiki', 'write_page', None)], 1)
+            judged('an MCP attribution that is not a name', 'decision/frame-tool-names',
+                   [dict(c_blocks([{'type': 'text', 'text': 'x'}]), attribution_mcp_server=['tracker'])], 'ask',
+                   [(at - 1, 'unreadable', None, None, None)], 0)
+            judged('a heartbeat of a shown built-in call (negative control)', 'decision/frame-tool-names',
+                   [c_progress('toolu_repl', 'REPL', heartbeat=True)], 'rerun', [], 0, repl_head)
 
         # The readers' tables are the binaries' own; each listed fixture form is one they list, each unlisted one not.
         with region('format/tool-forms'):
@@ -1128,17 +1269,53 @@ sys.exit(payload.get('code', 0))
                   claude_tables == module_tables and len(claude_tables['messages']) > 40
                   and set(getattr(CE, 'TOOL_FREE_REQUEST', ())) <= set(claude_tables['request_blocks'])
                   and set(getattr(CE, 'TOOL_FREE_BLOCKS', ())) <= set(claude_tables['response_blocks']))
+            renamed = {r['name']: tuple(r['aliases']) for r in CFORMS.get('builtin_renamed') or ()}
+            check('format/tool-forms', 'claude_code: the built-in names are BUILTIN_TOOL_NAMES and the current name of '
+                  'each tool it lists under an old one (%s) [%s, %s]' % (renamed, getattr(CE, 'BUILTIN_RENAMED', None),
+                                                                       sorted(set(getattr(CE, 'BUILTIN', ())) ^ (
+                                                                           claude_tables['builtin_tools'] | set(renamed)))),
+                  renamed == {'Agent': ('Task',)} and getattr(CE, 'BUILTIN_RENAMED', None) == renamed
+                  and set(getattr(CE, 'BUILTIN', ())) == claude_tables['builtin_tools'] | set(renamed))
+            binary_fields = {(tag, path) for source in ('tool_fields', 'emitted_tool_fields')
+                             for tag, paths in (CFORMS.get(source) or {}).items() for path in paths}
+            module_fields = {(tag, path) for tag, paths in (getattr(CE, 'TOOL_FIELDS', None) or {}).items()
+                             for path in paths}
+            reads = {(tag, path) for tag, paths in (getattr(CE, 'TOOL_FIELDS', None) or {}).items()
+                     for path, how in paths.items() if how == 'call'}
+            check('format/tool-forms', 'claude_code: every field of the binary\'s messages that names a tool, declared '
+                  'or emitted, is in the reader\'s table, and the tool names that ran are read as calls [%s, %s]'
+                  % (sorted(binary_fields ^ module_fields)[:6], sorted(reads)),
+                  binary_fields == module_fields and len(binary_fields) > 40
+                  and reads == {('tool_progress', 'tool_name'), ('tool_progress', 'repl_call.inner_tool_name'),
+                                ('system/task_progress', 'last_tool_name'),
+                                ('system/task_progress', 'workflow_progress.lastToolName'),
+                                ('assistant', 'attribution_mcp_tool'), ('assistant', 'batch_tool_uses')})
+            frames = {(f[0], f[1]): f[2] for f in CFORMS.get('frames') or ()}
+            check('format/tool-forms', 'claude_code: the frames outside the message union the reader takes as tool-free '
+                  'are the ones whose schema provably carries no tool call [%s, %s]'
+                  % (sorted(frames), sorted(map(str, getattr(CE, 'TOOL_FREE_FRAMES', ())))),
+                  set(getattr(CE, 'TOOL_FREE_FRAMES', ())) == {tag for tag, free in frames.items() if free}
+                  and {('control_request', None), ('control_response', None), ('transcript_mirror', None)}
+                  == {tag for tag, free in frames.items() if not free}
+                  and not set(frames) & claude_tables['messages'])
             exec_items = set(XFORMS.get('exec_items') or ())
-            known = set(getattr(XE, 'TOOL_FREE_ITEMS', ())) | set(getattr(XE, 'BUILTIN_ITEMS', ())) | {str(getattr(XE, 'MCP_ITEM', ''))}
-            check('format/tool-forms', 'codex: the reader\'s item and event tables are exec\'s own [%s, %s]'
+            known = (set(getattr(XE, 'TOOL_FREE_ITEMS', ())) | set(getattr(XE, 'BUILTIN_ITEMS', ()))
+                     | set(getattr(XE, 'SUBAGENT_ITEMS', ())) | {str(getattr(XE, 'MCP_ITEM', ''))})
+            check('format/tool-forms', 'codex: the reader\'s item and event tables are exec\'s own, its own '
+                  'collab_tool_call a sub-agent call [%s, %s]'
                   % (sorted(known ^ exec_items), sorted(map(str, set(getattr(XE, 'EVENTS', ())) ^ set(FORMATS['codex']['events'])))),
-                  known == exec_items and len(exec_items) == 8
+                  known == exec_items and len(exec_items) == 9 and 'collab_tool_call' in exec_items
+                  and set(getattr(XE, 'SUBAGENT_ITEMS', ())) == {'collab_tool_call'}
+                  and not set(getattr(XE, 'SUBAGENT_ITEMS', ())) & (set(getattr(XE, 'TOOL_FREE_ITEMS', ()))
+                                                                    | set(getattr(XE, 'BUILTIN_ITEMS', ())))
                   and set(getattr(XE, 'EVENTS', ())) == set(FORMATS['codex']['events']))
             listed = {'response_blocks': set(claude_tables['response_blocks']),
                       'request_blocks': set(claude_tables['request_blocks']),
                       'messages': {m[0] for m in claude_tables['messages']},
-                      'thread_items': set(XFORMS.get('thread_items') or ())}
-            every = {'claude_code': set().union(*listed.values(), claude_tables['stream_events'],
+                      'frames': {tag[0] for tag, free in frames.items() if not free},
+                      'thread_items': set(XFORMS.get('thread_items') or ()), 'exec_items': exec_items}
+            every = {'claude_code': set().union(listed['response_blocks'], listed['request_blocks'], listed['messages'],
+                                                listed['frames'], claude_tables['stream_events'],
                                                 {m[1] for m in claude_tables['messages'] if m[1]}),
                      'codex': set().union(listed['thread_items'], exec_items, FORMATS['codex']['events'])}
             wrong = []
