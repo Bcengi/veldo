@@ -181,4 +181,4 @@ proposal names its current revision, AC3 gives the project that revision as its 
 depends_on adds VELDO-0162. Criterion meaning unchanged. Draft; the owner decides readiness.
 
 2026-09-26, lead: AC1 names the factory PM's new-project route (VELDO-0152 AC3), since the owner replaced
-the keyword rule with routing by the factory PM (Telegram 29187, 29191).
+the keyword rule with routing by the factory PM (Telegram 29186, 29187 and 29191).

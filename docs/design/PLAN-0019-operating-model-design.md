@@ -9,7 +9,9 @@ sandbox denial and the `socat` install. And the review of PLAN-0019 revision 4 s
 out of VELDO-0129, so sections 1, 4, 11, 12 and 14 name it VELDO-0154 where they named VELDO-0129 AC4.
 Sections 8 and 11 still cite VELDO-0062 AC5 for the account pool, as approved; the pool is now VELDO-0160.
 And the owner replaced the keyword rule for new-project requests with routing by the factory PM (Telegram
-29187 and 29191, 2026-09-26), so section 5 and its VELDO-0126 amendment now describe that routing.
+29186, 29187 and 29191, 2026-09-26), so sections 2 and 5 and the VELDO-0126 amendment now describe that
+routing, in which a project name in the text is a hint and never decides, and section 15 marks the
+whole-words rule as replaced.
 Nothing else changed. It was written against origin/main `c1fd591` and the branches named below.
 Revision 2 answered the adversarial review of revision 1 (`6416eb8`) and folded in the owner's decision
 of the same day that each person runs their own factory (Telegram 29146, 29147); section 14 maps every
@@ -180,8 +182,8 @@ reaches the reference, the run asks the owner through an ordinary decision reque
 reference and the missing capability; nothing proceeds on the plain text alone.
 
 **Ticket keys name projects.** A project record gains an optional list of ticket key prefixes, for
-example `BCG`. Intake treats a ticket key in the text whose prefix one candidate lists exactly as it
-treats that candidate's name: it decides the project.
+example `BCG`. A ticket key in the text whose prefix exactly one candidate lists decides the project. A
+project's name in the text does not: it is a hint to the factory PM (section 5, VELDO-0152).
 
 **(e) Changes.** Amend VELDO-0091 AC1: the requirements document quotes every external reference in the
 objective's messages with reference, tool, fetch time and digest, and a reference no configured tool
@@ -453,9 +455,10 @@ not yet any project's. Intake
 never selects it as a default or as an only candidate.
 
 **Creating one from chat.** The owner writes, for example, "start a new personal project called
-tidepool". Intake decides only what needs no judgment: a ticket key whose prefix one project lists, or a
-project the message names. Every other message goes to the factory project as an inbox proposal with no
-intake question, and the loop starts its PM cycle. The factory PM, a Claude Code or Codex run on his own
+tidepool". Intake decides only what needs no judgment: a ticket key whose prefix one project lists, or
+the project field of an API request. A project the message names is passed to the factory PM as a hint
+and decides nothing at intake, so "start a new project like bcengi" does not land in bcengi. Every other
+message goes to the factory project as an inbox proposal with no intake question, and the loop starts its PM cycle. The factory PM, a Claude Code or Codex run on his own
 subscriptions, reads his words and routes the message: a new project, an existing project, or, only when
 it cannot tell, one question offering his projects and "a new project" (VELDO-0152). No keyword rule
 decides new-project intent. The
@@ -517,8 +520,8 @@ remote-owner refusal. New **VELDO-0143**: *A repository the owner asks for in ch
 under his named identity, taken on by the running factory without a restart and bound to a new project,
 on his one answer.* Its criteria cover the factory project and the new-project route, creation only from
 a settled answer, the scaffold commit on adoption, adoption without reinstallation, and activation with
-the first objective admitted. Amend VELDO-0126 AC1 (in VELDO-0152): a ticket key one project lists or a project the message names
-decides at intake; every other message goes to the factory project for the factory PM to route, and the
+the first objective admitted. Amend VELDO-0126 AC1 (in VELDO-0152): only a ticket key one project lists or an API request's project
+field decides at intake, and a project the message names is a hint to the factory PM; every other message goes to the factory project for the factory PM to route, and the
 factory project is never a default. Amend VELDO-0076 AC1: the execution repository is any repository adopted in this domain, and
 activation may be applied from the owner's settled answer. VELDO-0131 gains a read-only "Repositories
 and identities" screen row.
@@ -1013,7 +1016,8 @@ engine joins the MVP pool and the walkthrough stands as written.
 **Second check (2026-09-25).** A fresh check of this revision confirmed the seven fixes against the code
 and the installed binaries and found three that still failed: the environment strip would have cut
 `systemd-run` off from the user manager (now applied by the wrapper before exec), the new-project rule
-missed its own example (now whole words), and a signed run-ended packet would stall a unit whose
+missed its own example (then whole words; since replaced by the factory PM's routing, Telegram 29186,
+29187 and 29191, section 5), and a signed run-ended packet would stall a unit whose
 receiver died (now the Runner's launch pipe). It also corrected re-land approvals, the Mac credential
 file and sandbox, the factory project's repository, read-only marking per tool, the pinned binary copy,
 the joined instruction file and the wording of section 15. All are applied above.

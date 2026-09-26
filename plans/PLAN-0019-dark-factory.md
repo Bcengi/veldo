@@ -1089,7 +1089,7 @@ work:
     stage: 5
   - item: W112
     spec: VELDO-0152
-    title: Intake decides a project from a ticket key or a name the message states, and the factory project's PM routes every other message to a new project, an existing project or one question
+    title: Intake decides a project only from a ticket key or the request's project field, and the factory project's PM routes every other message to a new project, an existing project or one question
     feature_refs: [F5]
     depends_on: [VELDO-0076, VELDO-0088, VELDO-0126, VELDO-0128, VELDO-0130, VELDO-0154]
     order: 15152
@@ -1719,8 +1719,9 @@ VELDO-0162 AC4, built in the second stage, defines the default team, and W103 (V
 
 2026-09-26: within revision 4, the owner's decision on new projects (Telegram 29186, 29187 and 29191): a
 new project is recognized by the factory project's PM, a Claude Code or Codex run that reads his text,
-never by a keyword rule. W112's VELDO-0152 keeps the ticket key and name rule at intake, sends every other
-message to the factory project's inbox, and applies the PM's route (a new project, an existing project, or
-one question to the owner when it is unclear). It now depends on W73's VELDO-0088 (the PM run), W114's
+never by a keyword rule. W112's VELDO-0152 decides at intake only by a ticket key or the request's project
+field, passes a project name in the text to the PM as a hint, sends every other message to the factory
+project's inbox, and applies the PM's route (a new project, an existing project, or one question to the
+owner when it is unclear). It now depends on W73's VELDO-0088 (the PM run), W114's
 VELDO-0154 (the loop that starts its cycle), W91's VELDO-0128 (the progress report) and W93's VELDO-0130
 (the read the UI uses), so W112 moves from stage 4 to stage 5; none of them depends on it.
