@@ -29,6 +29,7 @@ def _v149_suite():
     import json
     import os
     from pathlib import Path
+    import re
     import shutil
     import subprocess
     import tempfile
@@ -43,7 +44,7 @@ def _v149_suite():
     # The fields VELDO-0076 AC1 says activation binds; VELDO-0149 AC2 says an answer binds the same.
     SPEC_FIELDS = ('owner', 'charter', 'execution_repository', 'authority_policy', 'coordination_budget')
     CHOICES = ('accept', 'return_for_elaboration', 'reject')
-    NAMES = ['tide', 'reef', 'kelp', 'cove', 'dune', 'moor', 'heath', 'fern', 'vale', 'glen', 'rill']
+    NAMES = ['tide', 'reef', 'kelp', 'cove', 'dune', 'moor', 'heath', 'fern', 'vale', 'glen', 'rill', 'bay', 'isle']
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -436,9 +437,13 @@ def _v149_suite():
                      and 'SSH SIGNATURE' not in json.dumps(activations))])
 
             # AC2: the owner's settled answer to an activation request.
-            def open_activation(alias, proposal, owner='owner'):
+            def open_activation(alias, proposal, owner='owner', brief=None):
                 """The requester's terms naming the activation, the inbox request, its framing and its
-                presentation: (request id, presented receipt)."""
+                presentation: (request id, presented receipt). The brief is the service's rendering of the
+                proposal (activation_brief) unless the requester writes his own."""
+                if brief is None:
+                    brief = (PJ.activation_brief(proposal) if hasattr(PJ, 'activation_brief')
+                             else 'Start project %s.' % proposal['project'])
                 target = {'kind': 'project_activation', 'ref': 'project:' + proposal['project'],
                           'digest': spelled_digest(proposal)}
                 body = dict(ids, operation='terms', terms=alias, principal='pm', command_id=next_id('terms'),
@@ -449,7 +454,7 @@ def _v149_suite():
                                                       command_id=next_id('c'), nonce=next_id('n'), assignment=dict(
                                                           kind='decision', owner=owner, scope=[proposal['project']],
                                                           deadline='2026-10-01T17:00:00Z', budget={'owner_minutes': 15},
-                                                          brief='Start project %s.' % proposal['project'],
+                                                          brief=brief,
                                                           choices=list(CHOICES), subject=subject))))
                 rid = I.assignment_id(REPO, alias)
                 frame(alias, 1)
@@ -466,7 +471,7 @@ def _v149_suite():
                 rid = I.assignment_id(REPO, alias)
                 inbox.apply(signed_command('pm', dict(ids, operation='revise', alias=alias, principal='pm',
                                                       command_id=next_id('c'), nonce=next_id('n'), request_version=1,
-                                                      changes={'brief': 'Start project %s, revised.' % alias})))
+                                                      changes={'deadline': '2026-10-02T17:00:00Z'})))
                 frame(alias, 2)
                 presenter.present(rid)
                 return presenter.current(rid) or {}
@@ -498,8 +503,14 @@ def _v149_suite():
                 return (result.get('ok') is False and result.get('reason') == reason and journal() == before
                         and project(name) is None)
 
+            def shown(receipt, who='owner'):
+                """The text of every Telegram message the presentation sent the owner, in order."""
+                return '\n'.join((bot['messages'].get((chats[who], m)) or {}).get('text', '')
+                                  for m in receipt.get('message_ids') or [])
+
             with region('answer/activates', 'answer/binds-every-field', 'answer/unsettled', 'answer/owner-only',
-                        'answer/stale', 'answer/observed'):
+                        'answer/stale', 'answer/brief-binds-proposal', 'answer/owner-sees-every-value',
+                        'answer/observed'):
                 cove_fields = fields('cove', 'repository-zeta')
                 cove_rid, cove_receipt = open_activation('A-cove', dict(cove_fields, project='cove'))
                 cove_answer = api_answer(cove_receipt, 'accept', 'start it on zeta')
@@ -570,8 +581,10 @@ def _v149_suite():
                     ('control: once the settlement settles his reply, the same request activates',
                      dune_settled.get('outcome') == 'settled' and dune.get('ok') is True
                      and (project('dune') or {}).get('execution_repository') == 'repository-eta'),
-                    ('a settled rejection refuses not_approved:reject, nothing written',
-                     rejected.get('outcome') == 'settled' and refused(no, 'not_approved:reject', before, 'rill'))])
+                    ('a settled rejection activates nothing: no project and nothing written',
+                     rejected.get('outcome') == 'settled' and no.get('ok') is False and journal() == before
+                     and project('rill') is None),
+                    ('it refuses not_approved:reject', no.get('reason') == 'not_approved:reject')])
 
                 heath_rid, heath_receipt = open_activation('A-heath', dict(fields('heath', 'repository-theta'), project='heath'),
                                                            owner='owner2')
@@ -607,6 +620,52 @@ def _v149_suite():
                      and entity('request-settlement:%s:2' % vale_rid) is None),
                     ('it refuses stale_answer, nothing written', refused(stale, 'stale_answer', before, 'vale'))])
 
+                # The review's case: the requester's brief names one repository and a small budget, the proposal
+                # another repository and a large one; the owner accepts what he was shown.
+                big = dict(fields('bay', 'repository-alpha'), project='bay',
+                           coordination_budget={'capacity': 999, 'invocations': 99999, 'wall_seconds': 3600})
+                bay_rid, bay_receipt = open_activation('A-bay', big,
+                                                       brief='Start project bay on repository-beta with a small budget.')
+                bay_answer = api_answer(bay_receipt, 'accept', 'small budget on beta is fine')
+                before = journal()
+                bay = activate_settled(bay_rid)
+                check('answer/brief-binds-proposal', [
+                    ('the owner was shown the requester\'s brief, not the proposal\'s repository or budget',
+                     bay_receipt.get('outcome') == 'published' and 'repository-beta' in shown(bay_receipt)
+                     and 'repository-alpha' not in shown(bay_receipt) and '99999' not in shown(bay_receipt)),
+                    ('his accept settles it', bay_answer.get('outcome') == 'settled'),
+                    ('it activates nothing: no project and nothing written',
+                     bay.get('ok') is False and journal() == before and project('bay') is None),
+                    ('it refuses stale_subject:brief', bay.get('reason') == 'stale_subject:brief')])
+
+                # Every value the activation binds reaches the owner's Telegram messages, and his accept of
+                # exactly those bytes activates exactly those values.
+                isle_fields = dict(fields('isle', 'repository-alpha'),
+                                   charter={'purpose': 'Chart the isle crossing for spring.', 'exclusions': ['refunds']},
+                                   authority_policy={'grooming': ['project_owner'], 'admission': ['admission_authority']},
+                                   coordination_budget={'capacity': 999, 'invocations': 99999, 'wall_seconds': 7777,
+                                                        'owner_minutes': 321})
+                isle_rid, isle_receipt = open_activation('A-isle', dict(isle_fields, project='isle'))
+                text = ' '.join(shown(isle_receipt).split())
+                budget = isle_fields['coordination_budget']
+                values = {'project': 'isle' in text and 'Activate project isle' in text,
+                          'owner': 'owner' in text,
+                          'execution repository': 'repository-alpha' in text,
+                          'charter': 'Chart the isle crossing for spring.' in text and 'refunds' in text,
+                          'authority policy': all(re.search(r'%s\W{0,6}%s\b' % (t_, r_), text)
+                                                  for t_, roles in isle_fields['authority_policy'].items() for r_ in roles),
+                          'coordination budget': all(re.search(r'%s\W{0,4}%s\b' % (u, c_), text) for u, c_ in budget.items())}
+                isle_answer = api_answer(isle_receipt, 'accept', 'start it as shown')
+                isle = activate_settled(isle_rid)
+                i_ = project('isle') or {}
+                check('answer/owner-sees-every-value', [
+                    ('the activation request is presented to the owner on Telegram',
+                     isle_receipt.get('outcome') == 'published' and text != '')] + [
+                    ('the owner\'s Telegram bytes show the %s' % f, ok) for f, ok in values.items()] + [
+                    ('control: his accept settles it and activates exactly those values',
+                     isle_answer.get('outcome') == 'settled' and isle.get('ok') is True
+                     and all(i_.get(f) == isle_fields[f] for f in SPEC_FIELDS))])
+
                 answered = [o for o in projects.observations if o.get('path') == 'settled_answer']
                 accepted = next((o for o in answered if o.get('project') == 'project:cove' and o.get('outcome') == 'accepted'), {})
                 classes = {o.get('refusal'): o.get('taxonomy') for o in answered if o.get('outcome') == 'refused'}
@@ -622,9 +681,11 @@ def _v149_suite():
                                                       'path': workspaces['zeta'], 'by': 'store_binding'}),
                     ('a missing field, an unsettled answer, another member\'s answer and a stale answer are distinct classes',
                      classes.get('missing_field:owner') == 'invalid_input' and classes.get('unsettled:no_answer') == 'missing_evidence'
-                     and classes.get('not_owner') == 'missing_authority' and classes.get('stale_answer') == 'stale_subject'),
+                     and classes.get('not_owner') == 'missing_authority' and classes.get('stale_answer') == 'stale_subject'
+                     and classes.get('stale_subject:brief') == 'stale_subject'),
                     ('the settled-answer activations are counted accepted and refused, by refusal',
-                     tally.get('accepted') == 2 and tally.get('refused') == 12
+                     tally.get('accepted') == 3 and tally.get('refused') == 13
+                     and (tally.get('refusals') or {}).get('stale_subject:brief') == 1
                      and (tally.get('refusals') or {}).get('not_owner') == 2
                      and (tally.get('refusals') or {}).get('already_exists') == 1),
                     ('no rationale, charter text or signature is observed',

@@ -35,8 +35,10 @@ missing_field:<field>. It applies only when the request is SATISFIED by the sett
 version, whose typed effect is that settlement's approval of these terms and carries this proposal
 (otherwise unsettled:no_answer, unsettled:not_settled, unsettled:request_closed, stale_answer when
 the only answers name a presentation or request version that has since changed, not_approved:<ruling>,
-invalid_input:settlement), and when the settlement's only principal is the owner the proposal binds
-(not_owner otherwise). Then the owner must be current and every activation check above applies, and
+invalid_input:settlement), when the request's brief, the text the owner was shown, is exactly
+activation_brief of the proposal, every value the activation binds (stale_subject:brief otherwise:
+he approved something other than what would activate), and when the settlement's only principal is
+the owner the proposal binds (not_owner otherwise). Then the owner must be current and every activation check above applies, and
 the activation commits pinned to the request, its terms, the settlement and the owner's membership.
 The record is the signed command's, with the settlement as its provenance; a second application of
 the same settlement refuses already_exists.
@@ -169,6 +171,27 @@ def activation_proposal(name, fields):
     """The proposal an activation request carries (VELDO-0149): the project's name and the fields the
     activation binds, exactly the signed command's."""
     return dict(fields, project=name)
+
+
+def _shown(value):
+    """One bound value as the owner reads it: an identifier as itself, anything else as canonical JSON."""
+    if isinstance(value, str):
+        return value
+    return json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(', ', ': '))
+
+
+def activation_brief(proposal):
+    """Exactly what the owner is shown when asked to activate `proposal` (VELDO-0149), in plain text: the
+    project and every value the activation binds, so an approval approves exactly what activates. An
+    activation request's brief must equal it. A field the proposal omits is shown as not given."""
+    p = proposal if isinstance(proposal, dict) else {}
+
+    def shown(field):
+        return _shown(p[field]) if field in p else '(not given)'
+    return ('Activate project %s.\nOwner: %s\nExecution repository: %s\nCharter: %s\nAuthority policy: %s\n'
+            'Coordination budget: %s\nApproving activates exactly this project with these values.'
+            % (shown('project'), shown('owner'), shown('execution_repository'), shown('charter'),
+               shown('authority_policy'), shown('coordination_budget')))
 
 
 def activation_target(proposal):
@@ -449,6 +472,8 @@ class Projects:
                 or effect is None or effect['kind'] != EFFECT_KIND or e.get('settlement_id') != s.get('settlement_id')
                 or e.get('type') != APPROVED_EFFECT or e.get('target') != target or e.get('proposal') != proposal):
             raise Refused('invalid_input:settlement', 'the settlement is not the approval of these terms')
+        if data.get('brief') != activation_brief(proposal):
+            raise Refused('stale_subject:brief', 'the owner was shown something other than this proposal')
         if s.get('principals') != [fields['owner']]:
             raise Refused('not_owner', 'the settled answer is not the owner\'s the activation binds')
         state = self.membership.authority_state(self.store, self.conn)
