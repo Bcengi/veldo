@@ -165,43 +165,57 @@ not declare, enum and literal values, integer counts), the fixtures print every 
 from, and each Codex usage-limit message matches the binary's own message, retry phrases and time
 formats. They check the fixtures, not production, so they are green at the pre-change commit too.
 
-Plain run: PLAIN_RUN. Stage environment run (`env -i`, the stage's variables): STAGE_RUN. The run waits
+Plain run: 45 passed (26 preamble, 19 rows), measured at 27, 36 and 48 seconds. Stage environment run
+(`env -i`, the stage's variables, TZ=UTC): 45 passed in 59 seconds. The run waits
 for the end of the minute the Codex usage-limit message states (up to about a minute after its start),
 so its wall time varies between runs.
 
 ## Red record
 
-`red-at-0af8dc0.json`: the current suite over `git archive 0af8dc0`, unchanged. All 15 rows fail by their
-own assertion: there are no account records, the receiver launches an engine adapter in the caller's
-environment with its profiles and paid-API variables, reserves no invocation, and nothing reads the CLI's
-usage reports.
+`red-at-0af8dc0.json`: the current suite over `git archive 0af8dc0`, unchanged. All 17 behavior rows fail
+by their own assertion: there are no account records, the receiver launches an engine adapter in the
+caller's environment with its profiles and login variables, reserves no invocation, nothing reads the
+CLI's usage reports or its usage-limit message, and the helper registers no Codex login for the fleet to
+keep out. The two `format/*` rows are green there, as they must be: they check the suite's own fixtures
+against the extracted table, not production.
 
 ## Mutations (finding 62)
 
 Registered in `scripts/check_teeth_mutations.py` with the `account-` prefix, each declared falsifier
-first; `drive.py` records `mutations.json` and one applied diff per mutant. All 17 turn their named row
+first; `drive.py` records `mutations.json` and one applied diff per mutant. All 25 turn their named row
 red by assertion; the baseline and the no-op copies are green.
-`check_teeth_mutations.py --finding 62 --jobs 2`: 17 rejected.
+`check_teeth_mutations.py --finding 62 --jobs 2`: 25 rejected.
 
 | Mutant | Module | Named row |
 |---|---|---|
 | account-profile-from-caller (AC1 falsifier) | control_accounts.py | login/recorded-account-profile |
-| account-paid-api-kept | control_accounts.py | login/no-paid-api |
+| account-login-fixed-list (back to the fixed list) | control_accounts.py | login/no-paid-api |
+| account-login-families-ignored | control_accounts.py | login/no-paid-api |
+| account-credential-tables-ignored | control_accounts.py | login/no-paid-api |
+| account-fleet-codex-to-claude | fleet.py | login/fleet-provider |
 | account-status-unchecked | control_accounts.py | login/substitution-refused |
 | account-follow-on-checked-after-launch (AC2 falsifier) | control_launch.py | usage/reserved-before-launch |
 | account-boundary-always-initial | control_reservation_runtime.py | usage/reserved-before-launch |
 | account-invocation-unreserved | control_launch.py | usage/allowance-states |
 | account-cap-stop-ignored | control_launch.py | usage/cap-stops-worker |
 | account-rate-window-unchecked | control_reservations.py | usage/rate-limit-reset |
+| account-codex-limit-unobserved (the usage-limit message ignored) | control_engine_codex.py | usage/rate-limit-reset |
+| account-codex-unstated-reset-invented | control_engine_codex.py | usage/rate-limit-reset |
+| account-codex-reset-at-minute-start | control_engine_codex.py | usage/rate-limit-reset |
 | account-timeout-releases (AC3 falsifier) | control_launch.py | settle/timeout-retained |
 | account-cancel-releases | control_launch.py | settle/cancel-retained |
 | account-claude-missing-result-conclusive | control_engine_claude.py | settle/missing-retained |
 | account-codex-open-turn-conclusive | control_engine_codex.py | settle/missing-retained |
+| account-claude-main-loop-usage (result.usage read again) | control_engine_claude.py | settle/model-usage |
+| account-claude-missing-model-usage-main-loop | control_engine_claude.py | settle/model-usage |
 | account-claude-repeat-counted | control_engine_claude.py | settle/once |
 | account-codex-repeat-counted | control_engine_codex.py | settle/once |
 | account-caller-label-attributed (AC4 falsifier) | control_launch.py | attribution/stored-account |
 | account-unknown-remaining-counted | control_accounts.py | attribution/measurement-removed |
 | account-watermark-from-reservation | control_accounts.py | attribution/watermark |
 
-The other findings with mutations in the modules this changes still reject: 36 (20, its
-`control_reservations.py` mutants now copy their siblings), 39 (30), 40 (22) and 41 (34).
+The first build's `account-paid-api-kept` is gone with the fixed list it mutated; the three strip mutants
+replace it. The other findings with mutations in the modules this changes still reject: 36 (20), 39 (30), 40 (22) and 41 (34). Suites run, plain and under the stage environment:
+`75_veldo_0062_accounts`, 36, 39, 40, 41, 47 (its installed-assets row caught that the scaffold must now lay down
+`accounts.py`) and 50, plus plainly every other suite that loads a changed module or the scaffold (41 more),
+all green.

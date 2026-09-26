@@ -273,5 +273,6 @@ names) and every name the installed binaries' own credential tables list, not a 
 provider-to-variable map is named once (`accounts.PROFILE_ENV`), and `fleet.py` no longer hands a Codex
 account to a Claude session. Every line the suite's fakes print is built in a shape the installed
 binaries declare, and two rows check them against `proof/VELDO-0062/cli-formats.json`, which
-`extract_formats.py` reads out of claude 2.1.281 and codex 0.154.0 without running either. The footprint
-already covers every file changed (`fleet.py` and `proof/VELDO-0062/*` included). Status unchanged.
+`extract_formats.py` reads out of claude 2.1.281 and codex 0.154.0 without running either. The scaffold lays
+down `accounts.py`, which `control_accounts` now loads. The footprint already covers every file changed
+(`fleet.py`, `init_scaffold.py` and `proof/VELDO-0062/*` included). Status unchanged.
