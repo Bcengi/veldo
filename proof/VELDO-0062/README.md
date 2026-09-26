@@ -217,5 +217,5 @@ red by assertion; the baseline and the no-op copies are green.
 The first build's `account-paid-api-kept` is gone with the fixed list it mutated; the three strip mutants
 replace it. The other findings with mutations in the modules this changes still reject: 36 (20), 39 (30), 40 (22) and 41 (34). Suites run, plain and under the stage environment:
 `75_veldo_0062_accounts`, 36, 39, 40, 41, 47 (its installed-assets row caught that the scaffold must now lay down
-`accounts.py`) and 50, plus plainly every other suite that loads a changed module or the scaffold (41 more),
+`accounts.py`) and 50, plus plainly every other suite that loads a changed module or the scaffold (44 more),
 all green.
