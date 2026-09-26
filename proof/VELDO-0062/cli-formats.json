@@ -2900,6 +2900,15 @@
   "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
   "source": "the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)",
   "tool_forms": {
+   "builtin_renamed": [
+    {
+     "aliases": [
+      "Task"
+     ],
+     "name": "Agent"
+    }
+   ],
+   "builtin_renamed_source": "a tool whose alias is on BUILTIN_TOOL_NAMES but whose current name is not: the Agent tool's definition (name, searchHint, aliases) with its names bound in the statement that binds its own description",
    "builtin_tools": [
     "Bash",
     "Read",
@@ -2924,6 +2933,65 @@
     "ToolSearch",
     "SendUserMessage"
    ],
+   "emitted_tool_fields": {
+    "system/task_progress": [
+     "workflow_progress.lastToolName"
+    ],
+    "tool_progress": [
+     "repl_call.inner_tool_name",
+     "repl_call.inner_tool_input",
+     "repl_call.inner_tool_use_id"
+    ]
+   },
+   "emitted_tool_fields_source": "the fields a frame's emitters write that name a tool though its schema omits them: the REPL tool's repl_call on a tool_progress (both emitters) and a task_progress's workflow_progress entries (workflow_agent progress with lastToolName)",
+   "frames": [
+    [
+     "active_goal",
+     null,
+     true
+    ],
+    [
+     "autocompact_state",
+     null,
+     true
+    ],
+    [
+     "control_cancel_request",
+     null,
+     true
+    ],
+    [
+     "control_request",
+     null,
+     false
+    ],
+    [
+     "control_response",
+     null,
+     false
+    ],
+    [
+     "keep_alive",
+     null,
+     true
+    ],
+    [
+     "system",
+     "post_turn_summary",
+     true
+    ],
+    [
+     "system",
+     "task_summary",
+     true
+    ],
+    [
+     "transcript_mirror",
+     null,
+     false
+    ]
+   ],
+   "frames_source": "the StdoutMessage members outside the SDK message union (everything the CLI writes in stream-json mode), each with whether its schema provably carries no tool call: only literals, enums, strings, numbers and booleans and no field naming a tool",
    "messages": [
     [
      "assistant",
@@ -3185,7 +3253,100 @@
     "content_block_stop",
     "message_delta",
     "message_stop"
-   ]
+   ],
+   "tool_fields": {
+    "assistant": [
+     "attribution_mcp_tool",
+     "batch_tool_uses",
+     "context_usage.mcp_tools",
+     "message.usage.server_tool_use",
+     "parent_tool_use_id",
+     "tool_use_meta",
+     "wire_tool_inputs"
+    ],
+    "result/error_during_execution": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "result/error_max_budget_usd": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "result/error_max_structured_output_retries": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "result/error_max_turns": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "result/success": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "stream_event": [
+     "parent_tool_use_id"
+    ],
+    "system/compact_boundary": [
+     "compact_metadata.pre_compact_discovered_tools"
+    ],
+    "system/informational": [
+     "tool_use_id"
+    ],
+    "system/init": [
+     "tools"
+    ],
+    "system/permission_denied": [
+     "tool_name",
+     "tool_use_id"
+    ],
+    "system/task_notification": [
+     "tool_use_id",
+     "usage.tool_uses"
+    ],
+    "system/task_progress": [
+     "last_tool_name",
+     "tool_use_id",
+     "usage.tool_uses"
+    ],
+    "system/task_started": [
+     "tool_use_id"
+    ],
+    "system/turn_handoff_available": [
+     "tools"
+    ],
+    "tool_progress": [
+     "parent_tool_use_id",
+     "tool_name",
+     "tool_use_id"
+    ],
+    "tool_use_summary": [
+     "preceding_tool_use_ids"
+    ],
+    "user": [
+     "parent_tool_use_id",
+     "source_tool_assistant_uuid",
+     "source_tool_use_id",
+     "tool_result_meta",
+     "tool_use_result"
+    ]
+   },
+   "tool_fields_source": "each SDK message's fields whose name names a tool (a dotted path; an array's items share its path), from its zod schema"
   },
   "usage_limit": {
    "admin_suffix": " \u00b7 ask your admin for a higher limit",
@@ -3892,9 +4053,10 @@
     "mcp_tool_call",
     "web_search",
     "todo_list",
+    "collab_tool_call",
     "error"
    ],
-   "source": "exec's ThreadItem tags (its literal run, and `error`, the literal heading its field run) and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as unknown",
+   "source": "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as unknown",
    "thread_items": [
     "user_message",
     "function_call_output",

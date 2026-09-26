@@ -81,8 +81,24 @@ tool-call form this reading does not recognize is named `unknown` with its form,
 an `mcp_tool_use`, `server_tool_use` or other server-tool block, a `stream_event` carrying any block that
 is not tool-free (a `tool_use` first), a user `tool_result`, a `tool_progress` or a `tool_use_summary`
 for a call id `seen` never held, a `tool_use` in a user message, and any message, subtype, block or
-streaming event type the tables do not list. `seen` is the ids of every tool call shown so far, to which
-each `tool_use` read is added.
+streaming event type the tables do not list. The frames the CLI writes outside the message union are
+read by the binary's own table (TOOL_FREE_FRAMES): those whose schema provably carries no tool call
+(`keep_alive`, `control_cancel_request`, `active_goal`, `autocompact_state` and the `post_turn_summary`
+and `task_summary` system messages) are no call, and the rest (a control request or response, the
+transcript mirror) are unknown. `seen` is the ids of every tool call shown so far, to which each
+`tool_use` read is added.
+
+A tool name a frame carries beside the content blocks counts too (TOOL_FIELDS lists every field of the
+binary's messages whose name names a tool, and how it is read): a `tool_progress`'s `tool_name`, the REPL
+tool's inner call, which reaches the stream only as a `tool_progress` of the REPL call carrying a
+`repl_call` the schema omits (an `mcp__` inner name is that MCP call, a built-in one no call, any other
+an unknown call; a `repl_call` that is not an object naming its inner tool is unreadable), a
+`system/task_progress`'s `last_tool_name` and its `workflow_progress` entries' `lastToolName`, and an
+assistant message's `attribution_mcp_server` and `attribution_mcp_tool` (the MCP tool that produced it)
+and `batch_tool_uses` names. Each such name is read as a `tool_use` name is: `mcp__<server>__<tool>` is
+that MCP call; on a redacted line a name neither `mcp__...` nor built in is `unreadable`. The built-in
+names are BUILTIN_TOOL_NAMES and the current name of a tool it lists under an old one (the Agent tool,
+listed as `Task`: BUILTIN_RENAMED).
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
@@ -222,10 +238,49 @@ TOOL_FREE_BLOCKS = frozenset(('text', 'thinking', 'redacted_thinking', 'compacti
 TOOL_FREE_REQUEST = TOOL_FREE_BLOCKS | {'image', 'document', 'search_result', 'mid_conv_system'}
 STREAM_EVENTS = ('message_start', 'content_block_start', 'content_block_delta', 'content_block_stop',
                  'message_delta', 'message_stop')
-# The binary's BUILTIN_TOOL_NAMES: a partial list of its own tools, so a redacted name it omits asks.
+# The binary's BUILTIN_TOOL_NAMES: a partial list of its own tools, so a redacted name it omits asks. It predates
+# a rename: its `Task` is the Agent tool's old name (cli-formats.json builtin_renamed), so the tool's current
+# name is built in too (BUILTIN).
 BUILTIN_TOOLS = frozenset(('Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'NotebookEdit', 'WebFetch', 'WebSearch',
                            'Task', 'TodoWrite', 'TaskCreate', 'TaskUpdate', 'TaskGet', 'TaskList', 'TaskStop', 'Skill',
                            'REPL', 'JavaScript', 'AskUserQuestion', 'ToolSearch', 'SendUserMessage'))
+BUILTIN_RENAMED = {'Agent': ('Task',)}
+BUILTIN = BUILTIN_TOOLS | frozenset(BUILTIN_RENAMED)
+# The frames the CLI writes outside the SDK message union (cli-formats.json frames) whose schema provably carries
+# no tool call; the others (control requests and responses, the transcript mirror) are unknown calls.
+TOOL_FREE_FRAMES = frozenset((('active_goal', None), ('autocompact_state', None), ('control_cancel_request', None),
+                              ('keep_alive', None), ('system', 'post_turn_summary'), ('system', 'task_summary')))
+# Every field of a stream message whose name names a tool, as the binary's schema declares it (cli-formats.json
+# tool_fields) and as its emitters write it beyond that schema (emitted_tool_fields), and how it is read. `call`:
+# the name of a tool that ran or may run, read as that call (TOOL CALLS in the module docstring). `id`: a call's
+# id, read against the ids shown. `free`: no call of its own: a count, a display or input copy of a block read
+# in the content, a tool the run offers or discovered, a call denied or deferred and never run.
+TOOL_FIELDS = {
+    'assistant': {'attribution_mcp_tool': 'call', 'batch_tool_uses': 'call', 'context_usage.mcp_tools': 'free',
+                  'message.usage.server_tool_use': 'free', 'parent_tool_use_id': 'free', 'tool_use_meta': 'free',
+                  'wire_tool_inputs': 'free'},
+    'stream_event': {'parent_tool_use_id': 'free'},
+    'system/compact_boundary': {'compact_metadata.pre_compact_discovered_tools': 'free'},
+    'system/informational': {'tool_use_id': 'free'},
+    'system/init': {'tools': 'free'},
+    'system/permission_denied': {'tool_name': 'free', 'tool_use_id': 'free'},
+    'system/task_notification': {'tool_use_id': 'free', 'usage.tool_uses': 'free'},
+    'system/task_progress': {'last_tool_name': 'call', 'tool_use_id': 'free', 'usage.tool_uses': 'free',
+                             'workflow_progress.lastToolName': 'call'},
+    'system/task_started': {'tool_use_id': 'free'},
+    'system/turn_handoff_available': {'tools': 'free'},
+    'tool_progress': {'parent_tool_use_id': 'free', 'repl_call.inner_tool_input': 'free',
+                      'repl_call.inner_tool_name': 'call', 'repl_call.inner_tool_use_id': 'id', 'tool_name': 'call',
+                      'tool_use_id': 'id'},
+    'tool_use_summary': {'preceding_tool_use_ids': 'id'},
+    'user': {'parent_tool_use_id': 'free', 'source_tool_assistant_uuid': 'free', 'source_tool_use_id': 'free',
+             'tool_result_meta': 'free', 'tool_use_result': 'free'},
+}
+TOOL_FIELDS.update({'result/' + sub: {'deferred_tool_use': 'free', 'permission_denials.tool_input': 'free',
+                                      'permission_denials.tool_name': 'free', 'permission_denials.tool_use_id': 'free',
+                                      'usage.server_tool_use': 'free'}
+                    for sub in ('error_during_execution', 'error_max_budget_usd', 'error_max_structured_output_retries',
+                                'error_max_turns', 'success')})
 
 
 def _count(value):
@@ -310,6 +365,79 @@ def _unknown(form, ident=None):
     return {'id': ident, 'server': None, 'tool': None, 'unknown': form}
 
 
+def _named(name, ident, redacted):
+    """The call a tool name a frame carries shows: an `mcp__<server>__<tool>` name is that MCP call; a name that
+    is not a string is unreadable; on a redacted line a name that is neither `mcp__...` nor built in is one the
+    redaction may have replaced (unreadable); any other name is no MCP call."""
+    if not isinstance(name, str):
+        return [_unreadable(ident)]  # A tool call whose tool cannot be read.
+    if name.startswith(MCP_PREFIX):
+        server, _, tool = name[len(MCP_PREFIX):].partition('__')
+        return [{'id': ident, 'server': server, 'tool': tool}]
+    if redacted and name not in BUILTIN:
+        return [_unreadable(ident)]  # the redaction may have replaced an MCP tool's name
+    return []
+
+
+def _repl_call(value, seen):
+    """The call the REPL tool's inner tool call shows (a tool_progress's `repl_call`, which its schema omits):
+    an `mcp__` inner name is that MCP call, a built-in one no MCP call, any other an unknown call; a repl_call
+    that is not an object naming its inner tool is unreadable."""
+    if not isinstance(value, dict) or not isinstance(value.get('inner_tool_name'), str):
+        return [_unreadable()]
+    name, ident = value['inner_tool_name'], value.get('inner_tool_use_id')
+    ident = ident if isinstance(ident, str) else None
+    if ident is not None:
+        seen.add(ident)
+    if name.startswith(MCP_PREFIX):
+        return _named(name, ident, False)
+    return [] if name in BUILTIN else [_unknown('repl_call:' + name, ident)]
+
+
+def _task_progress(event, redacted):
+    """The calls a task's progress names: its last tool (`last_tool_name`) and each workflow agent's
+    (`workflow_progress` entries' `lastToolName`, which the schema omits)."""
+    ident = event.get('tool_use_id') if isinstance(event.get('tool_use_id'), str) else None
+    found = _named(event['last_tool_name'], ident, redacted) if event.get('last_tool_name') is not None else []
+    entries = event.get('workflow_progress')
+    if entries is None:
+        return found
+    if not isinstance(entries, list):
+        return found + [_unreadable(ident)]
+    for entry in entries:
+        if not isinstance(entry, dict):
+            found.append(_unreadable(ident))
+        elif entry.get('lastToolName') is not None:
+            found += _named(entry['lastToolName'], ident, redacted)
+    return found
+
+
+def _attributed(event, seen, redacted):
+    """The calls an assistant message names beside its content: the MCP tool that produced it
+    (`attribution_mcp_server`, `attribution_mcp_tool`) and the batch tool_use blocks it was decomposed from
+    (`batch_tool_uses`, {id, name}); what is there and cannot be read is unreadable."""
+    found = []
+    server, tool = event.get('attribution_mcp_server'), event.get('attribution_mcp_tool')
+    if isinstance(tool, str) and tool.startswith(MCP_PREFIX):
+        found += _named(tool, None, redacted)
+    elif server is not None or tool is not None:
+        if isinstance(server, str) and server and (tool is None or isinstance(tool, str)):
+            found.append({'id': None, 'server': server, 'tool': tool})
+        else:
+            found.append(_unreadable())
+    batch = event.get('batch_tool_uses')
+    if batch is None:
+        return found
+    if not isinstance(batch, list):
+        return found + [_unreadable()]
+    for use in batch:
+        ident = use.get('id') if isinstance(use, dict) and isinstance(use.get('id'), str) else None
+        if ident is not None:
+            seen.add(ident)
+        found += _named(use.get('name') if isinstance(use, dict) else None, ident, redacted)
+    return found
+
+
 def _blocks(content, seen, redacted, user):
     """The calls a message's content blocks show (the module docstring, TOOL CALLS)."""
     if user and isinstance(content, str):
@@ -337,13 +465,7 @@ def _blocks(content, seen, redacted, user):
         name, ident = block.get('name'), block.get('id')
         if isinstance(ident, str):
             seen.add(ident)
-        if not isinstance(name, str):
-            found.append(_unreadable(ident))  # A tool call whose tool cannot be read.
-        elif name.startswith(MCP_PREFIX):
-            server, _, tool = name[len(MCP_PREFIX):].partition('__')
-            found.append({'id': ident, 'server': server, 'tool': tool})
-        elif redacted and name not in BUILTIN_TOOLS:
-            found.append(_unreadable(ident))  # the redaction may have replaced an MCP tool's name
+        found += _named(name, ident, redacted)
     return found
 
 
@@ -354,11 +476,16 @@ def tool_calls(event, seen, redacted=False):
     the tool calls shown so far; each tool_use read is added to it."""
     kind = event.get('type')
     tag = (kind, event.get('subtype') if kind in SUBTYPED else None)
+    if tag in TOOL_FREE_FRAMES:
+        return []
     if tag not in MESSAGES:
         return [_unknown('message:%s' % '/'.join(str(part) for part in tag if part is not None))]
     if kind in ('assistant', 'user'):
         message = event.get('message')
-        return _blocks(message.get('content') if isinstance(message, dict) else None, seen, redacted, kind == 'user')
+        found = _blocks(message.get('content') if isinstance(message, dict) else None, seen, redacted, kind == 'user')
+        return found + _attributed(event, seen, redacted) if kind == 'assistant' else found
+    if tag == ('system', 'task_progress'):
+        return _task_progress(event, redacted)
     if kind == 'stream_event':
         stream = event.get('event')
         name = stream.get('type') if isinstance(stream, dict) else None
@@ -387,7 +514,13 @@ def tool_calls(event, seen, redacted=False):
         ids = [event.get('tool_use_id')] if kind == 'tool_progress' else event.get('preceding_tool_use_ids')
         if not isinstance(ids, list) or not all(isinstance(ident, str) for ident in ids):
             return [_unreadable()]
-        return [_unknown(kind, ident) for ident in ids if ident not in seen]
+        found = [_unknown(kind, ident) for ident in ids if ident not in seen]
+        if kind == 'tool_progress':
+            # The tool the progress is of, and the REPL tool's inner call, which reaches the stream only here.
+            found += _named(event.get('tool_name'), ids[0], redacted)
+            if 'repl_call' in event:
+                found += _repl_call(event['repl_call'], seen)
+        return found
     return []
 
 

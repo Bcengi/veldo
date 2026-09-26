@@ -28,9 +28,15 @@ A TOOL-CALL FORM THE DECISION DOES NOT RECOGNIZE ASKS (fail closed). The engine 
 forms their binaries' own tables list (proof/VELDO-0062/cli-formats.json, tool_forms); any other form is
 an unknown call, named in `calls` by its sequence with its `form`, reason `unknown_call`: for Claude Code
 an `mcp_tool_use` or other server-tool block, a `stream_event` carrying a `tool_use` (or any block that
-is not tool-free), a user `tool_result` for an id no earlier line showed, and any message, subtype, block
-or streaming event type its tables do not list; for Codex a `dynamic_tool_call`, the sub-agent items
-(`collab_agent_tool_call`, `sub_agent_activity`) and any item or event type exec's tables do not list.
+is not tool-free), a user `tool_result` for an id no earlier line showed, any message, subtype, block or
+streaming event type its tables do not list, and a frame outside the stream's message union that is not
+provably tool-free (a control request or response, the transcript mirror); for Codex exec's own sub-agent
+call `collab_tool_call` and any item or event type exec's tables do not list (the core's
+`dynamic_tool_call`, `collab_agent_tool_call` and `sub_agent_activity` among them). A tool name a Claude
+Code frame carries beside its content blocks counts as that call: a `tool_progress`'s tool and the REPL
+tool's inner call (`repl_call`: a name neither `mcp__...` nor built in is an unknown call, a malformed one
+unreadable), a task's last tool and its workflow agents' (`system/task_progress`), and an assistant
+message's MCP attribution and batch tool names.
 
 THE MARKS are the dispatch's configuration, a list of servers each with the name its calls use, its
 catalog id and revision (`servers`), and for each revision the tools the owner marks read-only, the

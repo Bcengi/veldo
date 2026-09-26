@@ -62,9 +62,11 @@ server and tool, by the item id (exec's ThreadItem, proof/VELDO-0062/cli-formats
 tool_forms). It reads only the forms the binary's tables list and fails closed on everything else. What
 may be a tool call and cannot be read is named `unreadable` (an item that is not an object naming its
 type, an `mcp_tool_call` whose server or tool is not a name). A tool-call form this reading does not
-recognize is named `unknown` with its form, never taken for no call: an item whose type exec's table does
-not list (the core's `dynamic_tool_call`, `collab_agent_tool_call` and `sub_agent_activity` among them),
-and an event type the table does not list. exec's own non-MCP items are no MCP call: its messages,
+recognize is named `unknown` with its form, never taken for no call: exec's own sub-agent call
+`collab_tool_call` (SUBAGENT_ITEMS: the agents it spawns or drives make calls exec does not print), an item
+whose type exec's table does not list (the core's `dynamic_tool_call`, `collab_agent_tool_call` and
+`sub_agent_activity` among them, which exec does not print under those names), and an event type the table
+does not list. exec's own non-MCP items are no MCP call: its messages,
 reasoning, to-do lists and errors (TOOL_FREE_ITEMS), and its commands, file changes and web searches
 (BUILTIN_ITEMS), whose effects stay in the clone. `seen` and `redacted` are Claude Code's interface.
 
@@ -143,6 +145,8 @@ ITEM_EVENTS = ('item.started', 'item.updated', 'item.completed')
 EVENTS = ('thread.started', 'turn.started', 'turn.completed', 'turn.failed') + ITEM_EVENTS + ('error',)
 TOOL_FREE_ITEMS = frozenset(('agent_message', 'reasoning', 'todo_list', 'error'))
 BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))
+# exec's own sub-agent call: the agents it spawns or drives make calls exec does not print, so it is an unknown call.
+SUBAGENT_ITEMS = frozenset(('collab_tool_call',))
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
                       r'(?P<year>\d{4}) )?(?P<hour>\d{1,2}):(?P<minute>\d{2}) (?P<half>AM|PM)\.')
 

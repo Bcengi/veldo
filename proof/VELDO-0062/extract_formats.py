@@ -487,8 +487,17 @@ CLAUDE_FORMS = {
     'stream_events': 'tK=f(()=>ae().describe("One Anthropic Messages API streaming event (message_start, content_block_start, '
                      'content_block_delta, content_block_stop, message_delta, message_stop) as defined',
     'builtin_tools': 'dT.BUILTIN_TOOL_NAMES=[',
+    'stdout': 'TRr=f(()=>Fe([nn(),',
+    'agent_tool': 'name:mt,searchHint:"delegate work to a subagent",aliases:[',
+    'agent_names': ',Omo="Launch a new agent to handle complex, multi-step tasks",',
+    'task_progress': 'last_tool_name:e.lastToolName,summary:e.summary,workflow_progress:e.workflowProgress})',
+    'workflow_agent': 'lastToolName:we,lastToolSummary:qe,',
 }
 FORMS_WINDOW = 400000
+# The frames the binary emits carrying a tool's name outside the schema it declares for them, each by the
+# exact text of its emitters and how many there are: the REPL tool's `repl_call` on a tool_progress (its
+# inner tool's name), and the workflow agents' progress entries a task_progress carries.
+CLAUDE_EMITTED = {'repl_call': ('repl_call:{inner_tool_name:', 2)}
 
 
 def _tags(schema):
@@ -514,11 +523,113 @@ def _union_members(window, at, anchor):
     return re.findall(r'([A-Za-z_$][\w$]*)\(\)', window[start:window.index(']', start)])
 
 
+def _lazy(js, name, near):
+    """The body of the lazy schema `name=f(()=>BODY` nearest `near` (a minified name is also bound to other
+    values, which `Js.definition` could pick)."""
+    sites = js._sites(name, r'=f\(\(\)=>')
+    if not sites:
+        raise Moved('no lazy schema ' + name)
+    return min(sites, key=lambda m: abs(m.start() - near)).end()
+
+
+def _tool_free(schema):
+    """Whether a frame's schema provably carries no tool call: only literals, enums, strings, numbers and
+    booleans, in objects, arrays and unions of them, and no field whose name names a tool."""
+    kind = schema.get('type')
+    if kind in ('literal', 'enum', 'string', 'number', 'boolean'):
+        return True
+    if kind == 'object':
+        return all('tool' not in key and _tool_free(field) for key, field in (schema.get('fields') or {}).items())
+    if kind == 'array':
+        return _tool_free(schema.get('items') or {})
+    if kind == 'union':
+        return all(_tool_free(member) for member in schema.get('anyOf') or ())
+    return False  # a record or an unresolved reference may hold anything
+
+
+def _tool_paths(schema, path=()):
+    """The dotted paths of the fields of a schema whose name names a tool (an array's items are its path)."""
+    found = []
+    kind = schema.get('type')
+    if kind == 'object':
+        for key, field in (schema.get('fields') or {}).items():
+            if 'tool' in key.lower():
+                found.append('.'.join(path + (key,)))
+            found += _tool_paths(field, path + (key,))
+    elif kind == 'array':
+        found += _tool_paths(schema.get('items') or {}, path)
+    elif kind == 'union':
+        for member in schema.get('anyOf') or ():
+            found += _tool_paths(member, path)
+    return found
+
+
+def _tag(kind, sub):
+    return kind if sub is None else kind + '/' + sub
+
+
+def _builtin_renamed(text, builtin):
+    """[{name, aliases}]: a tool whose alias is on BUILTIN_TOOL_NAMES under a current name the list omits (the
+    Agent tool, once `Task`), its names bound in the statement that also binds its own description."""
+    for key in ('agent_tool', 'agent_names'):
+        if text.count(CLAUDE_FORMS[key]) != 1:
+            raise Moved('claude %s: anchor found %d times' % (key, text.count(CLAUDE_FORMS[key])))
+    at = text.index(CLAUDE_FORMS['agent_tool'])
+    m = re.compile(r'name:([A-Za-z_$][\w$]*),searchHint:"[^"]*",aliases:\[([^\]]*)\]').match(text, at)
+    names = text.index(CLAUDE_FORMS['agent_names'])
+    start, end = text.rindex('var ', 0, names), text.index(';', names)
+    bound = dict(re.findall(r'(?:var |,)([A-Za-z_$][\w$]*)="([^"]*)"', text[start:end]))
+    if m is None or m.group(1) not in bound or not text[start:names].startswith('var %s="' % m.group(1)):
+        raise Moved('claude agent tool names moved')
+    aliases = [json.loads(a) if a.startswith('"') else bound.get(a) for a in m.group(2).split(',')]
+    name = bound[m.group(1)]
+    if name in builtin or not aliases or not all(alias in builtin for alias in aliases):
+        raise Moved('claude agent tool: its alias is not on BUILTIN_TOOL_NAMES under another name')
+    return [{'name': name, 'aliases': aliases}]
+
+
+def _emitted(text):
+    """The fields a frame carries that name a tool though its declared schema omits them, read from the
+    emitters' own text: {tag: [dotted path]}."""
+    anchor, sites = CLAUDE_EMITTED['repl_call']
+    keys = set()
+    for m in re.finditer(re.escape(anchor), text):
+        body = text[m.start() + len('repl_call:{'):text.index('}', m.start())]
+        keys.add(tuple(re.findall(r'([a-z_]+):', body)))
+    if text.count(anchor) != sites or len(keys) != 1 or 'inner_tool_name' not in next(iter(keys)):
+        raise Moved('claude repl_call emitters moved')
+    for key in ('task_progress', 'workflow_agent'):
+        if text.count(CLAUDE_FORMS[key]) != 1:
+            raise Moved('claude %s: anchor found %d times' % (key, text.count(CLAUDE_FORMS[key])))
+    at = text.index(CLAUDE_FORMS['workflow_agent'])
+    if 'type:"workflow_agent"' not in text[at - 400:at]:
+        raise Moved('claude workflow agent progress moved')
+    return {'tool_progress': ['repl_call.' + key for key in next(iter(keys)) if 'tool' in key],
+            'system/task_progress': ['workflow_progress.lastToolName']}
+
+
+def claude_frames(text):
+    """The StdoutMessage members outside the SDK message union, each (type, subtype, provably tool-free)."""
+    at = text.index(CLAUDE_FORMS['stdout'])
+    window = text[at - FORMS_WINDOW:at + FORMS_WINDOW]
+    js = Js(window)
+    members = _union_members(window, FORMS_WINDOW, CLAUDE_FORMS['stdout'])
+    if members[0] != 'nn':
+        raise Moved('claude stdout union moved')
+    found = []
+    for name in members[1:]:
+        schema = Reader(js, depth=3).parse(_lazy(js, name, FORMS_WINDOW))[0]
+        found += [[kind, sub, _tool_free(schema)] for kind, sub in _tags(schema)]
+    return sorted(found, key=lambda tag: (tag[0], tag[1] or ''))
+
+
 def claude_forms(text):
     for key, anchor in CLAUDE_FORMS.items():
+        if key in ('agent_tool', 'agent_names', 'task_progress', 'workflow_agent'):
+            continue  # read, with their counts, by _builtin_renamed and _emitted
         if text.count(anchor) != 1:
             raise Moved('claude tool-call form table %s: anchor found %d times' % (key, text.count(anchor)))
-    found = {}
+    found, fields = {}, {}
     for key in ('messages', 'response_blocks', 'request_blocks'):
         at = text.index(CLAUDE_FORMS[key])
         window = text[at - FORMS_WINDOW:at + FORMS_WINDOW]
@@ -527,6 +638,10 @@ def claude_forms(text):
         for name in _union_members(window, FORMS_WINDOW, CLAUDE_FORMS[key]):
             body, _ = js.definition(name, FORMS_WINDOW)
             tags += _tags(Reader(js, depth=1).parse(body)[0])
+            if key == 'messages':
+                schema = Reader(js, depth=6).parse(body)[0]
+                for kind, sub in _tags(schema):
+                    fields.setdefault(_tag(kind, sub), set()).update(_tool_paths(schema))
         found[key] = tags
     tagged = json.loads(text[text.index(CLAUDE_FORMS['tagged']) + 3:].split(']', 1)[0] + ']')
     found['messages'] = sorted({(kind, sub) for kind, sub in found['messages']}, key=lambda tag: (tag[0], tag[1] or ''))
@@ -539,10 +654,25 @@ def claude_forms(text):
     return {'messages': [[kind, sub] for kind, sub in found['messages']],
             'response_blocks': found['response_blocks'], 'request_blocks': found['request_blocks'],
             'stream_events': stream_events, 'builtin_tools': builtin,
+            'builtin_renamed': _builtin_renamed(text, builtin),
+            'tool_fields': {tag: sorted(paths) for tag, paths in sorted(fields.items()) if paths},
+            'emitted_tool_fields': _emitted(text), 'frames': claude_frames(text),
             'source': "the SDK message union of the stream (each member's type and subtype), the content block "
                       "unions of an assistant and of a user message (the modelled blocks, then the type tags "
                       "the binary lists), the streaming events the stream_event schema names, and the binary's "
-                      "BUILTIN_TOOL_NAMES (a partial list of its built-in tools: a name it omits reads as unknown)"}
+                      "BUILTIN_TOOL_NAMES (a partial list of its built-in tools: a name it omits reads as unknown)",
+            'builtin_renamed_source': "a tool whose alias is on BUILTIN_TOOL_NAMES but whose current name is not: "
+                                      "the Agent tool's definition (name, searchHint, aliases) with its names "
+                                      "bound in the statement that binds its own description",
+            'tool_fields_source': "each SDK message's fields whose name names a tool (a dotted path; an array's "
+                                  "items share its path), from its zod schema",
+            'emitted_tool_fields_source': "the fields a frame's emitters write that name a tool though its schema "
+                                          "omits them: the REPL tool's repl_call on a tool_progress (both emitters) "
+                                          "and a task_progress's workflow_progress entries (workflow_agent progress "
+                                          "with lastToolName)",
+            'frames_source': "the StdoutMessage members outside the SDK message union (everything the CLI writes "
+                             "in stream-json mode), each with whether its schema provably carries no tool call: "
+                             "only literals, enums, strings, numbers and booleans and no field naming a tool"}
 
 
 def claude(path):
@@ -629,16 +759,24 @@ CODEX_THREAD_ITEMS = (b'user_messagefunction_call_outputhook_promptagent_message
                        'file_change', 'mcp_tool_call', 'context_compaction'))
 
 
+# exec's own sub-agent call item, `collab_tool_call` (its agents' calls are not in exec's stream), whose tag is
+# a literal placed after exec's event struct names rather than in the item run.
+CODEX_EXEC_COLLAB = (b'ItemUpdatedEventThreadErrorEventcollab_tool_call', 'collab_tool_call')
+
+
 def codex_forms(raw):
     head, run, names = CODEX_EXEC_ITEMS
     if head not in raw or run not in raw or ''.join(names).encode() != run:
         raise Moved('codex exec item types moved')
+    if raw.count(CODEX_EXEC_COLLAB[0]) != 1 or not CODEX_EXEC_COLLAB[0].endswith(CODEX_EXEC_COLLAB[1].encode()):
+        raise Moved('codex exec collab_tool_call moved')
     thread, thread_names = CODEX_THREAD_ITEMS
     if thread not in raw or ''.join(thread_names).encode() != thread:
         raise Moved('codex thread item types moved')
-    return {'exec_items': list(names) + ['error'], 'thread_items': list(thread_names),
-            'source': "exec's ThreadItem tags (its literal run, and `error`, the literal heading its field run) and "
-                      "the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as "
+    return {'exec_items': list(names) + [CODEX_EXEC_COLLAB[1], 'error'], 'thread_items': list(thread_names),
+            'source': "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's "
+                      "ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) "
+                      "and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as "
                       "unknown"}
 
 
