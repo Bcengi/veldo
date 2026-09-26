@@ -6350,9 +6350,12 @@ def cases():
     grooming('grooming-brief-omits-protected-paths', 'control_grooming_request.py',
              "        'Protected paths: %s.' % _list(c['protected_paths']),\n", '', ['material/telegram-brief'])
     grooming('grooming-thin-admission-accepted', 'control_backlog.py',
-             "        return GR.target(request), GR.brief(request, touchpoint), request\n",
-             "        return ({'kind': 'backlog_item', 'ref': data['uuid'], 'revision': data['decomposition_revision'],\n"
-             "                 'digest': data['decomposition_digest']}, None, request)  # defect: the thin target admits groomed work\n",
+             "        target, brief, request = self._groomed(conn, data, project, ADMISSION)\n",
+             "        target, brief, request = self._groomed(conn, data, project, ADMISSION)\n"
+             "        held = _row(conn, command.get('request')) or {}\n"
+             "        effect = _row(conn, ((held.get('data') or {}).get('settlement') or {}).get('effect_id')) or {}\n"
+             "        if ((effect.get('data') or {}).get('target') or {}).get('kind') == 'backlog_item':\n"
+             "            target, brief = effect['data']['target'], None  # defect: the item's thin target also admits groomed work\n",
              ['material/telegram-brief'])
     grooming('grooming-brief-unchecked', 'control_backlog.py',
              "        return GR.target(request), GR.brief(request, touchpoint), request\n",

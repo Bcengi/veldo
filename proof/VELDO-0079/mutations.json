@@ -67,7 +67,7 @@
     true
    ]
   ],
-  "seconds": 7.252
+  "seconds": 7.264
  },
  "controls_green": true,
  "mutants": [
@@ -150,7 +150,7 @@
      true
     ]
    ],
-   "seconds": 7.117,
+   "seconds": 7.096,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -232,7 +232,7 @@
      true
     ]
    ],
-   "seconds": 7.233,
+   "seconds": 7.137,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -315,7 +315,7 @@
      true
     ]
    ],
-   "seconds": 6.983,
+   "seconds": 7.139,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -398,32 +398,20 @@
      true
     ]
    ],
-   "seconds": 7.189,
+   "seconds": 7.167,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0079 detail: material/telegram-brief: an answer to the item's thinner brief does not admit groomed work; an answer to other text beside the request's digest does not admit it",
-    "VELDO-0079 detail: material/changed-decomposition: the regroomed decomposition, answered again, prioritizes both",
-    "VELDO-0079 detail: authority/owner-choices: each choice moves the item where it says; accepting both runs the work; a reject or return cancels the priority request still waiting",
-    "VELDO-0079 detail: authority/separate-predicates: his admission answer settles and is applied; admitted without priority, nothing runs; the admission was applied once",
-    "VELDO-0079 detail: authority/questions-unresolved: his answer to the questions admits it, and then the priority applies; the admission names the questions his answer resolved; the units run now",
-    "VELDO-0079 detail: ruling/parameter-binding: after the priority changed, the retained ruling is refused by its digest; after the ceiling changed, the retained ruling is refused by its digest",
-    "VELDO-0079 detail: ruling/duplicate: the admission was applied; the same signed command again is refused as stale and writes nothing; the one admission is bound to the one settlement"
+    "VELDO-0079 detail: material/telegram-brief: an answer to the item's thinner brief does not admit groomed work; an answer to other text beside the request's digest does not admit it"
    ],
    "diff": "proof/VELDO-0079/grooming-thin-admission-accepted.diff",
    "failed_rows": [
-    "VELDO-0079 material/telegram-brief",
-    "VELDO-0079 material/changed-decomposition",
-    "VELDO-0079 authority/owner-choices",
-    "VELDO-0079 authority/separate-predicates",
-    "VELDO-0079 authority/questions-unresolved",
-    "VELDO-0079 ruling/parameter-binding",
-    "VELDO-0079 ruling/duplicate"
+    "VELDO-0079 material/telegram-brief"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "a5c201b50c2920e44dc199de1f793578fd8760b40d3437ccb870c1985a1e4555",
+   "mutant_sha256": "775eaa23c0e014515d9064a4f456936d6fa4b9a0bcf74806fe6601c157bf6a69",
    "name": "grooming-thin-admission-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -457,11 +445,11 @@
     ],
     [
      "VELDO-0079 material/changed-decomposition",
-     false
+     true
     ],
     [
      "VELDO-0079 authority/owner-choices",
-     false
+     true
     ],
     [
      "VELDO-0079 authority/pm-self-admission",
@@ -469,11 +457,11 @@
     ],
     [
      "VELDO-0079 authority/separate-predicates",
-     false
+     true
     ],
     [
      "VELDO-0079 authority/questions-unresolved",
-     false
+     true
     ],
     [
      "VELDO-0079 authority/reprioritize-withdraw",
@@ -481,18 +469,18 @@
     ],
     [
      "VELDO-0079 ruling/parameter-binding",
-     false
+     true
     ],
     [
      "VELDO-0079 ruling/duplicate",
-     false
+     true
     ],
     [
      "VELDO-0079 observability",
      true
     ]
    ],
-   "seconds": 7.08,
+   "seconds": 7.346,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -574,7 +562,7 @@
      true
     ]
    ],
-   "seconds": 7.359,
+   "seconds": 7.19,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -656,7 +644,7 @@
      true
     ]
    ],
-   "seconds": 7.368,
+   "seconds": 7.157,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -738,7 +726,7 @@
      true
     ]
    ],
-   "seconds": 7.076,
+   "seconds": 7.075,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -820,7 +808,7 @@
      true
     ]
    ],
-   "seconds": 7.408,
+   "seconds": 7.359,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   {
@@ -918,7 +906,7 @@
      false
     ]
    ],
-   "seconds": 3.892,
+   "seconds": 3.891,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -1000,7 +988,7 @@
      true
     ]
    ],
-   "seconds": 7.012,
+   "seconds": 6.94,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -1082,7 +1070,7 @@
      true
     ]
    ],
-   "seconds": 7.156,
+   "seconds": 6.987,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -1164,7 +1152,7 @@
      true
     ]
    ],
-   "seconds": 6.91,
+   "seconds": 7.15,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -1249,7 +1237,7 @@
      true
     ]
    ],
-   "seconds": 7.216,
+   "seconds": 7.221,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -1341,7 +1329,7 @@
      false
     ]
    ],
-   "seconds": 7.51,
+   "seconds": 7.489,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   {
@@ -1423,7 +1411,7 @@
      true
     ]
    ],
-   "seconds": 7.065,
+   "seconds": 7.051,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -1505,7 +1493,7 @@
      true
     ]
    ],
-   "seconds": 7.057,
+   "seconds": 7.159,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -1587,7 +1575,7 @@
      true
     ]
    ],
-   "seconds": 7.127,
+   "seconds": 6.935,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   {
@@ -1669,7 +1657,7 @@
      true
     ]
    ],
-   "seconds": 7.219,
+   "seconds": 7.025,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   {
@@ -1751,7 +1739,7 @@
      true
     ]
    ],
-   "seconds": 7.133,
+   "seconds": 7.182,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -1833,7 +1821,7 @@
      true
     ]
    ],
-   "seconds": 7.195,
+   "seconds": 7.101,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   {
@@ -1915,7 +1903,7 @@
      true
     ]
    ],
-   "seconds": 7.252,
+   "seconds": 6.997,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   },
   {
@@ -1997,7 +1985,7 @@
      true
     ]
    ],
-   "seconds": 7.15,
+   "seconds": 7.022,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   },
   {
@@ -2079,7 +2067,7 @@
      false
     ]
    ],
-   "seconds": 7.166,
+   "seconds": 7.172,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   }
  ],
@@ -2206,7 +2194,7 @@
      true
     ]
    ],
-   "seconds": 7.169,
+   "seconds": 7.107,
    "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
   },
   "control_grooming.py": {
@@ -2276,7 +2264,7 @@
      true
     ]
    ],
-   "seconds": 7.152,
+   "seconds": 7.154,
    "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
   },
   "control_grooming_request.py": {
@@ -2346,7 +2334,7 @@
      true
     ]
    ],
-   "seconds": 6.987,
+   "seconds": 6.941,
    "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
   },
   "init_scaffold.py": {
@@ -2416,13 +2404,13 @@
      true
     ]
    ],
-   "seconds": 7.053,
+   "seconds": 7.181,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 79",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 204.486,
+ "serial_seconds": 203.635,
  "spec_id": "VELDO-0079",
  "suite": "scripts/suites/76_veldo_0079_grooming.py"
 }

@@ -1,6 +1,7 @@
 --- a/.veldo/control_backlog.py
 +++ b/.veldo/control_backlog.py
-@@ -652 +652,2 @@
--        return GR.target(request), GR.brief(request, touchpoint), request
-+        return ({'kind': 'backlog_item', 'ref': data['uuid'], 'revision': data['decomposition_revision'],
-+                 'digest': data['decomposition_digest']}, None, request)  # defect: the thin target admits groomed work
+@@ -671,0 +672,4 @@
++        held = _row(conn, command.get('request')) or {}
++        effect = _row(conn, ((held.get('data') or {}).get('settlement') or {}).get('effect_id')) or {}
++        if ((effect.get('data') or {}).get('target') or {}).get('kind') == 'backlog_item':
++            target, brief = effect['data']['target'], None  # defect: the item's thin target also admits groomed work
