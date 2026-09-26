@@ -242,3 +242,19 @@ call id seen read-only and then naming a write counts the write. Claude Code's o
 `decision/unreadable-asks`, `decision/same-id-write`, `pool/usage-observes`, `pool/selection-order` and
 `pool/until-earliest` pin these and the Notes' selection order and earliest reset; 13 more finding 160
 mutations. Status unchanged.
+
+2026-09-26, merged with main (VELDO-0060 and VELDO-0061) and the lead's fail-closed decision: the final
+report now closes the meter, takes the exit's outcome, keeps the engine's artifact and makes a zero exit
+without its terminal record a failure before it classifies the account limit, so a limit the stream
+stated on such a run is still `account_limit`; the engine protocol names each meter's `limit()`. The
+re-run-or-ask decision reads only the tool-call forms the binaries' own tables list (the extractor now
+reads Claude Code's stream message union, its assistant and user content block unions, its streaming
+events and its built-in tool list, and Codex exec's and the core's item types into `cli-formats.json`)
+and counts any other form as an unknown call that asks, naming its line and form (reason
+`unknown_call`): a Claude Code `mcp_tool_use` or other server-tool block, a `stream_event` carrying a
+`tool_use`, a user `tool_result`, a `tool_progress` or a `tool_use_summary` for a call id no earlier line
+showed, a Codex `dynamic_tool_call`, `collab_agent_tool_call` or `sub_agent_activity`, and any message,
+subtype, block, item or event type the tables do not list. On a redacted line a Claude Code tool name
+that is neither `mcp__...` nor a built-in tool is `redacted_unreadable`. New rows
+`decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms` (the negative control)
+and `format/tool-forms`, and 17 more finding 160 mutations. Status unchanged.
