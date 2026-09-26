@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -402 +402 @@
+-        return {'domain_uuid': self.ids['domain_uuid'], 'repository_uuid': repository, 'path': path,
++        return {'domain_uuid': self.ids['domain_uuid'], 'repository_uuid': repository, 'path': None,  # defect

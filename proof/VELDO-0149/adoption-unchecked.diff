@@ -1,0 +1,6 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -393,2 +393 @@
+-        return (repository == self.ids['repository_uuid']
+-                or self.store.bound_repository(conn, self.ids['domain_uuid'], repository) is not None)
++        return True  # defect: any repository is taken as adopted

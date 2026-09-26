@@ -1,0 +1,5 @@
+--- a/.veldo/control_project.py
++++ b/.veldo/control_project.py
+@@ -445 +445 @@
+-        if s.get('ruling') != 'approve':
++        if False:  # defect: a settled rejection is not refused as one
