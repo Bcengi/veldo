@@ -1,0 +1,7 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -651,2 +651,2 @@
+-        if (acceptor != owner or source.get('principal') != owner or proposal.get('principal') != owner
+-                or (source.get('command') or {}).get('principal') != owner):
++        owners = {json.loads(t).get('owner') for (t,) in conn.execute("SELECT data FROM entities WHERE kind='project'")}
++        if acceptor != owner or source.get('principal') not in owners:  # defect: the owner of any project

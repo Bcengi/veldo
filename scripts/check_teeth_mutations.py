@@ -5701,6 +5701,90 @@ def cases():
               "        if op in ('accept', 'propose_feature', 'assess') and project['data'].get('state') != 'ACTIVE':  # defect\n",
               ['project/inactive-refusals'])
 
+    # VELDO-0150: each criterion's declared falsifier first, then the threat model's other shapes.
+    def own_message(name, old, new, rows, also=()):
+        add(150, name, '75_veldo_0150_own_message_acceptance.py', 'control_objective.py', old, new, rows, also)
+
+    # AC1 (declared falsifier): a message by someone who is not the project's owner accepts, unpresented.
+    own_message('own-message-non-owner-accepted',
+                "        if (acceptor != owner or source.get('principal') != owner or proposal.get('principal') != owner\n"
+                "                or (source.get('command') or {}).get('principal') != owner):\n",
+                "        if acceptor != owner:  # defect: whose message it was is not compared\n",
+                ['own-message/non-owner-presented'])
+    own_message('own-message-operation-missing',
+                "OPERATIONS = ('propose', 'amend', 'accept', 'accept_message', 'propose_feature', 'assess', 'cancel', 'reopen')\n",
+                "OPERATIONS = ('propose', 'amend', 'accept', 'propose_feature', 'assess', 'cancel', 'reopen')  # defect\n",
+                ['own-message/telegram', 'own-message/api'])
+    own_message('own-message-path-unobserved',
+                "            observation['acceptance'] = self._acceptance_trace(after['acceptance'])\n",
+                "            pass  # defect: the acceptance's path is not observed\n",
+                ['own-message/telegram'])
+    own_message('own-message-acceptance-admits',
+                "                       state='RAW', scope=list(scope), specifications=list(specs), admission=None, priority=None,\n",
+                "                       state='RAW' if (data.get('acceptance') or {}).get('path') != MESSAGE_PATH else 'ADMITTED',\n"
+                "                       scope=list(scope), specifications=list(specs), priority=None,  # defect: his message admits\n"
+                "                       admission={'by': 'own_message'} if (data.get('acceptance') or {}).get('path') == MESSAGE_PATH\n"
+                "                       else None,\n",
+                ['own-message/admits-nothing'])
+    # AC2 (declared falsifier): the acceptance evidence names another intake command and still accepts.
+    own_message('own-message-other-intake-command',
+                "        if written is None or command.get('intake_command') != written[1]:\n",
+                "        if written is None or not _is_str(command.get('intake_command')):  # defect: any intake command\n",
+                ['evidence/bound-intake-command'])
+    own_message('own-message-sender-unbound',
+                "'message_id': fields['message_id'], 'sender_id': fields['sender_id'], 'date': fields['date'],\n",
+                "'message_id': fields['message_id'], 'sender_id': None, 'date': fields['date'],  # defect: no sender\n",
+                ['evidence/bound-intake-command'])
+    own_message('own-message-request-digest-unbound',
+                "                'principal': command.get('principal'), 'request_digest': where.get('request_digest')}\n",
+                "                'principal': command.get('principal'), 'request_digest': None}  # defect: the request is not bound\n",
+                ['evidence/bound-intake-command'])
+    own_message('own-message-bound-digest-unbound',
+                "                              'principals': [owner], 'revision': data['revision'], 'bound_digest': data['bound_digest']}\n",
+                "                              'principals': [owner], 'revision': data['revision']}  # defect: the digest is not bound\n",
+                ['evidence/same-bound-fields'])
+    own_message('own-message-any-project-owner',
+                "        if (acceptor != owner or source.get('principal') != owner or proposal.get('principal') != owner\n"
+                "                or (source.get('command') or {}).get('principal') != owner):\n",
+                "        owners = {json.loads(t).get('owner') for (t,) in conn.execute(\"SELECT data FROM entities WHERE kind='project'\")}\n"
+                "        if acceptor != owner or source.get('principal') not in owners:  # defect: the owner of any project\n",
+                ['evidence/project-not-his'])
+    own_message('own-message-repeat-not-returned',
+                "        if op == 'accept_message' and repeat:\n",
+                "        if False:  # defect: the same message's acceptance again is not the same acceptance\n",
+                ['evidence/repeat'])
+    # Review fix (declared falsifier): whoever wrote the bound fields is not checked, so a member's own
+    # outcome, scope and assessor are accepted by the owner's message.
+    own_message('own-message-author-unchecked',
+                "        if not authors or any(a != owner and a not in managers for a in authors):\n",
+                "        if False:  # defect: whoever wrote the bound fields is not checked\n",
+                ['authorship/member-authored-presented'])
+    # The project manager of the current team is not read, so the PM's proposal is not his.
+    own_message('own-message-pm-role-unread',
+                "    return [w for w in workers if _is_str(w)] if isinstance(workers, list) else []\n",
+                "    return []  # defect: the current team's project manager is not read\n",
+                ['own-message/telegram'])
+    # The repeat answers before the membership, owner and project-state checks, as before the fix.
+    own_message('own-message-repeat-before-checks',
+                "            if command.get('objective_version') != current['version'] and not repeat:\n",
+                "            if repeat:  # defect: the repeat answers before any check\n"
+                "                observation['acceptance'] = self._acceptance_trace(accepted)\n"
+                "                return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': current, 'receipt': None,\n"
+                "                        'feature_id': None, 'repeated': True}\n"
+                "            if command.get('objective_version') != current['version'] and not repeat:\n",
+                ['evidence/repeat-after-checks', 'evidence/paused-project'])
+    # The repeat does not read the project's state, so a paused project still answers "repeated".
+    own_message('own-message-repeat-while-paused',
+                "            if record['data'].get('state') != 'ACTIVE':\n"
+                "                raise Refused('project_not_active:%s' % record['data'].get('state'), project)\n"
+                "            observation['acceptance'] = self._acceptance_trace(accepted)\n",
+                "            observation['acceptance'] = self._acceptance_trace(accepted)  # defect: any project state\n",
+                ['evidence/paused-project'])
+    own_message('own-message-stale-revision-accepted',
+                "        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:\n",
+                "        if False:  # defect: an acceptance naming any revision counts\n",
+                ['evidence/stale-revision'])
+
     # VELDO-0075: each criterion's declared falsifier first, then the threat model's other shapes.
     def andon(name, module, old, new, row, also=()):
         add(75, name, '72_veldo_0075_andon.py', module, old, new, [row], also)

@@ -1,0 +1,7 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -417,0 +418,4 @@
++            if repeat:  # defect: the repeat answers before any check
++                observation['acceptance'] = self._acceptance_trace(accepted)
++                return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': current, 'receipt': None,
++                        'feature_id': None, 'repeated': True}

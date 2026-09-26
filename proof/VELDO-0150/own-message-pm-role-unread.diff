@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -299 +299 @@
+-    return [w for w in workers if _is_str(w)] if isinstance(workers, list) else []
++    return []  # defect: the current team's project manager is not read

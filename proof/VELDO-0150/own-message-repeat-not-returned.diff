@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -443 +443 @@
+-        if op == 'accept_message' and repeat:
++        if False:  # defect: the same message's acceptance again is not the same acceptance

@@ -1,0 +1,7 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -446,3 +446 @@
+-            if record['data'].get('state') != 'ACTIVE':
+-                raise Refused('project_not_active:%s' % record['data'].get('state'), project)
+-            observation['acceptance'] = self._acceptance_trace(accepted)
++            observation['acceptance'] = self._acceptance_trace(accepted)  # defect: any project state

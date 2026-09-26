@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -658 +658 @@
+-        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:
++        if False:  # defect: an acceptance naming any revision counts

@@ -33,6 +33,26 @@ source or a missing predicate is refused by name.
                    settlement's only principal are the bound acceptor, who is the project's owner and
                    current. Approve moves PROPOSED -> ACCEPTED and records accepted_revision; reject moves
                    it to REJECTED. Anything else refuses and writes nothing.
+  accept_message   The owner's own message accepts the objective it proposed (VELDO-0150), with nothing
+                   presented. The objective's intake proposal was made by the one intake source whose
+                   result is that proposal (the message that proposed it, or the follow-up that resolved
+                   an inbox proposal into it); the command names that source's intake command, the
+                   journal command that first wrote the source (invalid_input:intake_command
+                   otherwise). The source's principal, the proposal's and the bound acceptor must be the
+                   project's current owner (not_owner:source otherwise, which is also a message of his in
+                   a project he does not own). Whoever wrote the bound fields must be his too: the
+                   objective's proposer and the author of every amendment are the project's owner or
+                   the project manager of the project's current team (control_team's PM_ROLE workers of
+                   the accepted revision), not_authorized:author otherwise, so an objective a member
+                   elaborated from his message is presented to him through `accept` instead. The
+                   command names the objective's CURRENT revision and bound digest
+                   (stale_subject:revision otherwise). The acceptance binds the intake
+                   command, the source and the canonical attribution of the message: for Telegram the
+                   kept VELDO-0066 evidence (message id, sender id, platform date, digest), for the API
+                   the edge-signed request (request id, edge, principal, digest). The same command again,
+                   from a sender who passes the membership and owner checks in an ACTIVE project,
+                   returns the same acceptance and writes nothing. Every other objective is accepted
+                   only by `accept`.
   propose_feature  Bounded elaboration: under an ACCEPTED or ACTIVE objective a member proposes a
                    feature whose scope lies inside the objective's accepted scope. The feature is RAW: it
                    carries no admission and no priority, and nothing here writes either; admission and
@@ -58,7 +78,8 @@ source or a missing predicate is refused by name.
                    `continues` it.
 
 Each transition appends one entry to the record's `history` and never changes an earlier one. In a
-project that is not ACTIVE, amend, accept, propose_feature and assess refuse project_not_active:<state>.
+project that is not ACTIVE, amend, accept, accept_message, propose_feature and assess refuse
+project_not_active:<state>.
 
 STATED LIMITS. One project per objective and one acceptor, the project's owner (objectives spanning
 projects and additional owners are Release 3). Units of a stopped feature are not reached here: a
@@ -85,6 +106,7 @@ def _organ(name):
 EC = _organ('entity_contract')
 CC = _organ('completion_contract')
 RF = _organ('release_floor_contract')
+TM = _organ('control_team')
 Y = _organ('yamlish')
 
 SCHEMA = 'veldo.objective/v1'
@@ -94,7 +116,7 @@ ID_PREFIX, FEATURE_PREFIX = 'objective:', 'objective-feature:'
 OPERATION = 'objective_operation'
 OWNER = 'VELDO-0077 objectives'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
-OPERATIONS = ('propose', 'amend', 'accept', 'propose_feature', 'assess', 'cancel', 'reopen')
+OPERATIONS = ('propose', 'amend', 'accept', 'accept_message', 'propose_feature', 'assess', 'cancel', 'reopen')
 COORDINATES = ('domain_uuid', 'repository_uuid', 'store_uuid')
 OWNER_ROLE = 'project_owner'
 # What acceptance binds, in the order a missing one is named.
@@ -107,6 +129,10 @@ RULINGS = {'approve': 'ACCEPTED', 'reject': 'REJECTED'}
 EVIDENCE_KINDS = ('gate_observation',)
 SUPPORTED_DISPOSITIONS = ('stop', 'transfer')
 PROPOSAL_KIND, PROJECT_KIND = 'intake_proposal', 'project'
+# The owner's own message (VELDO-0150): the intake records it came by and what proposed an objective.
+SOURCE_KIND, CHANNEL_EVIDENCE_KIND = 'intake_source', 'channel_evidence'
+PROPOSING_OUTCOMES = ('proposed', 'resolved')
+MESSAGE_PATH, ANSWER_PATH = 'own_message', 'answer'
 REQUEST_KIND, SETTLEMENT_KIND, EFFECT_KIND = 'assignment', 'request_settlement', 'settlement_effect'
 TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 'out_of_scope': 'invalid_input',
             'no_such_objective': 'invalid_input', 'no_such_proposal': 'invalid_input',
@@ -202,19 +228,84 @@ def read(conn, oid):
 def _first_written(conn, eid):
     """The journal sequence of the first committed command that wrote `eid`, or None. The store assigns
     it inside the writing transaction, so no author of the record can choose it."""
-    for seq, text in conn.execute('SELECT seq, transition FROM journal WHERE instr(transition, ?) > 0 ORDER BY seq',
-                                  (json.dumps(eid),)):
-        if eid in json.loads(text):
-            return seq
-    return None
+    return (first_writer(conn, eid) or (None,))[0]
 
 
 def _acceptance_seq(conn, data):
     """The journal sequence of the command that accepted the objective record `data`, or None."""
-    accepted = [h for h in data.get('history') or [] if h.get('target') == 'ACCEPTED' and h.get('operation') == 'accept']
+    accepted = [h for h in data.get('history') or []
+                if h.get('target') == 'ACCEPTED' and h.get('operation') in ('accept', 'accept_message')]
     row = conn.execute('SELECT seq FROM commands WHERE command_id=?', (accepted[-1].get('command_id'),)).fetchone() \
         if accepted and _is_str(accepted[-1].get('command_id')) else None
     return None if row is None else row[0]
+
+
+def first_writer(conn, eid):
+    """(seq, command_id) of the first committed journal record that wrote `eid`, or None."""
+    for seq, command_id, text in conn.execute('SELECT seq, command_id, transition FROM journal '
+                                              'WHERE instr(transition, ?) > 0 ORDER BY seq', (json.dumps(eid),)):
+        if eid in json.loads(text):
+            return seq, command_id
+    return None
+
+
+def proposing_source(conn, proposal_id):
+    """(id, data) of the one intake source whose recorded result is the intake proposal `proposal_id`
+    (the message that proposed it, or the follow-up that resolved an inbox proposal into it), or None.
+    A clarification kept on a proposal is not its proposing source."""
+    proposal = _row(conn, proposal_id)
+    if proposal is None or proposal['kind'] != PROPOSAL_KIND or not isinstance(proposal['data'].get('sources'), list):
+        return None
+    found = []
+    for key in proposal['data']['sources']:
+        row = _row(conn, key)
+        data = row['data'] if row is not None and row['kind'] == SOURCE_KIND else {}
+        if (data.get('proposal_id') == proposal_id and isinstance(data.get('result'), dict)
+                and data['result'].get('outcome') in PROPOSING_OUTCOMES):
+            found.append((key, data))
+    return found[0] if len(found) == 1 else None
+
+
+def attribution(conn, source):
+    """The canonical attribution of the message an intake source recorded, or None when its evidence
+    is not what intake recorded: for Telegram the kept VELDO-0066 evidence (bot, chat, message, sender,
+    platform date, update and digest), for the API the edge-signed request."""
+    command = source.get('command') if isinstance(source.get('command'), dict) else {}
+    where = command.get('provenance') if isinstance(command.get('provenance'), dict) else {}
+    if command.get('source_kind') == 'telegram_message':
+        kept = _row(conn, where.get('evidence_id'))
+        fields = (kept or {}).get('data', {}).get('fields') if (kept or {}).get('kind') == CHANNEL_EVIDENCE_KIND else None
+        if (not isinstance(fields, dict) or kept['data'].get('source_digest') != where.get('evidence_digest')
+                or any(fields.get(k) != where.get(k) for k in ('message_id', 'chat_id', 'date', 'update_id'))):
+            return None
+        return {'channel': 'telegram_chat', 'bot_id': kept['data'].get('bot_id'), 'chat_id': fields['chat_id'],
+                'message_id': fields['message_id'], 'sender_id': fields['sender_id'], 'date': fields['date'],
+                'update_id': fields['update_id'], 'evidence_id': where['evidence_id'],
+                'evidence_digest': where['evidence_digest']}
+    if command.get('source_kind') == 'api_request':
+        if not _is_str(where.get('request_id')) or where.get('request_id') != command.get('source_id'):
+            return None
+        return {'channel': 'api', 'edge': where.get('edge'), 'request_id': where['request_id'],
+                'principal': command.get('principal'), 'request_digest': where.get('request_digest')}
+    return None
+
+
+def project_managers(store, conn, project):
+    """The principals holding the project manager role in project `project`'s current team, as
+    control_team (VELDO-0089) records it: the accepted revision's PM_ROLE workers, none before one."""
+    record = TM.read(store, conn, project) or {}
+    roles = (record.get('team') or {}).get('roles') if record.get('revision') else None
+    workers = ((roles or {}).get(TM.PM_ROLE) or {}).get('workers') if isinstance(roles, dict) else None
+    return [w for w in workers if _is_str(w)] if isinstance(workers, list) else []
+
+
+def bound_authors(data):
+    """Every principal who wrote an objective record's bound fields: its proposer and the author of
+    each amendment, or None when the record does not say who proposed it."""
+    proposer = (data.get('provenance') or {}).get('created_by') if isinstance(data.get('provenance'), dict) else None
+    if not _is_str(proposer):
+        return None
+    return [proposer] + [h.get('by') for h in data.get('history') or [] if h.get('operation') == 'amend']
 
 
 def features(conn, oid):
@@ -321,7 +412,10 @@ class Objectives:
             current = read(self.conn, oid) if _is_str(oid) and oid.startswith(ID_PREFIX) else None
             if current is None:
                 raise Refused('no_such_objective', str(oid)[:128])
-            if command.get('objective_version') != current['version']:
+            accepted = current.get('acceptance') if isinstance(current.get('acceptance'), dict) else {}
+            repeat = (op == 'accept_message' and accepted.get('path') == MESSAGE_PATH
+                      and _is_str(command.get('intake_command')) and accepted.get('intake_command') == command['intake_command'])
+            if command.get('objective_version') != current['version'] and not repeat:
                 raise Refused('stale_version', 'command names another objective version')
             project = current['project']
             pinned = []
@@ -339,13 +433,21 @@ class Objectives:
                 problems.append('not_owner:project')
         elif op == 'assess':
             problems = problems or self._person_problems(state, principal, project, now)
-        elif op == 'accept':
+        elif op in ('accept', 'accept_message'):
             problems = problems or ['not_owner:' + p for p in self._owner_problems(state, owner, project, now)]
         elif op == 'propose':
             assessor = (command.get('authority') or {}).get('assessor') if isinstance(command.get('authority'), dict) else None
             problems = problems or ['invalid_input:assessor:' + p for p in self._person_problems(state, assessor, project, now)]
         if problems:
             raise Refused(problems[0], '; '.join(problems))
+        if op == 'accept_message' and repeat:
+            # The same message's acceptance again, asked by a member in scope while the project's owner
+            # is current: the acceptance it made, nothing written. A project that is not ACTIVE refuses.
+            if record['data'].get('state') != 'ACTIVE':
+                raise Refused('project_not_active:%s' % record['data'].get('state'), project)
+            observation['acceptance'] = self._acceptance_trace(accepted)
+            return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': current, 'receipt': None,
+                    'feature_id': None, 'repeated': True}
         written = [oid]
         if op == 'propose_feature' and _is_str(command.get('feature')):
             written.append(feature_id(oid, command['feature']))
@@ -358,6 +460,11 @@ class Objectives:
             reference = (request.get('data') or {}).get('settlement') or {}
             pinned += [command['request']] + [reference[k] for k in ('settlement_id', 'effect_id')
                                               if isinstance(reference, dict) and _is_str(reference.get(k))]
+        if op == 'accept_message':
+            origin = proposing_source(self.conn, current.get('proposal_id'))
+            where = ((origin[1].get('command') or {}).get('provenance') or {}) if origin else {}
+            pinned += [current.get('proposal_id')] + ([origin[0]] if origin else []) + (
+                [where['evidence_id']] if _is_str(where.get('evidence_id')) else []) + [TM.team_id(project)]
         if op == 'assess' and isinstance(command.get('evidence'), dict):
             pinned += sorted({e['ref'] for e in command['evidence'].values() if isinstance(e, dict) and _is_str(e.get('ref'))})
         pinned.append('project:' + project)
@@ -368,8 +475,22 @@ class Objectives:
         stored = dict(command_id=command['command_id'], principal=principal, operation=OPERATION, parameters=params,
                       expected_versions=versions, artifact_digests=[], nonce=command['nonce'])
         receipt = self.store.execute(self.conn, stored, self.journal_signer, self.sign, self.authority_generation)
-        return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': read(self.conn, oid), 'receipt': receipt,
+        after = read(self.conn, oid)
+        if op in ('accept', 'accept_message') and isinstance((after or {}).get('acceptance'), dict):
+            observation['acceptance'] = self._acceptance_trace(after['acceptance'])
+        return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': after, 'receipt': receipt,
                 'feature_id': written[1] if op == 'propose_feature' else None}
+
+    @staticmethod
+    def _acceptance_trace(acceptance):
+        """The path an acceptance came by and what it joins: the intake command, the message and the
+        revision for his own message; the request and settlement for his answer. Never text."""
+        if acceptance.get('path') == MESSAGE_PATH:
+            return {k: acceptance.get(k) for k in ('path', 'intake_command', 'intake_source', 'source_kind', 'source_id',
+                                                   'revision', 'bound_digest')}
+        return {'path': ANSWER_PATH, 'request_id': acceptance.get('request_id'),
+                'settlement_id': acceptance.get('settlement_id'), 'revision': acceptance.get('revision'),
+                'bound_digest': acceptance.get('bound_digest')}
 
     def _member_problems(self, state, principal, project, now):
         entry = self.AC.membership_entry(state['membership'], principal)
@@ -509,6 +630,46 @@ class Objectives:
                               'revision': data['revision'], 'bound_digest': data['bound_digest']}
         data['history'] = list(data['history']) + [dict(entry, source='PROPOSED', target=target_state,
                                                         revision=data['revision'], request_id=command['request'])]
+        return {oid: {'kind': KIND, 'data': data}}
+
+    def _accept_message(self, conn, command, params, data, project, entry):
+        """VELDO-0150: the project owner's own message accepts the objective it proposed."""
+        oid = data['uuid']
+        if project['data'].get('state') != 'ACTIVE':
+            raise Refused('project_not_active:%s' % project['data'].get('state'), params['project'])
+        if data['state'] != 'PROPOSED':
+            raise Refused('invalid_transition:%s->ACCEPTED' % data['state'], 'only a proposed objective is accepted')
+        origin = proposing_source(conn, data['proposal_id'])
+        if origin is None:
+            raise Refused('missing_evidence:intake', 'no one intake source proposed this objective')
+        key, source = origin
+        written = first_writer(conn, key)
+        if written is None or command.get('intake_command') != written[1]:
+            raise Refused('invalid_input:intake_command', 'the acceptance evidence names another intake command')
+        acceptor, owner = data['bound']['authority']['acceptor'], project['data'].get('owner')
+        proposal = _row(conn, data['proposal_id'])['data']
+        if (acceptor != owner or source.get('principal') != owner or proposal.get('principal') != owner
+                or (source.get('command') or {}).get('principal') != owner):
+            raise Refused('not_owner:source', 'the message is not the project owner\'s own')
+        authors, managers = bound_authors(data), project_managers(self.store, conn, params['project'])
+        if not authors or any(a != owner and a not in managers for a in authors):
+            raise Refused('not_authorized:author', 'the bound fields were written by someone other than the '
+                                                   'project\'s owner or its project manager')
+        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:
+            raise Refused('stale_subject:revision', 'the acceptance names another revision of the objective')
+        attributed = attribution(conn, source)
+        if attributed is None:
+            raise Refused('missing_evidence:attribution', 'the message\'s kept evidence is not what intake recorded')
+        self._edge(KIND, 'PROPOSED', 'ACCEPTED', {'acceptance_authority_signed': True})
+        data['state'] = 'ACCEPTED'
+        data['accepted_revision'] = data['revision']
+        data['acceptance'] = {'path': MESSAGE_PATH, 'intake_command': written[1], 'intake_seq': written[0],
+                              'intake_source': key, 'source_kind': source['command']['source_kind'],
+                              'source_id': source['command']['source_id'], 'content_digest': source.get('content_digest'),
+                              'proposal_id': data['proposal_id'], 'attribution': attributed, 'ruling': 'approve',
+                              'principals': [owner], 'revision': data['revision'], 'bound_digest': data['bound_digest']}
+        data['history'] = list(data['history']) + [dict(entry, source='PROPOSED', target='ACCEPTED',
+                                                        revision=data['revision'], intake_command=written[1])]
         return {oid: {'kind': KIND, 'data': data}}
 
     def _propose_feature(self, conn, command, params, data, project, entry):
@@ -667,7 +828,15 @@ class Objectives:
         for (eid,) in self.conn.execute('SELECT id FROM entities WHERE kind=? AND substr(id, 1, ?) = ?',
                                         (FEATURE_KIND, len(FEATURE_PREFIX), FEATURE_PREFIX)):
             raw += (_row(self.conn, eid) or {}).get('data', {}).get('state') == 'RAW'
+        paths = {MESSAGE_PATH: 0, ANSWER_PATH: 0}
+        for (text,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (KIND,)):
+            acceptance = json.loads(text).get('acceptance')
+            if isinstance(acceptance, dict) and acceptance.get('ruling') == 'approve':
+                paths[MESSAGE_PATH if acceptance.get('path') == MESSAGE_PATH else ANSWER_PATH] += 1
+        refused = sum(1 for o in self.observations if o['operation'] == 'accept_message' and o['outcome'] == 'refused')
         return dict(self.counts, objectives=states,
+                    acceptances={'by_own_message': paths[MESSAGE_PATH], 'by_answer': paths[ANSWER_PATH],
+                                 'own_message_refused': refused},
                     pending={'awaiting_acceptance': states.get('PROPOSED', 0),
                              'awaiting_assessment': states.get('ACCEPTED', 0) + states.get('ACTIVE', 0),
                              'features_awaiting_admission': raw})

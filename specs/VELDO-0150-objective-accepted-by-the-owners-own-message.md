@@ -130,3 +130,27 @@ marks a specification ready.
 `Intake.receive('api_request', ...)` with a request the API edge signs, as VELDO-0126 does, rather than
 an authenticated API call, because the API server (VELDO-0130) is a later stage and drives its own leg.
 Criterion meaning and status unchanged.
+
+2026-09-25, build: `.veldo/control_objective.py` gains `accept_message`, the second acceptance path beside
+the presented `accept`, which it leaves unchanged. Its evidence is the intake command that first wrote
+the one intake source that proposed the objective (`invalid_input:intake_command` for any other); the
+source's principal, the proposal's and the bound acceptor must be the project's current owner
+(`not_owner:source`, which also refuses his message in a project he does not own); the command names
+the current revision and bound digest (`stale_subject:revision`). The acceptance binds the intake
+command, the source, the canonical attribution (the kept VELDO-0066 evidence, or the edge-signed API
+request) and the same revision, bound digest, principal and ruling an accepted answer binds; the same
+command again returns the same acceptance and writes nothing. Suite 75 has 9 rows, red at 0af8dc0 by
+assertion; finding 150 has 11 mutations (`proof/VELDO-0150/`). Filed for VELDO-0128: its Telegram
+report names an acceptance's settlement, unavailable for one by his own message. The criteria, status
+and risk are unchanged.
+
+2026-09-25, review fix: the review showed a plain member could propose and amend the objective of the
+owner's message with her own outcome, scope and assessor and then accept it by his message. `accept_message`
+now also requires that whoever wrote the bound fields, the proposer and the author of every amendment,
+is the project's owner or the project manager of the project's current team (control_team's PM_ROLE
+workers of the accepted revision), `not_authorized:author` otherwise, so such an objective is presented
+to him through `accept`. The repeat of an accepted message now answers only after the membership, owner
+and project-state checks, so a principal outside the project's scope is refused `not_authorized:scope`
+and a paused project `project_not_active:PAUSED`, never "repeated". Suite 75 gains 4 rows (13 in all, red
+at 0af8dc0 by assertion) and finding 150 gains 4 mutations (15 in all), among them the falsifier that
+drops the authorship check. The criteria, status and risk are unchanged.

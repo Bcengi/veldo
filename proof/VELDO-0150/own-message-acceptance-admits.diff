@@ -1,0 +1,8 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -695 +695,4 @@
+-                       state='RAW', scope=list(scope), specifications=list(specs), admission=None, priority=None,
++                       state='RAW' if (data.get('acceptance') or {}).get('path') != MESSAGE_PATH else 'ADMITTED',
++                       scope=list(scope), specifications=list(specs), priority=None,  # defect: his message admits
++                       admission={'by': 'own_message'} if (data.get('acceptance') or {}).get('path') == MESSAGE_PATH
++                       else None,

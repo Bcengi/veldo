@@ -1,0 +1,5 @@
+--- a/.veldo/control_objective.py
++++ b/.veldo/control_objective.py
+@@ -670 +670 @@
+-                              'principals': [owner], 'revision': data['revision'], 'bound_digest': data['bound_digest']}
++                              'principals': [owner], 'revision': data['revision']}  # defect: the digest is not bound
