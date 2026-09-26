@@ -7007,6 +7007,20 @@ def cases():
            "                        if metering is not None:\n"
            "                            metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
            'caps/stop-at-cap')
+    # Integration review: a local entrance is run by the receiver's own Python; the wrapper compares resolved
+    # paths, so a state root spelled through `..` is still re-hashed; the re-hash names reach the entrance.
+    claude('claude-entrance-interpreter-unchecked', 'control_launch.py',
+           "        if not reported and os.path.realpath(engine[0]) != os.path.realpath(sys.executable):\n",
+           "        if False:  # defect: any program may run the entrance, and then nothing re-hashes the engine\n",
+           'pin/entrance-interpreter')
+    claude('claude-wrapper-path-unresolved', 'control_launch.py',
+           "    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):\n",
+           "    elif pinned is not None and os.path.abspath(path) == pinned:  # defect: a `..` in the path skips the re-hash\n",
+           'pin/rehash-dot-dot')
+    claude('claude-wrapper-entrance-unforwarded', 'control_launch.py',
+           "        environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected\n",
+           "        pass  # defect: the clone entrance is not told what to re-hash\n",
+           'contained/rehash-before-exec')
 
 
     # VELDO-0061: each criterion's declared falsifier first, then the threat model's other shapes.

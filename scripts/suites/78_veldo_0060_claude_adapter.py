@@ -70,7 +70,7 @@ def _v60_suite():
     }
     ROWS = ('lifecycle/registration', 'lifecycle/pinned-launch',
             'pin/unexpected-launch', 'pin/copy', 'pin/shipped-qualification', 'pin/argv-binds-what-runs',
-            'pin/rehash-before-exec',
+            'pin/rehash-before-exec', 'pin/entrance-interpreter', 'pin/rehash-dot-dot',
             'artifact/complete', 'artifact/missing-result', 'artifact/exits', 'artifact/malformed-output',
             'artifact/missing-usage', 'artifact/exit-record', 'floor/missing-result',
             'stop/requested', 'stop/descendant-alive',
@@ -421,6 +421,12 @@ sys.exit(payload.get('code', 0))
                 'codex-link-first': {'engine': 'codex', 'executable': str(CODEX_BIN),
                                      'qualification': str(codex_qualification),
                                      'argv': entering + [str(npm_link), str(CODEX_BIN)] + CODEX_FLAGS},
+                # The installed entrance in its shape, run by another program than this receiver's Python.
+                'claude-contained-sh-first': {'engine': 'claude_code', 'executable': pinned_exe,
+                                              'argv': ['/bin/sh'] + entering[1:]},
+                'codex-contained-link-first': {'engine': 'codex', 'executable': str(CODEX_BIN),
+                                               'qualification': str(codex_qualification),
+                                               'argv': [str(npm_link)] + entering[1:] + [str(CODEX_BIN)] + CODEX_FLAGS},
                 # The reported path whose own wrapper execs the pinned engine, after a step that changes it.
                 'claude-swap': {'identity': 'reported', 'engine': 'claude_code', 'executable': pinned_exe,
                                 'argv': swapper},
@@ -433,6 +439,9 @@ sys.exit(payload.get('code', 0))
         stateless.write_text(json.dumps(dict(receiver_config, state_root=None)))
         linked = base / 'receiver-linked.json'
         linked.write_text(json.dumps(dict(receiver_config, state_root=str(state / 'factory-link'))))
+        # The same factory state root, spelled through `..`: the pinned path the receiver binds keeps that spelling.
+        dotted = base / 'receiver-dotted.json'
+        dotted.write_text(json.dumps(dict(receiver_config, state_root=str(factory) + '/../' + factory.name)))
         CONFIGURATION = {'tools': ['Read', 'Edit', 'Bash'], 'model': 'configured-model'}
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
@@ -1350,6 +1359,39 @@ sys.exit(payload.get('code', 0))
             launch, record = swapped_run('acct-60a', unit, 'claude-swap', pinned, normal())
             swap_checks('pin/rehash-before-exec', 'claude, exec\'d by the transport\'s wrapper', launch, record, unit,
                         'acct-60a', pinned, FAKE_SHA)
+
+        # The entrance's interpreter: a local adapter's entrance is run by this receiver's own Python, so the
+        # program that execs the pinned engine is one that re-hashes it.
+        with region('pin/entrance-interpreter'):
+            for label, account, adapter in (('claude, a shell running the entrance', 'acct-60a', 'claude-contained-sh-first'),
+                                            ('codex, a package manager\'s link running the entrance', 'acct-60x',
+                                             'codex-contained-link-first')):
+                script = x_normal('thread-' + os.urandom(3).hex()) if adapter.startswith('codex') else normal()
+                launch, record = run(account, admitted('VELDO-6016-' + adapter), adapter, script)
+                check('pin/entrance-interpreter', '%s: refused by name before acceptance, nothing spawned or reserved '
+                      '[%s]' % (label, (record or {}).get('refusal')),
+                      (record or {}).get('refusal') == 'invalid_input:engine_interpreter'
+                      and rec(launch.dispatch_id).get('state') == 'refused' and nothing_ran(launch.dispatch_id))
+
+        # A state root spelled through `..`: the wrapper that execs the pinned engine still re-hashes it, and the
+        # engine inherits neither name of the re-hash.
+        with region('pin/rehash-dot-dot'):
+            using[0] = dotted
+            try:
+                unit = 'VELDO-6017-claude-dotted'
+                launch, record = swapped_run('acct-60a', unit, 'claude-swap', pinned, normal())
+                swap_checks('pin/rehash-dot-dot', 'claude, its state root spelled through `..`', launch, record, unit,
+                            'acct-60a', pinned, FAKE_SHA)
+                launch, record = run('acct-60a', admitted('VELDO-6018-claude-dotted'), 'claude', normal())
+            finally:
+                using[0] = config
+            own = (engine_markers(launch.dispatch_id) or [{}])[0]
+            check('pin/rehash-dot-dot', 'unchanged, it runs the pinned path in that spelling and completes, and the engine '
+                  'inherits neither name of the re-hash [%s, %s]' % ((own.get('argv') or [None])[0],
+                                                                    (returned(launch) or {}).get('verdict')),
+                  '/../' in str((own.get('argv') or [''])[0]) and (record or {}).get('state') == 'exited'
+                  and (returned(launch) or {}).get('verdict') == 'complete' and bool(own.get('names'))
+                  and not {'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'} & set(own.get('names') or ()))
 
         with region('contained/rehash-before-exec'):
             for engine, case in ENGINE_CASES.items():
