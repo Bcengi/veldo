@@ -1,5 +1,5 @@
 --- a/.veldo/control_grooming_request.py
 +++ b/.veldo/control_grooming_request.py
-@@ -309 +309 @@
+@@ -361 +361 @@
 -    if acceptance.get('path') != OWN_MESSAGE or objective.get('accepted_revision') is None:
 +    if objective.get('accepted_revision') is None:  # defect: any accepted objective

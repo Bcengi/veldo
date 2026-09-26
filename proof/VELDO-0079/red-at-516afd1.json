@@ -5,6 +5,9 @@
   "VELDO-0079 detail: install/assets: the grooming service and its request contract installed by the scaffold; both engine copies identical; both laid by the installer",
   "VELDO-0079 detail: route/own-message-default: pm, the project manager, proposed the grooming with no question and no priority; the item is admitted and prioritized by his message; at the default priority; the admission and priority name his message as their evidence; every unit is executable",
   "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; asking the backlog to admit it by his message is refused by the reason",
+  "VELDO-0079 detail: route/presented-then-proposed: pm re-proposed the presented item with no question at the default priority; recording that revision superseded both requests in front of him, before grooming ran; his answer to the earlier presentation is refused; grooming presents it, naming its history, and his message does not admit it; his reject of the revision in front of him is applied; his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it; and it is applied as he gave it",
+  "VELDO-0079 detail: route/ruling-settled-unapplied: his reject settled and is not yet applied; pm's proposal with the question dropped is refused while it waits, and no revision is written; grooming asks him nothing over it; his message does not admit it; his reject is applied as he gave it and the priority request is canceled",
+  "VELDO-0079 detail: route/returned-then-proposed: his return was applied: the item went back to PREPARED and the priority request was canceled; pm asked for grooming again and proposed with no question at the default priority; it is presented to him again, naming its history; his message does not admit it",
   "VELDO-0079 detail: fragments absent from the Telegram text: ['admission/alternatives', 'admission/ceiling', 'admission/ceiling', 'admission/class', 'admission/decomposition', 'admission/decomposition', 'admission/decomposition', 'admission/evidence', 'admission/evidence', 'admission/exclusions', 'admission/expiry', 'admission/lane', 'admission/outcome', 'admission/outcome', 'admission/policy', 'admission/policy', 'admission/policy', 'admission/priority', 'admission/priority', 'admission/protected_paths', 'admission/protected_paths', 'admission/questions', 'admission/release_authority', 'admission/scope', 'admission/specifications', 'admission/specifications', 'priority/alternatives', 'priority/ceiling', 'priority/ceiling', 'priority/class', 'priority/decomposition', 'priority/decomposition', 'priority/decomposition', 'priority/evidence', 'priority/evidence', 'priority/exclusions', 'priority/expiry', 'priority/lane', 'priority/outcome', 'priority/outcome', 'priority/policy', 'priority/policy', 'priority/policy', 'priority/priority', 'priority/priority', 'priority/protected_paths', 'priority/protected_paths', 'priority/questions', 'priority/release_authority', 'priority/scope', 'priority/specifications', 'priority/specifications']",
   "VELDO-0079 detail: material/telegram-brief: the request records exactly those fields; both decisions were sent to olga's chat; every field of the request is in the bytes Telegram received, for both decisions; admission and priority are separate requests on their own touchpoints; both bind the request by its digest; the priority request proposes the rank shown; an answer to the item's thinner brief does not admit groomed work; an answer to other text beside the request's digest does not admit it",
   "VELDO-0079 detail: material/ungroomed-thin-brief: the backlog refuses it by name; nothing is written: the journal and the item are unchanged; no unit is admitted or executable",
@@ -23,6 +26,9 @@
   "VELDO-0079 install/assets",
   "VELDO-0079 route/own-message-default",
   "VELDO-0079 route/ask-when-needed",
+  "VELDO-0079 route/presented-then-proposed",
+  "VELDO-0079 route/ruling-settled-unapplied",
+  "VELDO-0079 route/returned-then-proposed",
   "VELDO-0079 material/telegram-brief",
   "VELDO-0079 material/ungroomed-thin-brief",
   "VELDO-0079 material/bound-fields",
@@ -39,15 +45,15 @@
  "modules": {
   ".veldo/control_backlog.py": {
    "at_commit": "ee8d2014f372c683161462f4706490978e1d0b13b676179ee2db9c01884b059b",
-   "now": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "now": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   ".veldo/control_grooming.py": {
    "at_commit": null,
-   "now": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
+   "now": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
   },
   ".veldo/control_grooming_request.py": {
    "at_commit": null,
-   "now": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "now": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "c50045cf9b1d332d628c00d9bfae3ab2e551d5f07bfbe5b62fc7c151b15910c6",
@@ -66,6 +72,18 @@
   ],
   [
    "VELDO-0079 route/ask-when-needed",
+   false
+  ],
+  [
+   "VELDO-0079 route/presented-then-proposed",
+   false
+  ],
+  [
+   "VELDO-0079 route/ruling-settled-unapplied",
+   false
+  ],
+  [
+   "VELDO-0079 route/returned-then-proposed",
    false
   ],
   [
@@ -118,7 +136,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 2.258,
+ "seconds": 2.494,
  "spec_id": "VELDO-0079",
  "suite": "scripts/suites/76_veldo_0079_grooming.py",
  "tree": "git archive 516afd154e0672e443325d379f5153cd96c8c777, unchanged; the current suite file run against it"

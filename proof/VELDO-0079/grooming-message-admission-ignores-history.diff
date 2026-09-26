@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -775 +775 @@
+-                                 request.get('author'), opened)
++                                 request.get('author'), [])  # defect: the backlog judges the revision alone

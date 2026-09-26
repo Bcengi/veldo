@@ -1,5 +1,5 @@
 --- a/.veldo/control_grooming_request.py
 +++ b/.veldo/control_grooming_request.py
-@@ -238 +238 @@
+@@ -289 +289 @@
 -    bound['decomposition'] = (fields.get('decomposition') or {}).get('digest')
 +    bound['decomposition'] = None  # defect: the decomposition digest is not bound

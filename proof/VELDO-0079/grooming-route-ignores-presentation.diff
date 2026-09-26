@@ -1,0 +1,5 @@
+--- a/.veldo/control_grooming_request.py
++++ b/.veldo/control_grooming_request.py
+@@ -371 +371 @@
+-    if opened:
++    if False:  # defect: a request put to the owner is forgotten by a later revision

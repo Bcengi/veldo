@@ -19,6 +19,18 @@
     true
    ],
    [
+    "VELDO-0079 route/presented-then-proposed",
+    true
+   ],
+   [
+    "VELDO-0079 route/ruling-settled-unapplied",
+    true
+   ],
+   [
+    "VELDO-0079 route/returned-then-proposed",
+    true
+   ],
+   [
     "VELDO-0079 material/telegram-brief",
     true
    ],
@@ -67,7 +79,7 @@
     true
    ]
   ],
-  "seconds": 7.264
+  "seconds": 9.063
  },
  "controls_green": true,
  "mutants": [
@@ -81,7 +93,7 @@
     "VELDO-0079 material/changed-decomposition"
    ],
    "module": ".veldo/control_grooming_request.py",
-   "mutant_sha256": "394c86d3ff6fbacc2f2b11f5ed1271b8178441eb9dd2ed26d5bd6ca2459c1719",
+   "mutant_sha256": "326e1e2411443771a36871b2e5e3ef91b7e1d653815328e029f50581335d7121",
    "name": "grooming-decomposition-digest-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -102,6 +114,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -150,8 +174,8 @@
      true
     ]
    ],
-   "seconds": 7.096,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 9.025,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   {
    "by_assertion": true,
@@ -163,7 +187,7 @@
     "VELDO-0079 material/changed-decomposition"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "b68cfd11a1d9c7d46195c89962a63a280dfaf320219d926bbcd8b48c384838ee",
+   "mutant_sha256": "be7968d4f0bc2b8eafb8891f9c9df63f4ed85fda39ba5ba9f94e3d23b0feb8e6",
    "name": "grooming-live-binding-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -184,6 +208,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -232,8 +268,8 @@
      true
     ]
    ],
-   "seconds": 7.137,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.114,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -246,7 +282,7 @@
     "VELDO-0079 material/telegram-brief"
    ],
    "module": ".veldo/control_grooming_request.py",
-   "mutant_sha256": "ba8d4bc677d86639e683d938e94857d92cca78bc3f187e20be2fcbaba5b4cf23",
+   "mutant_sha256": "5da1f46bfb18ace7847027a156bc3ac530d0c9aa214e236d4db1b6a263818e46",
    "name": "grooming-brief-omits-questions",
    "named_row_red": true,
    "named_rows": [
@@ -267,6 +303,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      false
     ],
@@ -315,8 +363,8 @@
      true
     ]
    ],
-   "seconds": 7.139,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 9.14,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   {
    "by_assertion": true,
@@ -329,7 +377,7 @@
     "VELDO-0079 material/telegram-brief"
    ],
    "module": ".veldo/control_grooming_request.py",
-   "mutant_sha256": "8358e5804aa7d4b324d006ef8975daf956ec1edcadb0d06d5f5b592aaca97dfd",
+   "mutant_sha256": "bfa147b873a282934d56d31f687f5a29dfe376f2253d95d091e402c9d1c6cde6",
    "name": "grooming-brief-omits-protected-paths",
    "named_row_red": true,
    "named_rows": [
@@ -350,6 +398,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      false
     ],
@@ -398,8 +458,8 @@
      true
     ]
    ],
-   "seconds": 7.167,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 9.153,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   {
    "by_assertion": true,
@@ -411,7 +471,7 @@
     "VELDO-0079 material/telegram-brief"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "775eaa23c0e014515d9064a4f456936d6fa4b9a0bcf74806fe6601c157bf6a69",
+   "mutant_sha256": "921feae79402e8e8b465ef8e13a9db2a67148dd9ba15af5a753d1e24e0814012",
    "name": "grooming-thin-admission-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -432,6 +492,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      false
     ],
@@ -480,8 +552,8 @@
      true
     ]
    ],
-   "seconds": 7.346,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.193,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -493,7 +565,7 @@
     "VELDO-0079 material/telegram-brief"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "fd3ee644a966833fbc4ee6576ef0c53602c131849491c1fa12bde3aceda2cc67",
+   "mutant_sha256": "0ef4beb0acd610b8d4c8e1b06061a48761aa213888a75011f1008d603e48efb4",
    "name": "grooming-brief-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -514,6 +586,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      false
     ],
@@ -562,8 +646,8 @@
      true
     ]
    ],
-   "seconds": 7.19,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.083,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -575,7 +659,7 @@
     "VELDO-0079 material/ungroomed-thin-brief"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "ab2959f18ab3cfaa19099523270749e9797ed5ec7342a68fba9641fd1cbe7197",
+   "mutant_sha256": "4558c99d1aacef3984812d49f8f405f32348608aee8ab3e360cc88aa1d222553",
    "name": "grooming-thin-path-reopened",
    "named_row_red": true,
    "named_rows": [
@@ -596,6 +680,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -644,8 +740,8 @@
      true
     ]
    ],
-   "seconds": 7.157,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.234,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -657,7 +753,7 @@
     "VELDO-0079 material/bound-fields"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "350618cab331d04c7611b2e43ce53f7f05f9bf719583265ed8e7906adff1c32e",
+   "mutant_sha256": "4dbc5c65c0a6d2bc245c7bd60c6231a83770cbd9936651e19ef72080c0f521f0",
    "name": "grooming-specification-files-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -678,6 +774,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -726,20 +834,22 @@
      true
     ]
    ],
-   "seconds": 7.075,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.123,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
    "details": [
+    "VELDO-0079 detail: route/presented-then-proposed: recording that revision superseded both requests in front of him, before grooming ran; his answer to the earlier presentation is refused",
     "VELDO-0079 detail: material/bound-fields: each change revised the pending requests: a new version whose presentation supersedes the one shown; an answer to the earlier presentation is refused after each change"
    ],
    "diff": "proof/VELDO-0079/grooming-pending-request-not-revised.diff",
    "failed_rows": [
+    "VELDO-0079 route/presented-then-proposed",
     "VELDO-0079 material/bound-fields"
    ],
    "module": ".veldo/control_grooming.py",
-   "mutant_sha256": "a0aa8000731b8bf3d5a2a3b13ac6570a00e8807ae1d5afafff55c37acdbcff2b",
+   "mutant_sha256": "42a0211e7b786a848c2c3e78bdfa6fc517bc0b85d030a4eb7a0da7466bc0541b",
    "name": "grooming-pending-request-not-revised",
    "named_row_red": true,
    "named_rows": [
@@ -760,6 +870,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -808,13 +930,16 @@
      true
     ]
    ],
-   "seconds": 7.359,
-   "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
+   "seconds": 10.709,
+   "source_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable",
+    "VELDO-0079 detail: route/presented-then-proposed: pm re-proposed the presented item with no question at the default priority; recording that revision superseded both requests in front of him, before grooming ran; his answer to the earlier presentation is refused; grooming presents it, naming its history, and his message does not admit it; his reject of the revision in front of him is applied; nothing of either was admitted or runs",
+    "VELDO-0079 detail: route/ruling-settled-unapplied: his reject settled and is not yet applied; pm's proposal with the question dropped is refused while it waits, and no revision is written; grooming asks him nothing over it; his message does not admit it; his reject is applied as he gave it and the priority request is canceled; nothing of it runs",
+    "VELDO-0079 detail: route/returned-then-proposed: his return was applied: the item went back to PREPARED and the priority request was canceled; pm asked for grooming again and proposed with no question at the default priority; it is presented to him again, naming its history; his message does not admit it; nothing of it runs",
     "VELDO-0079 detail: material/bound-fields: each proposed field is its own new revision with a new digest; each change revised the pending requests: a new version whose presentation supersedes the one shown; an answer to the earlier presentation is refused after each change; an answer settled before a specification file changed is not applied; no unit ran",
     "VELDO-0079 detail: authority/owner-choices: each choice moves the item where it says; each settlement carries the owner's own reasoning and his ruling; a reject or return cancels the priority request still waiting; rejected or returned work does not run",
     "VELDO-0079 detail: authority/pm-self-admission: its signed answer through the API edge is refused as not the owner's; its request to admit by his message is refused by the question it asked; its admit naming the unanswered request is refused for want of a settlement; an answer without the owner's own reasoning is refused; nothing was admitted and nothing runs",
@@ -827,6 +952,9 @@
    "diff": "proof/VELDO-0079/grooming-route-ignores-question.diff",
    "failed_rows": [
     "VELDO-0079 route/ask-when-needed",
+    "VELDO-0079 route/presented-then-proposed",
+    "VELDO-0079 route/ruling-settled-unapplied",
+    "VELDO-0079 route/returned-then-proposed",
     "VELDO-0079 material/bound-fields",
     "VELDO-0079 authority/owner-choices",
     "VELDO-0079 authority/pm-self-admission",
@@ -837,7 +965,7 @@
     "VELDO-0079 observability"
    ],
    "module": ".veldo/control_grooming_request.py",
-   "mutant_sha256": "442009ceb4303cfb8e96c5241f892ba9ca59547aa2322ece9427eafc2f4dbc85",
+   "mutant_sha256": "a487d06ca41f95f076b8b396322562c44dae7e34119197d7c86a8644fff3b11d",
    "name": "grooming-route-ignores-question",
    "named_row_red": true,
    "named_rows": [
@@ -858,6 +986,18 @@
      false
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     false
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     false
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -906,20 +1046,22 @@
      false
     ]
    ],
-   "seconds": 3.891,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 4.541,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable"
+    "VELDO-0079 detail: route/ask-when-needed: each is presented, naming why; each has its admission and priority requests published on Telegram; none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable",
+    "VELDO-0079 detail: route/presented-then-proposed: his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it; and it is applied as he gave it; nothing of either was admitted or runs"
    ],
    "diff": "proof/VELDO-0079/grooming-route-ignores-priority.diff",
    "failed_rows": [
-    "VELDO-0079 route/ask-when-needed"
+    "VELDO-0079 route/ask-when-needed",
+    "VELDO-0079 route/presented-then-proposed"
    ],
    "module": ".veldo/control_grooming_request.py",
-   "mutant_sha256": "3aee7f9bf0ec8689b6175717f053ef1de84b5943101d3d7ff65362c3b5bdcc87",
+   "mutant_sha256": "aab580f803380989317d0baad9a9e6fc334acf0c2fd0fe9f724b7da7fefcc676",
    "name": "grooming-route-ignores-priority",
    "named_row_red": true,
    "named_rows": [
@@ -940,6 +1082,18 @@
      false
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -988,8 +1142,8 @@
      true
     ]
    ],
-   "seconds": 6.94,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 8.765,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   {
    "by_assertion": true,
@@ -1001,7 +1155,7 @@
     "VELDO-0079 route/ask-when-needed"
    ],
    "module": ".veldo/control_grooming_request.py",
-   "mutant_sha256": "6882e9e7701eb2ecca7296764efa10526a5f02b081144c7f895946055f75fd7d",
+   "mutant_sha256": "457f039f49ce4c0b489a8ca3531a65e3c5c6892b349dbea0d8d9ae4b71652876",
    "name": "grooming-route-ignores-answered-objective",
    "named_row_red": true,
    "named_rows": [
@@ -1022,6 +1176,18 @@
      false
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1070,8 +1236,8 @@
      true
     ]
    ],
-   "seconds": 6.987,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 9.037,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   {
    "by_assertion": true,
@@ -1083,7 +1249,7 @@
     "VELDO-0079 route/ask-when-needed"
    ],
    "module": ".veldo/control_grooming_request.py",
-   "mutant_sha256": "9fa40398973d5a0579b15502bc0d0cca64eead76c0b01f2fb82dcc79feb07a07",
+   "mutant_sha256": "ba483f794391303d0b1249ab47ee38bd2a44bca34e43aee52bd41a43d7775209",
    "name": "grooming-route-ignores-author",
    "named_row_red": true,
    "named_rows": [
@@ -1104,6 +1270,18 @@
      false
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1152,22 +1330,28 @@
      true
     ]
    ],
-   "seconds": 7.15,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 8.987,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0079 detail: route/ask-when-needed: none is admitted: each awaits grooming; asking the backlog to admit it by his message is refused by the reason; no unit of any of them is executable",
+    "VELDO-0079 detail: route/presented-then-proposed: grooming presents it, naming its history, and his message does not admit it; his reject of the revision in front of him is applied; his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it; and it is applied as he gave it; nothing of either was admitted or runs",
+    "VELDO-0079 detail: route/ruling-settled-unapplied: his message does not admit it; his reject is applied as he gave it and the priority request is canceled; nothing of it runs",
+    "VELDO-0079 detail: route/returned-then-proposed: his message does not admit it; nothing of it runs",
     "VELDO-0079 detail: authority/pm-self-admission: its request to admit by his message is refused by the question it asked; its admit naming the unanswered request is refused for want of a settlement; nothing was admitted and nothing runs"
    ],
    "diff": "proof/VELDO-0079/grooming-message-admission-skips-route.diff",
    "failed_rows": [
     "VELDO-0079 route/ask-when-needed",
+    "VELDO-0079 route/presented-then-proposed",
+    "VELDO-0079 route/ruling-settled-unapplied",
+    "VELDO-0079 route/returned-then-proposed",
     "VELDO-0079 authority/pm-self-admission"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "6b07e57901d49f789fd438ee9a18ede2ab237fb57a4072a42c9b942ce3b00ed8",
+   "mutant_sha256": "04cacd0c76c37d4ee4488a87cc753e9d4342263e3507173f47de85a069b8c744",
    "name": "grooming-message-admission-skips-route",
    "named_row_red": true,
    "named_rows": [
@@ -1189,6 +1373,18 @@
      false
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     false
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     false
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1237,8 +1433,8 @@
      true
     ]
    ],
-   "seconds": 7.221,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.316,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -1260,7 +1456,7 @@
     "VELDO-0079 observability"
    ],
    "module": ".veldo/control_grooming_request.py",
-   "mutant_sha256": "320ab8a08b350c1f6da8da6c80d86a005b183e5e8322de757d0742c00ccc86d3",
+   "mutant_sha256": "1429ec12da3051f48b0010fba6b3bcdd359ec8d4f85328017270be89836eca4e",
    "name": "grooming-route-never-own-message",
    "named_row_red": true,
    "named_rows": [
@@ -1281,6 +1477,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1329,8 +1537,585 @@
      false
     ]
    ],
-   "seconds": 7.489,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 9.656,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/presented-then-proposed: grooming presents it, naming its history, and his message does not admit it; his reject of the revision in front of him is applied; nothing of either was admitted or runs",
+    "VELDO-0079 detail: route/returned-then-proposed: it is presented to him again, naming its history; his message does not admit it; nothing of it runs"
+   ],
+   "diff": "proof/VELDO-0079/grooming-route-ignores-presentation.diff",
+   "failed_rows": [
+    "VELDO-0079 route/presented-then-proposed",
+    "VELDO-0079 route/returned-then-proposed"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "3e64fa4c9c38b3121115d7dd02186849ea9c57a3521d43732c19e3aeb5a3e962",
+   "name": "grooming-route-ignores-presentation",
+   "named_row_red": true,
+   "named_rows": [
+    "route/presented-then-proposed",
+    "route/returned-then-proposed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 9.062,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/presented-then-proposed: his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it; and it is applied as he gave it",
+    "VELDO-0079 detail: route/ruling-settled-unapplied: pm's proposal with the question dropped is refused while it waits, and no revision is written; grooming asks him nothing over it; his reject is applied as he gave it and the priority request is canceled"
+   ],
+   "diff": "proof/VELDO-0079/grooming-settled-ruling-ignored.diff",
+   "failed_rows": [
+    "VELDO-0079 route/presented-then-proposed",
+    "VELDO-0079 route/ruling-settled-unapplied"
+   ],
+   "module": ".veldo/control_grooming_request.py",
+   "mutant_sha256": "0825d6fd5d355152856170779fcd0959cca9e3cd596384d75a6160f336119ea9",
+   "name": "grooming-settled-ruling-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "route/presented-then-proposed",
+    "route/ruling-settled-unapplied"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     false
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 9.418,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/presented-then-proposed: grooming presents it, naming its history, and his message does not admit it; his reject of the revision in front of him is applied; nothing of either was admitted or runs",
+    "VELDO-0079 detail: route/returned-then-proposed: his message does not admit it; nothing of it runs"
+   ],
+   "diff": "proof/VELDO-0079/grooming-message-admission-ignores-history.diff",
+   "failed_rows": [
+    "VELDO-0079 route/presented-then-proposed",
+    "VELDO-0079 route/returned-then-proposed"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "cbe3529f7eeb8fac856ef2de6544bac0b4e1cf3e8dfbb432c0d2048e50a6fb41",
+   "name": "grooming-message-admission-ignores-history",
+   "named_row_red": true,
+   "named_rows": [
+    "route/presented-then-proposed",
+    "route/returned-then-proposed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 9.158,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/presented-then-proposed: recording that revision superseded both requests in front of him, before grooming ran; his answer to the earlier presentation is refused"
+   ],
+   "diff": "proof/VELDO-0079/grooming-proposal-not-superseding.diff",
+   "failed_rows": [
+    "VELDO-0079 route/presented-then-proposed"
+   ],
+   "module": ".veldo/control_grooming.py",
+   "mutant_sha256": "39c8ad5ae2e5d2751c7748065ffc145b2325e1a0012747e8936bd91def9f6dae",
+   "name": "grooming-proposal-not-superseding",
+   "named_row_red": true,
+   "named_rows": [
+    "route/presented-then-proposed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 9.002,
+   "source_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/presented-then-proposed: his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it; and it is applied as he gave it",
+    "VELDO-0079 detail: route/ruling-settled-unapplied: pm's proposal with the question dropped is refused while it waits, and no revision is written; grooming asks him nothing over it; his reject is applied as he gave it and the priority request is canceled"
+   ],
+   "diff": "proof/VELDO-0079/grooming-proposal-over-settled-ruling.diff",
+   "failed_rows": [
+    "VELDO-0079 route/presented-then-proposed",
+    "VELDO-0079 route/ruling-settled-unapplied"
+   ],
+   "module": ".veldo/control_grooming.py",
+   "mutant_sha256": "ed105582acf274fdee354b55264515cebb621ea649708985ee88bb04dd1245a3",
+   "name": "grooming-proposal-over-settled-ruling",
+   "named_row_red": true,
+   "named_rows": [
+    "route/ruling-settled-unapplied"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     false
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 9.352,
+   "source_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0079 detail: route/presented-then-proposed: his settled reject of the rank-1 proposal holds: no revision is proposed or presented over it; and it is applied as he gave it",
+    "VELDO-0079 detail: route/ruling-settled-unapplied: grooming asks him nothing over it; his reject is applied as he gave it and the priority request is canceled"
+   ],
+   "diff": "proof/VELDO-0079/grooming-presented-over-settled-ruling.diff",
+   "failed_rows": [
+    "VELDO-0079 route/presented-then-proposed",
+    "VELDO-0079 route/ruling-settled-unapplied"
+   ],
+   "module": ".veldo/control_grooming.py",
+   "mutant_sha256": "e11a24ea42a124e8edb8dab85a5929383d932a78ed7f51138303c98468d6f7e8",
+   "name": "grooming-presented-over-settled-ruling",
+   "named_row_red": true,
+   "named_rows": [
+    "route/ruling-settled-unapplied"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0079 install/assets",
+     true
+    ],
+    [
+     "VELDO-0079 route/own-message-default",
+     true
+    ],
+    [
+     "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     false
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     false
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 material/telegram-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/ungroomed-thin-brief",
+     true
+    ],
+    [
+     "VELDO-0079 material/bound-fields",
+     true
+    ],
+    [
+     "VELDO-0079 material/changed-decomposition",
+     true
+    ],
+    [
+     "VELDO-0079 authority/owner-choices",
+     true
+    ],
+    [
+     "VELDO-0079 authority/pm-self-admission",
+     true
+    ],
+    [
+     "VELDO-0079 authority/separate-predicates",
+     true
+    ],
+    [
+     "VELDO-0079 authority/questions-unresolved",
+     true
+    ],
+    [
+     "VELDO-0079 authority/reprioritize-withdraw",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/parameter-binding",
+     true
+    ],
+    [
+     "VELDO-0079 ruling/duplicate",
+     true
+    ],
+    [
+     "VELDO-0079 observability",
+     true
+    ]
+   ],
+   "seconds": 9.362,
+   "source_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
   },
   {
    "by_assertion": true,
@@ -1342,7 +2127,7 @@
     "VELDO-0079 authority/separate-predicates"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "9d347e48f56eb5410fad3cd077c0675675193ff6c2b28e1a290f5ba0a5e4aa68",
+   "mutant_sha256": "64301b81973493f0f95c20c1a1741c94b8946e794e86a55709d311a57b4447f9",
    "name": "grooming-message-admission-priority-role",
    "named_row_red": true,
    "named_rows": [
@@ -1363,6 +2148,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1411,8 +2208,8 @@
      true
     ]
    ],
-   "seconds": 7.051,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.198,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -1424,7 +2221,7 @@
     "VELDO-0079 authority/questions-unresolved"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "d4d5bd5c4e4a1e21d5b3e75b139a840bed74a4503f832b01f58ad6318ec9de07",
+   "mutant_sha256": "55c010843fb0e433f511c4571931d58fd9085b8329b5f07788c4850b3eb290ce",
    "name": "grooming-admission-questions-unrecorded",
    "named_row_red": true,
    "named_rows": [
@@ -1445,6 +2242,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1493,8 +2302,8 @@
      true
     ]
    ],
-   "seconds": 7.159,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.023,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -1506,7 +2315,7 @@
     "VELDO-0079 authority/questions-unresolved"
    ],
    "module": ".veldo/control_grooming.py",
-   "mutant_sha256": "bb6a83928ab9d3d85626cf715481abdf85e142cc2d4864c0fbab2d02968246bf",
+   "mutant_sha256": "af63f48816f6573a2c8ca1aaf57d30fd652058bc5a0f0abb05003af79d6d5b16",
    "name": "grooming-priority-applied-before-admission",
    "named_row_red": true,
    "named_rows": [
@@ -1527,6 +2336,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1575,20 +2396,24 @@
      true
     ]
    ],
-   "seconds": 6.935,
-   "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
+   "seconds": 9.22,
+   "source_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
   },
   {
    "by_assertion": true,
    "details": [
+    "VELDO-0079 detail: route/ruling-settled-unapplied: his reject is applied as he gave it and the priority request is canceled",
+    "VELDO-0079 detail: route/returned-then-proposed: his return was applied: the item went back to PREPARED and the priority request was canceled",
     "VELDO-0079 detail: authority/owner-choices: a reject or return cancels the priority request still waiting"
    ],
    "diff": "proof/VELDO-0079/grooming-withdraw-skipped.diff",
    "failed_rows": [
+    "VELDO-0079 route/ruling-settled-unapplied",
+    "VELDO-0079 route/returned-then-proposed",
     "VELDO-0079 authority/owner-choices"
    ],
    "module": ".veldo/control_grooming.py",
-   "mutant_sha256": "176445d064d689e7701fda7a2f875f04531b23713410e6442c75689fd9e12fc7",
+   "mutant_sha256": "872c4273409113c225fd21f508e086d351cfb2147bfb2a0a9d07a7f5e28b171d",
    "name": "grooming-withdraw-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -1609,6 +2434,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     false
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     false
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1657,8 +2494,8 @@
      true
     ]
    ],
-   "seconds": 7.025,
-   "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
+   "seconds": 9.165,
+   "source_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
   },
   {
    "by_assertion": true,
@@ -1670,7 +2507,7 @@
     "VELDO-0079 authority/reprioritize-withdraw"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "2253b0efd939d435994857e4da517c10ec9b32b00a1556baea363b3b88322397",
+   "mutant_sha256": "909f27b9144acc29442701edb8c166cebfcf41495ab5803fb4f73333da64c957",
    "name": "grooming-reprioritize-unapplied",
    "named_row_red": true,
    "named_rows": [
@@ -1691,6 +2528,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1739,8 +2588,8 @@
      true
     ]
    ],
-   "seconds": 7.182,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.103,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -1752,7 +2601,7 @@
     "VELDO-0079 ruling/parameter-binding"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "34c3dcb5f2adcc70c9202775e774e0535ab2f0dc3ca103c210915b519d7287a2",
+   "mutant_sha256": "b80b3a1d911b06cb53020527a541a823b5c7fa6b72476369bbe02a878dbae671",
    "name": "grooming-ruling-digest-unvalidated",
    "named_row_red": true,
    "named_rows": [
@@ -1773,6 +2622,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1821,8 +2682,8 @@
      true
     ]
    ],
-   "seconds": 7.101,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.061,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   {
    "by_assertion": true,
@@ -1855,6 +2716,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1903,7 +2776,7 @@
      true
     ]
    ],
-   "seconds": 6.997,
+   "seconds": 9.225,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   },
   {
@@ -1937,6 +2810,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -1985,7 +2870,7 @@
      true
     ]
    ],
-   "seconds": 7.022,
+   "seconds": 9.184,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   },
   {
@@ -1998,7 +2883,7 @@
     "VELDO-0079 observability"
    ],
    "module": ".veldo/control_grooming.py",
-   "mutant_sha256": "c2e54e80235227651ca244a5094dbdffea0696bc22a668c34580e566f1a0b2a6",
+   "mutant_sha256": "eed4b6b8508a3fbd8edf990eb736dc0f5bff5a6d56c9f87bdda58dc729984e5d",
    "name": "grooming-refusal-unclassified",
    "named_row_red": true,
    "named_rows": [
@@ -2016,6 +2901,18 @@
     ],
     [
      "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
      true
     ],
     [
@@ -2067,8 +2964,8 @@
      false
     ]
    ],
-   "seconds": 7.172,
-   "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
+   "seconds": 9.12,
+   "source_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
   }
  ],
  "mutations_per_row": {
@@ -2122,13 +3019,28 @@
   "route/own-message-default": [
    "grooming-route-never-own-message"
   ],
+  "route/presented-then-proposed": [
+   "grooming-route-ignores-presentation",
+   "grooming-settled-ruling-ignored",
+   "grooming-message-admission-ignores-history",
+   "grooming-proposal-not-superseding"
+  ],
+  "route/returned-then-proposed": [
+   "grooming-route-ignores-presentation",
+   "grooming-message-admission-ignores-history"
+  ],
+  "route/ruling-settled-unapplied": [
+   "grooming-settled-ruling-ignored",
+   "grooming-proposal-over-settled-ruling",
+   "grooming-presented-over-settled-ruling"
+  ],
   "ruling/parameter-binding": [
    "grooming-ruling-digest-unvalidated"
   ]
  },
  "noop": {
   "control_backlog.py": {
-   "copy_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379",
+   "copy_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2143,6 +3055,18 @@
     ],
     [
      "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
      true
     ],
     [
@@ -2194,11 +3118,11 @@
      true
     ]
    ],
-   "seconds": 7.107,
-   "source_sha256": "bb9b2a26d51d118700f56c071d63c23c415674b98bcce1d40c162a23a7a4c379"
+   "seconds": 9.197,
+   "source_sha256": "fd1724dbb0e18d19ee23697bd949e40034620371a1def321667b747e646f3264"
   },
   "control_grooming.py": {
-   "copy_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044",
+   "copy_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2213,6 +3137,18 @@
     ],
     [
      "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
      true
     ],
     [
@@ -2264,11 +3200,11 @@
      true
     ]
    ],
-   "seconds": 7.154,
-   "source_sha256": "ce3f9a0931e60c1ec763dcab36c165c067301562f282599631ba773036031044"
+   "seconds": 8.979,
+   "source_sha256": "d30796cbaa51d27dc2eafbfb3b1f240cfb750f98e6c9e1d0fbb98f99bff2deb3"
   },
   "control_grooming_request.py": {
-   "copy_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f",
+   "copy_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2283,6 +3219,18 @@
     ],
     [
      "VELDO-0079 route/ask-when-needed",
+     true
+    ],
+    [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
      true
     ],
     [
@@ -2334,8 +3282,8 @@
      true
     ]
    ],
-   "seconds": 6.941,
-   "source_sha256": "15e56662b463dac10f88fd3c2fe2b32e18b63002906d82535f682d43343bc48f"
+   "seconds": 9.167,
+   "source_sha256": "596704cd93d99d03c05e99e5ce5f5105c57bab30bdbeeb1d1cb3961f9d7daabb"
   },
   "init_scaffold.py": {
    "copy_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9",
@@ -2356,6 +3304,18 @@
      true
     ],
     [
+     "VELDO-0079 route/presented-then-proposed",
+     true
+    ],
+    [
+     "VELDO-0079 route/ruling-settled-unapplied",
+     true
+    ],
+    [
+     "VELDO-0079 route/returned-then-proposed",
+     true
+    ],
+    [
      "VELDO-0079 material/telegram-brief",
      true
     ],
@@ -2404,13 +3364,13 @@
      true
     ]
    ],
-   "seconds": 7.181,
+   "seconds": 9.125,
    "source_sha256": "bba11d72a3609cee4de3a4647836a93f6093d5f58f3cbc11709d3a6b75da42f9"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 79",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 203.635,
+ "serial_seconds": 317.26,
  "spec_id": "VELDO-0079",
  "suite": "scripts/suites/76_veldo_0079_grooming.py"
 }
