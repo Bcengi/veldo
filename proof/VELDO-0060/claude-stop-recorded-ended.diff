@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -714 +714 @@
+@@ -725 +725 @@
 -        if remote and supervision['cause'] in ('requested', 'usage_cap'):
 +        if remote and supervision['cause'] in ('usage_cap',):  # defect: a requested stop is recorded as ended

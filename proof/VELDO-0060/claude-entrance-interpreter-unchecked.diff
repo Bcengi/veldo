@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -237 +237 @@
+-        if not reported and os.path.realpath(engine[0]) != os.path.realpath(sys.executable):
++        if False:  # defect: any program may run the entrance, and then nothing re-hashes the engine

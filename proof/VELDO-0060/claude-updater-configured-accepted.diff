@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -780 +780 @@
+@@ -791 +791 @@
 -            if name in configured and configured[name] != settings[name]:
 +            if False:  # defect: an adapter configuring the updater otherwise is overridden in silence

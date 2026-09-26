@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1336 +1336 @@
+@@ -1349 +1349 @@
 -        if not unchanged:
 +        if False:  # defect: the wrapper execs the pinned engine without re-hashing it

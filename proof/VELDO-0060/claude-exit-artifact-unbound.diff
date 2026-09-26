@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -728 +728 @@
+@@ -739 +739 @@
 -        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)
 +        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())  # defect: the exit record binds no artifact
