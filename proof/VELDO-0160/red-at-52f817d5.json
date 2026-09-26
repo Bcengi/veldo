@@ -1,0 +1,164 @@
+{
+ "by_assertion": true,
+ "commit": "52f817d5747cba5ff3fe3ef449048be441c17192",
+ "details": [
+  "VELDO-0160 pool/per-account-isolation detail: the Runner takes the account pool [AttributeError]",
+  "VELDO-0160 pool/per-account-isolation detail: the pool spread the three Claude Code dispatches over the three Claude Code accounts and the Codex one onto the Codex account [[None, None, None, None]]",
+  "VELDO-0160 pool/per-account-isolation detail: claude: a dispatch was prepared",
+  "VELDO-0160 pool/per-account-isolation detail: claude: a dispatch was prepared",
+  "VELDO-0160 pool/per-account-isolation detail: claude: a dispatch was prepared",
+  "VELDO-0160 pool/per-account-isolation detail: codex: a dispatch was prepared",
+  "VELDO-0160 pool/per-account-isolation detail: the four engines ran on four different profiles [0]",
+  "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': None, 'acct-c2': None, 'acct-c3': None, 'acct-x1': None}]",
+  "VELDO-0160 pool/one-registration detail: the store refuses a second record of acct-c1 by name [duplicate_account]",
+  "VELDO-0160 pool/one-registration detail: the login of acct-c1 registered under another name (acct-c1-again) is refused by name, and no second record exists [None]",
+  "VELDO-0160 pool/one-registration detail: the login of acct-x1 registered under another name (acct-x1-again) is refused by name, and no second record exists [None]",
+  "VELDO-0160 pool/concurrent detail: the four dispatches were each accepted and running before any ended [[('claude', 'invalid_input', None), ('claude', 'invalid_input', None), ('claude', 'invalid_input', None), ('codex', 'invalid_input', None)]]",
+  "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(None, None), (None, None), (None, None), (None, None)]]",
+  "VELDO-0160 pool/concurrent detail: the four engine processes were alive at the same time [0]",
+  "VELDO-0160 limit/stream-exhausted detail: Claude Code: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 limit/stream-exhausted detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{}]",
+  "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 decision/rerun detail: claude_code, no MCP call: decided re-run, naming no call [None, no decision module]",
+  "VELDO-0160 decision/rerun detail: claude_code, only calls to tools marked read-only: decided re-run, naming no call [None, no decision module]",
+  "VELDO-0160 decision/rerun detail: codex, no MCP call: decided re-run, naming no call [None, no decision module]",
+  "VELDO-0160 decision/rerun detail: codex, only calls to tools marked read-only: decided re-run, naming no call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: claude_code, a call to a tool not marked read-only: decided ask, naming exactly that call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: claude_code, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: claude_code: a record with a gap in its sequence is refused by name, never decided [no decision module]",
+  "VELDO-0160 decision/ask detail: codex, a call to a tool not marked read-only: decided ask, naming exactly that call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: codex: a record with a gap in its sequence is refused by name, never decided [no decision module]",
+  "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
+  "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [invalid_input, {}]",
+  "VELDO-0160 pool/moved-off detail: nothing was sent to acct-c1 before its reset: no slot and no process after its exhausting run [1 slots, 0 processes]",
+  "VELDO-0160 pool/moved-off detail: at its reported reset acct-c1 takes work again [[None, None], (None, 'invalid_input')]",
+  "VELDO-0160 pool/added-account detail: the three Claude Code accounts are each running a worker [[None, None, None]]",
+  "VELDO-0160 pool/added-account detail: the next dispatch launched on the new account [None, invalid_input]",
+  "VELDO-0160 pool/added-account detail: the process that prepares dispatches and every running worker kept its process identity and start time [0 of 0 workers]",
+  "VELDO-0160 pool/one-run-while-unknown detail: before its first observation the new account runs one: a second unit offered with it waits, the new account passed over at its one-run bound [invalid_input, None]",
+  "VELDO-0160 pool/one-run-while-unknown detail: the running unit reported the account's first observation [{}]",
+  "VELDO-0160 pool/one-run-while-unknown detail: after it the waiting unit launched on the new account, its second run at once [None, invalid_input]",
+  "VELDO-0160 install/assets detail: the scaffold lays down the account pool and the decision [['.veldo/control_account_pool.py', '.veldo/control_account_limit.py']]",
+  "VELDO-0160 install/assets detail: every engine copy of a module this work touches is identical [['.veldo/control_account_pool.py', '.veldo/control_account_limit.py', '.veldo/control_account_pool.py', '.veldo/control_account_limit.py']]"
+ ],
+ "failed_rows": [
+  "VELDO-0160 pool/per-account-isolation",
+  "VELDO-0160 pool/one-registration",
+  "VELDO-0160 pool/concurrent",
+  "VELDO-0160 limit/stream-exhausted",
+  "VELDO-0160 limit/rate-limit-result",
+  "VELDO-0160 decision/rerun",
+  "VELDO-0160 decision/ask",
+  "VELDO-0160 pool/moved-off",
+  "VELDO-0160 pool/added-account",
+  "VELDO-0160 pool/one-run-while-unknown",
+  "VELDO-0160 install/assets"
+ ],
+ "modules": {
+  ".veldo/control_account_limit.py": {
+   "at_commit": null,
+   "now": "36ad378a311ef894fae9c9a4c5ce0e6931677207c341fab1664fd3d85b186a55"
+  },
+  ".veldo/control_account_pool.py": {
+   "at_commit": null,
+   "now": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
+  },
+  ".veldo/control_accounts.py": {
+   "at_commit": "b0be0c4abfa91b83abf875c0ba530a245679838a259f001b74ea6cc5832374a6",
+   "now": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "9a9b490e53e57873ab2aaaa71f548e0c0721ce69dfd2ef3536064e99d494462e",
+   "now": "70553344bd722ae6a6fa8fb666b823b1af57e6c683585e10ee029ceb1be8bc4b"
+  },
+  ".veldo/control_engine_codex.py": {
+   "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
+   "now": "c433636de363062ac2f5f3fcbddb9022d6812a62e894d607f1f7ba0d85296958"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
+   "now": "97d79daa5f161645bf8748fe70dbea043946319126f78ac667e39db958e94a1b"
+  },
+  ".veldo/control_reservation_runtime.py": {
+   "at_commit": "edae4a25ec26031d041376ec64c5ccea3575eb5fc7b22a448fd2fc6d9674774b",
+   "now": "83b4b438d2aee50c0c7eeac894efcfc02bd8a2a6e830915a7606eff15e03edc7"
+  },
+  ".veldo/control_reservations.py": {
+   "at_commit": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f",
+   "now": "1abfdf9608cda66a979733d1788126b90756cb1abdf61b6c9276961c4990ec77"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "75eea8d7afe5ceb868c3afa3255b68d53613c20d91a91e673d6be2b4fa008233",
+   "now": "9ab13f553b96522d55c50c162f52f92ce732c948fbb83d0be52ece03817e2fdd"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0160 pool/per-account-isolation",
+   false
+  ],
+  [
+   "VELDO-0160 pool/one-registration",
+   false
+  ],
+  [
+   "VELDO-0160 pool/concurrent",
+   false
+  ],
+  [
+   "VELDO-0160 limit/stream-exhausted",
+   false
+  ],
+  [
+   "VELDO-0160 limit/rate-limit-result",
+   false
+  ],
+  [
+   "VELDO-0160 limit/ordinary-failure",
+   true
+  ],
+  [
+   "VELDO-0160 decision/rerun",
+   false
+  ],
+  [
+   "VELDO-0160 decision/ask",
+   false
+  ],
+  [
+   "VELDO-0160 pool/moved-off",
+   false
+  ],
+  [
+   "VELDO-0160 pool/added-account",
+   false
+  ],
+  [
+   "VELDO-0160 pool/one-run-while-unknown",
+   false
+  ],
+  [
+   "VELDO-0160 install/assets",
+   false
+  ],
+  [
+   "VELDO-0160 format/claude-fake-lines",
+   true
+  ],
+  [
+   "VELDO-0160 format/codex-fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 22.961,
+ "spec_id": "VELDO-0160",
+ "suite": "scripts/suites/78_veldo_0160_account_pool.py",
+ "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"
+}

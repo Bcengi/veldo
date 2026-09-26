@@ -36,3 +36,4 @@ Base: 52f817d5 (main, VELDO-0062 landed). Branch build-veldo-0160.
   cli-formats.json (the lead allowed extending it).
 
 ## Progress log
+- 2026-09-26T11:57:42Z suite 78 written, 14 rows green in 9.8 s; next: red record, mutations

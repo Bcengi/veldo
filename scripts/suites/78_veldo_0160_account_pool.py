@@ -54,7 +54,7 @@ def _v160_suite():
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
     ROWS = ('pool/per-account-isolation', 'pool/one-registration', 'pool/concurrent',
-            'limit/stream-exhausted', 'limit/rate-limit-result', 'limit/ordinary-failure',
+            'limit/stream-exhausted', 'limit/rate-limit-result',
             'decision/rerun', 'decision/ask',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -628,7 +628,7 @@ sys.exit(payload.get('code', 0))
                 finish(launch)
 
         # AC2: a run its account's limit stopped is classified account_limit with its window and reset; no other.
-        with region('limit/stream-exhausted', 'limit/rate-limit-result', 'limit/ordinary-failure'):
+        with region('limit/stream-exhausted', 'limit/rate-limit-result'):
             for account, provider in (('acct-l1', 'claude_code'), ('acct-l2', 'claude_code'), ('acct-l3', 'claude_code'),
                                       ('acct-l4', 'codex'), ('acct-l5', 'codex'), ('acct-l6', 'codex')):
                 error = register(account, provider)
@@ -650,13 +650,13 @@ sys.exit(payload.get('code', 0))
                 ('limit/rate-limit-result', 'Codex', 'acct-l5', 'codex',
                  [x_started(), x_failed(x_limit_message(stated))],
                  {'window': 'usage_limit', 'reset_at': end_of_minute(stated), 'signal': 'result'}),
-                ('limit/ordinary-failure', 'Claude Code', 'acct-l3', 'claude',
+                ('limit/stream-exhausted', 'Claude Code', 'acct-l3', 'claude',
                  [c_init(), c_msg('mf', 1, 1), c_failed(['the tool failed'])], None),
-                ('limit/ordinary-failure', 'Claude Code (a 429 that is not the account\'s limit)', 'acct-l3', 'claude',
+                ('limit/rate-limit-result', 'Claude Code (a 429 that is not the account\'s limit)', 'acct-l3', 'claude',
                  [c_init(), c_api_error((CLIMIT.get('not_account') or ['Server is temporarily limiting requests'])[0]),
                   c_result(0, 0, text=(CLIMIT.get('not_account') or ['Server is temporarily limiting requests'])[0],
                            error=True, status=429)], None),
-                ('limit/ordinary-failure', 'Codex', 'acct-l6', 'codex',
+                ('limit/stream-exhausted', 'Codex', 'acct-l6', 'codex',
                  [x_started(), x_failed('internal error; agent loop died unexpectedly')], None))
             for row, engine, account, adapter, script, expected in cases:
                 launch, error = submit('VELDO-16004-%s-%d' % (account, len(fixture_lines)), adapter, script, 1, via=account)

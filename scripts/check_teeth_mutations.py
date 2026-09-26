@@ -6841,6 +6841,149 @@ def cases():
             "            % (shown('project'), shown('owner'), shown('execution_repository'), shown('charter'),\n",
             "            % (shown('project'), shown('owner'), 'as proposed', shown('charter'),  # defect: repository not shown\n",
             'answer/owner-sees-every-value')
+
+    # VELDO-0160: each criterion's declared falsifier first, then the threat model's other shapes.
+    def pool(name, module, old, new, rows, also=()):
+        add(160, name, '78_veldo_0160_account_pool.py', module, old, new, rows, also)
+
+    # AC1 (declared falsifiers): two accounts' work under one shared profile; a second registration of one
+    # account accepted; the pool's launches serialized.
+    pool('pool-shared-profile', 'control_accounts.py',
+         "    directory = (record.get('profiles') or {}).get(host)\n",
+         "    directory = (record.get('profiles') or {}).get(host)\n"
+         "    directory = os.path.join(os.path.dirname(directory or '.'), 'shared-' + str(record.get('provider')))"
+         "  # defect: one profile shared by the accounts of a provider\n",
+         ['pool/per-account-isolation'])
+    pool('pool-second-registration-accepted', 'control_accounts.py',
+         "                        raise Refused('duplicate_account:' + other['id'], '%s on %s' % (directory, host))\n",
+         "                        pass  # defect: the same login is registered again under another name\n",
+         ['pool/one-registration'])
+    pool('pool-duplicate-id-unnamed', 'control_accounts.py',
+         "                raise Refused('duplicate_account:' + params['account'], params['account'])\n",
+         "                raise Refused('duplicate_account', params['account'])  # defect: the registered id is not named\n",
+         ['pool/one-registration'])
+    pool('pool-launches-serialized', 'control_account_pool.py',
+         "        if active >= admits:\n",
+         "        if active >= admits or any(r.get('type') == 'worker' and not r.get('retired') for r in records.values()):"
+         "  # defect: one pooled run at a time\n",
+         ['pool/concurrent'])
+    pool('pool-selection-untraced', 'control_reservations.py',
+         "                         selection=choice['trace'],\n",
+         "                         selection=None,  # defect: the choice and the windows it read are not kept\n",
+         ['pool/per-account-isolation'])
+    # AC2 (declared falsifier): a run whose engine ends with its rate-limit result classified as an ordinary failure.
+    pool('limit-result-ordinary', 'control_accounts.py',
+         "    if limit['signal'] == 'stream' and outcome == 'completed':\n",
+         "    if limit['signal'] == 'result':\n"
+         "        return outcome, None  # defect: the engine's rate-limit result is an ordinary failure\n"
+         "    if limit['signal'] == 'stream' and outcome == 'completed':\n",
+         ['limit/rate-limit-result'])
+    pool('limit-claude-result-unread', 'control_engine_claude.py',
+         "        window = limit_window(text) if event.get('is_error') is True else None\n",
+         "        window = None  # defect: the rate-limit result is not read\n",
+         ['limit/rate-limit-result'])
+    pool('limit-claude-any-error-result', 'control_engine_claude.py',
+         "    if not isinstance(text, str) or not text.startswith(LIMIT_MESSAGE):\n",
+         "    if not isinstance(text, str):  # defect: any error result is the account's limit\n",
+         ['limit/rate-limit-result'])
+    pool('limit-claude-reset-minute-start', 'control_engine_claude.py',
+         "                      for fold in (0, 1)) + 60\n",
+         "                      for fold in (0, 1))  # defect: the window reopens at the start of the stated minute\n",
+         ['limit/rate-limit-result'])
+    pool('limit-codex-failed-turn-unread', 'control_engine_codex.py',
+         "            found.extend(self._limited(seen, error.get('message') if isinstance(error, dict) else None, 'result'))\n",
+         "            pass  # defect: the failed turn's usage-limit message is not read\n",
+         ['limit/rate-limit-result'])
+    pool('limit-stream-unclassified', 'control_accounts.py',
+         "    if limit['signal'] == 'stream' and outcome == 'completed':\n",
+         "    if limit['signal'] == 'stream':  # defect: a window the stream reported exhausted is not a limit\n",
+         ['limit/stream-exhausted'])
+    pool('limit-claude-rejected-unread', 'control_engine_claude.py',
+         "            if status == 'rejected':\n                # VELDO-0160: the stream reports its window exhausted.\n",
+         "            if False:  # defect: a rejected window is not the account's limit\n",
+         ['limit/stream-exhausted'])
+    pool('limit-every-failure', 'control_accounts.py',
+         "    if not isinstance(limit, dict) or limit.get('signal') not in LIMIT_SIGNALS or outcome == 'not_executed':\n",
+         "    if outcome == 'failed':\n"
+         "        return LIMIT_OUTCOME, {'window': 'unified', 'reset_at': None, 'signal': 'stream'}  # defect: every failure\n"
+         "    if not isinstance(limit, dict) or limit.get('signal') not in LIMIT_SIGNALS or outcome == 'not_executed':\n",
+         ['limit/stream-exhausted', 'limit/rate-limit-result'])
+    pool('limit-unreported', 'control_launch.py',
+         "                               limit=limit)\n",
+         "                               limit=None)  # defect: the classification's window and reset are not reported\n",
+         ['limit/stream-exhausted', 'limit/rate-limit-result'])
+    # AC3 (declared falsifier): re-run decided for a record with a call to an MCP tool not marked read-only.
+    pool('decision-ask-reruns', 'control_account_limit.py',
+         "    return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(shown)}\n",
+         "    return {'schema': SCHEMA, 'decision': RERUN, 'calls': named, 'mcp_calls': len(shown)}  # defect\n",
+         ['decision/ask'])
+    pool('decision-unlisted-server-read-only', 'control_account_limit.py',
+         "            reason = 'server_not_configured'\n",
+         "            continue  # defect: a server the configuration does not list is taken as read-only\n",
+         ['decision/ask'])
+    pool('decision-unmarked-revision-read-only', 'control_account_limit.py',
+         "        elif call.get('tool') in read_only.get(revision, set()):\n",
+         "        elif call.get('tool') in read_only.get(revision, set()) or not read_only.get(revision):"
+         "  # defect: a revision that marks nothing marks everything\n",
+         ['decision/ask'])
+    pool('decision-claude-calls-unread', 'control_engine_claude.py',
+         "        if isinstance(name, str) and name.startswith(MCP_PREFIX):\n",
+         "        if False:  # defect: Claude Code's MCP tool calls are not read\n",
+         ['decision/ask'])
+    pool('decision-codex-calls-unread', 'control_engine_codex.py',
+         "    if not isinstance(item, dict) or item.get('type') != MCP_ITEM:\n",
+         "    if True:  # defect: Codex's MCP tool calls are not read\n",
+         ['decision/ask'])
+    pool('decision-call-named-twice', 'control_account_limit.py',
+         "            if key in seen:\n                continue\n",
+         "            if False:  # defect: a call shown twice is counted twice\n                continue\n",
+         ['decision/ask'])
+    pool('decision-read-only-asks', 'control_account_limit.py',
+         "        elif call.get('tool') in read_only.get(revision, set()):\n            continue\n",
+         "        elif False:  # defect: a call to a tool marked read-only asks\n            continue\n",
+         ['decision/rerun'])
+    pool('decision-gap-accepted', 'control_account_limit.py',
+         "        if line['sequence'] != at or isinstance(line['sequence'], bool):\n",
+         "        if isinstance(line['sequence'], bool):  # defect: a gap in the sequence is not refused\n",
+         ['decision/ask'])
+    # AC4 (declared falsifiers): an account chosen inside its reported window; the pool read only when the
+    # Runner starts; a second concurrent run admitted on an account with no observation.
+    pool('pool-inside-window', 'control_account_pool.py',
+         "        if limited:\n",
+         "        if limited and False:  # defect: an account inside its reported window is a candidate\n",
+         ['pool/moved-off'])
+    pool('pool-read-at-start', 'control_account_pool.py',
+         "    for record in accounts(conn):\n",
+         "    for record in [r for r in accounts(conn)\n"
+         "                   if r['id'] in _STARTED.setdefault('ids', {a['id'] for a in accounts(conn)})]:"
+         "  # defect: the pool as the Runner started\n",
+         ['pool/added-account'],
+         also=[("SCHEMA = 'veldo.account_selection/v1'\n", "SCHEMA = 'veldo.account_selection/v1'\n_STARTED = {}\n")])
+    pool('pool-unobserved-unbounded', 'control_account_pool.py',
+         "    return (record.get('concurrency') or 1) if observed(record, records) else 1\n",
+         "    return record.get('concurrency') or 1  # defect: unknown admits the account's whole concurrency\n",
+         ['pool/one-run-while-unknown'])
+    pool('pool-usage-unobserved', 'control_account_pool.py',
+         "    return bool((record or {}).get('windows')) or _uses(records, (record or {}).get('id'))[2]\n",
+         "    return True  # defect: an account with no observation counts as observed\n",
+         ['pool/one-run-while-unknown'])
+    pool('pool-concurrency-ignored', 'control_account_pool.py',
+         "        if active >= admits:\n",
+         "        if False:  # defect: an account at its concurrency is a candidate\n",
+         ['pool/moved-off'])
+    pool('pool-reset-unnamed', 'control_account_pool.py',
+         "    return 'no_account_until:%d' % math.ceil(until) if _number(until) else 'no_account'\n",
+         "    return 'no_account'  # defect: the waiting unit is not told the earliest reset\n",
+         ['pool/moved-off'])
+    pool('pool-read-once-per-runner', 'control_launch.py',
+         "        if hasattr(account, 'reserve'):\n",
+         "        if hasattr(account, 'reserve') and not getattr(self, '_pooled', None):\n"
+         "            self._pooled = True  # defect: only the Runner's first dispatch reads the pool\n",
+         ['pool/concurrent', 'pool/added-account'])
+    # Installation.
+    pool('pool-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_pool.py",\n', '', ['install/assets'])
+    pool('decision-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_limit.py",\n', '',
+         ['install/assets'])
     return result
 
 
