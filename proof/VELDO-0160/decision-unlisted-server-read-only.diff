@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -173 +173 @@
+@@ -179 +179 @@
 -            reason = 'server_not_configured'
 +            continue  # defect: a server the configuration does not list is taken as read-only

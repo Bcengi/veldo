@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -209 +209 @@
+@@ -213 +213 @@
 -    if kind != MCP_ITEM:
 +    if True:  # defect: Codex's MCP tool calls are not read

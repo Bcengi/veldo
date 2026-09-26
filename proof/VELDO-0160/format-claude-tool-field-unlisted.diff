@@ -1,0 +1,4 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -265 +264,0 @@
+-    'system/init': {'tools': 'free'},

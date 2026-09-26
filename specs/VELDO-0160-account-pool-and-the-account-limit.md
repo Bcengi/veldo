@@ -274,5 +274,5 @@ call; a control request or response and the transcript mirror cannot be shown to
 Codex exec's own `collab_tool_call` is in exec's item table, an unknown call. The extractor reads each
 of these out of the binaries into `cli-formats.json`. New rows `decision/repl-inner-call`,
 `decision/task-progress-tool` and `decision/frame-tool-names`; `decision/redacted-name`,
-`decision/unknown-forms`, `decision/tool-free-forms` and `format/tool-forms` extended; 14 more finding
-160 mutations. Status unchanged.
+`decision/unknown-forms`, `decision/tool-free-forms` and `format/tool-forms` extended; 13 more finding
+160 mutations (78 in all, each rejected). Status unchanged.

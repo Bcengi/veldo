@@ -63,6 +63,18 @@
     true
    ],
    [
+    "VELDO-0160 decision/repl-inner-call",
+    true
+   ],
+   [
+    "VELDO-0160 decision/task-progress-tool",
+    true
+   ],
+   [
+    "VELDO-0160 decision/frame-tool-names",
+    true
+   ],
+   [
     "VELDO-0160 pool/moved-off",
     true
    ],
@@ -99,17 +111,17 @@
     true
    ]
   ],
-  "seconds": 24.506
+  "seconds": 24.23
  },
  "controls_green": true,
  "mutants": [
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-71ehycql/helper/accounts/profiles/shared-claude_code, acct-c1]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-c2: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-71ehycql/helper/accounts/profiles/shared-claude_code, acct-c2]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-c3: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-71ehycql/helper/accounts/profiles/shared-claude_code, acct-c3]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-x1: the engine ran on exactly its own account's registered profile (CODEX_HOME) and no other provider's, named as that account [/dev/shm/v160-71ehycql/helper/accounts/profiles/shared-codex, acct-x1]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-hgbjx8lh/helper/accounts/profiles/shared-claude_code, acct-c1]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-c2: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-hgbjx8lh/helper/accounts/profiles/shared-claude_code, acct-c2]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-c3: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-hgbjx8lh/helper/accounts/profiles/shared-claude_code, acct-c3]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-x1: the engine ran on exactly its own account's registered profile (CODEX_HOME) and no other provider's, named as that account [/dev/shm/v160-hgbjx8lh/helper/accounts/profiles/shared-codex, acct-x1]",
     "VELDO-0160 pool/per-account-isolation detail: the four engines ran on four different profiles [2]"
    ],
    "diff": "proof/VELDO-0160/pool-shared-profile.diff",
@@ -182,6 +194,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -218,7 +242,7 @@
      true
     ]
    ],
-   "seconds": 24.767,
+   "seconds": 24.961,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -297,6 +321,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -333,7 +369,7 @@
      true
     ]
    ],
-   "seconds": 25.122,
+   "seconds": 24.93,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -411,6 +447,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -447,7 +495,7 @@
      true
     ]
    ],
-   "seconds": 24.906,
+   "seconds": 25.259,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -461,10 +509,10 @@
     "VELDO-0160 pool/per-account-isolation detail: the metrics count one dispatch on each account [{'acct-c1': 1}]",
     "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': 7, 'acct-c2': None, 'acct-c3': None, 'acct-x1': None}]",
     "VELDO-0160 pool/concurrent detail: the four dispatches were each accepted and running before any ended [[('claude', None, 'accepted'), ('claude', 'no_account', None), ('claude', 'no_account', None), ('codex', 'no_account', None)]]",
-    "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(1790446079.2607708, 1790446079.3191478), (None, None), (None, None), (None, None)]]",
+    "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(1790452487.531383, 1790452487.6100273), (None, None), (None, None), (None, None)]]",
     "VELDO-0160 pool/concurrent detail: the four engine processes were alive at the same time [1]",
-    "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[('acct-c2', None), (None, 'no_account_until:1790446091')]]",
-    "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [no_account_until:1790446091, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_unobserved:one_run', 'acct-c3': 'account_unobserved:one_run'}]",
+    "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[('acct-c2', None), (None, 'no_account_until:1790452499')]]",
+    "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [no_account_until:1790452499, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_unobserved:one_run', 'acct-c3': 'account_unobserved:one_run'}]",
     "VELDO-0160 pool/moved-off detail: at its reported reset acct-c1 takes work again [['acct-c3', None], (None, 'no_account')]",
     "VELDO-0160 pool/added-account detail: the three Claude Code accounts are each running a worker [['acct-c1', None, None]]",
     "VELDO-0160 pool/added-account detail: the next dispatch launched on the new account [None, no_account]",
@@ -548,6 +596,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -584,7 +644,7 @@
      true
     ]
    ],
-   "seconds": 36.564,
+   "seconds": 36.649,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -667,6 +727,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -703,7 +775,7 @@
      true
     ]
    ],
-   "seconds": 24.432,
+   "seconds": 25.146,
    "source_sha256": "308d51b7700b7193f7ba43c322b7f2d44d2f6a6cec543e204fc9a3e57d604491"
   },
   {
@@ -713,7 +785,7 @@
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 7:39pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:26pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
@@ -794,6 +866,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -830,7 +914,7 @@
      true
     ]
    ],
-   "seconds": 24.933,
+   "seconds": 25.007,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -839,7 +923,7 @@
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [failed, None]",
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{}]",
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 7:40pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:26pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
@@ -855,7 +939,7 @@
     "VELDO-0160 limit/claude-rejected-texts"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "fd18c11091f78ada9c6f4dda53725fd7890880b3f9da8c67da6862b051189b4d",
+   "mutant_sha256": "e14eb5790a363ff12c1af6a06def84a32d4fdc47b9a1721729eeed614f861cb2",
    "name": "limit-claude-result-unread",
    "named_row_red": true,
    "named_rows": [
@@ -920,6 +1004,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -956,8 +1052,8 @@
      true
     ]
    ],
-   "seconds": 24.972,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.955,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -969,7 +1065,7 @@
     "VELDO-0160 limit/rate-limit-result"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "687289e182f05003dd4a40bfde5839c2ea1ed75d308faa9756610be79b681508",
+   "mutant_sha256": "f7bf3605fab69ee96c8282e8f9ac05035d9095d1248c29b8b326c4af7cb08c63",
    "name": "limit-claude-any-error-result",
    "named_row_red": true,
    "named_rows": [
@@ -1034,6 +1130,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1070,15 +1178,15 @@
      true
     ]
    ],
-   "seconds": 25.211,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.013,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [account_limit, {'reset_at': 1790453460.0, 'signal': 'result', 'window': 'five_hour'}]",
-    "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{'observed_at': 1790446235.1184244, 'reset_at': 1790453460.0, 'source_dispatch': 'dispatch/VELDO-16004-acct-l2-87/506916ef2dc84dc992ebf1ae0e9daf6c', 'status': 'rejected', 'utilization': None}]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 7:40pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': 1790451600.0, 'signal': 'result', 'window': 'unified'}, rejected]"
+    "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [account_limit, {'reset_at': 1790459880.0, 'signal': 'result', 'window': 'five_hour'}]",
+    "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{'observed_at': 1790452644.2137399, 'reset_at': 1790459880.0, 'source_dispatch': 'dispatch/VELDO-16004-acct-l2-87/683a9186764c458a9e4a7750349e8bf0', 'status': 'rejected', 'utilization': None}]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:27pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': 1790458020.0, 'signal': 'result', 'window': 'unified'}, rejected]"
    ],
    "diff": "proof/VELDO-0160/limit-claude-reset-minute-start.diff",
    "failed_rows": [
@@ -1086,7 +1194,7 @@
     "VELDO-0160 limit/claude-rejected-texts"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "8b830ed5988f34fa1660d802a52ea014cf50979e90548bac098d644ba42636e6",
+   "mutant_sha256": "42f0794161844ba6953d6dd5ec2980e4e0167d2c2b328e643f6d7cf9794649ae",
    "name": "limit-claude-reset-minute-start",
    "named_row_red": true,
    "named_rows": [
@@ -1151,6 +1259,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1187,8 +1307,8 @@
      true
     ]
    ],
-   "seconds": 24.826,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.082,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -1202,7 +1322,7 @@
     "VELDO-0160 limit/rate-limit-result"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "2718321474abf4676b1fc7468c2650fce075491020b86713feab296fb5e79397",
+   "mutant_sha256": "93c09fdf289dd174c4517edf88caf98cde1aafa3b303603bc7d27895eb77b5b6",
    "name": "limit-codex-failed-turn-unread",
    "named_row_red": true,
    "named_rows": [
@@ -1267,6 +1387,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1303,8 +1435,8 @@
      true
     ]
    ],
-   "seconds": 25.029,
-   "source_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "seconds": 25.016,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   {
    "by_assertion": true,
@@ -1384,6 +1516,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1420,7 +1564,7 @@
      true
     ]
    ],
-   "seconds": 24.926,
+   "seconds": 24.957,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -1434,7 +1578,7 @@
     "VELDO-0160 limit/stream-exhausted"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "0b44a1218c939bd52ef6c2d1377ebabefef3a345e8b9fb2bd14f3d94389b9f90",
+   "mutant_sha256": "c3feabb11a4c6968d119a755ca08d0223cbf2aa68e016e071c039db3e8a87cf6",
    "name": "limit-claude-rejected-unread",
    "named_row_red": true,
    "named_rows": [
@@ -1499,6 +1643,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1535,20 +1691,20 @@
      true
     ]
    ],
-   "seconds": 25.052,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.998,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 limit/stream-exhausted detail: Claude Code (a window reported exhausted, then open again): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [account_limit, {'reset_at': 1790453571, 'signal': 'stream', 'window': 'five_hour'}, ['five_hour']]"
+    "VELDO-0160 limit/stream-exhausted detail: Claude Code (a window reported exhausted, then open again): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [account_limit, {'reset_at': 1790459980, 'signal': 'stream', 'window': 'five_hour'}, ['five_hour']]"
    ],
    "diff": "proof/VELDO-0160/limit-reopened-window-kept.diff",
    "failed_rows": [
     "VELDO-0160 limit/stream-exhausted"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "7d855a3f8cd4a3330b5c8223623f830d4cbc774d3c9930a9864c7555613dcf37",
+   "mutant_sha256": "d45e65d140228ca17a730f50c63c614d66f34a8536aaf7b1db362628b6876a12",
    "name": "limit-reopened-window-kept",
    "named_row_red": true,
    "named_rows": [
@@ -1613,6 +1769,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1649,8 +1817,8 @@
      true
     ]
    ],
-   "seconds": 25.168,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.897,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -1667,7 +1835,7 @@
     "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [{'unified': 1}]",
     "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, []]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 7:43pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:29pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
@@ -1750,6 +1918,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1786,7 +1966,7 @@
      true
     ]
    ],
-   "seconds": 24.831,
+   "seconds": 24.991,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -1800,7 +1980,7 @@
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [None, None]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 7:43pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:30pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
@@ -1890,6 +2070,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -1926,7 +2118,7 @@
      true
     ]
    ],
-   "seconds": 24.232,
+   "seconds": 24.268,
    "source_sha256": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502"
   },
   {
@@ -1963,13 +2155,34 @@
     "VELDO-0160 decision/unknown-forms detail: claude_code, a content block of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_block [rerun, [(3, 'unknown_call', 'unlisted_block')]]",
     "VELDO-0160 decision/unknown-forms detail: claude_code, a message of a type no table lists: decided ask, naming that line as an unknown call of form message:unlisted_message [rerun, [(3, 'unknown_call', 'message:unlisted_message')]]",
     "VELDO-0160 decision/unknown-forms detail: claude_code, a system message of a subtype no table lists: decided ask, naming that line as an unknown call of form message:system/unlisted_subtype [rerun, [(3, 'unknown_call', 'message:system/unlisted_subtype')]]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a can_use_tool control request (outside the message union): decided ask, naming that line as an unknown call of form message:control_request [rerun, [(3, 'unknown_call', 'message:control_request')]]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a control response (outside the message union): decided ask, naming that line as an unknown call of form message:control_response [rerun, [(3, 'unknown_call', 'message:control_response')]]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a transcript mirror (outside the message union): decided ask, naming that line as an unknown call of form message:transcript_mirror [rerun, [(3, 'unknown_call', 'message:transcript_mirror')]]",
     "VELDO-0160 decision/unknown-forms detail: codex, a dynamic_tool_call item: decided ask, naming that line as an unknown call of form dynamic_tool_call [rerun, [(3, 'unknown_call', 'dynamic_tool_call')]]",
     "VELDO-0160 decision/unknown-forms detail: codex, a collab_agent_tool_call item: decided ask, naming that line as an unknown call of form collab_agent_tool_call [rerun, [(3, 'unknown_call', 'collab_agent_tool_call')]]",
     "VELDO-0160 decision/unknown-forms detail: codex, a sub_agent_activity item: decided ask, naming that line as an unknown call of form sub_agent_activity [rerun, [(3, 'unknown_call', 'sub_agent_activity')]]",
+    "VELDO-0160 decision/unknown-forms detail: codex, exec's own collab_tool_call item (a sub-agent call): decided ask, naming that line as an unknown call of form collab_tool_call [rerun, [(3, 'unknown_call', 'collab_tool_call')]]",
     "VELDO-0160 decision/unknown-forms detail: codex, an item of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_item [rerun, [(3, 'unknown_call', 'unlisted_item')]]",
     "VELDO-0160 decision/unknown-forms detail: codex, an event of a type no table lists: decided ask, naming that line as an unknown call of form event:turn.unlisted [rerun, [(3, 'unknown_call', 'event:turn.unlisted')]]",
     "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named '[REDACTED:known_pattern]': decided ask [rerun, [(3, None, None, None, None, 'redacted_unreadable')]]",
-    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided ask [rerun, [(3, None, None, None, None, 'redacted_unreadable')]]"
+    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'NotebookRead': decided ask [rerun, [(3, None, None, None, None, 'redacted_unreadable')]]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [rerun, [(4, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write inside the REPL tool, in its end phase only: decided ask [rerun, [(4, 'not_marked_read_only', 'wiki', 'write_page', None)], 1 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a REPL inner tool neither mcp__ nor built in: decided ask [rerun, [(4, 'unknown_call', None, None, 'repl_call:RemoteTrigger')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call that is not an object: decided ask [rerun, [(4, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call without its inner tool name: decided ask [rerun, [(4, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call whose inner tool name is not a string: decided ask [rerun, [(4, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a background task whose last tool is an MCP write (the checker's reproduction): decided ask [rerun, [(6, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [rerun, [(6, 'not_marked_read_only', 'wiki', 'write_page', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow agent whose last tool is an MCP write: decided ask [rerun, [(6, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a last tool name that is not a string: decided ask [rerun, [(6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: workflow progress that is not a list: decided ask [rerun, [(6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow progress entry that is not an object: decided ask [rerun, [(6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: a tool_progress of a shown call naming an MCP write: decided ask [rerun, [(4, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an MCP write and its heartbeat are one call: decided ask [rerun, [(3, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an assistant message an MCP tool produced: decided ask [rerun, [(3, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an assistant message decomposed from a batch holding an MCP write: decided ask [rerun, [(3, 'not_marked_read_only', 'wiki', 'write_page', None)], 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an MCP attribution that is not a name: decided ask [rerun, [(3, 'unreadable', None, None, None)], 0 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-ask-reruns.diff",
    "failed_rows": [
@@ -1977,10 +2190,13 @@
     "VELDO-0160 decision/unreadable-asks",
     "VELDO-0160 decision/same-id-write",
     "VELDO-0160 decision/unknown-forms",
-    "VELDO-0160 decision/redacted-name"
+    "VELDO-0160 decision/redacted-name",
+    "VELDO-0160 decision/repl-inner-call",
+    "VELDO-0160 decision/task-progress-tool",
+    "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "ed2018186b6c34eb0ceed39468fede662586a9fa3d427c1d0cff1502584d1f3a",
+   "mutant_sha256": "7b00f405b2fe7adaa9ade97c511621a1c4ac0fbb2dd703ca34606f39b001c122",
    "name": "decision-ask-reruns",
    "named_row_red": true,
    "named_rows": [
@@ -2045,6 +2261,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2081,8 +2309,8 @@
      true
     ]
    ],
-   "seconds": 24.774,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 24.904,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -2095,7 +2323,7 @@
     "VELDO-0160 decision/ask"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "b68183bab4218ac80390e684dc85223db9388f57a6505417a29db0d0b2f3b523",
+   "mutant_sha256": "6871f732348f18649153cc15c750c5da2e435cefda1e99f0cedb1684324c71cb",
    "name": "decision-unlisted-server-read-only",
    "named_row_red": true,
    "named_rows": [
@@ -2160,6 +2388,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2196,21 +2436,27 @@
      true
     ]
    ],
-   "seconds": 24.967,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 24.746,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, None]",
-    "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, None]"
+    "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, None]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write inside the REPL tool, in its end phase only: decided ask [rerun, None, 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [rerun, None, 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an assistant message decomposed from a batch holding an MCP write: decided ask [rerun, None, 1 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-unmarked-revision-read-only.diff",
    "failed_rows": [
-    "VELDO-0160 decision/ask"
+    "VELDO-0160 decision/ask",
+    "VELDO-0160 decision/repl-inner-call",
+    "VELDO-0160 decision/task-progress-tool",
+    "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "f3ef8943892d712b78e25fbd489d393fdf78cfb45f39e244d8ff637f8cf93493",
+   "mutant_sha256": "e23411fe1138e81d395ed42aa124c6bae4f3ae81820e026bd69705f172e6e3c7",
    "name": "decision-unmarked-revision-read-only",
    "named_row_red": true,
    "named_rows": [
@@ -2275,6 +2521,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2311,8 +2569,8 @@
      true
     ]
    ],
-   "seconds": 24.945,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.077,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -2322,17 +2580,30 @@
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, None]",
     "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [rerun, None]",
     "VELDO-0160 decision/same-id-write detail: claude_code: the id shown read-only and then naming a write is decided ask, naming the write [rerun, None]",
-    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'mcp__tracker__get_issue': decided re-run [ask, [(3, None, None, None, None, 'redacted_unreadable')]]"
+    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'mcp__tracker__get_issue': decided re-run [ask, [(3, None, None, None, None, 'redacted_unreadable')]]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write inside the REPL tool, in its end phase only: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a read-only MCP call inside the REPL tool (negative control): decided rerun [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a background task whose last tool is an MCP write (the checker's reproduction): decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow agent whose last tool is an MCP write: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is a read-only MCP call (negative control): decided rerun [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: a tool_progress of a shown call naming an MCP write: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an MCP write and its heartbeat are one call: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an assistant message decomposed from a batch holding an MCP write: decided ask [rerun, None, 0 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-claude-calls-unread.diff",
    "failed_rows": [
     "VELDO-0160 decision/rerun",
     "VELDO-0160 decision/ask",
     "VELDO-0160 decision/same-id-write",
-    "VELDO-0160 decision/redacted-name"
+    "VELDO-0160 decision/redacted-name",
+    "VELDO-0160 decision/repl-inner-call",
+    "VELDO-0160 decision/task-progress-tool",
+    "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "4b5d37cd2908b07d87a6a0a95270307fb0783a911be3a3cb154dae9b3de75d8c",
+   "mutant_sha256": "4c27296a219b2c025d81a5e372e604f13735ae515fdf6777cb62cca1002c3072",
    "name": "decision-claude-calls-unread",
    "named_row_red": true,
    "named_rows": [
@@ -2397,6 +2668,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2433,8 +2716,8 @@
      true
     ]
    ],
-   "seconds": 25.08,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.126,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -2454,7 +2737,7 @@
     "VELDO-0160 decision/same-id-write"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "e5544f3feb1d62a39340590e7e4f962bd8fc37d3b60ba9b3eaab3472a496d063",
+   "mutant_sha256": "99e9db8847664bf6b9061383b0ffb1a17fbce26437aaffec0b5417ecdd647470",
    "name": "decision-codex-calls-unread",
    "named_row_red": true,
    "named_rows": [
@@ -2519,6 +2802,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2555,8 +2850,8 @@
      true
     ]
    ],
-   "seconds": 24.897,
-   "source_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "seconds": 24.949,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   {
    "by_assertion": true,
@@ -2568,15 +2863,19 @@
     "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured'), (4, 'mailer', 'send', None, None, 'server_not_configured')]]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool not marked read-only: decided ask, naming exactly that call [ask, [(5, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only'), (6, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [ask, [(3, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only'), (4, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only')]]",
-    "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured'), (4, 'mailer', 'send', None, None, 'server_not_configured')]]"
+    "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured'), (4, 'mailer', 'send', None, None, 'server_not_configured')]]",
+    "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [ask, [(6, 'not_marked_read_only', 'wiki', 'write_page', None), (7, 'not_marked_read_only', 'wiki', 'write_page', None)], 2 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an MCP write and its heartbeat are one call: decided ask [ask, [(3, 'not_marked_read_only', 'tracker', 'add_comment', None), (4, 'not_marked_read_only', 'tracker', 'add_comment', None)], 2 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-call-named-twice.diff",
    "failed_rows": [
     "VELDO-0160 decision/rerun",
-    "VELDO-0160 decision/ask"
+    "VELDO-0160 decision/ask",
+    "VELDO-0160 decision/task-progress-tool",
+    "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "eb1b8f26426eaa6e23ea1b2a1184a730c0c6cc9892661b48c276d5f2539a8b89",
+   "mutant_sha256": "c0eadf310d2ab355b0d6b6836703e560fd2305c0de95eadc7c794e356c100336",
    "name": "decision-call-named-twice",
    "named_row_red": true,
    "named_rows": [
@@ -2641,6 +2940,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2677,8 +2988,8 @@
      true
     ]
    ],
-   "seconds": 25.266,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 24.955,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -2689,17 +3000,21 @@
     "VELDO-0160 decision/ask detail: codex, a call to a tool not marked read-only: decided ask, naming exactly that call [ask, [(3, 'tracker', 'get_issue', 'mcp_server:tracker', 3, 'not_marked_read_only'), (5, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
     "VELDO-0160 decision/same-id-write detail: claude_code: the id shown read-only and then naming a write is decided ask, naming the write [ask, [(2, 'tracker', 'get_issue', 'mcp_server:tracker', 3, 'not_marked_read_only'), (3, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
     "VELDO-0160 decision/same-id-write detail: codex: the id shown read-only and then naming a write is decided ask, naming the write [ask, [(3, 'tracker', 'get_issue', 'mcp_server:tracker', 3, 'not_marked_read_only'), (4, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
-    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'mcp__tracker__get_issue': decided re-run [ask, [(3, 'tracker', 'get_issue', 'mcp_server:tracker', 3, 'not_marked_read_only')]]"
+    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'mcp__tracker__get_issue': decided re-run [ask, [(3, 'tracker', 'get_issue', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
+    "VELDO-0160 decision/repl-inner-call detail: a read-only MCP call inside the REPL tool (negative control): decided rerun [ask, [(4, 'not_marked_read_only', 'tracker', 'get_issue', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is a read-only MCP call (negative control): decided rerun [ask, [(6, 'not_marked_read_only', 'tracker', 'search', None)], 1 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-read-only-asks.diff",
    "failed_rows": [
     "VELDO-0160 decision/rerun",
     "VELDO-0160 decision/ask",
     "VELDO-0160 decision/same-id-write",
-    "VELDO-0160 decision/redacted-name"
+    "VELDO-0160 decision/redacted-name",
+    "VELDO-0160 decision/repl-inner-call",
+    "VELDO-0160 decision/task-progress-tool"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "9e183713076b835dd5b18a8cac1be4536fea4e9fdf8511febfe3f4b8b496a8e6",
+   "mutant_sha256": "dc97e52518710169f6cb40a73c38aa69b374dacd808fe70b16ddf799f4fba083",
    "name": "decision-read-only-asks",
    "named_row_red": true,
    "named_rows": [
@@ -2764,6 +3079,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2800,8 +3127,8 @@
      true
     ]
    ],
-   "seconds": 24.895,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.097,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -2814,7 +3141,7 @@
     "VELDO-0160 decision/ask"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "7582c14ba5665d66ea6cb2a72efc4d3958bc956667007377fafda98c70ed506e",
+   "mutant_sha256": "89b3ffda3bc5d77300d26f962d7c3adfb740a9eb492304e43389234cd83b8a38",
    "name": "decision-gap-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -2879,6 +3206,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2915,8 +3254,8 @@
      true
     ]
    ],
-   "seconds": 24.874,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 24.922,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -2935,7 +3274,7 @@
     "VELDO-0160 decision/unreadable-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "0f050b16a5592a7ce816346737ff93f3834ce0b095db202c2abde2a3bf16cf00",
+   "mutant_sha256": "cc5632df197c322b660dc0d4af155652c3e6c52679dc391a1887c2c1caa5507f",
    "name": "decision-unreadable-line-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -3000,6 +3339,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3036,8 +3387,8 @@
      true
     ]
    ],
-   "seconds": 25.097,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 24.888,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -3053,15 +3404,25 @@
     "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with its event wrapped in a list: decided ask, naming that line [rerun, None]",
     "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with a tool call whose server is not a string: decided ask, naming that line [rerun, None]",
     "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named '[REDACTED:known_pattern]': decided ask [rerun, None]",
-    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided ask [rerun, None]"
+    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'NotebookRead': decided ask [rerun, None]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call that is not an object: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call without its inner tool name: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call whose inner tool name is not a string: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a last tool name that is not a string: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: workflow progress that is not a list: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow progress entry that is not an object: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an MCP attribution that is not a name: decided ask [rerun, None, 0 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-unreadable-call-skipped.diff",
    "failed_rows": [
     "VELDO-0160 decision/unreadable-asks",
-    "VELDO-0160 decision/redacted-name"
+    "VELDO-0160 decision/redacted-name",
+    "VELDO-0160 decision/repl-inner-call",
+    "VELDO-0160 decision/task-progress-tool",
+    "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "5f870c3f6a9ae50d5d1e879d9dd5af4ecd770e4b2c4949385606eb0981c86f2f",
+   "mutant_sha256": "f9e2f8769d2290a4476a12e1430d2d061237cdd61e8684b426f08013bb0e8346",
    "name": "decision-unreadable-call-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -3126,6 +3487,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3162,8 +3535,8 @@
      true
     ]
    ],
-   "seconds": 24.981,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.276,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -3176,7 +3549,7 @@
     "VELDO-0160 decision/unreadable-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "ccf3851a5ddf69b70383238002ba64fe40cbfbe1a2138cb6df0fdaf8d5128f98",
+   "mutant_sha256": "197a8b3ec2eb53e4eaf3972dffbceab3bc232921442ab72c526319aecf89b514",
    "name": "decision-event-any-object",
    "named_row_red": true,
    "named_rows": [
@@ -3241,6 +3614,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3277,20 +3662,22 @@
      true
     ]
    ],
-   "seconds": 25.035,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.059,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with a tool call whose name is not a string: decided ask, naming that line [rerun, None]"
+    "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with a tool call whose name is not a string: decided ask, naming that line [rerun, None]",
+    "VELDO-0160 decision/task-progress-tool detail: a last tool name that is not a string: decided ask [rerun, None, 0 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-claude-nameless-call-skipped.diff",
    "failed_rows": [
-    "VELDO-0160 decision/unreadable-asks"
+    "VELDO-0160 decision/unreadable-asks",
+    "VELDO-0160 decision/task-progress-tool"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "979d0a0fbeefdfe2d6282ec5159208d4ae82b9f7d7be08e7e8fd5413407411af",
+   "mutant_sha256": "87bb5148e33ca46d5c2d33dd48f6b61e9b67f9bc747000adef4d7ba9684fb41a",
    "name": "decision-claude-nameless-call-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -3355,6 +3742,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3391,8 +3790,8 @@
      true
     ]
    ],
-   "seconds": 24.873,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.737,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -3404,7 +3803,7 @@
     "VELDO-0160 decision/unreadable-asks"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "219bcfcbb1b45ee95dab8fc8c0f44845a7090c799be530195c0778180f86382a",
+   "mutant_sha256": "d3ffafe6ec502084d395591b6bf77af0949e6bcd47c0a1cd8a2adac9a03d696f",
    "name": "decision-codex-serverless-call-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -3469,6 +3868,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3505,8 +3916,8 @@
      true
     ]
    ],
-   "seconds": 24.987,
-   "source_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "seconds": 25.036,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   {
    "by_assertion": true,
@@ -3516,7 +3927,7 @@
     "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with a redacted span in place of its input, breaking the JSON: decided ask, naming that line [ask, [(3, None, None, None, None, 'unreadable')]]",
     "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with the whole payload redacted: decided ask, naming that line [ask, [(3, None, None, None, None, 'unreadable')]]",
     "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named '[REDACTED:known_pattern]': decided ask [ask, [(3, None, None, None, None, 'unreadable')]]",
-    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided ask [ask, [(3, None, None, None, None, 'unreadable')]]"
+    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'NotebookRead': decided ask [ask, [(3, None, None, None, None, 'unreadable')]]"
    ],
    "diff": "proof/VELDO-0160/decision-redaction-unread.diff",
    "failed_rows": [
@@ -3524,7 +3935,7 @@
     "VELDO-0160 decision/redacted-name"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "91cb5debcf22bdabc2113b49719b69eff0d9690fd4e012b97db5d279ffa9bf3b",
+   "mutant_sha256": "a51038ede65ac6a629d6479c91e638a6f9c0696f2a96a827e94e5c1e58e4986b",
    "name": "decision-redaction-unread",
    "named_row_red": true,
    "named_rows": [
@@ -3589,6 +4000,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3625,8 +4048,8 @@
      true
     ]
    ],
-   "seconds": 25.012,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.127,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -3639,7 +4062,7 @@
     "VELDO-0160 decision/same-id-write"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "1c573f46cc88edae999c98e6c5962e1463ea37f16b3bb3113162e7a49d1c0b0d",
+   "mutant_sha256": "ebd1570e7eb2a06636d5e5191045ef3ec8b3fb1a903afee758d17949c11a4a4d",
    "name": "decision-same-id-first-wins",
    "named_row_red": true,
    "named_rows": [
@@ -3704,6 +4127,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3740,13 +4175,13 @@
      true
     ]
    ],
-   "seconds": 25.012,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.048,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 7:50pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:36pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
@@ -3761,7 +4196,7 @@
     "VELDO-0160 limit/claude-rejected-texts"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "6c87411ea0a5c1b04793a557b08c864e84e96e7bc12946d3da72d1f09dacacd0",
+   "mutant_sha256": "473b5ce3b3410fee5acaad02257e77f656ffffe63dda474eb22156428def83b1",
    "name": "limit-claude-rejected-texts-unread",
    "named_row_red": true,
    "named_rows": [
@@ -3826,6 +4261,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3862,8 +4309,8 @@
      true
     ]
    ],
-   "seconds": 25.594,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.967,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -3940,6 +4387,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3976,7 +4435,7 @@
      true
     ]
    ],
-   "seconds": 24.204,
+   "seconds": 24.785,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -4055,6 +4514,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4091,7 +4562,7 @@
      true
     ]
    ],
-   "seconds": 24.206,
+   "seconds": 25.31,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -4170,6 +4641,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4206,13 +4689,13 @@
      true
     ]
    ],
-   "seconds": 24.957,
+   "seconds": 24.839,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790448381, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour', 'acct-c4': 'account_limit:five_hour'}]"
+    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790454791, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour', 'acct-c4': 'account_limit:five_hour'}]"
    ],
    "diff": "proof/VELDO-0160/pool-until-latest-reset.diff",
    "failed_rows": [
@@ -4284,6 +4767,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4320,13 +4815,13 @@
      true
     ]
    ],
-   "seconds": 24.945,
+   "seconds": 24.988,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790447205, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour', 'acct-c4': 'account_limit:five_hour'}]"
+    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790453616, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour', 'acct-c4': 'account_limit:five_hour'}]"
    ],
    "diff": "proof/VELDO-0160/pool-until-first-window-reset.diff",
    "failed_rows": [
@@ -4398,6 +4893,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4434,7 +4941,7 @@
      true
     ]
    ],
-   "seconds": 24.09,
+   "seconds": 25.094,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -4516,6 +5023,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -4552,7 +5071,7 @@
      true
     ]
    ],
-   "seconds": 25.037,
+   "seconds": 25.162,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -4564,7 +5083,7 @@
     "VELDO-0160 pool/one-run-while-unknown detail: after it the waiting unit launched on the new account, its second run at once [None, no_account]",
     "VELDO-0160 pool/usage-observes detail: observed by its usage alone, acct-x2 admits its concurrency: three Codex dispatches run at once, two of them on acct-x2 [[('acct-x1', None), (None, 'no_account'), (None, 'no_account')]]",
     "VELDO-0160 pool/selection-order detail: the candidates are ranked lowest utilization first, least recently used first among equals, the unknown last [['acct-c3', 'acct-c2', 'acct-c1']]",
-    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790447569, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour'}]"
+    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790453980, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour'}]"
    ],
    "diff": "proof/VELDO-0160/pool-read-at-start.diff",
    "failed_rows": [
@@ -4640,6 +5159,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4676,7 +5207,7 @@
      true
     ]
    ],
-   "seconds": 38.819,
+   "seconds": 38.709,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -4755,6 +5286,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4791,7 +5334,7 @@
      true
     ]
    ],
-   "seconds": 24.039,
+   "seconds": 24.944,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -4870,6 +5413,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4906,29 +5461,34 @@
      true
     ]
    ],
-   "seconds": 24.031,
+   "seconds": 25.208,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/per-account-isolation detail: the pool spread the three Claude Code dispatches over the three Claude Code accounts and the Codex one onto the Codex account [['acct-c1', 'acct-c1', 'acct-c1', 'acct-x1']]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the invocation was reserved and settled on that account, with the tokens its own CLI reported [acct-c1, {'invocations': 1, 'messages': 1, 'tokens': 11, 'wall_seconds': 0.680995}]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the invocation was reserved and settled on that account, with the tokens its own CLI reported [acct-c1, {'invocations': 1, 'messages': 1, 'tokens': 15, 'wall_seconds': 0.4387}]",
-    "VELDO-0160 pool/per-account-isolation detail: the four engines ran on four different profiles [2]",
-    "VELDO-0160 pool/per-account-isolation detail: the metrics count one dispatch on each account [{'acct-c1': 3, 'acct-x1': 1}]",
-    "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': 33, 'acct-c2': None, 'acct-c3': None, 'acct-x1': 19}]",
+    "VELDO-0160 pool/per-account-isolation detail: the pool spread the three Claude Code dispatches over the three Claude Code accounts and the Codex one onto the Codex account [['acct-c1', 'acct-c2', 'acct-c1', 'acct-x1']]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the invocation was reserved and settled on that account, with the tokens its own CLI reported [acct-c1, {'invocations': 1, 'messages': 1, 'tokens': 15, 'wall_seconds': 0.477495}]",
+    "VELDO-0160 pool/per-account-isolation detail: the four engines ran on four different profiles [3]",
+    "VELDO-0160 pool/per-account-isolation detail: the metrics count one dispatch on each account [{'acct-c1': 2, 'acct-c2': 1, 'acct-x1': 1}]",
+    "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': 22, 'acct-c2': 11, 'acct-c3': None, 'acct-x1': 19}]",
+    "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[('acct-c2', None), ('acct-c2', None)]]",
     "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
     "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [None, {}]",
-    "VELDO-0160 pool/moved-off detail: nothing was sent to acct-c1 before its reset: no slot and no process after its exhausting run [4 slots, 0 processes]",
-    "VELDO-0160 pool/moved-off detail: at its reported reset acct-c1 takes work again [['acct-c1', 'acct-c3'], ('acct-c2', None)]",
+    "VELDO-0160 pool/moved-off detail: nothing was sent to acct-c1 before its reset: no slot and no process after its exhausting run [3 slots, 0 processes]",
+    "VELDO-0160 pool/moved-off detail: at its reported reset acct-c1 takes work again [['acct-c2', 'acct-c2'], ('acct-c2', None)]",
+    "VELDO-0160 pool/added-account detail: the three Claude Code accounts are each running a worker [['acct-c2', 'acct-c2', 'acct-c2']]",
+    "VELDO-0160 pool/added-account detail: the next dispatch launched on the new account [acct-c2, None]",
     "VELDO-0160 pool/one-run-while-unknown detail: before its first observation the new account runs one: a second unit offered with it waits, the new account passed over at its one-run bound [None, None]",
+    "VELDO-0160 pool/one-run-while-unknown detail: the running unit reported the account's first observation [{}]",
+    "VELDO-0160 pool/one-run-while-unknown detail: after it the waiting unit launched on the new account, its second run at once [acct-c2, None]",
     "VELDO-0160 pool/usage-observes detail: observed by its usage alone, acct-x2 admits its concurrency: three Codex dispatches run at once, two of them on acct-x2 [[('acct-x1', None), ('acct-x2', None), ('acct-x1', None)]]"
    ],
    "diff": "proof/VELDO-0160/pool-concurrency-ignored.diff",
    "failed_rows": [
     "VELDO-0160 pool/per-account-isolation",
     "VELDO-0160 pool/moved-off",
+    "VELDO-0160 pool/added-account",
     "VELDO-0160 pool/one-run-while-unknown",
     "VELDO-0160 pool/usage-observes"
    ],
@@ -4998,12 +5558,24 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
     [
      "VELDO-0160 pool/added-account",
-     true
+     false
     ],
     [
      "VELDO-0160 pool/one-run-while-unknown",
@@ -5034,7 +5606,7 @@
      true
     ]
    ],
-   "seconds": 25.306,
+   "seconds": 40.023,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -5114,6 +5686,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -5150,7 +5734,7 @@
      true
     ]
    ],
-   "seconds": 24.704,
+   "seconds": 24.933,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -5164,7 +5748,7 @@
     "VELDO-0160 pool/per-account-isolation detail: the metrics count one dispatch on each account [{'acct-c1': 1}]",
     "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': 7, 'acct-c2': None, 'acct-c3': None, 'acct-x1': None}]",
     "VELDO-0160 pool/concurrent detail: the four dispatches were each accepted and running before any ended [[('claude', None, 'accepted'), ('claude', 'invalid_input', None), ('claude', 'invalid_input', None), ('codex', 'invalid_input', None)]]",
-    "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(1790447074.0781724, 1790447074.1360812), (None, None), (None, None), (None, None)]]",
+    "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(1790453502.438794, 1790453502.5171244), (None, None), (None, None), (None, None)]]",
     "VELDO-0160 pool/concurrent detail: the four engine processes were alive at the same time [1]",
     "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
     "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
@@ -5259,6 +5843,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -5295,13 +5891,13 @@
      true
     ]
    ],
-   "seconds": 35.499,
+   "seconds": 35.44,
    "source_sha256": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [{'schema': 'veldo.reservations/v1', 'operation': 'pooled_worker', 'domain': 'domain-160', 'repository': 'repository-160', 'request': 'worker/dispatch/VELDO-16002-wait/8140b28a725d4707b47d9fe38cbd89be', 'subject': 'reservation:worker:[\"domain-160\",\"dispatch/VELDO-16002-wait/8140b28a725d4707b47d9fe38cbd89be\"]', 'accepted_versions': {'reservation:worker:[\"domain-160\",\"dispatch/VELDO-16002-wait/8140b28a725d4707b47d9fe38cbd89be\"]': 0}, 'outcome': 'refused', 'refusal': 'no_account_until:1790447122'}]"
+    "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [{'schema': 'veldo.reservations/v1', 'operation': 'pooled_worker', 'domain': 'domain-160', 'repository': 'repository-160', 'request': 'worker/dispatch/VELDO-16002-wait/140a71aea3884c7094bb3943cae29a69', 'subject': 'reservation:worker:[\"domain-160\",\"dispatch/VELDO-16002-wait/140a71aea3884c7094bb3943cae29a69\"]', 'accepted_versions': {'reservation:worker:[\"domain-160\",\"dispatch/VELDO-16002-wait/140a71aea3884c7094bb3943cae29a69\"]': 0}, 'outcome': 'refused', 'refusal': 'no_account_until:1790453550'}]"
    ],
    "diff": "proof/VELDO-0160/pool-refusal-reasons-unobserved.diff",
    "failed_rows": [
@@ -5373,6 +5969,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -5409,7 +6017,7 @@
      true
     ]
    ],
-   "seconds": 24.493,
+   "seconds": 24.669,
    "source_sha256": "308d51b7700b7193f7ba43c322b7f2d44d2f6a6cec543e204fc9a3e57d604491"
   },
   {
@@ -5492,6 +6100,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5528,7 +6148,7 @@
      true
     ]
    ],
-   "seconds": 25.038,
+   "seconds": 25.055,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -5606,6 +6226,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5642,7 +6274,7 @@
      true
     ]
    ],
-   "seconds": 24.977,
+   "seconds": 24.968,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -5661,18 +6293,24 @@
     "VELDO-0160 decision/unknown-forms detail: claude_code, a content block of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_block [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: claude_code, a message of a type no table lists: decided ask, naming that line as an unknown call of form message:unlisted_message [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: claude_code, a system message of a subtype no table lists: decided ask, naming that line as an unknown call of form message:system/unlisted_subtype [rerun, None]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a can_use_tool control request (outside the message union): decided ask, naming that line as an unknown call of form message:control_request [rerun, None]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a control response (outside the message union): decided ask, naming that line as an unknown call of form message:control_response [rerun, None]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a transcript mirror (outside the message union): decided ask, naming that line as an unknown call of form message:transcript_mirror [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: codex, a dynamic_tool_call item: decided ask, naming that line as an unknown call of form dynamic_tool_call [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: codex, a collab_agent_tool_call item: decided ask, naming that line as an unknown call of form collab_agent_tool_call [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: codex, a sub_agent_activity item: decided ask, naming that line as an unknown call of form sub_agent_activity [rerun, None]",
+    "VELDO-0160 decision/unknown-forms detail: codex, exec's own collab_tool_call item (a sub-agent call): decided ask, naming that line as an unknown call of form collab_tool_call [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: codex, an item of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_item [rerun, None]",
-    "VELDO-0160 decision/unknown-forms detail: codex, an event of a type no table lists: decided ask, naming that line as an unknown call of form event:turn.unlisted [rerun, None]"
+    "VELDO-0160 decision/unknown-forms detail: codex, an event of a type no table lists: decided ask, naming that line as an unknown call of form event:turn.unlisted [rerun, None]",
+    "VELDO-0160 decision/repl-inner-call detail: a REPL inner tool neither mcp__ nor built in: decided ask [rerun, None, 0 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-unknown-call-skipped.diff",
    "failed_rows": [
-    "VELDO-0160 decision/unknown-forms"
+    "VELDO-0160 decision/unknown-forms",
+    "VELDO-0160 decision/repl-inner-call"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "08a4baa898ea5d93b6953b3a16812b5043caae6d3103e3a8ae1d007c3e8f76c0",
+   "mutant_sha256": "859e40de57ba0f5a2aa96c784b160465b0096786f103335f9890b39bc4cce90a",
    "name": "decision-unknown-call-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -5737,6 +6375,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5773,8 +6423,8 @@
      true
     ]
    ],
-   "seconds": 24.99,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.16,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
@@ -5790,7 +6440,7 @@
     "VELDO-0160 decision/unknown-forms"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "117b0e6b52ccbe6e6dd4e41b105f221e5ffdad2236b81b0e16131062387a8e49",
+   "mutant_sha256": "1befebb7693b5afbb1cd40a6111bc05d2d821554dcaa7e36f04dc51d7521c858",
    "name": "decision-claude-server-tool-blocks-free",
    "named_row_red": true,
    "named_rows": [
@@ -5855,6 +6505,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5891,8 +6553,8 @@
      true
     ]
    ],
-   "seconds": 25.004,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.641,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -5904,7 +6566,7 @@
     "VELDO-0160 decision/unknown-forms"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "6e94fff74fa041402a65f9db7c47a02746c03ba1d4187fbff7e1781b19710913",
+   "mutant_sha256": "21d6db05c18199491f24125420fdec885254575b403d38fc5cbfcc7b2464e0a1",
    "name": "decision-claude-unseen-result-free",
    "named_row_red": true,
    "named_rows": [
@@ -5969,6 +6631,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6005,8 +6679,8 @@
      true
     ]
    ],
-   "seconds": 25.034,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.239,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -6019,7 +6693,7 @@
     "VELDO-0160 decision/unknown-forms"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "c2d033b9b1137ff463b949450854299b391fb1e31f44ff1b193c3764f84423e7",
+   "mutant_sha256": "23fc822541d8e775982b3417d996199b2cdb2ba5efe47ffd6b351bc7f07553d2",
    "name": "decision-claude-streamed-tool-use-free",
    "named_row_red": true,
    "named_rows": [
@@ -6084,6 +6758,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6120,21 +6806,24 @@
      true
     ]
    ],
-   "seconds": 25.031,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.725,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0160 decision/unknown-forms detail: claude_code, a message of a type no table lists: decided ask, naming that line as an unknown call of form message:unlisted_message [rerun, None]",
-    "VELDO-0160 decision/unknown-forms detail: claude_code, a system message of a subtype no table lists: decided ask, naming that line as an unknown call of form message:system/unlisted_subtype [rerun, None]"
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a system message of a subtype no table lists: decided ask, naming that line as an unknown call of form message:system/unlisted_subtype [rerun, None]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a can_use_tool control request (outside the message union): decided ask, naming that line as an unknown call of form message:control_request [rerun, None]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a control response (outside the message union): decided ask, naming that line as an unknown call of form message:control_response [rerun, None]",
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a transcript mirror (outside the message union): decided ask, naming that line as an unknown call of form message:transcript_mirror [rerun, None]"
    ],
    "diff": "proof/VELDO-0160/decision-claude-unlisted-message-free.diff",
    "failed_rows": [
     "VELDO-0160 decision/unknown-forms"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "02f7014a94d56fde1a2a40b49983c3e0618924be97e0825e10341279d6cab1f6",
+   "mutant_sha256": "496120c34c3fb3de79491e82e0be7ea058a1ca8679d17697b7f0add818aef763",
    "name": "decision-claude-unlisted-message-free",
    "named_row_red": true,
    "named_rows": [
@@ -6199,6 +6888,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6235,8 +6936,8 @@
      true
     ]
    ],
-   "seconds": 24.92,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.107,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -6248,7 +6949,7 @@
     "VELDO-0160 decision/unknown-forms"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "ef048fe8d7eb5da6e95893e66801a13b536d6552e58eeb0dd80af5edd1a70f89",
+   "mutant_sha256": "2d88236a04b3d24887b240d54339fedde98822cf1ca75b1d4eeea0f0bdcf72af",
    "name": "decision-claude-unlisted-stream-event-free",
    "named_row_red": true,
    "named_rows": [
@@ -6313,6 +7014,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6349,8 +7062,8 @@
      true
     ]
    ],
-   "seconds": 24.992,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.956,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -6363,7 +7076,7 @@
     "VELDO-0160 decision/unknown-forms"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "7e1c79c385fc4138a1a7054fa3b0e864f8826dbef2a5f3de479762a75f7f393e",
+   "mutant_sha256": "6edb454278319b60080bf5ab66d50016ab3a945a1d1239eedab3aabaa1363340",
    "name": "decision-claude-unseen-progress-free",
    "named_row_red": true,
    "named_rows": [
@@ -6428,6 +7141,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6464,8 +7189,8 @@
      true
     ]
    ],
-   "seconds": 24.967,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.991,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -6473,6 +7198,7 @@
     "VELDO-0160 decision/unknown-forms detail: codex, a dynamic_tool_call item: decided ask, naming that line as an unknown call of form dynamic_tool_call [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: codex, a collab_agent_tool_call item: decided ask, naming that line as an unknown call of form collab_agent_tool_call [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: codex, a sub_agent_activity item: decided ask, naming that line as an unknown call of form sub_agent_activity [rerun, None]",
+    "VELDO-0160 decision/unknown-forms detail: codex, exec's own collab_tool_call item (a sub-agent call): decided ask, naming that line as an unknown call of form collab_tool_call [rerun, None]",
     "VELDO-0160 decision/unknown-forms detail: codex, an item of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_item [rerun, None]"
    ],
    "diff": "proof/VELDO-0160/decision-codex-unlisted-item-free.diff",
@@ -6480,7 +7206,7 @@
     "VELDO-0160 decision/unknown-forms"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "21b65ea13899bdf2be2e845c64627fbf5b75ca2fe5b53b3c101baac4492d26a7",
+   "mutant_sha256": "491cdd3b89ba9d5f1b867f870f8a57c6cce0b807de38618fc61542c031ff2b70",
    "name": "decision-codex-unlisted-item-free",
    "named_row_red": true,
    "named_rows": [
@@ -6545,6 +7271,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6581,8 +7319,8 @@
      true
     ]
    ],
-   "seconds": 24.086,
-   "source_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "seconds": 25.115,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   {
    "by_assertion": true,
@@ -6594,7 +7332,7 @@
     "VELDO-0160 decision/unknown-forms"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "49633100f294896ac71b68c4c0b0d4b4cfe692f1219ef92b5b213b73c3ac6a4e",
+   "mutant_sha256": "d6d8efa2f7c9160fb4bb94ae2716578373f65d1292965369cfc289da0171cc5b",
    "name": "decision-codex-unlisted-event-free",
    "named_row_red": true,
    "named_rows": [
@@ -6659,6 +7397,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6695,21 +7445,21 @@
      true
     ]
    ],
-   "seconds": 25.24,
-   "source_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "seconds": 24.751,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named '[REDACTED:known_pattern]': decided ask [rerun, None]",
-    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided ask [rerun, None]"
+    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'NotebookRead': decided ask [rerun, None]"
    ],
    "diff": "proof/VELDO-0160/decision-redacted-name-trusted.diff",
    "failed_rows": [
     "VELDO-0160 decision/redacted-name"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "8609afa6d5f3b43af8a02f9508fc865a14f66bf7bd3fa20d5bcfabcf6a6adec9",
+   "mutant_sha256": "a22e5f3d837c4458c0b64a61a55c5ed06dc2e42f5ee578053aee3c48cd950c36",
    "name": "decision-redacted-name-trusted",
    "named_row_red": true,
    "named_rows": [
@@ -6774,6 +7524,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6810,21 +7572,21 @@
      true
     ]
    ],
-   "seconds": 25.039,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.053,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named '[REDACTED:known_pattern]': decided ask [rerun, None]",
-    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided ask [rerun, None]"
+    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'NotebookRead': decided ask [rerun, None]"
    ],
    "diff": "proof/VELDO-0160/decision-redaction-not-passed.diff",
    "failed_rows": [
     "VELDO-0160 decision/redacted-name"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "995149e7b30884e4af2163c886b09b9d1c933fd8f63cafdbf590b13bcb691fd9",
+   "mutant_sha256": "75c4f966fcdc802b67217f670b705995556471718c9410fb8b41cb912400ada4",
    "name": "decision-redaction-not-passed",
    "named_row_red": true,
    "named_rows": [
@@ -6889,6 +7651,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6925,20 +7699,42 @@
      true
     ]
    ],
-   "seconds": 24.818,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.268,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 decision/tool-free-forms detail: claude_code: 11 lines of tool-free and built-in forms decide re-run, naming no call [ask, [(4, 'unknown_call', 'tool_result'), (6, 'unknown_call', 'tool_progress'), (7, 'unknown_call', 'tool_use_summary')]]"
+    "VELDO-0160 decision/tool-free-forms detail: claude_code: 21 lines of tool-free and built-in forms decide re-run, naming no call [ask, [(4, 'unknown_call', 'tool_result'), (6, 'unknown_call', 'tool_progress'), (7, 'unknown_call', 'tool_use_summary'), (21, 'unknown_call', 'tool_progress'), (22, 'unknown_call', 'tool_progress')]]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [ask, [(4, 'not_marked_read_only', 'tracker', 'add_comment', None), (4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 1 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write inside the REPL tool, in its end phase only: decided ask [ask, [(4, 'not_marked_read_only', 'wiki', 'write_page', None), (4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 1 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a REPL inner tool neither mcp__ nor built in: decided ask [ask, [(4, 'unknown_call', None, None, 'repl_call:RemoteTrigger'), (4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call that is not an object: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (4, 'unreadable', None, None, None), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call without its inner tool name: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (4, 'unreadable', None, None, None), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call whose inner tool name is not a string: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (4, 'unreadable', None, None, None), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a read-only MCP call inside the REPL tool (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 1 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a built-in tool inside the REPL tool (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a background task whose last tool is an MCP write (the checker's reproduction): decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'not_marked_read_only', 'wiki', 'write_page', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow agent whose last tool is an MCP write: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a last tool name that is not a string: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: workflow progress that is not a list: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow progress entry that is not an object: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is a read-only MCP call (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_result')], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is built in (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: a tool_progress of a shown call naming an MCP write: decided ask [ask, [(4, 'not_marked_read_only', 'tracker', 'add_comment', None), (4, 'unknown_call', None, None, 'tool_progress')], 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an MCP write and its heartbeat are one call: decided ask [ask, [(3, 'not_marked_read_only', 'tracker', 'add_comment', None), (4, 'unknown_call', None, None, 'tool_progress')], 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: a heartbeat of a shown built-in call (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_progress')], 0 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-shown-ids-per-line.diff",
    "failed_rows": [
-    "VELDO-0160 decision/tool-free-forms"
+    "VELDO-0160 decision/tool-free-forms",
+    "VELDO-0160 decision/repl-inner-call",
+    "VELDO-0160 decision/task-progress-tool",
+    "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "4b8e6b2cb2ab7f8e8e2a9cc41b525095e3bea886e839b6b8ed43732f923a709a",
+   "mutant_sha256": "89a7fc2e7ee0195f18aa8177588a8e87e288165375362311f7d839ff46eda091",
    "name": "decision-shown-ids-per-line",
    "named_row_red": true,
    "named_rows": [
@@ -7003,6 +7799,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7039,20 +7847,42 @@
      true
     ]
    ],
-   "seconds": 24.971,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 24.65,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 decision/tool-free-forms detail: claude_code: 11 lines of tool-free and built-in forms decide re-run, naming no call [ask, [(4, 'unknown_call', 'tool_result'), (6, 'unknown_call', 'tool_progress'), (7, 'unknown_call', 'tool_use_summary')]]"
+    "VELDO-0160 decision/tool-free-forms detail: claude_code: 21 lines of tool-free and built-in forms decide re-run, naming no call [ask, [(4, 'unknown_call', 'tool_result'), (6, 'unknown_call', 'tool_progress'), (7, 'unknown_call', 'tool_use_summary'), (21, 'unknown_call', 'tool_progress'), (22, 'unknown_call', 'tool_progress')]]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [ask, [(4, 'not_marked_read_only', 'tracker', 'add_comment', None), (4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 1 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write inside the REPL tool, in its end phase only: decided ask [ask, [(4, 'not_marked_read_only', 'wiki', 'write_page', None), (4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 1 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a REPL inner tool neither mcp__ nor built in: decided ask [ask, [(4, 'unknown_call', None, None, 'repl_call:RemoteTrigger'), (4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call that is not an object: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (4, 'unreadable', None, None, None), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call without its inner tool name: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (4, 'unreadable', None, None, None), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call whose inner tool name is not a string: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (4, 'unreadable', None, None, None), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a read-only MCP call inside the REPL tool (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 1 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a built-in tool inside the REPL tool (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_progress'), (5, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a background task whose last tool is an MCP write (the checker's reproduction): decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'not_marked_read_only', 'wiki', 'write_page', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow agent whose last tool is an MCP write: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'not_marked_read_only', 'tracker', 'add_comment', None)], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a last tool name that is not a string: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: workflow progress that is not a list: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow progress entry that is not an object: decided ask [ask, [(4, 'unknown_call', None, None, 'tool_result'), (6, 'unreadable', None, None, None)], 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is a read-only MCP call (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_result')], 1 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is built in (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_result')], 0 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: a tool_progress of a shown call naming an MCP write: decided ask [ask, [(4, 'not_marked_read_only', 'tracker', 'add_comment', None), (4, 'unknown_call', None, None, 'tool_progress')], 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an MCP write and its heartbeat are one call: decided ask [ask, [(3, 'not_marked_read_only', 'tracker', 'add_comment', None), (4, 'unknown_call', None, None, 'tool_progress')], 1 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: a heartbeat of a shown built-in call (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'tool_progress')], 0 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/decision-claude-tool-ids-unremembered.diff",
    "failed_rows": [
-    "VELDO-0160 decision/tool-free-forms"
+    "VELDO-0160 decision/tool-free-forms",
+    "VELDO-0160 decision/repl-inner-call",
+    "VELDO-0160 decision/task-progress-tool",
+    "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "8d5609a1a9c0f0aecb561437248fb773626a71cd4b30e64bf7c8d982294c72c7",
+   "mutant_sha256": "6b544016ded6a2799b08c53d7d718204512c1eea8157acfa136369aa4b949b50",
    "name": "decision-claude-tool-ids-unremembered",
    "named_row_red": true,
    "named_rows": [
@@ -7117,6 +7947,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7153,8 +7995,8 @@
      true
     ]
    ],
-   "seconds": 25.06,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.165,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
@@ -7166,7 +8008,7 @@
     "VELDO-0160 decision/tool-free-forms"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "099d0e09dff468eace0a4d6b8a261fd538c1fdce7c2101350bdeb8801e44533a",
+   "mutant_sha256": "6df7b92ebf8e662d611eca6a38a3a33fae8548adcfe9da16840ae7dd0bb39d2f",
    "name": "decision-codex-builtin-items-ask",
    "named_row_red": true,
    "named_rows": [
@@ -7231,6 +8073,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7267,20 +8121,20 @@
      true
     ]
    ],
-   "seconds": 25.031,
-   "source_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "seconds": 24.884,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 decision/tool-free-forms detail: claude_code: 11 lines of tool-free and built-in forms decide re-run, naming no call [ask, [(3, 'unknown_call', 'redacted_thinking'), (3, 'unknown_call', 'thinking')]]"
+    "VELDO-0160 decision/tool-free-forms detail: claude_code: 21 lines of tool-free and built-in forms decide re-run, naming no call [ask, [(3, 'unknown_call', 'redacted_thinking'), (3, 'unknown_call', 'thinking')]]"
    ],
    "diff": "proof/VELDO-0160/decision-claude-thinking-asks.diff",
    "failed_rows": [
     "VELDO-0160 decision/tool-free-forms"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "18cb6f40fd97c4e5b49eda72115718fed71c903353ad81bc337e8a170b251a4b",
+   "mutant_sha256": "88658762f2a834d54c70d762063e854c2345dc004635ba5ae96ac902805e87fd",
    "name": "decision-claude-thinking-asks",
    "named_row_red": true,
    "named_rows": [
@@ -7345,6 +8199,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7381,22 +8247,27 @@
      true
     ]
    ],
-   "seconds": 25.018,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.223,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Read': decided re-run [ask, [(3, None, None, None, None, 'redacted_unreadable')]]",
-    "VELDO-0160 format/tool-forms detail: claude_code: the reader's message, block, streaming event and built-in tool tables are the binary's own [['builtin_tools']]"
+    "VELDO-0160 decision/tool-free-forms detail: claude_code: 21 lines of tool-free and built-in forms decide re-run, naming no call [ask, [(21, 'unknown_call', 'repl_call:Read')]]",
+    "VELDO-0160 format/tool-forms detail: claude_code: the reader's message, block, streaming event and built-in tool tables are the binary's own [['builtin_tools']]",
+    "VELDO-0160 format/tool-forms detail: claude_code: the built-in names are BUILTIN_TOOL_NAMES and the current name of each tool it lists under an old one ({'Agent': ('Task',)}) [{'Agent': ('Task',)}, ['Read']]",
+    "VELDO-0160 decision/repl-inner-call detail: a built-in tool inside the REPL tool (negative control): decided rerun [ask, [(4, 'unknown_call', None, None, 'repl_call:Read')], 0 MCP calls]"
    ],
    "diff": "proof/VELDO-0160/format-claude-builtin-table-drifts.diff",
    "failed_rows": [
     "VELDO-0160 decision/redacted-name",
-    "VELDO-0160 format/tool-forms"
+    "VELDO-0160 decision/tool-free-forms",
+    "VELDO-0160 format/tool-forms",
+    "VELDO-0160 decision/repl-inner-call"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "017a7a6ff879e7072bec9c1aeaf3f8e4932ef440e73a36080954b679db0ee3dc",
+   "mutant_sha256": "32185d5658758972d0687f55eb90b17bddd58abf1289f73c51a42a5be885b0ac",
    "name": "format-claude-builtin-table-drifts",
    "named_row_red": true,
    "named_rows": [
@@ -7455,11 +8326,23 @@
     ],
     [
      "VELDO-0160 decision/tool-free-forms",
-     true
+     false
     ],
     [
      "VELDO-0160 format/tool-forms",
      false
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
     ],
     [
      "VELDO-0160 pool/moved-off",
@@ -7498,14 +8381,14 @@
      true
     ]
    ],
-   "seconds": 25.052,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 24.744,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0160 decision/unknown-forms detail: codex, a dynamic_tool_call item: decided ask, naming that line as an unknown call of form dynamic_tool_call [rerun, None]",
-    "VELDO-0160 format/tool-forms detail: codex: the reader's item and event tables are exec's own [['dynamic_tool_call'], []]"
+    "VELDO-0160 format/tool-forms detail: codex: the reader's item and event tables are exec's own, its own collab_tool_call a sub-agent call [['dynamic_tool_call'], []]"
    ],
    "diff": "proof/VELDO-0160/format-codex-dynamic-item-builtin.diff",
    "failed_rows": [
@@ -7513,7 +8396,7 @@
     "VELDO-0160 format/tool-forms"
    ],
    "module": ".veldo/control_engine_codex.py",
-   "mutant_sha256": "e7fdde98766b9b918309fbb003ebb54b754918b1b6be131378a35d4e62e5f3e9",
+   "mutant_sha256": "d2760459c8a45bc7a89761a926babbd7fd90a7a509494844061d09559d98d766",
    "name": "format-codex-dynamic-item-builtin",
    "named_row_red": true,
    "named_rows": [
@@ -7579,6 +8462,18 @@
      false
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7615,8 +8510,1670 @@
      true
     ]
    ],
-   "seconds": 24.972,
-   "source_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "seconds": 25.18,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: an MCP write inside the REPL tool, in its end phase only: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a REPL inner tool neither mcp__ nor built in: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call that is not an object: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call without its inner tool name: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call whose inner tool name is not a string: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a read-only MCP call inside the REPL tool (negative control): decided rerun [rerun, None, 0 MCP calls]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-repl-inner-unread.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/repl-inner-call"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "29bf9d598c6575000797adc146a6c3f5c3c63020997c1f01fcf30f6f179d54b9",
+   "name": "decision-claude-repl-inner-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/repl-inner-call"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.039,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/repl-inner-call detail: a REPL inner tool neither mcp__ nor built in: decided ask [rerun, None, 0 MCP calls]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-repl-unknown-inner-free.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/repl-inner-call"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "137e5d58b46ae2dc925509c9a62a034c8b3c0bbc6da52510513c18849ed0ecd8",
+   "name": "decision-claude-repl-unknown-inner-free",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/repl-inner-call"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 24.997,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call that is not an object: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call without its inner tool name: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/repl-inner-call detail: a repl_call whose inner tool name is not a string: decided ask [rerun, None, 0 MCP calls]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-repl-malformed-free.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/repl-inner-call"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "b9af0f10521876235d7d6ade410c7747172e8475302b268465489f0d9cea6abc",
+   "name": "decision-claude-repl-malformed-free",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/repl-inner-call"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     false
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 24.902,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/task-progress-tool detail: a background task whose last tool is an MCP write (the checker's reproduction): decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow agent whose last tool is an MCP write: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a last tool name that is not a string: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: workflow progress that is not a list: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a workflow progress entry that is not an object: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/task-progress-tool detail: a task whose last tool is a read-only MCP call (negative control): decided rerun [rerun, None, 0 MCP calls]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-task-progress-tool-unread.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/task-progress-tool"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "e77e0f0faf5b1b4060ac47ff2c855f713673530d947f905dd6371da1380dce33",
+   "name": "decision-claude-task-progress-tool-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/task-progress-tool"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 24.837,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/task-progress-tool detail: a workflow agent whose last tool is an MCP write: decided ask [rerun, None, 0 MCP calls]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-workflow-progress-unread.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/task-progress-tool"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "13fbdbb8c8ed8a310e303a8006c6d0469b0ac41322a4d6f43b02ddd9a89a21b3",
+   "name": "decision-claude-workflow-progress-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/task-progress-tool"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     false
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.034,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/frame-tool-names detail: a tool_progress of a shown call naming an MCP write: decided ask [rerun, None, 0 MCP calls]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-progress-tool-name-unread.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/frame-tool-names"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "551240de965ae43b9c7bd1cb60a0c344848288a8c6d150ae724a59555c1dab2c",
+   "name": "decision-claude-progress-tool-name-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/frame-tool-names"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.124,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/frame-tool-names detail: an assistant message an MCP tool produced: decided ask [rerun, None, 0 MCP calls]",
+    "VELDO-0160 decision/frame-tool-names detail: an MCP attribution that is not a name: decided ask [rerun, None, 0 MCP calls]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-attribution-unread.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/frame-tool-names"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "db6a9101ed6e6fcf1c549512f8d8ec463313432747e932910caa3f93b835217e",
+   "name": "decision-claude-attribution-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/frame-tool-names"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.057,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/frame-tool-names detail: an assistant message decomposed from a batch holding an MCP write: decided ask [rerun, None, 0 MCP calls]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-batch-names-unread.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/frame-tool-names"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "a5199ab5b955239042fe2767f8854b776a58e405a830e982e267c8117db6e848",
+   "name": "decision-claude-batch-names-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/frame-tool-names"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     false
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 24.874,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided re-run [ask, [(3, None, None, None, None, 'redacted_unreadable')]]",
+    "VELDO-0160 format/tool-forms detail: claude_code: the built-in names are BUILTIN_TOOL_NAMES and the current name of each tool it lists under an old one ({'Agent': ('Task',)}) [{'Agent': ('Task',)}, ['Agent']]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-agent-rename-unread.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/redacted-name",
+    "VELDO-0160 format/tool-forms"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "1f0ae7e08e5370739a9948c689f12e22f99b2be20d8286ef8d82604916445893",
+   "name": "decision-claude-agent-rename-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/redacted-name",
+    "format/tool-forms"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     false
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     false
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.113,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/tool-free-forms detail: claude_code: 21 lines of tool-free and built-in forms decide re-run, naming no call [ask, [(14, 'unknown_call', 'message:keep_alive'), (15, 'unknown_call', 'message:control_cancel_request'), (16, 'unknown_call', 'message:active_goal'), (17, 'unknown_call', 'message:system/task_summary'), (18, 'unknown_call', 'message:system/post_turn_summary'), (19, 'unknown_call', 'message:autocompact_state')]]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-tool-free-frames-ask.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/tool-free-forms"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "f4b39bdd23e157598374e9869e1efbb80a2bf74f0838fb28ccabfeeb91f17f4e",
+   "name": "decision-claude-tool-free-frames-ask",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/tool-free-forms"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     false
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 24.918,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/unknown-forms detail: claude_code, a can_use_tool control request (outside the message union): decided ask, naming that line as an unknown call of form message:control_request [rerun, None]",
+    "VELDO-0160 format/tool-forms detail: claude_code: the frames outside the message union the reader takes as tool-free are the ones whose schema provably carries no tool call [[('active_goal', None), ('autocompact_state', None), ('control_cancel_request', None), ('control_request', None), ('control_response', None), ('keep_alive', None), ('system', 'post_turn_summary'), ('system', 'task_summary'), ('transcript_mirror', None)], [\"('active_goal', None)\", \"('autocompact_state', None)\", \"('control_cancel_request', None)\", \"('control_request', None)\", \"('keep_alive', None)\", \"('system', 'post_turn_summary')\", \"('system', 'task_summary')\"]]"
+   ],
+   "diff": "proof/VELDO-0160/decision-claude-control-request-free.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/unknown-forms",
+    "VELDO-0160 format/tool-forms"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "66bd7b16036f9745aca5a26aeb9dfe0d7912a0139426188e323d94e9aa108a72",
+   "name": "decision-claude-control-request-free",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/unknown-forms",
+    "format/tool-forms"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     false
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     false
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 24.983,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 format/tool-forms detail: claude_code: every field of the binary's messages that names a tool, declared or emitted, is in the reader's table, and the tool names that ran are read as calls [[('system/init', 'tools')], [('assistant', 'attribution_mcp_tool'), ('assistant', 'batch_tool_uses'), ('system/task_progress', 'last_tool_name'), ('system/task_progress', 'workflow_progress.lastToolName'), ('tool_progress', 'repl_call.inner_tool_name'), ('tool_progress', 'tool_name')]]"
+   ],
+   "diff": "proof/VELDO-0160/format-claude-tool-field-unlisted.diff",
+   "failed_rows": [
+    "VELDO-0160 format/tool-forms"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "4c43787e1463b4d9aaf42ae7288ca4c000ff1f1ae239b751ef9e6ac94fa393e3",
+   "name": "format-claude-tool-field-unlisted",
+   "named_row_red": true,
+   "named_rows": [
+    "format/tool-forms"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     false
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.117,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/unknown-forms detail: codex, exec's own collab_tool_call item (a sub-agent call): decided ask, naming that line as an unknown call of form collab_tool_call [rerun, None]",
+    "VELDO-0160 format/tool-forms detail: codex: the reader's item and event tables are exec's own, its own collab_tool_call a sub-agent call [[], []]"
+   ],
+   "diff": "proof/VELDO-0160/format-codex-collab-item-builtin.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/unknown-forms",
+    "VELDO-0160 format/tool-forms"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "eadda3fa60cb354dbd0e532e4575202278781842b44dfd2151d49a53a8b27ca1",
+   "name": "format-codex-collab-item-builtin",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/unknown-forms",
+    "format/tool-forms"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     false
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     false
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 24.905,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   {
    "by_assertion": true,
@@ -7693,6 +10250,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7729,7 +10298,7 @@
      true
     ]
    ],
-   "seconds": 24.967,
+   "seconds": 25.009,
    "source_sha256": "5e90deb4aa512408b5ffa963a9bd8ae8248b424693103ee8c937f79137c80f92"
   },
   {
@@ -7807,6 +10376,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7843,7 +10424,7 @@
      true
     ]
    ],
-   "seconds": 24.969,
+   "seconds": 25.042,
    "source_sha256": "5e90deb4aa512408b5ffa963a9bd8ae8248b424693103ee8c937f79137c80f92"
   }
  ],
@@ -7857,10 +10438,21 @@
    "decision-call-named-twice",
    "decision-gap-accepted"
   ],
+  "decision/frame-tool-names": [
+   "decision-claude-progress-tool-name-unread",
+   "decision-claude-attribution-unread",
+   "decision-claude-batch-names-unread"
+  ],
   "decision/redacted-name": [
    "decision-redacted-name-trusted",
    "decision-redaction-not-passed",
-   "format-claude-builtin-table-drifts"
+   "format-claude-builtin-table-drifts",
+   "decision-claude-agent-rename-unread"
+  ],
+  "decision/repl-inner-call": [
+   "decision-claude-repl-inner-unread",
+   "decision-claude-repl-unknown-inner-free",
+   "decision-claude-repl-malformed-free"
   ],
   "decision/rerun": [
    "decision-read-only-asks"
@@ -7868,11 +10460,16 @@
   "decision/same-id-write": [
    "decision-same-id-first-wins"
   ],
+  "decision/task-progress-tool": [
+   "decision-claude-task-progress-tool-unread",
+   "decision-claude-workflow-progress-unread"
+  ],
   "decision/tool-free-forms": [
    "decision-shown-ids-per-line",
    "decision-claude-tool-ids-unremembered",
    "decision-codex-builtin-items-ask",
-   "decision-claude-thinking-asks"
+   "decision-claude-thinking-asks",
+   "decision-claude-tool-free-frames-ask"
   ],
   "decision/unknown-forms": [
    "decision-unknown-call-skipped",
@@ -7884,7 +10481,9 @@
    "decision-claude-unseen-progress-free",
    "decision-codex-unlisted-item-free",
    "decision-codex-unlisted-event-free",
-   "format-codex-dynamic-item-builtin"
+   "format-codex-dynamic-item-builtin",
+   "decision-claude-control-request-free",
+   "format-codex-collab-item-builtin"
   ],
   "decision/unreadable-asks": [
    "decision-unreadable-line-skipped",
@@ -7896,7 +10495,11 @@
   ],
   "format/tool-forms": [
    "format-claude-builtin-table-drifts",
-   "format-codex-dynamic-item-builtin"
+   "format-codex-dynamic-item-builtin",
+   "decision-claude-agent-rename-unread",
+   "decision-claude-control-request-free",
+   "format-claude-tool-field-unlisted",
+   "format-codex-collab-item-builtin"
   ],
   "install/assets": [
    "pool-not-scaffolded",
@@ -7964,7 +10567,7 @@
  },
  "noop": {
   "control_account_limit.py": {
-   "copy_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea",
+   "copy_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -8026,6 +10629,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8062,8 +10677,8 @@
      true
     ]
    ],
-   "seconds": 25.14,
-   "source_sha256": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
+   "seconds": 25.235,
+   "source_sha256": "6273ae043baec2b43602ebd0b5e8e6a3a930a5de83b3b77e213a7ecd75c88eef"
   },
   "control_account_pool.py": {
    "copy_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4",
@@ -8128,6 +10743,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8164,7 +10791,7 @@
      true
     ]
    ],
-   "seconds": 24.951,
+   "seconds": 25.107,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   "control_accounts.py": {
@@ -8230,6 +10857,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8266,11 +10905,11 @@
      true
     ]
    ],
-   "seconds": 24.993,
+   "seconds": 24.847,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   "control_engine_claude.py": {
-   "copy_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed",
+   "copy_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -8332,6 +10971,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8368,11 +11019,11 @@
      true
     ]
    ],
-   "seconds": 24.949,
-   "source_sha256": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
+   "seconds": 25.161,
+   "source_sha256": "10ed4b13cfac29e1b8022c68516326d4a69679924189255a9ad5985e758eeb1c"
   },
   "control_engine_codex.py": {
-   "copy_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511",
+   "copy_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -8434,6 +11085,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8470,8 +11133,8 @@
      true
     ]
    ],
-   "seconds": 25.074,
-   "source_sha256": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
+   "seconds": 24.783,
+   "source_sha256": "efd81fea2c57c1a2f6271fe6b4d8285a73cd2b012e0d1eb76f55f3d92dd37c0c"
   },
   "control_launch.py": {
    "copy_sha256": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502",
@@ -8536,6 +11199,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8572,7 +11247,7 @@
      true
     ]
    ],
-   "seconds": 24.877,
+   "seconds": 24.977,
    "source_sha256": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502"
   },
   "control_reservations.py": {
@@ -8638,6 +11313,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8674,7 +11361,7 @@
      true
     ]
    ],
-   "seconds": 25.098,
+   "seconds": 24.887,
    "source_sha256": "308d51b7700b7193f7ba43c322b7f2d44d2f6a6cec543e204fc9a3e57d604491"
   },
   "init_scaffold.py": {
@@ -8740,6 +11427,18 @@
      true
     ],
     [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8776,13 +11475,13 @@
      true
     ]
    ],
-   "seconds": 25.089,
+   "seconds": 25.129,
    "source_sha256": "5e90deb4aa512408b5ffa963a9bd8ae8248b424693103ee8c937f79137c80f92"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 160",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 1878.443,
+ "serial_seconds": 2224.329,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py"
 }

@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -449 +449 @@
+@@ -582 +582 @@
 -        window = limit_window(text) if event.get('is_error') is True else None
 +        window = None  # defect: the rate-limit result is not read

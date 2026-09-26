@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -341 +341 @@
--            found.append(_unreadable(ident))  # A tool call whose tool cannot be read.
-+            pass  # defect: a tool call whose name cannot be read is no call
+@@ -373 +373 @@
+-        return [_unreadable(ident)]  # A tool call whose tool cannot be read.
++        return []  # defect: a tool call whose name cannot be read is no call

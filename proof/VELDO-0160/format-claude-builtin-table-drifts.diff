@@ -1,6 +1,6 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -226 +226,2 @@
+@@ -244 +244,2 @@
 -BUILTIN_TOOLS = frozenset(('Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'NotebookEdit', 'WebFetch', 'WebSearch',
 +BUILTIN_TOOLS = frozenset(('Bash', 'Write',  # defect: a built-in tool dropped
 + 'Edit', 'Glob', 'Grep', 'NotebookEdit', 'WebFetch', 'WebSearch',
