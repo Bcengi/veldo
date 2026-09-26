@@ -276,3 +276,22 @@ binaries declare, and two rows check them against `proof/VELDO-0062/cli-formats.
 `extract_formats.py` reads out of claude 2.1.281 and codex 0.154.0 without running either. The scaffold lays
 down `accounts.py`, which `control_accounts` now loads. The footprint already covers every file changed
 (`fleet.py`, `init_scaffold.py` and `proof/VELDO-0062/*` included). Status unchanged.
+
+2026-09-26, third review fixed (Release 1, Linux): the strip tables are now the installed binaries' own
+lists, read by `extract_formats.py` into `cli-formats.json`: Claude Code's sensitive-variable set (its
+logins, the OAuth store, host credentials file, managed and remote settings redirects, the OAuth,
+staging, bridge and federation overrides), its session, bridge, trusted-device, background-session and
+file-descriptor tokens and the variables a host credentials file may set, and Codex's auth redirects
+(login endpoint, client, issuer, refresh and revoke overrides, ChatGPT backend, model endpoints,
+organization, `CODEX_SQLITE_HOME`). The credential-word rule is gone: a count or threshold is not a login.
+The strip applies to the inherited environment only; what an adapter configures reaches the engine as
+configured (its model table included), and a configured login, redirect or provider switch is refused by
+name when the configuration is loaded. A resumed Claude Code session is charged its running total less
+the session's running total the ledger settled last (each final report now records it), unknown when
+that is unknown or larger; a resumed Codex thread is never subtracted. Codex's whole error table is read:
+the workspace credits, spend cap, quota and plan messages are each an exhausted window with no reset. The
+reset boundary is tested at the seams that take a clock (the account record, the reservation check, the
+Codex reader), so the suite no longer waits for a minute to end. Proof: suite `75_veldo_0062_accounts`
+(21 rows), the red record at 0af8dc0 (all 19 behavior rows red by assertion, the two format rows green)
+and 48 finding 62 mutations, each red on its named row; findings 36 (its report-order mutant follows the
+settled session), 39, 40 and 41 still reject. Main merged at a166d14. Status unchanged.
