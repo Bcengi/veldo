@@ -11,8 +11,16 @@ THE RECORD is the form VELDO-0141 writes: an ordered list of lines, each with a 
 `payload`. An MCP tool call is an `engine` line whose payload (the event, or its JSON text) is the
 engine's own tool-call event naming the server and the tool; each engine module reads its own
 (`mcp_calls`: Claude Code's `tool_use` block named `mcp__<server>__<tool>`, Codex's `mcp_tool_call`
-item). A call is counted once by its id, at the first line that shows it; a call the engine started and
-never finished counts the same, since it may have written.
+item). A call is counted once by its id with its server and tool, at the first line that shows it (the
+same id shown again naming another tool is another call); a call the engine started and never finished
+counts the same, since it may have written.
+
+AN ENGINE LINE THE DECISION CANNOT READ ASKS. Silence is not evidence of no call: an `engine` line whose
+payload is not a readable event (a JSON object, or its JSON text, naming its `type`), or whose event
+holds what may be a tool call the engine module cannot read (`mcp_calls` names it `unreadable`), is named
+in `calls` by its sequence with no server or tool, reason `unreadable`, or `redacted_unreadable` when
+its `redacted` field says spans of it were redacted (VELDO-0141 AC4 redacts inside the payload text, so a
+redaction can break the JSON or remove a tool's name). The decision is then `ask`, never `rerun`.
 
 THE MARKS are the dispatch's configuration, a list of servers each with the name its calls use, its
 catalog id and revision (`servers`), and for each revision the tools the owner marks read-only, the
@@ -22,8 +30,11 @@ configuration does not list, or to a tool its revision does not mark (a revision
 one with no marks given, marks no tool), is not read-only.
 
 The decision {schema, decision, calls, mcp_calls} names in `calls` exactly the calls that are not
-read-only, each with its sequence, server, tool, catalog id and revision and why (`server_not_configured`,
-`not_marked_read_only`). A malformed record or configuration is refused by name, never decided.
+read-only and the engine lines it cannot read, each with its sequence, server, tool, catalog id and
+revision and why (`server_not_configured`, `not_marked_read_only`, `unreadable`, `redacted_unreadable`);
+`mcp_calls` counts the MCP calls it read. A structurally malformed record (a line without exactly its
+fields, a gap in its sequence, an unknown stream or receive time) or configuration is refused by name,
+never decided.
 Standard library only.
 """
 import importlib.util
@@ -62,16 +73,19 @@ def _revision(value):
 
 
 def _event(payload):
+    """The engine event a payload is (the event, or its JSON text), or None when it is not a readable event:
+    a JSON object naming its type."""
     if isinstance(payload, str):
         try:
             payload = json.loads(payload)
         except ValueError:
             return None
-    return payload if isinstance(payload, dict) else None
+    return payload if isinstance(payload, dict) and _text(payload.get('type')) else None
 
 
 def calls(record, provider):
-    """[{id, sequence, server, tool}]: the MCP tool calls the record shows, each once, in order."""
+    """[{id, sequence, server, tool}]: the MCP tool calls the record shows, each once, in order, and each
+    engine line that cannot be read, {sequence, server: None, tool: None, unreadable: <reason>}."""
     engine = ENGINES.get(provider)
     if engine is None:
         raise Refused('invalid_input:provider', str(provider))
@@ -89,8 +103,15 @@ def calls(record, provider):
             raise Refused('invalid_input:record_line', 'line %d stream or receive time' % at)
         if line['stream'] != 'engine':
             continue
-        for call in engine.mcp_calls(_event(line['payload'])):
-            key = call.get('id') if _text(call.get('id')) else ('line', at, call.get('server'), call.get('tool'))
+        event = _event(line['payload'])
+        shown = engine.mcp_calls(event) if event is not None else [{'unreadable': True}]
+        for call in shown:
+            if call.get('unreadable'):
+                found.append({'id': None, 'sequence': at, 'server': None, 'tool': None,
+                              'unreadable': 'redacted_unreadable' if line['redacted'] else 'unreadable'})
+                continue
+            # One call is one id with one server and tool: the same id naming another tool is another call.
+            key = (call.get('id') if _text(call.get('id')) else ('line', at), call['server'], call['tool'])
             if key in seen:
                 continue
             seen.add(key)
@@ -120,6 +141,10 @@ def decide(record, servers, marks, provider):
     shown = calls(record, provider)
     named = []
     for call in shown:
+        if call.get('unreadable'):
+            named.append({'sequence': call['sequence'], 'server': None, 'tool': None, 'catalog_id': None,
+                          'revision': None, 'reason': call['unreadable']})
+            continue
         revision = configured.get(call.get('server'))
         if revision is None:
             reason = 'server_not_configured'
@@ -130,4 +155,5 @@ def decide(record, servers, marks, provider):
         named.append({'sequence': call['sequence'], 'server': call.get('server'), 'tool': call.get('tool'),
                       'catalog_id': revision[0] if revision else None, 'revision': revision[1] if revision else None,
                       'reason': reason})
-    return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(shown)}
+    read = [call for call in shown if not call.get('unreadable')]
+    return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(read)}

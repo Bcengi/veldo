@@ -67,7 +67,10 @@ as a window. Any other message (the binary's "Server is temporarily limiting req
 limit)", an overloaded model) is not the account's limit.
 
 MCP CALLS (VELDO-0160). `mcp_calls(event)` names the MCP tool calls an event of the stream shows: each
-`tool_use` block of an `assistant` message whose name is `mcp__<server>__<tool>`, by its id.
+`tool_use` block of an `assistant` message whose name is `mcp__<server>__<tool>`, by its id. What may be
+a tool call and cannot be read is named `unreadable` (an assistant message whose content is not a list, a
+content block that is not an object naming its type, a `tool_use` block whose name is not a string), so
+the decision never takes it for no call.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 Standard library only.
@@ -213,15 +216,29 @@ def limit_reset(text, now):
     return None
 
 
+def _unreadable(ident=None):
+    return {'id': ident, 'server': None, 'tool': None, 'unreadable': True}
+
+
 def mcp_calls(event):
-    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160)."""
+    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160); a block that may be
+    a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}."""
     if not isinstance(event, dict) or event.get('type') != 'assistant':
         return []
-    content = (event.get('message') or {}).get('content') if isinstance(event.get('message'), dict) else None
+    message = event.get('message')
+    content = message.get('content') if isinstance(message, dict) else None
+    if not isinstance(content, list):
+        return [_unreadable()]  # An assistant message with no readable content may hold a tool call.
     found = []
-    for block in content if isinstance(content, list) else []:
-        name = block.get('name') if isinstance(block, dict) and block.get('type') == 'tool_use' else None
-        if isinstance(name, str) and name.startswith(MCP_PREFIX):
+    for block in content:
+        kind = block.get('type') if isinstance(block, dict) else None
+        if not isinstance(kind, str):
+            found.append(_unreadable())
+            continue
+        name = block.get('name') if kind == 'tool_use' else None
+        if kind == 'tool_use' and not isinstance(name, str):
+            found.append(_unreadable(block.get('id')))  # A tool call whose tool cannot be read.
+        elif isinstance(name, str) and name.startswith(MCP_PREFIX):
             server, _, tool = name[len(MCP_PREFIX):].partition('__')
             found.append({'id': block.get('id'), 'server': server, 'tool': tool})
     return found

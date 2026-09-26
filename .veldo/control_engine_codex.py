@@ -58,7 +58,9 @@ window and reset, with its signal: in an `error` event the stream reports its wi
 
 MCP CALLS (VELDO-0160). `mcp_calls(event)` names the MCP tool calls an event shows: the `item` of an
 `item.started`, `item.updated` or `item.completed` whose type is `mcp_tool_call`, with its server and
-tool, by the item id (exec's ThreadItem, proof/VELDO-0062/cli-formats.json, codex items).
+tool, by the item id (exec's ThreadItem, proof/VELDO-0062/cli-formats.json, codex items). What may be a
+tool call and cannot be read is named `unreadable` (an item that is not an object naming its type, an
+`mcp_tool_call` whose server or tool is not a name), so the decision never takes it for no call.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 Standard library only.
@@ -144,11 +146,20 @@ def limit_reset(message, now, zone):
 
 
 def mcp_calls(event):
-    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160)."""
-    item = event.get('item') if isinstance(event, dict) and event.get('type') in ITEM_EVENTS else None
-    if not isinstance(item, dict) or item.get('type') != MCP_ITEM:
+    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160); an item that may be
+    a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}."""
+    if not isinstance(event, dict) or event.get('type') not in ITEM_EVENTS:
         return []
-    return [{'id': item.get('id'), 'server': item.get('server'), 'tool': item.get('tool')}]
+    item = event.get('item')
+    kind = item.get('type') if isinstance(item, dict) else None
+    if not isinstance(kind, str):
+        return [{'id': None, 'server': None, 'tool': None, 'unreadable': True}]
+    if kind != MCP_ITEM:
+        return []
+    server, tool = item.get('server'), item.get('tool')
+    if not (isinstance(server, str) and server and isinstance(tool, str) and tool):
+        return [{'id': item.get('id'), 'server': None, 'tool': None, 'unreadable': True}]
+    return [{'id': item.get('id'), 'server': server, 'tool': tool}]
 
 
 class Meter:
