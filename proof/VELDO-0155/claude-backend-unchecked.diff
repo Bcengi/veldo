@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -682 +682 @@
+-        if account.get('apiProvider') != SUBSCRIPTION_PROVIDER:
++        if False:  # defect: a cloud backend's login takes its first turn

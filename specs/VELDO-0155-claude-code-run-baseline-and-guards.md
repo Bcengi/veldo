@@ -27,6 +27,8 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0155_*.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/suites/78_veldo_0060_claude_adapter.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -61,16 +63,20 @@ acceptance_criteria:
       pinned version before use. Falsifier: Six mutants, one per switch, each dropping that switch with
       the others in place: drop the `setting-sources` restriction, and the planted-settings row must fail;
       drop `strict-mcp-config`, and the planted-server row must fail; drop `disable-slash-commands`, and
-      the planted-skill row must fail; unset `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, and the
-      planted-instruction-file row must fail; unset `CLAUDE_CODE_DISABLE_AUTO_MEMORY`, and the
-      planted-memory row must fail; drop `disableAllHooks`, and the planted-hook row must fail.
+      the planted-skill row must fail; unset `CLAUDE_CODE_DISABLE_AUTO_MEMORY`, and the planted-memory row
+      must fail; unset `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, and drop `disableAllHooks`, each a second layer
+      behind the `setting-sources` restriction, which already keeps the profile's and the clone's
+      instruction files and hooks out, and the baseline row, which reads the baseline the run launched
+      with, must fail each time.
     falsified_by: >
       Six mutants, one per switch, each dropping that switch with the others in place: drop the
       `setting-sources` restriction, and the planted-settings row must fail; drop `strict-mcp-config`, and
       the planted-server row must fail; drop `disable-slash-commands`, and the planted-skill row must
-      fail; unset `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, and the planted-instruction-file row must fail; unset
-      `CLAUDE_CODE_DISABLE_AUTO_MEMORY`, and the planted-memory row must fail; drop `disableAllHooks`, and
-      the planted-hook row must fail.
+      fail; unset `CLAUDE_CODE_DISABLE_AUTO_MEMORY`, and the planted-memory row must fail; unset
+      `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, and drop `disableAllHooks`, each a second layer behind the
+      `setting-sources` restriction, which already keeps the profile's and the clone's instruction files
+      and hooks out, and the baseline row, which reads the baseline the run launched with, must fail each
+      time.
   - id: AC2
     text: >
       Claim: No paid-API credential variable reaches a Claude Code engine environment. Set and
@@ -187,3 +193,65 @@ now drives one mutant per switch, each against its own planted item placed where
 it out; the planted set adds an MCP server, which `strict-mcp-config` keeps out. AC4's private runtime
 directory and the user manager staying reachable get falsifiers of their own beside the strip's.
 Criterion meaning unchanged. A draft.
+
+2026-09-26, built on branch build-veldo-0155-0156 with VELDO-0156, which shares the wrapper. The version
+is qualified with the baseline (the record's `baseline`, else `missing_evidence:engine_baseline:<version>`
+before acceptance) and every run adds it right after its qualified flags: `--setting-sources` with no
+source, the run's generated `--settings` file (`disableAllHooks`) and `--mcp-config` file (no server),
+`--strict-mcp-config`, `--disable-slash-commands`, CLAUDE_CODE_DISABLE_CLAUDE_MDS and
+CLAUDE_CODE_DISABLE_AUTO_MEMORY, the files 0600 in the run's own configuration directory, removed with
+the run; every name is read from the 2.1.281 bytes (proof/VELDO-0155/claude-baseline.json). AC2: the
+paid-API names were already stripped (VELDO-0062); an account the receiver's `subscription_tokens` names
+runs with its own token as CLAUDE_CODE_OAUTH_TOKEN, an unreadable token file refused by name. AC3: an
+init event whose apiKeySource is not `none` stops the run by name (stop cause `paid_api`); the review's
+Anthropic profile case cannot be caught there (the binary reports `none` for it, and takes the profile
+ahead of the claude.ai login), so the receiver refuses it by name before acceptance. AC4: the wrapper
+strips the five names just before its exec and gives the engine the run's own empty runtime directory.
+Two findings for the owner, from the binary's own code: with no setting source, the profile's and the
+clone's MCP servers, skills, instruction files and hooks are also kept out by the sources restriction, so
+the falsifiers that unset CLAUDE_CODE_DISABLE_CLAUDE_MDS or drop disableAllHooks cannot red a planted row
+(their mutants are held by the baseline row and driven as survivors; strict MCP and slash commands are
+falsified on what only they keep out, the login's claude.ai connectors and the bundled skills); and the
+init event comes with the first turn, so the stream stop races the first model request on the real
+binary. The footprint adds the VELDO-0062 and VELDO-0060 suites, whose exact argv checks and test records
+the baseline changes. Proof: suite `80_veldo_0155_claude_baseline` (16 rows), the red record at
+45ee21bb, finding 155's mutations. Status unchanged.
+
+2026-09-26, lead decision (a) on the review of build-veldo-0155-0156 at 18644a43: AC1's falsifiers for
+CLAUDE_CODE_DISABLE_CLAUDE_MDS and `disableAllHooks` now say what the 2.1.281 bytes allow. With
+`--setting-sources` empty the binary gates the profile's and the clone's instruction files and hooks by
+their source, so neither switch alone keeps a planted item out, and a mutant dropping one cannot red a
+planted row (proof/VELDO-0155/survivors.json). Both switches stay in the baseline as a second layer (they
+also keep out the managed instruction files and the flag, plugin and session hooks, which no source
+covers), and their mutants are held by the baseline row, which reads the baseline the run launched with.
+The planted instruction-file and hook rows stay. Criterion meaning unchanged; the specification stays
+ready.
+
+2026-09-26, fix round on the review of build-veldo-0155-0156 at 18644a43, AC3 and the filed findings. The
+stream stop raced the first model request (the init event comes with the turn), so the run now holds its
+prompt: the version is qualified with stream JSON input (`--input-format stream-json`, else
+`missing_evidence:engine_input_protocol:<version>` before acceptance), the receiver writes the initialize
+control request first, and the binary's answer (its Kfe() account, read from the 2.1.281 bytes into
+proof/VELDO-0155/claude-baseline.json, `input_protocol`) must name the first-party backend, no API key, and
+a claude.ai subscription or the account's own subscription token; anything else stops the run by name
+before any prompt is written (`paid_api:apiKeySource|apiProvider|tokenSource|subscriptionType:<value>`),
+and only a confirmed login gets the packet as the user message. Every init event of the stream is read,
+not only the first. A relative XDG_CONFIG_HOME, HOME or credentials_path resolves against the engine's
+working directory (the clone's work tree the entrance changes into), as the binary resolves it, through a
+new `cwd` argument of the engine protocol's `profile_problem` and `login_problem`; one whose working
+directory is unknown is refused by name. The token file is opened once and checked and read on that
+descriptor. The VELDO-0060 footprint changes with it (the qualified flags, the receiver's input path and
+suite 78's fake and rows; its History records it); the VELDO-0062 suite's fake and test record follow.
+Proof: suite `80_veldo_0155_claude_baseline` (17 rows: `paid-api/stop` per login the answer can name,
+`paid-api/every-init` new, `paid-api/profile-login` with the relative cases), the red record at 45ee21bb
+(15 behavior rows), finding 155's 24 mutations (the new ones include the prompt sent before the check); 25 with the subscription-label mutant of the check below.
+Criterion meaning unchanged; the specification stays ready.
+
+2026-09-26, the check of build-veldo-0155-0156 at 04bbe2c2 (rv155b, filed): the guard took any non-empty
+subscriptionType as a claude.ai subscription, and "Claude API" is the binary's own default label for a tier
+that is not one (its wBn(): Enterprise, Team, Max and Pro, else "Claude API"; proof/VELDO-0155/claude-baseline.json,
+subscriptions). `Guard` now accepts only the four subscription labels (`SUBSCRIPTIONS`) and stops any other by
+name (`paid_api:subscriptionType:<label>`) before the prompt is written. Suite 80's `paid-api/stop` adds the
+"Claude API" run and each of the four labels fed to the production Guard; finding 155's new mutant
+(`claude-subscription-label-unchecked`, the pre-fix check) reds it. Criterion meaning unchanged; the
+specification stays ready.

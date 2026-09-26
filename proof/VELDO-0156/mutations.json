@@ -1,0 +1,3026 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0156 baseline/qualified",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-user-config",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-rules",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-project-doc",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-hook",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-profile-instructions",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-skill-profile",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-skill-home",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-skill-clone",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-skill-clone-codex",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/planted-skill-bundled",
+    true
+   ],
+   [
+    "VELDO-0156 baseline/connectors-off",
+    true
+   ],
+   [
+    "VELDO-0156 paid-api/read-back",
+    true
+   ],
+   [
+    "VELDO-0156 paid-api/stop",
+    true
+   ],
+   [
+    "VELDO-0156 paid-api/file-login",
+    true
+   ],
+   [
+    "VELDO-0156 paid-api/engine-refusal",
+    true
+   ],
+   [
+    "VELDO-0156 strip/read-back",
+    true
+   ],
+   [
+    "VELDO-0156 strip/private-runtime-directory",
+    true
+   ],
+   [
+    "VELDO-0156 strip/user-manager",
+    true
+   ],
+   [
+    "VELDO-0156 fixture/planted-control",
+    true
+   ],
+   [
+    "VELDO-0156 format/fake-lines",
+    true
+   ]
+  ],
+  "seconds": 3.259
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [['exec', '--json', '-c', 'check_for_update_on_startup=false', '--ignore-rules', '--disable', 'apps', '-c', 'cli_auth_credentials_store=\"file\"', '-c', 'forced_login_method=\"chatgpt\"', '-c', 'project_doc_max_bytes=0', '-c', 'skills.bundled.enabled=false', '-c', 'skills.include_instructions=false']]",
+    "VELDO-0156 baseline/qualified detail: the shipped 0.154.0 record qualifies the binary with the module's baseline, every option and key in it the binary's own [{'configuration': {'cli_auth_credentials_store': 'file', 'forced_login_method': 'chatgpt', 'project_doc_max_bytes': 0, 'skills.bundled.enabled': False, 'skills.include_instructions': False}, 'options': ['--ignore-user-config', '--ignore-rules', '--disable', 'apps']}]",
+    "VELDO-0156 baseline/planted-user-config detail: the account profile's config.toml did not load: its model and developer instructions are not the run's effective configuration [['check_for_update_on_startup', 'cli_auth_credentials_store', 'developer_instructions', 'features', 'forced_login_method', 'hooks', 'model', 'project_doc_max_bytes', 'skills']]",
+    "VELDO-0156 baseline/planted-hook detail: no hook is in the run's effective configuration: the profile's is neither loaded nor copied into the generated one [{'session_start': [{'command': 'echo v156-planted-hook'}]}]"
+   ],
+   "diff": "proof/VELDO-0156/codex-baseline-user-config-loaded.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 baseline/planted-user-config",
+    "VELDO-0156 baseline/planted-hook"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "2f140f1022eba010ef165f5ab1de3b6cbe68b9abc948689e2142bded5dbb2c64",
+   "name": "codex-baseline-user-config-loaded",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-user-config"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.296,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [['exec', '--json', '-c', 'check_for_update_on_startup=false', '--ignore-user-config', '--disable', 'apps', '-c', 'cli_auth_credentials_store=\"file\"', '-c', 'forced_login_method=\"chatgpt\"', '-c', 'project_doc_max_bytes=0', '-c', 'skills.bundled.enabled=false', '-c', 'skills.include_instructions=false']]",
+    "VELDO-0156 baseline/qualified detail: the shipped 0.154.0 record qualifies the binary with the module's baseline, every option and key in it the binary's own [{'configuration': {'cli_auth_credentials_store': 'file', 'forced_login_method': 'chatgpt', 'project_doc_max_bytes': 0, 'skills.bundled.enabled': False, 'skills.include_instructions': False}, 'options': ['--ignore-user-config', '--ignore-rules', '--disable', 'apps']}]",
+    "VELDO-0156 baseline/planted-rules detail: no rules of the profile or the clone loaded [['/run/user/1000/v156-dl_m7fwn/helper/accounts/profiles/acct-156a/rules/v156-profile.rules', '/run/user/1000/v156-dl_m7fwn/state/clones/clone-48e7f768ba3c46e3ba99ab76b22e9387/work/.codex/rules/v156-clone.rules']]"
+   ],
+   "diff": "proof/VELDO-0156/codex-baseline-rules-loaded.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 baseline/planted-rules"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "ba347a79e6d8004416c1d796277a65e653653373f9d8582073086af7a63a036b",
+   "name": "codex-baseline-rules-loaded",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-rules"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.329,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [['exec', '--json', '-c', 'check_for_update_on_startup=false', '--ignore-user-config', '--ignore-rules', '--disable', 'apps', '-c', 'cli_auth_credentials_store=\"file\"', '-c', 'forced_login_method=\"chatgpt\"', '-c', 'skills.bundled.enabled=false', '-c', 'skills.include_instructions=false']]",
+    "VELDO-0156 baseline/qualified detail: the shipped 0.154.0 record qualifies the binary with the module's baseline, every option and key in it the binary's own [{'configuration': {'cli_auth_credentials_store': 'file', 'forced_login_method': 'chatgpt', 'project_doc_max_bytes': 0, 'skills.bundled.enabled': False, 'skills.include_instructions': False}, 'options': ['--ignore-user-config', '--ignore-rules', '--disable', 'apps']}]",
+    "VELDO-0156 baseline/planted-project-doc detail: the clone's AGENTS.md did not load: the project document budget is zero [['/run/user/1000/v156-corfdszr/state/clones/clone-1808a07a416844808c4be89cb3183f63/work/AGENTS.md'], None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-baseline-project-doc-default.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 baseline/planted-project-doc"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "33fd8f64605694ae91b5518de93e6f5973cee9634c3c9d5f94d54fab5804f721",
+   "name": "codex-baseline-project-doc-default",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-project-doc"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.399,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [['exec', '--json', '-c', 'check_for_update_on_startup=false', '--ignore-user-config', '--ignore-rules', '--disable', 'apps', '-c', 'cli_auth_credentials_store=\"file\"', '-c', 'forced_login_method=\"chatgpt\"', '-c', 'hooks={\"session_start\" = [{\"command\" = \"echo v156-planted-hook\"}]}', '-c', 'project_doc_max_bytes=0', '-c', 'skills.bundled.enabled=false', '-c', 'skills.include_instructions=false']]",
+    "VELDO-0156 baseline/planted-hook detail: no hook is in the run's effective configuration: the profile's is neither loaded nor copied into the generated one [{'session_start': [{'command': 'echo v156-planted-hook'}]}]"
+   ],
+   "diff": "proof/VELDO-0156/codex-baseline-hooks-copied.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 baseline/planted-hook"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "217f968815070df8363467a6d6929a1f4966c677f47cf2bf4fdc73bfb4bc5327",
+   "name": "codex-baseline-hooks-copied",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-hook"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.312,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 paid-api/read-back detail: planted in the caller's environment, OPENAI_API_KEY and CODEX_API_KEY are absent from the engine's [['OPENAI_API_KEY']]",
+    "VELDO-0156 paid-api/read-back detail: the receiver reported both removed, never a value [['CODEX_API_KEY']]"
+   ],
+   "diff": "proof/VELDO-0156/codex-paid-api-key-left.diff",
+   "failed_rows": [
+    "VELDO-0156 paid-api/read-back"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "8932b15450c9d3f5555c3b9213b419020c6753921429d09b807964b435c78d77",
+   "name": "codex-paid-api-key-left",
+   "named_row_red": true,
+   "named_rows": [
+    "paid-api/read-back"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.268,
+   "source_sha256": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 paid-api/stop detail: no login: refused by name before acceptance, nothing spawned or reserved and no turn sent [None]",
+    "VELDO-0156 paid-api/stop detail: an API-key login: refused by name before acceptance, nothing spawned or reserved and no turn sent [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-paid-api-stop-skipped.diff",
+   "failed_rows": [
+    "VELDO-0156 paid-api/stop"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "a0514ebf2f6dd7582ade93181856daa2e378617ab3e2beeb56a4265c1e62c803",
+   "name": "codex-paid-api-stop-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "paid-api/stop"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.633,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [['exec', '--json', '-c', 'check_for_update_on_startup=false', '--ignore-user-config', '--ignore-rules', '--disable', 'apps', '-c', 'cli_auth_credentials_store=\"file\"', '-c', 'project_doc_max_bytes=0', '-c', 'skills.bundled.enabled=false', '-c', 'skills.include_instructions=false']]",
+    "VELDO-0156 baseline/qualified detail: the shipped 0.154.0 record qualifies the binary with the module's baseline, every option and key in it the binary's own [{'configuration': {'cli_auth_credentials_store': 'file', 'forced_login_method': 'chatgpt', 'project_doc_max_bytes': 0, 'skills.bundled.enabled': False, 'skills.include_instructions': False}, 'options': ['--ignore-user-config', '--ignore-rules', '--disable', 'apps']}]",
+    "VELDO-0156 paid-api/engine-refusal detail: with the adapter's own stop off, the API-key profile's engine itself refused the login with the binary's message because the ChatGPT method is forced: no turn, no completion [[{'type': 'thread.started', 'thread_id': 'thread-156-11e225ef'}], complete]"
+   ],
+   "diff": "proof/VELDO-0156/codex-forced-login-dropped.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 paid-api/engine-refusal"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "4b6eece4bf8b8883a91b24e0ce1caf07e5d7a766b684334533d93c890d576bbf",
+   "name": "codex-forced-login-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "paid-api/engine-refusal"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     false
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.254,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [[]]",
+    "VELDO-0156 baseline/qualified detail: the generated configuration is kept in the run's own configuration directory, as passed [None]",
+    "VELDO-0156 baseline/qualified detail: the shipped 0.154.0 record qualifies the binary with the module's baseline, every option and key in it the binary's own [{'configuration': {'cli_auth_credentials_store': 'file', 'forced_login_method': 'chatgpt', 'project_doc_max_bytes': 0, 'skills.bundled.enabled': False, 'skills.include_instructions': False}, 'options': ['--ignore-user-config', '--ignore-rules', '--disable', 'apps']}]",
+    "VELDO-0156 baseline/planted-user-config detail: the account profile's config.toml did not load: its model and developer instructions are not the run's effective configuration [[]]",
+    "VELDO-0156 baseline/planted-rules detail: no rules of the profile or the clone loaded [None]",
+    "VELDO-0156 baseline/planted-project-doc detail: the clone's AGENTS.md did not load: the project document budget is zero [None, None]",
+    "VELDO-0156 baseline/planted-hook detail: no hook is in the run's effective configuration: the profile's is neither loaded nor copied into the generated one [None]",
+    "VELDO-0156 baseline/planted-profile-instructions detail: the binary's own offline renderer put each planted file in the prompt under the baseline and no switch tried removes it; the plain profile's run loaded none [None]",
+    "VELDO-0156 baseline/planted-skill-profile detail: the plain run's prompt named that skill and its model request carries no skill body [{}]",
+    "VELDO-0156 baseline/planted-skill-home detail: the plain run's prompt named that skill and its model request carries no skill body [{}]",
+    "VELDO-0156 baseline/planted-skill-clone detail: the plain run's prompt named that skill and its model request carries no skill body [{}]",
+    "VELDO-0156 baseline/planted-skill-clone-codex detail: the plain run's prompt named that skill and its model request carries no skill body [{}]",
+    "VELDO-0156 baseline/planted-skill-bundled detail: the profile's .system holds the bundled set and the prompt names each; skills.bundled.enabled is false in the run's effective configuration and its model request carries none of their bodies and lists no skill [{}, {}]",
+    "VELDO-0156 baseline/connectors-off detail: the launch and the shipped record carry --disable apps, the apps feature off in the run's effective configuration, and none of the login's ChatGPT connectors loaded [{}, None]",
+    "VELDO-0156 paid-api/read-back detail: planted in the caller's environment, OPENAI_API_KEY and CODEX_API_KEY are absent from the engine's [[]]",
+    "VELDO-0156 paid-api/read-back detail: the receiver reported both removed, never a value [[]]",
+    "VELDO-0156 paid-api/stop detail: an API-key login: refused by name before acceptance, nothing spawned or reserved and no turn sent [paid_api:codex_login:not_logged_in]",
+    "VELDO-0156 paid-api/stop detail: the check is the binary's own login status, read from the file store and never with the login method forced, so it logs no login out [2 calls]",
+    "VELDO-0156 paid-api/file-login detail: the ChatGPT profile's run took its first turn on the login read from its profile's file, and completed [None, None, None]",
+    "VELDO-0156 paid-api/file-login detail: the file store is the generated configuration's own, not the binary's default, and the binary's login status read that login from it before acceptance [None, 2 calls]",
+    "VELDO-0156 paid-api/engine-refusal detail: with the adapter's own stop off, the API-key profile's engine itself refused the login with the binary's message because the ChatGPT method is forced: no turn, no completion [[{'type': 'error', 'message': 'Not logged in'}], missing_result]",
+    "VELDO-0156 strip/read-back detail: planted in the receiver's environment, the SSH agent, the session bus and the Git tokens are absent from the Codex engine's [[]]",
+    "VELDO-0156 strip/read-back detail: the receiver reported them removed",
+    "VELDO-0156 strip/private-runtime-directory detail: the engine's XDG_RUNTIME_DIR is an empty directory of the run's own, 0700 and this account's, the one the receiver reported [{}]",
+    "VELDO-0156 strip/private-runtime-directory detail: never the receiver's runtime directory, never the directory holding the run's generated configuration nor one above it [None, /run/user/1000, /none]",
+    "VELDO-0156 strip/private-runtime-directory detail: each run has its own, removed with the run [None, None, {'normal': False, 'second': False}]",
+    "VELDO-0156 strip/user-manager detail: the receiver kept the session bus its own systemd-run and systemctl use: the run was created in its own transient scope in this run's slice, the engine inside it, and systemctl read the scope's result once it was empty, while the engine had no session bus [{}, None]",
+    "VELDO-0156 format/fake-lines detail: every line the fake printed is an exec event of the binary's own table [1 lines, []]"
+   ],
+   "diff": "proof/VELDO-0156/codex-credentials-keyring.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 baseline/planted-user-config",
+    "VELDO-0156 baseline/planted-rules",
+    "VELDO-0156 baseline/planted-project-doc",
+    "VELDO-0156 baseline/planted-hook",
+    "VELDO-0156 baseline/planted-profile-instructions",
+    "VELDO-0156 baseline/planted-skill-profile",
+    "VELDO-0156 baseline/planted-skill-home",
+    "VELDO-0156 baseline/planted-skill-clone",
+    "VELDO-0156 baseline/planted-skill-clone-codex",
+    "VELDO-0156 baseline/planted-skill-bundled",
+    "VELDO-0156 baseline/connectors-off",
+    "VELDO-0156 paid-api/read-back",
+    "VELDO-0156 paid-api/stop",
+    "VELDO-0156 paid-api/file-login",
+    "VELDO-0156 paid-api/engine-refusal",
+    "VELDO-0156 strip/read-back",
+    "VELDO-0156 strip/private-runtime-directory",
+    "VELDO-0156 strip/user-manager",
+    "VELDO-0156 format/fake-lines"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "8854639be90fc5664c0e466682e2b2105f46da4570381cbd1680c4a3cbe55064",
+   "name": "codex-credentials-keyring",
+   "named_row_red": true,
+   "named_rows": [
+    "paid-api/file-login"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     false
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     false
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     false
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     false
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     false
+    ]
+   ],
+   "seconds": 2.94,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 strip/read-back detail: planted in the receiver's environment, the SSH agent, the session bus and the Git tokens are absent from the Codex engine's [['SSH_AUTH_SOCK']]",
+    "VELDO-0156 strip/read-back detail: the receiver reported them removed"
+   ],
+   "diff": "proof/VELDO-0156/codex-strip-agent-left.diff",
+   "failed_rows": [
+    "VELDO-0156 strip/read-back"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "4f0510d23f24b9352a3d3db122de029ebfdfbf5c70069d91f95bf9c6c6cbc515",
+   "name": "codex-strip-agent-left",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/read-back"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     false
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.305,
+   "source_sha256": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 strip/private-runtime-directory detail: the engine's XDG_RUNTIME_DIR is an empty directory of the run's own, 0700 and this account's, the one the receiver reported [{'path': '/run/user/1000', 'dir': True, 'entries': ['.mutter-Xwaylandauth.RVDYU3', 'ICEauthority', 'at-spi', 'bus', 'cc-socks', 'dbus-1', 'dconf', 'doc', 'gcr', 'gdm', 'gnome-remote-desktop', 'gnome-session-leader-fifo', 'gnome-shell', 'gnupg', 'gvfs', 'gvfsd', 'keyring', 'pipewire-0', 'pipewire-0-manager', 'pipewire-0-manager.lock', 'pipewire-0.lock', 'pk-debconf-socket', 'pulse', 'snap.firmware-updater', 'snap.snapd-desktop-integration', 'snapd-session-agent.socket', 'speech-dispatcher', 'systemd', 'update-notifier.pid', 'v156-lxtnnba_', 'v41-3620g9ot', 'v41-3tztv8t1', 'v41-9xihkn6s', 'v41-ck7dx98f', 'v41-uqv754j9', 'v60-98hcahje', 'v60-cykfye_1', 'v60-pil3jmkw', 'wayland-0', 'wayland-0.lock'], 'mode': 448, 'uid': 1000}]",
+    "VELDO-0156 strip/private-runtime-directory detail: never the receiver's runtime directory, never the directory holding the run's generated configuration nor one above it [/run/user/1000, /run/user/1000, /run/user/1000/v156-lxtnnba_/state/factory/runs/fc9ce2667465606eaa4a37f9f12a8f4d/config]",
+    "VELDO-0156 strip/private-runtime-directory detail: each run has its own, removed with the run [/run/user/1000, /run/user/1000, {'normal': False, 'second': False}]"
+   ],
+   "diff": "proof/VELDO-0156/codex-runtime-receivers.diff",
+   "failed_rows": [
+    "VELDO-0156 strip/private-runtime-directory"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "1a8ba31732fd831332d6d59a253a9192e96890fcc90e21780eb5b9afdf173758",
+   "name": "codex-runtime-receivers",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/private-runtime-directory"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     false
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.272,
+   "source_sha256": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 strip/private-runtime-directory detail: the engine's XDG_RUNTIME_DIR is an empty directory of the run's own, 0700 and this account's, the one the receiver reported [{'path': '/run/user/1000/v156-6adfbbj7/state/factory/runs/08a2a42faebde438a7aae4e01d443a79/config', 'dir': True, 'entries': ['config.toml'], 'mode': 448, 'uid': 1000}]",
+    "VELDO-0156 strip/private-runtime-directory detail: never the receiver's runtime directory, never the directory holding the run's generated configuration nor one above it [/run/user/1000/v156-6adfbbj7/state/factory/runs/08a2a42faebde438a7aae4e01d443a79/config, /run/user/1000, /run/user/1000/v156-6adfbbj7/state/factory/runs/08a2a42faebde438a7aae4e01d443a79/config]"
+   ],
+   "diff": "proof/VELDO-0156/codex-runtime-config-directory.diff",
+   "failed_rows": [
+    "VELDO-0156 strip/private-runtime-directory"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "9026bbe9f8248992ce3faefe1c0137911aaa68b08a31c79ddfa4f3145e231455",
+   "name": "codex-runtime-config-directory",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/private-runtime-directory"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     false
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.318,
+   "source_sha256": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [[]]",
+    "VELDO-0156 baseline/planted-user-config detail: the account profile's config.toml did not load: its model and developer instructions are not the run's effective configuration [[]]",
+    "VELDO-0156 baseline/planted-rules detail: no rules of the profile or the clone loaded [None]",
+    "VELDO-0156 baseline/planted-project-doc detail: the clone's AGENTS.md did not load: the project document budget is zero [None, None]",
+    "VELDO-0156 baseline/planted-hook detail: no hook is in the run's effective configuration: the profile's is neither loaded nor copied into the generated one [None]",
+    "VELDO-0156 baseline/planted-profile-instructions detail: the binary's own offline renderer put each planted file in the prompt under the baseline and no switch tried removes it; the plain profile's run loaded none [None]",
+    "VELDO-0156 baseline/planted-skill-profile detail: the plain run's prompt named that skill and its model request carries no skill body [{}]",
+    "VELDO-0156 baseline/planted-skill-home detail: the plain run's prompt named that skill and its model request carries no skill body [{}]",
+    "VELDO-0156 baseline/planted-skill-clone detail: the plain run's prompt named that skill and its model request carries no skill body [{}]",
+    "VELDO-0156 baseline/planted-skill-clone-codex detail: the plain run's prompt named that skill and its model request carries no skill body [{}]",
+    "VELDO-0156 baseline/planted-skill-bundled detail: the profile's .system holds the bundled set and the prompt names each; skills.bundled.enabled is false in the run's effective configuration and its model request carries none of their bodies and lists no skill [{}, {}]",
+    "VELDO-0156 baseline/connectors-off detail: the launch and the shipped record carry --disable apps, the apps feature off in the run's effective configuration, and none of the login's ChatGPT connectors loaded [{}, None]",
+    "VELDO-0156 paid-api/read-back detail: planted in the caller's environment, OPENAI_API_KEY and CODEX_API_KEY are absent from the engine's [[]]",
+    "VELDO-0156 paid-api/file-login detail: the ChatGPT profile's run took its first turn on the login read from its profile's file, and completed [None, None, None]",
+    "VELDO-0156 paid-api/file-login detail: the file store is the generated configuration's own, not the binary's default, and the binary's login status read that login from it before acceptance [None, 2 calls]",
+    "VELDO-0156 paid-api/engine-refusal detail: with the adapter's own stop off, the API-key profile's engine itself refused the login with the binary's message because the ChatGPT method is forced: no turn, no completion [[], None]",
+    "VELDO-0156 strip/read-back detail: planted in the receiver's environment, the SSH agent, the session bus and the Git tokens are absent from the Codex engine's [[]]",
+    "VELDO-0156 strip/private-runtime-directory detail: the engine's XDG_RUNTIME_DIR is an empty directory of the run's own, 0700 and this account's, the one the receiver reported [{}]",
+    "VELDO-0156 strip/private-runtime-directory detail: never the receiver's runtime directory, never the directory holding the run's generated configuration nor one above it [None, /run/user/1000, /run/user/1000/v156-07he8uke/state/factory/runs/01fa2956c2804667c50796588f8f3b49/config]",
+    "VELDO-0156 strip/private-runtime-directory detail: each run has its own, removed with the run [None, None, {'normal': False, 'second': False}]",
+    "VELDO-0156 strip/user-manager detail: the receiver kept the session bus its own systemd-run and systemctl use: the run was created in its own transient scope in this run's slice, the engine inside it, and systemctl read the scope's result once it was empty, while the engine had no session bus [{}, None]",
+    "VELDO-0156 format/fake-lines detail: every line the fake printed is an exec event of the binary's own table [0 lines, []]"
+   ],
+   "diff": "proof/VELDO-0156/codex-strip-receiver-side.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 baseline/planted-user-config",
+    "VELDO-0156 baseline/planted-rules",
+    "VELDO-0156 baseline/planted-project-doc",
+    "VELDO-0156 baseline/planted-hook",
+    "VELDO-0156 baseline/planted-profile-instructions",
+    "VELDO-0156 baseline/planted-skill-profile",
+    "VELDO-0156 baseline/planted-skill-home",
+    "VELDO-0156 baseline/planted-skill-clone",
+    "VELDO-0156 baseline/planted-skill-clone-codex",
+    "VELDO-0156 baseline/planted-skill-bundled",
+    "VELDO-0156 baseline/connectors-off",
+    "VELDO-0156 paid-api/read-back",
+    "VELDO-0156 paid-api/file-login",
+    "VELDO-0156 paid-api/engine-refusal",
+    "VELDO-0156 strip/read-back",
+    "VELDO-0156 strip/private-runtime-directory",
+    "VELDO-0156 strip/user-manager",
+    "VELDO-0156 format/fake-lines"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "68b4f1bd0e239b539fcf03b4ce3941abad00e03e5c9b27b107e212d613103f9b",
+   "name": "codex-strip-receiver-side",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/user-manager"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     false
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     false
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     false
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     false
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     false
+    ]
+   ],
+   "seconds": 2.809,
+   "source_sha256": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: a binary whose record does not list the baseline is refused by name before acceptance, nothing spawned [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-baseline-unqualified-accepted.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "7f084b1893071ee6ee6c99d1c5f9b4b89ef22ee860453157660a346384fa0394",
+   "name": "codex-baseline-unqualified-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/qualified"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.485,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/planted-profile-instructions detail: a profile holding its own AGENTS.md, which the binary reads into every prompt whatever the baseline says, is refused by that name before acceptance, nothing spawned or reserved [invalid_input:engine_profile:skills/v156-profile-skill]",
+    "VELDO-0156 baseline/planted-profile-instructions detail: a profile holding its own AGENTS.override.md, which the binary reads into every prompt whatever the baseline says, is refused by that name before acceptance, nothing spawned or reserved [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-profile-instructions-accepted.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/planted-profile-instructions"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "c8e8bb35fe7ccf49c029df075c07e7d82cc4ff9cdd63ccdc503125d6e8c446ec",
+   "name": "codex-profile-instructions-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-profile-instructions"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.446,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/planted-profile-instructions detail: a profile holding its own AGENTS.override.md, which the binary reads into every prompt whatever the baseline says, is refused by that name before acceptance, nothing spawned or reserved [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-profile-override-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/planted-profile-instructions"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "47e407c51cb094f8a649c6a0fb180b2991452eaeaf4e868e0080733fe9495076",
+   "name": "codex-profile-override-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-profile-instructions"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.443,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [['exec', '--json', '-c', 'check_for_update_on_startup=false', '--ignore-user-config', '--ignore-rules', '--disable', 'apps', '-c', 'cli_auth_credentials_store=\"file\"', '-c', 'forced_login_method=\"chatgpt\"', '-c', 'project_doc_max_bytes=0', '-c', 'skills.bundled.enabled=false']]",
+    "VELDO-0156 baseline/qualified detail: the shipped 0.154.0 record qualifies the binary with the module's baseline, every option and key in it the binary's own [{'configuration': {'cli_auth_credentials_store': 'file', 'forced_login_method': 'chatgpt', 'project_doc_max_bytes': 0, 'skills.bundled.enabled': False, 'skills.include_instructions': False}, 'options': ['--ignore-user-config', '--ignore-rules', '--disable', 'apps']}]"
+   ],
+   "diff": "proof/VELDO-0156/codex-baseline-skills-listed.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "bd936f55a6c1ddd087d46cc775abd24122e1270cdaeef2a05fcac5e4ac607f18",
+   "name": "codex-baseline-skills-listed",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/qualified"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.309,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [['exec', '--json', '-c', 'check_for_update_on_startup=false', '--ignore-user-config', '--ignore-rules', '--disable', 'apps', '-c', 'cli_auth_credentials_store=\"file\"', '-c', 'forced_login_method=\"chatgpt\"', '-c', 'project_doc_max_bytes=0', '-c', 'skills.include_instructions=false']]",
+    "VELDO-0156 baseline/qualified detail: the shipped 0.154.0 record qualifies the binary with the module's baseline, every option and key in it the binary's own [{'configuration': {'cli_auth_credentials_store': 'file', 'forced_login_method': 'chatgpt', 'project_doc_max_bytes': 0, 'skills.bundled.enabled': False, 'skills.include_instructions': False}, 'options': ['--ignore-user-config', '--ignore-rules', '--disable', 'apps']}]",
+    "VELDO-0156 baseline/planted-skill-profile detail: the plain run's prompt named that skill and its model request carries no skill body [{'named': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer', 'v156-clone-codex-skill', 'v156-clone-skill', 'v156-home-skill', 'v156-profile-skill'], 'bodies': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer'], 'listed': []}]",
+    "VELDO-0156 baseline/planted-skill-home detail: the plain run's prompt named that skill and its model request carries no skill body [{'named': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer', 'v156-clone-codex-skill', 'v156-clone-skill', 'v156-home-skill', 'v156-profile-skill'], 'bodies': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer'], 'listed': []}]",
+    "VELDO-0156 baseline/planted-skill-clone detail: the plain run's prompt named that skill and its model request carries no skill body [{'named': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer', 'v156-clone-codex-skill', 'v156-clone-skill', 'v156-home-skill', 'v156-profile-skill'], 'bodies': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer'], 'listed': []}]",
+    "VELDO-0156 baseline/planted-skill-clone-codex detail: the plain run's prompt named that skill and its model request carries no skill body [{'named': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer', 'v156-clone-codex-skill', 'v156-clone-skill', 'v156-home-skill', 'v156-profile-skill'], 'bodies': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer'], 'listed': []}]",
+    "VELDO-0156 baseline/planted-skill-bundled detail: the profile's .system holds the bundled set and the prompt names each; skills.bundled.enabled is false in the run's effective configuration and its model request carries none of their bodies and lists no skill [{'include_instructions': False}, {'named': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer', 'v156-clone-codex-skill', 'v156-clone-skill', 'v156-home-skill', 'v156-profile-skill'], 'bodies': ['imagegen', 'openai-docs', 'plugin-creator', 'review-agent', 'skill-creator', 'skill-installer'], 'listed': []}]"
+   ],
+   "diff": "proof/VELDO-0156/codex-skills-bundled-kept.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 baseline/planted-skill-profile",
+    "VELDO-0156 baseline/planted-skill-home",
+    "VELDO-0156 baseline/planted-skill-clone",
+    "VELDO-0156 baseline/planted-skill-clone-codex",
+    "VELDO-0156 baseline/planted-skill-bundled"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "9191aa9e02c7db11efec0a3a7942522ba6549437c1519b1f8b7d98825ac94f77",
+   "name": "codex-skills-bundled-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-skill-bundled"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.294,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/planted-skill-profile detail: a profile skill, which the binary loads into the model request when the prompt names it whatever the baseline says, is refused by that name before acceptance: nothing spawned or reserved, no model request [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-skills-profile-accepted.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/planted-skill-profile"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "b1cb323fe467106ee058e137258e6687352bb8cf14c22569a5d1a33b76783cf6",
+   "name": "codex-skills-profile-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-skill-profile"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.471,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/planted-skill-home detail: a home skill, which the binary loads into the model request when the prompt names it whatever the baseline says, is refused by that name before acceptance: nothing spawned or reserved, no model request [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-skills-home-accepted.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/planted-skill-home"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "d49cb01fa1a8dee30ec67af311d1db0df5c3d5ff03b302ae7c4901d32dbb3083",
+   "name": "codex-skills-home-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-skill-home"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.497,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/planted-skill-clone detail: a clone skill, which the binary loads into the model request when the prompt names it whatever the baseline says, is refused by that name before acceptance: nothing spawned or reserved, no model request [None]",
+    "VELDO-0156 baseline/planted-skill-clone detail: an engine working below the project root is refused for the root's skill as well [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-skills-clone-accepted.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/planted-skill-clone"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "a8bab1ad21674af03b70b2fd3161588db4eeaa03f3ca0d16661c9dedca6bee10",
+   "name": "codex-skills-clone-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-skill-clone"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.453,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/planted-skill-clone-codex detail: a clone-codex skill, which the binary loads into the model request when the prompt names it whatever the baseline says, is refused by that name before acceptance: nothing spawned or reserved, no model request [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-skills-clone-codex-accepted.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/planted-skill-clone-codex"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "83de914b79dfd094bff95a5599999b623627e40fa627bbbdd8c606149627107b",
+   "name": "codex-skills-clone-codex-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-skill-clone-codex"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.469,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/planted-skill-clone detail: an engine working below the project root is refused for the root's skill as well [None]"
+   ],
+   "diff": "proof/VELDO-0156/codex-skills-project-root-unread.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/planted-skill-clone"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "e697fa243d864d1f59802080a1f899a452fea81e23569b5c48b557e4ec43e102",
+   "name": "codex-skills-project-root-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/planted-skill-clone"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.284,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 baseline/qualified detail: the run started the pinned vendor binary with the qualified flags and then exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT login forced, the file credentials store, the bundled skills off and no skills section, every name the binary's own [['exec', '--json', '-c', 'check_for_update_on_startup=false', '--ignore-user-config', '--ignore-rules', '-c', 'cli_auth_credentials_store=\"file\"', '-c', 'forced_login_method=\"chatgpt\"', '-c', 'project_doc_max_bytes=0', '-c', 'skills.bundled.enabled=false', '-c', 'skills.include_instructions=false']]",
+    "VELDO-0156 baseline/qualified detail: the shipped 0.154.0 record qualifies the binary with the module's baseline, every option and key in it the binary's own [{'configuration': {'cli_auth_credentials_store': 'file', 'forced_login_method': 'chatgpt', 'project_doc_max_bytes': 0, 'skills.bundled.enabled': False, 'skills.include_instructions': False}, 'options': ['--ignore-user-config', '--ignore-rules', '--disable', 'apps']}]",
+    "VELDO-0156 baseline/connectors-off detail: the launch and the shipped record carry --disable apps, the apps feature off in the run's effective configuration, and none of the login's ChatGPT connectors loaded [{}, ['v156-chatgpt-connector']]"
+   ],
+   "diff": "proof/VELDO-0156/codex-baseline-apps-kept.diff",
+   "failed_rows": [
+    "VELDO-0156 baseline/qualified",
+    "VELDO-0156 baseline/connectors-off"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "670a2110c80d2268a840e4099d4b5771164fcec3a58124e3b05e345b160b6750",
+   "name": "codex-baseline-apps-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/connectors-off"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.275,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0156 paid-api/stop detail: the check is the binary's own login status, read from the file store and never with the login method forced, so it logs no login out [2 calls]"
+   ],
+   "diff": "proof/VELDO-0156/codex-status-login-forced.diff",
+   "failed_rows": [
+    "VELDO-0156 paid-api/stop"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "e36a2195b85e54a921cf17b5c0fc2927242764c5258760d39c6ae1996ecb62c6",
+   "name": "codex-status-login-forced",
+   "named_row_red": true,
+   "named_rows": [
+    "paid-api/stop"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     false
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.301,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  }
+ ],
+ "mutations_per_row": {
+  "baseline/connectors-off": [
+   "codex-baseline-apps-kept"
+  ],
+  "baseline/planted-hook": [
+   "codex-baseline-hooks-copied"
+  ],
+  "baseline/planted-profile-instructions": [
+   "codex-profile-instructions-accepted",
+   "codex-profile-override-unchecked"
+  ],
+  "baseline/planted-project-doc": [
+   "codex-baseline-project-doc-default"
+  ],
+  "baseline/planted-rules": [
+   "codex-baseline-rules-loaded"
+  ],
+  "baseline/planted-skill-bundled": [
+   "codex-skills-bundled-kept"
+  ],
+  "baseline/planted-skill-clone": [
+   "codex-skills-clone-accepted",
+   "codex-skills-project-root-unread"
+  ],
+  "baseline/planted-skill-clone-codex": [
+   "codex-skills-clone-codex-accepted"
+  ],
+  "baseline/planted-skill-home": [
+   "codex-skills-home-accepted"
+  ],
+  "baseline/planted-skill-profile": [
+   "codex-skills-profile-accepted"
+  ],
+  "baseline/planted-user-config": [
+   "codex-baseline-user-config-loaded"
+  ],
+  "baseline/qualified": [
+   "codex-baseline-unqualified-accepted",
+   "codex-baseline-skills-listed"
+  ],
+  "paid-api/engine-refusal": [
+   "codex-forced-login-dropped"
+  ],
+  "paid-api/file-login": [
+   "codex-credentials-keyring"
+  ],
+  "paid-api/read-back": [
+   "codex-paid-api-key-left"
+  ],
+  "paid-api/stop": [
+   "codex-paid-api-stop-skipped",
+   "codex-status-login-forced"
+  ],
+  "strip/private-runtime-directory": [
+   "codex-runtime-receivers",
+   "codex-runtime-config-directory"
+  ],
+  "strip/read-back": [
+   "codex-strip-agent-left"
+  ],
+  "strip/user-manager": [
+   "codex-strip-receiver-side"
+  ]
+ },
+ "noop": {
+  "control_engine_codex.py": {
+   "copy_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.266,
+   "source_sha256": "dae32a5d36ddaea2daba07b8462295654a17d3f61dc44b90e8801a25f75d3d8f"
+  },
+  "control_launch.py": {
+   "copy_sha256": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0156 baseline/qualified",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-user-config",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-rules",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-project-doc",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-profile-instructions",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-profile",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-home",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-clone-codex",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/planted-skill-bundled",
+     true
+    ],
+    [
+     "VELDO-0156 baseline/connectors-off",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/file-login",
+     true
+    ],
+    [
+     "VELDO-0156 paid-api/engine-refusal",
+     true
+    ],
+    [
+     "VELDO-0156 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0156 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0156 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0156 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0156 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.248,
+   "source_sha256": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 156",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 89.635,
+ "spec_id": "VELDO-0156",
+ "suite": "scripts/suites/81_veldo_0156_codex_baseline.py"
+}

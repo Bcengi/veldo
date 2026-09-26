@@ -19,7 +19,7 @@ inherited environment (the owner's shell's), passed when the adapter configures 
 proxy, CA, runtime, cloud and home names are neither: the worker's tools need them. The model
 configuration (the binary's model table, ANTHROPIC_MODEL and the rest) is not a login either: an adapter
 configures it and it reaches the engine. (The subscription token of an account configured to use one
-is VELDO-0155.)
+is VELDO-0155's, below.)
 
 USAGE, FROM THE CLI'S OWN STREAM (print mode with stream JSON output). What is counted is only what
 the CLI reports, at the granularity it reports it:
@@ -70,7 +70,7 @@ version the record does not list, a pinned copy that is absent, a link or not a 
 copy whose digest differs are each refused by name, as are a linked directory on the way to it, a copy
 that is not this account's own, and one that is writable or carries a setuid, setgid or sticky bit (the pin
 writes it 0555). `command` is the adapter's prefix, the pinned path and the qualified flags; the role's own
-selections are VELDO-0127's and the everything-off baseline VELDO-0155's.
+selections are VELDO-0127's; the everything-off baseline (VELDO-0155) follows the flags.
 
 THE TERMINAL RECORD AND THE ARTIFACT, VELDO-0060. `Terminal` reads the same stream and returns what an
 invocation's output yields, judged by the receiver and never by the worker: the decoded `result` event
@@ -82,6 +82,32 @@ and the verdict. Only a zero exit with no signal, no stop and no deadline, a str
 events and a `result` whose subtype is `success` and whose `is_error` is false is `complete`; a zero
 exit whose stream has no result is `missing_result`, never a completion. The usage of that invocation
 is the Meter's: a result without readable usage leaves it unknown and its reservation retained.
+
+THE EVERYTHING-OFF BASELINE AND THE PAID-API GUARD, VELDO-0155. A version is qualified with BASELINE (the
+record's `baseline`, which must equal it, else `missing_evidence:engine_baseline:<version>` before
+acceptance). `baseline(binding, run)` is what every run adds right after its qualified flags: no setting
+source but the run's generated `--settings` file (`disableAllHooks`), `--strict-mcp-config` with the run's
+generated `--mcp-config` file (no server until VELDO-0127 lists them), `--disable-slash-commands`, and
+CLAUDE_CODE_DISABLE_CLAUDE_MDS and CLAUDE_CODE_DISABLE_AUTO_MEMORY; the files are written into the run's
+own configuration directory (control_launch). On 2.1.281 the setting-sources restriction also keeps the
+profile's and the clone's MCP servers, skills, instruction files and hooks out (the binary gates each by
+its source); the other switches keep out what no source covers: the claude.ai connectors of the account's
+login, the bundled skills, the managed instruction files and the flag, plugin and session hooks
+(proof/VELDO-0155/README.md). A version is also qualified with stream JSON input (INPUT_FLAGS among its
+flags, else `missing_evidence:engine_input_protocol:<version>` before acceptance), so nothing reaches the
+model until the receiver writes the prompt. `Guard` is the handshake and the stream check: the receiver
+writes the initialize control request first and the prompt only once the binary's answer names a
+subscription login (the first-party backend, no API key, a claude.ai subscription, whose subscriptionType
+is one of the binary's Enterprise, Team, Max and Pro labels, or the account's own subscription token); any
+other answer stops the run by name before any prompt is written
+(`paid_api:<field>:<value>`, stop cause `paid_api`), and so does every init event of the stream whose
+apiKeySource is not `none`. `login_problem` is the check before acceptance for the login apiKeySource
+cannot show: an Anthropic profile (user_oauth or oidc_federation) the engine environment reaches through
+XDG_CONFIG_HOME or HOME, which the binary takes ahead of the claude.ai login and reports as `none`, is
+refused by name (`paid_api:anthropic_profile:<type>`) from the profile's configuration alone, a relative
+path resolved against the engine's working directory as the binary resolves it. The subscription token
+of an account configured to use one reaches the engine as CLAUDE_CODE_OAUTH_TOKEN from the receiver's
+configuration (control_launch).
 Standard library only.
 """
 import hashlib
@@ -325,7 +351,7 @@ REGISTRATION = {
     },
 }
 VERSION_TEXT = re.compile(r'[0-9]+(?:\.[0-9]+){1,3}')
-STOPS = ('requested', 'usage_cap', 'heartbeat_missing')
+STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
 
 
 class Refused(Exception):
@@ -423,8 +449,14 @@ def bind(adapter, state_root, record=None):
         raise Refused('binding_mismatch:engine_mode', 'the pinned executable is writable or carries a special bit')
     if _file_digest(path) != entry['sha256']:
         raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')
+    # VELDO-0155: the version is qualified with the everything-off baseline, or nothing is accepted.
+    base = qualified_baseline({'version': version}, record)
+    # VELDO-0155 AC3: and with stream JSON input, so the prompt waits for the login check (Guard).
+    if not input_protocol(entry['flags']):
+        raise Refused('missing_evidence:engine_input_protocol:%s' % version,
+                      'the version is not qualified with stream JSON input')
     return {'engine': PROVIDER, 'version': version, 'path': str(path), 'sha256': entry['sha256'],
-            'flags': list(entry['flags'])}
+            'flags': list(entry['flags']), 'baseline': base}
 
 
 def command(bound, adapter):
@@ -436,6 +468,251 @@ def command(bound, adapter):
 def environment(bound, record=None):
     """What the engine's environment always carries for its version (DISABLE_AUTOUPDATER)."""
     return dict(qualified(bound['version'], record).get('environment') or {})
+
+
+# VELDO-0155: the everything-off baseline, the paid-API guard. Every name is the 2.1.281 binary's own
+# (proof/VELDO-0155/claude-baseline.json, read from its bytes): `--setting-sources` with an empty list
+# (its KIr("") is no source, so only the `--settings` file and managed policy load; the binary spawns
+# itself with `--setting-sources=` for the same), `--strict-mcp-config` with the run's `--mcp-config`
+# file, `--disable-slash-commands` (no skill is listed until VELDO-0127), CLAUDE_CODE_DISABLE_CLAUDE_MDS
+# and CLAUDE_CODE_DISABLE_AUTO_MEMORY, and `disableAllHooks` in the generated settings. Neither bare
+# mode (it refuses subscription logins) nor safe mode (it ignores the `--mcp-config` servers) is used.
+BASELINE = {
+    'options': ['--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands'],
+    'settings_option': '--settings',
+    'mcp_option': '--mcp-config',
+    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},
+    'settings': {'disableAllHooks': True},
+    'mcp_config': {'mcpServers': {}},
+}
+SETTINGS_FILE, MCP_FILE = 'settings.json', 'mcp.json'
+# The init event's apiKeySource of a run on no API key (the binary's M_ source "none"): a claude.ai
+# subscription login and a subscription token (CLAUDE_CODE_OAUTH_TOKEN) alike report it.
+SUBSCRIPTION_SOURCE = 'none'
+# The input protocol (proof/VELDO-0155/claude-baseline.json, input_protocol, read from the 2.1.281 bytes):
+# stream JSON input among the qualified flags (the binary requires stream JSON output and print mode with
+# it); the initialize control request the receiver writes first; in its answer's `account` (the binary's
+# Kfe()), the backend of a subscription login and the one token source the receiver itself configures.
+INPUT_FLAGS = ('--input-format', 'stream-json')
+INITIALIZE = {'subtype': 'initialize'}
+SUBSCRIPTION_PROVIDER = 'firstParty'
+# The subscriptionType labels of a claude.ai subscription (the binary's wBn(), proof/VELDO-0155/claude-baseline.json,
+# subscriptions): Enterprise, Team, Max and Pro. Its default label for any other tier, "Claude API", is not one.
+SUBSCRIPTIONS = ('Claude Enterprise', 'Claude Team', 'Claude Max', 'Claude Pro')
+TOKEN_SOURCE = 'CLAUDE_CODE_OAUTH_TOKEN'
+# The Anthropic profile store the binary reads when ANTHROPIC_CONFIG_DIR is unset (it is stripped):
+# XDG_CONFIG_HOME/anthropic, else HOME/.config/anthropic; the active profile named by its active_config
+# file, else `default`; a profile of either type below logs a run in ahead of the claude.ai login.
+PROFILE_TYPES = ('user_oauth', 'oidc_federation')
+
+
+def input_protocol(flags):
+    """Whether qualified flags carry stream JSON input (INPUT_FLAGS, the option and its value together)."""
+    flags = list(flags or [])
+    return any(tuple(flags[at:at + 2]) == INPUT_FLAGS for at in range(len(flags) - 1))
+
+
+def qualified_baseline(bound, record=None):
+    """The baseline the version's qualification record lists, which must be this module's BASELINE: a
+    version not qualified with it is refused by name before anything is accepted or spawned."""
+    entry = qualified(bound['version'], record)
+    if entry.get('baseline') != BASELINE:
+        raise Refused('missing_evidence:engine_baseline:%s' % bound['version'],
+                      'the version is not qualified with the everything-off baseline')
+    return BASELINE
+
+
+def baseline(bound, run, environment=None, record=None):
+    """{argv, environment, files}: what the run adds after its qualified flags. `run` names the run's own
+    `config` directory, where `files` ({name: bytes}) are written before the spawn and which the
+    generated `--settings` and `--mcp-config` options name."""
+    base = bound.get('baseline') if record is None else qualified_baseline(bound, record)
+    if base != BASELINE:
+        raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
+    config = Path(run['config'])
+    files = {SETTINGS_FILE: (json.dumps(base['settings'], sort_keys=True) + '\n').encode(),
+             MCP_FILE: (json.dumps(base['mcp_config'], sort_keys=True) + '\n').encode()}
+    argv = (list(base['options'][:2]) + [base['settings_option'], str(config / SETTINGS_FILE),
+                                         base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:]))
+    return {'argv': argv, 'environment': dict(base['environment']), 'files': files}
+
+
+class Unresolved(Exception):
+    """A relative path whose engine working directory is unknown."""
+
+
+def _resolved(path, cwd):
+    """`path` as the engine opens it: a relative one against the engine's working directory (the binary
+    joins it and reads it relative to its own), which must then be known."""
+    path = Path(path)
+    if path.is_absolute():
+        return path
+    if cwd is None:
+        raise Unresolved(str(path))
+    return Path(cwd) / path
+
+
+def _profile_store(environment, cwd=None):
+    """The Anthropic profile directory the engine would read, as the binary resolves it, or None."""
+    given = (environment.get('XDG_CONFIG_HOME') or '').strip()
+    if given:
+        return _resolved(given, cwd) / 'anthropic'
+    home = (environment.get('HOME') or '').strip()
+    return _resolved(home, cwd) / '.config' / 'anthropic' if home else None
+
+
+def profile_problem(bound, environment, cwd=None):
+    """THE ENGINE PROTOCOL's check of the account profile before acceptance: on 2.1.281 nothing of the
+    profile's reaches a run past the baseline (the setting sources are off, and each item is gated by its
+    source or its own switch, proof/VELDO-0155/README.md), so there is nothing to refuse."""
+    return None
+
+
+def login_problem(bound, environment, cwd=None):
+    """VELDO-0155 AC3, before anything is accepted: a login the engine would take ahead of the account's
+    claude.ai subscription and report as apiKeySource `none`, so the init event cannot show it: an
+    Anthropic profile (user_oauth or oidc_federation) in the profile store the engine environment
+    reaches. Only the profile's configuration is read, never its credentials file (whose size alone
+    says whether a user_oauth profile is usable). `cwd` is the engine's working directory (THE ENGINE
+    PROTOCOL): a relative XDG_CONFIG_HOME, HOME or credentials_path is the binary's relative to it, and
+    one whose working directory is unknown (None) is refused by name. None, or the named refusal."""
+    try:
+        return _profile_login(environment, cwd)
+    except Unresolved:
+        return 'paid_api:anthropic_profile:unresolved'
+
+
+def _profile_login(environment, cwd):
+    store = _profile_store(environment, cwd)
+    if store is None or not store.is_dir():
+        return None
+    try:
+        active = (store / 'active_config').read_text().strip()
+    except OSError:
+        active = ''
+    active = active or 'default'
+    try:
+        profile = json.loads((store / 'configs' / (active + '.json')).read_text())
+    except (OSError, ValueError):
+        return None
+    authentication = profile.get('authentication') if isinstance(profile, dict) else None
+    kind = authentication.get('type') if isinstance(authentication, dict) else None
+    if kind not in PROFILE_TYPES:
+        return None
+    if kind == 'user_oauth':
+        given = authentication.get('credentials_path')
+        if given is not None and (not isinstance(given, str) or not given):
+            return None  # The binary reads no file there, so the profile is not usable.
+        credentials = store / 'credentials' / (active + '.json') if given is None else _resolved(given, cwd)
+        try:
+            if os.stat(credentials).st_size == 0:
+                return None
+        except OSError:
+            return None
+    return 'paid_api:anthropic_profile:' + kind
+
+
+class Guard:
+    """VELDO-0155 AC3: the handshake that holds the prompt back, and the stream stop. The run is launched
+    with stream JSON input (INPUT_FLAGS, among its qualified flags), so nothing reaches the model until the
+    receiver writes the prompt. `opening(prompt)` is what the receiver writes first: the initialize control
+    request, the engine's input left open and the prompt held. The binary answers it with a control
+    response whose `account` is its Kfe(): the backend (apiProvider), apiKeySource only when an API key is
+    in use (the source the init event reports), tokenSource for a token login that is not a claude.ai
+    subscription (CLAUDE_CODE_OAUTH_TOKEN among them), subscriptionType for a claude.ai subscription, and
+    neither for an Anthropic profile. `feed(bytes)` reads the stream: that answer confirms the login only
+    when it is a success on the first-party backend, with no API key, and a claude.ai subscription or the
+    token the receiver configures (TOKEN_SOURCE); a subscriptionType other than the binary's Enterprise, Team,
+    Max and Pro labels (SUBSCRIPTIONS; its default "Claude API" among them) and anything else stops the run by name
+    (`paid_api:<field>:<value>`), returned once, and the prompt is never written. `release()` returns the
+    prompt, as the user message of stream JSON input, once and only after that confirmation with no stop.
+    Every init event the stream carries is read as well: one whose apiKeySource is not `none` stops the
+    run by name. `source` is the login the engine reported (`none` for a subscription), `stop` the named
+    stop, else None."""
+
+    def __init__(self):
+        self.pending = b''
+        self.source = None
+        self.stop = None
+        self.request_id = 'veldo-initialize-' + os.urandom(8).hex()
+        self.prompt = None
+        self.confirmed = False
+        self.released = False
+
+    def opening(self, prompt):
+        """(bytes, close): the initialize control request, written at once with the engine's input left open;
+        the prompt is held until the answer confirms a subscription login."""
+        self.prompt = bytes(prompt)
+        request = {'type': 'control_request', 'request_id': self.request_id, 'request': dict(INITIALIZE)}
+        return (json.dumps(request) + '\n').encode(), False
+
+    def release(self):
+        """The prompt as the user message of stream JSON input, once, after a confirmed subscription login and
+        with no stop; None otherwise (and ever after)."""
+        if not self.confirmed or self.stop is not None or self.prompt is None or self.released:
+            return None
+        self.released = True
+        message = {'type': 'user', 'message': {'role': 'user', 'content': self.prompt.decode('utf-8', 'replace')},
+                   'parent_tool_use_id': None}
+        return (json.dumps(message) + '\n').encode()
+
+    def feed(self, chunk):
+        self.pending += chunk
+        found = None
+        while b'\n' in self.pending:
+            line, _, self.pending = self.pending.partition(b'\n')
+            found = self._line(line) or found
+        return found
+
+    def _stopped(self, field, value):
+        self.source = value if isinstance(value, str) else repr(value)
+        if self.stop is None:
+            self.stop = 'paid_api:%s:%s' % (field, self.source)
+            return self.stop
+        return None
+
+    def _answer(self, answer):
+        """The initialize answer: None when it confirms a subscription login, else the named stop."""
+        if answer.get('subtype') != 'success':
+            return self._stopped('initialize', answer.get('subtype'))
+        response = answer.get('response')
+        account = response.get('account') if isinstance(response, dict) else None
+        if not isinstance(account, dict):
+            return self._stopped('initialize', 'no_account')
+        if account.get('apiProvider') != SUBSCRIPTION_PROVIDER:
+            return self._stopped('apiProvider', account.get('apiProvider'))
+        key = account.get('apiKeySource')
+        if key is not None and key != SUBSCRIPTION_SOURCE:
+            return self._stopped('apiKeySource', key)
+        token = account.get('tokenSource')
+        if token is not None and token != TOKEN_SOURCE:
+            return self._stopped('tokenSource', token)
+        subscription = account.get('subscriptionType')
+        if token is None and subscription not in SUBSCRIPTIONS:
+            return self._stopped('subscriptionType', subscription)
+        if self.stop is None:
+            self.source, self.confirmed = SUBSCRIPTION_SOURCE, True
+        return None
+
+    def _line(self, line):
+        try:
+            event = json.loads(line)
+        except ValueError:
+            return None
+        if not isinstance(event, dict):
+            return None
+        if event.get('type') == 'control_response':
+            answer = event.get('response')
+            if isinstance(answer, dict) and answer.get('request_id') == self.request_id and not self.confirmed:
+                return self._answer(answer)
+            return None
+        if event.get('type') == 'system' and event.get('subtype') == 'init':
+            source = event.get('apiKeySource')
+            if source != SUBSCRIPTION_SOURCE:
+                return self._stopped('apiKeySource', source)
+            if self.source is None:
+                self.source = SUBSCRIPTION_SOURCE
+        return None
 
 
 def _text(value):

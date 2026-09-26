@@ -1,0 +1,176 @@
+{
+ "apps": {
+  "default": {
+   "arguments": [],
+   "enabled": true,
+   "exit": 0,
+   "stage": "stable"
+  },
+  "disabled": {
+   "arguments": [
+    "--disable",
+    "apps"
+   ],
+   "enabled": false,
+   "exit": 0,
+   "stage": "stable"
+  }
+ },
+ "binary": "<codex>",
+ "commands": [
+  "codex debug prompt-input -c project_doc_max_bytes=0 [overrides] hello",
+  "codex [arguments] features list"
+ ],
+ "profile_instructions": {
+  "agents_md": {
+   "bundled_installed": [
+    "imagegen",
+    "openai-docs",
+    "plugin-creator",
+    "review-agent",
+    "skill-creator",
+    "skill-installer"
+   ],
+   "bundled_rendered": [],
+   "exit": 0,
+   "overrides": [
+    "-c",
+    "project_doc_max_bytes=0",
+    "-c",
+    "skills.include_instructions=false"
+   ],
+   "planted": [
+    "profile_agents_md",
+    "clone_agents_md",
+    "skills"
+   ],
+   "present": {
+    "clone_agents_md": false,
+    "profile_agents_md": true,
+    "profile_agents_override_md": false,
+    "skill_clone_agents": false,
+    "skill_clone_codex": false,
+    "skill_home_agents": false,
+    "skill_profile": false,
+    "skills_section": false
+   },
+   "rendered": true
+  },
+  "agents_override_md": {
+   "bundled_installed": [
+    "imagegen",
+    "openai-docs",
+    "plugin-creator",
+    "review-agent",
+    "skill-creator",
+    "skill-installer"
+   ],
+   "bundled_rendered": [],
+   "exit": 0,
+   "overrides": [
+    "-c",
+    "project_doc_max_bytes=0",
+    "-c",
+    "skills.include_instructions=false"
+   ],
+   "planted": [
+    "profile_agents_md",
+    "profile_agents_override_md",
+    "clone_agents_md",
+    "skills"
+   ],
+   "present": {
+    "clone_agents_md": false,
+    "profile_agents_md": false,
+    "profile_agents_override_md": true,
+    "skill_clone_agents": false,
+    "skill_clone_codex": false,
+    "skill_home_agents": false,
+    "skill_profile": false,
+    "skills_section": false
+   },
+   "rendered": true
+  },
+  "candidates": {
+   "developer_instructions=\"\"": true,
+   "include_environment_context=false": true,
+   "include_permissions_instructions=false": true,
+   "instructions=\"\"": true,
+   "project_doc_fallback_filenames=[]": true
+  }
+ },
+ "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "skills": {
+  "with_switch": {
+   "bundled_installed": [
+    "imagegen",
+    "openai-docs",
+    "plugin-creator",
+    "review-agent",
+    "skill-creator",
+    "skill-installer"
+   ],
+   "bundled_rendered": [],
+   "exit": 0,
+   "overrides": [
+    "-c",
+    "project_doc_max_bytes=0",
+    "-c",
+    "skills.include_instructions=false"
+   ],
+   "planted": [
+    "clone_agents_md",
+    "skills"
+   ],
+   "present": {
+    "clone_agents_md": false,
+    "profile_agents_md": false,
+    "profile_agents_override_md": false,
+    "skill_clone_agents": false,
+    "skill_clone_codex": false,
+    "skill_home_agents": false,
+    "skill_profile": false,
+    "skills_section": false
+   },
+   "rendered": true
+  },
+  "without_switch": {
+   "bundled_installed": [
+    "imagegen",
+    "openai-docs",
+    "plugin-creator",
+    "review-agent",
+    "skill-creator",
+    "skill-installer"
+   ],
+   "bundled_rendered": [
+    "imagegen",
+    "openai-docs",
+    "plugin-creator",
+    "skill-creator",
+    "skill-installer"
+   ],
+   "exit": 0,
+   "overrides": [
+    "-c",
+    "project_doc_max_bytes=0"
+   ],
+   "planted": [
+    "clone_agents_md",
+    "skills"
+   ],
+   "present": {
+    "clone_agents_md": false,
+    "profile_agents_md": false,
+    "profile_agents_override_md": false,
+    "skill_clone_agents": true,
+    "skill_clone_codex": true,
+    "skill_home_agents": true,
+    "skill_profile": true,
+    "skills_section": true
+   },
+   "rendered": true
+  }
+ },
+ "version": "0.154.0"
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -691 +691 @@
+-        if token is None and subscription not in SUBSCRIPTIONS:
++        if False:  # defect: a login with no subscription takes its first turn

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -605 +605 @@
+-    command = [bound['path'], 'login', 'status', '-c',
++    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method="chatgpt"', '-c',  # defect

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -685 +685 @@
+-        if key is not None and key != SUBSCRIPTION_SOURCE:
++        if False:  # defect: a run on an API key takes its first turn

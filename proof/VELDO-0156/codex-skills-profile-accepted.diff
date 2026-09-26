@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -573 +573 @@
+-    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,)) if home is not None else None
++    held = None  # defect: a profile's own skill loads when the prompt names it

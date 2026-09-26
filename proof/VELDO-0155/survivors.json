@@ -1,0 +1,269 @@
+{
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0155 baseline/qualified",
+    true
+   ],
+   [
+    "VELDO-0155 baseline/planted-settings",
+    true
+   ],
+   [
+    "VELDO-0155 baseline/planted-server",
+    true
+   ],
+   [
+    "VELDO-0155 baseline/planted-skill",
+    true
+   ],
+   [
+    "VELDO-0155 baseline/planted-instructions",
+    true
+   ],
+   [
+    "VELDO-0155 baseline/planted-memory",
+    true
+   ],
+   [
+    "VELDO-0155 baseline/planted-hook",
+    true
+   ],
+   [
+    "VELDO-0155 paid-api/read-back",
+    true
+   ],
+   [
+    "VELDO-0155 paid-api/token-file",
+    true
+   ],
+   [
+    "VELDO-0155 paid-api/stop",
+    true
+   ],
+   [
+    "VELDO-0155 paid-api/every-init",
+    true
+   ],
+   [
+    "VELDO-0155 paid-api/profile-login",
+    true
+   ],
+   [
+    "VELDO-0155 strip/read-back",
+    true
+   ],
+   [
+    "VELDO-0155 strip/private-runtime-directory",
+    true
+   ],
+   [
+    "VELDO-0155 strip/user-manager",
+    true
+   ],
+   [
+    "VELDO-0155 fixture/planted-control",
+    true
+   ],
+   [
+    "VELDO-0155 format/fake-lines",
+    true
+   ]
+  ],
+  "seconds": 12.219
+ },
+ "schema": "veldo.proof-survivors/v1",
+ "spec_id": "VELDO-0155",
+ "suite": "scripts/suites/80_veldo_0155_claude_baseline.py",
+ "survivors": [
+  {
+   "details": [
+    "VELDO-0155 baseline/qualified detail: the generated files are the run's own: its settings turn every hook off and its MCP configuration lists no server; both instruction files and auto memory are off by the binary's own switches [{'settings': {'disableAllHooks': True}, 'mcp': {'mcpServers': {}}}, None, 1]",
+    "VELDO-0155 baseline/qualified detail: the shipped 2.1.281 record qualifies the version with the module's baseline, every switch in it one the binary's own table reads [['', '--disable-slash-commands', '--setting-sources', '--strict-mcp-config', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY', 'CLAUDE_CODE_DISABLE_CLAUDE_MDS']]"
+   ],
+   "diff": "proof/VELDO-0155/claude-baseline-claude-mds-unset.diff",
+   "failed_rows": [
+    "VELDO-0155 baseline/qualified"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "name": "claude-baseline-claude-mds-unset",
+   "planted_row_green": true,
+   "planted_rows": [
+    "baseline/planted-instructions"
+   ],
+   "preamble_rows": 26,
+   "registered_row_red": true,
+   "registered_rows": [
+    "baseline/qualified"
+   ],
+   "rows": [
+    [
+     "VELDO-0155 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0155 baseline/planted-settings",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-server",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-skill",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-instructions",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-memory",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/token-file",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/every-init",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/profile-login",
+     true
+    ],
+    [
+     "VELDO-0155 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0155 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0155 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0155 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0155 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.213,
+   "why": "the binary loads the user CLAUDE.md only when pr(\"userSettings\") and the project ones only when pw(\"projectSettings\"): with no setting source neither loads, whatever the switch; what only the switch keeps out is the managed CLAUDE.md under /etc/claude-code (not relocatable) and --add-dir directories"
+  },
+  {
+   "details": [
+    "VELDO-0155 baseline/qualified detail: the generated files are the run's own: its settings turn every hook off and its MCP configuration lists no server; both instruction files and auto memory are off by the binary's own switches [{'settings': {}, 'mcp': {'mcpServers': {}}}, 1, 1]",
+    "VELDO-0155 baseline/qualified detail: the shipped 2.1.281 record qualifies the version with the module's baseline, every switch in it one the binary's own table reads [['', '--disable-slash-commands', '--setting-sources', '--strict-mcp-config', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY', 'CLAUDE_CODE_DISABLE_CLAUDE_MDS']]"
+   ],
+   "diff": "proof/VELDO-0155/claude-baseline-hooks-kept.diff",
+   "failed_rows": [
+    "VELDO-0155 baseline/qualified"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "name": "claude-baseline-hooks-kept",
+   "planted_row_green": true,
+   "planted_rows": [
+    "baseline/planted-hook"
+   ],
+   "preamble_rows": 26,
+   "registered_row_red": true,
+   "registered_rows": [
+    "baseline/qualified"
+   ],
+   "rows": [
+    [
+     "VELDO-0155 baseline/qualified",
+     false
+    ],
+    [
+     "VELDO-0155 baseline/planted-settings",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-server",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-skill",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-instructions",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-memory",
+     true
+    ],
+    [
+     "VELDO-0155 baseline/planted-hook",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/read-back",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/token-file",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/stop",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/every-init",
+     true
+    ],
+    [
+     "VELDO-0155 paid-api/profile-login",
+     true
+    ],
+    [
+     "VELDO-0155 strip/read-back",
+     true
+    ],
+    [
+     "VELDO-0155 strip/private-runtime-directory",
+     true
+    ],
+    [
+     "VELDO-0155 strip/user-manager",
+     true
+    ],
+    [
+     "VELDO-0155 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0155 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.296,
+   "why": "the binary takes hooks from the merged settings of the enabled sources: with no setting source the profile's and the clone's hooks never merge; what only the switch keeps out is hooks in the --settings file itself, --plugin-dir plugins and skill or agent frontmatter, none of which a baseline run has"
+  }
+ ]
+}

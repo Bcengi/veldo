@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -475 +475 @@
+-HOME_SKILLS = ('.agents/skills',)
++HOME_SKILLS = ()  # defect: the engine HOME's skill loads when the prompt names it

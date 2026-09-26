@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -519 +519 @@
+-    if entry.get('baseline') != BASELINE:
++    if False:  # defect: a version not qualified with the baseline is accepted

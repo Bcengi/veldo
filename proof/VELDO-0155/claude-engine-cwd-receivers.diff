@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -898 +898 @@
+-        if not entrance(engine):
++        if True:  # defect: the engine's working directory taken to be the receiver's

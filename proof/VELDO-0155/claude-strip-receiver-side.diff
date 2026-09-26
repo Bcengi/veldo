@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -982 +982 @@
+-        environment[ENGINE_RUNTIME] = run['runtime']
++        environment = engine_environment(dict(environment, **{ENGINE_RUNTIME: run['runtime']}))  # defect

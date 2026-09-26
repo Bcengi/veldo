@@ -1,0 +1,6 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -711 +711,2 @@
+-            if source != SUBSCRIPTION_SOURCE:
++            self.inits = getattr(self, 'inits', 0) + 1  # defect: only the first init event is read
++            if source != SUBSCRIPTION_SOURCE and self.inits == 1:

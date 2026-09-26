@@ -1,0 +1,4 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1054,0 +1055 @@
++            environment.update({k: v for k, v in os.environ.items() if k == 'ANTHROPIC_API_KEY'})  # defect

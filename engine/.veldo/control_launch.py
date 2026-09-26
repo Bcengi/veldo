@@ -118,6 +118,35 @@ ENGINE_PROTOCOL with the same signatures, and the receiver drives each through t
 - `Meter` (VELDO-0062), with PROVIDER, CREDENTIALS, SETTINGS and REGISTRATION (the lifecycle operations).
 An engine module that does not implement the protocol is refused by name before acceptance.
 
+THE EVERYTHING-OFF BASELINE, THE PAID-API GUARD AND THE ENVIRONMENT STRIP (VELDO-0155, VELDO-0156). The
+protocol's `baseline(binding, run, environment)` is what every engine run adds right after its qualified
+flags (`baseline_at`, so an adapter's own trailing arguments stay last): each engine's everything-off
+options and its generated configuration, whose files the receiver writes 0600 into the run's own
+configuration directory, `<runs>/<digest of the dispatch>/config` (0700, fresh, outside every clone, under
+the config's `runs`, else the state root's `runs`, else beside the store), removed with the run once its
+engine has ended. A version or binary whose qualification record does not list the module's baseline is
+refused by name before acceptance. `profile_problem(binding, environment, cwd)` and then
+`login_problem(binding, environment, cwd)` are checked before acceptance in the engine's own login
+environment and working directory (`cwd`: the clone's work tree the clone entrance changes into, this
+receiver's own for an engine it execs directly, None for another host's): an account profile holding an
+item no switch of the baseline keeps out (Codex's own AGENTS.md) is refused by name, and so is a login
+that is not a subscription (`paid_api:...`), nothing accepted, reserved or spawned. The protocol's `Guard`
+holds the prompt: the receiver writes the engine's input from `Guard.opening(packet)` ((bytes, close):
+Claude Code's initialize control request with its input left open, Codex's packet whole and closed),
+reads the stream through `Guard.feed`, where a login the engine reports that is not a subscription stops
+the worker by name (stop cause `paid_api`, the invocation cancelled, the artifact's `login` naming it)
+before the prompt is ever written, and writes `Guard.release()` (the prompt, once the login is
+confirmed) before closing the input; a stopped run's input is closed with nothing more written. An
+account the config's `subscription_tokens` names (account to a 0600 file of this account's own) runs
+with that token as CLAUDE_CODE_OAUTH_TOKEN, the one login variable it then carries; the file is opened
+once, without following a link, and checked and read on that one descriptor. The receiver's own environment keeps
+the SSH agent, the session bus, the Git tokens and its runtime directory, so its systemd-run and
+systemctl reach the user manager; it names the run's own empty runtime directory (`<run>/runtime`, never
+its own and never the configuration directory) in ENGINE_RUNTIME, and the trusted wrapper, just before
+it execs, removes EXEC_STRIPPED and that name and makes the directory the engine's XDG_RUNTIME_DIR
+(`engine_environment`). The receiver reports each launch's baseline, the names it removed and never a
+value (`baseline` event).
+
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
 """
@@ -131,6 +160,7 @@ import os
 from pathlib import Path
 import select
 import shutil
+import queue
 import signal
 import socket
 import subprocess
@@ -164,7 +194,7 @@ CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.value
 STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
 # What every engine module implements, with the same signatures (THE ENGINE PROTOCOL above).
 ENGINE_PROTOCOL = ('PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind', 'command',
-                   'environment', 'Terminal')
+                   'environment', 'Terminal', 'baseline', 'profile_problem', 'login_problem', 'Guard')
 RECEIPTS_SCHEMA = 'veldo.usage_receipts/v1'
 ARTIFACT_REPORT = ('path', 'digest', 'verdict', 'complete')
 RECEIVER = str(Path(__file__).resolve())
@@ -201,6 +231,35 @@ def process_identity(pid):
 ENTRANCE_MODULE, WRAPPER_MODULE = 'control_clone.py', 'control_launch.py'
 ENGINE_PATH, ENGINE_DIGEST = 'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'
 WRAPPER_REFUSED = 70
+# VELDO-0155 AC4, VELDO-0156 AC4: what the trusted wrapper removes from the environment it execs an engine
+# with (the SSH agent, the session bus, the Git tokens), and the variable naming the engine's own runtime
+# directory, which the wrapper makes the engine's XDG_RUNTIME_DIR. The receiver keeps all of them, so its
+# own systemd-run and systemctl still reach the user manager.
+EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')
+ENGINE_RUNTIME = 'VELDO_ENGINE_RUNTIME_DIR'
+RUN_CONFIG, RUN_RUNTIME = 'config', 'runtime'
+TOKEN_VARIABLE = 'CLAUDE_CODE_OAUTH_TOKEN'
+
+
+def engine_environment(environment):
+    """THE ENVIRONMENT STRIP: an engine launch's environment (one naming ENGINE_RUNTIME) without the SSH agent,
+    the session bus and the Git tokens, and with XDG_RUNTIME_DIR the run's own empty runtime directory, never
+    the receiver's; any other environment unchanged. The trusted wrapper applies it to what it execs."""
+    runtime = environment.pop(ENGINE_RUNTIME, None)
+    if runtime is None:
+        return environment
+    for name in EXEC_STRIPPED:
+        environment.pop(name, None)
+    environment['XDG_RUNTIME_DIR'] = runtime
+    return environment
+
+
+def baseline_at(argv, bound, reported=False):
+    """Where the engine's baseline options go in `argv`: right after its qualified flags (the argv
+    pinned_argv_problem accepted), so an adapter's own trailing arguments stay last."""
+    engine = engine_argv(argv, reported) or []
+    at = 6 if entrance(engine) else 0
+    return len(argv) - len(engine) + at + 1 + len(bound.get('flags') or [])
 
 
 def engine_argv(argv, reported):
@@ -242,6 +301,11 @@ def pinned_argv_problem(argv, bound, reported=False):
     if engine[at + 1:at + 1 + len(flags)] != flags:
         return 'invalid_input:engine_flags'
     return None
+
+
+def stat_regular(info):
+    """Whether an lstat result is a regular file (not a link, a directory or a device)."""
+    return (info.st_mode & 0o170000) == 0o100000
 
 
 def file_digest(path):
@@ -580,9 +644,18 @@ class Receiver:
         self.login = None
         self.metering = None
         self.binding = None
+        self.token = None
+        self.run = None
 
     def close(self):
         self.conn.close()
+
+    def _remove_run(self):
+        """The run's own directories are removed once its engine has ended (or never started), before its end is
+        recorded; a group that could not be emptied keeps them, since what is left of the run may still use them."""
+        run, self.run = self.run, None
+        if run is not None and (self.supervision or {}).get('empty') is not False:
+            shutil.rmtree(run, ignore_errors=True)
 
     def _recheck(self, contract):
         """The preparation's station decision, rechecked at this accepting boundary as its ticket."""
@@ -634,7 +707,7 @@ class Receiver:
         if not refusal:
             refusal = self._login(contract, adapter)
         if not refusal:
-            refusal = self._bind(adapter)
+            refusal = self._bind(adapter, dispatch_id)
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -714,6 +787,7 @@ class Receiver:
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
             if self.metering.report is not None:
                 self.emit({'event': 'artifact', 'artifact': self.metering.report})
+        self._remove_run()
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
             # outcome is unknown, and the unit and station stay held.
@@ -722,6 +796,12 @@ class Receiver:
             self.emit({'event': 'unknown'})
             return
         supervision = self.supervision
+        if remote and supervision['cause'] == 'paid_api':
+            # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
+            self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
+                                    expected_state='running')
+            self.emit({'event': 'unknown', 'supervision': supervision})
+            return
         if remote and supervision['cause'] in ('requested', 'usage_cap'):
             # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
@@ -769,11 +849,12 @@ class Receiver:
         self.login = {'engine': module, 'account': account, 'record': record, 'zone': zone}
         return None
 
-    def _bind(self, adapter):
+    def _bind(self, adapter, dispatch_id):
         """THE ENGINE PROTOCOL's one binding path (VELDO-0060, VELDO-0061): the engine's pinned executable,
         its argv and its settings, bound before acceptance. None when it may run; else the named refusal,
         with nothing accepted, reserved or spawned."""
         self.binding = None
+        self.token = None
         module = (self.login or {}).get('engine')
         if module is None:
             return None
@@ -791,7 +872,120 @@ class Receiver:
             if name in configured and configured[name] != settings[name]:
                 return 'invalid_input:adapter_environment:' + name
         self.binding = dict(bound, argv=argv, environment=settings)
+        # VELDO-0155, VELDO-0156: the subscription token an account is configured with, the account profile
+        # and the login the engine would take in its environment, checked before acceptance: a profile item
+        # the baseline cannot keep out, or a login that is not a subscription, is refused by name and no
+        # turn is ever sent.
+        login_environment = self._login_environment(adapter)
+        cwd = self._engine_cwd(argv, dispatch_id, adapter.get('identity', 'local') == 'reported')
+        self.token, problem = self._token()
+        problem = (problem or module.profile_problem(bound, login_environment, cwd)
+                   or module.login_problem(bound, login_environment, cwd))
+        if problem:
+            self.binding, self.token = None, None
+            return problem
         return None
+
+    @staticmethod
+    def _engine_cwd(argv, dispatch_id, reported):
+        """The engine's working directory, where a relative path it reads resolves (THE ENGINE PROTOCOL): the
+        work tree of the dispatch's clone when the clone entrance execs it (it changes into it), this
+        receiver's own when this receiver's wrapper execs it directly; None for another host's engine, or a
+        clone that names no single work tree."""
+        if reported:
+            return None
+        engine = engine_argv(argv, False)
+        if not entrance(engine):
+            return os.getcwd()
+        clone = _organ('control_clone')
+        try:
+            return clone.find(engine[4], dispatch_id)[0]['work']
+        except (clone.Refused, KeyError, TypeError, OSError):
+            return None
+
+    def _login_environment(self, adapter):
+        """The engine's login environment as _spawn builds it (VELDO-0062): the inherited one without every
+        login, the adapter's configured one, the recorded account's profile."""
+        inherited = dict(os.environ)
+        inherited = ACC.login_environment(inherited, self.login['record'], self.host, STRIPPED,
+                                          adapter.get('environment') or {}, CREDENTIALS)
+        inherited['VELDO_ACCOUNT'] = self.login['account']
+        return inherited
+
+    def _token(self):
+        """(token, refusal): the subscription token of the recorded account, from the file the receiver's
+        configuration names for it (`subscription_tokens`, account to an absolute path; VELDO-0155 AC2), which
+        reaches the engine as CLAUDE_CODE_OAUTH_TOKEN, the only login variable it then carries. A Claude Code
+        account only; the file is a regular file of this account's own that nobody else can read, opened once
+        (never through a link, never waiting on a pipe) and checked and read on that one descriptor, so what
+        is checked is what is read. (None, None) for none."""
+        path = (self.config.get('subscription_tokens') or {}).get((self.login or {}).get('account'))
+        if path is None:
+            return None, None
+        account = self.login['account']
+        if self.login['engine'].PROVIDER != 'claude_code':
+            return None, 'invalid_input:subscription_token:%s' % account
+        refused = 'missing_authority:subscription_token:%s' % account
+        try:
+            fd = (os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC)
+                  if isinstance(path, str) and os.path.isabs(path) else None)
+        except OSError:
+            fd = None
+        if fd is None:
+            return None, refused
+        try:
+            info = os.fstat(fd)
+            if (not stat_regular(info) or info.st_uid != os.geteuid() or info.st_mode & 0o077
+                    or info.st_size == 0):
+                return None, refused
+            data = b''
+            for block in iter(lambda: os.read(fd, 65536), b''):
+                data += block
+        except OSError:
+            return None, refused
+        finally:
+            os.close(fd)
+        token = data.decode('utf-8', 'replace').strip()
+        return (token, None) if token else (None, refused)
+
+    def _run_directories(self, dispatch_id):
+        """The run's own directories (VELDO-0155, VELDO-0156), fresh and 0700, outside every clone: `config`
+        holds its generated configuration, `runtime` is the engine's empty XDG_RUNTIME_DIR. Under the
+        config's `runs`, else the factory state root's runs, else beside the store."""
+        runs = self.config.get('runs') or (os.path.join(self.config['state_root'], 'runs') if self.config.get('state_root')
+                                          else os.path.join(os.path.dirname(self.config['store']), 'runs'))
+        os.makedirs(runs, mode=0o700, exist_ok=True)
+        run = os.path.join(runs, hashlib.sha256(dispatch_id.encode()).hexdigest()[:32])
+        os.mkdir(run, 0o700)
+        self.run = run
+        for name in (RUN_CONFIG, RUN_RUNTIME):
+            os.mkdir(os.path.join(run, name), 0o700)
+        return {'root': run, 'config': os.path.join(run, RUN_CONFIG), 'runtime': os.path.join(run, RUN_RUNTIME)}
+
+    def _baseline(self, dispatch_id, argv, environment, reported):
+        """VELDO-0155, VELDO-0156: the everything-off baseline right after the qualified flags, its generated
+        files written 0600 into the run's own configuration directory, the engine's own runtime directory
+        named for the wrapper's strip, and the subscription token of an account configured with one. The
+        receiver reports what it added and the names removed, never a value."""
+        run = self._run_directories(dispatch_id)
+        extra = self.login['engine'].baseline(self.binding, run, environment)
+        for name, data in sorted(extra['files'].items()):
+            with os.fdopen(os.open(os.path.join(run['config'], name), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600),
+                           'wb') as handle:
+                handle.write(data)
+        at = baseline_at(argv, self.binding, reported)
+        argv[at:at] = list(extra['argv'])
+        environment.update(extra['environment'])
+        token = self.token
+        if token is not None:
+            environment[TOKEN_VARIABLE] = token
+        environment[ENGINE_RUNTIME] = run['runtime']
+        self.emit({'event': 'baseline', 'baseline': {
+            'options': list(extra['argv']), 'environment': sorted(extra['environment']),
+            'files': sorted(extra['files']), 'run': run, 'token': token is not None,
+            'removed': sorted(set(n for n in os.environ if n not in environment)
+                              | set(n for n in EXEC_STRIPPED if n in environment))}})
+        return argv, environment
 
     def _invoke(self, contract, acceptance, adapter):
         """Spawn the worker. For a subscription engine the invocation is first checked and reserved
@@ -825,7 +1019,9 @@ class Receiver:
         return spawned[0]
 
     def _not_executed(self):
-        """A reserved invocation whose engine never started: the receiver attests it (VELDO-0036)."""
+        """A reserved invocation whose engine never started: the receiver attests it (VELDO-0036), and the run's
+        own directories go."""
+        self._remove_run()
         metering, self.metering = self.metering, None
         if metering is not None:
             metering.settle(None, None)
@@ -865,6 +1061,8 @@ class Receiver:
             environment.update(self.binding['environment'])
             # What the trusted program that execs the engine re-hashes immediately before the exec.
             environment[ENGINE_PATH], environment[ENGINE_DIGEST] = self.binding['path'], self.binding['sha256']
+            argv, environment = self._baseline(dispatch_id, argv, environment,
+                                               adapter.get('identity', 'local') == 'reported')
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         if adapter.get('identity', 'local') != 'reported':
@@ -1016,13 +1214,28 @@ class Receiver:
         packet = {'dispatch_id': contract['dispatch_id'], 'unit': contract['unit'], 'station': contract['station'],
                   'source': contract['source'], 'payload': contract['input']['payload'],
                   'configuration': contract['capability']['configuration']}
+        metering = self.metering
+        # THE ENGINE PROTOCOL's Guard (VELDO-0155 AC3): what is written first, and whether the input then closes;
+        # a held prompt is written only once the Guard releases it, and nothing more once the run stops.
+        login = metering.login_guard if metering is not None else None
+        opening, close = login.opening(json.dumps(packet).encode()) if login is not None \
+            else (json.dumps(packet).encode(), True)
+        held = queue.Queue()
 
         def feed():
             try:
-                worker.stdin.write(json.dumps(packet).encode())
-                worker.stdin.close()
+                worker.stdin.write(opening)
+                worker.stdin.flush()
+                if not close:
+                    later = held.get()
+                    if later:
+                        worker.stdin.write(later)
+                        worker.stdin.flush()
             except OSError:
                 pass
+            finally:
+                with contextlib.suppress(OSError):
+                    worker.stdin.close()
         feeder = threading.Thread(target=feed, daemon=True)
         feeder.start()
         group, watch = getattr(worker, 'group', None), getattr(worker, 'heartbeat', None)
@@ -1050,9 +1263,20 @@ class Receiver:
             else:
                 self._stop(worker)
                 code = worker.returncode
-        metering = self.metering
-        if metering is not None and metering.feed(carry):
-            begin('usage_cap')
+
+        def take(chunk):
+            # VELDO-0155, VELDO-0156: a login that is not a subscription stops it by name, and the held prompt
+            # goes to the engine only once its login is confirmed and nothing has stopped it.
+            if metering is not None and metering.guarded(chunk):
+                begin('paid_api')
+            if login is not None and cause is None and code is None:
+                prompt = login.release()
+                if prompt is not None:
+                    held.put(prompt)
+            # VELDO-0062: a cap the CLI's own report reached stops the worker.
+            if metering is not None and metering.feed(chunk):
+                begin('usage_cap')
+        take(carry)
         try:
             if self._stop_asked():
                 begin('requested')
@@ -1077,9 +1301,7 @@ class Receiver:
                             poller.unregister(output)
                         size += len(chunk)
                         hasher.update(chunk)
-                        if metering is not None and metering.feed(chunk):
-                            # VELDO-0062: a cap the CLI's own report reached stops the worker.
-                            begin('usage_cap')
+                        take(chunk)
                     elif fd == pidfd:
                         poller.unregister(pidfd)
                         code = worker.wait()
@@ -1112,6 +1334,8 @@ class Receiver:
                         stop.adapter_exited(now)
                     stop.advance(now)
         finally:
+            # A prompt still held is never written: the engine's input closes with nothing more on it.
+            held.put(None)
             os.close(pidfd)
             if watch is not None:
                 os.close(watch.fd)
@@ -1191,9 +1415,21 @@ class Metering:
         # THE ENGINE PROTOCOL: the engine's terminal output, decoded from the same stream, and its report.
         self.terminal = self.engine.Terminal()
         self.report = None
+        # VELDO-0155, VELDO-0156: the stream side of the paid-API guard, and the named stop it made.
+        self.login_guard = self.engine.Guard()
+        self.login_stop = None
 
     def _stop(self, dispatch_id):
         self.stop = True
+
+    def guarded(self, chunk):
+        """Whether the engine's stream now shows a login that is not a subscription (the engine's Guard: the
+        init event's apiKeySource), which stops the worker by name before its first turn; true once."""
+        stop = self.login_guard.feed(chunk)
+        if stop and self.login_stop is None:
+            self.login_stop = stop
+            return True
+        return False
 
     def started(self):
         """The engine exists: open its receipt file and start its clock."""
@@ -1250,7 +1486,8 @@ class Metering:
         executable = self.receiver.binding or {}
         document = dict(self.terminal.document(termination, cause), dispatch_id=self.dispatch_id,
                         invocation=self.invocation, account=self.account,
-                        executable={k: executable.get(k) for k in ('engine', 'version', 'path', 'sha256')})
+                        executable={k: executable.get(k) for k in ('engine', 'version', 'path', 'sha256')},
+                        login={'source': self.login_guard.source, 'stop': self.login_stop})
         data = (json.dumps(document, sort_keys=True) + '\n').encode()
         directory = Path(self.receiver.config.get('artifacts') or Path(self.receiver.config['store']).parent / 'artifacts')
         try:
@@ -1280,6 +1517,8 @@ class Metering:
                          wall_seconds=round(time.monotonic() - (self.start or time.monotonic()), 6))
             if termination.get('deadline_stop'):
                 outcome = 'timeout'
+            elif cause == 'paid_api':
+                outcome = 'cancelled'
             elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):
                 outcome = 'cancelled'
             else:
@@ -1350,6 +1589,8 @@ def wrap(argv):
             sys.stderr.write('wrapper refused: binding_mismatch:engine_digest\n')
             sys.stderr.flush()
             os._exit(WRAPPER_REFUSED)
+    # THE ENVIRONMENT STRIP (VELDO-0155, VELDO-0156), applied to what this wrapper execs and to nothing else.
+    environment = engine_environment(environment)
     try:
         os.execve(path, argv, environment)
     except OSError:

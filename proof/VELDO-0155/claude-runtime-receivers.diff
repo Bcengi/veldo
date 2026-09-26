@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -253 +253 @@
+-    environment['XDG_RUNTIME_DIR'] = runtime
++    environment.setdefault('XDG_RUNTIME_DIR', runtime)  # defect: the receiver's runtime directory stays

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -470 +470 @@
+-PROFILE_INSTRUCTIONS = ('AGENTS.override.md', 'AGENTS.md')
++PROFILE_INSTRUCTIONS = ('AGENTS.md',)  # defect: the profile's AGENTS.override.md is taken in

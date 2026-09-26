@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -552 +552 @@
+-    return Path(cwd) / path
++    return Path(os.path.abspath(path))  # defect: resolved against the receiver's working directory

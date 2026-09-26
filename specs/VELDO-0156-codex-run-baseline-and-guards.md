@@ -27,6 +27,9 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0156_*.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/suites/78_veldo_0060_claude_adapter.py"
+  - "scripts/suites/79_veldo_0061_codex_adapter.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -49,24 +52,38 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Every Codex run starts with every profile source off, so the account profile (`CODEX_HOME`)
-      supplies only the login and the same role behaves the same on every account. Set and completeness:
-      Launch the pinned vendor binary (VELDO-0061 AC1) with the `ignore-user-config` and `ignore-rules`
-      options and a generated configuration, `project_doc_max_bytes` at zero and no hooks in the generated
-      configuration. Plant a user configuration, rules, a project document and a hook in the account
-      profile and the clone, each where only its own switch keeps it out, and require none of them in the
-      run, read from its event stream and its effective configuration, one row per planted item. Each
-      internal setting is qualified on the pinned version before use. Falsifier: Four mutants, one per
-      switch, each with the others in place: drop the `ignore-user-config` option, and the
-      planted-user-configuration row must fail; drop the `ignore-rules` option, and the planted-rules row
-      must fail; leave `project_doc_max_bytes` at its default, and the planted-project-document row must
-      fail; generate the configuration with the account profile's hooks copied into it, and the
-      planted-hook row must fail.
+      supplies only the login and the same role behaves the same on every account, and no skill body enters
+      a model request unless the role's configuration lists it (none does before VELDO-0127). Set and
+      completeness: Launch the pinned vendor binary (VELDO-0061 AC1) with the `ignore-user-config` and
+      `ignore-rules` options and a generated configuration, `project_doc_max_bytes` at zero,
+      `skills.bundled.enabled` false, `skills.include_instructions` false and no hooks in the generated
+      configuration. Plant a user configuration, rules, a project document and a hook in the account profile
+      and the clone, each where only its own switch keeps it out, and require none of them in the run, read
+      from its event stream and its effective configuration, one row per planted item. A skill the prompt
+      names loads its whole SKILL.md into the model request whatever `skills.include_instructions` says, so
+      name every planted skill in the prompt: the bundled set the binary installs into the profile's
+      skills/.system must be absent from the run's model request (its own switch); a skill in each other
+      place the binary reads skills from (the profile's skills, HOME/.agents/skills and the clone's
+      .agents/skills and .codex/skills, up to the project root), which no switch keeps out, must be refused
+      by name before acceptance, one row per place, with the real binary's model request captured on loopback
+      showing each such body present under every switch tried. Each internal setting is qualified on the
+      pinned version before use. Falsifier: One mutant per switch or refusal, each with the others in place:
+      drop the `ignore-user-config` option, and the planted-user-configuration row must fail; drop the
+      `ignore-rules` option, and the planted-rules row must fail; leave `project_doc_max_bytes` at its
+      default, and the planted-project-document row must fail; generate the configuration with the account
+      profile's hooks copied into it, and the planted-hook row must fail; leave `skills.bundled.enabled` at
+      its default, and the planted-bundled-skill row must fail; accept a profile, HOME, clone .agents or clone
+      .codex skill, and that place's planted-skill row must fail. `skills.include_instructions` is a second
+      layer once those hold (the binary then lists no skill), held by the qualified-baseline row.
     falsified_by: >
-      Four mutants, one per switch, each with the others in place: drop the `ignore-user-config` option,
-      and the planted-user-configuration row must fail; drop the `ignore-rules` option, and the
-      planted-rules row must fail; leave `project_doc_max_bytes` at its default, and the
-      planted-project-document row must fail; generate the configuration with the account profile's hooks
-      copied into it, and the planted-hook row must fail.
+      One mutant per switch or refusal, each with the others in place: drop the `ignore-user-config` option,
+      and the planted-user-configuration row must fail; drop the `ignore-rules` option, and the planted-rules
+      row must fail; leave `project_doc_max_bytes` at its default, and the planted-project-document row must
+      fail; generate the configuration with the account profile's hooks copied into it, and the planted-hook
+      row must fail; leave `skills.bundled.enabled` at its default, and the planted-bundled-skill row must
+      fail; accept a profile, HOME, clone .agents or clone .codex skill, and that place's planted-skill row
+      must fail. `skills.include_instructions` is a second layer once those hold, held by the
+      qualified-baseline row.
   - id: AC2
     text: >
       Claim: No paid-API credential variable reaches a Codex engine environment. Set and completeness:
@@ -188,3 +205,66 @@ theirs beside the strip's. Criterion meaning unchanged. A draft.
 
 2026-09-25, lead: AC4's runtime directory is also never the one holding the run's generated
 configuration, as in VELDO-0155 AC4, with its falsifier.
+
+2026-09-26, built on branch build-veldo-0155-0156 with VELDO-0155, whose wrapper strip this qualifies for
+Codex. The binary is qualified with the baseline (the record's `baseline`, which the production writer
+now writes, else `missing_evidence:engine_baseline:<version>` before acceptance) and every run adds it
+right after its qualified flags: `--ignore-user-config`, `--ignore-rules` and the generated configuration
+as `-c` overrides (`project_doc_max_bytes` 0, `forced_login_method` chatgpt, `cli_auth_credentials_store`
+file, no hook), also kept as passed in the run's own configuration directory; every name is read from
+the 0.154.0 bytes (proof/VELDO-0156/codex-baseline.json). AC3's stop is before acceptance: the pinned
+binary's own `login status` in the engine's environment, read from the file store and never with the
+login method forced (with it forced the binary logs an API-key login out), must print its ChatGPT line;
+any other login is refused by name (`paid_api:codex_login:<kind>`). AC2's names were already stripped
+(VELDO-0062); the receiver now reports the names it removed. The footprint adds the VELDO-0062, 0060 and
+0061 suites: their fakes answer the status check, their exact argv checks take the baseline after the
+flags, and 0061's actual-binary launch on an empty profile is received with any login let through. Not
+shown by the binary's strings, filed for the owner: whether the profile's own AGENTS.md and a hooks.json
+beside a configuration layer load under the baseline. Proof: suite `81_veldo_0156_codex_baseline` (14
+rows), the red record at 45ee21bb, finding 156's mutations. Status unchanged.
+
+2026-09-26, the review of build-veldo-0155-0156 at 18644a43 (rv155, from the 0.154.0 binary's own offline
+renderer `codex debug prompt-input` and `codex app-server` hooks/list, scratch CODEX_HOME and HOME, no
+login): AC1 now lists skills, which the design's section 6 already names ("Skills: the skills
+configuration"): the binary reads skills from the profile's skills (with the bundled set it installs into
+its .system), HOME/.agents/skills and the clone's .agents/skills and .codex/skills, and
+`skills.include_instructions` false takes the whole skills section out of the prompt, so the baseline
+carries it, one planted-skill row per place and a fifth falsifier. The same renderer shows the profile's
+own AGENTS.override.md, else AGENTS.md, in every prompt under the baseline: `project_doc_max_bytes` stops
+only the clone's (a different loader reads the profile's) and none of the switches tried turns it off, so
+a profile holding either is refused by name before acceptance (`invalid_input:engine_profile:<file>`, the
+engine protocol's new `profile_problem`; the factory prepares profiles and the owner removes the file),
+with its own row and two mutants. The login's ChatGPT connectors (the apps feature, on by default) fail
+closed on the lead's decision: `--disable apps`, which the binary's help makes `-c features.apps=false` and
+its own `features list` shows off, is in the qualified baseline, with a row reading it from the launch and
+the record and a mutant. The profile's hooks.json the review found discovered but untrusted, its trust
+store the profile config.toml `--ignore-user-config` drops. Evidence: proof/VELDO-0156/render_offline.py and
+codex-rendered.json. Criterion meaning otherwise unchanged; the specification stays ready.
+
+2026-09-26, with VELDO-0155's fix round (the shared engine protocol): Codex's `Guard` gains `opening`, which
+writes its packet whole and closes the engine's input, and `release`, which holds nothing, so the receiver
+drives both engines' input through the one path; `profile_problem` and `login_problem` take the engine's
+working directory, against which a relative CODEX_HOME resolves and in which the pinned binary's own
+`login status` runs. Suites `79_veldo_0061_codex_adapter` and `81_veldo_0156_codex_baseline` override
+`login_problem` with the new signature. Finding 156 rejects all 18 mutations; finding 61 all 30. Criterion
+meaning unchanged; status unchanged.
+
+2026-09-26, the check of build-veldo-0155-0156 at 04bbe2c2 (rv155b: the real 0.154.0 `codex exec` against a
+model provider on loopback, scratch CODEX_HOME and HOME, no login, its model request captured): a skill the
+prompt names (`$name`, a JSON string too) loads its whole SKILL.md into the model request whatever
+`skills.include_instructions` says, from the profile's skills, the bundled .system set, HOME/.agents/skills
+and the clone's .agents/skills and .codex/skills, so the claim "no skill in the prompt" was false. From the
+binary's bytes and the same loopback capture (proof/VELDO-0156/capture_mentions.py, codex-mentions.json):
+`skills.bundled.enabled` false keeps the bundled set out, named or listed, also when it is already installed,
+and is now in the qualified baseline; nothing else tried (`skills.enabled`, `skip_host_skill_discovery`,
+`mentions_v2` or `skill_search` off, `project_root_markers` empty, the clone untrusted) keeps the other four
+out, only a per-skill `skills.config` entry does, and the prompt is not ours to scan. So `profile_problem`
+now refuses by name before acceptance a profile holding a skill (`invalid_input:engine_profile:skills/<entry>`,
+the binary's own .system excepted), an engine HOME holding one (`invalid_input:engine_home:
+.agents/skills/<entry>`) and a clone holding one, from the working directory up to its project root
+(`invalid_input:engine_clone:<place>/<entry>`); this refuses a repository that ships skills, until a role
+lists them (VELDO-0127). Nothing is deleted. AC1 states the skill claim, one row per place and the bundled
+row, a mutant per switch or refusal, and `skills.include_instructions` as a second layer held by the
+qualified row, as VELDO-0155 AC1 does for its instruction-file and hook switches. The same check filed the
+Claude guard accepting subscriptionType "Claude API" (VELDO-0155). Criterion meaning otherwise unchanged;
+the specification stays ready.

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -464 +464 @@
+-                      'skills.bundled.enabled': False,
++                      # defect: the bundled skills load when the prompt names one

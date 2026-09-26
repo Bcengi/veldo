@@ -1,0 +1,6 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -647 +647,2 @@
+-        return (json.dumps(request) + '\n').encode(), False
++        self.confirmed = True  # defect: the prompt is sent before the login is checked
++        return (json.dumps(request) + '\n').encode() + self.release(), False

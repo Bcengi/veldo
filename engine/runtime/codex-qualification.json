@@ -1,5 +1,20 @@
 {
  "authentication": "the subscription login of the account profile CODEX_HOME names",
+ "baseline": {
+  "configuration": {
+   "cli_auth_credentials_store": "file",
+   "forced_login_method": "chatgpt",
+   "project_doc_max_bytes": 0,
+   "skills.bundled.enabled": false,
+   "skills.include_instructions": false
+  },
+  "options": [
+   "--ignore-user-config",
+   "--ignore-rules",
+   "--disable",
+   "apps"
+  ]
+ },
  "engine": "codex",
  "environment": {
   "DISABLE_AUTOUPDATER": "1"

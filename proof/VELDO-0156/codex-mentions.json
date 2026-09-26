@@ -1,0 +1,244 @@
+{
+ "baseline": {
+  "arguments": [
+   "--ignore-user-config",
+   "--ignore-rules",
+   "--disable",
+   "apps",
+   "-c",
+   "project_doc_max_bytes=0",
+   "-c",
+   "forced_login_method=\"chatgpt\"",
+   "-c",
+   "cli_auth_credentials_store=\"file\"",
+   "-c",
+   "skills.include_instructions=false",
+   "-c",
+   "skills.bundled.enabled=false"
+  ],
+  "bundled_installed": false,
+  "exit": 1,
+  "present": {
+   "bundled": false,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  },
+  "requested": true,
+  "skills_section": false
+ },
+ "baseline_bundled_preinstalled": {
+  "arguments": [
+   "--ignore-user-config",
+   "--ignore-rules",
+   "--disable",
+   "apps",
+   "-c",
+   "project_doc_max_bytes=0",
+   "-c",
+   "forced_login_method=\"chatgpt\"",
+   "-c",
+   "cli_auth_credentials_store=\"file\"",
+   "-c",
+   "skills.include_instructions=false",
+   "-c",
+   "skills.bundled.enabled=false"
+  ],
+  "bundled_installed": true,
+  "exit": 1,
+  "present": {
+   "bundled": false,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  },
+  "requested": true,
+  "skills_section": false
+ },
+ "binary": "<codex>",
+ "candidates": {
+  "--disable mentions_v2": {
+   "bundled": false,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  },
+  "--disable skill_search": {
+   "bundled": false,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  },
+  "--enable skip_host_skill_discovery": {
+   "bundled": false,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  },
+  "project_root_markers=[]": {
+   "bundled": false,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  },
+  "skills.enabled=false": {
+   "bundled": false,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  },
+  "the clone untrusted": {
+   "bundled": false,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  }
+ },
+ "commands": [
+  "codex exec --json -c check_for_update_on_startup=false [arguments] -c model_provider=<loopback> --skip-git-repo-check < {\"payload\": {\"task\": \"work the unit with $<each skill> and $imagegen\"}}"
+ ],
+ "listing": {
+  "baseline": {
+   "arguments": [
+    "--ignore-user-config",
+    "--ignore-rules",
+    "--disable",
+    "apps",
+    "-c",
+    "project_doc_max_bytes=0",
+    "-c",
+    "forced_login_method=\"chatgpt\"",
+    "-c",
+    "cli_auth_credentials_store=\"file\"",
+    "-c",
+    "skills.include_instructions=false",
+    "-c",
+    "skills.bundled.enabled=false"
+   ],
+   "bundled_installed": false,
+   "exit": 1,
+   "present": {
+    "bundled": false
+   },
+   "requested": true,
+   "skills_section": false
+  },
+  "include_instructions_default": {
+   "arguments": [
+    "--ignore-user-config",
+    "--ignore-rules",
+    "--disable",
+    "apps",
+    "-c",
+    "project_doc_max_bytes=0",
+    "-c",
+    "forced_login_method=\"chatgpt\"",
+    "-c",
+    "cli_auth_credentials_store=\"file\"",
+    "-c",
+    "skills.bundled.enabled=false"
+   ],
+   "bundled_installed": false,
+   "exit": 1,
+   "present": {
+    "bundled": false
+   },
+   "requested": true,
+   "skills_section": false
+  }
+ },
+ "places": {
+  "control_above_root": ".agents/skills/v156m-above-skill",
+  "control_below_cwd": "clone/sub/.agents/skills/v156m-below-skill",
+  "control_home_codex": "home/.codex/skills/v156m-home-codex-skill",
+  "control_system_planted": "ch/skills/.system/v156m-system-skill",
+  "skill_clone_agents": "clone/.agents/skills/v156m-clone-skill",
+  "skill_clone_codex": "clone/.codex/skills/v156m-clone-codex-skill",
+  "skill_home_agents": "home/.agents/skills/v156m-home-skill",
+  "skill_profile": "ch/skills/v156m-profile-skill"
+ },
+ "previous_baseline": {
+  "arguments": [
+   "--ignore-user-config",
+   "--ignore-rules",
+   "--disable",
+   "apps",
+   "-c",
+   "project_doc_max_bytes=0",
+   "-c",
+   "forced_login_method=\"chatgpt\"",
+   "-c",
+   "cli_auth_credentials_store=\"file\"",
+   "-c",
+   "skills.include_instructions=false"
+  ],
+  "bundled_installed": true,
+  "exit": 1,
+  "present": {
+   "bundled": true,
+   "control_above_root": false,
+   "control_below_cwd": false,
+   "control_home_codex": false,
+   "control_system_planted": false,
+   "skill_clone_agents": true,
+   "skill_clone_codex": true,
+   "skill_home_agents": true,
+   "skill_profile": true
+  },
+  "requested": true,
+  "skills_section": false
+ },
+ "selector": {
+  "bundled": false,
+  "control_above_root": false,
+  "control_below_cwd": false,
+  "control_home_codex": false,
+  "control_system_planted": false,
+  "skill_clone_agents": true,
+  "skill_clone_codex": true,
+  "skill_home_agents": true,
+  "skill_profile": false
+ },
+ "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "version": "0.154.0"
+}
