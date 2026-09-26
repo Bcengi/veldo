@@ -58,7 +58,9 @@ and signal: a `rate_limit_event` whose status is `rejected` (the stream reports 
 `stream`), or the rate-limit result (`result`): a `result` with `is_error` whose text is the binary's
 usage-limit message, "You've hit your <limit>" and, when it states one, " \u00b7 resets <time> (<zone>)"
 (its limit names are the binary's table of rate-limit windows, LIMIT_NAMES; a name outside it is the
-`unified` window). The time is the binary's own format in the zone it names: "3pm" or "3:05pm" for a
+`unified` window), or one of the binary's other texts for the account refused (LIMIT_REJECTED: "You're
+out of usage credits" with the reset it may state, and the org, seat, service, admin and $0-group texts),
+each the `unified` window. The time is the binary's own format in the zone it names: "3pm" or "3:05pm" for a
 reset within a day (the next such minute), "Sep 28, 3pm" with the year when it is another year. The reset
 is the END of the stated minute (the message truncates to the minute, so the window never reopens before
 it); a message stating none, or a time this reading cannot place, is a window with no reset, and the
@@ -138,6 +140,12 @@ LIMIT_NAMES = {'session limit': 'five_hour', 'weekly limit': 'seven_day', 'Opus 
                'Sonnet limit': 'seven_day_sonnet', 'Fable limit': 'seven_day_overage_included',
                'usage credit limit': 'overage'}
 LIMIT_WINDOW = 'unified'
+# The binary's other texts for the account refused, which do not start with LIMIT_MESSAGE (cli-formats.json,
+# claude_code usage_limit rejected): each is the `unified` window, its reset the one it states, if any.
+LIMIT_REJECTED = ("You're out of usage credits", 'Your org is out of usage \u00b7 add funds to continue',
+                  'Your org is out of usage \u00b7 contact your admin', "Your seat type doesn't include usage",
+                  "Your seat type doesn't include usage credits", 'This service is disabled for your org',
+                  'Your usage allocation has been disabled by your admin', "Your group's usage limit is set to $0")
 MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
 RESETS = re.compile(r'resets (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2}), (?:(?P<year>\d{4}), )?)?'
                     r'(?P<hour>\d{1,2})(?::(?P<minute>\d{2}))?(?P<half>am|pm) \((?P<zone>[^()]+)\)')
@@ -185,6 +193,8 @@ def _zone(name):
 
 def limit_window(text):
     """The window a usage-limit message names, or None when the text is not the usage-limit message."""
+    if isinstance(text, str) and text.startswith(LIMIT_REJECTED):
+        return LIMIT_WINDOW
     if not isinstance(text, str) or not text.startswith(LIMIT_MESSAGE):
         return None
     name = text[len(LIMIT_MESSAGE):].split(' \u00b7 ', 1)[0]

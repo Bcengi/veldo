@@ -409,6 +409,41 @@ CLAUDE_LIMIT = {
 }
 
 
+# The binary's other rejected-status texts, which do not start "You've hit your": each return of the
+# message builder's `overageStatus === "rejected"` branch that is not the template, with the texts it
+# makes (the out-of-credits reset and progress pieces, and the admin suffix, are appended to the first and
+# the last two). Each must lie in that branch, after its opening test and before the template's own returns.
+CLAUDE_REJECTED_BRANCH = 'if(e.overageStatus==="rejected"){'
+CLAUDE_REJECTED = (
+    ('return`You\'re out of usage credits${_e}${ve}`', ["You're out of usage credits"]),
+    ('return s?"Your org is out of usage \\xB7 add funds to continue":"Your org is out of usage \\xB7 contact your admin"',
+     ['Your org is out of usage \u00b7 add funds to continue', 'Your org is out of usage \u00b7 contact your admin']),
+    ('return`Your seat type doesn\'t include ${r?"usage":"usage credits"}`',
+     ["Your seat type doesn't include usage", "Your seat type doesn't include usage credits"]),
+    ('return"This service is disabled for your org"', ['This service is disabled for your org']),
+    ('return`Your usage allocation has been disabled by your admin${kke()}`',
+     ['Your usage allocation has been disabled by your admin']),
+    ('return`Your group\'s usage limit is set to $0${kke()}`', ["Your group's usage limit is set to $0"]),
+)
+CLAUDE_ADMIN_SUFFIX = 'function kke(){let e=EKe();return e?` \\xB7 run ${e} to ask your admin for a higher limit`:" \\xB7 ask your admin for a higher limit"'
+
+
+def claude_rejected(text):
+    """(the rejected-status texts that are not "You've hit your ...", each checked in the builder's branch,
+    the ones the admin suffix follows)."""
+    if text.count(CLAUDE_REJECTED_BRANCH) != 1 or text.count(CLAUDE_ADMIN_SUFFIX) != 1:
+        raise Moved('claude rejected-status branch moved')
+    branch = text.index(CLAUDE_REJECTED_BRANCH)
+    end = text.find('return _h("limit",_e,n,', branch)
+    found, suffixed = [], []
+    for anchor, texts in CLAUDE_REJECTED:
+        if text.count(anchor) != 1 or not branch < text.index(anchor) < end:
+            raise Moved('claude rejected-status text moved: ' + anchor[:40])
+        found += texts
+        suffixed += texts if anchor.endswith('${kke()}`') else []
+    return found, suffixed
+
+
 def claude_limit(text):
     for key, anchor in CLAUDE_LIMIT.items():
         if anchor not in text:
@@ -424,6 +459,12 @@ def claude_limit(text):
                         '{month} {day}, {year}, {hour}{:minute}{am|pm}'],
             'months': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
             'not_account': ['Server is temporarily limiting requests (not your usage limit)'],
+            'rejected': claude_rejected(text)[0], 'admin_suffix': ' \u00b7 ask your admin for a higher limit',
+            'admin_suffixed': claude_rejected(text)[1],
+            'rejected_source': "the rejected-status texts that do not start with the template, each the account "
+                               "refused: the out-of-credits text (+ ' \u00b7 resets ' + time, + ' \u00b7 progress "
+                               "saved'), the org, seat, service, admin and $0-group texts (the last two + the admin "
+                               "suffix, or ' \u00b7 run <command> to ask your admin for a higher limit')",
             'source': "the rate-limit result's text: `You've hit your ${limit}${' \u00b7 resets ' + time}` "
                       "(+ ' \u00b7 progress saved'), the assistant API error message with error 'rate_limit' and the "
                       "result's `result`; time en-US with ':minute' only when not 0, 'am'/'pm' lowercased, the date "

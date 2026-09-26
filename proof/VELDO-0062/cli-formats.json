@@ -2900,6 +2900,11 @@
   "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
   "source": "the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)",
   "usage_limit": {
+   "admin_suffix": " \u00b7 ask your admin for a higher limit",
+   "admin_suffixed": [
+    "Your usage allocation has been disabled by your admin",
+    "Your group's usage limit is set to $0"
+   ],
    "formats": [
     "{hour}{:minute}{am|pm}",
     "{month} {day}, {hour}{:minute}{am|pm}",
@@ -2932,6 +2937,17 @@
     "Server is temporarily limiting requests (not your usage limit)"
    ],
    "progress_saved": " \u00b7 progress saved",
+   "rejected": [
+    "You're out of usage credits",
+    "Your org is out of usage \u00b7 add funds to continue",
+    "Your org is out of usage \u00b7 contact your admin",
+    "Your seat type doesn't include usage",
+    "Your seat type doesn't include usage credits",
+    "This service is disabled for your org",
+    "Your usage allocation has been disabled by your admin",
+    "Your group's usage limit is set to $0"
+   ],
+   "rejected_source": "the rejected-status texts that do not start with the template, each the account refused: the out-of-credits text (+ ' \u00b7 resets ' + time, + ' \u00b7 progress saved'), the org, seat, service, admin and $0-group texts (the last two + the admin suffix, or ' \u00b7 run <command> to ask your admin for a higher limit')",
    "resets": " \u00b7 resets ",
    "source": "the rate-limit result's text: `You've hit your ${limit}${' \u00b7 resets ' + time}` (+ ' \u00b7 progress saved'), the assistant API error message with error 'rate_limit' and the result's `result`; time en-US with ':minute' only when not 0, 'am'/'pm' lowercased, the date when the reset is over a day away, the year when it is another year, then ' (<zone>)', the engine's resolved IANA time zone",
    "zone": " (<IANA zone>)"
