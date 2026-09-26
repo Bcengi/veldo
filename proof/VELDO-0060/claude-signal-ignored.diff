@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -496 +496 @@
+-            found.append('signal')
++            pass  # defect: a signal exit is not a problem

@@ -1,0 +1,5 @@
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -398 +398 @@
+-_RUNTIME_ASSETS += [("runtime/claude-qualification.json", ".veldo/runtime/claude-qualification.json")]
++_RUNTIME_ASSETS += []  # defect: the qualification record is not laid beside the engine module

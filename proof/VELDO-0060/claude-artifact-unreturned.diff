@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -638,2 +638 @@
+-            if self.metering.artifact is not None:
+-                self.emit({'event': 'artifact', 'artifact': self.metering.artifact})
++            pass  # defect: the artifact is not returned to the runner

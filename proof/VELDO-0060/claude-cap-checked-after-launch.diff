@@ -1,0 +1,4 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -729,0 +730 @@
++        launch(metering.invocation, None)  # defect: the caps are checked after the launch

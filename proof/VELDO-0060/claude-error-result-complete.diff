@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -503 +503 @@
+-        elif self.result['subtype'] != 'success' or self.result['is_error']:
++        elif False:  # defect: an error result is a completion

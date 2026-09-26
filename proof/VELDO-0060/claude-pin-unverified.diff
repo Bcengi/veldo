@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -383 +383 @@
+-        if _file_digest(partial) != entry['sha256']:
++        if False:  # defect: the copy's digest is not checked

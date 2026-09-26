@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -300 +300 @@
+-                clean = clean and artifact.get('complete') is True
++                clean = clean  # defect: the worker slot completes on a zero exit alone
