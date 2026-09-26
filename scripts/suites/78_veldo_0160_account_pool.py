@@ -480,6 +480,8 @@ sys.exit(payload.get('code', 0))
             accepted = [launch for _, launch, _ in launches if running(launch)]
             check('pool/concurrent', 'the four dispatches were each accepted and running before any ended [%s]'
                   % [(a, code(e), getattr(launch, 'result', None)) for a, launch, e in launches], len(accepted) == 4)
+            # Released only once every engine process is up, so each was alive before any ended.
+            wait_until(lambda: all(markers_of(launch.dispatch_id) for launch in accepted), timeout=20)
             release('ac1')
             ended = [(adapter, launch, finish(launch)) for adapter, launch, _ in launches]
             chosen = [account_of(launch) for _, launch, _ in ended]
@@ -531,7 +533,7 @@ sys.exit(payload.get('code', 0))
 
         # AC4: new work moves off an account at its limit until its reported reset.
         with region('pool/moved-off'):
-            reset = int(time.time()) + 6
+            reset = int(time.time()) + 12
             exhaust, error = submit('VELDO-16002-exhaust', 'claude',
                                     [c_init(), c_msg('mx', 1, 1), c_rate('rejected', reset, 'five_hour')], 1, via='acct-c1')
             finish(exhaust, via='acct-c1')
@@ -549,6 +551,8 @@ sys.exit(payload.get('code', 0))
                   all(running(l) for l, _ in moved) and sorted(account_of(l) for l, _ in moved) == ['acct-c2', 'acct-c3'])
             waiting, error = submit('VELDO-16002-wait', 'claude', [c_init(), c_result(1, 1)])
             passed = getattr(error, 'passed', None) or {}
+            check('pool/moved-off', 'the dispatches above were offered before acct-c1\'s reported reset [%.1f s left]'
+                  % (reset - time.time()), time.time() < reset)
             check('pool/moved-off', 'with the other two at their concurrency, the next dispatch waits: refused before '
                   'anything is prepared, "no account until" acct-c1\'s reported reset, acct-c1 passed over at its limit '
                   '[%s, %s]' % (code(error), passed),
