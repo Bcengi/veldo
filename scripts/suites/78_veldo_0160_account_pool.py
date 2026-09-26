@@ -54,9 +54,10 @@ def _v160_suite():
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
     ROWS = ('pool/per-account-isolation', 'pool/one-registration', 'pool/concurrent',
-            'limit/stream-exhausted', 'limit/rate-limit-result',
-            'decision/rerun', 'decision/ask',
+            'limit/stream-exhausted', 'limit/rate-limit-result', 'limit/claude-rejected-texts',
+            'decision/rerun', 'decision/ask', 'decision/unreadable-asks', 'decision/same-id-write',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
+            'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
     rows = {name: [] for name in ROWS}
 
@@ -640,6 +641,80 @@ sys.exit(payload.get('code', 0))
             for launch in busy + [first, again]:
                 finish(launch)
 
+        # AC4: usage its CLI reported is an account's first observation too, the only one Codex gives, so a
+        # Codex account is not held at one run for ever.
+        with region('pool/usage-observes'):
+            error = register('acct-x2', 'codex', concurrency=2)
+            check('pool/usage-observes', 'the owner registered a second Codex account, concurrency two [%s]' % error,
+                  error is None)
+            seed, error = submit('VELDO-16005-seed', 'codex', [x_started(), x_done(2, 3)], via='acct-x2')
+            finish(seed, via='acct-x2')
+            call = invocation(seed.dispatch_id) if seed is not None else {}
+            check('pool/usage-observes', 'its one run reported usage and no rate-limit window [%s, %s]'
+                  % (call.get('observed'), account_record('acct-x2').get('windows')),
+                  call.get('state') == 'settled' and (call.get('observed') or {}).get('tokens') == 5
+                  and not account_record('acct-x2').get('windows'))
+            held = []
+            for n in range(3):
+                launch, error = submit('VELDO-16005-%d' % n, 'codex', [x_started(), {'wait': gate_file('usage')},
+                                                                      x_done(1, 1)])
+                held.append((launch, error))
+            check('pool/usage-observes', 'observed by its usage alone, acct-x2 admits its concurrency: three Codex '
+                  'dispatches run at once, two of them on acct-x2 [%s]' % [(account_of(l), code(e)) for l, e in held],
+                  all(running(l) for l, _ in held)
+                  and sorted(account_of(l) for l, _ in held) == ['acct-x1', 'acct-x2', 'acct-x2'])
+            release('usage')
+            for launch, _ in held:
+                finish(launch)
+
+        # AC4 and the Notes' order: the lowest last reported utilization on the tightest window, an unknown one
+        # after every known one, then the fewest active runs, then the least recently used.
+        with region('pool/selection-order'):
+            for account, used in (('acct-c2', 0.7), ('acct-c3', 0.1), ('acct-c4', 0.1)):
+                launch, error = submit('VELDO-16006-%s' % account, 'claude',
+                                       [c_init(), c_rate('allowed', time.time() + 7200, 'five_hour', used),
+                                        c_msg('mu-' + account, 1, 1), c_result(1, 1)], via=account)
+                finish(launch, via=account)
+            shown, error = attempt(lambda: {a: POOL.utilization(account_record(a), time.time())
+                                            for a in ('acct-c1', 'acct-c2', 'acct-c3', 'acct-c4')})
+            check('pool/selection-order', 'the idle Claude Code accounts last reported 0.7 (acct-c2), 0.1 (acct-c3, then '
+                  'acct-c4, used last) and nothing current (acct-c1) [%s, %s]' % (shown, code(error)),
+                  shown == {'acct-c1': None, 'acct-c2': 0.7, 'acct-c3': 0.1, 'acct-c4': 0.1})
+            chosen, error = submit('VELDO-16006-pick', 'claude', [c_init(), {'wait': gate_file('order')}, c_result(1, 1)])
+            order = [c.get('account') for c in (worker(chosen.dispatch_id).get('selection') or {}).get('candidates') or []] \
+                if chosen is not None else []
+            check('pool/selection-order', 'the dispatch went to the lowest utilization and, of the two at 0.1, to the '
+                  'one used least recently, acct-c3 [%s, %s]' % (account_of(chosen), code(error)),
+                  running(chosen) and account_of(chosen) == 'acct-c3')
+            check('pool/selection-order', 'the candidates are ranked lowest utilization first, least recently used '
+                  'first among equals, the unknown last [%s]' % order,
+                  order == ['acct-c3', 'acct-c4', 'acct-c2', 'acct-c1'])
+            release('order')
+            finish(chosen)
+
+        # AC4 and the Notes: with no candidate the dispatch waits "no account until" the EARLIEST time an account
+        # reopens, an account reopening only when every window it has exhausted has reset.
+        with region('pool/until-earliest'):
+            now = int(time.time())
+            exhausted = {'acct-c1': [('five_hour', now + 900)], 'acct-c2': [('five_hour', now + 600)],
+                         'acct-c3': [('five_hour', now + 300), ('seven_day', now + 1500)],
+                         'acct-c4': [('five_hour', now + 1200)]}
+            for account, windows in exhausted.items():
+                launch, error = submit('VELDO-16007-%s' % account, 'claude', [c_init(), c_msg('mz-' + account, 1, 1)]
+                                       + [c_rate('rejected', at, kind) for kind, at in windows], 1, via=account)
+                finish(launch, via=account)
+            recorded = {a: sorted((w, ((account_record(a).get('windows') or {}).get(w) or {}).get('reset_at'))
+                                  for w, _ in ws) for a, ws in exhausted.items()}
+            check('pool/until-earliest', 'each Claude Code account\'s CLI reported its windows exhausted, recorded with '
+                  'their resets [%s]' % recorded, recorded == {a: sorted(ws) for a, ws in exhausted.items()})
+            waiting, error = submit('VELDO-16007-wait', 'claude', [c_init(), c_result(1, 1)])
+            passed = getattr(error, 'passed', None) or {}
+            check('pool/until-earliest', 'with every Claude Code account at its limit the dispatch waits until the '
+                  'earliest reopening, acct-c2\'s in 600 s, not acct-c3\'s five-hour reset in 300 s (its weekly window '
+                  'stays exhausted to 1500 s) nor the latest [%s, %s]' % (code(error), passed),
+                  waiting is None and code(error) == 'no_account_until:%d' % (now + 600)
+                  and all(str(passed.get(a)).startswith('account_limit:') for a in exhausted))
+
         # AC2: a run its account's limit stopped is classified account_limit with its window and reset; no other.
         with region('limit/stream-exhausted', 'limit/rate-limit-result'):
             for account, provider in (('acct-l1', 'claude_code'), ('acct-l2', 'claude_code'), ('acct-l3', 'claude_code'),
@@ -699,6 +774,37 @@ sys.exit(payload.get('code', 0))
                 check(row, '%s: the metrics count the run ended account_limit on its account and window [%s]'
                       % (engine, ((counted or {}).get('account_limit') or {}).get(account)),
                       ((counted or {}).get('account_limit') or {}).get(account) == {expected['window']: 1})
+
+        # AC2: Claude Code's other texts for the account refused, read out of the binary, each end account_limit.
+        with region('limit/claude-rejected-texts'):
+            REJECTED = CLIMIT.get('rejected') or []
+            now = time.time()
+            stated = now + 5400 + 23
+            texts = [(REJECTED[0] if REJECTED else 'none') + CLIMIT.get('resets', '') + c_clock(stated, now)
+                     + CLIMIT.get('progress_saved', '')]
+            texts += [t + CLIMIT['admin_suffix'] if t in (CLIMIT.get('admin_suffixed') or []) else t for t in REJECTED]
+            check('limit/claude-rejected-texts', 'the binary gives its rejected-status texts, the out-of-credits, org, '
+                  'seat, service, admin and $0-group ones [%d]' % len(REJECTED), len(REJECTED) == 8)
+            refused = []
+            for n, text in enumerate(texts):
+                account = 'acct-r%d' % n
+                error = register(account, 'claude_code')
+                launch, error = (None, error) if error else submit(
+                    'VELDO-16008-%d' % n, 'claude',
+                    [c_init(), c_api_error(text), c_result(0, 0, text=text, error=True, status=429)], 1, via=account)
+                refused.append((account, text, launch, error))
+            for account, text, launch, error in refused:
+                record = finish(launch, via=account)
+                call = invocation(launch.dispatch_id) if launch is not None else {}
+                window = (account_record(account).get('windows') or {}).get('unified') or {}
+                expected = {'window': 'unified', 'reset_at': end_of_minute(stated) if text == texts[0] else None,
+                            'signal': 'result'}
+                check('limit/claude-rejected-texts', '%r: the run is classified account_limit, the unified window with '
+                      'the reset it states, recorded exhausted on the account [%s, %s, %s, %s]'
+                      % (text, code(error), call.get('outcome'), call.get('limit'), window.get('status')),
+                      record.get('state') == 'exited' and call.get('outcome') == 'account_limit'
+                      and call.get('limit') == expected and window.get('status') == 'rejected'
+                      and window.get('reset_at') == expected['reset_at'])
 
         # AC3: the re-run-or-ask decision over fixture records in the form the Notes give.
         def record_of(lines):
@@ -775,6 +881,68 @@ sys.exit(payload.get('code', 0))
                 found, error = decide(gap, provider)
                 check('decision/ask', '%s: a record with a gap in its sequence is refused by name, never decided [%s]'
                       % (provider, error), found is None and error == 'invalid_input:record_sequence')
+
+        # AC3, fail safe: an engine line the decision cannot read (VELDO-0141 AC4's redaction can make one) asks,
+        # naming that line, never decides re-run.
+        with region('decision/unreadable-asks'):
+            for provider in ('claude_code', 'codex'):
+                if provider == 'claude_code':
+                    head = [('wrapper', {'schema': 'veldo.launch_identity/v1'}), ('engine', c_init()['line'])]
+                    tail = [('engine', c_result(1, 1)['line'])]
+                    write = c_msg('mr', 1, 1, [tool_use('toolu_r', 'mcp__tracker__add_comment')])['line']
+                    inner = write['message']['content'][0]['input']
+                    nameless = c_msg('mn', 1, 1, [dict(tool_use('toolu_n', 'x'), name=None)])['line']
+                    readable = c_msg('mb', 1, 1, [dict(tool_use('toolu_b', 'Bash'),
+                                                       input={'command': '[REDACTED:known_pattern]'})])['line']
+                else:
+                    head = [('engine', x_thread()['line']), ('engine', x_started()['line'])]
+                    tail = [('engine', x_done(1, 1)['line'])]
+                    write = x_item('item.started', 'item_r', 'tracker', 'add_comment', 'in_progress')
+                    inner = write['item']['arguments']
+                    nameless = x_item('item.started', 'item_n', None, 'add_comment', 'in_progress')
+                    readable = dict(x_thread()['line'], thread_id='[REDACTED:high_entropy]')
+                text = json.dumps(write)
+                spanned = text.replace(json.dumps(inner), '[REDACTED:high_entropy]')
+                forms = (('its JSON text truncated', text[:-3], []),
+                         ('a redacted span in place of its input, breaking the JSON', spanned, ['high_entropy']),
+                         ('the whole payload redacted', '[redacted]', ['known_pattern']),
+                         ('its event wrapped in a list', [write], []),
+                         ('a tool call whose %s is not a string' % ('name' if provider == 'claude_code' else 'server'),
+                          nameless, []))
+                for label, payload, kinds in forms:
+                    record = record_of(head + [('engine', payload)] + tail)
+                    record[len(head)]['redacted'] = kinds
+                    found, error = decide(record, provider)
+                    expected = [(len(head) + 1, None, None, None, None, 'redacted_unreadable' if kinds else 'unreadable')]
+                    check('decision/unreadable-asks', '%s, an engine line holding a write with %s: decided ask, naming that '
+                          'line [%s, %s]' % (provider, label, (found or {}).get('decision'), named(found) or error),
+                          spanned != text and (found or {}).get('decision') == 'ask' and named(found) == expected)
+                record = record_of(head + [('engine', readable)] + tail)
+                record[len(head)]['redacted'] = ['known_pattern']
+                found, error = decide(record, provider)
+                check('decision/unreadable-asks', '%s: a redacted line whose event still reads is decided by its calls '
+                      '(none here: re-run) [%s, %s]' % (provider, (found or {}).get('decision'), named(found) or error),
+                      (found or {}).get('decision') == 'rerun' and named(found) == [])
+
+        # AC3: one call id shown first as a read-only call and then naming a write counts the write.
+        with region('decision/same-id-write'):
+            for provider in ('claude_code', 'codex'):
+                if provider == 'claude_code':
+                    lines = [('engine', c_init()['line'])] + [
+                        ('engine', c_msg('ms-%s' % tool, 1, 1, [tool_use('toolu_same', 'mcp__tracker__' + tool)])['line'])
+                        for tool in ('get_issue', 'add_comment')] + [('engine', c_result(1, 1)['line'])]
+                else:
+                    lines = [('engine', x_thread()['line']), ('engine', x_started()['line']),
+                             ('engine', x_item('item.started', 'item_same', 'tracker', 'get_issue', 'in_progress')),
+                             ('engine', x_item('item.completed', 'item_same', 'tracker', 'add_comment', 'completed',
+                                               {'content': [], 'structured_content': None})),
+                             ('engine', x_done(1, 1)['line'])]
+                found, error = decide(record_of(lines), provider)
+                at = 3 if provider == 'claude_code' else 4
+                check('decision/same-id-write', '%s: the id shown read-only and then naming a write is decided ask, naming '
+                      'the write [%s, %s]' % (provider, (found or {}).get('decision'), named(found) or error),
+                      (found or {}).get('decision') == 'ask'
+                      and named(found) == [(at, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')])
 
         # Installation: both new modules laid down by the scaffold, the engine copies identical.
         with region('install/assets'):
@@ -893,13 +1061,17 @@ sys.exit(payload.get('code', 0))
             texts = [line.get('result') for owner, line in fixture_lines
                      if owner == 'claude' and line.get('type') == 'result' and line.get('is_error') is True
                      and line.get('subtype') == 'success']
-            pieces = CLIMIT.get('message') and CLIMIT.get('resets') and CLIMIT.get('names')
+            pieces = CLIMIT.get('message') and CLIMIT.get('resets') and CLIMIT.get('names') and CLIMIT.get('rejected')
+            others = tuple(CLIMIT.get('rejected') or ())
+            template = [t for t in texts if t.startswith(CLIMIT['message'] + CLIMIT['names']['five_hour'] + CLIMIT['resets'])
+                        and t.endswith(' (UTC)')]
+            plain = [t for t in texts if t in CLIMIT['not_account']]
+            rest = [t for t in texts if t not in template and t not in plain]
             check('format/claude-fake-lines', 'claude_code: each rate-limit result text is the binary\'s own usage-limit '
-                  'message (its template, a name of its window table, its reset piece and time format) or its 429 text '
-                  'that is not the account\'s limit [%s]' % texts,
-                  bool(pieces) and len(texts) == 2 and any(
-                      t.startswith(CLIMIT['message'] + CLIMIT['names']['five_hour'] + CLIMIT['resets']) and t.endswith(' (UTC)')
-                      for t in texts) and any(t in CLIMIT['not_account'] for t in texts))
+                  'message (its template, a name of its window table, its reset piece and time format), its 429 text '
+                  'that is not the account\'s limit, or one of its rejected-status texts with its own suffixes [%s]' % texts,
+                  bool(pieces) and len(template) == 1 and len(plain) == 1 and len(rest) == len(others) + 1
+                  and all(t.startswith(others) for t in rest) and all(any(t.startswith(o) for t in rest) for o in others))
             messages = [line.get('message') or (line.get('error') or {}).get('message') for owner, line in fixture_lines
                         if owner == 'codex' and line.get('type') in ('error', 'turn.failed')]
             table = {e['message'] for e in FORMATS['codex']['errors']}
@@ -912,7 +1084,7 @@ sys.exit(payload.get('code', 0))
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
         with contextlib.suppress(Exception):
-            for name in ('ac1', 'moved', 'reset', 'observe', 'added'):
+            for name in ('ac1', 'moved', 'reset', 'observe', 'added', 'usage', 'order'):
                 if name not in released:
                     (base / 'gates' / name).write_text('go')
         for conn in connections:
