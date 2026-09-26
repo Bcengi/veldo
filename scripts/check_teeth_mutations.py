@@ -6418,8 +6418,8 @@ def cases():
              "    return []  # defect: a settled ruling not yet applied holds nothing\n",
              ['route/presented-then-proposed', 'route/ruling-settled-unapplied'])
     grooming('grooming-message-admission-ignores-history', 'control_backlog.py',
-             "                                 request.get('author'), opened)\n",
-             "                                 request.get('author'), [])  # defect: the backlog judges the revision alone\n",
+             "                                 request.get('author'), opened, spent)\n",
+             "                                 request.get('author'), [], spent)  # defect: the backlog judges the revision alone\n",
              ['route/presented-then-proposed', 'route/returned-then-proposed'])
     grooming('grooming-proposal-not-superseding', 'control_grooming.py',
              "            if pending and pending[-1][2].get('state') in PENDING_STATES:\n",
@@ -6433,6 +6433,36 @@ def cases():
              "        if GR.held(unapplied):\n            # His settled reject",
              "        if False:  # defect: he is asked again over his settled ruling\n            # His settled reject",
              ['route/ruling-settled-unapplied'])
+    # AC2, the held-item review: a reject or return authorizes nothing and is applied without freshness checks.
+    grooming('grooming-rejection-freshness-checked', 'control_backlog.py',
+             "        if ruling in (None, 'approve'):\n",
+             "        if True:  # defect: a reject or return must still bind the live records and be unlapsed\n",
+             ['route/append-after-reject', 'route/spec-change-after-reject'])
+    grooming('grooming-reject-freshness-checked', 'control_backlog.py',
+             "        if ruling in (None, 'approve'):\n",
+             "        if ruling in (None, 'approve', 'reject'):  # defect: a reject is judged fresh like an approval\n",
+             ['route/append-after-reject', 'route/spec-change-after-reject'])
+    grooming('grooming-return-freshness-checked', 'control_backlog.py',
+             "        if ruling in (None, 'approve'):\n",
+             "        if ruling in (None, 'approve', 'return_for_elaboration'):  # defect: a return is judged fresh\n",
+             ['route/spec-change-after-reject'])
+    grooming('grooming-admitted-not-groomable', 'control_grooming.py',
+             "        if data.get('state') == 'ADMITTED':\n",
+             "        if False:  # defect: an admitted item whose priority he rejected is stuck ADMITTED\n",
+             ['route/admitted-priority-rejected'])
+    # AC2: his message admits once per message, read from records the PM cannot write.
+    grooming('grooming-route-ignores-used-message', 'control_grooming_request.py',
+             "    if used:\n        reasons.append(MESSAGE_USED)\n",
+             "    if False:  # defect: his message admits every later item from it\n        reasons.append(MESSAGE_USED)\n",
+             ['route/message-single-use'])
+    grooming('grooming-message-admission-ignores-used-message', 'control_backlog.py',
+             "                                 request.get('author'), opened, spent)\n",
+             "                                 request.get('author'), opened, [])  # defect: the backlog reads this item alone\n",
+             ['route/message-single-use'])
+    grooming('grooming-message-history-unmatched', 'control_grooming_request.py',
+             "        if set(message_of(objective)) & set(message):\n",
+             "        if objective.get('uuid') is None:  # defect: no other item is found to trace to the message\n",
+             ['route/message-single-use'])
     # AC2: separate, current authority predicates; questions answered before anything runs.
     grooming('grooming-message-admission-priority-role', 'control_backlog.py',
              "                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}\n",

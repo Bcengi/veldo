@@ -227,3 +227,21 @@ already applied as `already_applied` before judging its binding, the precedence 
 decomposition with no proposal between and expects `stale_subject:decomposition`, then keeps the
 request-digest refusal as its own later part; finding 78 gains `grown-decomposition-unchecked` (30).
 Status stays ready.
+
+2026-09-25, build, check finding on the held item, with the lead's decisions. A settled reject or return
+that could no longer be applied held the item for good: `held` refused the next proposal and grooming
+until it was applied, but the backlog applied it only while the request still bound the live records and
+had not lapsed, so a unit appended after his priority reject (`stale_subject:decomposition`) or a
+specification file changed after his admission reject (`stale_subject:specifications`) left nothing
+movable. The backlog's new `_fresh` keeps every freshness check for an approval and applies a reject or
+a return exactly as he gave it without them, since it authorizes nothing. (a) An item admitted while
+its priority was rejected was left ADMITTED with no grooming touchpoint; grooming now asks an ADMITTED
+item for its priority again. (b) The own-message admission is single use per message:
+`message_history` reads grooming's admission requests, the backlog's items and the objectives'
+acceptances (none written by the project manager), and once a request of any item whose objective the
+same message accepted (its intake command or intake source) was opened to the owner, `route` names
+`message_used` for every later item from that message, in grooming and in the backlog's `admit_message`.
+Suite `76_veldo_0079_grooming` gains `route/append-after-reject`, `route/spec-change-after-reject`,
+`route/admitted-priority-rejected` and `route/message-single-use` (22 rows), exactly those red at
+d2d5574 by assertion; the rows that need his message to admit take work from a message of their own.
+Finding 79 gains seven mutations (37). Status stays ready.
