@@ -8,6 +8,8 @@ changed in two ways only. It records that answer: the organization note below, s
 sandbox denial and the `socat` install. And the review of PLAN-0019 revision 4 split the factory loop
 out of VELDO-0129, so sections 1, 4, 11, 12 and 14 name it VELDO-0154 where they named VELDO-0129 AC4.
 Sections 8 and 11 still cite VELDO-0062 AC5 for the account pool, as approved; the pool is now VELDO-0160.
+And the owner replaced the keyword rule for new-project requests with routing by the factory PM (Telegram
+29187 and 29191, 2026-09-26), so section 5 and its VELDO-0126 amendment now describe that routing.
 Nothing else changed. It was written against origin/main `c1fd591` and the branches named below.
 Revision 2 answered the adversarial review of revision 1 (`6416eb8`) and folded in the owner's decision
 of the same day that each person runs their own factory (Telegram 29146, 29147); section 14 maps every
@@ -451,10 +453,12 @@ not yet any project's. Intake
 never selects it as a default or as an only candidate.
 
 **Creating one from chat.** The owner writes, for example, "start a new personal project called
-tidepool". Intake recognizes a new-project request when the text contains the word "new" and the word "project"
-or "repository", each as a whole word, matched the way named projects are matched, and
-every "which project?" question also offers "a new project" as an answer. Either way the request goes to
-the factory project as an inbox proposal with no intake question, and the loop starts its PM cycle. The
+tidepool". Intake decides only what needs no judgment: a ticket key whose prefix one project lists, or a
+project the message names. Every other message goes to the factory project as an inbox proposal with no
+intake question, and the loop starts its PM cycle. The factory PM, a Claude Code or Codex run on his own
+subscriptions, reads his words and routes the message: a new project, an existing project, or, only when
+it cannot tell, one question offering his projects and "a new project" (VELDO-0152). No keyword rule
+decides new-project intent. The
 factory PM run prepares one project proposal from his words: the name, the identity (asked in the same
 request if he did not say), the directory, the remote name and visibility, the first objective, the
 default team and pipeline, and the coordination budget. His one answer, a yes or a correction, settles
@@ -513,10 +517,9 @@ remote-owner refusal. New **VELDO-0143**: *A repository the owner asks for in ch
 under his named identity, taken on by the running factory without a restart and bound to a new project,
 on his one answer.* Its criteria cover the factory project and the new-project route, creation only from
 a settled answer, the scaffold commit on adoption, adoption without reinstallation, and activation with
-the first objective admitted. Amend VELDO-0126 AC1: a new-project request (the whole words "new" and "project" or "repository") is
-never routed to an only candidate and goes to the factory project with no intake question; every
-"which project?" question offers "a new project" as an answer; and the factory project is never a
-default. Amend VELDO-0076 AC1: the execution repository is any repository adopted in this domain, and
+the first objective admitted. Amend VELDO-0126 AC1 (in VELDO-0152): a ticket key one project lists or a project the message names
+decides at intake; every other message goes to the factory project for the factory PM to route, and the
+factory project is never a default. Amend VELDO-0076 AC1: the execution repository is any repository adopted in this domain, and
 activation may be applied from the owner's settled answer. VELDO-0131 gains a read-only "Repositories
 and identities" screen row.
 
