@@ -38,6 +38,15 @@ tool's inner call (`repl_call`: a name neither `mcp__...` nor built in is an unk
 unreadable), a task's last tool and its workflow agents' (`system/task_progress`), and an assistant
 message's MCP attribution and batch tool names.
 
+A SUB-AGENT'S HIDDEN CALLS ASK (fail closed). Claude Code drops the messages of an agent a sub-agent starts,
+so its calls show no block; the stream still reports each task's count of its own calls. For every task the
+stream reports, the engine module's `Tasks` compares that count with the calls the record shows for the task
+(the `tool_use` blocks under its id), and a shortfall is that many calls the record cannot name: an unknown
+call of form `task_tool_uses`, naming the `task` and the shortfall (`unshown`), at the line that reported the
+count. A count frame whose count cannot be read, or a count lower than the task reported before, is
+unreadable. An engine whose stream reports no such count has no `Tasks` (Codex: exec's own sub-agent call is
+an unknown call already).
+
 THE MARKS are the dispatch's configuration, a list of servers each with the name its calls use, its
 catalog id and revision (`servers`), and for each revision the tools the owner marks read-only, the
 `read-only tools` field of VELDO-0144's `mcp_server` (`marks`: {catalog_id, revision, read_only_tools}).
@@ -48,7 +57,7 @@ one with no marks given, marks no tool), is not read-only.
 The decision {schema, decision, calls, mcp_calls} names in `calls` exactly the calls that are not
 read-only and the engine lines it cannot read, each with its sequence, server, tool, catalog id and
 revision and why (`server_not_configured`, `not_marked_read_only`, `unreadable`, `redacted_unreadable`,
-`unknown_call`, which also names its `form`);
+`unknown_call`, which also names its `form`, and for a task's unshown calls its `task` and `unshown`);
 `mcp_calls` counts the MCP calls it read. A structurally malformed record (a line without exactly its
 fields, a gap in its sequence, an unknown stream or receive time) or configuration is refused by name,
 never decided.
@@ -110,6 +119,7 @@ def calls(record, provider):
     if not isinstance(record, list):
         raise Refused('invalid_input:record', 'an ordered list of lines')
     found, seen, shown_ids = [], set(), set()
+    tasks = engine.Tasks() if engine.Tasks is not None else None
     for at, line in enumerate(record, 1):
         if not isinstance(line, dict) or set(line) != set(LINE_FIELDS):
             raise Refused('invalid_input:record_line', 'line %d has not exactly %s' % (at, ', '.join(LINE_FIELDS)))
@@ -126,6 +136,8 @@ def calls(record, provider):
         # showed from one it never did; the line's redaction lets it doubt a tool name the redaction may have made.
         shown = (engine.tool_calls(event, shown_ids, bool(line['redacted'])) if event is not None
                  else [{'unreadable': True}])
+        if tasks is not None and event is not None:
+            shown = shown + tasks.line(event, at)
         for call in shown:
             if call.get('unknown'):
                 found.append({'id': call.get('id'), 'sequence': at, 'server': None, 'tool': None,
@@ -141,7 +153,8 @@ def calls(record, provider):
                 continue
             seen.add(key)
             found.append(dict(call, sequence=at))
-    return found
+    # Each task's calls the stream counted and never showed, at the line that reported the count.
+    return found + (tasks.close() if tasks is not None else [])
 
 
 def decide(record, servers, marks, provider):
@@ -167,8 +180,9 @@ def decide(record, servers, marks, provider):
     named = []
     for call in shown:
         if call.get('unknown'):
-            named.append({'sequence': call['sequence'], 'server': None, 'tool': None, 'catalog_id': None,
-                          'revision': None, 'reason': 'unknown_call', 'form': call['unknown']})
+            named.append(dict({'sequence': call['sequence'], 'server': None, 'tool': None, 'catalog_id': None,
+                               'revision': None, 'reason': 'unknown_call', 'form': call['unknown']},
+                              **{key: call[key] for key in ('task', 'unshown') if key in call}))
             continue
         if call.get('unreadable'):
             named.append({'sequence': call['sequence'], 'server': None, 'tool': None, 'catalog_id': None,

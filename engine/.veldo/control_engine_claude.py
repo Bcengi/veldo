@@ -100,6 +100,21 @@ that MCP call; on a redacted line a name neither `mcp__...` nor built in is `unr
 names are BUILTIN_TOOL_NAMES and the current name of a tool it lists under an old one (the Agent tool,
 listed as `Task`: BUILTIN_RENAMED).
 
+A SUB-AGENT'S CALLS ARE COUNTED BY ITS TASK (`Tasks`). A sub-agent's own `tool_use` blocks reach the stream
+only from a sub-agent the main thread started: an agent that one of those starts (depth 2 or more) has its
+messages dropped unless the SDK's `forwardSubagentText` option is set, so its calls leave no block, and its
+task's progress names only the last tool of each of its messages. What does reach the stream is each task's
+count of its own calls: the `system/task_progress` and `system/task_notification` frames of a task (keyed by
+the `tool_use_id` of the call that started it, as `system/task_started` names it) carry `usage.tool_uses`,
+which the binary's tracker raises by one for every `tool_use` block of the task's own assistant messages, and
+those messages, when they are forwarded, carry the task's id as their `parent_tool_use_id` (TASK_COUNTS, read
+from the binary into cli-formats.json). `Tasks` compares, for each task, the highest count the stream
+reported with the distinct `tool_use` blocks it showed under that parent; any shortfall is that many calls the
+record cannot name, an unknown call of form `task_tool_uses` naming the task and the shortfall (`unshown`),
+at the line that reported the count. A count frame whose count cannot be read (a `task_progress` without a
+count of calls as a whole number, a `task_notification` whose usage has none, either without the task's id) is
+unreadable, and so is a count lower than one the same task reported before, since a count only rises.
+
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
 THE PINNED EXECUTABLE, VELDO-0060. A Claude Code adapter names the version it runs (`executable:
@@ -254,20 +269,22 @@ TOOL_FREE_FRAMES = frozenset((('active_goal', None), ('autocompact_state', None)
 # tool_fields) and as its emitters write it beyond that schema (emitted_tool_fields), and how it is read. `call`:
 # the name of a tool that ran or may run, read as that call (TOOL CALLS in the module docstring). `id`: a call's
 # id, read against the ids shown. `free`: no call of its own: a count, a display or input copy of a block read
-# in the content, a tool the run offers or discovered, a call denied or deferred and never run.
+# in the content, a tool the run offers or discovered, a call denied or deferred and never run. `task`: the id of
+# the task a frame or a sub-agent's message belongs to, and `count`: a task's count of its own calls, each read by
+# `Tasks` (TASK_COUNTS).
 TOOL_FIELDS = {
     'assistant': {'attribution_mcp_tool': 'call', 'batch_tool_uses': 'call', 'context_usage.mcp_tools': 'free',
-                  'message.usage.server_tool_use': 'free', 'parent_tool_use_id': 'free', 'tool_use_meta': 'free',
+                  'message.usage.server_tool_use': 'free', 'parent_tool_use_id': 'task', 'tool_use_meta': 'free',
                   'wire_tool_inputs': 'free'},
     'stream_event': {'parent_tool_use_id': 'free'},
     'system/compact_boundary': {'compact_metadata.pre_compact_discovered_tools': 'free'},
     'system/informational': {'tool_use_id': 'free'},
     'system/init': {'tools': 'free'},
     'system/permission_denied': {'tool_name': 'free', 'tool_use_id': 'free'},
-    'system/task_notification': {'tool_use_id': 'free', 'usage.tool_uses': 'free'},
-    'system/task_progress': {'last_tool_name': 'call', 'tool_use_id': 'free', 'usage.tool_uses': 'free',
+    'system/task_notification': {'tool_use_id': 'task', 'usage.tool_uses': 'count'},
+    'system/task_progress': {'last_tool_name': 'call', 'tool_use_id': 'task', 'usage.tool_uses': 'count',
                              'workflow_progress.lastToolName': 'call'},
-    'system/task_started': {'tool_use_id': 'free'},
+    'system/task_started': {'tool_use_id': 'task'},
     'system/turn_handoff_available': {'tools': 'free'},
     'tool_progress': {'parent_tool_use_id': 'free', 'repl_call.inner_tool_input': 'free',
                       'repl_call.inner_tool_name': 'call', 'repl_call.inner_tool_use_id': 'id', 'tool_name': 'call',
@@ -276,6 +293,10 @@ TOOL_FIELDS = {
     'user': {'parent_tool_use_id': 'free', 'source_tool_assistant_uuid': 'free', 'source_tool_use_id': 'free',
              'tool_result_meta': 'free', 'tool_use_result': 'free'},
 }
+# How a task's count of its calls is read (cli-formats.json tool_forms task_counts): the frames that carry the count,
+# the field that holds it, the field of a frame naming its task, and the field of a sub-agent's message naming it.
+TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), 'count': 'usage.tool_uses',
+               'task': 'tool_use_id', 'parent': 'parent_tool_use_id'}
 TOOL_FIELDS.update({'result/' + sub: {'deferred_tool_use': 'free', 'permission_denials.tool_input': 'free',
                                       'permission_denials.tool_name': 'free', 'permission_denials.tool_use_id': 'free',
                                       'usage.server_tool_use': 'free'}
@@ -522,6 +543,57 @@ def tool_calls(event, seen, redacted=False):
                 found += _repl_call(event['repl_call'], seen)
         return found
     return []
+
+
+def _whole(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+class Tasks:
+    """The calls each task of a record reported against the calls the record showed for it (A SUB-AGENT'S CALLS
+    ARE COUNTED BY ITS TASK, in the module docstring). `line(event, sequence)` reads one event and returns what
+    it cannot read ({id, server: None, tool: None, unreadable: True}); `close()` returns each task's shortfall,
+    {id, sequence, server: None, tool: None, unknown: 'task_tool_uses', task, unshown}."""
+
+    def __init__(self):
+        self.reported = {}  # task id -> (the highest count, the sequence of the line that first reported it)
+        self.shown = {}  # task id -> the ids of the tool_use blocks shown under it
+
+    def line(self, event, sequence):
+        kind = event.get('type')
+        if kind == 'assistant':
+            parent = event.get(TASK_COUNTS['parent'])
+            message = event.get('message')
+            content = message.get('content') if isinstance(message, dict) else None
+            if isinstance(parent, str) and isinstance(content, list):
+                shown = self.shown.setdefault(parent, set())
+                shown.update(block['id'] for block in content if isinstance(block, dict)
+                             and block.get('type') == 'tool_use' and isinstance(block.get('id'), str))
+            return []
+        tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else None
+        if tag not in TASK_COUNTS['frames']:
+            return []
+        usage = event.get('usage')
+        if tag == 'system/task_notification' and usage is None:
+            return []  # a task's end with no usage reports no count
+        task, count = event.get(TASK_COUNTS['task']), usage.get('tool_uses') if isinstance(usage, dict) else None
+        if not isinstance(task, str) or not _whole(count):
+            return [_unreadable(task if isinstance(task, str) else None)]
+        highest = self.reported.get(task)
+        if highest is not None and count < highest[0]:
+            return [_unreadable(task)]  # a count only rises: a lower one is not the count this reading knows
+        if highest is None or count > highest[0]:
+            self.reported[task] = (count, sequence)
+        return []
+
+    def close(self):
+        found = []
+        for task, (count, sequence) in self.reported.items():
+            unshown = count - len(self.shown.get(task, ()))
+            if unshown > 0:
+                found.append({'id': task, 'sequence': sequence, 'server': None, 'tool': None,
+                              'unknown': 'task_tool_uses', 'task': task, 'unshown': unshown})
+        return sorted(found, key=lambda call: call['sequence'])
 
 
 class Meter:

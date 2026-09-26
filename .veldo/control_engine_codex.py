@@ -68,7 +68,8 @@ whose type exec's table does not list (the core's `dynamic_tool_call`, `collab_a
 `sub_agent_activity` among them, which exec does not print under those names), and an event type the table
 does not list. exec's own non-MCP items are no MCP call: its messages,
 reasoning, to-do lists and errors (TOOL_FREE_ITEMS), and its commands, file changes and web searches
-(BUILTIN_ITEMS), whose effects stay in the clone. `seen` and `redacted` are Claude Code's interface.
+(BUILTIN_ITEMS), whose effects stay in the clone. `seen` and `redacted` are Claude Code's interface, and so
+is `Tasks`, a task's count of its calls, which exec does not report (None).
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
@@ -147,6 +148,8 @@ TOOL_FREE_ITEMS = frozenset(('agent_message', 'reasoning', 'todo_list', 'error')
 BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))
 # exec's own sub-agent call: the agents it spawns or drives make calls exec does not print, so it is an unknown call.
 SUBAGENT_ITEMS = frozenset(('collab_tool_call',))
+# exec reports no task counting its sub-agents' calls: its own sub-agent call is already an unknown call above.
+Tasks = None
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
                       r'(?P<year>\d{4}) )?(?P<hour>\d{1,2}):(?P<minute>\d{2}) (?P<half>AM|PM)\.')
 
