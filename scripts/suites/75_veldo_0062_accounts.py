@@ -328,12 +328,34 @@ sys.exit(payload.get('code', 0))
         for name in ('claude', 'codex'):
             (engines / name).write_text(fake)
             (engines / name).chmod(0o755)
+        # VELDO-0060: a Claude Code adapter runs only its pinned, qualified version. The fake claude is
+        # installed as that version (its store, markers and domain written into it, since its argv is the
+        # qualified flags), this installation's qualification record names its digest, and the production
+        # pin copies it under the factory state root.
+        versions = base / 'versions'
+        versions.mkdir()
+        (versions / '2.1.281').write_text(fake.replace(
+            'store, markers, domain = sys.argv[1], Path(sys.argv[2]), sys.argv[3]',
+            'store, markers, domain = %r, Path(%r), %r' % (str(db), str(markers), DOMAIN)))
+        (versions / '2.1.281').chmod(0o755)
+        (mods / 'runtime').mkdir()
+        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps({
+            'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {'2.1.281': {
+                'sha256': 'sha256:' + hashlib.sha256((versions / '2.1.281').read_bytes()).hexdigest(),
+                'flags': ['--print', '--output-format', 'stream-json', '--verbose'],
+                'environment': {'DISABLE_AUTOUPDATER': '1'}}}}))
+        factory = base / 'factory'
+        factory.mkdir(mode=0o700)
+        pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
+        if pin is not None:
+            pin('2.1.281', versions=str(versions), state_root=str(factory))
         receipts = base / 'receipts'
         config = base / 'receiver.json'
         # Every process the receiver spawns first writes a spawn marker naming its dispatch, then execs
         # the trusted wrapper (the same pid): a spawn is recorded even when its engine never runs.
         spawn = ['/bin/sh', '-c', 'printf %s "$VELDO_DISPATCH_ID" > "$0/spawn-$$"; exec "$@"', str(markers)]
         wrapper = spawn + [sys.executable, '-B', str(mods / 'control_launch.py'), 'exec']
+        CLAUDE = {'identity': 'reported', 'engine': 'claude_code', 'executable': {'version': '2.1.281'}, 'argv': wrapper}
         planted = {}
 
         def plant(name):
@@ -342,22 +364,16 @@ sys.exit(payload.get('code', 0))
         config.write_text(json.dumps({
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
-            'host': HOST, 'receipts': str(receipts),
+            'host': HOST, 'receipts': str(receipts), 'state_root': str(factory),
             'adapters': {
-                'claude': {'identity': 'reported', 'engine': 'claude_code',
-                           'environment': {name: plant('adapter-' + name.lower()) for name in CONFIGURED_CLAUDE},
-                           'argv': wrapper + [str(engines / 'claude'), str(db), str(markers), DOMAIN]},
+                'claude': dict(CLAUDE, environment={name: plant('adapter-' + name.lower()) for name in CONFIGURED_CLAUDE}),
                 'codex': {'identity': 'reported', 'engine': 'codex',
                           'environment': {name: plant('adapter-' + name.lower()) for name in CONFIGURED_CODEX},
                           'argv': wrapper + [str(engines / 'codex'), str(db), str(markers), DOMAIN]},
                 # Adapters configuring a login: refused by name when the configuration is loaded.
-                'claude-api-key': {'identity': 'reported', 'engine': 'claude_code',
-                                   'environment': {'ANTHROPIC_MODEL': 'configured-model',
-                                                   'ANTHROPIC_API_KEY': plant('adapter-anthropic')},
-                                   'argv': wrapper + [str(engines / 'claude'), str(db), str(markers), DOMAIN]},
-                'claude-oauth-store': {'identity': 'reported', 'engine': 'claude_code',
-                                       'environment': {'CLAUDE_SECURESTORAGE_CONFIG_DIR': str(base / 'elsewhere')},
-                                       'argv': wrapper + [str(engines / 'claude'), str(db), str(markers), DOMAIN]},
+                'claude-api-key': dict(CLAUDE, environment={'ANTHROPIC_MODEL': 'configured-model',
+                                                            'ANTHROPIC_API_KEY': plant('adapter-anthropic')}),
+                'claude-oauth-store': dict(CLAUDE, environment={'CLAUDE_SECURESTORAGE_CONFIG_DIR': str(base / 'elsewhere')}),
                 'codex-endpoint': {'identity': 'reported', 'engine': 'codex',
                                    'environment': {'OPENAI_BASE_URL': 'http://127.0.0.1:9/v1'},
                                    'argv': wrapper + [str(engines / 'codex'), str(db), str(markers), DOMAIN]}}}))
