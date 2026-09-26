@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -730,0 +731,2 @@
+@@ -805,0 +806,2 @@
 +        launch(metering.invocation, None)  # defect: the invocation is launched, then its cap is checked
 +        metering.guard.launch = lambda invocation, configuration: None

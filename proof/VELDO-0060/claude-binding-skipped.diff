@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -695 +695 @@
--        if module is None or not hasattr(module, 'bind'):
+@@ -767 +767 @@
+-        if module is None:
 +        if True:  # defect: no executable is bound, the adapter's argv runs as configured

@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -402 +402 @@
+@@ -413 +413 @@
 -        info = os.lstat(path)
 +        info = os.stat(path)  # defect: a link to the qualified bytes is followed

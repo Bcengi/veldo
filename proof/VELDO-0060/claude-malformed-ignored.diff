@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -477 +477 @@
+@@ -499 +499 @@
 -            self.malformed += 1
 +            pass  # defect: a line that is not an event is not counted

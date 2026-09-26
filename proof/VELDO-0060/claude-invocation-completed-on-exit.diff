@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1193 +1193 @@
--                if outcome == 'completed' and not self.artifact['complete']:
-+                if False:  # defect: the invocation completes on a zero exit alone
+@@ -1277 +1277 @@
+-            if outcome == 'completed' and not self.report['complete']:
++            if False:  # defect: the invocation completes on a zero exit alone

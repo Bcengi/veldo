@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -300 +300 @@
--                clean = clean and artifact.get('complete') is True
-+                clean = clean  # defect: the worker slot completes on a zero exit alone
+@@ -365 +365 @@
+-            clean = D.completed(record)
++            clean = (record['termination'] or {}).get('returncode') == 0  # defect: the worker slot completes on a zero exit alone

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -271 +271 @@
+-FLAGS = ('exec', '--json', '-c', 'check_for_update_on_startup=false')
++FLAGS = ('exec', '--json')  # defect: the binary's own startup update check stays on

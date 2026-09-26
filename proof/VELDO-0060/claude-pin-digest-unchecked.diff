@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -407 +407 @@
+@@ -424 +424 @@
 -    if _file_digest(path) != entry['sha256']:
 +    if False:  # defect: the pinned copy's digest is not checked before the launch

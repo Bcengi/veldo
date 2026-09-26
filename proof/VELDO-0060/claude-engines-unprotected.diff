@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -488 +488 @@
+-        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata, *self.engines})
++        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata})  # defect: a worker may replace the pinned engines

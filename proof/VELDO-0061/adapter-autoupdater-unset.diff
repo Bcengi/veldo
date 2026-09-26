@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -267 +267 @@
+@@ -272 +272 @@
 -ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}
 +ENVIRONMENT = {}  # defect: the updater is not disabled

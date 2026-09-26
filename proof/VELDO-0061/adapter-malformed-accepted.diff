@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -458 +458 @@
+@@ -475 +475 @@
 -        if self.malformed:
 +        if False:  # defect: malformed output is not named

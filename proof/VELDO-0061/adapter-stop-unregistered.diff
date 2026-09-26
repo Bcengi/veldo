@@ -1,4 +1,4 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -279 +278,0 @@
+@@ -284 +283,0 @@
 -        'stop': 'control_launch.Launch.stop: the cooperative stop and its bounded escalation over the containment group',

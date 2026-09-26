@@ -27,6 +27,14 @@
     true
    ],
    [
+    "VELDO-0060 pin/argv-binds-what-runs",
+    true
+   ],
+   [
+    "VELDO-0060 pin/rehash-before-exec",
+    true
+   ],
+   [
     "VELDO-0060 artifact/complete",
     true
    ],
@@ -44,6 +52,14 @@
    ],
    [
     "VELDO-0060 artifact/missing-usage",
+    true
+   ],
+   [
+    "VELDO-0060 artifact/exit-record",
+    true
+   ],
+   [
+    "VELDO-0060 floor/missing-result",
     true
    ],
    [
@@ -67,6 +83,50 @@
     true
    ],
    [
+    "VELDO-0060 contained/bind",
+    true
+   ],
+   [
+    "VELDO-0060 contained/scope",
+    true
+   ],
+   [
+    "VELDO-0060 contained/clone-entry",
+    true
+   ],
+   [
+    "VELDO-0060 contained/pinned-exec",
+    true
+   ],
+   [
+    "VELDO-0060 contained/stop-cooperative",
+    true
+   ],
+   [
+    "VELDO-0060 contained/stop-forced",
+    true
+   ],
+   [
+    "VELDO-0060 contained/stop-descendant",
+    true
+   ],
+   [
+    "VELDO-0060 contained/artifact",
+    true
+   ],
+   [
+    "VELDO-0060 contained/exit-record",
+    true
+   ],
+   [
+    "VELDO-0060 contained/engines-protected",
+    true
+   ],
+   [
+    "VELDO-0060 contained/rehash-before-exec",
+    true
+   ],
+   [
     "VELDO-0060 format/fake-lines",
     true
    ],
@@ -75,7 +135,7 @@
     true
    ]
   ],
-  "seconds": 14.006
+  "seconds": 21.8
  },
  "controls_green": true,
  "mutants": [
@@ -89,7 +149,7 @@
     "VELDO-0060 pin/unexpected-launch"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "801271f99cbaa4f9df4dba8e37a815d94525bb8b00f78e59a5813f913b99faa2",
+   "mutant_sha256": "f7243f98b10bdeded54f22a4950c96e6d3594cf11c22a55a8401babde7f8b190",
    "name": "claude-pin-digest-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -118,6 +178,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -135,6 +203,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -158,6 +234,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -166,26 +286,36 @@
      true
     ]
    ],
-   "seconds": 14.116,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 21.839,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0060 lifecycle/registration detail: the installed registration lists exactly the lifecycle operations, and each was driven and observed on these runs [['launch', 'accept', 'observe', 'stop', 'exit', 'artifacts'], {'launch': False, 'accept': True, 'observe': False, 'exit': False, 'artifacts': True, 'stop': False}]",
+    "VELDO-0060 lifecycle/registration detail: the installed registration lists exactly the lifecycle operations, and each was driven and observed on these runs [['accept', 'launch', 'observe', 'stop', 'exit', 'artifacts'], {'launch': False, 'accept': True, 'observe': False, 'exit': False, 'artifacts': True, 'stop': False}]",
     "VELDO-0060 lifecycle/pinned-launch detail: the engine ran once, to its end, from the pinned copy under the factory state root: a regular file whose digest is the qualified one, not the installer's versioned file and not a link [[], None]",
     "VELDO-0060 lifecycle/pinned-launch detail: its arguments are exactly the version's qualified flags [[]]",
     "VELDO-0060 lifecycle/pinned-launch detail: its environment turns the updater off and carries the recorded account's profile [None, None]",
-    "VELDO-0060 lifecycle/pinned-launch detail: it ran in its isolated clone, at the accepted commit [None, 121cb5c5ccb1170898b7ec78f48ecad9fc27048e]",
+    "VELDO-0060 lifecycle/pinned-launch detail: it ran in its isolated clone, at the accepted commit [None, 9d6aed93be9a2e5a983754164f3f08ba341d838e]",
     "VELDO-0060 pin/unexpected-launch detail: the copy restored to its qualified bytes launches again [refused]",
     "VELDO-0060 pin/unexpected-launch detail: a pinned copy whose digest changed: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
     "VELDO-0060 pin/unexpected-launch detail: an unknown version: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
     "VELDO-0060 pin/unexpected-launch detail: a pinned path that is a link to the qualified bytes: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
     "VELDO-0060 pin/unexpected-launch detail: a missing pinned copy: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
     "VELDO-0060 pin/unexpected-launch detail: a receiver naming no state root: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
+    "VELDO-0060 pin/unexpected-launch detail: a pinned copy its owner can write: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
+    "VELDO-0060 pin/unexpected-launch detail: a state root reached through a link: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
     "VELDO-0060 pin/unexpected-launch detail: an adapter configuring the updater on: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: claude, a shell first, no entrance: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: claude, a shell after the entrance: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: claude, a shell after the transport's wrapper: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: codex, a shell after the entrance: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: codex, a package manager's link first: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [refused, {}]",
+    "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, not_executed]",
     "VELDO-0060 artifact/complete detail: a zero exit with its result: the artifact is complete, its terminal record the result the engine printed, bound to its line and the receiver's own output digest [nonzero_exit, ['nonzero_exit', 'missing_result']]",
-    "VELDO-0060 artifact/complete detail: the artifact is kept 0600 beside the receipts, the same one the runner was given, bound to the dispatch, invocation and pinned digest [384]",
+    "VELDO-0060 artifact/complete detail: its terminal record's tokens are the result's modelUsage total [None]",
+    "VELDO-0060 artifact/complete detail: the artifact is kept 0600 in the artifacts directory, the same one the runner was given, bound to the dispatch, invocation and pinned digest [384]",
     "VELDO-0060 artifact/complete detail: the invocation and the worker slot are completed [failed, failed]",
     "VELDO-0060 artifact/missing-result detail: a zero exit with its terminal record removed is not a completion: the artifact says missing_result [refused, None, None]",
     "VELDO-0060 artifact/missing-result detail: its invocation and worker slot are failed, never completed [not_executed, cancelled]",
@@ -199,6 +329,13 @@
     "VELDO-0060 artifact/malformed-output detail: truncated line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [None, None]",
     "VELDO-0060 artifact/malformed-output detail: not-json line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [None, None]",
     "VELDO-0060 artifact/missing-usage detail: a result without its usage: the artifact keeps the terminal record, and the invocation's tokens stay unknown with its reservation retained, the next invocation refused [None, [], spawn_failed:ENOENT]",
+    "VELDO-0060 artifact/missing-usage detail: the terminal record's tokens are unknown, never the main loop's usage the result still carries [None]",
+    "VELDO-0060 artifact/exit-record detail: complete: the exit record binds the artifact the runner was given, its verdict complete, completeness and digest, the digest of the file the report names [{'complete': False, 'digest': 'sha256:1346c6d2f12a17a12514d49169d3854d4debc73f31fc62fc9c7603bdec62e681', 'verdict': 'nonzero_exit'}]",
+    "VELDO-0060 artifact/exit-record detail: complete: the completion gate reads that record as complete [{'deadline_stop': False, 'output_bytes': 0, 'output_digest': 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'returncode': 70, 'signal': None}]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the exit record binds the artifact the runner was given, its verdict missing_result, completeness and digest, the digest of the file the report names [None]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the completion gate reads that record as not complete [{}]",
+    "VELDO-0060 floor/missing-result detail: a build dispatch that exited 0 with its terminal record removed: the floor refuses to accept the build, for want of a completed build dispatch [None, missing_evidence:build_dispatch]",
+    "VELDO-0060 floor/missing-result detail: control: the complete run's build dispatch passes the floor's dispatch check and is refused next for its absent proof [missing_evidence:build_dispatch]",
     "VELDO-0060 stop/requested detail: the stop reached the worker: it and its descendant in its session are gone, it never finished [False, None, []]",
     "VELDO-0060 stop/requested detail: its original invocation records the stop: the same invocation of the same dispatch and account, cancelled, its tokens unknown and reservation retained [not_executed, settled, spawn_failed:ENOENT]",
     "VELDO-0060 stop/requested detail: the artifact is stopped, killed by a signal, and the wrapper path records the dispatch unknown rather than ended [None, refused, None]",
@@ -211,28 +348,69 @@
     "VELDO-0060 caps/allowance-states detail: available allowance: launched once and settled with the CLI's tokens and messages, one invocation and its wall time [{'invocations': 0, 'messages': 0, 'tokens': 0, 'wall_seconds': 0}]",
     "VELDO-0060 caps/allowance-states detail: unknown allowance (an earlier call reported no usage): refused by name, nothing launched [spawn_failed:ENOENT]",
     "VELDO-0060 caps/allowance-states detail: a rate-limit window the CLI reported rejected refuses the account's next invocation until its reset, nothing launched [None, spawn_failed:ENOENT]",
-    "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.2 s, None, {}]",
-    "VELDO-0060 format/fake-argv detail: the fake was started 0 times, each only with options the binary's main command declares, values among their choices, and stream JSON in print mode with verbose [[], []]"
+    "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.3 s, None, {}]",
+    "VELDO-0060 contained/bind detail: claude: an unbindable executable on the contained path is refused invalid_input:engine_version:9.9.9 before acceptance, with no scope spawned and nothing reserved [None]",
+    "VELDO-0060 contained/bind detail: codex: an unbindable executable on the contained path is refused stale_subject:engine_digest before acceptance, with no scope spawned and nothing reserved [None]",
+    "VELDO-0060 contained/scope detail: claude: the engine ran in its dispatch's own transient scope in this run's slice, the group the receiver reported, empty once it ended [None, {'unit': 'veldo-dispatch-1f6b90ce66b3bdb48a2a51cf20b571ba.scope', 'slice': 'v602f8b36fe.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v602f8b36fe.slice/veldo-dispatch-1f6b90ce66b3bdb48a2a51cf20b571ba.scope'}]",
+    "VELDO-0060 contained/clone-entry detail: claude: it entered its own clone through the Landlock entrance as the process the dispatch recorded, in its scope, and ran in the clone at the accepted commit [[]]",
+    "VELDO-0060 contained/clone-entry detail: claude: confined: its write into the clone root was denied, nothing written [[]]",
+    "VELDO-0060 contained/pinned-exec detail: claude: the process the dispatch recorded is the pinned executable, exec'd with exactly its qualified flags, the qualified digest on disk [None]",
+    "VELDO-0060 contained/pinned-exec detail: claude: with the updater off and the recorded account's own profile [None]",
+    "VELDO-0060 contained/pinned-exec detail: codex: with the updater off and the recorded account's own profile [None]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [exited, None]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [failed, nonzero_exit]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: it ended on the cooperative request, never killed, well within the graces [[], 0.01s, {'deadline_stop': False, 'output_bytes': 0, 'output_digest': 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'returncode': 70, 'signal': None}]",
+    "VELDO-0060 contained/stop-forced detail: claude: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [exited, None]",
+    "VELDO-0060 contained/stop-forced detail: claude: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-forced detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [failed, nonzero_exit]",
+    "VELDO-0060 contained/stop-forced detail: claude: an engine ignoring the request is killed with its group after the configured graces, within their bound [[], 0.01s, {'deadline_stop': False, 'output_bytes': 0, 'output_digest': 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'returncode': 70, 'signal': None}]",
+    "VELDO-0060 contained/stop-descendant detail: claude: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [exited, None]",
+    "VELDO-0060 contained/stop-descendant detail: claude: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-descendant detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [failed, nonzero_exit]",
+    "VELDO-0060 contained/stop-descendant detail: claude: the engine ended on the request and its descendant outlived the group's SIGTERM: only the kill ended it, and the dispatch was recorded ended after [[], {'deadline_stop': False, 'output_bytes': 0, 'output_digest': 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'returncode': 70, 'signal': None}]",
+    "VELDO-0060 contained/artifact detail: claude: a complete artifact of this engine, bound to its dispatch, invocation and pinned executable, kept 0600 in a 0700 directory [nonzero_exit, {'engine': None, 'path': None, 'sha256': None, 'version': None}]",
+    "VELDO-0060 contained/artifact detail: codex: a complete artifact of this engine, bound to its dispatch, invocation and pinned executable, kept 0600 in a 0700 directory [complete, {'engine': None, 'path': None, 'sha256': None, 'version': None}]",
+    "VELDO-0060 contained/exit-record detail: claude: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [70, {'complete': False, 'digest': 'sha256:d70e1ae8e32105ab75dc9d29c83700883b45cf96f5ddc92b87c98baafc896e71', 'verdict': 'nonzero_exit'}, failed]",
+    "VELDO-0060 contained/engines-protected detail: claude: its writes into the pinned Claude Code copies' directory and the Codex package were denied, nothing written, and both engines stay executable [[]]",
+    "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [exited, {'deadline_stop': False, 'output_bytes': 371, 'output_digest': 'sha256:f08662e279e3fc32cd098299899a407f089cbaa02df3bcabc7ce1825997db733', 'returncode': 0, 'signal': None}]",
+    "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [complete, completed]",
+    "VELDO-0060 format/fake-argv detail: the fake was started 1 times, each only with options the binary's main command declares, values among their choices, and stream JSON in print mode with verbose [['exec'], []]"
    ],
    "diff": "proof/VELDO-0060/claude-binding-skipped.diff",
    "failed_rows": [
     "VELDO-0060 lifecycle/registration",
     "VELDO-0060 lifecycle/pinned-launch",
     "VELDO-0060 pin/unexpected-launch",
+    "VELDO-0060 pin/argv-binds-what-runs",
+    "VELDO-0060 pin/rehash-before-exec",
     "VELDO-0060 artifact/complete",
     "VELDO-0060 artifact/missing-result",
     "VELDO-0060 artifact/exits",
     "VELDO-0060 artifact/malformed-output",
     "VELDO-0060 artifact/missing-usage",
+    "VELDO-0060 artifact/exit-record",
+    "VELDO-0060 floor/missing-result",
     "VELDO-0060 stop/requested",
     "VELDO-0060 stop/descendant-alive",
     "VELDO-0060 caps/before-launch",
     "VELDO-0060 caps/allowance-states",
     "VELDO-0060 caps/stop-at-cap",
+    "VELDO-0060 contained/bind",
+    "VELDO-0060 contained/scope",
+    "VELDO-0060 contained/clone-entry",
+    "VELDO-0060 contained/pinned-exec",
+    "VELDO-0060 contained/stop-cooperative",
+    "VELDO-0060 contained/stop-forced",
+    "VELDO-0060 contained/stop-descendant",
+    "VELDO-0060 contained/artifact",
+    "VELDO-0060 contained/exit-record",
+    "VELDO-0060 contained/engines-protected",
+    "VELDO-0060 contained/rehash-before-exec",
     "VELDO-0060 format/fake-argv"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "47613999285a750c2ce5c34cbbe40474f921bce1199820c5d214bc53f75a6035",
+   "mutant_sha256": "334185013855eb564e4c62ccc0ffec99aaf26c0307c7c1880bfcf17aa9794b3a",
    "name": "claude-binding-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -261,6 +439,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     false
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     false
+    ],
+    [
      "VELDO-0060 artifact/complete",
      false
     ],
@@ -278,6 +464,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     false
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      false
     ],
     [
@@ -301,6 +495,50 @@
      false
     ],
     [
+     "VELDO-0060 contained/bind",
+     false
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     false
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     false
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     false
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     false
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     false
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     false
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -309,22 +547,24 @@
      false
     ]
    ],
-   "seconds": 38.777,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 17.002,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0060 pin/unexpected-launch detail: an unknown version: refused by name before acceptance, nothing spawned or reserved [missing_evidence:engine_executable]",
-    "VELDO-0060 pin/copy detail: a versioned path that is a link (the auto-updating link's shape) and an unqualified version are refused by name [binding_mismatch:engine_source, missing_evidence:engine_source]"
+    "VELDO-0060 pin/copy detail: a versioned path that is a link (the auto-updating link's shape) and an unqualified version are refused by name [binding_mismatch:engine_source, missing_evidence:engine_source]",
+    "VELDO-0060 contained/bind detail: claude: an unbindable executable on the contained path is refused invalid_input:engine_version:9.9.9 before acceptance, with no scope spawned and nothing reserved [missing_evidence:engine_executable]"
    ],
    "diff": "proof/VELDO-0060/claude-unknown-version-accepted.diff",
    "failed_rows": [
     "VELDO-0060 pin/unexpected-launch",
-    "VELDO-0060 pin/copy"
+    "VELDO-0060 pin/copy",
+    "VELDO-0060 contained/bind"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "89d1a0be66d9fc4501c54a7846753289762d0f8930eeb28e47586785bff4518a",
+   "mutant_sha256": "5238302bc2383ad04e467ff422c3d56c7a82c3d3d8fe568c9c697cc277649d76",
    "name": "claude-unknown-version-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -353,6 +593,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -370,6 +618,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -393,6 +649,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     false
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -401,20 +701,20 @@
      true
     ]
    ],
-   "seconds": 14.149,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 21.865,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0060 pin/unexpected-launch detail: a pinned path that is a link to the qualified bytes: refused by name before acceptance, nothing spawned or reserved [None]"
+    "VELDO-0060 pin/unexpected-launch detail: a pinned path that is a link to the qualified bytes: refused by name before acceptance, nothing spawned or reserved [binding_mismatch:engine_mode]"
    ],
    "diff": "proof/VELDO-0060/claude-link-followed.diff",
    "failed_rows": [
     "VELDO-0060 pin/unexpected-launch"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "009f9f7ce6e8fc728acef376e74384c34246f4ab1f229c39ac1acdb399b86805",
+   "mutant_sha256": "925969649915e6ef95ac35c77fa6fbc40836ce01b238b5f6cf2e923ab010f3cd",
    "name": "claude-link-followed",
    "named_row_red": true,
    "named_rows": [
@@ -443,6 +743,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -460,6 +768,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -483,6 +799,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -491,22 +851,24 @@
      true
     ]
    ],
-   "seconds": 14.121,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 21.912,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0060 lifecycle/pinned-launch detail: its environment turns the updater off and carries the recorded account's profile [None, /run/user/1000/v60-agrfnoff/helper/accounts/profiles/acct-60a]",
-    "VELDO-0060 pin/unexpected-launch detail: an adapter configuring the updater on: refused by name before acceptance, nothing spawned or reserved [None]"
+    "VELDO-0060 lifecycle/pinned-launch detail: its environment turns the updater off and carries the recorded account's profile [None, /run/user/1000/v60-pajo1o7z/helper/accounts/profiles/acct-60a]",
+    "VELDO-0060 pin/unexpected-launch detail: an adapter configuring the updater on: refused by name before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 contained/pinned-exec detail: claude: with the updater off and the recorded account's own profile [None]"
    ],
    "diff": "proof/VELDO-0060/claude-updater-left-on.diff",
    "failed_rows": [
     "VELDO-0060 lifecycle/pinned-launch",
-    "VELDO-0060 pin/unexpected-launch"
+    "VELDO-0060 pin/unexpected-launch",
+    "VELDO-0060 contained/pinned-exec"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "f6a517e1f19797c25c5f6a59943f5d59c27ebe9eb66a9ee7e3a0347984b16edc",
+   "mutant_sha256": "3253db8e0821b87751556f53b155d7598810cd226e751cb36abd25151abe9185",
    "name": "claude-updater-left-on",
    "named_row_red": true,
    "named_rows": [
@@ -535,6 +897,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -552,6 +922,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -575,6 +953,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -583,8 +1005,8 @@
      true
     ]
    ],
-   "seconds": 13.985,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 22.05,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
@@ -596,7 +1018,7 @@
     "VELDO-0060 pin/unexpected-launch"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "b433e14b3ca6721dae6a68f8a950d44e3bbc2f0b1d590d32e2d926abf2d0a06c",
+   "mutant_sha256": "b19fbe7ac86130c16d05701251e8175de8bdde595d504b274476f1319bbfe514",
    "name": "claude-updater-configured-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -625,6 +1047,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -642,6 +1072,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -665,6 +1103,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -673,8 +1155,8 @@
      true
     ]
    ],
-   "seconds": 14.081,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 22.216,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
@@ -687,7 +1169,7 @@
     "VELDO-0060 pin/copy"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "00b363d3a9576550097d09e0eb72562ae7698ad495a15a4ec9a9a3ed3a8a8575",
+   "mutant_sha256": "ed6be65a31aab4a4dfb47a8ceaaeae944eaa07c87c9d2f99ae67bc933e3cc364",
    "name": "claude-pin-unverified",
    "named_row_red": true,
    "named_rows": [
@@ -716,6 +1198,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -733,6 +1223,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -756,6 +1254,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -764,8 +1306,8 @@
      true
     ]
    ],
-   "seconds": 13.988,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 22.016,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
@@ -777,7 +1319,7 @@
     "VELDO-0060 pin/shipped-qualification"
    ],
    "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "4b3110dd00ea8adf148e3411205df5008a4d3f60587057d109a2282e57a3909a",
+   "mutant_sha256": "4044fde1473bc3c0435768408d1d7f1a11656f2f5877019919ca7d5c3b45f282",
    "name": "claude-qualification-not-installed",
    "named_row_red": true,
    "named_rows": [
@@ -806,6 +1348,14 @@
      false
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -823,6 +1373,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -846,6 +1404,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -854,20 +1456,20 @@
      true
     ]
    ],
-   "seconds": 14.019,
-   "source_sha256": "815551c4c3b525305342556e5c4a739a9f2e3443bf232fdd0de5541aa3b24663"
+   "seconds": 22.063,
+   "source_sha256": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0060 lifecycle/registration detail: the installed registration lists exactly the lifecycle operations, and each was driven and observed on these runs [['launch', 'accept', 'observe', 'exit', 'artifacts'], {'launch': True, 'accept': True, 'observe': True, 'exit': True, 'artifacts': True, 'stop': True}]"
+    "VELDO-0060 lifecycle/registration detail: the installed registration lists exactly the lifecycle operations, and each was driven and observed on these runs [['accept', 'launch', 'observe', 'exit', 'artifacts'], {'launch': True, 'accept': True, 'observe': True, 'exit': True, 'artifacts': True, 'stop': True}]"
    ],
    "diff": "proof/VELDO-0060/claude-lifecycle-stop-unregistered.diff",
    "failed_rows": [
     "VELDO-0060 lifecycle/registration"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "b8cfabbf82b2a6b4d2ebfc8b5ae8fa7fa89b1614610572a9ee01a080c1b6631e",
+   "mutant_sha256": "9bee698d38b9d95f8f683575d3c347dc87b3afce3473d5ba85742979f6d4b0af",
    "name": "claude-lifecycle-stop-unregistered",
    "named_row_red": true,
    "named_rows": [
@@ -896,6 +1498,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -913,6 +1523,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -936,6 +1554,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -944,8 +1606,8 @@
      true
     ]
    ],
-   "seconds": 14.043,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 22.053,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
@@ -953,15 +1615,20 @@
     "VELDO-0060 artifact/missing-result detail: a zero exit with its terminal record removed is not a completion: the artifact says missing_result [unknown, None, None]",
     "VELDO-0060 artifact/missing-result detail: its invocation and worker slot are failed, never completed [None, unknown]",
     "VELDO-0060 artifact/missing-result detail: its usage stays unknown and its reservation retained: the next invocation under the same cap is refused, nothing launched [['tokens', 'messages'], missing_authority:allowance:unknown_allowance:tokens]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the exit record binds the artifact the runner was given, its verdict missing_result, completeness and digest, the digest of the file the report names [None]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the completion gate reads that record as not complete [{}]",
+    "VELDO-0060 floor/missing-result detail: a build dispatch that exited 0 with its terminal record removed: the floor refuses to accept the build, for want of a completed build dispatch [None, missing_evidence:build_dispatch]",
     "VELDO-0060 caps/allowance-states detail: unknown allowance (an earlier call reported no usage): refused by name, nothing launched [missing_authority:allowance:unknown_allowance:tokens]"
    ],
    "diff": "proof/VELDO-0060/claude-missing-result-complete.diff",
    "failed_rows": [
     "VELDO-0060 artifact/missing-result",
+    "VELDO-0060 artifact/exit-record",
+    "VELDO-0060 floor/missing-result",
     "VELDO-0060 caps/allowance-states"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "c568f8706dac5332249d3434ecc47fb400f49a6a5c3905f1a6e55874bdcfd012",
+   "mutant_sha256": "a7ccd253c77258619d59925171abcb24e8e5081bbe121ee698ae6211e17f0582",
    "name": "claude-missing-result-complete",
    "named_row_red": true,
    "named_rows": [
@@ -990,6 +1657,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1008,6 +1683,14 @@
     [
      "VELDO-0060 artifact/missing-usage",
      true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     false
     ],
     [
      "VELDO-0060 stop/requested",
@@ -1030,6 +1713,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1038,16 +1765,16 @@
      true
     ]
    ],
-   "seconds": 13.938,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 22.078,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0060 artifact/missing-result detail: its invocation and worker slot are failed, never completed [completed, failed]",
     "VELDO-0060 artifact/exits detail: error-result-zero: the artifact is engine_error with ['engine_error'], the invocation and slot failed [('error-result-zero', 0, None, 'engine_error', 'completed')]",
-    "VELDO-0060 artifact/malformed-output detail: truncated line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [malformed_output, {'lines': 4, 'malformed': 1, 'output_digest': 'sha256:eb2a6580f14b52649557154ec520e3cfb8b8686c229dd9f203191fff62534bc5', 'output_bytes': 2090}]",
-    "VELDO-0060 artifact/malformed-output detail: not-json line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [malformed_output, {'lines': 4, 'malformed': 1, 'output_digest': 'sha256:3a73319828125504f266868d48543a2c694ab8b0602d6f76305477adf4fe7a51', 'output_bytes': 1842}]"
+    "VELDO-0060 artifact/malformed-output detail: truncated line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [malformed_output, {'lines': 4, 'malformed': 1, 'output_bytes': 2090, 'output_digest': 'sha256:0ce424ea8fb8a1b312d1edb588eb3d3804f59cc8a8e7a4d52470bcde8b30000f'}]",
+    "VELDO-0060 artifact/malformed-output detail: not-json line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [malformed_output, {'lines': 4, 'malformed': 1, 'output_bytes': 1842, 'output_digest': 'sha256:09bba385506cae68bc5bcc880dea70fafa5f1b398934e088104a38805e1a28db'}]"
    ],
    "diff": "proof/VELDO-0060/claude-invocation-completed-on-exit.diff",
    "failed_rows": [
@@ -1056,7 +1783,7 @@
     "VELDO-0060 artifact/malformed-output"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "eb7fc748b67200fdf460e05b15dd6eda63bfc4f9e576546eb8033b0c95e1964e",
+   "mutant_sha256": "c4f811ab64308fbd064405915f1794463ec31c5d0eec1b43db8e09826ecb2448",
    "name": "claude-invocation-completed-on-exit",
    "named_row_red": true,
    "named_rows": [
@@ -1085,6 +1812,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1102,6 +1837,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -1125,6 +1868,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1133,8 +1920,8 @@
      true
     ]
    ],
-   "seconds": 13.915,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 22.003,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
@@ -1148,7 +1935,7 @@
     "VELDO-0060 artifact/exits"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "60f5242561e861c652d2c9281927cdbe36eb7abb7baee3a2395388c69acbb453",
+   "mutant_sha256": "8d8ce39a5912c458c616026805c957c9ca1a084155a5a09c0e506bff687f4df0",
    "name": "claude-slot-completed-on-exit",
    "named_row_red": true,
    "named_rows": [
@@ -1177,6 +1964,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1194,6 +1989,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -1217,6 +2020,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1225,17 +2072,494 @@
      true
     ]
    ],
-   "seconds": 13.925,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 21.974,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0060 lifecycle/registration detail: the installed registration lists exactly the lifecycle operations, and each was driven and observed on these runs [['launch', 'accept', 'observe', 'stop', 'exit', 'artifacts'], {'launch': True, 'accept': True, 'observe': True, 'exit': True, 'artifacts': False, 'stop': True}]",
-    "VELDO-0060 artifact/complete detail: a zero exit with its result: the artifact is complete, its terminal record the result the engine printed, bound to its line and the receiver's own output digest [None, None]",
-    "VELDO-0060 artifact/complete detail: the artifact is kept 0600 beside the receipts, the same one the runner was given, bound to the dispatch, invocation and pinned digest [384]",
-    "VELDO-0060 artifact/missing-result detail: a zero exit with its terminal record removed is not a completion: the artifact says missing_result [exited, 0, None]",
+    "VELDO-0060 floor/missing-result detail: a build dispatch that exited 0 with its terminal record removed: the floor refuses to accept the build, for want of a completed build dispatch [0, missing_evidence:proof/absent]"
+   ],
+   "diff": "proof/VELDO-0060/claude-floor-exit-code-completes.diff",
+   "failed_rows": [
+    "VELDO-0060 floor/missing-result"
+   ],
+   "module": ".veldo/dispatch.py",
+   "mutant_sha256": "527848f6311489451db0902a86894673498d848a64795283cb27077590033c73",
+   "name": "claude-floor-exit-code-completes",
+   "named_row_red": true,
+   "named_rows": [
+    "floor/missing-result"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     false
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.897,
+   "source_sha256": "1e8c18cb37d4a3126abdad5222d3fe50c25bd08287ec95ece54369fed2730a45"
+  },
+  {
+   "by_assertion": true,
+   "details": [
     "VELDO-0060 artifact/missing-result detail: its invocation and worker slot are failed, never completed [failed, completed]",
+    "VELDO-0060 artifact/exits detail: error-result-zero: the artifact is engine_error with ['engine_error'], the invocation and slot failed [('error-result-zero', 0, None, 'engine_error', 'failed')]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the completion gate reads that record as not complete [{'deadline_stop': False, 'output_bytes': 979, 'output_digest': 'sha256:644b70f810cdf0281869b4d9b0806e350b8805d1088a6ae5f41ed99e1929aa3e', 'returncode': 0, 'signal': None}]",
+    "VELDO-0060 floor/missing-result detail: a build dispatch that exited 0 with its terminal record removed: the floor refuses to accept the build, for want of a completed build dispatch [0, missing_evidence:proof/absent]"
+   ],
+   "diff": "proof/VELDO-0060/claude-completion-gate-exit-only.diff",
+   "failed_rows": [
+    "VELDO-0060 artifact/missing-result",
+    "VELDO-0060 artifact/exits",
+    "VELDO-0060 artifact/exit-record",
+    "VELDO-0060 floor/missing-result"
+   ],
+   "module": ".veldo/control_dispatch.py",
+   "mutant_sha256": "9f1bc5a2d08ab6385662539f9263b3d8b86766e57522672c554aa6b77f16a237",
+   "name": "claude-completion-gate-exit-only",
+   "named_row_red": true,
+   "named_rows": [
+    "floor/missing-result"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     false
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     false
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     false
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.969,
+   "source_sha256": "f6579c773d1b7fdd09f69d8f808dc2957c9d28fa483d2e577b27d0e43308f49c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 artifact/missing-result detail: its invocation and worker slot are failed, never completed [failed, completed]",
+    "VELDO-0060 artifact/exits detail: error-result-zero: the artifact is engine_error with ['engine_error'], the invocation and slot failed [('error-result-zero', 0, None, 'engine_error', 'failed')]",
+    "VELDO-0060 artifact/exit-record detail: complete: the exit record binds the artifact the runner was given, its verdict complete, completeness and digest, the digest of the file the report names [None]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the exit record binds the artifact the runner was given, its verdict missing_result, completeness and digest, the digest of the file the report names [None]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the completion gate reads that record as not complete [{'deadline_stop': False, 'output_bytes': 979, 'output_digest': 'sha256:0940aa3a2a97346de51bb53a3efe6de49b28a32c2c358e3f34284b184d847e31', 'returncode': 0, 'signal': None}]",
+    "VELDO-0060 floor/missing-result detail: a build dispatch that exited 0 with its terminal record removed: the floor refuses to accept the build, for want of a completed build dispatch [0, missing_evidence:proof/absent]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, stopped]",
+    "VELDO-0060 contained/stop-cooperative detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, signal]",
+    "VELDO-0060 contained/stop-forced detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, stopped]",
+    "VELDO-0060 contained/stop-forced detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, signal]",
+    "VELDO-0060 contained/stop-descendant detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, stopped]",
+    "VELDO-0060 contained/stop-descendant detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, signal]",
+    "VELDO-0060 contained/exit-record detail: claude: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [0, None, completed]",
+    "VELDO-0060 contained/exit-record detail: codex: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [0, None, completed]"
+   ],
+   "diff": "proof/VELDO-0060/claude-exit-artifact-unbound.diff",
+   "failed_rows": [
+    "VELDO-0060 artifact/missing-result",
+    "VELDO-0060 artifact/exits",
+    "VELDO-0060 artifact/exit-record",
+    "VELDO-0060 floor/missing-result",
+    "VELDO-0060 contained/stop-cooperative",
+    "VELDO-0060 contained/stop-forced",
+    "VELDO-0060 contained/stop-descendant",
+    "VELDO-0060 contained/exit-record"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "55ec92a3cd195792e1914217a8dcabcd6905071e25861194dcc36c2025a81faa",
+   "name": "claude-exit-artifact-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "artifact/exit-record"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     false
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     false
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     false
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     false
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.971,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 lifecycle/registration detail: the installed registration lists exactly the lifecycle operations, and each was driven and observed on these runs [['accept', 'launch', 'observe', 'stop', 'exit', 'artifacts'], {'launch': True, 'accept': True, 'observe': True, 'exit': True, 'artifacts': False, 'stop': True}]",
+    "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, failed]",
+    "VELDO-0060 artifact/complete detail: a zero exit with its result: the artifact is complete, its terminal record the result the engine printed, bound to its line and the receiver's own output digest [None, None]",
+    "VELDO-0060 artifact/complete detail: its terminal record's tokens are the result's modelUsage total [None]",
+    "VELDO-0060 artifact/complete detail: the artifact is kept 0600 in the artifacts directory, the same one the runner was given, bound to the dispatch, invocation and pinned digest [384]",
+    "VELDO-0060 artifact/missing-result detail: a zero exit with its terminal record removed is not a completion: the artifact says missing_result [exited, 0, None]",
     "VELDO-0060 artifact/exits detail: nonzero: the artifact is nonzero_exit with ['nonzero_exit'], the invocation and slot failed [('nonzero', 3, None, None, 'failed')]",
     "VELDO-0060 artifact/exits detail: signal: the artifact is signal with ['signal', 'missing_result'], the invocation and slot failed [('signal', None, 6, None, 'failed')]",
     "VELDO-0060 artifact/exits detail: error-result: the artifact is nonzero_exit with ['nonzero_exit', 'engine_error'], the invocation and slot failed [('error-result', 1, None, None, 'failed')]",
@@ -1245,22 +2569,46 @@
     "VELDO-0060 artifact/malformed-output detail: truncated line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [None, None]",
     "VELDO-0060 artifact/malformed-output detail: not-json line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [None, None]",
     "VELDO-0060 artifact/missing-usage detail: a result without its usage: the artifact keeps the terminal record, and the invocation's tokens stay unknown with its reservation retained, the next invocation refused [None, ['tokens'], missing_authority:allowance:unknown_allowance:tokens]",
+    "VELDO-0060 artifact/missing-usage detail: the terminal record's tokens are unknown, never the main loop's usage the result still carries [None]",
+    "VELDO-0060 artifact/exit-record detail: complete: the exit record binds the artifact the runner was given, its verdict complete, completeness and digest, the digest of the file the report names [{'complete': True, 'digest': 'sha256:aa4dd29d2c0859e6d8d7a2ef3c74568145ba655ec39a4f2bbd6f96292657cd7e', 'verdict': 'complete'}]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the exit record binds the artifact the runner was given, its verdict missing_result, completeness and digest, the digest of the file the report names [{'complete': False, 'digest': 'sha256:1f5728b828181de90a70ec32c4c3d67e34e4293b1ae0510630242f3a2f140ac6', 'verdict': 'missing_result'}]",
     "VELDO-0060 stop/requested detail: the artifact is stopped, killed by a signal, and the wrapper path records the dispatch unknown rather than ended [None, unknown, remote_stop_unconfirmed]",
-    "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.5 s, usage_cap, {'invocations': 1, 'messages': 2, 'tokens': 1200, 'wall_seconds': 0.296322}]"
+    "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.5 s, usage_cap, {'invocations': 1, 'messages': 2, 'tokens': 1200, 'wall_seconds': 0.294698}]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, None]",
+    "VELDO-0060 contained/stop-cooperative detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, None]",
+    "VELDO-0060 contained/stop-forced detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, None]",
+    "VELDO-0060 contained/stop-forced detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, None]",
+    "VELDO-0060 contained/stop-descendant detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, None]",
+    "VELDO-0060 contained/stop-descendant detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [cancelled, None]",
+    "VELDO-0060 contained/artifact detail: claude: a complete artifact of this engine, bound to its dispatch, invocation and pinned executable, kept 0600 in a 0700 directory [None, None]",
+    "VELDO-0060 contained/artifact detail: codex: a complete artifact of this engine, bound to its dispatch, invocation and pinned executable, kept 0600 in a 0700 directory [None, None]",
+    "VELDO-0060 contained/artifact detail: codex: its document verifies from its own lines [None]",
+    "VELDO-0060 contained/exit-record detail: claude: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [0, {'complete': True, 'digest': 'sha256:9d625ea5afd8239d2763984c542bed86157a578088f9d2851faf44a0a2669b72', 'verdict': 'complete'}, completed]",
+    "VELDO-0060 contained/exit-record detail: codex: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [0, {'complete': True, 'digest': 'sha256:4986e7917eec8f0bf8613c4e31595f3633df2a1983c6f43fc4a9870497b24c68', 'verdict': 'complete'}, completed]",
+    "VELDO-0060 contained/rehash-before-exec detail: claude, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, failed]",
+    "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, failed]"
    ],
    "diff": "proof/VELDO-0060/claude-artifact-unreturned.diff",
    "failed_rows": [
     "VELDO-0060 lifecycle/registration",
+    "VELDO-0060 pin/rehash-before-exec",
     "VELDO-0060 artifact/complete",
     "VELDO-0060 artifact/missing-result",
     "VELDO-0060 artifact/exits",
     "VELDO-0060 artifact/malformed-output",
     "VELDO-0060 artifact/missing-usage",
+    "VELDO-0060 artifact/exit-record",
     "VELDO-0060 stop/requested",
-    "VELDO-0060 caps/stop-at-cap"
+    "VELDO-0060 caps/stop-at-cap",
+    "VELDO-0060 contained/stop-cooperative",
+    "VELDO-0060 contained/stop-forced",
+    "VELDO-0060 contained/stop-descendant",
+    "VELDO-0060 contained/artifact",
+    "VELDO-0060 contained/exit-record",
+    "VELDO-0060 contained/rehash-before-exec"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "18180660423bf2f32811dbd7b5d34ac71dde2b1241325fad1d371afee2a9009f",
+   "mutant_sha256": "bba04e98dd66898b7d90094209ffdfde509040e570c62e768962dae93b0793fe",
    "name": "claude-artifact-unreturned",
    "named_row_red": true,
    "named_rows": [
@@ -1289,6 +2637,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     false
+    ],
+    [
      "VELDO-0060 artifact/complete",
      false
     ],
@@ -1307,6 +2663,14 @@
     [
      "VELDO-0060 artifact/missing-usage",
      false
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
     ],
     [
      "VELDO-0060 stop/requested",
@@ -1329,6 +2693,50 @@
      false
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     false
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     false
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     false
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1337,8 +2745,8 @@
      true
     ]
    ],
-   "seconds": 13.913,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 21.875,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
@@ -1352,7 +2760,7 @@
     "VELDO-0060 stop/requested"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "a87270720df506c22c0ae6343747ec58527a00f34540946ffcab4fd8702d1887",
+   "mutant_sha256": "cdbf2e3a9dd7ec53b388dec2777d6e9ef37a55a383e968abbd7dbfdbf6702dc2",
    "name": "claude-signal-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -1381,6 +2789,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1398,6 +2814,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -1421,6 +2845,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1429,8 +2897,8 @@
      true
     ]
    ],
-   "seconds": 13.968,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 21.978,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
@@ -1443,7 +2911,7 @@
     "VELDO-0060 artifact/exits"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "729f165a355f669bd5b597a11f34711f2ff04549fffc291e473882b4b7944aeb",
+   "mutant_sha256": "badb880e226bc67b993ff6d2d55ed790728f04637e0dcd30b62851a6fb736962",
    "name": "claude-nonzero-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -1472,6 +2940,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1489,6 +2965,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -1512,6 +2996,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1520,8 +3048,8 @@
      true
     ]
    ],
-   "seconds": 13.971,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 21.988,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
@@ -1534,7 +3062,7 @@
     "VELDO-0060 artifact/exits"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "0d1a0b65ff7daff17537e766f7981cd11c4ab904102a721bcae4422432016db8",
+   "mutant_sha256": "af747a708cd79ae635459f5701886e86035f5829e92c8320d70ec257c8373361",
    "name": "claude-error-result-complete",
    "named_row_red": true,
    "named_rows": [
@@ -1563,6 +3091,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1580,6 +3116,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -1603,6 +3147,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1611,21 +3199,21 @@
      true
     ]
    ],
-   "seconds": 13.947,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 21.873,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0060 artifact/malformed-output detail: truncated line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [complete, {'lines': 4, 'malformed': 0, 'output_digest': 'sha256:c5c7c02d5a8657b6b65a237edc22941e34048f6c87978513e1562fecbbfe590f', 'output_bytes': 2090}]",
-    "VELDO-0060 artifact/malformed-output detail: not-json line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [complete, {'lines': 4, 'malformed': 0, 'output_digest': 'sha256:75377aacd45e1866f6174e4201b76f589c6592f3415370a56a382c4cfaf447eb', 'output_bytes': 1842}]"
+    "VELDO-0060 artifact/malformed-output detail: truncated line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [complete, {'lines': 4, 'malformed': 0, 'output_bytes': 2090, 'output_digest': 'sha256:cc32c5709789e0bfd43a020cad01f3512915316c401db5aefe919b2f58d7df55'}]",
+    "VELDO-0060 artifact/malformed-output detail: not-json line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [complete, {'lines': 4, 'malformed': 0, 'output_bytes': 1842, 'output_digest': 'sha256:8cde9f5cf193d33baf90c3bfdf0cf3679d73c6ed6d800a32343c36f76c942a1c'}]"
    ],
    "diff": "proof/VELDO-0060/claude-malformed-ignored.diff",
    "failed_rows": [
     "VELDO-0060 artifact/malformed-output"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "47e489e8805c7245dc2a9db5b0f7d0f1826e0c6c5a7e6aeed074fec079261431",
+   "mutant_sha256": "2f3e3bbbe4df9e92197501560ed38d819cfcc923297b102f29249928bf6f6591",
    "name": "claude-malformed-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -1654,6 +3242,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1671,6 +3267,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -1694,6 +3298,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1702,8 +3350,161 @@
      true
     ]
    ],
-   "seconds": 14.013,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 21.982,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 contained/stop-descendant detail: claude: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': True}]",
+    "VELDO-0060 contained/stop-descendant detail: claude: the engine ended on the request and its descendant outlived the group's SIGTERM: only the kill ended it, and the dispatch was recorded ended after [['cooperative', 'terminate'], {'deadline_stop': False, 'output_bytes': 387, 'output_digest': 'sha256:1014641930deca88c697a76898b19823b0090ac01591e65a8b86b0cdc5199923', 'returncode': None, 'signal': 15}]",
+    "VELDO-0060 contained/stop-descendant detail: codex: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': True}]",
+    "VELDO-0060 contained/stop-descendant detail: codex: the engine ended on the request and its descendant outlived the group's SIGTERM: only the kill ended it, and the dispatch was recorded ended after [['cooperative', 'terminate'], {'deadline_stop': False, 'output_bytes': 82, 'output_digest': 'sha256:a8145d32aebe5c3aa87ea9ad6df1e9fd6a432099bf04288dab16ab620c3994e0', 'returncode': None, 'signal': 15}]"
+   ],
+   "diff": "proof/VELDO-0060/claude-stop-leaves-descendant.diff",
+   "failed_rows": [
+    "VELDO-0060 contained/stop-descendant"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "c9d313d902ff9f58474dab26092f1d54a4bef964869d53c5822eff5e0d1ff216",
+   "name": "claude-stop-leaves-descendant",
+   "named_row_red": true,
+   "named_rows": [
+    "contained/stop-descendant"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     false
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.599,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
@@ -1717,7 +3518,7 @@
     "VELDO-0060 stop/descendant-alive"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "9d9c317576c9b8369a3d6f64efe8e42ea5271d702c634c8d6257fd861deef698",
+   "mutant_sha256": "a945f58531b78c838d5819dfb1f6828b0b58df3f49336f1f5efb0ae6ad5aee8d",
    "name": "claude-stop-recorded-ended",
    "named_row_red": true,
    "named_rows": [
@@ -1746,6 +3547,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1763,6 +3572,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -1786,6 +3603,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1794,22 +3655,31 @@
      true
     ]
    ],
-   "seconds": 14.007,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 21.947,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0060 stop/requested detail: its original invocation records the stop: the same invocation of the same dispatch and account, cancelled, its tokens unknown and reservation retained [None, pending, missing_authority:allowance:unknown_allowance:tokens]",
-    "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.5 s, usage_cap, {'messages': 2, 'tokens': 1200}]"
+    "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.5 s, usage_cap, {'messages': 2, 'tokens': 1200}]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, stopped]",
+    "VELDO-0060 contained/stop-cooperative detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, signal]",
+    "VELDO-0060 contained/stop-forced detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, stopped]",
+    "VELDO-0060 contained/stop-forced detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, signal]",
+    "VELDO-0060 contained/stop-descendant detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, stopped]",
+    "VELDO-0060 contained/stop-descendant detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, signal]"
    ],
    "diff": "proof/VELDO-0060/claude-stopped-invocation-released.diff",
    "failed_rows": [
     "VELDO-0060 stop/requested",
-    "VELDO-0060 caps/stop-at-cap"
+    "VELDO-0060 caps/stop-at-cap",
+    "VELDO-0060 contained/stop-cooperative",
+    "VELDO-0060 contained/stop-forced",
+    "VELDO-0060 contained/stop-descendant"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "0961c8dcaeb313c80b526723ea66171a8e4cb886bddb139bcbb36efdf00176e5",
+   "mutant_sha256": "826109bfc450e71828261a51b46c54162e912ee440310cfcd478a3039556de0c",
    "name": "claude-stopped-invocation-released",
    "named_row_red": true,
    "named_rows": [
@@ -1838,6 +3708,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -1855,6 +3733,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -1878,6 +3764,50 @@
      false
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     false
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -1886,20 +3816,23 @@
      true
     ]
    ],
-   "seconds": 13.97,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 21.791,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0060 lifecycle/registration detail: the installed registration lists exactly the lifecycle operations, and each was driven and observed on these runs [['launch', 'accept', 'observe', 'stop', 'exit', 'artifacts'], {'launch': False, 'accept': False, 'observe': True, 'exit': False, 'artifacts': False, 'stop': False}]",
+    "VELDO-0060 lifecycle/registration detail: the installed registration lists exactly the lifecycle operations, and each was driven and observed on these runs [['accept', 'launch', 'observe', 'stop', 'exit', 'artifacts'], {'launch': False, 'accept': False, 'observe': True, 'exit': False, 'artifacts': False, 'stop': False}]",
     "VELDO-0060 lifecycle/pinned-launch detail: the engine ran once, to its end, from the pinned copy under the factory state root: a regular file whose digest is the qualified one, not the installer's versioned file and not a link [[], None]",
     "VELDO-0060 lifecycle/pinned-launch detail: its arguments are exactly the version's qualified flags [[]]",
     "VELDO-0060 lifecycle/pinned-launch detail: its environment turns the updater off and carries the recorded account's profile [None, None]",
-    "VELDO-0060 lifecycle/pinned-launch detail: it ran in its isolated clone, at the accepted commit [None, 0e4926f70804416a6fcf342b783bb32884119487]",
+    "VELDO-0060 lifecycle/pinned-launch detail: it ran in its isolated clone, at the accepted commit [None, ed137509c0599ec18bd6b8f82566b8c784dcfe40]",
     "VELDO-0060 pin/unexpected-launch detail: the copy restored to its qualified bytes launches again [refused]",
+    "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [refused, {}]",
+    "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, not_executed]",
     "VELDO-0060 artifact/complete detail: a zero exit with its result: the artifact is complete, its terminal record the result the engine printed, bound to its line and the receiver's own output digest [None, None]",
-    "VELDO-0060 artifact/complete detail: the artifact is kept 0600 beside the receipts, the same one the runner was given, bound to the dispatch, invocation and pinned digest [None]",
+    "VELDO-0060 artifact/complete detail: its terminal record's tokens are the result's modelUsage total [None]",
+    "VELDO-0060 artifact/complete detail: the artifact is kept 0600 in the artifacts directory, the same one the runner was given, bound to the dispatch, invocation and pinned digest [None]",
     "VELDO-0060 artifact/complete detail: the invocation and the worker slot are completed [not_executed, cancelled]",
     "VELDO-0060 artifact/missing-result detail: a zero exit with its terminal record removed is not a completion: the artifact says missing_result [refused, None, None]",
     "VELDO-0060 artifact/missing-result detail: its invocation and worker slot are failed, never completed [not_executed, cancelled]",
@@ -1913,6 +3846,13 @@
     "VELDO-0060 artifact/malformed-output detail: truncated line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [None, None]",
     "VELDO-0060 artifact/malformed-output detail: not-json line in an otherwise complete stream with a zero exit: the artifact is malformed_output, one of four lines, the result still decoded [None, None]",
     "VELDO-0060 artifact/missing-usage detail: a result without its usage: the artifact keeps the terminal record, and the invocation's tokens stay unknown with its reservation retained, the next invocation refused [None, [], spawn_failed:EEXIST]",
+    "VELDO-0060 artifact/missing-usage detail: the terminal record's tokens are unknown, never the main loop's usage the result still carries [None]",
+    "VELDO-0060 artifact/exit-record detail: complete: the exit record binds the artifact the runner was given, its verdict complete, completeness and digest, the digest of the file the report names [None]",
+    "VELDO-0060 artifact/exit-record detail: complete: the completion gate reads that record as complete [{}]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the exit record binds the artifact the runner was given, its verdict missing_result, completeness and digest, the digest of the file the report names [None]",
+    "VELDO-0060 artifact/exit-record detail: missing result: the completion gate reads that record as not complete [{}]",
+    "VELDO-0060 floor/missing-result detail: a build dispatch that exited 0 with its terminal record removed: the floor refuses to accept the build, for want of a completed build dispatch [None, missing_evidence:build_dispatch]",
+    "VELDO-0060 floor/missing-result detail: control: the complete run's build dispatch passes the floor's dispatch check and is refused next for its absent proof [missing_evidence:build_dispatch]",
     "VELDO-0060 stop/requested detail: the stop reached the worker: it and its descendant in its session are gone, it never finished [False, None, []]",
     "VELDO-0060 stop/requested detail: its original invocation records the stop: the same invocation of the same dispatch and account, cancelled, its tokens unknown and reservation retained [not_executed, settled, spawn_failed:EEXIST]",
     "VELDO-0060 stop/requested detail: the artifact is stopped, killed by a signal, and the wrapper path records the dispatch unknown rather than ended [None, refused, None]",
@@ -1927,6 +3867,53 @@
     "VELDO-0060 caps/allowance-states detail: unknown allowance (an earlier call reported no usage): refused by name, nothing launched [spawn_failed:EEXIST]",
     "VELDO-0060 caps/allowance-states detail: a rate-limit window the CLI reported rejected refuses the account's next invocation until its reset, nothing launched [None, spawn_failed:EEXIST]",
     "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.2 s, None, {}]",
+    "VELDO-0060 contained/bind detail: claude: bound before acceptance and launched once in its own scope, accepted before it ran [['prepared', 'accepted', 'refused'], 2 spawns]",
+    "VELDO-0060 contained/bind detail: codex: bound before acceptance and launched once in its own scope, accepted before it ran [['prepared', 'accepted', 'refused'], 2 spawns]",
+    "VELDO-0060 contained/scope detail: claude: the engine ran in its dispatch's own transient scope in this run's slice, the group the receiver reported, empty once it ended [None, {'unit': 'veldo-dispatch-2431fdfb714df883fdf849adb618d5c5.scope', 'slice': 'v60209baa50.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v60209baa50.slice/veldo-dispatch-2431fdfb714df883fdf849adb618d5c5.scope'}]",
+    "VELDO-0060 contained/scope detail: codex: the engine ran in its dispatch's own transient scope in this run's slice, the group the receiver reported, empty once it ended [None, {'unit': 'veldo-dispatch-cedf2623ec677375441140c15779678a.scope', 'slice': 'v60209baa50.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v60209baa50.slice/veldo-dispatch-cedf2623ec677375441140c15779678a.scope'}]",
+    "VELDO-0060 contained/clone-entry detail: claude: it entered its own clone through the Landlock entrance as the process the dispatch recorded, in its scope, and ran in the clone at the accepted commit [[]]",
+    "VELDO-0060 contained/clone-entry detail: claude: confined: its write into the clone root was denied, nothing written [[]]",
+    "VELDO-0060 contained/clone-entry detail: codex: it entered its own clone through the Landlock entrance as the process the dispatch recorded, in its scope, and ran in the clone at the accepted commit [[]]",
+    "VELDO-0060 contained/clone-entry detail: codex: confined: its write into the clone root was denied, nothing written [[]]",
+    "VELDO-0060 contained/pinned-exec detail: claude: the process the dispatch recorded is the pinned executable, exec'd with exactly its qualified flags, the qualified digest on disk [None]",
+    "VELDO-0060 contained/pinned-exec detail: claude: with the updater off and the recorded account's own profile [None]",
+    "VELDO-0060 contained/pinned-exec detail: codex: the process the dispatch recorded is the pinned executable, exec'd with exactly its qualified flags, the qualified digest on disk [None]",
+    "VELDO-0060 contained/pinned-exec detail: codex: with the updater off and the recorded account's own profile [None]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [refused, None]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, None]",
+    "VELDO-0060 contained/stop-cooperative detail: claude: it ended on the cooperative request, never killed, well within the graces [[], 0.00s, {}]",
+    "VELDO-0060 contained/stop-cooperative detail: codex: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [refused, None]",
+    "VELDO-0060 contained/stop-cooperative detail: codex: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-cooperative detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, None]",
+    "VELDO-0060 contained/stop-cooperative detail: codex: it ended on the cooperative request, never killed, well within the graces [[], 0.00s, {}]",
+    "VELDO-0060 contained/stop-forced detail: claude: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [refused, None]",
+    "VELDO-0060 contained/stop-forced detail: claude: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-forced detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, None]",
+    "VELDO-0060 contained/stop-forced detail: claude: an engine ignoring the request is killed with its group after the configured graces, within their bound [[], 0.00s, {}]",
+    "VELDO-0060 contained/stop-forced detail: codex: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [refused, None]",
+    "VELDO-0060 contained/stop-forced detail: codex: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-forced detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, None]",
+    "VELDO-0060 contained/stop-forced detail: codex: an engine ignoring the request is killed with its group after the configured graces, within their bound [[], 0.00s, {}]",
+    "VELDO-0060 contained/stop-descendant detail: claude: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [refused, None]",
+    "VELDO-0060 contained/stop-descendant detail: claude: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-descendant detail: claude: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, None]",
+    "VELDO-0060 contained/stop-descendant detail: claude: the engine ended on the request and its descendant outlived the group's SIGTERM: only the kill ended it, and the dispatch was recorded ended after [[], {}]",
+    "VELDO-0060 contained/stop-descendant detail: codex: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [refused, None]",
+    "VELDO-0060 contained/stop-descendant detail: codex: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
+    "VELDO-0060 contained/stop-descendant detail: codex: its original invocation is cancelled, its usage unknown and retained, and its artifact names it, never complete [not_executed, None]",
+    "VELDO-0060 contained/stop-descendant detail: codex: the engine ended on the request and its descendant outlived the group's SIGTERM: only the kill ended it, and the dispatch was recorded ended after [[], {}]",
+    "VELDO-0060 contained/artifact detail: claude: a complete artifact of this engine, bound to its dispatch, invocation and pinned executable, kept 0600 in a 0700 directory [None, None]",
+    "VELDO-0060 contained/artifact detail: codex: a complete artifact of this engine, bound to its dispatch, invocation and pinned executable, kept 0600 in a 0700 directory [None, None]",
+    "VELDO-0060 contained/artifact detail: codex: its document verifies from its own lines [None]",
+    "VELDO-0060 contained/exit-record detail: claude: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [None, None, cancelled]",
+    "VELDO-0060 contained/exit-record detail: codex: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [None, None, cancelled]",
+    "VELDO-0060 contained/engines-protected detail: claude: its writes into the pinned Claude Code copies' directory and the Codex package were denied, nothing written, and both engines stay executable [[]]",
+    "VELDO-0060 contained/engines-protected detail: codex: its writes into the pinned Claude Code copies' directory and the Codex package were denied, nothing written, and both engines stay executable [[]]",
+    "VELDO-0060 contained/rehash-before-exec detail: claude, exec'd by the clone entrance: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [refused, {}]",
+    "VELDO-0060 contained/rehash-before-exec detail: claude, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, not_executed]",
+    "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [refused, {}]",
+    "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, not_executed]",
     "VELDO-0060 format/fake-argv detail: the fake was started 0 times, each only with options the binary's main command declares, values among their choices, and stream JSON in print mode with verbose [[], []]"
    ],
    "diff": "proof/VELDO-0060/claude-cap-checked-after-launch.diff",
@@ -1934,20 +3921,34 @@
     "VELDO-0060 lifecycle/registration",
     "VELDO-0060 lifecycle/pinned-launch",
     "VELDO-0060 pin/unexpected-launch",
+    "VELDO-0060 pin/rehash-before-exec",
     "VELDO-0060 artifact/complete",
     "VELDO-0060 artifact/missing-result",
     "VELDO-0060 artifact/exits",
     "VELDO-0060 artifact/malformed-output",
     "VELDO-0060 artifact/missing-usage",
+    "VELDO-0060 artifact/exit-record",
+    "VELDO-0060 floor/missing-result",
     "VELDO-0060 stop/requested",
     "VELDO-0060 stop/descendant-alive",
     "VELDO-0060 caps/before-launch",
     "VELDO-0060 caps/allowance-states",
     "VELDO-0060 caps/stop-at-cap",
+    "VELDO-0060 contained/bind",
+    "VELDO-0060 contained/scope",
+    "VELDO-0060 contained/clone-entry",
+    "VELDO-0060 contained/pinned-exec",
+    "VELDO-0060 contained/stop-cooperative",
+    "VELDO-0060 contained/stop-forced",
+    "VELDO-0060 contained/stop-descendant",
+    "VELDO-0060 contained/artifact",
+    "VELDO-0060 contained/exit-record",
+    "VELDO-0060 contained/engines-protected",
+    "VELDO-0060 contained/rehash-before-exec",
     "VELDO-0060 format/fake-argv"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "693a693a2550c7114f0805be3eba695f59674da5e2ab32e52cbfcf77a2b867f6",
+   "mutant_sha256": "02084a8cd9996bcc66b98fcec1bd38eb005efc11ba2c45925d0aca1e9817196c",
    "name": "claude-cap-checked-after-launch",
    "named_row_red": true,
    "named_rows": [
@@ -1976,6 +3977,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     false
+    ],
+    [
      "VELDO-0060 artifact/complete",
      false
     ],
@@ -1993,6 +4002,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     false
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      false
     ],
     [
@@ -2016,6 +4033,50 @@
      false
     ],
     [
+     "VELDO-0060 contained/bind",
+     false
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     false
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     false
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     false
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     false
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     false
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     false
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     false
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     false
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -2024,20 +4085,1079 @@
      false
     ]
    ],
-   "seconds": 36.279,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 11.705,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [30.5 s, None, {'invocations': 1, 'messages': 2, 'tokens': 1200, 'wall_seconds': 30.294583}]"
+    "VELDO-0060 pin/argv-binds-what-runs detail: claude, a shell first, no entrance: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: claude, a shell after the entrance: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: claude, a shell after the transport's wrapper: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: codex, a shell after the entrance: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
+    "VELDO-0060 pin/argv-binds-what-runs detail: codex, a package manager's link first: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]"
+   ],
+   "diff": "proof/VELDO-0060/claude-argv-position-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0060 pin/argv-binds-what-runs"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "a16e6d91dc240a60d60f6fb619977878283386a1c62f96d69aa300de9830eb7f",
+   "name": "claude-argv-position-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "pin/argv-binds-what-runs"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     false
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 22.492,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [exited, {'deadline_stop': False, 'output_bytes': 1792, 'output_digest': 'sha256:5e22c3339877e693726ba1139465bf520a488505d05b3ecef403af35eb7b77ab', 'returncode': 0, 'signal': None}]",
+    "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [complete, completed]"
+   ],
+   "diff": "proof/VELDO-0060/claude-wrapper-rehash-skipped.diff",
+   "failed_rows": [
+    "VELDO-0060 pin/rehash-before-exec"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "777359098e4a0f20c4a34be27f27d2530626ec28e5985265dd4b504bcab8c24c",
+   "name": "claude-wrapper-rehash-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "pin/rehash-before-exec"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     false
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.847,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 contained/rehash-before-exec detail: claude, exec'd by the clone entrance: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [exited, {'deadline_stop': False, 'output_bytes': 1792, 'output_digest': 'sha256:bb935dfc45928d1da9d18c57fec153ab433b72b8d11f2f39f231efbb7ac0b97d', 'returncode': 0, 'signal': None}]",
+    "VELDO-0060 contained/rehash-before-exec detail: claude, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [complete, completed]",
+    "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [exited, {'deadline_stop': False, 'output_bytes': 371, 'output_digest': 'sha256:a78f058854365530d9b91e90cfaf5f9d0b604604e5f54631f51d30e172e6b969', 'returncode': 0, 'signal': None}]",
+    "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [complete, completed]"
+   ],
+   "diff": "proof/VELDO-0060/claude-entrance-rehash-skipped.diff",
+   "failed_rows": [
+    "VELDO-0060 contained/rehash-before-exec"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "edd90b93cc6dbbe4ed521c6e500ecd2a3a2f5fa54f15801f638cbf42fcf75564",
+   "name": "claude-entrance-rehash-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "contained/rehash-before-exec"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     false
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.928,
+   "source_sha256": "a70a276f6c13473038ee9d001dd2e4f72abce93131c409cc9b4e5a89170cf2a7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 contained/engines-protected detail: claude: its writes into the pinned Claude Code copies' directory and the Codex package were denied, nothing written, and both engines stay executable [[['/run/user/1000/v60-umyugcl1/state/factory/engines/claude_code/probe-claude-31d4a1', 'written'], ['/run/user/1000/v60-umyugcl1/packages/codex/vendor/x86_64-unknown-linux-musl/bin/probe-claude-31d4a1', 'written']]]",
+    "VELDO-0060 contained/engines-protected detail: codex: its writes into the pinned Claude Code copies' directory and the Codex package were denied, nothing written, and both engines stay executable [[['/run/user/1000/v60-umyugcl1/state/factory/engines/claude_code/probe-codex-b4ac28', 'written'], ['/run/user/1000/v60-umyugcl1/packages/codex/vendor/x86_64-unknown-linux-musl/bin/probe-codex-b4ac28', 'written']]]"
+   ],
+   "diff": "proof/VELDO-0060/claude-engines-unprotected.diff",
+   "failed_rows": [
+    "VELDO-0060 contained/engines-protected"
+   ],
+   "module": ".veldo/control_clone.py",
+   "mutant_sha256": "6b75e31441fd3e9429e4951638764a56194f93f8606e45af0b2f721424ebd098",
+   "name": "claude-engines-unprotected",
+   "named_row_red": true,
+   "named_rows": [
+    "contained/engines-protected"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     false
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.812,
+   "source_sha256": "a70a276f6c13473038ee9d001dd2e4f72abce93131c409cc9b4e5a89170cf2a7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 pin/unexpected-launch detail: a pinned copy its owner can write: refused by name before acceptance, nothing spawned or reserved [None]"
+   ],
+   "diff": "proof/VELDO-0060/claude-mode-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0060 pin/unexpected-launch"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "c53fb328e3e71486414e794789d86e13202fc1d9ea748e094e38bd22fc41b3a6",
+   "name": "claude-mode-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "pin/unexpected-launch"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     false
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.875,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 pin/unexpected-launch detail: a state root reached through a link: refused by name before acceptance, nothing spawned or reserved [None]"
+   ],
+   "diff": "proof/VELDO-0060/claude-parent-link-followed.diff",
+   "failed_rows": [
+    "VELDO-0060 pin/unexpected-launch"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "ad522e0699639a8dda2200d43baf4403c76136f5cbfc72c4cefedad45049953d",
+   "name": "claude-parent-link-followed",
+   "named_row_red": true,
+   "named_rows": [
+    "pin/unexpected-launch"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     false
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 22.002,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 artifact/missing-usage detail: the terminal record's tokens are unknown, never the main loop's usage the result still carries [5]"
+   ],
+   "diff": "proof/VELDO-0060/claude-terminal-main-loop-usage.diff",
+   "failed_rows": [
+    "VELDO-0060 artifact/missing-usage"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "8d4687e3f6fcf8e589bbbf272757419fc75679540b2c46c1555bec3bfe9b416c",
+   "name": "claude-terminal-main-loop-usage",
+   "named_row_red": true,
+   "named_rows": [
+    "artifact/missing-usage"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     false
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.879,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [30.5 s, None, {'invocations': 1, 'messages': 2, 'tokens': 1200, 'wall_seconds': 30.295832}]"
    ],
    "diff": "proof/VELDO-0060/claude-usage-cap-stop-ignored.diff",
    "failed_rows": [
     "VELDO-0060 caps/stop-at-cap"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "6a596b6c8db821ae4fe491b77ce3394c744c6d5f2eb793664450893f22a0b4de",
+   "mutant_sha256": "b3419e1d34150231d463c745993f558a58f78269b8667c0c862a77d3a6be38f4",
    "name": "claude-usage-cap-stop-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -2066,6 +5186,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -2083,6 +5211,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -2106,6 +5242,50 @@
      false
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -2114,13 +5294,16 @@
      true
     ]
    ],
-   "seconds": 43.874,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 51.654,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
   }
  ],
  "mutations_per_row": {
   "artifact/complete": [
    "claude-artifact-unreturned"
+  ],
+  "artifact/exit-record": [
+   "claude-exit-artifact-unbound"
   ],
   "artifact/exits": [
    "claude-signal-ignored",
@@ -2135,11 +5318,27 @@
    "claude-invocation-completed-on-exit",
    "claude-slot-completed-on-exit"
   ],
+  "artifact/missing-usage": [
+   "claude-terminal-main-loop-usage"
+  ],
   "caps/before-launch": [
    "claude-cap-checked-after-launch"
   ],
   "caps/stop-at-cap": [
    "claude-usage-cap-stop-ignored"
+  ],
+  "contained/engines-protected": [
+   "claude-engines-unprotected"
+  ],
+  "contained/rehash-before-exec": [
+   "claude-entrance-rehash-skipped"
+  ],
+  "contained/stop-descendant": [
+   "claude-stop-leaves-descendant"
+  ],
+  "floor/missing-result": [
+   "claude-floor-exit-code-completes",
+   "claude-completion-gate-exit-only"
   ],
   "lifecycle/pinned-launch": [
    "claude-binding-skipped",
@@ -2148,8 +5347,14 @@
   "lifecycle/registration": [
    "claude-lifecycle-stop-unregistered"
   ],
+  "pin/argv-binds-what-runs": [
+   "claude-argv-position-unchecked"
+  ],
   "pin/copy": [
    "claude-pin-unverified"
+  ],
+  "pin/rehash-before-exec": [
+   "claude-wrapper-rehash-skipped"
   ],
   "pin/shipped-qualification": [
    "claude-qualification-not-installed"
@@ -2158,7 +5363,9 @@
    "claude-pin-digest-unchecked",
    "claude-unknown-version-accepted",
    "claude-link-followed",
-   "claude-updater-configured-accepted"
+   "claude-updater-configured-accepted",
+   "claude-mode-unchecked",
+   "claude-parent-link-followed"
   ],
   "stop/descendant-alive": [
    "claude-stop-recorded-ended"
@@ -2168,8 +5375,8 @@
   ]
  },
  "noop": {
-  "control_engine_claude.py": {
-   "copy_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff",
+  "control_clone.py": {
+   "copy_sha256": "a70a276f6c13473038ee9d001dd2e4f72abce93131c409cc9b4e5a89170cf2a7",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2195,6 +5402,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -2212,6 +5427,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -2235,6 +5458,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -2243,11 +5510,287 @@
      true
     ]
    ],
-   "seconds": 13.968,
-   "source_sha256": "6f782d1f48f1b7deba173fdb963d47558300b27a1c5ae20f88897acb212005ff"
+   "seconds": 21.842,
+   "source_sha256": "a70a276f6c13473038ee9d001dd2e4f72abce93131c409cc9b4e5a89170cf2a7"
+  },
+  "control_dispatch.py": {
+   "copy_sha256": "f6579c773d1b7fdd09f69d8f808dc2957c9d28fa483d2e577b27d0e43308f49c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.72,
+   "source_sha256": "f6579c773d1b7fdd09f69d8f808dc2957c9d28fa483d2e577b27d0e43308f49c"
+  },
+  "control_engine_claude.py": {
+   "copy_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.86,
+   "source_sha256": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229"
   },
   "control_launch.py": {
-   "copy_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b",
+   "copy_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2273,6 +5816,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -2290,6 +5841,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -2313,6 +5872,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -2321,11 +5924,149 @@
      true
     ]
    ],
-   "seconds": 13.895,
-   "source_sha256": "56bead11bf1746b8eab844a94d0d9f4b822ab7079661746fcd11e382aff0e69b"
+   "seconds": 21.864,
+   "source_sha256": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+  },
+  "dispatch.py": {
+   "copy_sha256": "1e8c18cb37d4a3126abdad5222d3fe50c25bd08287ec95ece54369fed2730a45",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0060 lifecycle/registration",
+     true
+    ],
+    [
+     "VELDO-0060 lifecycle/pinned-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/unexpected-launch",
+     true
+    ],
+    [
+     "VELDO-0060 pin/copy",
+     true
+    ],
+    [
+     "VELDO-0060 pin/shipped-qualification",
+     true
+    ],
+    [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/complete",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exits",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/malformed-output",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
+     true
+    ],
+    [
+     "VELDO-0060 stop/requested",
+     true
+    ],
+    [
+     "VELDO-0060 stop/descendant-alive",
+     true
+    ],
+    [
+     "VELDO-0060 caps/before-launch",
+     true
+    ],
+    [
+     "VELDO-0060 caps/allowance-states",
+     true
+    ],
+    [
+     "VELDO-0060 caps/stop-at-cap",
+     true
+    ],
+    [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0060 format/fake-argv",
+     true
+    ]
+   ],
+   "seconds": 21.805,
+   "source_sha256": "1e8c18cb37d4a3126abdad5222d3fe50c25bd08287ec95ece54369fed2730a45"
   },
   "init_scaffold.py": {
-   "copy_sha256": "815551c4c3b525305342556e5c4a739a9f2e3443bf232fdd0de5541aa3b24663",
+   "copy_sha256": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2351,6 +6092,14 @@
      true
     ],
     [
+     "VELDO-0060 pin/argv-binds-what-runs",
+     true
+    ],
+    [
+     "VELDO-0060 pin/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 artifact/complete",
      true
     ],
@@ -2368,6 +6117,14 @@
     ],
     [
      "VELDO-0060 artifact/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0060 artifact/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 floor/missing-result",
      true
     ],
     [
@@ -2391,6 +6148,50 @@
      true
     ],
     [
+     "VELDO-0060 contained/bind",
+     true
+    ],
+    [
+     "VELDO-0060 contained/scope",
+     true
+    ],
+    [
+     "VELDO-0060 contained/clone-entry",
+     true
+    ],
+    [
+     "VELDO-0060 contained/pinned-exec",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-cooperative",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-forced",
+     true
+    ],
+    [
+     "VELDO-0060 contained/stop-descendant",
+     true
+    ],
+    [
+     "VELDO-0060 contained/artifact",
+     true
+    ],
+    [
+     "VELDO-0060 contained/exit-record",
+     true
+    ],
+    [
+     "VELDO-0060 contained/engines-protected",
+     true
+    ],
+    [
+     "VELDO-0060 contained/rehash-before-exec",
+     true
+    ],
+    [
      "VELDO-0060 format/fake-lines",
      true
     ],
@@ -2399,13 +6200,13 @@
      true
     ]
    ],
-   "seconds": 14.051,
-   "source_sha256": "815551c4c3b525305342556e5c4a739a9f2e3443bf232fdd0de5541aa3b24663"
+   "seconds": 21.787,
+   "source_sha256": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 60",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 426.919,
+ "serial_seconds": 869.813,
  "spec_id": "VELDO-0060",
  "suite": "scripts/suites/78_veldo_0060_claude_adapter.py"
 }

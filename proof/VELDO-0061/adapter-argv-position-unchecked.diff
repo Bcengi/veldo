@@ -1,0 +1,4 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -228,0 +229 @@
++    at = engine.index(path) if path in engine else at  # defect: the pinned path anywhere in the argv binds

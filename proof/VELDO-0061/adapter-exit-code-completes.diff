@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1201 +1201 @@
--                outcome = 'completed' if termination.get('returncode') == 0 and self._result(termination) else 'failed'
-+                outcome = 'completed' if termination.get('returncode') == 0 else 'failed'  # defect: the exit code decides
+@@ -1277 +1277 @@
+-            if outcome == 'completed' and not self.report['complete']:
++            if False:  # defect: the exit code decides the invocation's outcome

@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -419 +419 @@
+@@ -438 +438 @@
 -    return dict(qualified(bound['version'], record).get('environment') or {})
 +    return {}  # defect: the version's settings (DISABLE_AUTOUPDATER) are not set

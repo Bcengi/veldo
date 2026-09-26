@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -877 +877 @@
+@@ -957 +957 @@
 -        return self._settings('stop_grace_seconds', 'kill_grace_seconds')
 +        return (2.5, 2.5)  # defect: the configured graces are not the ones the stop uses

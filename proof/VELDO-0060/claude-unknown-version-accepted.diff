@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -352 +352 @@
+@@ -361 +361 @@
 -    entry = record['versions'].get(version) if isinstance(version, str) and VERSION_TEXT.fullmatch(version) else None
 +    entry = record['versions'].get(version) or next(iter(record['versions'].values()))  # defect: an unknown version runs a qualified one

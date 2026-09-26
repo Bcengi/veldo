@@ -1,5 +1,6 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -668 +668 @@
--                   'artifacts': self.metering.returned if self.metering is not None else None})
-+                   'artifacts': None})  # defect: the artifacts are not returned with the exit
+@@ -704,2 +704 @@
+-            if self.metering.report is not None:
+-                self.emit({'event': 'artifact', 'artifact': self.metering.report})
++            pass  # defect: the artifacts are not returned to the runner

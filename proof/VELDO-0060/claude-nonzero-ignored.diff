@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -497 +497 @@
+@@ -519 +519 @@
 -        elif termination.get('returncode') != 0:
 +        elif False:  # defect: a nonzero exit is not a problem

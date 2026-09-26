@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -372 +372 @@
+@@ -379 +379 @@
 -    if os.path.realpath(executable) != os.path.normpath(executable):
 +    if False:  # defect: a link, the package manager's own among them, is followed

@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -454 +454 @@
+@@ -471 +471 @@
 -        if termination.get('signal') is not None:
 +        if False:  # defect: a signal exit is not named

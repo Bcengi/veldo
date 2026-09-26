@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -486 +486 @@
+@@ -504 +504 @@
 -    return all(fresh[k] == document.get(k) for k in DECODED)
 +    return True  # defect: a document is believed, never decoded again

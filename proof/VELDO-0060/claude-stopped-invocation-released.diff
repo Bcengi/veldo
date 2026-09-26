@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1187 +1187 @@
+@@ -1273 +1273 @@
 -                outcome = 'cancelled'
 +                usage, outcome = {}, 'not_executed'  # defect: a stopped invocation releases its reservation
