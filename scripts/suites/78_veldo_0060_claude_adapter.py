@@ -66,16 +66,19 @@ def _v60_suite():
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
         'control_dispatch.py': ROOT / ".veldo" / "control_dispatch.py",
         'dispatch.py': ROOT / ".veldo" / "dispatch.py",
+        'control_clone.py': ROOT / ".veldo" / "control_clone.py",
     }
     ROWS = ('lifecycle/registration', 'lifecycle/pinned-launch',
-            'pin/unexpected-launch', 'pin/copy', 'pin/shipped-qualification',
+            'pin/unexpected-launch', 'pin/copy', 'pin/shipped-qualification', 'pin/argv-binds-what-runs',
+            'pin/rehash-before-exec',
             'artifact/complete', 'artifact/missing-result', 'artifact/exits', 'artifact/malformed-output',
             'artifact/missing-usage', 'artifact/exit-record', 'floor/missing-result',
             'stop/requested', 'stop/descendant-alive',
             'caps/before-launch', 'caps/allowance-states', 'caps/stop-at-cap',
             'contained/bind', 'contained/scope', 'contained/clone-entry', 'contained/pinned-exec',
             'contained/stop-cooperative', 'contained/stop-forced', 'contained/stop-descendant',
-            'contained/artifact', 'contained/exit-record',
+            'contained/artifact', 'contained/exit-record', 'contained/engines-protected',
+            'contained/rehash-before-exec',
             'format/fake-lines', 'format/fake-argv')
     rows = {name: [] for name in ROWS}
 
@@ -355,12 +358,17 @@ sys.exit(payload.get('code', 0))
         with open(CODEX_CHANGED, 'ab') as handle:
             handle.write(b'# changed after it was qualified\n')
         CODEX_FLAGS = list(getattr(X, 'FLAGS', ()) or ())
+        # A spawn step that changes the bound executable after its bind and before its exec, for the unit a
+        # request file names (markers/swap-<unit> holds the path): the re-hash rows.
+        SWAP = ('u=${VELDO_DISPATCH_ID#dispatch/}; u=${u%%%%/*}; if [ -f "%(markers)s/swap-$u" ]; then '
+                't=$(cat "%(markers)s/swap-$u"); chmod u+w "$t"; printf "# swapped\\n" >> "$t"; '
+                ': > "%(markers)s/swapped-$u"; fi')
         # The profile of the contained launch: its systemd-run records every spawn by its dispatch, then becomes
         # the real one, so a spawn for a refused dispatch is seen.
         real_systemd_run = shutil.which('systemd-run', path=tools.get('PATH', os.defpath)) or '/usr/bin/systemd-run'
         shim = base / 'systemd-run'
-        shim.write_text('#!/bin/sh\nprintf %%s "$VELDO_DISPATCH_ID" > "%s/spawn-$$"\nexec %s "$@"\n'
-                        % (markers, real_systemd_run))
+        shim.write_text('#!/bin/sh\nprintf %%s "$VELDO_DISPATCH_ID" > "%s/spawn-$$"\n%s\nexec %s "$@"\n'
+                        % (markers, SWAP % {'markers': str(markers)}, real_systemd_run))
         shim.chmod(0o755)
         GRACE = 0.4
         profile = {'kind': 'linux-systemd', 'slice': slice_name, 'lock': str(base / 'slice.lock'), 'concurrency': 16,
@@ -374,6 +382,11 @@ sys.exit(payload.get('code', 0))
         # trusted wrapper (the same pid): a spawn is recorded even when its engine never runs.
         spawn = ['/bin/sh', '-c', 'printf %s "$VELDO_DISPATCH_ID" > "$0/spawn-$$"; exec "$@"', str(markers)]
         wrapper = spawn + [sys.executable, '-B', str(mods / 'control_launch.py'), 'exec']
+        swapper = ['/bin/sh', '-c', SWAP % {'markers': str(markers)} + '; exec "$@"', 'swap'] + wrapper
+        shell = ['/bin/sh', '-c', 'exec "$@"', 'shell']
+        (base / 'links').mkdir()
+        npm_link = base / 'links' / 'codex'
+        npm_link.symlink_to(CODEX_BIN)
         clones_root, caches_root = state / 'clones', state / 'caches'
         entering = [sys.executable, '-B', str(mods / 'control_clone.py'), 'enter', str(clones_root), '--']
         pinned_exe = {'version': VERSION}
@@ -397,6 +410,20 @@ sys.exit(payload.get('code', 0))
                 'codex-contained': {'engine': 'codex', 'executable': str(CODEX_BIN),
                                     'qualification': str(codex_qualification),
                                     'argv': entering + [str(CODEX_BIN)] + CODEX_FLAGS},
+                # The argv must bind what runs: a shell, or a package manager's link, before the pinned path.
+                'claude-shell-first': {'engine': 'claude_code', 'executable': pinned_exe, 'argv': shell},
+                'claude-contained-shell': {'engine': 'claude_code', 'executable': pinned_exe, 'argv': entering + shell},
+                'claude-reported-shell': {'identity': 'reported', 'engine': 'claude_code', 'executable': pinned_exe,
+                                          'argv': wrapper + shell},
+                'codex-contained-shell': {'engine': 'codex', 'executable': str(CODEX_BIN),
+                                          'qualification': str(codex_qualification),
+                                          'argv': entering + shell + [str(CODEX_BIN)] + CODEX_FLAGS},
+                'codex-link-first': {'engine': 'codex', 'executable': str(CODEX_BIN),
+                                     'qualification': str(codex_qualification),
+                                     'argv': entering + [str(npm_link), str(CODEX_BIN)] + CODEX_FLAGS},
+                # The reported path whose own wrapper execs the pinned engine, after a step that changes it.
+                'claude-swap': {'identity': 'reported', 'engine': 'claude_code', 'executable': pinned_exe,
+                                'argv': swapper},
                 'codex-contained-changed': {'engine': 'codex', 'executable': str(CODEX_CHANGED),
                                             'qualification': str(codex_qualification),
                                             'argv': entering + [str(CODEX_CHANGED)] + CODEX_FLAGS}},
@@ -404,11 +431,16 @@ sys.exit(payload.get('code', 0))
         config.write_text(json.dumps(receiver_config))
         stateless = base / 'receiver-stateless.json'
         stateless.write_text(json.dumps(dict(receiver_config, state_root=None)))
+        linked = base / 'receiver-linked.json'
+        linked.write_text(json.dumps(dict(receiver_config, state_root=str(state / 'factory-link'))))
         CONFIGURATION = {'tools': ['Read', 'Edit', 'Bash'], 'model': 'configured-model'}
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign)
-        clones = CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root), protected=[str(private)])
+        # The engines directories (the pinned copies, the Codex packages) are write-protected in every clone.
+        engines_dirs = [str(factory / 'engines'), str(base / 'packages')]
+        clones = CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root), protected=[str(private)],
+                           engines=engines_dirs)
         provisioned = {}
         using = [config]
 
@@ -656,6 +688,8 @@ sys.exit(payload.get('code', 0))
                   and result_line is not None and artifact.get('terminal_receipt') == sha(result_line)
                   and (artifact.get('stream') or {}).get('output_digest') == termination.get('output_digest')
                   and (artifact.get('stream') or {}).get('lines') == len(lines) == 3)
+            check('artifact/complete', 'its terminal record\'s tokens are the result\'s modelUsage total [%s]'
+                  % (artifact.get('terminal') or {}).get('tokens'), (artifact.get('terminal') or {}).get('tokens') == 5)
             check('artifact/complete', 'the artifact is kept 0600 in the artifacts directory, the same one the runner was '
                   'given, bound to the dispatch, invocation and pinned digest [%s]' % mode,
                   stored == artifact and mode == 0o600 and artifact.get('dispatch_id') == launch.dispatch_id
@@ -678,10 +712,13 @@ sys.exit(payload.get('code', 0))
             pinned.chmod(0o755)
             with open(pinned, 'ab') as handle:
                 handle.write(b'# changed after it was pinned\n')
+            pinned.chmod(0o555)
             launch, record = run('acct-60a', admitted('VELDO-6002-changed'), 'claude', normal())
             cases.append(('a pinned copy whose digest changed', launch.dispatch_id, record,
                           'binding_mismatch:engine_digest'))
+            pinned.chmod(0o755)
             pinned.write_bytes(original)
+            pinned.chmod(0o555)
             launch, record = run('acct-60a', admitted('VELDO-6002-restored'), 'claude', normal())
             check('pin/unexpected-launch', 'the copy restored to its qualified bytes launches again [%s]'
                   % (record or {}).get('state'),
@@ -705,6 +742,23 @@ sys.exit(payload.get('code', 0))
                 using[0] = config
             cases.append(('a receiver naming no state root', launch.dispatch_id, record,
                           'missing_authority:engine_state_root'))
+            pinned.chmod(0o755)
+            launch, record = run('acct-60a', admitted('VELDO-6002-writable'), 'claude', normal())
+            pinned.chmod(0o555)
+            cases.append(('a pinned copy its owner can write', launch.dispatch_id, record, 'binding_mismatch:engine_mode'))
+            linked_root = state / 'factory-link'
+            linked_root.symlink_to(factory)
+            using[0] = linked
+            try:
+                launch, record = run('acct-60a', admitted('VELDO-6002-linked-root'), 'claude', normal())
+            finally:
+                using[0] = config
+            cases.append(('a state root reached through a link', launch.dispatch_id, record,
+                          'binding_mismatch:engine_path'))
+            info = os.lstat(pinned)
+            check('pin/unexpected-launch', 'the pinned copy the launches ran is this account\'s own, read and execute '
+                  'only [%o, %d]' % (info.st_mode & 0o7777, info.st_uid),
+                  info.st_uid == os.geteuid() and info.st_mode & 0o7777 == 0o555)
             launch, record = run('acct-60a', admitted('VELDO-6002-updater'), 'claude-updater-on', normal())
             cases.append(('an adapter configuring the updater on', launch.dispatch_id, record,
                           'invalid_input:adapter_environment:DISABLE_AUTOUPDATER'))
@@ -906,6 +960,10 @@ sys.exit(payload.get('code', 0))
                   and call.get('unknown') == ['tokens'] and call.get('charge', {}).get('messages') == 1
                   and (nrecord or {}).get('refusal') == 'missing_authority:allowance:unknown_allowance:tokens'
                   and nothing_ran(nxt.dispatch_id))
+            check('artifact/missing-usage', 'the terminal record\'s tokens are unknown, never the main loop\'s usage the '
+                  'result still carries [%s]' % (artifact.get('terminal') or {}).get('tokens'),
+                  'tokens' in (artifact.get('terminal') or {}) and (artifact.get('terminal') or {}).get('tokens') is None
+                  and 'usage' in script[-1]['source'] and 'usage' in json.loads(script[-1]['raw']))
 
         # AC3: an ordinary stop through the wrapper, with a real descendant of the worker in its session.
         with region('stop/requested', 'lifecycle/registration'):
@@ -1075,12 +1133,15 @@ sys.exit(payload.get('code', 0))
             # group's kill ends it, and the dispatch must not be recorded ended while it lives.
             'descendant': lambda: [{'descendant': 60}, {'sleep': 30}]}
         runs60 = {}
+        engine_dirs_resolved = [str(Path(x).resolve()) for x in engines_dirs]
         with region(*CONTAINED):
             for engine, case in ENGINE_CASES.items():
-                probe = str(clones_root / ('probe-%s-%s' % (engine, os.urandom(3).hex())))
+                tag = '%s-%s' % (engine, os.urandom(3).hex())
+                probe = str(clones_root / ('probe-' + tag))
+                engine_probes = [str(pinned.parent / ('probe-' + tag)), str(CODEX_BIN.parent / ('probe-' + tag))]
                 launch, record = run(case['account'], admitted('VELDO-6010-' + engine), case['adapter'],
-                                     [{'probe': probe}] + case['normal']())
-                runs60[(engine, 'normal')] = (launch, record or {}, probe)
+                                     [{'probe': probe}] + [{'probe': x} for x in engine_probes] + case['normal']())
+                runs60[(engine, 'normal')] = (launch, record or {}, (probe, engine_probes))
                 launch, record = run(case['account'], admitted('VELDO-6011-' + engine), case['refused'], case['normal']())
                 runs60[(engine, 'refused')] = (launch, record or {}, None)
                 for stop, script in STOPS.items():
@@ -1100,7 +1161,7 @@ sys.exit(payload.get('code', 0))
                                                                      'own': own, 'kids': kids, 'living': living})
 
             for engine, case in ENGINE_CASES.items():
-                launch, record, probe = runs60[(engine, 'normal')]
+                launch, record, (probe, engine_probes) = runs60[(engine, 'normal')]
                 own = (engine_markers(launch.dispatch_id) or [{}])[0]
                 history = [h.get('state') for h in rec(launch.dispatch_id).get('history') or []]
                 accepted_at = journal_seq('dispatch/accept/%s/' % launch.dispatch_id)
@@ -1149,7 +1210,14 @@ sys.exit(payload.get('code', 0))
                       and head == ((record.get('contract') or {}).get('source') or {}).get('commit'))
                 check('contained/clone-entry', '%s: confined: its write into the clone root was denied, nothing '
                       'written [%s]' % (engine, probed),
-                      probed == [[probe, 'PermissionError']] and not os.path.exists(probe))
+                      probed[:1] == [[probe, 'PermissionError']] and not os.path.exists(probe))
+                check('contained/engines-protected', '%s: its writes into the pinned Claude Code copies\' directory and '
+                      'the Codex package were denied, nothing written, and both engines stay executable [%s]'
+                      % (engine, probed[1:]),
+                      probed[1:] == [[x, 'PermissionError'] for x in engine_probes]
+                      and not any(os.path.exists(x) for x in engine_probes)
+                      and all(x in ((clones._manifest(handle.env_id) or {}).get('protected') or {}).get('write', [])
+                              for x in engine_dirs_resolved) if handle is not None else False)
 
                 env = own.get('env') or {}
                 check('contained/pinned-exec', '%s: the process the dispatch recorded is the pinned executable, exec\'d '
@@ -1158,7 +1226,8 @@ sys.exit(payload.get('code', 0))
                       and file_sha(case['exe']) == case['sha256'] and case['sha256'])
                 check('contained/pinned-exec', '%s: with the updater off and the recorded account\'s own profile [%s]'
                       % (engine, env.get('DISABLE_AUTOUPDATER')),
-                      env.get('DISABLE_AUTOUPDATER') == '1' and env.get(case['profile']) == profiles[case['account']])
+                      env.get('DISABLE_AUTOUPDATER') == '1' and env.get(case['profile']) == profiles[case['account']]
+                      and not {'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'} & set(own.get('names') or ()))
 
                 found = returned(launch) or {}
                 stored, mode = artifact_file(launch.dispatch_id)
@@ -1231,6 +1300,60 @@ sys.exit(payload.get('code', 0))
                               termination.get('signal') == int(signal.SIGTERM) and 'kill' in steps
                               and supervision.get('empty_monotonic') is not None
                               and steps[-1:] == ['kill'])
+
+        # The pin binds what runs: the pinned path is what the wrapper execs, or what the clone entrance execs.
+        with region('pin/argv-binds-what-runs'):
+            for label, account, adapter in (('claude, a shell first, no entrance', 'acct-60a', 'claude-shell-first'),
+                                            ('claude, a shell after the entrance', 'acct-60a', 'claude-contained-shell'),
+                                            ('claude, a shell after the transport\'s wrapper', 'acct-60a',
+                                             'claude-reported-shell'),
+                                            ('codex, a shell after the entrance', 'acct-60x', 'codex-contained-shell'),
+                                            ('codex, a package manager\'s link first', 'acct-60x', 'codex-link-first')):
+                script = x_normal('thread-' + os.urandom(3).hex()) if adapter.startswith('codex') else normal()
+                launch, record = run(account, admitted('VELDO-6013-' + adapter), adapter, script)
+                check('pin/argv-binds-what-runs', '%s: the pinned path is in the argv but is not what runs: refused '
+                      'before acceptance, nothing spawned or reserved [%s]' % (label, (record or {}).get('refusal')),
+                      (record or {}).get('refusal') == 'invalid_input:engine_executable'
+                      and rec(launch.dispatch_id).get('state') == 'refused' and nothing_ran(launch.dispatch_id))
+
+        def swapped_run(account, unit, adapter, target, script):
+            (markers / ('swap-' + unit)).write_text(str(target))
+            original, mode = Path(target).read_bytes(), os.lstat(target).st_mode & 0o7777
+            try:
+                launch, record = run(account, admitted(unit), adapter, script)
+            finally:
+                os.chmod(target, 0o755)
+                Path(target).write_bytes(original)
+                os.chmod(target, mode)
+                (markers / ('swap-' + unit)).unlink()
+            return launch, record or {}
+
+        def swap_checks(row, label, launch, record, unit, account, target, sha256):
+            termination = record.get('termination') or {}
+            found = returned(launch) or {}
+            check(row, '%s: the executable changed after its bind was re-hashed before its exec and refused: the '
+                  'engine never ran, the dispatch exited 70 [%s, %s]' % (label, record.get('state'), termination),
+                  (markers / ('swapped-' + unit)).exists() and record.get('state') == 'exited'
+                  and termination.get('returncode') == 70 and not engine_markers(launch.dispatch_id)
+                  and spawned(launch.dispatch_id) == 1)
+            check(row, '%s: never a completion: its artifact is not complete, its invocation and slot failed, and the '
+                  'file is back at its qualified bytes [%s, %s]' % (label, found.get('verdict'),
+                                                                   invocation(launch.dispatch_id).get('outcome')),
+                  found.get('complete') is False and invocation(launch.dispatch_id).get('outcome') == 'failed'
+                  and slot_outcome(account, launch.dispatch_id) == 'failed' and file_sha(target) == sha256)
+
+        with region('pin/rehash-before-exec'):
+            unit = 'VELDO-6014-claude-wrapper'
+            launch, record = swapped_run('acct-60a', unit, 'claude-swap', pinned, normal())
+            swap_checks('pin/rehash-before-exec', 'claude, exec\'d by the transport\'s wrapper', launch, record, unit,
+                        'acct-60a', pinned, FAKE_SHA)
+
+        with region('contained/rehash-before-exec'):
+            for engine, case in ENGINE_CASES.items():
+                unit = 'VELDO-6015-%s-entrance' % engine
+                launch, record = swapped_run(case['account'], unit, case['adapter'], case['exe'], case['normal']())
+                swap_checks('contained/rehash-before-exec', '%s, exec\'d by the clone entrance' % engine, launch, record,
+                            unit, case['account'], case['exe'], case['sha256'])
 
         # The fixtures, checked against the tables extracted from the installed binary.
         def conform(value, schema, path):

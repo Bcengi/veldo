@@ -332,6 +332,12 @@ sys.exit(payload.get('code', 0))
             'codex-link': adapter(LINK),
             'codex-npm-link': adapter(NPM_LINK or '/nonexistent/bin/codex', qualification=None),
             'codex-flags': adapter(GOOD, flags=['exec']),
+            # The pinned path is in the argv but is not what runs: a shell, or the package manager's link, first.
+            'codex-shell': {'engine': 'codex', 'executable': str(GOOD), 'qualification': str(qualification_path),
+                            'argv': clones.adapter(['/bin/sh', '-c', 'exec "$@"', 'shell', str(GOOD)] + FLAGS
+                                                   + [str(markers)])},
+            'codex-link-first': {'engine': 'codex', 'executable': str(GOOD), 'qualification': str(qualification_path),
+                                 'argv': clones.adapter([str(LINK), str(GOOD)] + FLAGS + [str(markers)])},
             # The installed binary, pinned by the installed qualification record; `--help` so no model runs.
             'codex-real': adapter(REAL, qualification=None, extra=('--help',), environment={'COLUMNS': '100'}),
         }
@@ -482,7 +488,8 @@ sys.exit(payload.get('code', 0))
             ('cooperative', 'VELDO-9608', {}), ('forced', 'VELDO-9609', {}), ('termination', 'VELDO-9610', {}),
             ('cap', 'VELDO-9611', dict(tokens=1000)), ('limit', 'VELDO-9612', {}), ('limited', 'VELDO-9613', {}),
             ('real', 'VELDO-9614', {}), ('changed', 'VELDO-9615', {}), ('newer', 'VELDO-9616', {}),
-            ('link', 'VELDO-9617', {}), ('npm', 'VELDO-9618', {}), ('flags', 'VELDO-9619', {}))}
+            ('link', 'VELDO-9617', {}), ('npm', 'VELDO-9618', {}), ('flags', 'VELDO-9619', {}),
+            ('shell', 'VELDO-9620', {}), ('link-first', 'VELDO-9621', {}))}
         L1_STREAM = normal('thread-9601')
         LIMIT = "You've hit your usage limit. Try again later."
         runs, ended = {}, {}
@@ -510,7 +517,8 @@ sys.exit(payload.get('code', 0))
                 {'type': 'turn.failed', 'error': {'message': LIMIT}}], code=1))
             runs['real'] = ('acct-real', submit('acct-real', units['real'], 'codex-real'))
             for name, adapter_name in (('changed', 'codex-changed'), ('newer', 'codex-newer'), ('link', 'codex-link'),
-                                       ('npm', 'codex-npm-link'), ('flags', 'codex-flags')):
+                                       ('npm', 'codex-npm-link'), ('flags', 'codex-flags'), ('shell', 'codex-shell'),
+                                       ('link-first', 'codex-link-first')):
                 runs[name] = ('acct-x1', submit('acct-x1', units[name], adapter_name, normal('thread-' + name)))
             for name in list(runs):
                 account, launch = runs[name]
@@ -586,6 +594,9 @@ sys.exit(payload.get('code', 0))
                   list(registration.get('flags') or ()) == installed.get('flags') == FLAGS and FLAGS
                   and all(a['argv'][a['argv'].index(a['executable']) + 1:][:len(FLAGS)] == FLAGS
                           for n, a in ADAPTERS.items() if n != 'codex-flags'))
+            check('lifecycle/registered', 'the qualified flags turn the binary\'s own startup update check off, a '
+                  'config key the installed binary names [%s]' % FLAGS,
+                  FLAGS == ['exec', '--json', '-c', 'check_for_update_on_startup=false'] and b'check_for_update_on_startup' in Path(REAL).read_bytes())
             normal_launch, stop_launch = get('normal'), get('cooperative')
             seen = {
                 'accept': normal_launch is not None and history(normal_launch)[:3] == ['prepared', 'accepted', 'running'],
@@ -621,9 +632,12 @@ sys.exit(payload.get('code', 0))
                   % (engine.get('cwd'), clone_error),
                   work is not None and engine.get('cwd') == str(work) and head == contract.get('source', {}).get('commit')
                   and env.get('VELDO_CLONE') == str(work))
-            check('lifecycle/normal-run', 'it was the pinned vendor binary with the qualified flags, as configured '
-                  '[%s]' % engine.get('argv'),
-                  engine.get('argv') == [str(GOOD)] + FLAGS + [str(markers)])
+            check('lifecycle/normal-run', 'it was the pinned vendor binary with the qualified flags, the update check '
+                  'off, as configured [%s]' % engine.get('argv'),
+                  engine.get('argv') == [str(GOOD)] + FLAGS + [str(markers)]
+                  and engine.get('argv', [None])[1:5] == ['exec', '--json', '-c', 'check_for_update_on_startup=false'])
+            check('lifecycle/normal-run', 'the engine inherits neither name of the exec-time re-hash',
+                  not {'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'} & set(env))
             packet = engine.get('packet') or {}
             check('lifecycle/normal-run', 'it was handed exactly the accepted source, input and tool configuration',
                   packet.get('source') == contract.get('source') and packet.get('payload') == contract['input']['payload']
@@ -644,7 +658,7 @@ sys.exit(payload.get('code', 0))
             launch = get('real')
             record = rec(launch.dispatch_id)
             termination = record.get('termination') or {}
-            direct = subprocess.run([REAL, 'exec', '--json', '--help'], capture_output=True, timeout=60,
+            direct = subprocess.run([REAL] + FLAGS + ['--help'], capture_output=True, timeout=60,
                                     stdin=subprocess.DEVNULL,
                                     env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'LANG': 'C.UTF-8', 'COLUMNS': '100',
                                          'CODEX_HOME': str(base / 'direct-codex-home')})
@@ -677,7 +691,8 @@ sys.exit(payload.get('code', 0))
         with region('pin/unexpected-launch'):
             expected = {'changed': 'stale_subject:engine_digest', 'newer': 'stale_subject:engine_version',
                         'link': 'invalid_input:engine_link', 'npm': 'invalid_input:engine_link',
-                        'flags': 'invalid_input:engine_flags'}
+                        'flags': 'invalid_input:engine_flags', 'shell': 'invalid_input:engine_executable',
+                        'link-first': 'invalid_input:engine_executable'}
             for name, refusal in expected.items():
                 launch = get(name)
                 record = rec(launch.dispatch_id)
@@ -704,7 +719,7 @@ sys.exit(payload.get('code', 0))
                   installed.get('version') == FORMATS['version'] == EXEC['version'] == '0.154.0'
                   and installed.get('sha256') == FORMATS['sha256'] == EXEC['sha256']
                   and installed.get('executable') == 'vendor/x86_64-unknown-linux-musl/bin/codex'
-                  and installed.get('package') == '@openai/codex' and installed.get('flags') == ['exec', '--json']
+                  and installed.get('package') == '@openai/codex' and installed.get('flags') == ['exec', '--json', '-c', 'check_for_update_on_startup=false']
                   and sorted(installed.get('terminal_protocol', {}).get('events', [])) == sorted(EXEC['events'])
                   and installed.get('terminal_protocol', {}).get('item_kinds') == EXEC['item']['kinds'])
             scaffold = load('v61_scaffold', mods / 'init_scaffold.py')

@@ -95,7 +95,14 @@ ENGINE_PROTOCOL with the same signatures, and the receiver drives each through t
 - `command(binding, adapter)`: the engine argv. Claude Code's is the adapter's prefix (its clone
   entrance, or a transport's trusted wrapper) followed by the pinned path and the qualified flags;
   Codex's is the adapter's own argv, exactly. The receiver then checks, for every engine, that the argv
-  runs the pinned path followed by its qualified flags, or refuses it by name.
+  binds what runs (`pinned_argv_problem`): what the trusted wrapper execs (a local adapter's whole argv, a
+  reported adapter's argv after its transport's `control_launch.py exec`) is the pinned path itself, or
+  the clone entrance (`<python> -B control_clone.py enter <clones> --`, for a local adapter the installed
+  one beside this receiver) and then the pinned path, followed by its qualified flags; anything else,
+  a shell or a package manager's link first among them, is refused by name. The engine's environment
+  names the pinned path and digest (VELDO_ENGINE_PATH, VELDO_ENGINE_SHA256), and whichever trusted
+  program execs the engine (this wrapper, or the clone entrance) re-hashes the file immediately before
+  the exec and refuses a changed one (exit 70, the engine never runs); the engine inherits neither name.
 - `environment(binding)`: the settings the engine always runs with (DISABLE_AUTOUPDATER), set last in
   its environment; an adapter configuring one of them otherwise is refused by name.
 - `Terminal()`: the terminal output decoder, fed what the meter is fed. At the end its document (one
@@ -187,18 +194,51 @@ def process_identity(pid):
     raise ValueError('no process identity reader for ' + sys.platform)
 
 
-# THE ENGINE PROTOCOL's argv check, the same for every engine.
+# THE ENGINE PROTOCOL's argv check and exec-time re-hash, the same for every engine.
 
-def pinned_argv_problem(argv, bound):
-    """None when the engine argv runs the bound pinned path, once, followed by its qualified flags; else
-    the named refusal."""
+ENTRANCE_MODULE, WRAPPER_MODULE = 'control_clone.py', 'control_launch.py'
+ENGINE_PATH, ENGINE_DIGEST = 'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'
+WRAPPER_REFUSED = 70
+
+
+def engine_argv(argv, reported):
+    """What the trusted wrapper execs: a local adapter's whole argv (the receiver starts the wrapper around
+    it), a reported adapter's argv after its transport's wrapper (`control_launch.py exec`); None when a
+    reported argv names no wrapper."""
+    if not reported:
+        return list(argv)
+    for at in range(len(argv) - 2, -1, -1):
+        if Path(argv[at]).name == WRAPPER_MODULE and argv[at + 1] == 'exec':
+            return list(argv[at + 2:])
+    return None
+
+
+def pinned_argv_problem(argv, bound, reported=False):
+    """None when the argv binds what runs: the engine argv (engine_argv) is the bound pinned path, or the
+    clone entrance and then the pinned path, followed by its qualified flags; else the named refusal."""
     path, flags = bound.get('path'), list(bound.get('flags') or [])
-    if not isinstance(path, str) or argv.count(path) != 1:
+    engine = engine_argv(argv, reported)
+    if not isinstance(path, str) or not engine:
         return 'invalid_input:engine_executable'
-    at = argv.index(path) + 1
-    if argv[at:at + len(flags)] != flags:
+    at = 0
+    if (len(engine) > 6 and engine[1] == '-B' and Path(engine[2]).name == ENTRANCE_MODULE and engine[3] == 'enter'
+            and engine[5] == '--'):
+        if not reported and Path(engine[2]).resolve() != Path(__file__).resolve().with_name(ENTRANCE_MODULE):
+            return 'invalid_input:engine_entrance'
+        at = 6
+    if engine[at] != path:
+        return 'invalid_input:engine_executable'
+    if engine[at + 1:at + 1 + len(flags)] != flags:
         return 'invalid_input:engine_flags'
     return None
+
+
+def file_digest(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for block in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(block)
+    return 'sha256:' + digest.hexdigest()
 
 
 # The runner: decide, reserve, prepare the complete contract, then invoke the receiver.
@@ -732,7 +772,7 @@ class Receiver:
             settings = module.environment(bound)
         except module.Refused as error:
             return error.code
-        refusal = pinned_argv_problem(argv, bound)
+        refusal = pinned_argv_problem(argv, bound, adapter.get('identity', 'local') == 'reported')
         if refusal:
             return refusal
         configured = adapter.get('environment') or {}
@@ -812,6 +852,8 @@ class Receiver:
             # THE ENGINE PROTOCOL: the bound engine argv and the engine's own settings, last.
             argv = list(self.binding['argv'])
             environment.update(self.binding['environment'])
+            # What the trusted program that execs the engine re-hashes immediately before the exec.
+            environment[ENGINE_PATH], environment[ENGINE_DIGEST] = self.binding['path'], self.binding['sha256']
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         if adapter.get('identity', 'local') != 'reported':
@@ -1281,8 +1323,22 @@ def wrap(argv):
     # The engine starts with the default dispositions of the signals Python ignores, as subprocess does.
     for number in (signal.SIGPIPE, signal.SIGXFSZ):
         signal.signal(number, signal.SIG_DFL)
+    environment = dict(os.environ)
+    if environment.get(ENGINE_PATH) is not None and os.path.abspath(path) == environment[ENGINE_PATH]:
+        # THE ENGINE PROTOCOL: this wrapper execs the pinned engine itself, so it re-hashes the file now,
+        # immediately before the exec; a changed one never runs. The engine inherits neither name.
+        expected = environment.pop(ENGINE_DIGEST, None)
+        environment.pop(ENGINE_PATH)
+        try:
+            unchanged = file_digest(path) == expected
+        except OSError:
+            unchanged = False
+        if not unchanged:
+            sys.stderr.write('wrapper refused: binding_mismatch:engine_digest\n')
+            sys.stderr.flush()
+            os._exit(WRAPPER_REFUSED)
     try:
-        os.execv(path, argv)
+        os.execve(path, argv, environment)
     except OSError:
         os._exit(126)
 

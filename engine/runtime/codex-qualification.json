@@ -7,7 +7,9 @@
  "executable": "vendor/x86_64-unknown-linux-musl/bin/codex",
  "flags": [
   "exec",
-  "--json"
+  "--json",
+  "-c",
+  "check_for_update_on_startup=false"
  ],
  "package": "@openai/codex",
  "package_version": "0.154.0-linux-x64",

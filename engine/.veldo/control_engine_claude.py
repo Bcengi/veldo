@@ -67,12 +67,16 @@ file the installer keeps (~/.local/share/claude/versions/<version>) under the fa
 the interactive updater may remove an old version, and the auto-updating ~/.local/bin/claude link is
 never read. `bind` is the check every launch makes before acceptance, so before anything is spawned: a
 version the record does not list, a pinned copy that is absent, a link or not a regular file, and a
-copy whose digest differs are each refused by name. `command` is the pinned path and the qualified
-flags; the role's own selections are VELDO-0127's and the everything-off baseline VELDO-0155's.
+copy whose digest differs are each refused by name, as are a linked directory on the way to it, a copy
+that is not this account's own, and one that is writable or carries a setuid, setgid or sticky bit (the pin
+writes it 0555). `command` is the adapter's prefix, the pinned path and the qualified flags; the role's own
+selections are VELDO-0127's and the everything-off baseline VELDO-0155's.
 
 THE TERMINAL RECORD AND THE ARTIFACT, VELDO-0060. `Terminal` reads the same stream and returns what an
 invocation's output yields, judged by the receiver and never by the worker: the decoded `result` event
-(its subtype, error flag, turns, session, stop reason, the digest of its result text and its errors),
+(its subtype, error flag, turns, session, stop reason, the digest of its result text, its errors and
+its tokens, modelUsage's total or None when the result carries no readable modelUsage, never its
+main-loop `usage`),
 the digest of the line it came from, how many lines the stream had and how many were not a JSON event,
 and the verdict. Only a zero exit with no signal, no stop and no deadline, a stream of well-formed
 events and a `result` whose subtype is `success` and whose `is_error` is false is `complete`; a zero
@@ -411,6 +415,12 @@ def bind(adapter, state_root, record=None):
         raise Refused('missing_evidence:engine_executable', str(path))
     if not stat.S_ISREG(info.st_mode):
         raise Refused('binding_mismatch:engine_executable', 'the pinned executable is not a regular file')
+    if os.path.realpath(path.parent) != os.path.normpath(str(path.parent)):
+        raise Refused('binding_mismatch:engine_path', 'a directory on the way to the pinned executable is a link')
+    if info.st_uid != os.geteuid():
+        raise Refused('binding_mismatch:engine_owner', 'the pinned executable is not this account\'s own copy')
+    if info.st_mode & 0o7222:
+        raise Refused('binding_mismatch:engine_mode', 'the pinned executable is writable or carries a special bit')
     if _file_digest(path) != entry['sha256']:
         raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')
     return {'engine': PROVIDER, 'version': version, 'path': str(path), 'sha256': entry['sha256'],
@@ -447,8 +457,11 @@ def _terminal(event):
         text = None
     else:
         return None
+    # Its usage is modelUsage's total over every model, the invocation's; without a readable modelUsage the
+    # tokens are unknown (None), never the result's `usage`, which is the main agent loop's alone.
     return {'subtype': subtype, 'is_error': event['is_error'], 'num_turns': turns, 'session_id': event['session_id'],
             'stop_reason': event.get('stop_reason'), 'errors': list(errors),
+            'tokens': _model_tokens(event.get('modelUsage')),
             'result_digest': None if text is None else 'sha256:' + hashlib.sha256(text.encode()).hexdigest()}
 
 

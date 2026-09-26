@@ -6967,6 +6967,39 @@ def cases():
            "        metering = Metering(self, contract, reservations, accounts, launch)\n"
            "        launch(metering.invocation, None)  # defect: the caps are checked after the launch\n        try:\n",
            'caps/before-launch')
+    # Filed hardening (0060 and 0061 reviews): the pin binds what runs; the exec re-hashes it; no worker writes
+    # the engines; the copy's mode and the directories on its way; the terminal record's usage.
+    claude('claude-argv-position-unchecked', 'control_launch.py',
+           "    if engine[at] != path:\n        return 'invalid_input:engine_executable'\n",
+           "    at = engine.index(path) if path in engine else at  # defect: the pinned path anywhere in the argv binds\n"
+           "    if engine[at] != path:\n        return 'invalid_input:engine_executable'\n",
+           'pin/argv-binds-what-runs')
+    claude('claude-wrapper-rehash-skipped', 'control_launch.py',
+           "        if not unchanged:\n",
+           "        if False:  # defect: the wrapper execs the pinned engine without re-hashing it\n",
+           'pin/rehash-before-exec')
+    claude('claude-entrance-rehash-skipped', 'control_clone.py',
+           "        if _file_digest(pinned) != expected:\n",
+           "        if False:  # defect: the clone entrance execs the pinned engine without re-hashing it\n",
+           'contained/rehash-before-exec')
+    claude('claude-engines-unprotected', 'control_clone.py',
+           "        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata, *self.engines})\n",
+           "        write = sorted({self.clones, self.caches, *self.store_directory, *self.protected, *metadata})"
+           "  # defect: a worker may replace the pinned engines\n",
+           'contained/engines-protected')
+    claude('claude-mode-unchecked', 'control_engine_claude.py',
+           "    if info.st_mode & 0o7222:\n",
+           "    if False:  # defect: a writable pinned copy is launched\n",
+           'pin/unexpected-launch')
+    claude('claude-parent-link-followed', 'control_engine_claude.py',
+           "    if os.path.realpath(path.parent) != os.path.normpath(str(path.parent)):\n",
+           "    if False:  # defect: a linked directory on the way to the pinned copy is followed\n",
+           'pin/unexpected-launch')
+    claude('claude-terminal-main-loop-usage', 'control_engine_claude.py',
+           "            'tokens': _model_tokens(event.get('modelUsage')),\n",
+           "            'tokens': _model_tokens(event['modelUsage']) if 'modelUsage' in event else _tokens(event.get('usage')),"
+           "  # defect: the main loop's usage stands in\n",
+           'artifact/missing-usage')
     claude('claude-usage-cap-stop-ignored', 'control_launch.py',
            "                        if metering is not None and metering.feed(chunk):\n"
            "                            # VELDO-0062: a cap the CLI's own report reached stops the worker.\n"
@@ -6999,7 +7032,7 @@ def cases():
             "    if False:  # defect: a link, the package manager's own among them, is followed\n",
             'pin/unexpected-launch')
     adapter('adapter-flags-unbound', 'control_launch.py',
-            "    if argv[at:at + len(flags)] != flags:\n",
+            "    if engine[at + 1:at + 1 + len(flags)] != flags:\n",
             "    if False:  # defect: the engine is launched with other flags than the qualified ones\n",
             'pin/unexpected-launch')
     adapter('adapter-autoupdater-unset', 'control_engine_codex.py',
@@ -7097,6 +7130,16 @@ def cases():
             "            for window in ():  # defect: the account's reported usage limit is not read\n"
             "                raise Refused('rate_limited:' + window)\n",
             'caps/refused-before-launch')
+    # Filed hardening: the pin binds what runs, and the binary's own update check is off.
+    adapter('adapter-argv-position-unchecked', 'control_launch.py',
+            "    if engine[at] != path:\n        return 'invalid_input:engine_executable'\n",
+            "    at = engine.index(path) if path in engine else at  # defect: the pinned path anywhere in the argv binds\n"
+            "    if engine[at] != path:\n        return 'invalid_input:engine_executable'\n",
+            'pin/unexpected-launch')
+    adapter('adapter-update-check-left-on', 'control_engine_codex.py',
+            "FLAGS = ('exec', '--json', '-c', 'check_for_update_on_startup=false')\n",
+            "FLAGS = ('exec', '--json')  # defect: the binary's own startup update check stays on\n",
+            'pin/qualified-record')
     adapter('adapter-qualification-not-scaffolded', 'init_scaffold.py',
             '_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]\n',
             '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid down\n',

@@ -69,8 +69,10 @@ digest; the receiver then checks, for every engine alike (control_launch.ENGINE_
 `command` returns (the adapter's own, exactly) runs it with the recorded flags. Anything else is refused
 by name. ENVIRONMENT (`environment`) sets
 DISABLE_AUTOUPDATER in the engine's environment, as the design asks of both engines. This binary does
-not name that variable: an upgrade of it is a new package installed over this one (the command its
-update notice prints), and the version and digest checks refuse the binary that install leaves.
+not name that variable, so FLAGS also turn its own startup update check off with the config key it does
+name (check_for_update_on_startup); an upgrade of it is a new package installed over this one (the
+command its update notice prints), and the version and digest checks refuse the binary that install
+leaves.
 
 TERMINAL OUTPUT (`Terminal`). What the engine printed becomes an artifact document, never a completion
 by exit code: every stdout line is kept as printed and checked against the exec events of the table
@@ -263,9 +265,10 @@ class Meter:
 
 # VELDO-0061: the adapter registration, the pinned executable and the terminal output.
 
-# The flags of the qualified configuration: exec mode with its JSON event stream on stdout; the prompt
-# is what the receiver writes on stdin.
-FLAGS = ('exec', '--json')
+# The flags of the qualified configuration: exec mode with its JSON event stream on stdout, and the
+# binary's own update check at startup turned off (`-c check_for_update_on_startup=false`, a config key the
+# binary names; DISABLE_AUTOUPDATER is not one it reads); the prompt is what the receiver writes on stdin.
+FLAGS = ('exec', '--json', '-c', 'check_for_update_on_startup=false')
 ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}
 QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
