@@ -6467,8 +6467,25 @@ def cases():
             'settle/model-usage')
     # Codex's limit signal is its usage-limit message (the second review's finding 2).
     account('account-codex-limit-unobserved', 'control_engine_codex.py',
-            "        if not isinstance(message, str) or LIMIT_MESSAGE not in message:\n",
-            "        if True:  # defect: the usage-limit message is not observed\n",
+            "        if LIMIT_MESSAGE in message:\n            window, reset = LIMIT_WINDOW, limit_reset(message, self.clock(), self.zone)\n",
+            "        if False:  # defect: the usage-limit message is not observed\n            pass\n",
+            'usage/rate-limit-reset')
+    account('account-codex-workspace-unobserved', 'control_engine_codex.py',
+            "            window = next((window for text, window in EXHAUSTED if text in message), None)\n",
+            "            window = None  # defect: only the usage-limit family of the error table is read\n",
+            'usage/rate-limit-reset')
+    account('account-codex-exhaustion-reset-invented', 'control_engine_codex.py',
+            "                return []\n            reset = None\n",
+            "                return []\n            reset = self.clock() + 3600  # defect: a reset the message never stated\n",
+            'usage/rate-limit-reset')
+    # The reset boundary, at the pure seam that takes a clock (the lead's decision: no wait in the suite).
+    account('account-window-reopens-early', 'control_accounts.py',
+            "        if not _number(reset) or now < reset:\n",
+            "        if not _number(reset) or now < reset - 1:  # defect: the window reopens a second early\n",
+            'usage/rate-limit-reset')
+    account('account-window-reopens-late', 'control_accounts.py',
+            "        if not _number(reset) or now < reset:\n",
+            "        if not _number(reset) or now <= reset:  # defect: still refused at the reported reset\n",
             'usage/rate-limit-reset')
     account('account-codex-unstated-reset-invented', 'control_engine_codex.py',
             "    if found is None or tz is None:\n        return None\n",

@@ -44,7 +44,13 @@ for a reset later the same day and "%b %-d<st|nd|rd|th>, %Y %-I:%M %p" otherwise
 message truncates to the minute, so the window never reopens before the time it stated), in the zone
 the engine ran in (`zone`, its TZ; unset, the system's). A message that states no reset, or one this
 reading cannot place in time, is a window with no reset: the account stays refused until a later
-observation says otherwise. Utilization is not stated and stays unknown.
+observation says otherwise. Utilization is not stated and stays unknown. The usage-limit message has
+seven forms in the binary's error table (a plan's own sentence, a model's own limit, an admin's), all
+starting with that text. The table's other exhaustion messages (EXHAUSTED: the workspace out of
+credits, the workspace spend cap, the quota exceeded, a plan without Codex) state no reset: each is its
+own window with none, and the account stays refused until observed otherwise. The rest of the table
+(transient, request and local errors, Codex's own rollout and thread budgets) states no allowance and
+records nothing.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 Standard library only.
@@ -68,6 +74,17 @@ CREDENTIALS = frozenset((
 SETTINGS = frozenset()
 LIMIT_MESSAGE = "You've hit your usage limit"
 LIMIT_WINDOW = 'usage_limit'
+# The other messages of the binary's error table that say the account's allowance is exhausted, each with
+# the window it is recorded as; none states a reset (proof/VELDO-0062/cli-formats.json, codex errors).
+EXHAUSTED = (
+    ('Your workspace is out of credits. Add credits to continue.', 'workspace_credits'),
+    ('Your workspace is out of credits. Ask your workspace owner to refill in order to continue.', 'workspace_credits'),
+    ('You hit your spend cap set in your workspace. Increase your spend cap to continue.', 'workspace_spend_cap'),
+    ('You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.',
+     'workspace_spend_cap'),
+    ('Quota exceeded. Check your plan and billing details.', 'quota'),
+    ('To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.', 'plan'),
+)
 MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
                       r'(?P<year>\d{4}) )?(?P<hour>\d{1,2}):(?P<minute>\d{2}) (?P<half>AM|PM)\.')
@@ -129,7 +146,7 @@ class Meter:
         self.incomplete = False
         self.turns = 0
         self.tokens = 0
-        self.limit = ()
+        self.limit = set()
 
     def feed(self, chunk):
         self.pending += chunk
@@ -160,14 +177,21 @@ class Meter:
         return {'provider': PROVIDER, 'id': self.thread, 'tokens': self.final().get('tokens')}
 
     def _limited(self, seen, message):
-        """A usage-limit message as the `usage_limit` window; the same statement again adds nothing."""
-        if not isinstance(message, str) or LIMIT_MESSAGE not in message:
+        """An exhaustion message of the error table as its window, exhausted: the usage-limit message with
+        the reset it states (or none), every other with no reset. The same statement again adds nothing."""
+        if not isinstance(message, str):
             return []
-        reset = limit_reset(message, self.clock(), self.zone)
-        if self.limit == (reset,):
+        if LIMIT_MESSAGE in message:
+            window, reset = LIMIT_WINDOW, limit_reset(message, self.clock(), self.zone)
+        else:
+            window = next((window for text, window in EXHAUSTED if text in message), None)
+            if window is None:
+                return []
+            reset = None
+        if (window, reset) in self.limit:
             return []
-        self.limit = (reset,)
-        return [dict(seen, kind='window', window_id=LIMIT_WINDOW, status='rejected', reset_at=reset, utilization=None)]
+        self.limit.add((window, reset))
+        return [dict(seen, kind='window', window_id=window, status='rejected', reset_at=reset, utilization=None)]
 
     def line(self, line):
         try:

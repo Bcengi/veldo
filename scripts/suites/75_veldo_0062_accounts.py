@@ -638,48 +638,33 @@ sys.exit(payload.get('code', 0))
 
         LIMIT = FORMATS['codex']['usage_limit']
 
-        def x_limit_message(reset):
-            """The usage-limit message Codex prints, from the binary's own pieces: a stated reset in the
-            local time of this process (the engine inherits its zone), or none."""
-            if reset is None:
-                return LIMIT['message'] + '.' + LIMIT['retry_later'][0]
-            at, now = time.localtime(reset), time.localtime()
-            clock = '%d:%02d %s' % (at.tm_hour % 12 or 12, at.tm_min, 'AM' if at.tm_hour < 12 else 'PM')
-            if (at.tm_year, at.tm_yday) != (now.tm_year, now.tm_yday):
-                day = at.tm_mday
+        def x_clock(stated, zone=None, now=None):
+            """The local time Codex states for a reset: the minute `stated` in `zone` (this process's own zone
+            when None, which the engine inherits), with the date when it is not the day of `now`."""
+            import datetime
+            import zoneinfo
+            tz = zoneinfo.ZoneInfo(zone) if zone else None
+            at = datetime.datetime.fromtimestamp(stated, tz) if tz else datetime.datetime.fromtimestamp(stated)
+            today = (datetime.datetime.fromtimestamp(now if now is not None else time.time(), tz) if tz
+                     else datetime.datetime.fromtimestamp(now if now is not None else time.time()))
+            clock = '%d:%02d %s' % (at.hour % 12 or 12, at.minute, 'AM' if at.hour < 12 else 'PM')
+            if at.date() != today.date():
+                day = at.day
                 suffix = 'th' if 11 <= day % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
                 clock = '%s %d%s, %d %s' % (('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
-                                                  'Dec')[at.tm_mon - 1], day, suffix, at.tm_year, clock)
-            return LIMIT['message'] + '.' + LIMIT['retry_at'][0] + clock + '.'
+                                                  'Dec')[at.month - 1], day, suffix, at.year, clock)
+            return clock
+
+        def x_limit_message(stated, zone=None, now=None):
+            """The usage-limit message Codex prints, from the binary's own pieces: the minute `stated` as its
+            reset (in the engine's local time, or `zone`), or none."""
+            if stated is None:
+                return LIMIT['message'] + '.' + LIMIT['retry_later'][0]
+            return LIMIT['message'] + '.' + LIMIT['retry_at'][0] + x_clock(stated, zone, now) + '.'
 
         def ok(adapter, inp=1, out=1):
             """A normal, complete report of one small invocation, in the adapter's own format."""
             return [c_result(inp, out, 1)] if adapter.startswith('claude') else [x_started(), x_done(inp, out)]
-
-        # AC2, first because its minute must pass: Codex's usage-limit message, one stating its reset (the
-        # end of the minute it names, within the next minute) and one stating none.
-        limited = {'stated': None}
-        with region('usage/rate-limit-reset'):
-            minute = (int(time.time()) + 8) // 60 * 60
-            limited['stated'] = minute + 60
-            for account, stated in (('acct-x2', minute), ('acct-x3', None)):
-                message = x_limit_message(stated)
-                launch, record = run(account, admitted('VELDO-6208-%s-a' % account), 'codex',
-                                     [x_started(), x_error(message), x_failed(message)], code=1)
-                limited[account] = launch.dispatch_id
-            for account, codex_reset in (('acct-x2', limited['stated']), ('acct-x3', None)):
-                stored = (account_record(account).get('windows') or {}).get('usage_limit') or {}
-                check('usage/rate-limit-reset', 'codex %s: the usage-limit message is recorded on the account as an '
-                      'exhausted window, its reset %s, from its dispatch [%s]'
-                      % (account, 'the end of the minute it stated' if codex_reset else 'unknown, none stated', stored),
-                      stored.get('status') == 'rejected' and stored.get('reset_at') == codex_reset
-                      and stored.get('source_dispatch') == limited.get(account))
-                launch, record = run(account, admitted('VELDO-6208-%s-b' % account), 'codex', ok('codex'))
-                check('usage/rate-limit-reset', 'codex %s: inside the reported window a new invocation is refused by '
-                      'name and nothing launches [%s]' % (account, (record or {}).get('refusal')),
-                      (record or {}).get('refusal') == 'missing_authority:allowance:rate_limited:usage_limit'
-                      and not engine_markers(launch.dispatch_id) and not spawned(launch.dispatch_id)
-                      and (codex_reset is None or time.time() < codex_reset))
 
         # AC1: the login of the account the dispatch recorded, never the caller's; no paid API.
         with region('login/recorded-account-profile', 'login/no-paid-api', 'login/configured-environment'):
@@ -962,7 +947,10 @@ sys.exit(payload.get('code', 0))
                       and call.get('charge', {}).get('invocations') == 1)
 
         with region('usage/rate-limit-reset'):
-            reset = int(time.time()) + 5
+            # Claude Code: a reported window whose reset is an hour away refuses its account; at the pure seams
+            # that take a clock, one second before the reset is refused and the reset itself is allowed.
+            now = int(time.time())
+            reset = now + 3600
             launch, record = run('acct-c3', admitted('VELDO-6208-claude-a'), 'claude',
                                  [c_rate('rejected', reset, 'five_hour', 1.0), c_result(1, 1, 1)])
             stored = (account_record('acct-c3').get('windows') or {}).get('five_hour') or {}
@@ -974,17 +962,114 @@ sys.exit(payload.get('code', 0))
             check('usage/rate-limit-reset', 'claude: inside the reported window a new invocation is refused by name '
                   'and nothing launches [%s]' % (record or {}).get('refusal'),
                   (record or {}).get('refusal') == 'missing_authority:allowance:rate_limited:five_hour'
-                  and not engine_markers(launch.dispatch_id) and not spawned(launch.dispatch_id) and time.time() < reset)
-            blocked, _ = attempt(lambda: ACC.blocking(account_record('acct-x3'), time.time() + 10 ** 7))
-            check('usage/rate-limit-reset', 'codex acct-x3: with no reset stated the account stays refused however '
-                  'long, until a later observation says otherwise [%s]' % blocked, blocked == ['usage_limit'])
-            while time.time() < reset + 0.2:
-                time.sleep(0.1)
-            launch, record = run('acct-c3', admitted('VELDO-6208-claude-c'), 'claude', ok('claude'))
-            check('usage/rate-limit-reset', 'claude: at the reported reset the account takes work again [%s]'
-                  % (record or {}).get('state'),
-                  (record or {}).get('state') == 'exited' and len(engine_markers(launch.dispatch_id)) == 1)
-            # Codex's stated reset is checked at the end of the suite, when its minute has passed.
+                  and not engine_markers(launch.dispatch_id) and not spawned(launch.dispatch_id))
+            before, _ = attempt(lambda: ACC.blocking(account_record('acct-c3'), reset - 1))
+            at, _ = attempt(lambda: ACC.blocking(account_record('acct-c3'), reset))
+            seam_unit = admitted('VELDO-6208-claude-seam')
+            context = dict(domain=DOMAIN, repository=REPOSITORY, account='acct-c3', project='journey', unit=seam_unit)
+            _, check_before = attempt(lambda: reservations._check(context, {'invocations': 1}, reservations._records(),
+                                                                  reset - 1))
+            _, check_at = attempt(lambda: reservations._check(context, {'invocations': 1}, reservations._records(),
+                                                              reset))
+            check('usage/rate-limit-reset', 'claude: the account record and the reservation check refuse one second '
+                  'before the reported reset and allow at it [%s, %s, %s, %s]' % (before, at, check_before, check_at),
+                  before == ['five_hour'] and at == [] and check_before == 'rate_limited:five_hour' and check_at is None)
+            # Another account whose reported reset already ended takes work.
+            launch, record = run('acct-c2', admitted('VELDO-6208-claude-c'), 'claude',
+                                 [c_rate('rejected', now - 60, 'five_hour', 1.0), c_result(1, 1, 1)])
+            launch, record = run('acct-c2', admitted('VELDO-6208-claude-d'), 'claude', ok('claude'))
+            check('usage/rate-limit-reset', 'claude: an account whose reported reset already ended takes work [%s, %s]'
+                  % ((account_record('acct-c2').get('windows') or {}).get('five_hour'), (record or {}).get('state')),
+                  ((account_record('acct-c2').get('windows') or {}).get('five_hour') or {}).get('reset_at') == now - 60
+                  and (record or {}).get('state') == 'exited' and len(engine_markers(launch.dispatch_id)) == 1)
+
+            # Codex, on the production reader with a fixed clock and zone: the stated minute's end is the reset
+            # (the same local minute in another zone is another instant), refused a second before it, allowed at it.
+            X = L.ENGINES['codex']
+            fixed = 1790000000
+            for zone in ('UTC', 'America/New_York', 'Asia/Kolkata'):
+                for stated in (fixed // 60 * 60 + 7200, fixed // 60 * 60 + 3 * 86400):
+                    message = x_limit_message(stated, zone, fixed)
+                    meter, _ = attempt(lambda: X.Meter(clock=lambda: fixed, zone=zone))
+                    seen = [o for o in (meter.feed((json.dumps(x_error(message)['line']) + '\n').encode()) if meter
+                                        else []) if o['kind'] == 'window']
+                    direct, _ = attempt(lambda: X.limit_reset(message, fixed, zone))
+                    window = dict(status='rejected', reset_at=(seen[0]['reset_at'] if seen else None))
+                    record = {'windows': {'usage_limit': window}}
+                    check('usage/rate-limit-reset', 'codex, %s, "%s": the reset is the end of the stated minute, '
+                          'refused one second before it and allowed at it [%s, %s]' % (zone, message[-24:], direct,
+                                                                                    window['reset_at']),
+                          len(seen) == 1 and seen[0]['window_id'] == 'usage_limit' and direct == stated + 60
+                          == window['reset_at'] and ACC.blocking(record, stated + 59) == ['usage_limit']
+                          and ACC.blocking(record, stated + 60) == [])
+            # Every message of the binary's error table, on the production reader: each exhaustion is its window,
+            # the usage-limit forms with the reset their retry phrase states or none, the rest with none; nothing
+            # else in the table records a window.
+            ERRORS = FORMATS['codex']['errors']
+
+            def filled(entry, retry):
+                text = entry['message']
+                if entry['window'] == 'usage_limit':
+                    pieces = text.split('{}')
+                    # the model or plan sentence, then the retry phrase as the last argument
+                    return ''.join(p + ('configured-model' if i < len(pieces) - 2 else retry if i == len(pieces) - 2
+                                        else '') for i, p in enumerate(pieces))
+                return text.replace('{}', 'x')
+            misread = []
+            for entry in ERRORS:
+                retries = ((LIMIT['retry_at'][1] + x_clock(fixed // 60 * 60 + 600, 'UTC', fixed) + '.',
+                            fixed // 60 * 60 + 660), (LIMIT['retry_later'][1], None)) \
+                    if entry['window'] == 'usage_limit' else (('', None),)
+                for retry, expected in retries:
+                    if entry['window'] == 'usage_limit' and not entry['message'].rsplit('{}', 2)[-2].endswith(','):
+                        retry = retry.replace(' or try', ' Try')  # after a full stop the phrase opens a sentence
+                    message = filled(entry, retry)
+                    meter = X.Meter(clock=lambda: fixed, zone='UTC')
+                    windows = [o for chunk in (x_error(message), x_failed(message))
+                               for o in meter.feed((json.dumps(chunk['line']) + '\n').encode()) if o['kind'] == 'window']
+                    wanted = [] if entry['window'] is None else [(entry['window'], 'rejected', expected)]
+                    got = [(o['window_id'], o['status'], o['reset_at']) for o in windows]
+                    if got != wanted:
+                        misread.append((message[:60], got, wanted))
+            exhaustions = [e for e in ERRORS if e['window']]
+            check('usage/rate-limit-reset', 'codex: every one of the %d messages of the binary\'s error table is read as '
+                  'its window or as none, the %d exhaustions each once, with the reset stated or none [%s]'
+                  % (len(ERRORS), len(exhaustions), misread[:3]),
+                  len(ERRORS) >= 40 and {'usage_limit', 'workspace_credits', 'workspace_spend_cap', 'quota', 'plan'}
+                  == {e['window'] for e in exhaustions} and not misread)
+            # End to end, no wait: a stated minute two hours away refuses its account; none stated keeps its account
+            # refused however long; a stated minute that already ended lets its account take work; a workspace out
+            # of credits refuses its account with no reset.
+            now = int(time.time())
+            future = now // 60 * 60 + 7200
+            past = now // 60 * 60 - 60
+            credits = next(e['message'] for e in ERRORS if e['window'] == 'workspace_credits')
+            for account, message, window, expected in (
+                    ('acct-x2', x_limit_message(future), 'usage_limit', future + 60),
+                    ('acct-x3', x_limit_message(None), 'usage_limit', None),
+                    ('acct-x4', x_limit_message(past), 'usage_limit', past + 60),
+                    ('acct-x5', credits, 'workspace_credits', None)):
+                launch, record = run(account, admitted('VELDO-6208-%s-a' % account), 'codex',
+                                     [x_started(), x_error(message), x_failed(message)], code=1)
+                stored = (account_record(account).get('windows') or {}).get(window) or {}
+                check('usage/rate-limit-reset', 'codex %s: "%s" is recorded on the account as the exhausted %s window, '
+                      'its reset %s, from its dispatch [%s]' % (account, message[-32:], window, expected, stored),
+                      stored.get('status') == 'rejected' and stored.get('reset_at') == expected
+                      and stored.get('source_dispatch') == launch.dispatch_id)
+                launch, record = run(account, admitted('VELDO-6208-%s-b' % account), 'codex', ok('codex'))
+                if account == 'acct-x4':
+                    check('usage/rate-limit-reset', 'codex acct-x4: its stated minute already ended, so it takes work '
+                          '[%s]' % (record or {}).get('state'),
+                          (record or {}).get('state') == 'exited' and len(engine_markers(launch.dispatch_id)) == 1)
+                    continue
+                check('usage/rate-limit-reset', 'codex %s: a new invocation is refused by name and nothing launches '
+                      '[%s]' % (account, (record or {}).get('refusal')),
+                      (record or {}).get('refusal') == 'missing_authority:allowance:rate_limited:' + window
+                      and not engine_markers(launch.dispatch_id) and not spawned(launch.dispatch_id))
+                if expected is None:
+                    blocked, _ = attempt(lambda: ACC.blocking(account_record(account), time.time() + 10 ** 7))
+                    check('usage/rate-limit-reset', 'codex %s: with no reset stated the account stays refused however '
+                          'long, until a later observation says otherwise [%s]' % (account, blocked), blocked == [window])
 
         # AC3: one settlement per invocation and sequence; incomplete reports keep their reservation.
         with region('settle/once'):
@@ -1277,15 +1362,6 @@ sys.exit(payload.get('code', 0))
                   % (len(compared), [c for c in compared if c[2] != c[3]][:3]),
                   len(compared) > 20 and all(shown_seq == seq for _, _, shown_seq, seq in compared))
 
-        # AC2, Codex's stated reset: refused inside it (above), the account takes work again once it passed.
-        with region('usage/rate-limit-reset'):
-            while limited['stated'] is not None and time.time() < limited['stated'] + 0.2:
-                time.sleep(0.2)
-            launch, record = run('acct-x2', admitted('VELDO-6208-acct-x2-c'), 'codex', ok('codex'))
-            check('usage/rate-limit-reset', 'codex: once the stated reset passed the account takes work again [%s]'
-                  % (record or {}).get('state'),
-                  (record or {}).get('state') == 'exited' and len(engine_markers(launch.dispatch_id)) == 1)
-
         # The fixtures: every line a fake engine was scripted to print, checked against the format table
         # extract_formats.py read out of the installed binary. A CLI whose format moved (after the table
         # is regenerated) reds these rows, not a live run.
@@ -1375,10 +1451,13 @@ sys.exit(payload.get('code', 0))
             limit_lines = [line for owner, line in fixture_lines if owner == 'codex' and line.get('type') in ('error', 'turn.failed')]
             messages = [line.get('message') or (line.get('error') or {}).get('message') for line in limit_lines]
             pattern = limit_pattern()
-            check('format/codex-fake-lines', 'codex: each usage-limit message the fake prints is built from the binary\'s '
-                  'own message, retry phrases and time formats [%s]' % [m for m in messages if not pattern.match(m or '')][:2],
-                  len(messages) >= 4 and all(pattern.match(m or '') for m in messages)
-                  and any('again at' in m for m in messages) and any('later' in m for m in messages))
+            table = {e['message'] for e in FORMATS['codex']['errors'] if e['window'] not in (None, 'usage_limit')}
+            check('format/codex-fake-lines', 'codex: each limit message the fake prints is the binary\'s own: a usage-limit '
+                  'message built from its message, retry phrases and time formats, or an exhaustion message of its '
+                  'error table [%s]' % [m for m in messages if not pattern.match(m or '') and m not in table][:2],
+                  len(messages) >= 8 and all(pattern.match(m or '') or m in table for m in messages)
+                  and any('again at' in m for m in messages) and any('later' in m for m in messages)
+                  and any(m in table for m in messages))
     except Exception as exc:  # noqa: BLE001 - recorded against every row, never raised past the suite
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
