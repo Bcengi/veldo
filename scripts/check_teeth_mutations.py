@@ -6902,6 +6902,10 @@ def cases():
          "            if status == 'rejected':\n                # VELDO-0160: the stream reports its window exhausted.\n",
          "            if False:  # defect: a rejected window is not the account's limit\n",
          ['limit/stream-exhausted'])
+    pool('limit-reopened-window-kept', 'control_engine_claude.py',
+         "                self.limited = None  # The same window reported open again: the run is no longer at its limit.\n",
+         "                pass  # defect: a window reported open again still counts as the run's limit\n",
+         ['limit/stream-exhausted'])
     pool('limit-every-failure', 'control_accounts.py',
          "    if not isinstance(limit, dict) or limit.get('signal') not in LIMIT_SIGNALS or outcome == 'not_executed':\n",
          "    if outcome == 'failed':\n"

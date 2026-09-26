@@ -372,6 +372,9 @@ class Meter:
                 # VELDO-0160: the stream reports its window exhausted.
                 self.limited = {'window': str(info.get('rateLimitType') or LIMIT_WINDOW),
                                 'reset_at': reset if _number(reset) else None, 'signal': 'stream'}
+            elif (self.limited or {}).get('signal') == 'stream' and self.limited['window'] == str(
+                    info.get('rateLimitType') or LIMIT_WINDOW):
+                self.limited = None  # The same window reported open again: the run is no longer at its limit.
             return [dict(seen, kind='window', window_id=str(info.get('rateLimitType') or 'unified'),
                          status='rejected' if status == 'rejected' else 'allowed',
                          reset_at=reset if _number(reset) else None,

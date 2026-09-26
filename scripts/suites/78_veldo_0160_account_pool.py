@@ -643,7 +643,8 @@ sys.exit(payload.get('code', 0))
         # AC2: a run its account's limit stopped is classified account_limit with its window and reset; no other.
         with region('limit/stream-exhausted', 'limit/rate-limit-result'):
             for account, provider in (('acct-l1', 'claude_code'), ('acct-l2', 'claude_code'), ('acct-l3', 'claude_code'),
-                                      ('acct-l4', 'codex'), ('acct-l5', 'codex'), ('acct-l6', 'codex')):
+                                      ('acct-l4', 'codex'), ('acct-l5', 'codex'), ('acct-l6', 'codex'),
+                                      ('acct-l7', 'claude_code')):
                 error = register(account, provider)
                 if error:
                     check('limit/stream-exhausted', 'registered %s [%s]' % (account, error), False)
@@ -669,6 +670,9 @@ sys.exit(payload.get('code', 0))
                  [c_init(), c_api_error((CLIMIT.get('not_account') or ['Server is temporarily limiting requests'])[0]),
                   c_result(0, 0, text=(CLIMIT.get('not_account') or ['Server is temporarily limiting requests'])[0],
                            error=True, status=429)], None),
+                ('limit/stream-exhausted', 'Claude Code (a window reported exhausted, then open again)', 'acct-l7',
+                 'claude', [c_init(), c_rate('rejected', stated, 'five_hour'), c_rate('allowed', stated, 'five_hour', 0.5),
+                            c_msg('mo', 1, 1), c_failed(['the tool failed'])], None),
                 ('limit/stream-exhausted', 'Codex', 'acct-l6', 'codex',
                  [x_started(), x_failed('internal error; agent loop died unexpectedly')], None))
             for row, engine, account, adapter, script, expected in cases:
