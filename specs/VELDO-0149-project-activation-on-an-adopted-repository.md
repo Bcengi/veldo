@@ -136,3 +136,14 @@ and the adopting binding; metrics count activations by path and refusal. Suite
 `77_veldo_0149_adopted_activation`, red at a166d14 by assertion (9 rows); finding 149: 11 mutations.
 Finding 76's `omitted-policy-activates` and `second-activation-replaces` anchors follow the shared
 bound-fields helper (finding 76 still rejects 23). Status unchanged.
+
+2026-09-26, review fix: the owner approved one thing and another project was activated. The Telegram
+presentation of an activation request showed only the requester's free text and a terms digest, and
+`activate_settled` never checked that text against the proposal, so an accept of "repository-beta, small
+budget" activated repository-alpha with capacity 999. `activation_brief(proposal)` now renders the
+project and every bound value in plain text, and an activation request whose brief is not exactly that
+rendering refuses `stale_subject:brief` with nothing written (the pattern of `control_backlog._settled`).
+Rows `answer/brief-binds-proposal` (the review's case) and `answer/owner-sees-every-value` (the owner's
+Telegram bytes carry every bound value); mutations `settled-brief-unchecked` and
+`activation-brief-omits-repository`; `settled-rejection-applies` now lets the rejection activate. Red at
+a166d14 regenerated (11 rows by assertion); finding 149: 13 rejected; finding 76: 23. Status unchanged.

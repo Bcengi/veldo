@@ -24,8 +24,11 @@ effect is the approval of exactly these terms carrying this proposal. Named refu
 written: `missing_field:<field>` (the same helper, `_bound_fields`, the signed command uses),
 `unsettled:no_answer`, `unsettled:not_settled` (answered at the current presentation, not yet settled),
 `unsettled:request_closed`, `stale_answer` (the only answers name a presentation or request version that
-has since changed), `not_approved:<ruling>`, `invalid_input:settlement`, and `not_owner` when the
-settlement's only principal is not the owner the activation binds. Then the owner must be current and
+has since changed), `not_approved:<ruling>`, `invalid_input:settlement`, `stale_subject:brief` when the
+request's brief (the text the owner is shown on Telegram) is not exactly `activation_brief(proposal)`, the
+plain-text rendering of the project and every bound value (owner, execution repository, charter,
+authority policy, coordination budget), as `control_backlog._settled` does for its briefs, and
+`not_owner` when the settlement's only principal is not the owner the activation binds. Then the owner must be current and
 every activation predicate applies; the commit pins the request, its terms, the settlement, its effect
 and the owner's membership, under the command id `project-activation:<settlement id>`. The record is the
 signed command's (same fields, digest, state and history edge) with `provenance.source =
@@ -48,7 +51,7 @@ signs, and settled by the VELDO-0068 service. Each row is reported once.
 | Criterion | Rows |
 |---|---|
 | AC1 | `adopted/two-repositories`, `adopted/unadopted-refused` (declared falsifier), `adopted/observed` |
-| AC2 | `answer/activates`, `answer/binds-every-field`, `answer/unsettled`, `answer/owner-only` (declared falsifier), `answer/stale`, `answer/observed` |
+| AC2 | `answer/activates`, `answer/binds-every-field`, `answer/unsettled`, `answer/owner-only` (declared falsifier), `answer/stale`, `answer/brief-binds-proposal`, `answer/owner-sees-every-value`, `answer/observed` |
 
 `adopted/two-repositories`: two clones resolve through their signed bindings to this store and are bound
 for this domain; the owner's signed activation on each creates one ACTIVE project bound to it.
@@ -61,29 +64,39 @@ one ACTIVE project results whose record equals the signed command's, with the se
 applying it again refuses `already_exists`. `answer/binds-every-field`: five settled requests, each
 omitting one field, refuse `missing_field:<field>`. `answer/unsettled`: unanswered (`unsettled:no_answer`),
 answered by Telegram but not settled (`unsettled:not_settled`, and once settled it activates), and a
-settled rejection (`not_approved:reject`). `answer/owner-only`: a settlement answered by another current
+settled rejection, which activates nothing (its own part) and refuses `not_approved:reject`. `answer/owner-only`: a settlement answered by another current
 owner-role member, and an owner's answer for a project another member would own, refuse `not_owner`.
 `answer/stale`: the owner's Telegram reply to the first presentation, then the request revised and
-presented again; nothing settles and activation refuses `stale_answer`. `answer/observed`: request,
-settlement, receipt, presentation, repository and binding on the accepted observation; the five error
+presented again (a new deadline); nothing settles and activation refuses `stale_answer`.
+`answer/brief-binds-proposal`: the review's case. The requester's brief says "repository-beta with a
+small budget" and the proposal names repository-alpha with capacity 999; the owner's Telegram text shows
+neither the proposal's repository nor its budget, his accept settles it, and activation refuses
+`stale_subject:brief` with no project and nothing written. `answer/owner-sees-every-value`: an activation
+request whose brief is `activation_brief`; the owner's Telegram message text, read back from the
+loopback platform, shows the project, owner, execution repository, charter purpose and exclusion, every
+policy touchpoint beside its role and every budget unit beside its cap (distinctive values, matched
+without the rendering's format), and his accept of those bytes activates exactly those values.
+`answer/observed`: request,
+settlement, receipt, presentation, repository and binding on the accepted observation; the six error
 classes distinct; counts by path and refusal; no rationale, charter text or signature.
 
-Stage environment run (`env -i`, the stage's variables): 37 passed, 0 failed (26 preamble, 9 rows and 2
-`ran/` rows), about 2 seconds. Suites of the touched module, all green: 71 (VELDO-0076), 72 (VELDO-0077),
+Stage environment run (`env -i`, the stage's variables): 39 passed, 0 failed (26 preamble, 11 rows and 2
+`ran/` rows), about 2 seconds; suite 71 (VELDO-0076) under the same environment: 53 passed. Suites of the touched module, all green: 71 (VELDO-0076), 72 (VELDO-0077),
 73 (VELDO-0078, VELDO-0089), 75 (VELDO-0150), 76 (VELDO-0079).
 
 ## Red record
 
-`red-at-a166d14.json`: the current suite over `git archive a166d14`, unchanged. All 9 behavior rows fail
+`red-at-a166d14.json`: the current suite over `git archive a166d14`, unchanged. All 11 behavior rows fail
 by their own assertion (no row raised): the pre-change service accepts only the store's own repository,
 so both bound repositories and the control are refused, its observations carry no path or binding, and
-it has no settled path (the suite answers it `no_settled_activation`).
+it has no settled path (the suite answers it `no_settled_activation`), and its requests carry the
+requester's brief, so the owner's Telegram text shows none of the bound values.
 
 ## Mutations (finding 149)
 
 Registered in `scripts/check_teeth_mutations.py`, each declared falsifier first; `drive.py` records
-`mutations.json` and one applied diff per mutant. All 11 turn their named row red by assertion; the
-baseline and the no-op copy are green. `check_teeth_mutations.py --finding 149 --jobs 2`: 11 rejected.
+`mutations.json` and one applied diff per mutant. All 13 turn their named row red by assertion; the
+baseline and the no-op copy are green. `check_teeth_mutations.py --finding 149 --jobs 2`: 13 rejected.
 
 | Mutant | Named row |
 |---|---|
@@ -95,10 +108,17 @@ baseline and the no-op copy are green. `check_teeth_mutations.py --finding 149 -
 | settled-answer-any-member (AC2 falsifier) | answer/owner-only |
 | settled-field-unbound | answer/binds-every-field |
 | settled-unsettled-applies | answer/unsettled |
-| settled-rejection-applies | answer/unsettled |
+| settled-rejection-applies (neither ruling nor approval effect required: the rejection activates) | answer/unsettled |
 | stale-answer-unnamed | answer/stale |
 | settled-provenance-unrecorded | answer/activates |
+| settled-brief-unchecked (the review's case) | answer/brief-binds-proposal |
+| activation-brief-omits-repository | answer/owner-sees-every-value |
 
 Finding 76 mutates the same module: its `omitted-policy-activates` and `second-activation-replaces`
 anchors now name the shared `_bound_fields` helper and the activating branch that calls it (the same
 defects, relocated); `--finding 76`: 23 rejected.
+
+`settled-unsettled-applies` still stops at a later check under another name (`not_approved:None`): an
+unsettled request has no settlement or effect record, so no mutant can make it activate without
+fabricating one. `settled-rejection-applies` now makes the rejection activate, so its row proves the
+check stops activation and not only the refusal's name.
