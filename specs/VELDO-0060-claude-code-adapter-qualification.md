@@ -253,3 +253,13 @@ special-bit copy and a linked directory on its way; the terminal record's tokens
 without it, never the main loop's usage. The owner check cannot be driven negative without a second
 account or root (no row for it). Proof: suite `78_veldo_0060_claude_adapter` (32 rows), the red record
 at b39a0fdc regenerated, finding 60's mutations. Status unchanged.
+
+2026-09-26, integration review fixes (branch build-veldo-0060-0061): a local adapter's clone entrance
+must be run by the receiver's own Python (`sys.executable`, resolved), else `invalid_input:engine_interpreter`
+before acceptance, so a shell or a package manager's link can no longer stand where neither the wrapper
+nor the entrance re-hashes. The trusted wrapper compares resolved paths, so a state root spelled through
+`..` is still re-hashed before the exec, and it passes VELDO_ENGINE_PATH and VELDO_ENGINE_SHA256 on to the
+clone entrance only, never to an engine. Proof: suite `78_veldo_0060_claude_adapter` gains
+`pin/entrance-interpreter` and `pin/rehash-dot-dot` (34 rows); mutations
+`claude-entrance-interpreter-unchecked`, `claude-wrapper-path-unresolved` and
+`claude-wrapper-entrance-unforwarded`; the red record at b39a0fdc regenerated. Status unchanged.

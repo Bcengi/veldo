@@ -55,17 +55,20 @@ changed one (exit 70), and passes neither name on. Clones may write-protect the 
 every chunk the meter is fed. Each stdout line is kept as printed and checked against exec's events and
 fields (`EVENTS`, `USAGE_FIELDS`, `ITEM_KINDS`); an item is read only for its `id` and `type`, the fields
 the binary ties to exec's items, and is returned whole. The verdict is `complete` only for a well-formed
-stream whose last turn closed with `turn.completed` and a zero exit; otherwise `signal`, `deadline`,
-`malformed_output`, `turn_failed`, `missing_result` or `nonzero_exit`, in that order. At the end
+stream whose last turn closed with `turn.completed` and a zero exit, when nothing stopped it; otherwise
+`stopped` (its `cause`: a stop on request, at the usage cap or for a missed heartbeat, whatever it printed
+and however it exited, as Claude Code's is), `signal`, `deadline`, `malformed_output`, `turn_failed`,
+`missing_result` or `nonzero_exit`, in that order. At the end
 `Metering` keeps the document (the verdict, terminal record, thread, turns, items, malformed line
-indices, termination, every line, the dispatch, invocation, account and pinned executable) in a private
+indices, termination, stop cause, every line, the dispatch, invocation, account and pinned executable) in a private
 file (0600 in a 0700 directory, beside the store unless the config names `artifacts`) and the receiver
 sends its report {path, digest, verdict, complete} before the end (`Launch.artifact`). The invocation's
 final report settles `completed` only when the document is complete; the exit record binds the report's
 verdict, completeness and digest, and `control_dispatch.completed` (the one completion gate, which the
 runner's worker slot and the build and review floor both read) is true only when that artifact is
 complete: an exit code completes nothing. `control_engine_codex.verify(document)` recomputes a document
-from its own lines.
+from its own lines and cause. A module that lacks one of the protocol's names is refused
+`unregistered_adapter:engine_protocol:<engine>:<name>` before acceptance, nothing spawned.
 
 **Stop and caps are the machinery VELDO-0039 to 0041 and 0062 built, on this configuration.** A stop is
 `Launch.stop`: SIGTERM to the engine, SIGTERM to its group after the stop grace, cgroup.kill after the kill
@@ -119,9 +122,9 @@ systemd-run, so a spawn for a refused invocation is seen. Each row is reported o
 
 | Criterion | Rows |
 |---|---|
-| AC1 | `lifecycle/registered`, `lifecycle/normal-run`, `lifecycle/actual-binary`, `pin/unexpected-launch` (declared falsifier), `pin/qualified-record` |
+| AC1 | `lifecycle/registered`, `lifecycle/normal-run`, `lifecycle/actual-binary`, `lifecycle/engine-protocol`, `pin/unexpected-launch` (declared falsifier), `pin/qualified-record` |
 | AC2 | `artifacts/normal-exit`, `artifacts/missing-result` (declared falsifier), `artifacts/malformed-output`, `artifacts/missing-usage`, `artifacts/nonzero-and-signal` |
-| AC3 | `stop/cooperative`, `stop/forced`, `stop/termination` (declared falsifier) |
+| AC3 | `stop/cooperative`, `stop/forced`, `stop/termination` (declared falsifier), `stop/stopped-not-complete` |
 | AC4 | `caps/boundaries`, `caps/refused-before-launch` (declared falsifier), `caps/stop-at-cap`, `caps/observed` |
 | Fixtures | `format/codex-fake-lines` |
 
@@ -138,7 +141,10 @@ executable's digest. The installed Codex 0.154.0 binary is launched through the 
 wrapper, scope and clone entrance, pinned by the installed record: it enters its own clone as the
 recorded process inside the dispatch's scope, exits 0, prints byte for byte what the binary prints for
 the same arguments, and its zero exit with no terminal record is malformed output, a failed invocation
-and a slot returned failed. `pin/*`: a binary with one byte changed after qualification, a newer
+and a slot returned failed. `lifecycle/engine-protocol`: both installed engine modules implement all ten
+protocol names, and a receiver installed with a Codex module lacking `REGISTRATION`, or `Terminal`, refuses
+the dispatch `unregistered_adapter:engine_protocol:codex:<name>` before acceptance, with zero spawns, no
+invocation and no engine. `pin/*`: a binary with one byte changed after qualification, a newer
 package version, a link to the qualified binary, the package manager's `codex` link, an argv without
 `--json`, the pinned binary behind a shell and behind a link to it are each refused by name before
 acceptance, with zero spawns, no invocation and no engine; the
@@ -156,7 +162,11 @@ descendant that ignore it are killed with their group after the configured grace
 their bound; an engine that leaves a descendant ignoring the request is recorded exited only after that
 descendant was killed. In each, every process is gone, the exit recorded is the engine's own under its
 process identity, and the original invocation is cancelled, its usage unknown and retained, its
-document naming it with no result. `caps/*`: the initial, retry and follow-on invocations are each
+document naming it, `stopped`, never complete. `stop/stopped-not-complete`: an engine that answers the
+request with `turn.completed` and exits 0 is `stopped`, not complete, in its document (which verifies) and
+in its exit record; the completion gate reads it as not complete, its invocation and slot are cancelled,
+and the floor refuses the build `missing_evidence:build_dispatch`, while a unit whose one build completed
+passes the floor's dispatch check and is refused next for its absent proof. `caps/*`: the initial, retry and follow-on invocations are each
 reserved before the running record and ran the pinned binary; a fourth invocation of a unit capped at
 three, a retry under a token cap whose earlier usage is unknown and a launch on an account whose Codex
 usage limit was reported are each refused by name with zero spawns (the account carries the rejected

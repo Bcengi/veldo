@@ -40,13 +40,15 @@ entrance, or a transport's trusted wrapper) followed by the pinned path and the 
 **The pin binds what runs.** For every engine the receiver checks (`pinned_argv_problem`) that what the
 trusted wrapper will exec (a local adapter's whole argv; a reported adapter's argv after its transport's
 `control_launch.py exec`) is the pinned path itself, or the installed clone entrance
-(`<python> -B control_clone.py enter <clones> --`, beside the receiver for a local adapter) followed by the
-pinned path, and that the qualified flags follow it. The pinned path somewhere in the argv is not enough:
-a shell or a package manager's link before it is refused `invalid_input:engine_executable`. The engine's
-environment names the pinned path and digest (`VELDO_ENGINE_PATH`, `VELDO_ENGINE_SHA256`); whichever
-trusted program execs the engine (the wrapper, when no entrance stands before it, or the clone entrance)
-re-hashes the file immediately before the exec, refuses a changed one (exit 70, the engine never runs)
-and passes neither name to the engine. The clone provisioner takes `engines`, directories every clone's
+(`<python> -B control_clone.py enter <clones> --`, for a local adapter the one beside the receiver, run
+by the receiver's own Python, else `invalid_input:engine_interpreter`) followed by the pinned path, and
+that the qualified flags follow it. The pinned path somewhere in the argv is not enough: a shell or a
+package manager's link before it is refused `invalid_input:engine_executable`. The engine's environment
+names the pinned path and digest (`VELDO_ENGINE_PATH`, `VELDO_ENGINE_SHA256`); whichever trusted program
+execs the engine (the wrapper, when no entrance stands before it, or the clone entrance) re-hashes the
+file immediately before the exec, refuses a changed one (exit 70, the engine never runs) and passes
+neither name to the engine. The wrapper compares resolved paths, so a pinned path spelled through `..`
+is still re-hashed, and it passes the two names on to the clone entrance only. The clone provisioner takes `engines`, directories every clone's
 users may read and execute but never write (`Clones(engines=...)`, recorded in the manifest's protected
 write targets): the pinned copies' directory and the engine packages, so no worker replaces what the
 next dispatch runs.
@@ -129,7 +131,7 @@ reported once.
 
 | Criterion | Rows |
 |---|---|
-| AC1 | `lifecycle/registration`, `lifecycle/pinned-launch`, `pin/unexpected-launch` (declared falsifier), `pin/copy`, `pin/shipped-qualification`, `pin/argv-binds-what-runs`, `pin/rehash-before-exec`, `contained/bind`, `contained/scope`, `contained/clone-entry`, `contained/pinned-exec`, `contained/engines-protected`, `contained/rehash-before-exec` |
+| AC1 | `lifecycle/registration`, `lifecycle/pinned-launch`, `pin/unexpected-launch` (declared falsifier), `pin/copy`, `pin/shipped-qualification`, `pin/argv-binds-what-runs`, `pin/rehash-before-exec`, `pin/entrance-interpreter`, `pin/rehash-dot-dot`, `contained/bind`, `contained/scope`, `contained/clone-entry`, `contained/pinned-exec`, `contained/engines-protected`, `contained/rehash-before-exec` |
 | AC2 | `artifact/complete`, `artifact/missing-result` (declared falsifier), `artifact/exits`, `artifact/malformed-output`, `artifact/missing-usage`, `artifact/exit-record`, `floor/missing-result`, `contained/artifact`, `contained/exit-record` |
 | AC3 | `stop/requested`, `stop/descendant-alive`, `contained/stop-cooperative`, `contained/stop-forced`, `contained/stop-descendant` (declared falsifier) |
 | AC4 | `caps/before-launch` (declared falsifier), `caps/allowance-states`, `caps/stop-at-cap` |
@@ -149,7 +151,12 @@ against the binary's own tables). `pin/argv-binds-what-runs`: the pinned path in
 entrance or behind a package manager's link, each refused `invalid_input:engine_executable` with nothing
 run. `pin/rehash-before-exec` (the wrapper) and `contained/rehash-before-exec` (the clone entrance, both
 engines): the bound executable changed after its bind and before its exec is refused at the exec, exit
-70, the engine never ran, the artifact is not complete, the invocation and slot failed. `artifact/*`:
+70, the engine never ran, the artifact is not complete, the invocation and slot failed.
+`pin/entrance-interpreter`: the installed entrance in its shape run by `/bin/sh` (Claude Code) or by a
+package manager's link (Codex) is refused `invalid_input:engine_interpreter` before acceptance with
+nothing run. `pin/rehash-dot-dot`: under a receiver whose state root is spelled through `..`, the pinned
+copy changed after its bind is still refused at the wrapper's exec (exit 70, as above), and unchanged it
+runs in that spelling, completes, and the engine inherits neither re-hash name. `artifact/*`:
 the live exits and perturbed bytes of build-veldo-0060, plus the terminal record's tokens (the
 `modelUsage` total for a complete run, unknown for a result without `modelUsage`, which still carries
 its main-loop `usage`); `artifact/exit-record`: the exit record binds the verdict, completeness and
@@ -228,6 +235,9 @@ red by assertion; the baseline and the no-op copies are green. `check_teeth_muta
 | claude-parent-link-followed | control_engine_claude.py | pin/unexpected-launch |
 | claude-terminal-main-loop-usage | control_engine_claude.py | artifact/missing-usage |
 | claude-usage-cap-stop-ignored | control_launch.py | caps/stop-at-cap |
+| claude-entrance-interpreter-unchecked | control_launch.py | pin/entrance-interpreter |
+| claude-wrapper-path-unresolved | control_launch.py | pin/rehash-dot-dot |
+| claude-wrapper-entrance-unforwarded | control_launch.py | contained/rehash-before-exec |
 
 The AC3 falsifier is `claude-stop-leaves-descendant`: it breaks the contained path's empty-group check
 (the worker's exit ends the stop, whatever is left in its group), and `contained/stop-descendant` reds for
