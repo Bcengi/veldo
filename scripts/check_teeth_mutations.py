@@ -6350,13 +6350,24 @@ def cases():
     grooming('grooming-brief-omits-protected-paths', 'control_grooming_request.py',
              "        'Protected paths: %s.' % _list(c['protected_paths']),\n", '', ['material/telegram-brief'])
     grooming('grooming-thin-admission-accepted', 'control_backlog.py',
-             "        target, brief = groomed[:2] if groomed else (decision_target(data), admission_brief(data))\n",
-             "        target, brief = decision_target(data), admission_brief(data)  # defect: the thin brief admits groomed work\n",
+             "        return GR.target(request), GR.brief(request, touchpoint), request\n",
+             "        return ({'kind': 'backlog_item', 'ref': data['uuid'], 'revision': data['decomposition_revision'],\n"
+             "                 'digest': data['decomposition_digest']}, None, request)  # defect: the thin target admits groomed work\n",
              ['material/telegram-brief'])
     grooming('grooming-brief-unchecked', 'control_backlog.py',
-             "        target, brief = groomed[:2] if groomed else (decision_target(data), admission_brief(data))\n",
-             "        target, brief = (groomed[0], None) if groomed else (decision_target(data), admission_brief(data))  # defect\n",
+             "        return GR.target(request), GR.brief(request, touchpoint), request\n",
+             "        return GR.target(request), None, request  # defect: any brief shown admits\n",
              ['material/telegram-brief'])
+    # AC1, the lead's decision: an item grooming never made a request for is admitted on VELDO-0078's thin path.
+    grooming('grooming-thin-path-reopened', 'control_backlog.py',
+             "        if request is None:\n"
+             "            raise Refused('missing_evidence:admission_request', 'grooming recorded no admission request for the item')\n",
+             "        if request is None:  # defect: the thin path: an item with no admission request is admitted on its own target\n"
+             "            return ({'kind': 'backlog_item', 'ref': data['uuid'], 'revision': data['decomposition_revision'],\n"
+             "                     'digest': data['decomposition_digest']}, None,\n"
+             "                    {'uuid': None, 'revision': None, 'digest': None,\n"
+             "                     'content': {'questions': [], 'priority': {'rank': None}}})\n",
+             ['material/ungroomed-thin-brief'])
     grooming('grooming-specification-files-unchecked', 'control_backlog.py',
              "        problems += missing + ['stale_subject:' + f for f in GR.WORKSPACE_FIELDS if found[f] != fields.get(f)]\n",
              "        problems += missing  # defect: a changed specification file is not noticed\n",
@@ -6394,8 +6405,8 @@ def cases():
              "                  'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority',)}  # defect\n",
              ['authority/separate-predicates'])
     grooming('grooming-admission-questions-unrecorded', 'control_backlog.py',
-             "                          request_digest=request['digest'], questions=[q['id'] for q in request['content']['questions']])\n",
-             "                          request_digest=request['digest'], questions=[])  # defect: the answered questions are lost\n",
+             "                      request_digest=request['digest'], questions=[q['id'] for q in request['content']['questions']])\n",
+             "                      request_digest=request['digest'], questions=[])  # defect: the answered questions are lost\n",
              ['authority/questions-unresolved'])
     grooming('grooming-priority-applied-before-admission', 'control_grooming.py',
              "            if touchpoint == GR.PRIORITY and item.get('state') not in ('ADMITTED',) + tuple(self.CB.EXECUTABLE_STATES):\n",
