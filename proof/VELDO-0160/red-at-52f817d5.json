@@ -17,24 +17,28 @@
   "VELDO-0160 pool/concurrent detail: the four dispatches were each accepted and running before any ended [[('claude', 'invalid_input', None), ('claude', 'invalid_input', None), ('claude', 'invalid_input', None), ('codex', 'invalid_input', None)]]",
   "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(None, None), (None, None), (None, None), (None, None)]]",
   "VELDO-0160 pool/concurrent detail: the four engine processes were alive at the same time [0]",
-  "VELDO-0160 limit/stream-exhausted detail: Claude Code: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 limit/stream-exhausted detail: Claude Code: the run is classified account_limit with its window and reset time [not_executed, None]",
+  "VELDO-0160 limit/stream-exhausted detail: Claude Code: the window and reset time are recorded on the account, exhausted [{}]",
   "VELDO-0160 limit/stream-exhausted detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/stream-exhausted detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/stream-exhausted detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
-  "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [failed, None]",
+  "VELDO-0160 limit/stream-exhausted detail: Claude Code: an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
+  "VELDO-0160 limit/stream-exhausted detail: Claude Code (a window reported exhausted, then open again): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
+  "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [not_executed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{}]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 4:47pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"Your seat type doesn't include usage\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"Your seat type doesn't include usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: 'This service is disabled for your org': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: 'Your usage allocation has been disabled by your admin \u00b7 ask your admin for a higher limit': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"Your group's usage limit is set to $0 \u00b7 ask your admin for a higher limit\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+  "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 6:58pm (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"Your seat type doesn't include usage\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"Your seat type doesn't include usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: 'This service is disabled for your org': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: 'Your usage allocation has been disabled by your admin \u00b7 ask your admin for a higher limit': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"Your group's usage limit is set to $0 \u00b7 ask your admin for a higher limit\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 decision/rerun detail: claude_code, no MCP call: decided re-run, naming no call [None, no decision module]",
   "VELDO-0160 decision/rerun detail: claude_code, only calls to tools marked read-only: decided re-run, naming no call [None, no decision module]",
   "VELDO-0160 decision/rerun detail: codex, no MCP call: decided re-run, naming no call [None, no decision module]",
@@ -61,6 +65,33 @@
   "VELDO-0160 decision/unreadable-asks detail: codex: a redacted line whose event still reads is decided by its calls (none here: re-run) [None, no decision module]",
   "VELDO-0160 decision/same-id-write detail: claude_code: the id shown read-only and then naming a write is decided ask, naming the write [None, no decision module]",
   "VELDO-0160 decision/same-id-write detail: codex: the id shown read-only and then naming a write is decided ask, naming the write [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, an mcp_tool_use block: decided ask, naming that line as an unknown call of form mcp_tool_use [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, an mcp_tool_result block: decided ask, naming that line as an unknown call of form mcp_tool_result [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a server_tool_use block: decided ask, naming that line as an unknown call of form server_tool_use [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a stream_event starting a tool_use block: decided ask, naming that line as an unknown call of form stream_event:tool_use [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a stream_event starting a message that holds a tool_use: decided ask, naming that line as an unknown call of form stream_event:tool_use [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a stream_event of a type the schema does not name: decided ask, naming that line as an unknown call of form stream_event:unlisted_stream_event [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a user tool_result for an id never seen: decided ask, naming that line as an unknown call of form tool_result [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a tool_use block in a user message: decided ask, naming that line as an unknown call of form tool_use [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a tool_progress for an id never seen: decided ask, naming that line as an unknown call of form tool_progress [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a tool_use_summary of an id never seen: decided ask, naming that line as an unknown call of form tool_use_summary [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a content block of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_block [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a message of a type no table lists: decided ask, naming that line as an unknown call of form message:unlisted_message [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: claude_code, a system message of a subtype no table lists: decided ask, naming that line as an unknown call of form message:system/unlisted_subtype [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: codex, a dynamic_tool_call item: decided ask, naming that line as an unknown call of form dynamic_tool_call [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: codex, a collab_agent_tool_call item: decided ask, naming that line as an unknown call of form collab_agent_tool_call [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: codex, a sub_agent_activity item: decided ask, naming that line as an unknown call of form sub_agent_activity [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: codex, an item of a type no table lists: decided ask, naming that line as an unknown call of form unlisted_item [None, no decision module]",
+  "VELDO-0160 decision/unknown-forms detail: codex, an event of a type no table lists: decided ask, naming that line as an unknown call of form event:turn.unlisted [None, no decision module]",
+  "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named '[REDACTED:known_pattern]': decided ask [None, no decision module]",
+  "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Agent': decided ask [None, no decision module]",
+  "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'Read': decided re-run [None, no decision module]",
+  "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'mcp__tracker__get_issue': decided re-run [None, no decision module]",
+  "VELDO-0160 decision/tool-free-forms detail: claude_code: 11 lines of tool-free and built-in forms decide re-run, naming no call [None, no decision module]",
+  "VELDO-0160 decision/tool-free-forms detail: codex: 7 lines of tool-free and built-in forms decide re-run, naming no call [None, no decision module]",
+  "VELDO-0160 format/tool-forms detail: claude_code: the reader's message, block, streaming event and built-in tool tables are the binary's own [['messages', 'response_blocks', 'request_blocks', 'stream_events', 'builtin_tools']]",
+  "VELDO-0160 format/tool-forms detail: codex: the reader's item and event tables are exec's own [['', 'agent_message', 'command_execution', 'error', 'file_change', 'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'], ['error', 'item.completed', 'item.started', 'item.updated', 'thread.started', 'turn.completed', 'turn.failed', 'turn.started']]",
+  "VELDO-0160 pool/moved-off detail: acct-c1's CLI reported its window exhausted, recorded with its reset [{}]",
   "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
   "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
   "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [invalid_input, {}]",
@@ -76,6 +107,7 @@
   "VELDO-0160 pool/selection-order detail: the idle Claude Code accounts last reported 0.7 (acct-c2), 0.1 (acct-c3, then acct-c4, used last) and nothing current (acct-c1) [None, AttributeError]",
   "VELDO-0160 pool/selection-order detail: the dispatch went to the lowest utilization and, of the two at 0.1, to the one used least recently, acct-c3 [None, invalid_input]",
   "VELDO-0160 pool/selection-order detail: the candidates are ranked lowest utilization first, least recently used first among equals, the unknown last [[]]",
+  "VELDO-0160 pool/until-earliest detail: each Claude Code account's CLI reported its windows exhausted, recorded with their resets [{'acct-c1': [('five_hour', None)], 'acct-c2': [('five_hour', None)], 'acct-c3': [('five_hour', None), ('seven_day', None)], 'acct-c4': [('five_hour', None)]}]",
   "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [invalid_input, {}]",
   "VELDO-0160 install/assets detail: the scaffold lays down the account pool and the decision [['.veldo/control_account_pool.py', '.veldo/control_account_limit.py']]",
   "VELDO-0160 install/assets detail: every engine copy of a module this work touches is identical [['.veldo/control_account_pool.py', '.veldo/control_account_limit.py', '.veldo/control_account_pool.py', '.veldo/control_account_limit.py']]"
@@ -91,6 +123,10 @@
   "VELDO-0160 decision/ask",
   "VELDO-0160 decision/unreadable-asks",
   "VELDO-0160 decision/same-id-write",
+  "VELDO-0160 decision/unknown-forms",
+  "VELDO-0160 decision/redacted-name",
+  "VELDO-0160 decision/tool-free-forms",
+  "VELDO-0160 format/tool-forms",
   "VELDO-0160 pool/moved-off",
   "VELDO-0160 pool/added-account",
   "VELDO-0160 pool/one-run-while-unknown",
@@ -102,7 +138,7 @@
  "modules": {
   ".veldo/control_account_limit.py": {
    "at_commit": null,
-   "now": "7aa6f72de1e8c4c79f42428dcadb2f4b7c6ae688e5aa09ffd6276b8d00615e97"
+   "now": "969693efe501d86ffbeb95812ce44de7c58978c3f47f54e27234cd0c36abd6ea"
   },
   ".veldo/control_account_pool.py": {
    "at_commit": null,
@@ -114,15 +150,15 @@
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "9a9b490e53e57873ab2aaaa71f548e0c0721ce69dfd2ef3536064e99d494462e",
-   "now": "358688510a369780346f071a09110c4a97a0b5b77966738e4150c6e08234eba2"
+   "now": "018c84f3de2f8027950360ac1cb695d37c97da01a355cc90183d7ace493b5eed"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
-   "now": "8835cf2044137def2cce80e0028d747ec45626eee6923ee01b5d7ec2c35dad09"
+   "now": "b2f0c9605d0bc4ea71316b25da54ec7244194ceef276b2b0c994296ecb665511"
   },
   ".veldo/control_launch.py": {
    "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
-   "now": "97d79daa5f161645bf8748fe70dbea043946319126f78ac667e39db958e94a1b"
+   "now": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502"
   },
   ".veldo/control_reservation_runtime.py": {
    "at_commit": "edae4a25ec26031d041376ec64c5ccea3575eb5fc7b22a448fd2fc6d9674774b",
@@ -134,7 +170,7 @@
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "75eea8d7afe5ceb868c3afa3255b68d53613c20d91a91e673d6be2b4fa008233",
-   "now": "9ab13f553b96522d55c50c162f52f92ce732c948fbb83d0be52ece03817e2fdd"
+   "now": "5e90deb4aa512408b5ffa963a9bd8ae8248b424693103ee8c937f79137c80f92"
   }
  },
  "preamble_rows": 26,
@@ -180,6 +216,22 @@
    false
   ],
   [
+   "VELDO-0160 decision/unknown-forms",
+   false
+  ],
+  [
+   "VELDO-0160 decision/redacted-name",
+   false
+  ],
+  [
+   "VELDO-0160 decision/tool-free-forms",
+   false
+  ],
+  [
+   "VELDO-0160 format/tool-forms",
+   false
+  ],
+  [
    "VELDO-0160 pool/moved-off",
    false
   ],
@@ -217,7 +269,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 34.311,
+ "seconds": 34.006,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"

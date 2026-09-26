@@ -1129,9 +1129,9 @@ sys.exit(payload.get('code', 0))
                   and set(getattr(CE, 'TOOL_FREE_REQUEST', ())) <= set(claude_tables['request_blocks'])
                   and set(getattr(CE, 'TOOL_FREE_BLOCKS', ())) <= set(claude_tables['response_blocks']))
             exec_items = set(XFORMS.get('exec_items') or ())
-            known = set(getattr(XE, 'TOOL_FREE_ITEMS', ())) | set(getattr(XE, 'BUILTIN_ITEMS', ())) | {getattr(XE, 'MCP_ITEM', None)}
+            known = set(getattr(XE, 'TOOL_FREE_ITEMS', ())) | set(getattr(XE, 'BUILTIN_ITEMS', ())) | {str(getattr(XE, 'MCP_ITEM', ''))}
             check('format/tool-forms', 'codex: the reader\'s item and event tables are exec\'s own [%s, %s]'
-                  % (sorted(known ^ exec_items), sorted(set(getattr(XE, 'EVENTS', ())) ^ set(FORMATS['codex']['events']))),
+                  % (sorted(known ^ exec_items), sorted(map(str, set(getattr(XE, 'EVENTS', ())) ^ set(FORMATS['codex']['events'])))),
                   known == exec_items and len(exec_items) == 8
                   and set(getattr(XE, 'EVENTS', ())) == set(FORMATS['codex']['events']))
             listed = {'response_blocks': set(claude_tables['response_blocks']),
