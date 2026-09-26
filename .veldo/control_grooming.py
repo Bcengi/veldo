@@ -138,8 +138,12 @@ class Grooming:
     def _observe(self, operation, item, outcome, reason=None, **extra):
         accepted = reason is None
         self.counts['accepted' if accepted else 'refused'] += 1
+        named = None if accepted else taxonomy(reason)
+        if named == 'unknown_outcome':
+            # A refusal the backlog named keeps the backlog's class.
+            named = self.CB.taxonomy(reason)
         self.observations.append(dict(self.ids, operation=operation, item=item, outcome=outcome, refusal=reason,
-                                      taxonomy=None if accepted else taxonomy(reason), **extra))
+                                      taxonomy=named, **extra))
         result = dict({'ok': accepted, 'item': item, 'outcome': outcome}, **extra)
         if reason is not None:
             result['reason'] = reason
