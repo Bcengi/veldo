@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -380 +380 @@
+-    if manifest.get('version') != record['package_version']:
++    if False:  # defect: another version of the package is launched

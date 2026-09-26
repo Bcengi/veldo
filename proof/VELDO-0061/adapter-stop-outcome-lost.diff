@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1198 +1198 @@
+-            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):
++            elif False:  # defect: a stopped invocation's outcome is taken from its exit

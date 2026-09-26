@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -969 +969 @@
+-                if code is not None and (group is None or not group.populated()):
++                if code is not None:  # defect: the worker's exit ends the stop, whatever is left in its group
