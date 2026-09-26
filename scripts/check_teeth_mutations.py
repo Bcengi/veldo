@@ -6931,8 +6931,8 @@ def cases():
          "  # defect: a revision that marks nothing marks everything\n",
          ['decision/ask'])
     pool('decision-claude-calls-unread', 'control_engine_claude.py',
-         "        elif name.startswith(MCP_PREFIX):\n",
-         "        elif False:  # defect: Claude Code's MCP tool calls are not read\n",
+         "    if name.startswith(MCP_PREFIX):\n        server, _, tool =",
+         "    if False:  # defect: Claude Code's MCP tool calls are not read\n        server, _, tool =",
          ['decision/ask'])
     pool('decision-codex-calls-unread', 'control_engine_codex.py',
          "    if kind != MCP_ITEM:\n",
@@ -6964,8 +6964,8 @@ def cases():
          "    return payload if isinstance(payload, (dict, list)) else None  # defect: any JSON value is an event\n",
          ['decision/unreadable-asks'])
     pool('decision-claude-nameless-call-skipped', 'control_engine_claude.py',
-         "            found.append(_unreadable(ident))  # A tool call whose tool cannot be read.\n",
-         "            pass  # defect: a tool call whose name cannot be read is no call\n",
+         "        return [_unreadable(ident)]  # A tool call whose tool cannot be read.\n",
+         "        return []  # defect: a tool call whose name cannot be read is no call\n",
          ['decision/unreadable-asks'])
     pool('decision-codex-serverless-call-skipped', 'control_engine_codex.py',
          "        return [{'id': item.get('id'), 'server': None, 'tool': None, 'unreadable': True}]\n",
@@ -7078,8 +7078,8 @@ def cases():
          "        if False:  # defect: a streaming event the schema does not name is taken as tool-free\n",
          ['decision/unknown-forms'])
     pool('decision-claude-unseen-progress-free', 'control_engine_claude.py',
-         "        return [_unknown(kind, ident) for ident in ids if ident not in seen]\n",
-         "        return []  # defect: progress and summaries of calls never shown are no call\n",
+         "        found = [_unknown(kind, ident) for ident in ids if ident not in seen]\n",
+         "        found = []  # defect: progress and summaries of calls never shown are no call\n",
          ['decision/unknown-forms'])
     pool('decision-codex-unlisted-item-free', 'control_engine_codex.py',
          "        return [{'id': ident, 'server': None, 'tool': None, 'unknown': kind}]\n",
@@ -7090,8 +7090,8 @@ def cases():
          "    if False:  # defect: an event type exec does not list is taken as tool-free\n",
          ['decision/unknown-forms'])
     pool('decision-redacted-name-trusted', 'control_engine_claude.py',
-         "        elif redacted and name not in BUILTIN_TOOLS:\n",
-         "        elif False:  # defect: a redacted tool name is taken as it reads\n",
+         "    if redacted and name not in BUILTIN:\n",
+         "    if False:  # defect: a redacted tool name is taken as it reads\n",
          ['decision/redacted-name'])
     pool('decision-redaction-not-passed', 'control_account_limit.py',
          "        shown = (engine.tool_calls(event, shown_ids, bool(line['redacted'])) if event is not None\n",
@@ -7122,6 +7122,63 @@ def cases():
     pool('format-codex-dynamic-item-builtin', 'control_engine_codex.py',
          "BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))\n",
          "BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search', 'dynamic_tool_call'))  # defect\n",
+         ['decision/unknown-forms', 'format/tool-forms'])
+    # The tool names a Claude Code frame carries beside its content blocks count as those calls.
+    pool('decision-claude-repl-inner-unread', 'control_engine_claude.py',
+         "            if 'repl_call' in event:\n",
+         "            if False:  # defect: the REPL tool's inner calls are not read\n",
+         ['decision/repl-inner-call'])
+    pool('decision-claude-repl-unknown-inner-free', 'control_engine_claude.py',
+         "    return [] if name in BUILTIN else [_unknown('repl_call:' + name, ident)]\n",
+         "    return []  # defect: a REPL inner tool neither mcp__ nor built in is no call\n",
+         ['decision/repl-inner-call'])
+    pool('decision-claude-repl-malformed-free', 'control_engine_claude.py',
+         "    if not isinstance(value, dict) or not isinstance(value.get('inner_tool_name'), str):\n"
+         "        return [_unreadable()]\n",
+         "    if not isinstance(value, dict) or not isinstance(value.get('inner_tool_name'), str):\n"
+         "        return []  # defect: a repl_call that cannot be read is no call\n",
+         ['decision/repl-inner-call'])
+    pool('decision-claude-task-progress-tool-unread', 'control_engine_claude.py',
+         "    if tag == ('system', 'task_progress'):\n",
+         "    if False:  # defect: a task's last tool is not read\n",
+         ['decision/task-progress-tool'])
+    pool('decision-claude-workflow-progress-unread', 'control_engine_claude.py',
+         "        elif entry.get('lastToolName') is not None:\n",
+         "        elif False:  # defect: a workflow agent's last tool is not read\n",
+         ['decision/task-progress-tool'])
+    pool('decision-claude-progress-tool-name-unread', 'control_engine_claude.py',
+         "            found += _named(event.get('tool_name'), ids[0], redacted)\n",
+         "            pass  # defect: the tool a tool_progress is of is not read\n",
+         ['decision/frame-tool-names'])
+    pool('decision-claude-attribution-unread', 'control_engine_claude.py',
+         "    elif server is not None or tool is not None:\n",
+         "    elif False:  # defect: the MCP tool that produced a message is not read\n",
+         ['decision/frame-tool-names'])
+    pool('decision-claude-batch-names-unread', 'control_engine_claude.py',
+         "    batch = event.get('batch_tool_uses')\n",
+         "    batch = None  # defect: the batch tool names are not read\n",
+         ['decision/frame-tool-names'])
+    pool('decision-claude-agent-rename-unread', 'control_engine_claude.py',
+         "BUILTIN = BUILTIN_TOOLS | frozenset(BUILTIN_RENAMED)\n",
+         "BUILTIN = BUILTIN_TOOLS  # defect: the Agent tool's current name is not built in\n",
+         ['decision/redacted-name', 'format/tool-forms'])
+    # The frames outside the message union: the provably tool-free ones are no call, the rest unknown calls.
+    pool('decision-claude-tool-free-frames-ask', 'control_engine_claude.py',
+         "    if tag in TOOL_FREE_FRAMES:\n        return []\n",
+         "",
+         ['decision/tool-free-forms'])
+    pool('decision-claude-control-request-free', 'control_engine_claude.py',
+         "TOOL_FREE_FRAMES = frozenset((('active_goal', None),",
+         "TOOL_FREE_FRAMES = frozenset((('control_request', None), ('active_goal', None),  # defect\n",
+         ['decision/unknown-forms', 'format/tool-forms'])
+    pool('format-claude-tool-field-unlisted', 'control_engine_claude.py',
+         "    'system/init': {'tools': 'free'},\n",
+         "",
+         ['format/tool-forms'])
+    # exec's own sub-agent call is an unknown call.
+    pool('format-codex-collab-item-builtin', 'control_engine_codex.py',
+         "SUBAGENT_ITEMS = frozenset(('collab_tool_call',))\n",
+         "SUBAGENT_ITEMS = frozenset()\nBUILTIN_ITEMS = BUILTIN_ITEMS | {'collab_tool_call'}  # defect\n",
          ['decision/unknown-forms', 'format/tool-forms'])
     # Installation.
     pool('pool-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_pool.py",\n', '', ['install/assets'])
