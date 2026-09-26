@@ -183,7 +183,7 @@ stage's variables, TZ=UTC): 44 passed in 10 seconds.
 
 ## Red record
 
-`red-at-b39a0fdc.json`: the current suite over `git archive b39a0fdc`, unchanged. All 17 behavior rows
+`red-at-b39a0fdc.json`: the current suite over `git archive b39a0fdc`, unchanged. All 19 behavior rows
 fail by their own assertion: that tree has no registration or qualification record, binds no executable
 (the changed, newer and linked binaries and the other flags each launch), sets no `DISABLE_AUTOUPDATER`,
 returns no artifact document and completes an invocation, and its slot, on its exit code. The

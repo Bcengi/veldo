@@ -6,7 +6,7 @@
   "VELDO-0060 lifecycle/pinned-launch detail: the engine ran once, to its end, from the pinned copy under the factory state root: a regular file whose digest is the qualified one, not the installer's versioned file and not a link [[], AttributeError]",
   "VELDO-0060 lifecycle/pinned-launch detail: its arguments are exactly the version's qualified flags [[]]",
   "VELDO-0060 lifecycle/pinned-launch detail: its environment turns the updater off and carries the recorded account's profile [None, None]",
-  "VELDO-0060 lifecycle/pinned-launch detail: it ran in its isolated clone, at the accepted commit [None, 82e2bb6ab33223ee751d52b4ff18df447dbe0dca]",
+  "VELDO-0060 lifecycle/pinned-launch detail: it ran in its isolated clone, at the accepted commit [None, f6d58d6596a2997ca84a015ff529bcf1963a6362]",
   "VELDO-0060 pin/unexpected-launch detail: the pinned copy exists to be changed [AttributeError]",
   "VELDO-0060 pin/unexpected-launch detail: the copy restored to its qualified bytes launches again [refused]",
   "VELDO-0060 pin/unexpected-launch detail: a pinned copy whose digest changed: refused by name before acceptance, nothing spawned or reserved [spawn_failed:ENOENT]",
@@ -31,6 +31,11 @@
   "VELDO-0060 pin/argv-binds-what-runs detail: codex, a package manager's link first: the pinned path is in the argv but is not what runs: refused before acceptance, nothing spawned or reserved [None]",
   "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [refused, {}]",
   "VELDO-0060 pin/rehash-before-exec detail: claude, exec'd by the transport's wrapper: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, not_executed]",
+  "VELDO-0060 pin/entrance-interpreter detail: claude, a shell running the entrance: refused by name before acceptance, nothing spawned or reserved [None]",
+  "VELDO-0060 pin/entrance-interpreter detail: codex, a package manager's link running the entrance: refused by name before acceptance, nothing spawned or reserved [None]",
+  "VELDO-0060 pin/rehash-dot-dot detail: claude, its state root spelled through `..`: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [refused, {}]",
+  "VELDO-0060 pin/rehash-dot-dot detail: claude, its state root spelled through `..`: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, not_executed]",
+  "VELDO-0060 pin/rehash-dot-dot detail: unchanged, it runs the pinned path in that spelling and completes, and the engine inherits neither name of the re-hash [None, None]",
   "VELDO-0060 artifact/complete detail: a zero exit with its result: the artifact is complete, its terminal record the result the engine printed, bound to its line and the receiver's own output digest [None, None]",
   "VELDO-0060 artifact/complete detail: its terminal record's tokens are the result's modelUsage total [None]",
   "VELDO-0060 artifact/complete detail: the artifact is kept 0600 in the artifacts directory, the same one the runner was given, bound to the dispatch, invocation and pinned digest [None]",
@@ -66,15 +71,15 @@
   "VELDO-0060 caps/allowance-states detail: available allowance: launched once and settled with the CLI's tokens and messages, one invocation and its wall time [{'invocations': 0, 'messages': 0, 'tokens': 0, 'wall_seconds': 0}]",
   "VELDO-0060 caps/allowance-states detail: unknown allowance (an earlier call reported no usage): refused by name, nothing launched [spawn_failed:ENOENT]",
   "VELDO-0060 caps/allowance-states detail: a rate-limit window the CLI reported rejected refuses the account's next invocation until its reset, nothing launched [None, spawn_failed:ENOENT]",
-  "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.3 s, None, {}]",
+  "VELDO-0060 caps/stop-at-cap detail: the report that reached the token cap stopped the worker, which never finished; the invocation is cancelled with what the CLI reported and its wall time [0.2 s, None, {}]",
   "VELDO-0060 contained/bind detail: claude: an unbindable executable on the contained path is refused invalid_input:engine_version:9.9.9 before acceptance, with no scope spawned and nothing reserved [None]",
   "VELDO-0060 contained/bind detail: codex: an unbindable executable on the contained path is refused stale_subject:engine_digest before acceptance, with no scope spawned and nothing reserved [None]",
-  "VELDO-0060 contained/scope detail: claude: the engine ran in its dispatch's own transient scope in this run's slice, the group the receiver reported, empty once it ended [None, {'unit': 'veldo-dispatch-bd7e137dcbc0fe2c5caaf9cf8e30dc72.scope', 'slice': 'v60c6980c35.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v60c6980c35.slice/veldo-dispatch-bd7e137dcbc0fe2c5caaf9cf8e30dc72.scope'}]",
+  "VELDO-0060 contained/scope detail: claude: the engine ran in its dispatch's own transient scope in this run's slice, the group the receiver reported, empty once it ended [None, {'unit': 'veldo-dispatch-b87cc587ba66613d383087a1447a476c.scope', 'slice': 'v60e0369842.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v60e0369842.slice/veldo-dispatch-b87cc587ba66613d383087a1447a476c.scope'}]",
   "VELDO-0060 contained/clone-entry detail: claude: it entered its own clone through the Landlock entrance as the process the dispatch recorded, in its scope, and ran in the clone at the accepted commit [[]]",
   "VELDO-0060 contained/clone-entry detail: claude: confined: its write into the clone root was denied, nothing written [[]]",
   "VELDO-0060 contained/pinned-exec detail: claude: the process the dispatch recorded is the pinned executable, exec'd with exactly its qualified flags, the qualified digest on disk [None]",
   "VELDO-0060 contained/pinned-exec detail: claude: with the updater off and the recorded account's own profile [None]",
-  "VELDO-0060 contained/pinned-exec detail: codex: the process the dispatch recorded is the pinned executable, exec'd with exactly its qualified flags, the qualified digest on disk [['/run/user/1000/v60-ra3yvvao/packages/codex/vendor/x86_64-unknown-linux-musl/bin/codex']]",
+  "VELDO-0060 contained/pinned-exec detail: codex: the process the dispatch recorded is the pinned executable, exec'd with exactly its qualified flags, the qualified digest on disk [['/run/user/1000/v60-8souk5g7/packages/codex/vendor/x86_64-unknown-linux-musl/bin/codex']]",
   "VELDO-0060 contained/pinned-exec detail: codex: with the updater off and the recorded account's own profile [None]",
   "VELDO-0060 contained/stop-cooperative detail: claude: the stop reached the receiver and the dispatch is recorded exited, stopped on request, its group empty, for the process it recorded [exited, None]",
   "VELDO-0060 contained/stop-cooperative detail: claude: when that end was read, the engine and its descendant were gone [{'engine': False, 'descendant': False}]",
@@ -97,11 +102,11 @@
   "VELDO-0060 contained/exit-record detail: claude: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [70, None, failed]",
   "VELDO-0060 contained/exit-record detail: codex: the exit is recorded for the recorded process, exit 0, binding the complete artifact the runner was given; invocation and slot completed [0, None, completed]",
   "VELDO-0060 contained/engines-protected detail: claude: its writes into the pinned Claude Code copies' directory and the Codex package were denied, nothing written, and both engines stay executable [[]]",
-  "VELDO-0060 contained/engines-protected detail: codex: its writes into the pinned Claude Code copies' directory and the Codex package were denied, nothing written, and both engines stay executable [[['/run/user/1000/v60-ra3yvvao/state/factory/engines/claude_code/probe-codex-2c981f', 'written'], ['/run/user/1000/v60-ra3yvvao/packages/codex/vendor/x86_64-unknown-linux-musl/bin/probe-codex-2c981f', 'written']]]",
+  "VELDO-0060 contained/engines-protected detail: codex: its writes into the pinned Claude Code copies' directory and the Codex package were denied, nothing written, and both engines stay executable [[['/run/user/1000/v60-8souk5g7/state/factory/engines/claude_code/probe-codex-97ab15', 'written'], ['/run/user/1000/v60-8souk5g7/packages/codex/vendor/x86_64-unknown-linux-musl/bin/probe-codex-97ab15', 'written']]]",
   "VELDO-0060 contained/rehash-before-exec detail: claude, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, failed]",
-  "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [exited, {'deadline_stop': False, 'output_bytes': 371, 'output_digest': 'sha256:ae01c4ead21f952c3245e3f50672a005812523fe26ad966e1d2df362e2618962', 'returncode': 0, 'signal': None}]",
+  "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: the executable changed after its bind was re-hashed before its exec and refused: the engine never ran, the dispatch exited 70 [exited, {'deadline_stop': False, 'output_bytes': 371, 'output_digest': 'sha256:0ee6844a1828e5dfe69e1936477c698b0ecd367bfa29e5d4113a3f71c50ce121', 'returncode': 0, 'signal': None}]",
   "VELDO-0060 contained/rehash-before-exec detail: codex, exec'd by the clone entrance: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, completed]",
-  "VELDO-0060 format/fake-argv detail: the fake was started 1 times, each only with options the binary's main command declares, values among their choices, and stream JSON in print mode with verbose [[], []]"
+  "VELDO-0060 format/fake-argv detail: the fake was started 2 times, each only with options the binary's main command declares, values among their choices, and stream JSON in print mode with verbose [['-B'], []]"
  ],
  "failed_rows": [
   "VELDO-0060 lifecycle/registration",
@@ -111,6 +116,8 @@
   "VELDO-0060 pin/shipped-qualification",
   "VELDO-0060 pin/argv-binds-what-runs",
   "VELDO-0060 pin/rehash-before-exec",
+  "VELDO-0060 pin/entrance-interpreter",
+  "VELDO-0060 pin/rehash-dot-dot",
   "VELDO-0060 artifact/complete",
   "VELDO-0060 artifact/missing-result",
   "VELDO-0060 artifact/exits",
@@ -151,11 +158,11 @@
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
-   "now": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "now": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   ".veldo/control_launch.py": {
    "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
-   "now": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "now": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   ".veldo/dispatch.py": {
    "at_commit": "381f105070c13ce42c0e8a31fa7bf150bdde2f4039a3a1871cef6d0d01259605",
@@ -194,6 +201,14 @@
   ],
   [
    "VELDO-0060 pin/rehash-before-exec",
+   false
+  ],
+  [
+   "VELDO-0060 pin/entrance-interpreter",
+   false
+  ],
+  [
+   "VELDO-0060 pin/rehash-dot-dot",
    false
   ],
   [
@@ -298,7 +313,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 16.521,
+ "seconds": 17.712,
  "spec_id": "VELDO-0060",
  "suite": "scripts/suites/78_veldo_0060_claude_adapter.py",
  "tree": "git archive b39a0fdcd97db54655b709aa47e5e1b1eb76284e, unchanged; the current suite file run against it"

@@ -186,7 +186,7 @@ stage's variables, TZ=UTC): 58 passed in about 21 seconds. No scope, slice or pr
 
 ## Red record
 
-`red-at-b39a0fdc.json`: the current suite over `git archive b39a0fdc`, unchanged. All 31 behavior rows
+`red-at-b39a0fdc.json`: the current suite over `git archive b39a0fdc`, unchanged. All 33 behavior rows
 fail by their own assertion (no row raised): that tree's engine modules pin nothing, decode no terminal
 record and register no lifecycle, its receiver launches each adapter's argv as configured and returns no
 artifact, its exit record binds none and its floor completes a build on the exit code, its clones protect

@@ -6,7 +6,7 @@
   "VELDO-0061 lifecycle/registered detail: the registration's flags are the installed qualification's, and every configured Codex adapter launches with them [None None]",
   "VELDO-0061 lifecycle/registered detail: the qualified flags turn the binary's own startup update check off, a config key the installed binary names [['exec', '--json']]",
   "VELDO-0061 lifecycle/registered detail: each registered operation was driven through the trusted runner on the qualified configuration and observed [['artifacts']]",
-  "VELDO-0061 lifecycle/normal-run detail: it was the pinned vendor binary with the qualified flags, the update check off, as configured [['/run/user/1000/v61-cas9vcky/packages/good/vendor/x86_64-unknown-linux-musl/bin/codex', 'exec', '--json', '/run/user/1000/v61-cas9vcky/markers']]",
+  "VELDO-0061 lifecycle/normal-run detail: it was the pinned vendor binary with the qualified flags, the update check off, as configured [['/run/user/1000/v61-787mttrz/packages/good/vendor/x86_64-unknown-linux-musl/bin/codex', 'exec', '--json', '/run/user/1000/v61-787mttrz/markers']]",
   "VELDO-0061 lifecycle/normal-run detail: its environment names its dispatch, the acceptance it launched under, its account's own profile and DISABLE_AUTOUPDATER=1 [None]",
   "VELDO-0061 lifecycle/normal-run detail: the stream was observed as it came (its usage line kept as a receipt) and its artifact document returned with the exit, naming the pinned executable [None]",
   "VELDO-0061 lifecycle/actual-binary detail: its zero exit with no terminal record is no completion: its artifact document is malformed output (help text), the invocation failed and the slot was not returned completed [None completed]",
@@ -25,22 +25,29 @@
   "VELDO-0061 artifacts/missing-result detail: the normal stream with its terminal record removed, exit 0: missing_result, never completion [None]",
   "VELDO-0061 artifacts/missing-result detail: the invocation settled failed and the worker slot was returned failed, not completed [completed completed]",
   "VELDO-0061 artifacts/malformed-output detail: a line that is not JSON and an event exec does not print make the output malformed, both named, never completion [None None]",
-  "VELDO-0061 artifacts/missing-usage detail: a completed turn whose usage the CLI left out is a result with its usage unknown: the reservation is retained, never counted zero [None unknown {'invocations': 1, 'wall_seconds': 0.050423}]",
+  "VELDO-0061 artifacts/missing-usage detail: a completed turn whose usage the CLI left out is a result with its usage unknown: the reservation is retained, never counted zero [None unknown {'invocations': 1, 'wall_seconds': 0.047633}]",
   "VELDO-0061 artifacts/nonzero-and-signal detail: failed: the live exit {'returncode': 1, 'signal': None} is turn_failed, the invocation failed [None {'deadline_stop': False, 'output_bytes': 673, 'output_digest': 'sha256:ead1558ad9f30ee860b2301b545ce59063ffeed4c58731a53ed718a2bfdbea89', 'returncode': 1, 'signal': None}]",
   "VELDO-0061 artifacts/nonzero-and-signal detail: nonzero: the live exit {'returncode': 3, 'signal': None} is nonzero_exit, the invocation failed [None {'deadline_stop': False, 'output_bytes': 654, 'output_digest': 'sha256:03d18ea997e1e24bd1610f70ffa01197030dbd1b2e12f08ca6778f839d5732b7', 'returncode': 3, 'signal': None}]",
   "VELDO-0061 artifacts/nonzero-and-signal detail: signal: the live exit {'returncode': None, 'signal': 9} is signal, the invocation failed [None {'deadline_stop': False, 'output_bytes': 210, 'output_digest': 'sha256:7526120b2952d6291c6d363406f9ad0b7e94d4fddc49f41850a18ff834c7ec05', 'returncode': None, 'signal': 9}]",
   "VELDO-0061 stop/cooperative detail: cooperative: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
   "VELDO-0061 stop/forced detail: forced: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
   "VELDO-0061 stop/termination detail: termination: its original invocation is recorded cancelled with its usage unknown and retained, and its artifacts name it, with no result [cancelled None]",
-  "VELDO-0061 caps/boundaries detail: normal: the initial invocation was reserved against its caps before its engine was spawned (reservation 120 before the running record 121), and it ran the pinned binary",
-  "VELDO-0061 caps/boundaries detail: retry: the retry invocation was reserved against its caps before its engine was spawned (reservation 312 before the running record 313), and it ran the pinned binary",
-  "VELDO-0061 caps/boundaries detail: follow: the follow_on invocation was reserved against its caps before its engine was spawned (reservation 332 before the running record 333), and it ran the pinned binary",
+  "VELDO-0061 stop/stopped-not-complete detail: the engine was stopped on request, then printed its turn's completion and exited 0 [['prepared', 'accepted', 'running', 'exited'] requested {'deadline_stop': False, 'output_bytes': 216, 'output_digest': 'sha256:99fdd442c7aa5c81e1b60029e463f445c1b77e6dbc2ffb3cdb12b2592e5bfeb6', 'returncode': 0, 'signal': None}]",
+  "VELDO-0061 stop/stopped-not-complete detail: its artifact is stopped, never complete, the exit record binds that, and its document verifies from its own lines and cause [None None]",
+  "VELDO-0061 stop/stopped-not-complete detail: the completion gate reads it as not complete, and its invocation and slot are cancelled [cancelled cancelled]",
+  "VELDO-0061 stop/stopped-not-complete detail: the floor refuses to accept the stopped build, for want of a completed build dispatch [missing_evidence:proof/absent]",
+  "VELDO-0061 lifecycle/engine-protocol detail: control: both installed engine modules implement every protocol name [()]",
+  "VELDO-0061 lifecycle/engine-protocol detail: a Codex module without REGISTRATION: refused by that name before acceptance, nothing spawned, reserved or run [None]",
+  "VELDO-0061 lifecycle/engine-protocol detail: a Codex module without Terminal: refused by that name before acceptance, nothing spawned, reserved or run [None]",
+  "VELDO-0061 caps/boundaries detail: normal: the initial invocation was reserved against its caps before its engine was spawned (reservation 141 before the running record 142), and it ran the pinned binary",
+  "VELDO-0061 caps/boundaries detail: retry: the retry invocation was reserved against its caps before its engine was spawned (reservation 353 before the running record 354), and it ran the pinned binary",
+  "VELDO-0061 caps/boundaries detail: follow: the follow_on invocation was reserved against its caps before its engine was spawned (reservation 373 before the running record 374), and it ran the pinned binary",
   "VELDO-0061 caps/refused-before-launch detail: the unknown one is refused for its unknown allowance, after the invocation that left it unknown ran [missing_authority:allowance:unknown_allowance:tokens]",
-  "VELDO-0061 caps/refused-before-launch detail: the limited account carries the usage_limit window Codex reported, rejected with no reset stated, from the invocation that saw it [{'usage_limit': {'observed_at': 1790423652.713739, 'reset_at': None, 'source_dispatch': 'dispatch/VELDO-9612/d58874e4244341c4bb2de71de2382d7f', 'status': 'rejected', 'utilization': None}}]",
+  "VELDO-0061 caps/refused-before-launch detail: the limited account carries the usage_limit window Codex reported, rejected with no reset stated, from the invocation that saw it [{'usage_limit': {'observed_at': 1790433167.4941027, 'reset_at': None, 'source_dispatch': 'dispatch/VELDO-9612/bac0fe01923d404dab46944428a76676', 'status': 'rejected', 'utilization': None}}]",
   "VELDO-0061 caps/stop-at-cap detail: the capped invocation returned what it printed up to the stop as its artifacts, never as a completion [None]",
-  "VELDO-0061 caps/observed detail: normal: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 1500, 'wall_seconds': 0.047127}]",
-  "VELDO-0061 caps/observed detail: retry: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 800, 'wall_seconds': 0.049613}]",
-  "VELDO-0061 caps/observed detail: follow: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 550, 'wall_seconds': 0.050071}]"
+  "VELDO-0061 caps/observed detail: normal: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 1500, 'wall_seconds': 0.048298}]",
+  "VELDO-0061 caps/observed detail: retry: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 800, 'wall_seconds': 0.052697}]",
+  "VELDO-0061 caps/observed detail: follow: one invocation, its wall time and the tokens and messages the CLI reported in the stream the adapter returned [{'invocations': 1, 'messages': 1, 'tokens': 550, 'wall_seconds': 0.050227}]"
  ],
  "failed_rows": [
   "VELDO-0061 lifecycle/registered",
@@ -56,6 +63,8 @@
   "VELDO-0061 stop/cooperative",
   "VELDO-0061 stop/forced",
   "VELDO-0061 stop/termination",
+  "VELDO-0061 stop/stopped-not-complete",
+  "VELDO-0061 lifecycle/engine-protocol",
   "VELDO-0061 caps/boundaries",
   "VELDO-0061 caps/refused-before-launch",
   "VELDO-0061 caps/stop-at-cap",
@@ -72,11 +81,11 @@
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
-   "now": "4c3575e796c64ae71692a36413e1148163879e74c3e589dc8b4206467dd50abc"
+   "now": "3773163924aec31f3a889388584b399e031c3536b92060d8f631fc5f645f7110"
   },
   ".veldo/control_launch.py": {
    "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
-   "now": "f6f354c386d8c7eb3fde714e4bf734d64ed0882b06b9ac3d6eb98eacda6bf097"
+   "now": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356"
   },
   ".veldo/control_reservations.py": {
    "at_commit": "b2b2c90bae76857fd3b060819b09da84ec1da45bf0f5de504497cc864764d26f",
@@ -142,6 +151,14 @@
    false
   ],
   [
+   "VELDO-0061 stop/stopped-not-complete",
+   false
+  ],
+  [
+   "VELDO-0061 lifecycle/engine-protocol",
+   false
+  ],
+  [
    "VELDO-0061 caps/boundaries",
    false
   ],
@@ -163,7 +180,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 23.289,
+ "seconds": 25.055,
  "spec_id": "VELDO-0061",
  "suite": "scripts/suites/79_veldo_0061_codex_adapter.py",
  "tree": "git archive b39a0fdcd97db54655b709aa47e5e1b1eb76284e, unchanged; the current suite file run against it"
