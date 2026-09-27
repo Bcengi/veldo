@@ -1,8 +1,8 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -622 +622 @@
+@@ -664 +664 @@
 -        found.append(('nested_progress', NESTED['forwarded']['field']))
 +        pass  # defect: a sub-agent's or forked skill's forwarded message is not nested work
-@@ -625 +625 @@
+@@ -667 +667 @@
 -        found.append(('nested_progress', 'progress:' + data['type']))
 +        pass

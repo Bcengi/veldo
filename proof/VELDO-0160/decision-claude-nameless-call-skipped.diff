@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -419 +419 @@
+@@ -461 +461 @@
 -        return [_unreadable(ident)]  # A tool call whose tool cannot be read.
 +        return []  # defect: a tool call whose name cannot be read is no call

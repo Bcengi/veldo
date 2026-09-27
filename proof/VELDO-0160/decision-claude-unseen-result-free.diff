@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -505 +505 @@
+@@ -547 +547 @@
 -            elif ident not in seen:
 +            elif False:  # defect: the result of a call the record never showed is no call

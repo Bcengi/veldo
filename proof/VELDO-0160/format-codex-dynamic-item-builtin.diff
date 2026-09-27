@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -153 +153 @@
+@@ -186 +186 @@
 -BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))
 +BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search', 'dynamic_tool_call'))  # defect

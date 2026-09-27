@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -213 +213 @@
+@@ -246 +246 @@
 -    if name not in EVENTS:
 +    if False:  # defect: an event type exec does not list is taken as tool-free

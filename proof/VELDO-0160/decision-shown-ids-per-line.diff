@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -173 +173 @@
+@@ -182 +182 @@
 -        shown = (engine.tool_calls(event, shown_ids, bool(line['redacted'])) if event is not None
 +        shown = (engine.tool_calls(event, set(), bool(line['redacted'])) if event is not None  # defect

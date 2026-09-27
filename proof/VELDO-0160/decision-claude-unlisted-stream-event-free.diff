@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -540 +540 @@
+@@ -582 +582 @@
 -        if name not in STREAM_EVENTS:
 +        if False:  # defect: a streaming event the schema does not name is taken as tool-free

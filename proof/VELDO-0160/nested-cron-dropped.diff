@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -354 +354 @@
+-                'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),
++                'remote': ('RemoteTrigger',),  # defect: a CronCreate is not nested work

@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -304 +304 @@
+@@ -334 +334 @@
 -    if not write_capable(servers, marks):
 +    if False:  # defect: a run with no write-capable server is decided by its stream

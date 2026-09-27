@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -323 +323 @@
+-    if started:
++    if False:  # defect: an agent started outside the run is not asked about

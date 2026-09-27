@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -525,2 +524,0 @@
+@@ -567,2 +566,0 @@
 -    if tag in TOOL_FREE_FRAMES:
 -        return []

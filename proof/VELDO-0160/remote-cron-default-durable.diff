@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -702 +702 @@
+-                value = inputs[0].get(durable['field'], False) if isinstance(inputs[0], dict) else None
++                value = inputs[0].get(durable['field'], True) if isinstance(inputs[0], dict) else None  # defect: a CronCreate that leaves durable out is durable

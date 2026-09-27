@@ -1,10 +1,10 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -652,2 +652,2 @@
+@@ -729,2 +729,2 @@
 -            if isinstance(parent, str) and isinstance(content, list):
 -                shown = self.shown.setdefault(parent, set())
 +            if isinstance(content, list):
 +                shown = self.shown.setdefault('any', set())  # defect: any message's calls count for a task
-@@ -677 +677 @@
+@@ -754 +754 @@
 -            unshown = count - len(self.shown.get(task, ()))
 +            unshown = count - len(self.shown.get('any', ()))

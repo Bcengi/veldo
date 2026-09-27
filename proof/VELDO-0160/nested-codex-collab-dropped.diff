@@ -1,6 +1,6 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -158 +158,2 @@
+@@ -191 +191,2 @@
 -NESTED_ITEMS = {'collab': ('collab_agent_tool_call', 'collab_tool_call'), 'sub_agent': ('sub_agent_activity',)}
 +NESTED_ITEMS = {  # defect: a collab agent call is not nested work
 +    'sub_agent': ('sub_agent_activity',)}

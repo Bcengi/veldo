@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -533 +533 @@
+@@ -575 +575 @@
 -    if tag == ('system', 'task_progress'):
 +    if False:  # defect: a task's last tool is not read

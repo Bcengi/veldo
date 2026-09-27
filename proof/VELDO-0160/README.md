@@ -366,15 +366,20 @@ write-capable server, an Agent under a write-capable server) keep their decision
 `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
-Plain run after the unconfigured-call rule: 57 passed (26 preamble, 31 rows) in 18.9 s. Stage environment run
-(`env -i`, the stage's variables, TZ=UTC): 57 passed in 24.8 s. After the merge the fake `claude` is
+Plain run after the remote-agent rule: 58 passed (26 preamble, 32 rows) in 18.9 s. Stage environment run
+(`env -i`, the stage's variables, TZ=UTC): 58 passed in 25.0 s. After the merge with main (VELDO-0155 and
+VELDO-0156) the fake `claude` is qualified with `--input-format stream-json` and the engine module's
+everything-off baseline, as `bind()` requires, and answers the initialize control request with a claude.ai
+subscription login (`subscriptionType` Claude Max, `apiProvider` firstParty); the fake Codex answers `login status`
+on stderr, as 0.154.0 prints it, and its qualification record carries the baseline, as suites 78_veldo_0060, 80 and
+81 do. After the merge the fake `claude` is
 installed, pinned and qualified as version 2.1.281 under the factory state root and the fake Codex is a
 qualified vendor package (VELDO-0060, VELDO-0061), as suite 75 does.
 
 ## Red record
 
 `red-at-52f817d5.json`: the current suite over `git archive 52f817d5` (main before this work),
-unchanged, regenerated after the unconfigured-call rule. All 29 behavior rows fail by their own
+unchanged, regenerated after the remote-agent rule. All 30 behavior rows fail by their own
 assertion: there is no account pool (the Runner given
 a pool refuses `invalid_input` and nothing is dispatched), the same login registers twice under two
 names and a second record of an id is refused unnamed, no run is classified `account_limit` (each limited
@@ -385,7 +390,7 @@ they check the suite's own fixtures against the extracted table, not production.
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 103 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 2848 s, after the unconfigured-call rule).
+`drive.py` records `mutations.json` and one applied diff per mutant. All 113 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 3102 s, after the remote-agent rule).
 
 | Mutant | Module | Named rows |
 |---|---|---|
@@ -492,12 +497,25 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | nested-codex-collab-dropped | control_engine_codex.py | `decision/nested-constructs`, `decision/nested-work-asks`, `format/tool-forms` |
 | nested-codex-sub-agent-dropped | control_engine_codex.py | `decision/nested-constructs`, `format/tool-forms` |
 | nested-claude-last-tool-unread | control_engine_claude.py | `decision/nested-work-asks` |
+| remote-agent-skipped (the remote-agent rule skipped) | control_account_limit.py | `decision/remote-agent-asks` |
+| remote-agent-text-lines-unread | control_account_limit.py | `decision/remote-agent-asks` |
+| remote-agent-contradicting-unnamed | control_account_limit.py | `decision/remote-agent-asks` |
+| remote-trigger-not-outside | control_engine_claude.py | `decision/remote-agent-asks`, `format/tool-forms` |
+| remote-cron-durable-unread | control_engine_claude.py | `decision/remote-agent-asks` |
+| remote-cron-durable-text-missed | control_engine_claude.py | `decision/remote-agent-asks` |
+| remote-cron-default-durable | control_engine_claude.py | `decision/remote-agent-asks` |
+| remote-cron-unseen-input-trusted | control_engine_claude.py | `decision/remote-agent-asks` |
+| nested-remote-dropped (class dropped from rule 2) | control_engine_claude.py | `decision/nested-constructs`, `format/tool-forms` |
+| nested-cron-dropped | control_engine_claude.py | `decision/nested-constructs`, `decision/remote-agent-asks`, `format/tool-forms` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 103 rejected after the unconfigured-call rule (101 after the structural rule, 86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 113 rejected after the remote-agent rule (103 after the unconfigured-call rule, 101 after the structural rule, 86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
 
-Suites run after the unconfigured-call rule, plain and under the stage environment, all green:
-`78_veldo_0160_account_pool` (31 rows; no other suite reads `control_account_limit.py`); after the structural rule, `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
+Suites run after the merge with main (VELDO-0155, VELDO-0156) and the remote-agent rule, plain and under the stage
+environment, all green: `78_veldo_0160_account_pool` (32 rows), `78_veldo_0060_claude_adapter` (34),
+`79_veldo_0061_codex_adapter` (20), `80_veldo_0155_claude_baseline` (17), `81_veldo_0156_codex_baseline` (21) and
+`75_veldo_0062_accounts` (22); `extract_formats.py --check` matches the installed binaries. After the unconfigured-call
+rule, `78_veldo_0160_account_pool` (31 rows; no other suite reads `control_account_limit.py`); after the structural rule, `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
 (20) and `75_veldo_0062_accounts` (22); `extract_formats.py --check` matches the installed binaries. After the
 second check's round `58_veldo_0036_reservations` (10) was also green; no module it reads changed since. Before the merge the suites of
 every module this touches and every suite that reads `init_scaffold.py` were run green as well.

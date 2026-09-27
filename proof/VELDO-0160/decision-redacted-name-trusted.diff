@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -423 +423 @@
+@@ -465 +465 @@
 -    if redacted and name not in BUILTIN:
 +    if False:  # defect: a redacted tool name is taken as it reads

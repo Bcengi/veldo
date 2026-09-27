@@ -1,6 +1,6 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -316 +316,2 @@
+@@ -353 +353,2 @@
 -NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'repl': ('REPL',), 'skill': ('Skill',),
 +NESTED_TOOLS = {  # defect: the agent tools are not nested work
 +    'repl': ('REPL',), 'skill': ('Skill',),

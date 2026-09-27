@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -221 +221 @@
+@@ -254 +254 @@
 -    if kind in TOOL_FREE_ITEMS or kind in BUILTIN_ITEMS:
 +    if kind in TOOL_FREE_ITEMS:  # defect: exec's own commands and file changes ask

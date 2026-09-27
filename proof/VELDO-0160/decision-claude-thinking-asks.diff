@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -262 +262 @@
+@@ -299 +299 @@
 -TOOL_FREE_BLOCKS = frozenset(('text', 'thinking', 'redacted_thinking', 'compaction', 'fallback'))
 +TOOL_FREE_BLOCKS = frozenset(('text', 'compaction', 'fallback'))  # defect: reasoning blocks ask

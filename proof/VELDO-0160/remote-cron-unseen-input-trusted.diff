@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -698,0 +699,2 @@
++            if not inputs:
++                continue  # defect: a CronCreate named without its input is not durable

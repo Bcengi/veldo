@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -703 +703 @@
+-                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):
++                if value is not True:  # defect: durable as the text "true" is taken as not durable
