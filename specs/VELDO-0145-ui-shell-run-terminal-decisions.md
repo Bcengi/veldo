@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0145
 title: The UI shell, the live run terminal and the decisions screen on phone and desktop
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -166,3 +166,5 @@ edge and install the API behind Tailscale Serve, so the UI runs on a host that f
 On the lead's follow-up decision, AC1 owns the enrollment and sign-in screen in this React shell under
 PLAN-0019 C16, consuming VELDO-0171's API ceremony, host command and content security policy; AC4
 applies the screen rules to it too. Status is draft; only the owner marks it ready.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

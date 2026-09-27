@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0167
 title: Factory setup writes the execution record's configuration, and a launch receiver's record hints reach every API subscribed to the running service through that service
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -166,3 +166,5 @@ hint through the running service, which fans it out to its subscribers, in place
 service's private api-subscribers.json, so no registry path is written. New AC3: the re-run adds only
 this step's keys to a host laid down before it and keeps VELDO-0171's changes-nothing behavior. The out of
 scope text now names VELDO-0171. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

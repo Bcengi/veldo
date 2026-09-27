@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0168
 title: Telegram presentations keep their line breaks, show invisible and direction characters escaped, and mark a cut inside a long token
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -158,3 +158,5 @@ the owner marks a specification ready.
 same. One rule for the tab in both criteria: it is escaped as `<U+0009>`, never collapsed, and AC1 no
 longer collapses runs of spaces, which would make two values differing by a doubled space look alike.
 The non-breaking space and every other Zs space but U+0020 are escaped. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0165
 title: A worker engine inherits nothing from a parent Claude Code or Codex session
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -148,3 +148,5 @@ then set the baseline's own variables, with extraction as evidence that the pref
 the former AC3 and AC4 move to VELDO-0173, which depends on this specification and VELDO-0160.
 The bound role's PushNotification grant row moves to VELDO-0127 AC4, whose dependency now names
 VELDO-0173. Only the owner marks a specification ready.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

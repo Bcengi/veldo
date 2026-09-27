@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0172
 title: The engine stream-format tables and every fake engine match the real Claude Code and Codex output recorded in the live runs of 2026-09-26
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -176,3 +176,5 @@ constants, numbers are kept only in token-count fields, and no tap record but th
 Codex login status is committed. The read-back against the source is a recorded proof step, not a suite
 row. The falsifier plants a value of a kind the source really has, which must not survive. depends_on adds
 VELDO-0160. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0166
 title: The Claude Code meter records every usage window a run reports, and adding an account leaves an existing profile directory as it is
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -132,3 +132,5 @@ registration leaving an existing profile directory's mode alone) stay in one spe
 splitting them would leave two specifications of one criterion each, below the two a specification holds.
 They share the live run that found them and the account they touch, and each keeps its own criterion and
 falsifier. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

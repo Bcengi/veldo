@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0170
 title: A launch receiver configuration that names no host trust stops by name, and factory setup's re-run adds the host trust
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -141,3 +141,5 @@ its filed list). A draft: only the owner marks a specification ready.
 factory upgrade` command is dropped: AC1 names the stop and the re-run as its one repair, and AC2's repair
 is one step of that re-run. depends_on adds VELDO-0171, so the work item moves from stage 3 to stage 5;
 bin/veldo leaves the footprint. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

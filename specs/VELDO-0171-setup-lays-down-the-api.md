@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0171
 title: Factory setup writes the API configuration, enrolls the API edge and installs the API behind Tailscale Serve, so the owner enrolls his first passkey on a fresh host, and a second run changes nothing
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -266,3 +266,5 @@ draft.
 VELDO-0145 AC1 owns the enrollment screen in the React shell under C16. AC2 requires a recorded
 read-only Tailscale capture before the stand-in, allowlist scrubbing and exact replay, and checks
 background persistence against the suite-owned invocation log after setup exits. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

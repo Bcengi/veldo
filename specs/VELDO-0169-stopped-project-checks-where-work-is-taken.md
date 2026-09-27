@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0169
 title: Every path that hands out work, found by a census of the claim and station contract writers, refuses a unit of a stopped project, and a claim on a unit with no project, with the Gate's one project check
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -177,3 +177,5 @@ VELDO-0133's disposition, whose backlog outcome hands parked work out again, joi
 under the same check (AC2), and depends_on adds VELDO-0133. The footprint lists every suite that claims a
 unit through control_claim.Receiver (58, 59, 60, 66, 69, 71 and 73, by grep), which AC4 requires to seed
 an active project. The title names the census. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0164
 title: The API's read models, workflow read and event feed serve a member only the projects her scope covers
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -155,3 +155,5 @@ an unrouted intake proposal, the project-less kind the universal scope still dec
 2026-09-27: lead follow-up: depends_on adds VELDO-0162 and AC1 seeds its default team; project-less
 entities are decided per entity, with intake_proposal and subscription_reservation named from main.
 Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

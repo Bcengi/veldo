@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0173
 title: A Claude Code run is offered its launch tool set with every other registered tool switched off
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -142,3 +142,5 @@ VELDO-0127, and the launch then passes that revision's native tools in place of 
 2026-09-27: split VELDO-0165's tool registry and qualified-baseline criteria into this draft on the
 lead's decision, with a full-registry falsifier that must fail on ReportFindings; the bound
 PushNotification grant row moves to VELDO-0127 AC4. Only the owner marks a specification ready.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").

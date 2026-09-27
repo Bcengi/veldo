@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0127
 title: Versioned per-role MCP server and tool configuration
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -225,3 +225,5 @@ launch-set comparison read the init event against the revision's tools, and a to
 never switched off by the launch. AC4 adds the row that launches a revision granting PushNotification
 and checks its presence in init and absence from disallowedTools, moved from VELDO-0165 when the
 registry concern became VELDO-0173. Status is draft; only the owner marks it ready.
+
+2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
