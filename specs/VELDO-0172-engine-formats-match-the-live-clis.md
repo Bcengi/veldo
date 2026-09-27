@@ -194,4 +194,6 @@ and Git process boundary. No production engine module changes.
 and in the clean gate environment. The unchanged base at 65125030 fails all four behavior rows by
 assertion. Finding 0172 rejects five mutations on their named rows, with a green baseline and three
 green no-op controls. The host read-back records 462 matching typed paths and no literal matches among
-810 non-allowlisted source strings. Final whole selftest pending; status unchanged.
+810 non-allowlisted source strings. The final whole selftest passes all 122 suites, with 6864 assertions
+passed and zero failed. Git boundary, footprint, anchor and validation checks pass; all 198 Python engine
+copies remain byte-identical. The canonical gate was not run, as instructed. Status unchanged.

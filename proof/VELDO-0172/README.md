@@ -64,4 +64,9 @@ three green no-op copies and all five mutations failing their named rows by asse
 | `formats172-keep-pid` | `capture/planted` |
 | `formats172-required-usage` | `table/capture` |
 
-The final whole selftest remains pending. The canonical gate was not run, as instructed.
+The final whole selftest passed all 122 suites: 6864 assertions passed, zero failed, exit status 0.
+The worktree was left untouched while it ran. Git boundary, footprint, anchors and validation pass.
+All 198 corresponding Python engine copies are byte-identical. The configuration files
+`architecture.yaml` and `policy.yaml` differ between the engine template and this repository, as they
+did at the base commit; all four files are unchanged.
+The canonical gate was not run, as instructed.

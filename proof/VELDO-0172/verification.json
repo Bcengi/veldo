@@ -133,7 +133,23 @@
    }
   ]
  },
- "engine_copies": "All corresponding .veldo Python files and engine copies compared byte-identical.",
+ "engine_copies": {
+  "byte_identical": true,
+  "changed_engine_modules": 0,
+  "config_files_unchanged_from_base": true,
+  "preexisting_config_differences": [
+   "architecture.yaml",
+   "policy.yaml"
+  ],
+  "python_copies_compared": 198
+ },
+ "final_checks": {
+  "anchors": "0 bad anchors",
+  "diff_check": "pass",
+  "footprint": "32 changed files, none outside footprint",
+  "git_boundary": "pass",
+  "validation": "pass"
+ },
  "gate": "Not run, as instructed.",
  "mutations": {
   "all_by_assertion": true,
@@ -228,5 +244,15 @@
  },
  "schema": "veldo.verification-record/v1",
  "spec_id": "VELDO-0172",
- "whole_selftest": "pending"
+ "whole_selftest": {
+  "command": "python3 scripts/selftest.py",
+  "exit": 0,
+  "failed": 0,
+  "failed_rows": [],
+  "log_sha256": "af85e1b48145bb195a2bc5a61a79dcec45bd061c83689d836c74a2832bb5bbd9",
+  "passed": 6864,
+  "suites": 122,
+  "summary": "selftest: 6864 passed, 0 failed",
+  "worktree_untouched_during_run": true
+ }
 }
