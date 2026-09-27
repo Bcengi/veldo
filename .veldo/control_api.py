@@ -73,8 +73,8 @@ each frame's id its cursor, so an EventSource resumes with Last-Event-ID): fille
 woken by the launch receiver's record hint (control_execution_record.HINT_SCHEMA, which `deliver` routes to
 `deliver_record`) and filled through `record`, page after page, to the lines the record then holds; it closes as
 `ended` once the run has ended and every line to the committed count is out. A session that ends closes it as
-the event stream closes (signed_out, session_expired, revoked). Lines are served as the receiver kept them, already redacted;
-this process never holds an unredacted line. Nothing is polled.
+the event stream closes (signed_out, session_expired, revoked). Lines are served as the receiver kept them,
+already redacted; this process never holds an unredacted line. Nothing is polled.
 
 ACTIONS (AC4). The UI action contract is control_api_models.ACTIONS: each action with a route is a POST
 here whose operation the authority executes as the named existing command (a workflow save is VELDO-0132's
@@ -165,7 +165,8 @@ ROUTES = (
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
-    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/record', 'events', True, ('dispatch',), ('after',), None),
+    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/record', 'events', True, ('dispatch',), ('after',),
+          None),
     Route('runs.record_stream', 'GET', '/api/v1/domains/{domain}/runs/record/stream', 'events', True, ('dispatch',),
           ('after',), None),
 )

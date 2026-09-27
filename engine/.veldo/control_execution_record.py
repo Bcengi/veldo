@@ -72,7 +72,8 @@ HINT_SECONDS = 1.0
 
 
 def _scanner():
-    spec = importlib.util.spec_from_file_location('execution_record_secret_scan', Path(__file__).with_name('secret_scan.py'))
+    spec = importlib.util.spec_from_file_location('execution_record_secret_scan',
+                                                  Path(__file__).with_name('secret_scan.py'))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -299,7 +300,8 @@ def read(records, dispatch_id, after, limit, committed=None):
     except OSError:
         raise Refused('missing_evidence:unknown_run', 'no execution record of this run') from None
     if committed is not None:
-        if ('sha256:' + hashlib.sha256(data).hexdigest() != committed.get('digest') or len(data) != committed.get('bytes')):
+        if ('sha256:' + hashlib.sha256(data).hexdigest() != committed.get('digest')
+                or len(data) != committed.get('bytes')):
             raise Refused('unknown_outcome:record_digest', 'the record is not the one its exit committed')
     complete = data[:data.rfind(b'\n') + 1].split(b'\n')[:-1]
     try:

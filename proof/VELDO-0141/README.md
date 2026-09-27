@@ -28,7 +28,7 @@ token") and its high-entropy spans (`[REDACTED:entropy]`, a hex digest's shape e
 per run, as the worker is spawned, by `control_launch.RESOLVERS`: each `resolver(receiver, contract, adapter,
 environment)` returns `[(kind, value)]` and may deliver its value into the engine's environment. The built-in one
 is the account's subscription token (`subscription_token`, VELDO-0155 AC2's file); VELDO-0158 AC3 adds the
-keystore's. The receiver's `record` event names the kinds in the set and the redactions by kind, never a value.
+keystore's. The receiver's end event names the kinds in the set and the redactions by kind, never a value.
 
 **Committed at the end, hinted as it goes.** After each batch the reap loop hints each socket the receiver
 configuration's `record_hints` names (the API process's own hint socket, `control_client_api.Hints`) with
@@ -36,7 +36,8 @@ configuration's `record_hints` names (the API process's own hint socket, `contro
 a directory nobody else can enter, its peer checked with SO_PEERCRED; a hint only wakes. The record is closed
 when the worker's streams are drained, and `control_dispatch.exit` commits `execution_record: {lines, bytes,
 digest}` (the count of record lines, the file's size and SHA-256) in the exit record; the receiver then sends a
-last hint marked ended and its `record` event, before it tells the runner the run ended.
+last hint marked ended and tells the runner the run ended, its end event carrying the record's account (`record`:
+path, line and byte counts per stream, redactions by kind, the resolved kinds, the hints sent, the commitment).
 
 **Served.** `control_api_authority.ApiAuthority.record(principal, dispatch_id, after, limit)` reads the dispatch
 record from the store and the file from its `records` directory: the member must be a current person member
@@ -141,7 +142,7 @@ refused `unknown_outcome:record_digest`; the file is 0600 in a 0700 directory. `
 planted value (three low-entropy words, no pattern), printed alone in the command's output, inside it, on the
 command's and the engine's error stream and joined to a high-entropy span, is replaced by
 `[REDACTED:v141_planted]` exactly as often as it was printed on each line, no word of it survives, the joined
-lines carry both markers, and the receiver's `record` event names the planted kind and the subscription token.
+lines carry both markers, and the receiver's end event names the planted kind and the subscription token.
 `redaction/known-pattern`: a GitHub-shaped token redacted as `pattern:github_token` in the messages and the error
 stream; the account's subscription token replaced as `subscription_token`. `redaction/kinds-field`: each line's
 `redacted` names exactly the kinds its markers name. `redaction/exact-set`: a low-entropy word no resolver named

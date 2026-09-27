@@ -681,12 +681,13 @@ class Receiver:
         self.conn.close()
 
     def _ended(self):
-        """The dispatch's end is recorded: the execution record's last hint, marked ended, and its account in
-        the log (VELDO-0141), before the runner is told."""
-        if self.recorder is not None:
-            self.committed = self.recorder.close()
-            self.recorder.hint(True)
-            self.emit({'event': 'record', 'record': self.recorder.summary()})
+        """The dispatch's end is recorded: the execution record's last hint, marked ended, before the runner is
+        told; returns the record's account for the end event the runner reads (VELDO-0141), never a value."""
+        if self.recorder is None:
+            return None
+        self.committed = self.recorder.close()
+        self.recorder.hint(True)
+        return self.recorder.summary()
 
     def _record(self, adapter, environment):
         """The run's set of resolved credential values, from every resolver (VELDO-0141), and its execution
@@ -847,38 +848,33 @@ class Receiver:
             # outcome is unknown, and the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running')
-            self._ended()
-            self.emit({'event': 'unknown'})
+            self.emit({'event': 'unknown', 'record': self._ended()})
             return
         supervision = self.supervision
         if remote and supervision['cause'] == 'paid_api':
             # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running')
-            self._ended()
-            self.emit({'event': 'unknown', 'supervision': supervision})
+            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if remote and supervision['cause'] in ('requested', 'usage_cap'):
             # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running')
-            self._ended()
-            self.emit({'event': 'unknown', 'supervision': supervision})
+            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if supervision['empty'] is False:
             # Something of the worker's group is still running: never recorded as ended.
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
                                     expected_state='running')
-            self._ended()
-            self.emit({'event': 'unknown', 'supervision': supervision})
+            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         report = self.metering.report if self.metering is not None else None
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
         # VELDO-0141: the exit commits the execution record's line count, byte count and digest.
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,
                              execution_record=self.committed)
-        self._ended()
-        self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision})
+        self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision, 'record': self._ended()})
 
     def _login(self, contract, adapter):
         """VELDO-0062: the subscription login of an engine adapter, read before acceptance from the

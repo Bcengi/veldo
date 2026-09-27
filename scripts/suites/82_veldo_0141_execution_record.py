@@ -40,6 +40,7 @@ def _v141_suite():
     import re
     import secrets
     import shutil
+    import string
     import subprocess
     import sys
     import tempfile
@@ -538,8 +539,7 @@ err.close()
             high = secrets.token_urlsafe(30).replace('-', 'x').replace('_', 'y')
             if not any(rx.search(high) for rx, _ in SS.PATTERNS) and SS.shannon(high) >= SS.ENTROPY_THRESHOLD:
                 break
-        pattern_token = 'gh' + 'p_' + ''.join(pick.choice('ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789')
-                                              for _ in range(36))
+        pattern_token = 'gh' + 'p_' + ''.join(pick.choice(string.ascii_letters + string.digits) for _ in range(36))
         control_word = 'plain.control.' + ''.join(pick.choice('bcdfghjkm') for _ in range(4))
         planted_file = base / 'planted-value'
         planted_file.write_text(planted)
@@ -881,7 +881,7 @@ err.close()
         planted_own = own_of(planted_launch.dispatch_id)
         planted_header, planted_lines = kept(planted_launch.dispatch_id)
         planted_summary = next((m.get('record') for m in planted_launch.messages or []
-                                if isinstance(m, dict) and m.get('event') == 'record'), None) or {}
+                                if isinstance(m, dict) and m.get('event') in ('exited', 'unknown')), None) or {}
 
         # AC1: the complete record of each engine's run.
         with region('record/claude-complete'):

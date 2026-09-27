@@ -1,0 +1,165 @@
+{
+ "by_assertion": true,
+ "commit": "3c85f33b2f51f505cfed69d03272f9c077436478",
+ "details": [
+  "VELDO-0141 record/claude-complete detail: every line the Claude Code worker printed on its output and its error stream was kept, in order, after the wrapper's identity line, with gapless sequences and receive times [['no record bound to the dispatch', 'engine: 0 kept of 13 printed', 'stderr: 0 kept of 1 printed', 'the wrapper identity line is not the first, naming the engine'], 0 lines, 14 printed]",
+  "VELDO-0141 record/claude-complete detail: the record holds every tool call with its input (the command, the failing command, the edit, the subagent), each result with the command's output and its error stream, the failed command as an error, and the edit made in the clone [[], 0 results]",
+  "VELDO-0141 record/codex-complete detail: every line the Codex worker printed on its output and its error stream was kept, in order, after the wrapper's identity line [['no record bound to the dispatch', 'engine: 0 kept of 10 printed', 'stderr: 0 kept of 1 printed', 'the wrapper identity line is not the first, naming the engine']]",
+  "VELDO-0141 record/codex-complete detail: the record holds both commands with their output and error stream, the failed one's exit code, the file change, the error item, the error stream's own line [[], []]",
+  "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-puutf4z1/state/factory/runs/af541d3b2b04af8c7784b45f64d5eb47/config/settings.json', '--mcp-config', '/run/user/1000/v141-puutf4z1/state/factory/runs/af541d3b2b04af8c7784b45f64d5eb47/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
+  "VELDO-0141 record/stream-options detail: the shipped 2.1.281 record qualifies the baseline with them",
+  "VELDO-0141 record/stream-options detail: the subagent's forwarded text and the partial messages are in the record [0 subagent, 0 partial]",
+  "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [0 frames, 0 before the exit, 0 hints]",
+  "VELDO-0141 api/live detail: after the run ended the stream served the rest and closed as ended, having served every kept line once, in sequence [0 served, 0 kept, []]",
+  "VELDO-0141 api/live detail: each frame is a record frame whose id is its cursor, the last one the committed count",
+  "VELDO-0141 api/cursor detail: a stream resumed with Last-Event-ID 0 serves exactly the lines after it, then closes as ended [[]]",
+  "VELDO-0141 api/cursor detail: a page from the middle cursor starts after it [404]",
+  "VELDO-0141 api/refusals detail: a member whose scope does not cover the run's project is refused by name, nothing served [404 missing_evidence:route]",
+  "VELDO-0141 api/refusals detail: an unknown run and a cursor past the end are refused by name, never an empty record [404 missing_evidence:route, 404 missing_evidence:route]",
+  "VELDO-0141 api/refusals detail: a session that ended while the run was writing is refused by name, and the record stream it had open closed as it ended, before the run did [404 missing_evidence:route, []]",
+  "VELDO-0141 api/refusals detail: nor is a stream opened for a member outside the scope [404 missing_evidence:route]",
+  "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [[], 0 lines served]",
+  "VELDO-0141 api/no-secret-served detail: while the run printed each of them [['high', 'pattern', 'token']]",
+  "VELDO-0141 api/service-call detail: the record call over the service socket serves the owner the same lines the file holds, and refuses the outsider by name [AttributeError, None]",
+  "VELDO-0141 route/served-lines detail: the route served every kept line of the run, as kept: count, order, sequence, receive time, stream, redaction marks and payload, nothing merged, dropped, reordered or replaced [0 served, 0 kept]",
+  "VELDO-0141 route/served-lines detail: and so did the live stream",
+  "VELDO-0141 route/served-lines detail: every engine event served is the one the engine printed: each tool call with its input and result, each command's output, the edit and the error [0 of 13]",
+  "VELDO-0141 route/committed detail: after the run ended the route names it ended with the committed line count and digest, the exit record's, which the kept file matches [404, {}]",
+  "VELDO-0141 route/committed detail: a record whose file no longer matches the committed digest is refused by name [{'a line changed': (404, 'missing_evidence:route'), 'a line added': (404, 'missing_evidence:route')}]",
+  "VELDO-0141 route/committed detail: the record file is the receiver's alone: 0600 in a 0700 directory",
+  "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [[], True]",
+  "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[]]",
+  "VELDO-0141 redaction/planted-value detail: the receiver named the planted kind and the subscription token among the run's resolved values and redactions, never a value [None]",
+  "VELDO-0141 redaction/known-pattern detail: the token of a known pattern is redacted by the scanner in the messages and the error stream, its kind named [[]]",
+  "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [[]]",
+  "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[]]",
+  "VELDO-0141 redaction/exact-set detail: a low-entropy word no resolver named is kept as printed: the receiver replaces exactly the run's set [[]]",
+  "VELDO-0141 redaction/exact-set detail: and every other line is the printed one with only redacted spans replaced [['no record bound to the dispatch', 'engine: 0 kept of 10 printed', 'stderr: 0 kept of 6 printed', 'the wrapper identity line is not the first, naming the engine']]"
+ ],
+ "failed_rows": [
+  "VELDO-0141 record/claude-complete",
+  "VELDO-0141 record/codex-complete",
+  "VELDO-0141 record/stream-options",
+  "VELDO-0141 api/live",
+  "VELDO-0141 api/cursor",
+  "VELDO-0141 api/refusals",
+  "VELDO-0141 api/no-secret-served",
+  "VELDO-0141 api/service-call",
+  "VELDO-0141 route/served-lines",
+  "VELDO-0141 route/committed",
+  "VELDO-0141 redaction/planted-value",
+  "VELDO-0141 redaction/known-pattern",
+  "VELDO-0141 redaction/kinds-field",
+  "VELDO-0141 redaction/exact-set"
+ ],
+ "modules": {
+  ".veldo/control_api.py": {
+   "at_commit": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5",
+   "now": "12a8fe55da78a6f0e2c73ab84c4b2ccffbbf701c3de183c3fc62f25fc6157828"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15",
+   "now": "946821ea836085adaceb9720ad876bb015898a67500349823b08fd9922894d6e"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c",
+   "now": "9c5fc45e6003097fcbca8ad0094b245c2c2ed3eabf1f6ecad5e4daa4770ba057"
+  },
+  ".veldo/control_client_api.py": {
+   "at_commit": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e",
+   "now": "f1f5cfd4be9cae8920b2bfddf3fa2a0a631e4eceeccd0aa79203f263e1858e46"
+  },
+  ".veldo/control_dispatch.py": {
+   "at_commit": "f6579c773d1b7fdd09f69d8f808dc2957c9d28fa483d2e577b27d0e43308f49c",
+   "now": "6557e96b2e022b2524b0084aa9bf594a7b8e9703fd90e4dcc98ee1f065939b37"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "c3e8485375116e3d16b124dc67de05e176c8959b2596e5d8275d7b49a12fdf2a",
+   "now": "930ad4632833358a2864838ef84761ce17c06071f9881737d02ae4214fb7377e"
+  },
+  ".veldo/control_execution_record.py": {
+   "at_commit": null,
+   "now": "aba9a4e2bafea9c703706f5a75267b3b18c2e20bdabe8d7b7da2597ad0d60c31"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20",
+   "now": "60a69442e3ee111a5152fed3ea73f10bdf4de3cc26b4242ed7a44748fa2a5c9d"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941",
+   "now": "90e0d1dcb8c7a9cc08d96bbb5ec6319eb8ebdd49ee67462f57a032e5b368b3d9"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0141 record/claude-complete",
+   false
+  ],
+  [
+   "VELDO-0141 record/codex-complete",
+   false
+  ],
+  [
+   "VELDO-0141 record/stream-options",
+   false
+  ],
+  [
+   "VELDO-0141 api/live",
+   false
+  ],
+  [
+   "VELDO-0141 api/cursor",
+   false
+  ],
+  [
+   "VELDO-0141 api/refusals",
+   false
+  ],
+  [
+   "VELDO-0141 api/no-secret-served",
+   false
+  ],
+  [
+   "VELDO-0141 api/service-call",
+   false
+  ],
+  [
+   "VELDO-0141 route/served-lines",
+   false
+  ],
+  [
+   "VELDO-0141 route/committed",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/planted-value",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/known-pattern",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/kinds-field",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/exact-set",
+   false
+  ],
+  [
+   "VELDO-0141 fixture/planted-control",
+   true
+  ],
+  [
+   "VELDO-0141 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 11.505,
+ "spec_id": "VELDO-0141",
+ "suite": "scripts/suites/82_veldo_0141_execution_record.py",
+ "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"
+}
