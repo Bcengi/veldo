@@ -20,7 +20,7 @@ claim stays released with no holder and loses `parked_on`, so the unit is claima
 ordinary `claim` with its own eligibility, capability and activation checks. Like `park` and
 `resume`, it is not an IPC operation of the Receiver.
 
-Project lifecycle (VELDO-0076). A claim of a unit that names a project is refused by name when the
+Project lifecycle (VELDO-0076). Every claim of a unit is refused by name when the
 shared eligibility Gate's own project check refuses it (project_not_active:PAUSED, :CANCELED,
 :COMPLETED, :owner_not_current, :not_a_project, or missing_authority:project): a stopped project
 takes no new assignment. The project and owner records that check read are pinned in the claim's
@@ -187,6 +187,9 @@ class Receiver:
             break
         observation.update(outcome='accepted' if result['ok'] else 'refused', reason=result.get('reason'))
         self.counts[observation['outcome']] += 1
+        if not result['ok']:
+            reasons = self.counts.setdefault('refused_by_reason', {})
+            reasons[result['reason']] = reasons.get(result['reason'], 0) + 1
         self.observations.append(observation)
         return result
 
@@ -247,14 +250,15 @@ class Receiver:
         # Bind every authorization and activation input to the store transaction.
         touched = {unit, backlog, cid, principal, key['key_id'], CM.VERSIONS_ENTITY}
         versions = {eid: entities.get(eid, {}).get('version', 0) for eid in touched}
-        if command['operation'] == 'claim' and u['data'].get('project') is not None:
+        if command['operation'] == 'claim':
             # VELDO-0076: a paused, canceled or completed project takes no new assignment. The check is the
             # one every station makes; the project and owner records it read are pinned with the rest, so
             # a pause committed before this claim refuses it by name, never after it.
             refusals, read = self._project_problems(unit)
+            versions.update(read)
+            observation.update(project=u['data'].get('project'), accepted_versions=dict(versions))
             if refusals:
                 raise S.StoreRefused(refusals[0], 'the unit\'s project takes no new assignment')
-            versions.update(read)
         observation['accepted_versions'] = versions
         params = dict(action=command['operation'], unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
                       holder=principal, generation=command['generation'], capabilities=command['capabilities'],

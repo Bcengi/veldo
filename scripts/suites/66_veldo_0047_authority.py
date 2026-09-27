@@ -172,8 +172,10 @@ def _v47_suite():
                                  ('worker', 'agent_run', '*')):
             put(who, 'membership', dict(principal_type=kind, roles=[], scope=scope))
             put('key:%s:1' % who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
+        put('project-owner', 'membership', dict(principal_type='person', roles=['project_owner'], scope='*'))
+        put('project:claims47', 'project', dict(name='claims47', state='ACTIVE', owner='project-owner'))
         put('backlog-47', 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPOSITORY))
-        put('unit-47', 'execution_unit', dict(state='READY', repository_uuid=REPOSITORY, backlog_item_uuid='backlog-47',
+        put('unit-47', 'execution_unit', dict(state='READY', repository_uuid=REPOSITORY, backlog_item_uuid='backlog-47', project='claims47',
                                               requirements=[], eligible_holders=['worker']))
         setup.close()
 

@@ -293,9 +293,13 @@ class Andon:
     def _observe(self, operation, outcome, reason, *, stop=None, unit=None, request=None, versions=None, **extra):
         accepted = reason is None
         self.counts['accepted' if accepted else 'refused'] += 1
+        if not accepted:
+            reasons = self.counts.setdefault('refused_by_reason', {})
+            reasons[reason] = reasons.get(reason, 0) + 1
         self.observations.append(dict(self.ids, operation=operation, stop_id=stop, unit=unit, request_id=request,
                                       accepted_versions=dict(versions or {}), outcome=outcome, reason=reason,
-                                      error_class=None if accepted else taxonomy(reason)))
+                                      error_class=None if accepted else taxonomy(reason),
+                                      project=extra.get('project')))
         result = dict({'outcome': outcome, 'stop_id': stop, 'unit': unit, 'request_id': request}, **extra)
         if reason is not None:
             result['reason'] = reason
@@ -745,6 +749,7 @@ class Andon:
         if stop is None:
             return self._observe('resume', 'refused', 'invalid_input', stop=sid)
         unit, rid = stop['unit'], stop['request_id']
+        expected, project = {}, None
         try:
             if stop['state'] != 'stopped':
                 raise Refused('not_stopped', 'the stop is %s' % stop['state'])
@@ -763,6 +768,10 @@ class Andon:
             now = self.clock()
             state = self.CM.authority_state(self.S, self.conn)
             permission = self._permission(stop, item, state, now)
+            project = u['data'].get('project')
+            refusals, expected = self.gate.project_problems(unit)
+            if refusals:
+                raise Refused(refusals[0], 'the project takes no new work')
             attempt = 1 + sum(1 for _i, _v, d in self._of_kind(CONTRACT_KIND) if d.get('unit') == unit)
             cid = contract_id(self.ids['repository_uuid'], unit, attempt)
             contract = {'schema': CONTRACT_SCHEMA, 'contract_id': cid, 'unit': unit, 'station': stop['station'],
@@ -771,7 +780,7 @@ class Andon:
                         'issued_at': now, 'domain_uuid': self.ids['domain_uuid'],
                         'repository_uuid': self.ids['repository_uuid']}
             contract['contract_digest'] = digest(contract)
-            expected = dict(self._pinned(state, permission['principal']),
+            expected = dict(self._pinned(state, permission['principal']), **expected,
                             **{sid: self._entity(sid)['version'], unit: u['version'], cid: 0, rid: item['version']})
             for eid in (permission.get('settlement_id'), permission.get('receipt_id'), permission.get('effect_id'),
                         permission.get('presentation_id')):
@@ -783,14 +792,16 @@ class Andon:
             self._commit(dict(action='resume', stop_id=sid, unit_id=unit, contract=contract, permission=permission,
                               evidence=evidence), expected, self.journal_signer, command_id, command_id)
         except Refused as exc:
-            return self._observe('resume', 'refused', exc.code, stop=sid, unit=unit, request=rid)
+            return self._observe('resume', 'refused', exc.code, stop=sid, unit=unit, request=rid,
+                                 versions=expected, project=project)
         except self.S.StoreRefused as exc:
-            return self._observe('resume', 'refused', 'stale_subject' if exc.code in ('stale_version', 'transition_refused')
-                                 else 'unknown_outcome', stop=sid, unit=unit, request=rid)
+            return self._observe('resume', 'refused', exc.code if exc.code == 'stale_version' else
+                                 'stale_subject' if exc.code == 'transition_refused' else 'unknown_outcome',
+                                 stop=sid, unit=unit, request=rid, versions=expected, project=project)
         except sqlite3.Error:
             return self._observe('resume', 'refused', 'unavailable_service', stop=sid, unit=unit, request=rid)
         return self._observe('resume', 'resumed', None, stop=sid, unit=unit, request=rid, versions=expected,
-                             contract_id=cid, permission=permission)
+                             contract_id=cid, permission=permission, project=project)
 
     def run(self):
         """One pass over the pending stops: present any version not yet noticed, then resume each
