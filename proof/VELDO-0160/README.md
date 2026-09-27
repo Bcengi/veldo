@@ -75,7 +75,18 @@ tool's result with status `forked`); and Codex's `collab` (exec's `collab_tool_c
 rules below unchanged, decides, basis `calls`. The authoritative evidence later is a factory-side log of the
 MCP calls themselves (filed for VELDO-0158).
 
-**A call that contradicts the configuration asks first (the lead's decision).** Before rule 1, `decide` reads
+**A call that starts an agent outside the run asks first of all (the lead's decision).** Such an agent may act
+through the account's claude.ai connectors, which no configuration of the run governs, so `decide` first reads each
+engine line with the engine module's `remote_agents` (`outside(record, provider)`): for Claude Code any RemoteTrigger
+call (`remote`; a deferred tool whose create, update and run start a cloud agent routine) and a CronCreate that may
+be durable (`cron`, form `tool:CronCreate:durable`: its own input, in an assistant message's `tool_use` block or the
+REPL tool's inner call, gives `durable` true or the text "true", or any value the binary does not read as false; a
+CronCreate named where its input is not given, such as a task's last tool, may be durable). Any such line makes the
+decision `ask` under every configuration, basis `remote_agent`, naming each such line with reason `remote_agent`, its
+`construct` and `form`, beside the calls that contradict the configuration. Codex exec's item table lists no such item
+(`remote_agents` names none there). RemoteTrigger and CronCreate are also rule 2's constructs (`remote`, `cron`).
+
+**A call that contradicts the configuration asks next (the lead's decision).** Before rule 1, `decide` reads
 the record's calls and `unconfigured(shown, servers, marks)` names each MCP call to a server the configuration does
 not list, or to a tool of a listed server that the configuration does not give the run (its `tools` list); any
 such call makes the decision `ask`, basis `unconfigured_call`, naming each with reason `unconfigured_call`, its
@@ -190,6 +201,12 @@ fields of a task frame (`workflow_name`, documented as set only for task type `l
 under their task's id (`Sne`: `agent_progress`, `skill_progress`) and the Skill tool's result schema with status
 `forked`; for Codex exec's `collab_tool_call` and the core's items whose struct names another thread
 (`CollabAgentToolCallItem` with `receiver_thread_ids`, `SubAgentActivityItem` with `agent_thread_id`).
+The remote-agent round added RemoteTrigger (`var lK="RemoteTrigger"`, its definition with `searchHint` "manage
+scheduled cloud agent routines", its description naming the claude.ai CCR API and its actions) and CronCreate
+(`var iy="CronCreate"`, its definition, and its input schema's `durable:BA(O().optional())` whose description says
+false by default and true persists to .claude/scheduled_tasks.json, read through the semantic boolean `dN` that takes
+"true" and "false" for the booleans) as the classes `remote` and `cron`, and `remote_agent` (the tools any call of
+which starts an agent outside the run, and CronCreate's `durable` field with the values that are off).
 `format/tool-forms` requires the readers' tables to equal these. Every line the suite's fakes print and every engine payload of the fixture records
 conforms to that table (the two format rows).
 
@@ -208,7 +225,7 @@ where the script says, so concurrency is observed rather than timed. No real eng
 |---|---|
 | AC1 | `pool/per-account-isolation` (declared falsifier), `pool/one-registration` (declared), `pool/concurrent` (declared) |
 | AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted`, `limit/claude-rejected-texts` |
-| AC3 | `decision/ask` (declared), `decision/unconfigured-call-asks`, `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls`, `decision/no-write-server-reruns`, `decision/nested-work-asks`, `decision/nested-constructs` |
+| AC3 | `decision/ask` (declared), `decision/unconfigured-call-asks`, `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls`, `decision/no-write-server-reruns`, `decision/nested-work-asks`, `decision/nested-constructs`, `decision/remote-agent-asks` |
 | AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared), `pool/usage-observes`, `pool/selection-order`, `pool/until-earliest` |
 | Install | `install/assets` |
 | Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines`, `format/tool-forms` |
@@ -331,9 +348,21 @@ nested work and as an unknown call. `decision/nested-constructs`: each of 16 rec
 RunWorkflow, a background shell task started, a task moved to the background, a sub-agent's message, a forked
 skill's progress frame, a forked skill's result; Codex's `collab_tool_call`, `collab_agent_tool_call` and
 `sub_agent_activity`) asks naming exactly that construct and form, a workflow's task start names a task frame and
-a workflow's, every class the binaries' tables list is driven, and the negative control (a Bash call, a denied
+a workflow's, a CronCreate that is not durable asks by rule 2 naming `cron`, rule 2's table names a RemoteTrigger
+call `remote` (and the decision asks, by the rule before it), every class the binaries' tables list is driven (11),
+and the negative control (a Bash call, a denied
 Agent call and its result) names no nested work and re-runs by the calls. `format/tool-forms` also requires
 the construct tables (`NESTED_TOOLS`, `NESTED`, Codex's `NESTED_ITEMS`) to equal `nested_work`.
+`decision/remote-agent-asks` (the lead's decision on work outside the run): the checker's routine (ToolSearch
+loading RemoteTrigger, then a RemoteTrigger create whose body keeps the account's Atlassian connector, then a run),
+a RemoteTrigger list, the checker's durable CronCreate, one durable as the text "true", a durable CronCreate as the
+REPL tool's inner call and a CronCreate named only as a task's last tool each decide ask, basis `remote_agent`,
+naming exactly those lines, under no MCP server, only read-only tools and a write-capable server; the routine as
+JSON text asks too; a RemoteTrigger call beside a call to an unlisted server names both. The negative controls: a
+CronCreate with `durable` left out, false, or the text "false" re-runs with only read-only tools and is asked by rule
+2 (`cron`) with a write-capable server; RemoteTrigger's schema loaded and never called re-runs; the checker's normal
+runs (an Agent whose one call is read-only under read-only tools, an Agent with no server, reads only under a
+write-capable server, an Agent under a write-capable server) keep their decisions and name no remote agent.
 `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 

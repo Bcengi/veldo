@@ -194,8 +194,14 @@ that gives no list gives all its tools.
 **The structural rule for the re-run-or-ask decision (the lead's decision).** Three rounds of checks each found
 a new way Claude Code keeps a nested MCP call out of the stream (the REPL tool's inner calls, an agent a
 sub-agent starts, a skill a sub-agent forks, whose messages are dropped and whose end reports no count), so
-rebuilding the calls from the stream cannot be made complete, and the configuration decides first. Before rule 1,
-a visible call that contradicts the configuration asks: an MCP call the record shows to a server the run's
+rebuilding the calls from the stream cannot be made complete, and the configuration decides first. First of all, a
+call that starts an agent outside the run asks whatever the configuration, since that agent may act through the
+account's claude.ai connectors, which no configuration of the run governs: for Claude Code any RemoteTrigger call
+(a deferred tool whose create, update and run start a cloud agent routine) and a durable CronCreate (its prompt
+persists to the project's scheduled tasks and fires after the run; a CronCreate named where its input is not given
+may be durable), read from the binary's bytes into `cli-formats.json` (`nested_work` `remote_agent`); the decision is
+ask, naming each such line (reason `remote_agent`, basis `remote_agent`) beside the calls that contradict the
+configuration. Next, before rule 1, a visible call that contradicts the configuration asks: an MCP call the record shows to a server the run's
 configuration does not list, or to a tool the configuration does not give the run, shows the run did not have the
 configuration the decision reads, so the decision is ask, naming each such line (reason `unconfigured_call`, basis
 `unconfigured_call`), even when every configured server is read-only. Rule 1: when
@@ -205,7 +211,7 @@ decision is re-run whatever the stream shows; a structurally malformed record is
 otherwise, when the record shows any construct that can run nested work the stream may not show, the decision
 is ask, naming each such line and its construct: for Claude Code an Agent tool call (or its old name Task, or
 SendMessage to a teammate), a Skill tool call, the REPL tool or its inner call, the Workflow tool or a
-workflow's task frames, any task frame (`task_started`, `task_progress`, `task_notification`,
+workflow's task frames, a RemoteTrigger call, a CronCreate call, any task frame (`task_started`, `task_progress`, `task_notification`,
 `task_updated`), a message a sub-agent or a forked skill produced (it names its task in `parent_tool_use_id`,
 how the CLI forwards `agent_progress` and `skill_progress`) and a forked skill's result; for Codex a collab
 agent call (exec's `collab_tool_call`, the core's `collab_agent_tool_call`) and a sub-agent's activity. The
@@ -344,3 +350,18 @@ unlisted server was re-run. The call-by-call rules keep `server_not_configured` 
 read-only servers configured; the same record calling a listed read-only tool re-runs); `decision/ask` now expects
 the unlisted server's call to be decided by this rule and checks the call-by-call rules still name it. 2 more
 finding 160 mutations (the check skipped, the configuration's tool list ignored). Status unchanged.
+
+2026-09-26, merged with main (VELDO-0155 and VELDO-0156) and the lead's decision on work outside the run: the
+suite's fake Claude Code is qualified with stream JSON input and main's everything-off baseline and answers the
+initialize handshake with a subscription login, and its fake Codex prints `login status` on stderr as 0.154.0
+does, as main's suites do. A call that starts an agent outside the run now asks first, whatever the configuration
+(basis and reason `remote_agent`): any Claude Code RemoteTrigger call (create, update and run start a cloud agent
+routine that keeps the account's claude.ai connectors) and a durable CronCreate (a prompt that fires after the
+run; `durable` true or the text "true", or a CronCreate named where its input is not given), each named beside the
+calls that contradict the configuration; before this a routine created and run with no MCP server configured was
+re-run. RemoteTrigger and CronCreate are also rule 2's constructs (`remote`, `cron`). The extractor reads both
+tools, RemoteTrigger's actions and CronCreate's `durable` field with its default and semantic boolean out of the
+2.1.281 bytes into `cli-formats.json`. New row `decision/remote-agent-asks` (the checker's routine and durable
+cron ask under no server, only read-only tools and a write-capable server; a non-durable cron and the checker's
+normal runs keep their decisions); `decision/nested-constructs` and `format/tool-forms` cover the two
+constructs; 10 more finding 160 mutations. Status unchanged.
