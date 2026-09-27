@@ -397,3 +397,21 @@ That unchanged row passed in the first full run and in an isolated rerun. Its ca
 established. The validation record retains that failed run and the isolated result as well.
 
 The final complete run passed all 6,896 assertions across 122 suites with zero failures. All 47 finding-141 mutations were rejected on the final implementation; the Git boundary checker and validator passed, and both changed engine copies matched byte for byte.
+
+## Receiver configuration review fix
+
+`invoke` loads the receiver configuration and resolves the execution-record directory before
+`Popen`. Missing files, malformed JSON and configurations with no usable `records`, `state_root`
+or `store` take the existing `receiver_unavailable` refusal path with no receiver child.
+The record directory fallback order is unchanged.
+
+Three new suite 82 rows assert the named refusal, zero receiver spawn calls and an unchanged
+process census scoped to the suite's temporary tree. The census includes unreaped child PIDs;
+cleanup happens after the assertions, including when a mutant leaks a receiver. `config/malformed`
+uses malformed JSON generated at runtime, `config/incomplete` omits all three record-directory
+keys, and `config/missing-file` names an absent file in that same temporary tree.
+
+Finding 141 adds `record141e-config-catches-only-oserror` and
+`record141e-config-read-after-spawn`. Finding 41 adds `retire41-config-oserror-unhandled`,
+which removes OSError from the launch refusal handling and must fail the existing retirement row.
+[receiver-config-review.json](receiver-config-review.json) records the checks for this fix.

@@ -3255,6 +3255,10 @@ def cases():
          "{'cooperative': stop_grace, 'terminate': kill_grace,",
          "{'cooperative': stop_grace, 'terminate': 0,", 'stop/bounded-group-exit')
     # AC3, declared: the slot is released before the descendants have ended.
+    beat('retire41-config-oserror-unhandled', 'control_launch.py',
+         '    except (OSError, ValueError, KeyError, TypeError):\n        # No receiver ran',
+         '    except (ValueError, KeyError, TypeError):\n        # No receiver ran',
+         'retirement/live-descendant')
     beat('retire-before-descendant-termination', 'control_retirement.py',
          "        kernel = C.retirement(entry['group'], record.get('process'))\n",
          "        kernel = C.retirement(None, record.get('process'))  # defect: only the worker is looked at\n",
@@ -8193,6 +8197,20 @@ def cases():
               "        self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))\n",
               '        self.resolved.paths = ()  # defect: receiver never snapshots its clone\n',
               ['redaction/clone-relative-paths'])
+    record141('record141e-config-catches-only-oserror', 'control_launch.py',
+              '    except (OSError, ValueError, KeyError, TypeError):\n        # No receiver ran',
+              '    except OSError:\n        # No receiver ran',
+              ['config/malformed', 'config/incomplete'])
+    record_config = ("        with open(config_path) as handle:\n"
+                     "            config = json.load(handle)\n"
+                     "        if not isinstance(config, dict):\n"
+                     "            raise ValueError('receiver config must be an object')\n"
+                     "        records = ER.directory(config)\n")
+    record_spawn = ("        child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,\n"
+                    "                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)\n")
+    record141('record141e-config-read-after-spawn', 'control_launch.py',
+              record_config + record_spawn, record_spawn + record_config,
+              ['config/malformed', 'config/incomplete', 'config/missing-file'])
     record141('record141d-clone-git-discovery-restored', 'control_execution_record.py',
               '    root = Path(root if root is not None else cwd).absolute()\n',
               "    spec = importlib.util.spec_from_file_location('record_git', Path(__file__).with_name('git_process.py'))\n"

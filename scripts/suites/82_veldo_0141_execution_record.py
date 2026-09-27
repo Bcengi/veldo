@@ -81,7 +81,8 @@ def _v141_suite():
             'api/scope-before-existence', 'api/registration-race', 'api/slow-reader', 'route/unknown-committed',
             'redaction/thinking-and-unknown', 'redaction/live-paths', 'redaction/offset-encodings',
             'redaction/clone-leaf-candidates', 'redaction/uppercase-hex', 'redaction/clone-without-git',
-            'api/byte-pages', 'api/fast-catchup', 'route/runner-unknown')
+            'api/byte-pages', 'api/fast-catchup', 'route/runner-unknown',
+            'config/malformed', 'config/incomplete', 'config/missing-file')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -1916,6 +1917,68 @@ err.close()
                 finally:
                     if original_bytes is not None:
                         location.write_bytes(original_bytes)
+                    writer.execute('UPDATE entities SET data=? WHERE id=?',
+                                   (original_dispatch, 'dispatch:' + main_launch.dispatch_id))
+
+        # Invalid configuration must settle before a receiver exists. Keep real Popen handles so
+        # an escaping invoke cannot hide a zombie from the census or from this suite's cleanup.
+        from unittest.mock import patch
+
+        def config_census(children):
+            pids = {child.pid for child in children if Path('/proc/%d' % child.pid).exists()}
+            for proc in Path('/proc').iterdir():
+                if proc.name.isdigit():
+                    with contextlib.suppress(OSError):
+                        if os.fsencode(base) in (proc / 'cmdline').read_bytes():
+                            pids.add(int(proc.name))
+            return pids
+
+        for row, contents in (('config/malformed', '{' + secrets.token_hex(8)),
+                              ('config/incomplete', json.dumps({})),
+                              ('config/missing-file', None)):
+            with region(row):
+                bad_config = base / (row.split('/')[-1] + '-receiver.json')
+                if contents is not None:
+                    bad_config.write_text(contents)
+                original_dispatch = writer.execute('SELECT data FROM entities WHERE id=?',
+                                                   ('dispatch:' + main_launch.dispatch_id,)).fetchone()[0]
+                prepared = json.loads(original_dispatch)
+                prepared.update(state='prepared', execution_record=None)
+                writer.execute('UPDATE entities SET data=? WHERE id=?',
+                               (json.dumps(prepared), 'dispatch:' + main_launch.dispatch_id))
+                children, spawned = [], []
+                popen = subprocess.Popen
+                before = config_census(children)
+
+                def observed_popen(argv, *args, **kwargs):
+                    # Journal signing may spawn ssh-keygen. Census only this suite's receiver.
+                    child = popen(argv, *args, **kwargs)
+                    if str(bad_config) in argv:
+                        spawned.append(child.pid)
+                        children.append(child)
+                    return child
+
+                try:
+                    with patch.object(L.subprocess, 'Popen', observed_popen):
+                        launch, error = attempt(lambda: L.invoke(bad_config, main_launch.contract, dispatches,
+                                                                accept_seconds=5, environment=RECEIVER_ENV))
+                    settled = dispatches.record(main_launch.dispatch_id)
+                    check(row, 'invalid config returns the main refusal without an exception: ' + str(error),
+                          error is None and launch is not None and launch.result == 'refused'
+                          and settled.get('state') == 'refused'
+                          and settled.get('refusal') == 'receiver_unavailable')
+                    check(row, 'no receiver was spawned: ' + str(spawned), not spawned)
+                    remaining = config_census(children) - before
+                    check(row, 'suite process census has no new live or zombie child: ' + str(sorted(remaining)),
+                          not remaining)
+                finally:
+                    for child in children:
+                        if child.poll() is None:
+                            child.kill()
+                        child.wait(timeout=10)
+                        for pipe in (child.stdin, child.stdout):
+                            if pipe is not None:
+                                pipe.close()
                     writer.execute('UPDATE entities SET data=? WHERE id=?',
                                    (original_dispatch, 'dispatch:' + main_launch.dispatch_id))
 

@@ -648,19 +648,18 @@ class Launch:
 def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, environment=None, clock=None):
     """Hand the prepared contract to the trusted receiver process named by the installed config."""
     try:
+        with open(config_path) as handle:
+            config = json.load(handle)
+        if not isinstance(config, dict):
+            raise ValueError('receiver config must be an object')
+        records = ER.directory(config)
         child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)
-    except OSError:
+    except (OSError, ValueError, KeyError, TypeError):
         # No receiver ran, so nothing was launched: a conclusive refusal, never a held unit.
         launch = Launch(None, contract, dispatches, clock or time.time)
         launch._settle(lost=True)
         return launch
-    try:
-        with open(config_path) as handle:
-            records = ER.directory(json.load(handle))
-    except OSError:
-        # Let the runner settle an unavailable receiver and retain its cleanup obligations.
-        records = None
     launch = Launch(child, contract, dispatches, clock or time.time, records=records)
     try:
         # The receiver's stdin stays open as its control channel: Launch.stop writes a stop request on it.
