@@ -66,6 +66,8 @@ WHAT IT IS NOT. Not the transport: the service socket and its client are control
 control_client_api. Standard library only.
 """
 import fcntl
+import hashlib
+import hmac
 import importlib.util
 import json
 import os
@@ -85,6 +87,8 @@ AS = organ('control_api_assertion')
 CR = organ('control_api_credentials')
 MO = organ('control_api_models')
 WF = MO.WF
+MC = organ('control_mcp_catalog')
+CV = organ('control_credential')
 E = organ('control_channel_enrollment')
 ER = organ('control_execution_record')
 RECORD_SCHEMA = 'veldo.api_execution_record/v1'
@@ -156,7 +160,7 @@ class ApiAuthority:
 
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
                  workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None,
-                 records=None):
+                 catalog=None, mcp_credentials=None, records=None):
         self.S, self.CM, self.conn = store, membership, conn
         # VELDO-0141: the launch receivers' records directory (control_execution_record.directory).
         self.records = records
@@ -166,6 +170,7 @@ class ApiAuthority:
         self.intake, self.settlement, self.credentials, self.clock = intake, settlement, credentials, clock
         # VELDO-0132's Workflows on this connection, and VELDO-0051's Projection of this store.
         self.workflows, self.publication = workflows, publication
+        self.catalog, self.mcp_credentials = catalog, mcp_credentials
         # After each accepted command: notify(hint), the VELDO-0046 notification shape of the head record.
         self.notify = notify
         self.observe = observe or (lambda event: None)
@@ -372,12 +377,38 @@ class ApiAuthority:
             return self.settlement.api_answer({'answer': derived, 'signature': packet.get('domain_signature')})
         provenance = {'channel': AS.CHANNEL, 'edge': self.edge, 'request_id': a['request_id'],
                       'credential_id': a['credential_id'], 'assertion_digest': AS.digest(a)}
+        if a['operation'] in (MC.SAVE,) + CV.OPERATIONS:
+            return self._mcp(a, packet)
         if a['operation'] == 'save_workflow':
             return self._save_workflow(a)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
         if done['refusal']:
             return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
         return {'outcome': 'revoked'}
+
+    def _mcp(self, a, packet):
+        p = dict(a['parameters'])
+        try:
+            if a['operation'] == MC.SAVE:
+                if self.catalog is None:
+                    raise MC.Refused('unavailable_service:mcp_catalog')
+                return self.catalog.save(p['definition'], principal=a['principal'], base=p['base'],
+                                         command_id=a['request_id'], session=a['session'])
+            if self.mcp_credentials is None:
+                raise MC.Refused('unavailable_service:mcp_credentials')
+            if a['operation'] == CV.SET:
+                value = packet.get('value')
+                bound = p.pop('value_digest')
+                if (not isinstance(value, str) or not isinstance(bound, str)
+                        or not hmac.compare_digest(hashlib.sha256(value.encode()).hexdigest(), bound)):
+                    raise MC.Refused('invalid_input:credential_binding')
+                p['value'] = value
+            return self.mcp_credentials.apply(a['operation'], p, principal=a['principal'],
+                                              command_id=a['request_id'], session=a['session'])
+        except UnicodeEncodeError:
+            return {'outcome': 'refused', 'reason': 'invalid_input:credential_encoding'}
+        except (MC.Refused, CV.Refused) as error:
+            return {'outcome': 'refused', 'reason': error.code}
 
     def _save_workflow(self, a):
         """VELDO-0132's save for the verified principal: its transaction judges the editor and the base."""
@@ -401,7 +432,7 @@ class ApiAuthority:
     def commands(self):
         """Each operation and the store command it executes, for the route-to-command comparison."""
         return {'send_message': AS.IN.RECORD, 'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
-                'save_workflow': WF.SAVE}
+                'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1
