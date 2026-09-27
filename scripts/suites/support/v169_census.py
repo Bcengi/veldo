@@ -212,14 +212,14 @@ class Census:
                 self.handouts = ()
         self.schema = organ.constants.get(RECEIPT_SCHEMA, NOVALUE) if organ else NOVALUE
 
-    # -- reporting ------------------------------------------------------------------------------
+    # Reporting.
 
     def fail(self, stem, fn, line, why):
         failure = '%s.%s:%s %s' % (stem, fn or '<module>', line, why)
         if failure not in self.failures:
             self.failures.append(failure)
 
-    # -- discovery ------------------------------------------------------------------------------
+    # Discovery.
 
     def run(self):
         kinds = self.constructor_kinds()
@@ -314,7 +314,7 @@ class Census:
         self.fail(module.stem, where, ref.lineno, 'a reference to %s escapes: what calls it is not visible' % name)
         return []
 
-    # -- the claim organ ------------------------------------------------------------------------
+    # The claim organ.
 
     def binds(self, call):
         """Whether `call` can bind the organ's positional signature."""
@@ -513,7 +513,7 @@ class Census:
             return frozenset([value])
         return self.narrow(module, fn, node, [self.strip(expr)], All())
 
-    # -- guards ---------------------------------------------------------------------------------
+    # Guards.
 
     def narrow(self, module, fn, node, forms, values):
         """`values` narrowed by the conditions every path to `node` inside `fn` has passed, on any of
@@ -560,7 +560,7 @@ class Census:
                 return restrict(values, allowed=right) if positive else restrict(values, excluded=right)
         return values
 
-    # -- the receipt ----------------------------------------------------------------------------
+    # The receipt.
 
     def obtains(self, module, fn, depth=0, seen=()):
         """Whether calling `fn` makes the Gate's project check unconditionally before it returns."""
@@ -651,7 +651,7 @@ class Census:
                   and not (module.stem == ORGAN_MODULE and isinstance(module.parents.get(node), ast.Assign))):
                 self.fail(module.stem, module.name_of(module.enclosing(node)), node.lineno, 'writes the receipt schema by hand')
 
-    # -- station contracts ----------------------------------------------------------------------
+    # Station contracts.
 
     def constructor_kinds(self):
         """The entity kinds the station contract's writer writes, read from its own body."""
@@ -699,7 +699,7 @@ class Census:
             if not self.within(module, c['node'], call):
                 self.require(c['module'], c['function'], c['node'], 'the station contract it commits')
 
-    # -- dynamic attribute access ---------------------------------------------------------------
+    # Dynamic attribute access.
 
     def dynamic(self, module):
         tracked = (ORGAN, CONSTRUCTOR, RECEIPT)
