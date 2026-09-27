@@ -104,7 +104,6 @@ import signal
 import sqlite3
 import subprocess
 import time
-import types
 
 SCHEMA = "veldo.control_store/v1"
 JOURNAL_ENCODING = "veldo.journal/v1"
@@ -156,6 +155,13 @@ def _claim_data(record):
     return data if isinstance(data, dict) else {}
 
 
+class _Records:
+    """This store as the Gate reads its records: control_snapshot.entity checks each row's digest with
+    digest_of, and the Gate names the store's refusal type."""
+    def __init__(self):
+        self.digest_of, self.StoreRefused = digest_of, StoreRefused
+
+
 def _project_gate(conn):
     """The eligibility Gate over `conn`, for its project check alone, which reads the unit, its project
     record and the owner's membership on that connection and no domain or repository coordinate."""
@@ -165,9 +171,7 @@ def _project_gate(conn):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         _ELIGIBILITY.append(module)
-    # This store as the Gate reads its records: control_snapshot.entity checks each row's digest with it.
-    records = types.SimpleNamespace(digest_of=digest_of, StoreRefused=StoreRefused)
-    return _ELIGIBILITY[0].Gate(records, conn, domain_uuid=None, repository_uuid=None)
+    return _ELIGIBILITY[0].Gate(_Records(), conn, domain_uuid=None, repository_uuid=None)
 
 
 def _handout_units(conn, eid, was, now):

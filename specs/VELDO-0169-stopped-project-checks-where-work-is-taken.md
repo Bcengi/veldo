@@ -42,6 +42,7 @@ footprint:
   - "scripts/suites/81_veldo_0156_codex_baseline.py"
   - "scripts/suites/82_veldo_0129_worker_wiring.py"
   - "scripts/suites/82_veldo_0141_execution_record.py"
+  - "scripts/suites/36_veldo_0023_journal.py"
   - "scripts/suites/58_veldo_0031_claims.py"
   - "scripts/suites/59_veldo_0031_review.py"
   - "scripts/suites/60_veldo_0064_inbox.py"
@@ -283,7 +284,9 @@ the transaction's own connection after the records are written, finds a problem 
 record names (its unit_id before and after, and every execution unit its id can name). It trusts no
 caller and no attribute, so the claim organ, a hand-built record, an injected attribute and the
 generic upsert are all held to it; the renewal of a claim already held, a release and a park pass
-unchanged. The store loads the Gate by a literal file name, so the installer's closure includes it.
+unchanged. The store loads the Gate by a literal file name, so the installer's closure includes it, and imports
+importlib for it, which suite 36's row of VELDO-0023 now admits beside the rest of the standard
+library it names (the footprint gains that suite).
 The claim organ keeps its own check, which refuses earlier, before any other reason, by the same
 name. Suite 84 replaces organ/ownership with store/invariant (the reviewer's inject probe, a claim
 built by hand, the generic upsert, a hand-built resume and unpark, a record whose id names a paused

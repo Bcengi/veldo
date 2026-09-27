@@ -8651,8 +8651,8 @@ def cases():
             '        return None if was.get("parked_on") else "claim"  # defect: a parked unit taken again hands nothing out\n',
             ['store/invariant', 'organ/stopped'])
     handout('store-reads-outside-transaction', 'control_store.py',
-            "    return _ELIGIBILITY[0].Gate(records, conn, domain_uuid=None, repository_uuid=None)\n",
-            "    return _ELIGIBILITY[0].Gate(records, sqlite3.connect(conn.execute('PRAGMA database_list').fetchone()[2]),"
+            "    return _ELIGIBILITY[0].Gate(_Records(), conn, domain_uuid=None, repository_uuid=None)\n",
+            "    return _ELIGIBILITY[0].Gate(_Records(), sqlite3.connect(conn.execute('PRAGMA database_list').fetchone()[2]),"
             " domain_uuid=None, repository_uuid=None)  # defect: the project is read outside the transaction\n",
             ['store/invariant'])
     handout('store-id-unit-unchecked', 'control_store.py',
