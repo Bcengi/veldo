@@ -2,7 +2,7 @@
 
 The trusted exec wrapper removes every name starting with CLAUDE, CLAUDECODE, AI_AGENT or CODEX,
 beside the VELDO-0155 AC4 names. The receiver carries the qualified baseline and the registered
-account's profile and optional subscription token in VELDO_ENGINE_ENVIRONMENT. The wrapper applies
+account's profile, optional subscription token and checked adapter configuration in VELDO_ENGINE_ENVIRONMENT. The wrapper applies
 those values after the strip and removes the carrier itself. The receiver's own environment is kept.
 Its baseline event names the dispatch, executable version and digest, strip prefixes and removed
 variable names. It records no variable value.
@@ -20,7 +20,10 @@ committed inventories record the pinned digest, uppercase identifier candidates 
 including ELF string slices for Rust literals that abut without delimiters. This is a conservative
 candidate inventory, not a claim that every uppercase identifier is an environment read. The session
 family extraction is also recorded separately and compared exactly with each shipped qualification.
-The independently listed parent session names are checked against the prefixes and AC4's names.
+The extractor locates Claude Code's child-environment array and unconditional startup assignments by
+content, and decodes Codex's six-entry child-key array from consecutive length-bound stack string
+slices. Every extracted child name must match the prefixes or AC4's names. The suite reruns the
+extractor and compares the whole inventory; substituting the old prefixed hand list fails completeness.
 The Claude record also pins the SDK naming switch, its skipPrefix field, the conditional tool name
 and the MCP prefix text in the binary.
 
@@ -41,36 +44,30 @@ local, so these rows do not access the user service manager. No model or real lo
 | AC1 | refuse/claude, refuse/codex | Removing prefixes or extracted names separately refuses before any engine marker exists. |
 | AC1, AC2 | evidence/qualified | Shipped qualifiers match the pinned inventory and carry the strip; the MCP override is explicitly named. |
 | AC2 | mcp/prefixed-tools | Both configured SDK server tools keep mcp__tracker__ prefixes in the init event. |
+| AC1 | strip/configured, strip/unprefixed | Configured subagent model and CA certificate replace parent values; Git parameters, trace context and Corepack settings are absent. |
+| AC1 | evidence/empty, evidence/completeness, evidence/prefixes | Empty evidence launches, missing and null evidence refuse; extracted child structures are covered; wrapper prefixes equal both baselines. |
+| AC1 | report/removed, report/refused | Restored names are not reported removed; each refused baseline emits one engine_baseline_refused metric increment. |
 | Controls | fixture/extraction, fixture/mcp-control | Inventory offsets are present; the same fake without the wrapper loses the prefix when the override is inherited. |
 
 ## Red record and mutations
 
-red-at-65125030.json runs the current suite over an unchanged git archive of the starting commit.
-All eight behavior rows fail by assertion. Both fixture controls stay green. The suite reports each
-row once and the driver rejects raised exceptions as proof of a behavior failure.
+red-at-65125030.json runs the current suite over an unchanged archive of the original implementation
+base. red-at-fd81afc0.json does the same for the reviewed commit. Failures are assertions, never
+exceptions. Both fixture controls stay green. Rows whose behavior already existed at a base remain
+green there; the red records retain each individual outcome.
 
-Finding 165 registers nine unique mutations. The declared falsifiers are hygiene-listed-names-only
-(using the complete extracted session-name sets), hygiene-codex-strip-unqualified and
-hygiene-mcp-override-kept. The others drop Claude qualification, either extracted-name check, the
-restored own values, the exec strip, or the names-only removal report. mutations.json and the
-individual diffs retain the controls and each named assertion failure. All nine are rejected.
+Finding 165 registers 15 globally unique mutations. In addition to the original nine, these cover
+empty evidence treated as missing for either engine, configured values dropped after the strip,
+unprefixed child names left in the environment, the old hand-list extraction and the refused metric
+not incremented. mutations.json and individual diffs record controls and named assertion failures.
 
-## Validation and remaining restriction
+The VELDO-0062 suite still checks configured login, redirect and provider-switch refusal. Its existing
+non-login-setting row now requires CLAUDE_CODE_MAX_OUTPUT_TOKENS when configured and its absence when
+only inherited, following approval of VELDO-0165 (Telegram 29229). Account-boundary checks retain the
+credential classification contract before the wrapper's broader strip, so that the strip cannot hide
+an account-layer defect from the finding-62 mutations.
 
-The new suite passes 10 rows, and the VELDO-0160 account pool suite passes 33 rows, each both normally
-and in the requested empty gate environment. Each selector also runs the 26 shared preamble rows.
-These are partial selftests and do not constitute a gate pass or landing evidence.
+## Validation
 
-The engine and installed copies are byte-identical. The mutation anchor check, footprint check,
-Git subprocess boundary check and repository validator pass. The byte extractor's check reproduces
-the committed inventories.
-
-The whole selftest and the existing contained-launch, heartbeat, accounts, adapter and baseline suites
-have not been run: they use the real user service manager, which this task expressly forbids touching.
-Clarification was requested; no exception to that restriction has been received. No gate was run.
-The implementation remains ready for those checks and independent review; this is not a completion
-or activation claim.
-
-The footprint adds scripts/drive.py because the requested red command had no repository entry point,
-and the VELDO-0062 and VELDO-0160 suites because their fake Claude qualifications must carry the new
-required evidence. No protected path was changed.
+Validation results are recorded here after the whole selftest and the four requested mutation runs.
+No canonical gate, real model, login or non-loopback network access is part of this review-fix task.

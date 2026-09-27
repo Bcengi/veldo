@@ -7696,7 +7696,8 @@ def cases():
     adapter('adapter-engine-environment-ignored', 'control_launch.py',
             "            environment.update(self.binding['environment'])\n",
             "            pass  # defect: the engine's pinned settings never reach it\n",
-            'lifecycle/normal-run')
+            'lifecycle/normal-run',
+            also=(("        own.update(self.binding['environment'])\n", ""),))
     adapter('adapter-stop-unregistered', 'control_engine_codex.py',
             "        'stop': 'control_launch.Launch.stop: the cooperative stop and its bounded escalation over the containment group',\n",
             "",
@@ -7850,8 +7851,8 @@ def cases():
                 "        if False:  # defect: a run on an API key takes its first turn\n",
                 'paid-api/stop')
     baseline155('claude-strip-agent-left', 'control_launch.py',
-                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')\n",
-                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')  # defect: the agent stays\n",
+                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',\n",
+                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',  # defect: the agent stays\n",
                 'strip/read-back')
     baseline155('claude-runtime-receivers', 'control_launch.py',
                 "    environment['XDG_RUNTIME_DIR'] = runtime\n",
@@ -7875,7 +7876,7 @@ def cases():
                 "            if (not stat_regular(info) or info.st_uid != os.geteuid()  # defect: any mode\n",
                 'paid-api/token-file')
     baseline155('claude-token-not-delivered', 'control_launch.py',
-                "            environment[TOKEN_VARIABLE] = token\n",
+                "            own[TOKEN_VARIABLE] = token\n",
                 "            pass  # defect: the account's token never reaches the engine\n",
                 'paid-api/read-back')
     baseline155('claude-baseline-unqualified-accepted', 'control_engine_claude.py',
@@ -7967,8 +7968,8 @@ def cases():
                 "                      'cli_auth_credentials_store': 'keyring',  # defect: the login from the keyring\n",
                 'paid-api/file-login')
     baseline156('codex-strip-agent-left', 'control_launch.py',
-                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')\n",
-                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')  # defect: the agent stays\n",
+                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',\n",
+                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',  # defect: the agent stays\n",
                 'strip/read-back')
     baseline156('codex-runtime-receivers', 'control_launch.py',
                 "    environment['XDG_RUNTIME_DIR'] = runtime\n",
@@ -8083,7 +8084,7 @@ def cases():
                "", ['strip/unprefixed'], also=(("'TRACEPARENT', ", ""),))
     hygiene165('parent-hand-list', 'extract_environment.py',
                "    parents, structures = parent_environment(engine, data, names)",
-               "    parents, structures = sorted(n for n in names if n.startswith(PREFIXES)), []",
+               "    parents, structures = [n for n in ('CLAUDECODE', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_SESSION_ATTENDED', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_PID', 'CLAUDE_EFFORT', 'AI_AGENT', 'CODEX_THREAD_ID', 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED') if n in names], []",
                ['evidence/completeness'])
     result[-1]['dir'] = 'proof/VELDO-0165'
     hygiene165('refused-not-counted', 'control_launch.py',

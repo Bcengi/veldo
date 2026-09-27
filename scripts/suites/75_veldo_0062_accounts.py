@@ -770,6 +770,23 @@ sys.exit(payload.get('code', 0))
                 values = own.get('values') or {}
                 adapter = 'codex' if account.startswith('acct-x') else 'claude'
                 wanted = CONFIGURED[adapter]['environment']
+                # The account boundary also serves login checks before the exec wrapper.
+                # Keep its credential classification independently proven from binary tables;
+                # the wrapper's broader session strip must not conceal a broken login boundary.
+                login_env, login_error = attempt(lambda: ACC.login_environment(
+                    caller, account_record(account), HOST, L.STRIPPED, wanted, L.CREDENTIALS))
+                login_env = login_env or {}
+                check('login/recorded-account-profile', account + ': account boundary selects the registered profile',
+                      login_error is None and login_env.get(variable) == profiles[account])
+                login_strip = {n for n in caller if n in PROFILE_VARS or n.startswith(FAMILY)
+                               or DECIDED.get(n) in ('strip', 'setting') or n in NINE + REDIRECTS + FAMILIES}
+                check('login/no-paid-api', account + ': account boundary strips logins and settings before wrapper',
+                      login_error is None and all(n not in login_env for n in login_strip - set(wanted) - {variable}))
+                login_keep = {n for n in LISTED if n not in login_strip} | {'CLAUDE_CODE_MAX_OUTPUT_TOKENS'}
+                check('login/no-paid-api', account + ': account boundary distinguishes non-login counts and thresholds',
+                      all(login_env.get(n) == caller[n] for n in login_keep - set(wanted) if n in caller))
+                check('login/configured-environment', account + ': account boundary applies checked configuration',
+                      login_error is None and all(login_env.get(n) == v for n, v in wanted.items()))
                 # A name the adapter configures arrives with the configured value, and the account's own profile
                 # variable with its profile (the rows above), never with the caller's.
                 leaked = sorted(n for n in set(STRIPPED) & names

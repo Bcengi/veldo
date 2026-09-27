@@ -1,31 +1,26 @@
 {
  "by_assertion": true,
- "commit": "6512503076f231b94485421f91dc663ee0a36649",
+ "commit": "fd81afc0538fcda22997b4b0d79171f095b5b57e",
  "details": [
   "VELDO-0165 strip/claude detail: real wrapper spawned one engine and removed every planted name",
   "VELDO-0165 strip/claude detail: removed names and executable identity reported without values",
   "VELDO-0165 strip/codex detail: real wrapper spawned one engine and removed every planted name",
   "VELDO-0165 strip/codex detail: removed names and executable identity reported without values",
-  "VELDO-0165 strip/future-names detail: claude: unlisted future names removed by all four prefixes",
-  "VELDO-0165 strip/future-names detail: codex: unlisted future names removed by all four prefixes",
   "VELDO-0165 strip/own-values detail: claude: account profile and baseline restored after strip",
   "VELDO-0165 strip/own-values detail: codex: account profile and baseline restored after strip",
-  "VELDO-0165 refuse/claude detail: strip_prefixes: refused by name before spawn",
-  "VELDO-0165 refuse/claude detail: session_environment: refused by name before spawn",
-  "VELDO-0165 refuse/claude detail: null_session_environment: refused by name before spawn",
-  "VELDO-0165 refuse/codex detail: strip_prefixes: refused by name before spawn",
-  "VELDO-0165 refuse/codex detail: session_environment: refused by name before spawn",
-  "VELDO-0165 refuse/codex detail: null_session_environment: refused by name before spawn",
-  "VELDO-0165 mcp/prefixed-tools detail: configured SDK server tools retain their names in the init event",
   "VELDO-0165 evidence/qualified detail: claude: qualification carries prefixes, names and pinned digest",
   "VELDO-0165 evidence/qualified detail: codex: qualification carries prefixes, names and pinned digest",
-  "VELDO-0165 evidence/qualified detail: MCP override named explicitly in baseline",
+  "VELDO-0165 strip/configured detail: claude: configured values replace inherited values exactly",
   "VELDO-0165 strip/configured detail: codex: configured values replace inherited values exactly",
   "VELDO-0165 strip/unprefixed detail: claude: parent child settings outside prefixes removed",
   "VELDO-0165 strip/unprefixed detail: codex: parent child settings outside prefixes removed",
+  "VELDO-0165 evidence/empty detail: claude: empty extracted list is present evidence and launches",
+  "VELDO-0165 evidence/empty detail: codex: empty extracted list is present evidence and launches",
   "VELDO-0165 evidence/completeness detail: claude: rerun byte extraction equals inventory and covers child structures",
-  "VELDO-0165 evidence/prefixes detail: claude: wrapper and qualified baseline use identical prefixes",
-  "VELDO-0165 evidence/prefixes detail: codex: wrapper and qualified baseline use identical prefixes",
+  "VELDO-0165 evidence/completeness detail: child array and unconditional startup assignments are extracted",
+  "VELDO-0165 evidence/completeness detail: codex: rerun byte extraction equals inventory and covers child structures",
+  "VELDO-0165 report/removed detail: claude: restored names are not reported removed",
+  "VELDO-0165 report/removed detail: codex: restored names are not reported removed",
   "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
   "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
   "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
@@ -36,29 +31,26 @@
  "failed_rows": [
   "VELDO-0165 strip/claude",
   "VELDO-0165 strip/codex",
-  "VELDO-0165 strip/future-names",
   "VELDO-0165 strip/own-values",
-  "VELDO-0165 refuse/claude",
-  "VELDO-0165 refuse/codex",
-  "VELDO-0165 mcp/prefixed-tools",
   "VELDO-0165 evidence/qualified",
   "VELDO-0165 strip/configured",
   "VELDO-0165 strip/unprefixed",
+  "VELDO-0165 evidence/empty",
   "VELDO-0165 evidence/completeness",
-  "VELDO-0165 evidence/prefixes",
+  "VELDO-0165 report/removed",
   "VELDO-0165 report/refused"
  ],
  "modules": {
   ".veldo/control_engine_claude.py": {
-   "at_commit": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444",
+   "at_commit": "651b0c7faf1e8980d72e12dc64cbccbef11cb402ac9d66f2cb7cedd9a9a162a7",
    "now": "b50e99b038985d7f8f9bee4f83be1a1ee7d178612c3797383f3a3a93c46e1a4f"
   },
   ".veldo/control_engine_codex.py": {
-   "at_commit": "c0d82741b4b40a5141d87c1ee0f28a05a7bc7e4f7e9bf190f54340539492273a",
+   "at_commit": "29261d863a58f647a18428353991368e558e5d085ab285df795e65f3e26a83f2",
    "now": "67522723ca236e992acc850f33a625a674e02568dc9f266d49cf33514b74b150"
   },
   ".veldo/control_launch.py": {
-   "at_commit": "453619ba9d151fbcc47fc1e95d40d4f50615a33e2223e904c981ccd6d68c89d0",
+   "at_commit": "bc4eb59d170b82af984c671d344bba9399a47370c6be7a545b819f5ddff60501",
    "now": "8bf2a63f714e5093f8c939668281982861bcf351e298a70384126c6228767c8b"
   }
  },
@@ -74,7 +66,7 @@
   ],
   [
    "VELDO-0165 strip/future-names",
-   false
+   true
   ],
   [
    "VELDO-0165 strip/own-values",
@@ -82,15 +74,15 @@
   ],
   [
    "VELDO-0165 refuse/claude",
-   false
+   true
   ],
   [
    "VELDO-0165 refuse/codex",
-   false
+   true
   ],
   [
    "VELDO-0165 mcp/prefixed-tools",
-   false
+   true
   ],
   [
    "VELDO-0165 evidence/qualified",
@@ -114,7 +106,7 @@
   ],
   [
    "VELDO-0165 evidence/empty",
-   true
+   false
   ],
   [
    "VELDO-0165 evidence/completeness",
@@ -122,11 +114,11 @@
   ],
   [
    "VELDO-0165 evidence/prefixes",
-   false
+   true
   ],
   [
    "VELDO-0165 report/removed",
-   true
+   false
   ],
   [
    "VELDO-0165 report/refused",
@@ -134,8 +126,8 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 15.811,
+ "seconds": 19.083,
  "spec_id": "VELDO-0165",
  "suite": "scripts/suites/82_veldo_0165_launch_hygiene.py",
- "tree": "git archive 6512503076f231b94485421f91dc663ee0a36649, unchanged; the current suite file run against it"
+ "tree": "git archive fd81afc0538fcda22997b4b0d79171f095b5b57e, unchanged; the current suite file run against it"
 }
