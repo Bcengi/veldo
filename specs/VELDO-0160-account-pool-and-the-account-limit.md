@@ -440,3 +440,6 @@ server and asks by rule 2 with one; probe12's normal general-purpose and Explore
 skip the parent and fork checks independently. Status unchanged.
 The rule 2 row retains exact forwarded-message and last-tool coverage through a fully shown nested Agent record,
 after the full mutation run exposed the assertion lost when the forked Skill moved to rule A.
+Validation of this fix: all 33 suite rows pass, all 134 finding 160 mutations are rejected, the red record at
+52f817d5 has 31 assertion failures and two green fixture rows, format extraction matches, engine copies are
+identical, and repository validation passes. The gate was not run.

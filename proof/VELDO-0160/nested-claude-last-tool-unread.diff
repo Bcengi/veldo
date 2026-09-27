@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -653 +653 @@
+@@ -654 +654 @@
 -        names.append(event.get('last_tool_name'))
 +        pass  # defect: a task's last tool is not read for nested work

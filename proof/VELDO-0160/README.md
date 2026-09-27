@@ -620,3 +620,7 @@ The first full mutation run caught a coverage regression after the forked Skill 
 `nested-progress-dropped` still failed `decision/nested-constructs` but no longer failed its other named row,
 `decision/nested-work-asks`. That row now checks every construct of a fully shown nested Agent record, preserving
 both its forwarded-message and last-tool assertions without relying on a Skill that rule A decides first.
+
+The full finding 160 run with two jobs rejects all 134 mutations after the Skill fork fix. Its complete results
+and summary are retained in `skill-fork-mutations.json` under `registry_check`, with the implementation commit and
+input digests. The older `mutations.json` remains the prior 132-mutation tally round's detailed record.
