@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -571 +571 @@
+-        if os.path.lexists(home / name):
++        if False:  # defect: a profile's own instruction file is taken into the run

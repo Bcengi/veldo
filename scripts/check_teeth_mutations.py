@@ -6494,11 +6494,10 @@ def cases():
             "            return self._spawn(dispatch_id, acceptance, adapter)\n",
             'usage/allowance-states')
     account('account-cap-stop-ignored', 'control_launch.py',
-            "                        if metering is not None and metering.feed(chunk):\n"
-            "                            # VELDO-0062: a cap the CLI's own report reached stops the worker.\n"
-            "                            begin('usage_cap')\n",
-            "                        if metering is not None:\n"
-            "                            metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
+            "            if metering is not None and metering.feed(chunk):\n"
+            "                begin('usage_cap')\n",
+            "            if metering is not None:\n"
+            "                metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
             'usage/cap-stops-worker')
     account('account-rate-window-unchecked', 'control_reservations.py',
             "            for window in ACC.blocking(ACC.read(self.conn, context['account']), now):\n"
@@ -7459,11 +7458,10 @@ def cases():
            "  # defect: the main loop's usage stands in\n",
            'artifact/missing-usage')
     claude('claude-usage-cap-stop-ignored', 'control_launch.py',
-           "                        if metering is not None and metering.feed(chunk):\n"
-           "                            # VELDO-0062: a cap the CLI's own report reached stops the worker.\n"
-           "                            begin('usage_cap')\n",
-           "                        if metering is not None:\n"
-           "                            metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
+           "            if metering is not None and metering.feed(chunk):\n"
+           "                begin('usage_cap')\n",
+           "            if metering is not None:\n"
+           "                metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
            'caps/stop-at-cap')
     # Integration review: a local entrance is run by the receiver's own Python; the wrapper compares resolved
     # paths, so a state root spelled through `..` is still re-hashed; the re-hash names reach the entrance.
@@ -7590,11 +7588,10 @@ def cases():
             "        try:\n",
             'caps/refused-before-launch')
     adapter('adapter-cap-stop-ignored', 'control_launch.py',
-            "                        if metering is not None and metering.feed(chunk):\n"
-            "                            # VELDO-0062: a cap the CLI's own report reached stops the worker.\n"
-            "                            begin('usage_cap')\n",
-            "                        if metering is not None and metering.feed(chunk):\n"
-            "                            pass  # defect: a reached cap does not stop the worker\n",
+            "            if metering is not None and metering.feed(chunk):\n"
+            "                begin('usage_cap')\n",
+            "            if metering is not None and metering.feed(chunk):\n"
+            "                pass  # defect: a reached cap does not stop the worker\n",
             'caps/stop-at-cap')
     adapter('adapter-window-unchecked', 'control_reservations.py',
             "            for window in ACC.blocking(ACC.read(self.conn, context['account']), now):\n"
@@ -7628,6 +7625,234 @@ def cases():
             "        if False:  # defect: an engine module missing a protocol name is driven as if it had it\n"
             "            return 'unregistered_adapter:engine_protocol:%s:%s' % (engine, missing[0])\n",
             'lifecycle/engine-protocol')
+    # VELDO-0155: every Claude Code run on the everything-off baseline, behind the paid-API guard and the
+    # environment strip. Each criterion's declared falsifier first, each on its named row of suite 80. Two AC1
+    # switches keep out nothing of the profile or the clone that the setting-sources restriction does not also
+    # keep out on 2.1.281 (CLAUDE_CODE_DISABLE_CLAUDE_MDS, disableAllHooks): dropping either alone leaves its
+    # planted row green (proof/VELDO-0155/survivors.json), so their mutants are held by the row that reads the
+    # baseline itself.
+    def baseline155(name, module, old, new, row, also=()):
+        add(155, name, '80_veldo_0155_claude_baseline.py', module, old, new, [row], also)
+    OPTIONS155 = "    'options': ['--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands'],\n"
+    baseline155('claude-baseline-sources-kept', 'control_engine_claude.py', OPTIONS155,
+                "    'options': ['--strict-mcp-config', '--disable-slash-commands'],  # defect: every setting source loads\n",
+                'baseline/planted-settings')
+    baseline155('claude-baseline-strict-mcp-dropped', 'control_engine_claude.py', OPTIONS155,
+                "    'options': ['--setting-sources', '', '--disable-slash-commands'],  # defect: no strict MCP\n",
+                'baseline/planted-server')
+    baseline155('claude-baseline-slash-commands-kept', 'control_engine_claude.py', OPTIONS155,
+                "    'options': ['--setting-sources', '', '--strict-mcp-config'],  # defect: every skill loads\n",
+                'baseline/planted-skill')
+    baseline155('claude-baseline-claude-mds-unset', 'control_engine_claude.py',
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},  # defect: instruction files stay on\n",
+                'baseline/qualified')
+    baseline155('claude-baseline-hooks-kept', 'control_engine_claude.py',
+                "    'settings': {'disableAllHooks': True},\n",
+                "    'settings': {},  # defect: hooks stay on\n",
+                'baseline/qualified')
+    baseline155('claude-baseline-auto-memory-kept', 'control_engine_claude.py',
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1'},  # defect: auto memory stays on\n",
+                'baseline/planted-memory')
+    baseline155('claude-paid-api-key-left', 'control_launch.py',
+                "            environment['VELDO_ACCOUNT'] = self.login['account']\n        else:\n",
+                "            environment['VELDO_ACCOUNT'] = self.login['account']\n"
+                "            environment.update({k: v for k, v in os.environ.items() if k == 'ANTHROPIC_API_KEY'})  # defect\n"
+                "        else:\n",
+                'paid-api/read-back')
+    baseline155('claude-paid-api-stop-skipped', 'control_engine_claude.py',
+                "        if key is not None and key != SUBSCRIPTION_SOURCE:\n",
+                "        if False:  # defect: a run on an API key takes its first turn\n",
+                'paid-api/stop')
+    baseline155('claude-strip-agent-left', 'control_launch.py',
+                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')\n",
+                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')  # defect: the agent stays\n",
+                'strip/read-back')
+    baseline155('claude-runtime-receivers', 'control_launch.py',
+                "    environment['XDG_RUNTIME_DIR'] = runtime\n",
+                "    environment.setdefault('XDG_RUNTIME_DIR', runtime)  # defect: the receiver's runtime directory stays\n",
+                'strip/private-runtime-directory')
+    baseline155('claude-runtime-config-directory', 'control_launch.py',
+                "        environment[ENGINE_RUNTIME] = run['runtime']\n",
+                "        environment[ENGINE_RUNTIME] = run['config']  # defect: the runtime is the generated configuration's\n",
+                'strip/private-runtime-directory')
+    baseline155('claude-strip-receiver-side', 'control_launch.py',
+                "        environment[ENGINE_RUNTIME] = run['runtime']\n",
+                "        environment = engine_environment(dict(environment, **{ENGINE_RUNTIME: run['runtime']}))  # defect\n",
+                'strip/user-manager')
+    # The guard's other checks: the Anthropic profile the init cannot show, the token file and its delivery.
+    baseline155('claude-profile-login-unchecked', 'control_engine_claude.py',
+                "    store = _profile_store(environment, cwd)\n    if store is None or not store.is_dir():\n",
+                "    store = _profile_store(environment, cwd)\n    if True:  # defect: the profile store is never read\n",
+                'paid-api/profile-login')
+    baseline155('claude-token-file-unchecked', 'control_launch.py',
+                "            if (not stat_regular(info) or info.st_uid != os.geteuid() or info.st_mode & 0o077\n",
+                "            if (not stat_regular(info) or info.st_uid != os.geteuid()  # defect: any mode\n",
+                'paid-api/token-file')
+    baseline155('claude-token-not-delivered', 'control_launch.py',
+                "            environment[TOKEN_VARIABLE] = token\n",
+                "            pass  # defect: the account's token never reaches the engine\n",
+                'paid-api/read-back')
+    baseline155('claude-baseline-unqualified-accepted', 'control_engine_claude.py',
+                "    if entry.get('baseline') != BASELINE:\n",
+                "    if False:  # defect: a version not qualified with the baseline is accepted\n",
+                'baseline/qualified')
+    # The review of 2026-09-26: the stream JSON input handshake holds the prompt until the initialize answer names
+    # a subscription login, every init event is read, and a relative profile path resolves where the engine
+    # resolves it.
+    baseline155('claude-prompt-before-login-check', 'control_engine_claude.py',
+                "        return (json.dumps(request) + '\\n').encode(), False\n",
+                "        self.confirmed = True  # defect: the prompt is sent before the login is checked\n"
+                "        return (json.dumps(request) + '\\n').encode() + self.release(), False\n",
+                'paid-api/stop')
+    baseline155('claude-backend-unchecked', 'control_engine_claude.py',
+                "        if account.get('apiProvider') != SUBSCRIPTION_PROVIDER:\n",
+                "        if False:  # defect: a cloud backend's login takes its first turn\n",
+                'paid-api/stop')
+    baseline155('claude-token-source-unchecked', 'control_engine_claude.py',
+                "        if token is not None and token != TOKEN_SOURCE:\n",
+                "        if False:  # defect: a bearer token or a key helper's token takes its first turn\n",
+                'paid-api/stop')
+    baseline155('claude-subscription-unchecked', 'control_engine_claude.py',
+                "        if token is None and subscription not in SUBSCRIPTIONS:\n",
+                "        if False:  # defect: a login with no subscription takes its first turn\n",
+                'paid-api/stop')
+    # The check of 2026-09-26: the binary's default label for a tier that is not a subscription, "Claude API",
+    # was accepted as one. The pre-fix check, any label at all.
+    baseline155('claude-subscription-label-unchecked', 'control_engine_claude.py',
+                "        if token is None and subscription not in SUBSCRIPTIONS:\n",
+                "        if token is None and not (isinstance(subscription, str) and subscription):  # defect: any label\n",
+                'paid-api/stop')
+    baseline155('claude-input-protocol-unqualified-accepted', 'control_engine_claude.py',
+                "    if not input_protocol(entry['flags']):\n",
+                "    if False:  # defect: a version without stream JSON input is accepted\n",
+                'paid-api/stop')
+    baseline155('claude-stream-first-init-only', 'control_engine_claude.py',
+                "            if source != SUBSCRIPTION_SOURCE:\n                return self._stopped('apiKeySource', source)\n",
+                "            self.inits = getattr(self, 'inits', 0) + 1  # defect: only the first init event is read\n"
+                "            if source != SUBSCRIPTION_SOURCE and self.inits == 1:\n"
+                "                return self._stopped('apiKeySource', source)\n",
+                'paid-api/every-init')
+    baseline155('claude-profile-relative-receiver-cwd', 'control_engine_claude.py',
+                "    return Path(cwd) / path\n",
+                "    return Path(os.path.abspath(path))  # defect: resolved against the receiver's working directory\n",
+                'paid-api/profile-login')
+    baseline155('claude-engine-cwd-receivers', 'control_launch.py',
+                "        if not entrance(engine):\n            return os.getcwd()\n",
+                "        if True:  # defect: the engine's working directory taken to be the receiver's\n"
+                "            return os.getcwd()\n",
+                'paid-api/profile-login')
+    # VELDO-0156: every Codex run on the everything-off baseline, behind the paid-API guard and the environment
+    # strip, on suite 81. Each criterion's declared falsifier first.
+    def baseline156(name, module, old, new, row, also=()):
+        add(156, name, '81_veldo_0156_codex_baseline.py', module, old, new, [row], also)
+    OPTIONS156 = "    'options': ['--ignore-user-config', '--ignore-rules',\n"
+    baseline156('codex-baseline-user-config-loaded', 'control_engine_codex.py', OPTIONS156,
+                "    'options': ['--ignore-rules',  # defect: the profile's config.toml loads\n",
+                'baseline/planted-user-config')
+    baseline156('codex-baseline-rules-loaded', 'control_engine_codex.py', OPTIONS156,
+                "    'options': ['--ignore-user-config',  # defect: the profile's and the clone's rules load\n",
+                'baseline/planted-rules')
+    baseline156('codex-baseline-project-doc-default', 'control_engine_codex.py',
+                "    'configuration': {'project_doc_max_bytes': 0, 'forced_login_method': 'chatgpt',\n",
+                "    'configuration': {'forced_login_method': 'chatgpt',  # defect: the project document budget at its default\n",
+                'baseline/planted-project-doc')
+    baseline156('codex-baseline-hooks-copied', 'control_engine_codex.py',
+                "    return dict(BASELINE['configuration'])\n",
+                "    import tomllib  # defect: the account profile's hooks copied into the generated configuration\n"
+                "    profile = tomllib.loads(Path((environment or {})['CODEX_HOME'], 'config.toml').read_text())\n"
+                "    return dict(BASELINE['configuration'], hooks=profile['hooks'])\n",
+                'baseline/planted-hook')
+    baseline156('codex-paid-api-key-left', 'control_launch.py',
+                "            environment['VELDO_ACCOUNT'] = self.login['account']\n        else:\n",
+                "            environment['VELDO_ACCOUNT'] = self.login['account']\n"
+                "            environment.update({k: v for k, v in os.environ.items() if k == 'OPENAI_API_KEY'})  # defect\n"
+                "        else:\n",
+                'paid-api/read-back')
+    baseline156('codex-paid-api-stop-skipped', 'control_engine_codex.py',
+                "    return None if kind == 'chatgpt' and done.returncode == 0 else 'paid_api:codex_login:' + kind\n",
+                "    return None  # defect: a run not logged in through ChatGPT takes its first turn\n",
+                'paid-api/stop')
+    baseline156('codex-forced-login-dropped', 'control_engine_codex.py',
+                "    'configuration': {'project_doc_max_bytes': 0, 'forced_login_method': 'chatgpt',\n",
+                "    'configuration': {'project_doc_max_bytes': 0,  # defect: no forced login method\n",
+                'paid-api/engine-refusal')
+    baseline156('codex-credentials-keyring', 'control_engine_codex.py',
+                "                      'cli_auth_credentials_store': 'file',\n",
+                "                      'cli_auth_credentials_store': 'keyring',  # defect: the login from the keyring\n",
+                'paid-api/file-login')
+    baseline156('codex-strip-agent-left', 'control_launch.py',
+                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')\n",
+                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')  # defect: the agent stays\n",
+                'strip/read-back')
+    baseline156('codex-runtime-receivers', 'control_launch.py',
+                "    environment['XDG_RUNTIME_DIR'] = runtime\n",
+                "    environment.setdefault('XDG_RUNTIME_DIR', runtime)  # defect: the receiver's runtime directory stays\n",
+                'strip/private-runtime-directory')
+    baseline156('codex-runtime-config-directory', 'control_launch.py',
+                "        environment[ENGINE_RUNTIME] = run['runtime']\n",
+                "        environment[ENGINE_RUNTIME] = run['config']  # defect: the runtime is the generated configuration's\n",
+                'strip/private-runtime-directory')
+    baseline156('codex-strip-receiver-side', 'control_launch.py',
+                "        environment[ENGINE_RUNTIME] = run['runtime']\n",
+                "        environment = engine_environment(dict(environment, **{ENGINE_RUNTIME: run['runtime']}))  # defect\n",
+                'strip/user-manager')
+    baseline156('codex-baseline-unqualified-accepted', 'control_engine_codex.py',
+                "    if record.get('baseline') != BASELINE:\n",
+                "    if False:  # defect: a binary not qualified with the baseline is accepted\n",
+                'baseline/qualified')
+    # The review of 2026-09-26, from the binary's own offline renderer: the profile's own instruction files load
+    # whatever the baseline says (refused before acceptance), skills load from four places and the bundled set
+    # (skills.include_instructions false), and the login's ChatGPT connectors fail closed (--disable apps).
+    baseline156('codex-profile-instructions-accepted', 'control_engine_codex.py',
+                "        if os.path.lexists(home / name):\n",
+                "        if False:  # defect: a profile's own instruction file is taken into the run\n",
+                'baseline/planted-profile-instructions')
+    baseline156('codex-profile-override-unchecked', 'control_engine_codex.py',
+                "PROFILE_INSTRUCTIONS = ('AGENTS.override.md', 'AGENTS.md')\n",
+                "PROFILE_INSTRUCTIONS = ('AGENTS.md',)  # defect: the profile's AGENTS.override.md is taken in\n",
+                'baseline/planted-profile-instructions')
+    # The skills section switch is a second layer once the bundled set is off and every other place is refused
+    # (the real binary lists nothing then, codex-mentions.json): the qualified-baseline row holds it.
+    baseline156('codex-baseline-skills-listed', 'control_engine_codex.py',
+                "                      'skills.include_instructions': False},\n",
+                "                      },  # defect: the skills section is in the prompt\n",
+                'baseline/qualified')
+    # The check of 2026-09-26 (the real binary's model request on loopback): a skill named in the prompt loads
+    # whatever skills.include_instructions says. The bundled set is turned off; each other place is refused.
+    baseline156('codex-skills-bundled-kept', 'control_engine_codex.py',
+                "                      'skills.bundled.enabled': False,\n",
+                "                      # defect: the bundled skills load when the prompt names one\n",
+                'baseline/planted-skill-bundled')
+    baseline156('codex-skills-profile-accepted', 'control_engine_codex.py',
+                "    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,)) if home is not None else None\n",
+                "    held = None  # defect: a profile's own skill loads when the prompt names it\n",
+                'baseline/planted-skill-profile')
+    baseline156('codex-skills-home-accepted', 'control_engine_codex.py',
+                "HOME_SKILLS = ('.agents/skills',)\n",
+                "HOME_SKILLS = ()  # defect: the engine HOME's skill loads when the prompt names it\n",
+                'baseline/planted-skill-home')
+    baseline156('codex-skills-clone-accepted', 'control_engine_codex.py',
+                "CLONE_SKILLS = ('.agents/skills', '.codex/skills')\n",
+                "CLONE_SKILLS = ('.codex/skills',)  # defect: the clone's .agents skill loads when the prompt names it\n",
+                'baseline/planted-skill-clone')
+    baseline156('codex-skills-clone-codex-accepted', 'control_engine_codex.py',
+                "CLONE_SKILLS = ('.agents/skills', '.codex/skills')\n",
+                "CLONE_SKILLS = ('.agents/skills',)  # defect: the clone's .codex skill loads when the prompt names it\n",
+                'baseline/planted-skill-clone-codex')
+    baseline156('codex-skills-project-root-unread', 'control_engine_codex.py',
+                "            return walk[:at + 1]\n",
+                "            return walk[:1]  # defect: the project root's skills load for an engine below it\n",
+                'baseline/planted-skill-clone')
+    baseline156('codex-baseline-apps-kept', 'control_engine_codex.py',
+                "                '--disable', 'apps'],\n",
+                "                ],  # defect: the login's ChatGPT connectors load\n",
+                'baseline/connectors-off')
+    baseline156('codex-status-login-forced', 'control_engine_codex.py',
+                "    command = [bound['path'], 'login', 'status', '-c',\n",
+                "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
+                'paid-api/stop')
     return result
 
 

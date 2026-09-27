@@ -1,0 +1,7 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -516 +516,3 @@
+-    return dict(BASELINE['configuration'])
++    import tomllib  # defect: the account profile's hooks copied into the generated configuration
++    profile = tomllib.loads(Path((environment or {})['CODEX_HOME'], 'config.toml').read_text())
++    return dict(BASELINE['configuration'], hooks=profile['hooks'])

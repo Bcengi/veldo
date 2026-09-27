@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -613 +613 @@
+-    return None if kind == 'chatgpt' and done.returncode == 0 else 'paid_api:codex_login:' + kind
++    return None  # defect: a run not logged in through ChatGPT takes its first turn

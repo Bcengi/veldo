@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -938 +938 @@
+-            if (not stat_regular(info) or info.st_uid != os.geteuid() or info.st_mode & 0o077
++            if (not stat_regular(info) or info.st_uid != os.geteuid()  # defect: any mode

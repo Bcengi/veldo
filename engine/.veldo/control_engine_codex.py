@@ -13,7 +13,37 @@ endpoints, the login endpoint, client, issuer and token refresh and revocation o
 backend, the model endpoints (OPENAI_BASE_URL, the local provider's), the organization an API key bills
 and CODEX_SQLITE_HOME, the thread state beside CODEX_HOME. An adapter configuring one is refused by
 name; its other CODEX_ settings pass. (Forcing the ChatGPT login method and the file credential store
-are VELDO-0156.)
+are VELDO-0156's, below.)
+
+THE EVERYTHING-OFF BASELINE AND THE PAID-API GUARD, VELDO-0156. The qualification record lists BASELINE
+(`baseline`, which must equal it, else `missing_evidence:engine_baseline:<version>` before acceptance).
+`baseline(binding, run)` is what every run adds right after its qualified flags: `--ignore-user-config`
+and `--ignore-rules`, `--disable apps` (the login's ChatGPT connectors off, failing closed), then the
+generated configuration (`generated`) as `-c` overrides, never anything copied from the account profile:
+`project_doc_max_bytes` 0, `forced_login_method` chatgpt, `cli_auth_credentials_store` file,
+`skills.bundled.enabled` false (the bundled skills the binary installs into the profile's skills/.system
+never load, listed or named) and `skills.include_instructions` false (no skills section in the prompt), and
+no hook; the overrides are also kept, as passed, in the run's own configuration directory (control_launch).
+`profile_problem` is checked before acceptance: the binary reads the account profile's own
+AGENTS.override.md, else its AGENTS.md, into every prompt whatever the baseline says (no switch of 0.154.0
+turns that loader off; proof/VELDO-0156/codex-rendered.json), so a profile holding either is refused by name
+(`invalid_input:engine_profile:<file>`). A skill NAMED in the prompt (`$name`, anywhere in it, a JSON string
+too) has its whole SKILL.md put into the model request whatever `skills.include_instructions` says, from every
+place the binary reads skills: the profile's skills/, HOME/.agents/skills and the clone's .agents/skills and
+.codex/skills, from the engine's working directory up to its project root (the nearest directory holding
+.git; the working directory alone when none does). No switch of 0.154.0 keeps those four out (only a
+per-skill `skills.config` entry does, and the prompt is not ours to scan; proof/VELDO-0156/codex-mentions.json,
+the real binary's model request captured on loopback), and no role lists a skill yet (VELDO-0127), so each
+place holding anything is refused by name before acceptance: `invalid_input:engine_profile:skills/<entry>`
+(the binary's own .system excepted, which the bundled switch keeps out), `invalid_input:engine_home:
+.agents/skills/<entry>` and `invalid_input:engine_clone:<directory>/<entry>`, where a repository that ships
+skills is refused too. The factory prepares profiles and the owner removes the file; nothing is deleted.
+`login_problem` is the paid-API stop before acceptance: the
+pinned binary's own `login status` in the engine's environment must say "Logged in using ChatGPT", and
+any other login (an API key, a token, Bedrock, workload identity, none) is refused by name
+(`paid_api:codex_login:<kind>`); the status check never forces the login method (with it forced the
+binary logs an API-key login out of the profile). With that stop off, the engine itself refuses a login
+other than ChatGPT because of the forced method.
 
 USAGE, FROM THE CLI'S OWN STREAM (`codex exec` with JSON output). Its events are `thread.started`,
 `turn.started`, `turn.completed` (with `usage`), `turn.failed` (with `error.message`), the `item.*`
@@ -117,6 +147,7 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import time
 import zoneinfo
 
@@ -352,7 +383,7 @@ QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualifica
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The stop causes the receiver records (control_launch): an invocation stopped for one is never complete.
-STOPS = ('requested', 'usage_cap', 'heartbeat_missing')
+STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
 PACKAGE = '@openai/codex'
 # The adapter registration (control_launch.ENGINE_PROTOCOL).
 REGISTRATION = {
@@ -427,6 +458,7 @@ def qualification(executable, flags=FLAGS):
     return {'schema': QUALIFICATION_SCHEMA, 'engine': PROVIDER, 'package': PACKAGE, 'package_version': version,
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
+            'baseline': BASELINE,
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',
@@ -469,8 +501,11 @@ def bind(adapter, state_root=None):
     digest = _file_digest(executable)
     if digest != record['sha256']:
         raise Refused('stale_subject:engine_digest')
+    # VELDO-0156: the binary is qualified with the everything-off baseline, or nothing is accepted.
+    base = qualified_baseline(None, record)
     return {'engine': PROVIDER, 'path': executable, 'version': record['version'],
-            'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags'])}
+            'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags']),
+            'baseline': base}
 
 
 def command(bound, adapter):
@@ -481,6 +516,197 @@ def command(bound, adapter):
 def environment(bound):
     """What the engine's environment always carries (DISABLE_AUTOUPDATER)."""
     return dict(ENVIRONMENT)
+
+
+# VELDO-0156: the everything-off baseline and the paid-API guard. Every name is the 0.154.0 binary's own
+# (proof/VELDO-0156/codex-baseline.json, read from its bytes and `exec --help`): `--ignore-user-config` (the
+# account profile's config.toml is not loaded; the login is still CODEX_HOME's) and `--ignore-rules` (no
+# user or project execpolicy rules), then the generated configuration as `-c` overrides: no project
+# document (`project_doc_max_bytes` 0; the binary's own default is 32768), the ChatGPT login forced
+# (`forced_login_method`, one of chatgpt and api) and the credentials read from the profile's file
+# (`cli_auth_credentials_store`, one of file, keyring and ephemeral). No hook is generated. Observed with the
+# binary's own offline renderer (`debug prompt-input`, proof/VELDO-0156/codex-rendered.json): skills load from
+# CODEX_HOME/skills (with the bundled set the binary installs into its .system), HOME/.agents/skills and the
+# clone's .agents/skills and .codex/skills, and `skills.include_instructions` false takes the whole skills
+# section out; `--disable apps` (`-c features.apps=false`, its help says) turns the apps feature, the login's
+# ChatGPT connectors, off, as its own `features list` shows. Captured on loopback (the real binary's model
+# request, proof/VELDO-0156/codex-mentions.json): a skill named in the prompt loads its SKILL.md whatever
+# `skills.include_instructions` says; `skills.bundled.enabled` false keeps the bundled set out, named or not.
+BASELINE = {
+    'options': ['--ignore-user-config', '--ignore-rules',
+                '--disable', 'apps'],
+    'configuration': {'project_doc_max_bytes': 0, 'forced_login_method': 'chatgpt',
+                      'cli_auth_credentials_store': 'file',
+                      'skills.bundled.enabled': False,
+                      'skills.include_instructions': False},
+}
+GENERATED_FILE = 'config.toml'
+# The account profile's own instruction files the binary reads into every prompt (its codex-home loader,
+# AGENTS.override.md first), which nothing in the baseline can turn off: a profile holding one is refused.
+PROFILE_INSTRUCTIONS = ('AGENTS.override.md', 'AGENTS.md')
+# The places the binary reads a skill named in the prompt from, which no switch of the baseline keeps out: the
+# profile's (its own bundled .system excepted, kept out by `skills.bundled.enabled`), the engine HOME's and the
+# clone's, in the working directory and each directory above it up to the project root (PROJECT_MARKER).
+PROFILE_SKILLS, BUNDLED_SKILLS = 'skills', '.system'
+HOME_SKILLS = ('.agents/skills',)
+CLONE_SKILLS = ('.agents/skills', '.codex/skills')
+PROJECT_MARKER = '.git'
+# What `codex login status` prints for each login (the binary's own messages); only the first is a ChatGPT
+# login. The status check reads the file store and never forces the login method: with it forced the
+# binary logs an API-key login out of the profile, which the check must not do.
+LOGIN_STATUS = (('Logged in using ChatGPT', 'chatgpt'), ('Logged in using an API key - ', 'api_key'),
+                ('Logged in using access token', 'access_token'),
+                ('Logged in using personal access token', 'personal_access_token'),
+                ('Logged in using Amazon Bedrock API key', 'bedrock_api_key'),
+                ('Logged in using Amazon Bedrock AWS access keys', 'bedrock_aws_keys'),
+                ('Logged in using workload identity', 'workload_identity'), ('Not logged in', 'not_logged_in'))
+LOGIN_SECONDS = 30
+
+
+def _toml(value):
+    """A TOML value for a `-c key=value` override: a string, a whole number, a boolean, a list or a table."""
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, str):
+        return json.dumps(value)
+    if isinstance(value, (list, tuple)):
+        return '[' + ', '.join(_toml(v) for v in value) + ']'
+    if isinstance(value, dict):
+        return '{' + ', '.join('%s = %s' % (json.dumps(str(k)), _toml(v)) for k, v in sorted(value.items())) + '}'
+    raise Refused('invalid_input:generated_configuration')
+
+
+def qualified_baseline(bound, record=None):
+    """The baseline the qualification record lists, which must be this module's BASELINE: a binary not
+    qualified with it is refused by name before anything is accepted or spawned."""
+    record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
+    if record.get('baseline') != BASELINE:
+        raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
+    return BASELINE
+
+
+def generated(environment=None):
+    """The run's generated configuration: the baseline's, and nothing of the account profile's."""
+    return dict(BASELINE['configuration'])
+
+
+def baseline(bound, run, environment=None, record=None):
+    """{argv, environment, files}: what the run adds right after its qualified flags; the generated
+    configuration is passed as `-c` overrides and kept, as passed, in the run's `config` directory."""
+    base = bound.get('baseline') if record is None else qualified_baseline(bound, record)
+    if base != BASELINE:
+        raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
+    configuration = generated(environment)
+    argv = list(base['options'])
+    for key in sorted(configuration):
+        argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]
+    text = ''.join('%s = %s\n' % (key, _toml(configuration[key])) for key in sorted(configuration))
+    return {'argv': argv, 'environment': {}, 'files': {GENERATED_FILE: text.encode()}}
+
+
+def _codex_home(environment, cwd=None):
+    """The account profile the engine reads, as the binary resolves it: CODEX_HOME, else HOME/.codex; a
+    relative one against the engine's working directory `cwd` (the receiver's own when it is unknown)."""
+    given = environment.get('CODEX_HOME')
+    home = Path(given) if given else (Path(environment['HOME']) / '.codex' if environment.get('HOME') else None)
+    return Path(cwd) / home if home is not None and cwd is not None and not home.is_absolute() else home
+
+
+def _held(directory, skip=()):
+    """The first entry of a skill place, or None when it holds nothing (absent, or not a directory); a place
+    that cannot be listed holds something unknown and is named itself."""
+    try:
+        entries = sorted(set(os.listdir(directory)) - set(skip))
+    except (FileNotFoundError, NotADirectoryError):
+        return None
+    except OSError:
+        return '.'
+    return entries[0] if entries else None
+
+
+def _project(cwd):
+    """The directories whose skill places the binary reads for a working directory: it and each one above it
+    up to the nearest holding PROJECT_MARKER; the working directory alone when none does."""
+    walk = [Path(cwd)] + list(Path(cwd).parents)
+    for at, directory in enumerate(walk):
+        if os.path.lexists(directory / PROJECT_MARKER):
+            return walk[:at + 1]
+    return walk[:1]
+
+
+def profile_problem(bound, environment, cwd=None):
+    """VELDO-0156 AC1, before anything is accepted: what the binary puts in front of the model whatever the
+    baseline says, refused by name: the account profile's own AGENTS.override.md or AGENTS.md, then any skill of
+    the profile (its bundled .system excepted), of the engine HOME's .agents and of the clone around the
+    engine's working directory `cwd` (not known for another host's engine, whose own receiver checks it). None
+    when there is none."""
+    home = _codex_home(environment, cwd)
+    for name in PROFILE_INSTRUCTIONS if home is not None else ():
+        if os.path.lexists(home / name):
+            return 'invalid_input:engine_profile:' + name
+    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,)) if home is not None else None
+    if held is not None:
+        return 'invalid_input:engine_profile:%s/%s' % (PROFILE_SKILLS, held)
+    user = environment.get('HOME')
+    user = (Path(cwd) / user if cwd is not None and not Path(user).is_absolute() else Path(user)) if user else None
+    for place in HOME_SKILLS if user is not None else ():
+        held = _held(user / place)
+        if held is not None:
+            return 'invalid_input:engine_home:%s/%s' % (place, held)
+    for directory in _project(cwd) if cwd is not None else ():
+        for place in CLONE_SKILLS:
+            held = _held(directory / place)
+            if held is not None:
+                return 'invalid_input:engine_clone:%s/%s' % (os.path.relpath(directory / place, cwd), held)
+    return None
+
+
+def login_status(text):
+    """The login a `codex login status` output names (LOGIN_STATUS, each a whole line of its own, the API
+    key's followed by the key's masked form), or `unknown`."""
+    for line in text.splitlines():
+        for message, kind in LOGIN_STATUS:
+            if line.strip() == message or (message.endswith(' - ') and line.startswith(message)):
+                return kind
+    return 'unknown'
+
+
+def login_problem(bound, environment, cwd=None):
+    """VELDO-0156 AC3, before anything is accepted: the pinned binary's own `login status` in the engine's
+    environment (its CODEX_HOME, the file credentials store) and working directory `cwd` (THE ENGINE
+    PROTOCOL; the receiver's own when unknown) must be a ChatGPT login; anything else is refused by name
+    (`paid_api:codex_login:<kind>`) and no turn is ever sent."""
+    command = [bound['path'], 'login', 'status', '-c',
+               'cli_auth_credentials_store=' + _toml(BASELINE['configuration']['cli_auth_credentials_store'])]
+    try:
+        done = subprocess.run(command, capture_output=True, text=True, timeout=LOGIN_SECONDS, env=dict(environment),
+                              stdin=subprocess.DEVNULL, errors='replace', cwd=cwd)
+    except (OSError, subprocess.SubprocessError):
+        return 'paid_api:codex_login:unreadable'
+    kind = login_status(done.stdout + '\n' + done.stderr)
+    return None if kind == 'chatgpt' and done.returncode == 0 else 'paid_api:codex_login:' + kind
+
+
+class Guard:
+    """The stream side of the paid-API guard (the same protocol as Claude Code's): Codex's exec stream
+    names no login, so its guard is `login_problem` before acceptance and the engine's own forced login
+    method; nothing on the stream stops a run, and the prompt is written whole at once (`opening`, with the
+    engine's input closed after it; nothing is held for `release`)."""
+
+    def __init__(self):
+        self.source = None
+        self.stop = None
+
+    def opening(self, prompt):
+        return bytes(prompt), True
+
+    def release(self):
+        return None
+
+    def feed(self, chunk):
+        return None
 
 
 def _malformed(event):

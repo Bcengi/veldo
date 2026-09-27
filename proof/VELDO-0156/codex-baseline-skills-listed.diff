@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -465 +465 @@
+-                      'skills.include_instructions': False},
++                      },  # defect: the skills section is in the prompt

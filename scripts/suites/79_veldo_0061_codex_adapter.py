@@ -244,7 +244,11 @@ end = time.monotonic() + 60
 while time.monotonic() < end:
     time.sleep(0.05)
 ''')
-        fake = ('#!%s -B\n' % sys.executable) + common + '''markers = sys.argv[-1]
+        fake = ('#!%s -B\n' % sys.executable) + common + '''if sys.argv[1:3] == ['login', 'status']:
+    # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
+    print('Logged in using ChatGPT')
+    sys.exit(0)
+markers = sys.argv[-1]
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 tag = dispatch.rsplit('/', 1)[-1]
 raw = sys.stdin.buffer.read()
@@ -300,6 +304,9 @@ sys.exit(payload.get('code', 0))
         if written is not None:
             qualification_path.write_text(json.dumps(written))
         FLAGS = list(getattr(X, 'FLAGS', ('exec', '--json')))
+        # VELDO-0156: the everything-off baseline the receiver adds right after the flags (none before it).
+        BASELINE_ARGV = (X.baseline({'baseline': X.BASELINE}, {'config': '/none', 'runtime': '/none'})['argv']
+                         if hasattr(X, 'BASELINE') else [])
         # The perturbed executables: the qualified package with one byte changed after qualification, a newer
         # version of it, a link to the qualified binary, and the package manager's own `codex` link.
         CHANGED = package('changed', extra=b'#')
@@ -530,7 +537,18 @@ sys.exit(payload.get('code', 0))
             runs['limit'] = ('acct-x2', submit('acct-x2', units['limit'], 'codex', [
                 thread('thread-9612'), {'type': 'turn.started'}, {'type': 'error', 'message': LIMIT},
                 {'type': 'turn.failed', 'error': {'message': LIMIT}}], code=1))
-            runs['real'] = ('acct-real', submit('acct-real', units['real'], 'codex-real'))
+            # The actual binary runs on this run's empty profile, which no login is in: VELDO-0156's login check
+            # before acceptance would refuse it (VELDO-0156's own suite drives that check), so while this one
+            # launch is received the installed Codex module lets any login through, and is restored after.
+            installed_codex = (mods / 'control_engine_codex.py').read_bytes()
+            if hasattr(X, 'login_problem'):
+                with open(mods / 'control_engine_codex.py', 'ab') as handle:
+                    handle.write(b'\n\ndef login_problem(bound, environment, cwd=None):  # this launch lets any login through\n'
+                                 b'    return None\n')
+            try:
+                runs['real'] = ('acct-real', submit('acct-real', units['real'], 'codex-real'))
+            finally:
+                (mods / 'control_engine_codex.py').write_bytes(installed_codex)
             # The floor's control: a unit whose one build ran to its completion.
             runs['floor'] = ('acct-x1', submit('acct-x1', units['floor'], 'codex', normal('thread-9625')))
             for name, adapter_name in (('changed', 'codex-changed'), ('newer', 'codex-newer'), ('link', 'codex-link'),
@@ -671,7 +689,7 @@ sys.exit(payload.get('code', 0))
                   and env.get('VELDO_CLONE') == str(work))
             check('lifecycle/normal-run', 'it was the pinned vendor binary with the qualified flags, the update check '
                   'off, as configured [%s]' % engine.get('argv'),
-                  engine.get('argv') == [str(GOOD)] + FLAGS + [str(markers)]
+                  engine.get('argv') == [str(GOOD)] + FLAGS + BASELINE_ARGV + [str(markers)]
                   and engine.get('argv', [None])[1:5] == ['exec', '--json', '-c', 'check_for_update_on_startup=false'])
             check('lifecycle/normal-run', 'the engine inherits neither name of the exec-time re-hash',
                   not {'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'} & set(env))
@@ -700,8 +718,8 @@ sys.exit(payload.get('code', 0))
                                     env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'LANG': 'C.UTF-8', 'COLUMNS': '100',
                                          'CODEX_HOME': str(base / 'direct-codex-home')})
             check('lifecycle/actual-binary', 'the installed Codex 0.154.0 vendor binary, pinned by the installed '
-                  'qualification, was launched through the trusted runner in its clone and exited 0 [%s %s]'
-                  % (history(launch), termination),
+                  'qualification, was launched through the trusted runner in its clone and exited 0 [%s %s %s]'
+                  % (history(launch), termination, record.get('refusal')),
                   history(launch) == ['prepared', 'accepted', 'running', 'exited'] and termination.get('returncode') == 0
                   and spawns(launch) == 1)
             check('lifecycle/actual-binary', 'what it printed is what that binary prints for the same arguments, byte '
@@ -942,7 +960,8 @@ sys.exit(payload.get('code', 0))
         with region('lifecycle/engine-protocol'):
             protocol = tuple(getattr(L, 'ENGINE_PROTOCOL', ()) or ())
             check('lifecycle/engine-protocol', 'control: both installed engine modules implement every protocol name '
-                  '[%s]' % (protocol,), len(protocol) == 10
+                  '[%s]' % (protocol,), {'PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind',
+                                          'command', 'environment', 'Terminal'} <= set(protocol)
                   and all(hasattr(m, n) for m in getattr(L, 'ENGINES', {}).values() for n in protocol))
             for name, missing in (('protocol-registration', 'REGISTRATION'), ('protocol-terminal', 'Terminal')):
                 launch = get(name)

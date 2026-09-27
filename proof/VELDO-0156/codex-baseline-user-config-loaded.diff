@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -460 +460 @@
+-    'options': ['--ignore-user-config', '--ignore-rules',
++    'options': ['--ignore-rules',  # defect: the profile's config.toml loads

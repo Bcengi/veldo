@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -688 +688 @@
+-        if token is not None and token != TOKEN_SOURCE:
++        if False:  # defect: a bearer token or a key helper's token takes its first turn

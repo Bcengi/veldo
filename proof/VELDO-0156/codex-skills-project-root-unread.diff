@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -559 +559 @@
+-            return walk[:at + 1]
++            return walk[:1]  # defect: the project root's skills load for an engine below it

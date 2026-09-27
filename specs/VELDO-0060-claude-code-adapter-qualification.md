@@ -263,3 +263,18 @@ clone entrance only, never to an engine. Proof: suite `78_veldo_0060_claude_adap
 `pin/entrance-interpreter` and `pin/rehash-dot-dot` (34 rows); mutations
 `claude-entrance-interpreter-unchecked`, `claude-wrapper-path-unresolved` and
 `claude-wrapper-entrance-unforwarded`; the red record at b39a0fdc regenerated. Status unchanged.
+
+2026-09-26, by VELDO-0155 AC3 (branch build-veldo-0155-0156, the review of 18644a43): the qualified
+command line of 2.1.281 gains `--input-format stream-json` (the binary accepts it only with stream JSON
+output in print mode), and a version whose record lacks it is refused by name before acceptance
+(`missing_evidence:engine_input_protocol:<version>`). The dispatch packet no longer reaches the engine as a
+text prompt: the receiver writes the initialize control request first and the packet, as the user message
+of stream JSON input, only once the binary's answer names a subscription login (VELDO-0155). This changes
+files in this specification's footprint: the shipped and installed qualification records (flags, `input`,
+`note`), `control_launch.py` (the receiver's one output path, the held prompt) and suite
+`78_veldo_0060_claude_adapter`, whose fake now speaks stream JSON input from the binary's own schema
+(proof/VELDO-0155/claude-baseline.json, `input_protocol`), whose test record carries the input flags, and
+whose argv, shipped-record and stream line-count rows (`format/fake-argv`, `pin/shipped-qualification`,
+`artifact/complete`, `artifact/malformed-output`: the initialize answer is the stream's first line) check
+it. Finding 60's `claude-usage-cap-stop-ignored` is anchored on the receiver's one output path. Suite 78
+34 rows green; finding 60 rejects all 35 mutations. Criterion meaning unchanged; status unchanged.

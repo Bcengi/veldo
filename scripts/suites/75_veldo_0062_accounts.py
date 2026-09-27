@@ -292,6 +292,10 @@ def _v62_suite():
         fake = '''#!%s -B
 import json, os, sqlite3, sys, time
 from pathlib import Path
+if sys.argv[1:3] == ['login', 'status']:
+    # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
+    print('Logged in using ChatGPT')
+    sys.exit(0)
 store, markers, domain = sys.argv[-3], Path(sys.argv[-2]), sys.argv[-1]
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 key = 'reservation:invocation:' + json.dumps([domain, 'invocation/' + dispatch], separators=(',', ':'))
@@ -308,10 +312,37 @@ own = {'engine': Path(sys.argv[0]).name, 'pid': os.getpid(), 'dispatch': dispatc
        'values': dict(os.environ)}
 (markers / ('%%d.tmp' %% os.getpid())).write_text(json.dumps(own))
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
-raw = sys.stdin.buffer.read()
-packet = json.loads(raw) if raw.strip() else {}
-payload = packet.get('payload') or {}
 out = open(markers / ('%%d.out' %% os.getpid()), 'w')
+def say(event):
+    text = json.dumps(event)
+    out.write(text + chr(10))
+    out.flush()
+    sys.stdout.write(text + chr(10))
+    sys.stdout.flush()
+def stream_input():
+    # VELDO-0155: stream JSON input (--input-format stream-json) as the 2.1.281 binary reads it: the initialize
+    # control request is answered with the login (the binary's Kfe()), the user message's content is the
+    # prompt; without it the whole input is the prompt.
+    at = sys.argv.index('--input-format') if '--input-format' in sys.argv else -1
+    if at < 0 or sys.argv[at + 1:at + 2] != ['stream-json']:
+        raw = sys.stdin.buffer.read()
+        return json.loads(raw) if raw.strip() else {}
+    while True:
+        line = sys.stdin.buffer.readline()
+        if not line:
+            return {}
+        message = json.loads(line)
+        if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
+            token = bool(os.environ.get('CLAUDE_CODE_OAUTH_TOKEN'))
+            account = dict({'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} if token else {'subscriptionType': 'Claude Max'},
+                           apiProvider='firstParty')
+            say({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
+                                                          'response': {'account': account, 'pid': os.getpid()}}})
+        elif message.get('type') == 'user':
+            content = (message.get('message') or {}).get('content')
+            return json.loads(content) if isinstance(content, str) and content.strip() else {}
+packet = stream_input()
+payload = packet.get('payload') or {}
 for step in payload.get('script') or []:
     if 'line' in step:
         text = json.dumps(step['line'])
@@ -342,8 +373,11 @@ sys.exit(payload.get('code', 0))
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps({
             'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {'2.1.281': {
                 'sha256': 'sha256:' + hashlib.sha256((versions / '2.1.281').read_bytes()).hexdigest(),
-                'flags': ['--print', '--output-format', 'stream-json', '--verbose'],
-                'environment': {'DISABLE_AUTOUPDATER': '1'}}}}))
+                'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
+                'environment': {'DISABLE_AUTOUPDATER': '1'},
+                # VELDO-0155: the version is qualified with the everything-off baseline.
+                **({'baseline': L.ENGINES['claude_code'].BASELINE}
+                   if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'BASELINE') else {})}}}))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)

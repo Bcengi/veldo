@@ -1,0 +1,234 @@
+{
+ "binary": "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+ "configuration": {
+  "cli_auth_credentials_store": {
+   "anchors": [
+    {
+     "count": 5,
+     "text": "cli_auth_credentials_store = \"file\""
+    },
+    {
+     "count": 4,
+     "text": "AuthCredentialsStoreModekeyringephemeral"
+    }
+   ],
+   "default": "file",
+   "value": "file",
+   "values": [
+    "file",
+    "keyring",
+    "ephemeral"
+   ]
+  },
+  "forced_login_method": {
+   "anchors": [
+    {
+     "count": 3,
+     "text": "ForcedLoginMethodchatgptapi"
+    }
+   ],
+   "default": null,
+   "value": "chatgpt",
+   "values": [
+    "chatgpt",
+    "api"
+   ]
+  },
+  "project_doc_max_bytes": {
+   "anchors": [
+    {
+     "count": 5,
+     "text": "project_doc_max_bytes = 32768"
+    },
+    {
+     "count": 5,
+     "text": "project doc exceeds remaining budget; truncating"
+    }
+   ],
+   "default": 32768,
+   "value": 0
+  },
+  "skills.bundled.enabled": {
+   "anchors": [
+    {
+     "count": 4,
+     "text": "BundledSkillsConfigSkillConfigSkillsConfigbundledinclude_instructions"
+    },
+    {
+     "count": 1,
+     "text": "# Image Generation Skill"
+    }
+   ],
+   "default": true,
+   "value": false
+  },
+  "skills.include_instructions": {
+   "anchors": [
+    {
+     "count": 11,
+     "text": "bundledinclude_instructionsmax_context_tokensconfig"
+    },
+    {
+     "count": 8,
+     "text": "<skills_instructions>"
+    }
+   ],
+   "default": true,
+   "value": false
+  }
+ },
+ "engine_refusal": {
+  "count": 1,
+  "text": "ChatGPT login is required, but an API key is currently being used. Logging out."
+ },
+ "features": {
+  "apps": {
+   "anchors": [
+    {
+     "count": 2,
+     "text": "ChatGPT connectors require Codex backend auth"
+    }
+   ],
+   "default": true,
+   "value": false
+  }
+ },
+ "gates": {
+  "bundled_skills": {
+   "kept_out_by": [
+    "skills.bundled.enabled"
+   ],
+   "where": "the bundled skills the binary installs into the profile skills/.system, listed or named in the prompt"
+  },
+  "connectors": {
+   "kept_out_by": [
+    "disable_apps"
+   ],
+   "where": "the login's ChatGPT connectors (the apps feature)"
+  },
+  "hooks": {
+   "kept_out_by": [
+    "ignore_user_config",
+    "generated_without_hooks"
+   ],
+   "where": "hooks in the profile config.toml"
+  },
+  "named_skills": {
+   "kept_out_by": [],
+   "refused": "invalid_input:engine_profile:skills/<entry>, invalid_input:engine_home:.agents/skills/<entry>, invalid_input:engine_clone:<place>/<entry>",
+   "where": "a skill named in the prompt ($name) from the profile skills/, HOME/.agents/skills, the clone .agents/skills and .codex/skills, from the working directory up to its project root"
+  },
+  "profile_instructions": {
+   "kept_out_by": [],
+   "refused": "invalid_input:engine_profile:<file>",
+   "where": "the profile AGENTS.override.md, else AGENTS.md"
+  },
+  "project_doc": {
+   "kept_out_by": [
+    "project_doc_max_bytes"
+   ],
+   "where": "the clone AGENTS.md"
+  },
+  "rules": {
+   "kept_out_by": [
+    "ignore_rules"
+   ],
+   "where": "the profile rules/*.rules and the clone .codex/rules/*.rules"
+  },
+  "skills": {
+   "kept_out_by": [
+    "skills.include_instructions"
+   ],
+   "where": "the skills section listing every skill of the profile skills/ (and the bundled skills the binary installs into its .system), HOME/.agents/skills, the clone .agents/skills and .codex/skills"
+  },
+  "user_config": {
+   "kept_out_by": [
+    "ignore_user_config"
+   ],
+   "where": "the profile config.toml"
+  }
+ },
+ "hook_events": {
+  "count": 7,
+  "text": "pre_tool_usepermission_requestpost_tool_usepre_compactpost_compactsession_startsession_end"
+ },
+ "login_status": [
+  {
+   "count": 1,
+   "text": "Not logged in\n"
+  },
+  {
+   "count": 1,
+   "text": "Logged in using ChatGPT\n"
+  },
+  {
+   "count": 1,
+   "text": "Logged in using an API key - "
+  },
+  {
+   "count": 1,
+   "text": "Logged in using access token\n"
+  },
+  {
+   "count": 1,
+   "text": "Logged in using personal access token\n"
+  },
+  {
+   "count": 1,
+   "text": "Logged in using Amazon Bedrock API key\n"
+  },
+  {
+   "count": 1,
+   "text": "Logged in using Amazon Bedrock AWS access keys\n"
+  },
+  {
+   "count": 1,
+   "text": "Logged in using workload identity\n"
+  }
+ ],
+ "observed": [
+  "the binary's own offline renderer (render_offline.py, codex-rendered.json): the profile AGENTS.override.md, else AGENTS.md, is in the prompt under the baseline and no switch removes it; skills.include_instructions false removes every skill; --disable apps turns the apps feature off",
+  "the binary's own model request captured on loopback (capture_mentions.py, codex-mentions.json): a skill named in the prompt loads its SKILL.md whatever skills.include_instructions says, from the profile, HOME/.agents and the clone under every switch tried; skills.bundled.enabled false keeps the bundled set out",
+  "hooks.json beside a configuration layer (the review's app-server hooks/list, 2026-09-26): the profile's is discovered untrusted, its trust lives in the profile config.toml, which --ignore-user-config does not load"
+ ],
+ "options": {
+  "--disable": {
+   "count": 1,
+   "text": "Disable a feature (repeatable). Equivalent to `-c features.<name>=false`"
+  },
+  "--ignore-rules": {
+   "count": 1,
+   "text": "ignore_rulesIGNORE_RULESDo not load user or project execpolicy `.rules` filesignore-rules"
+  },
+  "--ignore-user-config": {
+   "count": 1,
+   "text": "ignore_user_configIGNORE_USER_CONFIGDo not load `$CODEX_HOME/config.toml`; auth still uses `CODEX_HOME`ignore-user-config"
+  },
+  "-c": {
+   "count": 2,
+   "text": "Override a configuration value that would otherwise be loaded from `~/.codex/config.toml`"
+  }
+ },
+ "profile_instructions": {
+  "anchors": [
+   {
+    "count": 1,
+    "text": "codex-home/src/instructions/mod.rs"
+   },
+   {
+    "count": 1,
+    "text": "Failed to read global AGENTS.md instructions from `"
+   },
+   {
+    "count": 2,
+    "text": "AGENTS.override.mdAGENTS.md"
+   }
+  ],
+  "files": [
+   "AGENTS.override.md",
+   "AGENTS.md"
+  ]
+ },
+ "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "version": "0.154.0"
+}

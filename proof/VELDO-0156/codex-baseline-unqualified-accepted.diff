@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -509 +509 @@
+-    if record.get('baseline') != BASELINE:
++    if False:  # defect: a binary not qualified with the baseline is accepted

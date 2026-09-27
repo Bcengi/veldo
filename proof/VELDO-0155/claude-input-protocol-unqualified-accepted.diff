@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -455 +455 @@
+-    if not input_protocol(entry['flags']):
++    if False:  # defect: a version without stream JSON input is accepted

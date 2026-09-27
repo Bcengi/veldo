@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -481 +481 @@
+-    'options': ['--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands'],
++    'options': ['--strict-mcp-config', '--disable-slash-commands'],  # defect: every setting source loads

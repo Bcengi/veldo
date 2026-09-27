@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -476 +476 @@
+-CLONE_SKILLS = ('.agents/skills', '.codex/skills')
++CLONE_SKILLS = ('.agents/skills',)  # defect: the clone's .codex skill loads when the prompt names it

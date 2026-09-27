@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -981 +981 @@
+-            environment[TOKEN_VARIABLE] = token
++            pass  # defect: the account's token never reaches the engine

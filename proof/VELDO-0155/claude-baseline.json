@@ -1,0 +1,381 @@
+{
+ "api_key_sources": [
+  "ANTHROPIC_API_KEY",
+  "apiKeyHelper",
+  "/login managed key",
+  "none",
+  "user",
+  "project",
+  "org",
+  "temporary",
+  "oauth"
+ ],
+ "binary": "/home/dmitry/.local/share/claude/versions/2.1.281",
+ "bundled_skills": [
+  "artifact-components",
+  "batch",
+  "claude-api",
+  "claude-in-chrome",
+  "debug",
+  "design-sync",
+  "explain-usage",
+  "keybindings-help",
+  "run",
+  "run-skill-generator",
+  "update-config"
+ ],
+ "gates": {
+  "hooks_profile": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "let t=Un();if(t.disableAllHooks===!0)return o?.hooks??{};return t.hooks??{}"
+    }
+   ],
+   "kept_out_by": [
+    "setting_sources",
+    "disable_all_hooks"
+   ],
+   "where": "hooks in the profile settings.json and the clone .claude/settings.json"
+  },
+  "instructions_profile": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "Pe=pr(\"userSettings\"),Le=we(),De=$8(\"User\")"
+    },
+    {
+     "count": 1,
+     "text": "We=pw(\"projectSettings\"),st=pw(\"localSettings\")"
+    }
+   ],
+   "kept_out_by": [
+    "setting_sources",
+    "disable_claude_mds"
+   ],
+   "where": "the profile CLAUDE.md (user) and the clone CLAUDE.md (project)"
+  },
+  "mcp_claudeai": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "function HZe(){return!VI()&&!d2e()&&!uo()}"
+    },
+    {
+     "count": 1,
+     "text": "let di=Ze&&!oe&&HZe()?jbe(w)"
+    }
+   ],
+   "kept_out_by": [
+    "strict_mcp_config"
+   ],
+   "where": "the claude.ai connectors of the account profile's login"
+  },
+  "mcp_profile": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "let r={project:\"projectSettings\",user:\"userSettings\",local:\"localSettings\"};if(e in r&&!(e===\"local\"?f5e():pr(r[e])))return{servers:OP(),errors:[]};"
+    }
+   ],
+   "kept_out_by": [
+    "setting_sources",
+    "strict_mcp_config"
+   ],
+   "where": "the profile .claude.json mcpServers (user scope) and the clone .mcp.json (project scope)"
+  },
+  "memory": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "function By(){if(Ar())return\"off\";if(gC())return\"off\";"
+    }
+   ],
+   "kept_out_by": [
+    "disable_auto_memory"
+   ],
+   "where": "the profile projects/<project>/memory/MEMORY.md (auto memory)"
+  },
+  "settings": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "function pr(e){return us().includes(e)}"
+    }
+   ],
+   "kept_out_by": [
+    "setting_sources"
+   ],
+   "where": "the profile settings.json (user source) and the clone .claude/settings.json and settings.local.json (project and local sources)"
+  },
+  "skill_bundled": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "Ce=this.disableSlashCommands?this.noCommands:"
+    }
+   ],
+   "kept_out_by": [
+    "disable_slash_commands"
+   ],
+   "where": "the skills the binary bundles"
+  },
+  "skill_profile": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "pr(\"userSettings\")&&!_?NP(r,\"userSettings\",\"skills\",n)"
+    }
+   ],
+   "kept_out_by": [
+    "setting_sources",
+    "disable_slash_commands"
+   ],
+   "where": "the profile skills/ (user source) and the clone .claude/skills/ (project source)"
+  }
+ },
+ "input_protocol": {
+  "account": {
+   "count": 1,
+   "text": "account:{email:ie?.email,organization:ie?.organization,subscriptionType:ie?.subscription,tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}"
+  },
+  "account_key": {
+   "count": 1,
+   "text": "let{key:s,source:g}=Yf();if(s)r.apiKeySource=g;"
+  },
+  "account_login": {
+   "count": 1,
+   "text": "function Kfe(){if(He()!==\"firstParty\")return;let{source:n}=Mc(),r={};"
+  },
+  "account_token": {
+   "count": 1,
+   "text": "if(n===\"CLAUDE_CODE_OAUTH_TOKEN\"||n===\"CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR\")r.tokenSource=n;else if(pt())r.subscription=wBn();else if(n!==\"profile\")r.tokenSource=n;"
+  },
+  "answer": {
+   "count": 1,
+   "text": "ie=Kfe(),z=g().toolPermissionContext.mode"
+  },
+  "answered": {
+   "count": 1,
+   "text": "s.enqueue({type:\"control_response\",response:{subtype:\"success\",request_id:r,response:Pe,"
+  },
+  "control_request": {
+   "count": 1,
+   "text": "Ax=f(()=>Yo(\"type\",[d({type:R(\"control_request\"),request_id:o(),request:kx()}),O1n(),M1n()]))"
+  },
+  "control_response": {
+   "count": 1,
+   "text": "O1n=f(()=>d({type:R(\"control_response\"),response:Fe([_Y(),mY()])})"
+  },
+  "error": {
+   "count": 1,
+   "text": "mY=f(()=>d({subtype:R(\"error\"),request_id:o()"
+  },
+  "flags": [
+   "--input-format",
+   "stream-json"
+  ],
+  "initialize": {
+   "count": 1,
+   "text": "ssn=f(()=>d({subtype:R(\"initialize\"),hooks:me(GR(),C(nF())).optional()"
+  },
+  "providers": {
+   "count": 1,
+   "subscription": "firstParty",
+   "text": "apiProvider:z([\"firstParty\",\"bedrock\",\"vertex\",\"foundry\",\"anthropicAws\",\"anthropicGoogleCloud\",\"mantle\",\"gateway\"])",
+   "values": [
+    "firstParty",
+    "bedrock",
+    "vertex",
+    "foundry",
+    "anthropicAws",
+    "anthropicGoogleCloud",
+    "mantle",
+    "gateway"
+   ]
+  },
+  "requires": {
+   "count": 1,
+   "text": "if(me===\"stream-json\"&&ze!==\"stream-json\")return Yt(\"Error: --input-format=stream-json requires output-format=stream-json.\");if(me===\"stream-json\"&&!Te())return Yt(\"Error: --input-format=stream-json requires --print.\");"
+  },
+  "subscriptions": {
+   "count": 1,
+   "text": "function wBn(){switch(tr()){case\"enterprise\":return\"Claude Enterprise\";case\"team\":return\"Claude Team\";case\"max\":return\"Claude Max\";case\"pro\":return\"Claude Pro\";default:return\"Claude API\"}}",
+   "values": [
+    "Claude Enterprise",
+    "Claude Team",
+    "Claude Max",
+    "Claude Pro",
+    "Claude API"
+   ]
+  },
+  "success": {
+   "count": 1,
+   "text": "_Y=f(()=>d({subtype:R(\"success\"),request_id:o()"
+  },
+  "token_sources": {
+   "count": 1,
+   "subscription_token": "CLAUDE_CODE_OAUTH_TOKEN",
+   "text": "function Mc(){if(uo()){if(D_())return{source:\"apiKeyHelper\",hasToken:!0};return{source:\"none\",hasToken:!1}}if(hH()&&!_Ht())return{source:\"ANTHROPIC_AUTH_TOKEN\",hasToken:!0};if(a.CLAUDE_CODE_OAUTH_TOKEN)return{source:\"CLAUDE_CODE_OAUTH_TOKEN\",hasToken:!0};if(OI()){if(q4(\"CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR\"))return{source:\"CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR\",hasToken:!0};return{source:\"CCR_OAUTH_TOKEN_FILE\",hasToken:!0}}if(D_()&&!In())return{source:\"apiKeyHelper\",hasToken:!0};if(Oc())return{source:\"profile\",hasToken:!0};let r=un();if(_N(r?.scopes)&&r?.accessToken)return{source:\"claude.ai\",hasToken:!0};return{source:\"none\",hasToken:!1}}",
+   "values": [
+    "apiKeyHelper",
+    "none",
+    "ANTHROPIC_AUTH_TOKEN",
+    "CLAUDE_CODE_OAUTH_TOKEN",
+    "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",
+    "CCR_OAUTH_TOKEN_FILE",
+    "claude.ai"
+   ]
+  },
+  "user": {
+   "count": 1,
+   "text": "XR=f(()=>d({type:R(\"user\"),message:J0(),parent_tool_use_id:o().nullable()"
+  }
+ },
+ "not_used": {
+  "--bare": {
+   "count": 2,
+   "text": "Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read)"
+  },
+  "--safe-mode": {
+   "count": 4,
+   "text": "claude.ai connectors are not loaded in this Claude Code session (safe mode)"
+  }
+ },
+ "options": {
+  "--disable-slash-commands": {
+   "count": 1,
+   "text": ".option(\"--disable-slash-commands\",\"Disable all skills\",()=>!0)"
+  },
+  "--mcp-config": {
+   "count": 1,
+   "text": "\"--mcp-config <configs...>\""
+  },
+  "--setting-sources": {
+   "count": 2,
+   "text": ".option(\"--setting-sources <sources>\",\"Comma-separated list of setting sources to load (user, project, local).\")"
+  },
+  "--settings": {
+   "count": 2,
+   "text": "\"--settings <file-or-json>\""
+  },
+  "--strict-mcp-config": {
+   "count": 1,
+   "text": ".option(\"--strict-mcp-config\",\"Only use MCP servers from --mcp-config, ignoring all other MCP configurations\",()=>!0)"
+  }
+ },
+ "profile": {
+  "init_source": {
+   "count": 1,
+   "text": "function zrn(){return Yf().source}"
+  },
+  "no_key": {
+   "count": 1,
+   "text": "let g=pBn();if(g)return g;return{key:null,source:\"none\"}"
+  },
+  "precedence": {
+   "count": 1,
+   "text": "if(Oc())return{source:\"profile\",hasToken:!0};let r=un();if(_N(r?.scopes)&&r?.accessToken)return{source:\"claude.ai\",hasToken:!0}"
+  },
+  "store": {
+   "count": 1,
+   "text": "let n=e.XDG_CONFIG_HOME?.trim();if(n)return{dir:g(n,\"anthropic\"),space:\"home\"};let s=e.HOME?.trim();return s?{dir:g(s,\".config\",\"anthropic\"),space:\"home\"}:null"
+  },
+  "types": {
+   "count": 1,
+   "text": "if(n===\"oidc_federation\"||n===\"user_oauth\")return\"profile-implicit\"",
+   "values": [
+    "user_oauth",
+    "oidc_federation"
+   ]
+  }
+ },
+ "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+ "switches": {
+  "disable_all_hooks": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "let t=Un();if(t.disableAllHooks===!0)return o?.hooks??{};return t.hooks??{}"
+    }
+   ],
+   "kind": "setting",
+   "name": "disableAllHooks",
+   "value": true
+  },
+  "disable_auto_memory": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "let e=process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY;if(Oe(e))return\"off\";"
+    },
+    {
+     "count": 1,
+     "text": "if(Va()){if(n={auto:Qs()}"
+    }
+   ],
+   "kind": "environment",
+   "name": "CLAUDE_CODE_DISABLE_AUTO_MEMORY",
+   "value": "1"
+  },
+  "disable_claude_mds": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "function aH(){return Boolean(a.CLAUDE_CODE_DISABLE_CLAUDE_MDS||"
+    },
+    {
+     "count": 1,
+     "text": "async function set(e,n,r){if(a.CLAUDE_CODE_DISABLE_CLAUDE_MDS)return[];"
+    }
+   ],
+   "kind": "environment",
+   "name": "CLAUDE_CODE_DISABLE_CLAUDE_MDS",
+   "value": "1"
+  },
+  "disable_slash_commands": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "Ce=this.disableSlashCommands?this.noCommands:"
+    }
+   ],
+   "kind": "option",
+   "name": "--disable-slash-commands"
+  },
+  "setting_sources": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "function KIr(e){if(e===\"\")return[];"
+    },
+    {
+     "count": 1,
+     "text": "function d$n(){let r=vD(\"--setting-sources\");if(r!==void 0)g(r);"
+    },
+    {
+     "count": 1,
+     "text": "let t=new Set(e);t.add(\"flagSettings\"),t.add(\"policySettings\");"
+    }
+   ],
+   "kind": "option",
+   "name": "--setting-sources",
+   "value": ""
+  },
+  "strict_mcp_config": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "ns=(wt||uo()||Vn()?Promise.resolve({servers:{}}):wO("
+    },
+    {
+     "count": 1,
+     "text": "function HZe(){return!VI()&&!d2e()&&!uo()}"
+    }
+   ],
+   "kind": "option",
+   "name": "--strict-mcp-config"
+  }
+ },
+ "version": "2.1.281"
+}

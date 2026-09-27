@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -587 +587 @@
+-    if store is None or not store.is_dir():
++    if True:  # defect: the profile store is never read

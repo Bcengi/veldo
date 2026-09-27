@@ -57,6 +57,8 @@ def _v60_suite():
     TREE = Path(globals().get('__suite_file__', str(ROOT / 'scripts' / 'suites' / 'x.py'))).resolve().parents[2]
     FORMATS = json.loads((TREE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())['claude_code']
     OPTIONS = json.loads((TREE / 'proof' / 'VELDO-0060' / 'cli-options.json').read_text())['claude_code']
+    # VELDO-0155: the stream JSON input protocol, read from the same binary's bytes.
+    INPUT = json.loads((TREE / 'proof' / 'VELDO-0155' / 'claude-baseline.json').read_text())['input_protocol']
     VERSION = '2.1.281'
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
@@ -246,6 +248,10 @@ def _v60_suite():
         fake = '''#!%(python)s -B
 import json, os, signal, sqlite3, subprocess, sys, time
 from pathlib import Path
+if sys.argv[1:3] == ['login', 'status']:
+    # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
+    print('Logged in using ChatGPT')
+    sys.exit(0)
 store, markers, domain = %(store)r, Path(%(markers)r), %(domain)r
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 key = 'reservation:invocation:' + json.dumps([domain, 'invocation/' + dispatch], separators=(',', ':'))
@@ -267,10 +273,34 @@ own = {'pid': os.getpid(), 'start': start(os.getpid()), 'sid': os.getsid(0), 'pg
        'names': sorted(os.environ)}
 (markers / ('%%d.tmp' %% os.getpid())).write_text(json.dumps(own))
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
-raw = sys.stdin.buffer.read()
-packet = json.loads(raw) if raw.strip() else {}
-payload = packet.get('payload') or {}
 out = open(markers / ('%%d.out' %% os.getpid()), 'wb')
+def stream_input():
+    # VELDO-0155: stream JSON input (--input-format stream-json) as the 2.1.281 binary reads it: the initialize
+    # control request is answered with the login (the binary's Kfe(), a claude.ai subscription here), the user
+    # message's content is the prompt; without it the whole input is the prompt.
+    at = sys.argv.index('--input-format') if '--input-format' in sys.argv else -1
+    if at < 0 or sys.argv[at + 1:at + 2] != ['stream-json']:
+        raw = sys.stdin.buffer.read()
+        return json.loads(raw) if raw.strip() else {}
+    while True:
+        line = sys.stdin.buffer.readline()
+        if not line:
+            return {}
+        message = json.loads(line)
+        if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
+            answer = {'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
+                      'response': {'account': {'subscriptionType': 'Claude Max', 'apiProvider': 'firstParty'},
+                                   'pid': os.getpid()}}}
+            data = (json.dumps(answer) + chr(10)).encode()
+            out.write(data)
+            out.flush()
+            sys.stdout.buffer.write(data)
+            sys.stdout.flush()
+        elif message.get('type') == 'user':
+            content = (message.get('message') or {}).get('content')
+            return json.loads(content) if isinstance(content, str) and content.strip() else {}
+packet = stream_input()
+payload = packet.get('payload') or {}
 children = []
 for step in payload.get('script') or []:
     if 'line' in step or 'raw' in step:
@@ -325,10 +355,14 @@ sys.exit(payload.get('code', 0))
         # never from the production record (the shipped record is checked on its own row).
         errors = FORMATS['events']['result/error']['fields']['subtype']['values']
         test_record = {'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {
-            VERSION: {'sha256': FAKE_SHA, 'flags': ['--print', '--output-format', 'stream-json', '--verbose'],
+            VERSION: {'sha256': FAKE_SHA, 'flags': ['--print', '--output-format', 'stream-json', '--verbose',
+                                                    '--input-format', 'stream-json'],
                       'environment': {'DISABLE_AUTOUPDATER': '1'},
                       'terminal_protocol': {'output': 'stream-json', 'terminal_event': 'result',
                                             'success_subtype': 'success', 'error_subtypes': errors}}}}
+        if getattr(E, 'BASELINE', None) is not None:
+            # VELDO-0155: the version is qualified with the everything-off baseline.
+            test_record['versions'][VERSION]['baseline'] = E.BASELINE
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
         QUALIFIED = test_record['versions'][VERSION]
@@ -569,6 +603,20 @@ sys.exit(payload.get('code', 0))
             fields = stat[stat.rindex(')') + 2:].split()
             return fields[19] == start and fields[0] != 'Z'
 
+        def with_baseline(args, flags, module):
+            """The qualified flags, then exactly the everything-off baseline the engine module generates
+            (VELDO-0155, VELDO-0156) for the run whose configuration directory the argv names; nothing
+            after the flags for a module without one."""
+            base = getattr(module, 'BASELINE', None)
+            if list(args[:len(flags)]) != list(flags):
+                return False
+            if base is None:
+                return list(args[len(flags):]) == []
+            config = next((str(Path(a).parent) for a in args if a.endswith('/config/settings.json')), '/none')
+            expected, _ = attempt(lambda: module.baseline({'baseline': base, 'version': VERSION},
+                                                          {'config': config, 'runtime': '/none'})['argv'])
+            return expected is not None and list(args[len(flags):]) == list(expected)
+
         def nothing_ran(dispatch_id):
             return not engine_markers(dispatch_id) and not spawned(dispatch_id) and not invocation(dispatch_id)
 
@@ -659,7 +707,7 @@ sys.exit(payload.get('code', 0))
                   and (info.st_mode & 0o170000) == 0o100000 and file_sha(pinned) == QUALIFIED['sha256'] == FAKE_SHA
                   and str(pinned) != str(versions / VERSION) and str(factory) in str(pinned))
             check('lifecycle/pinned-launch', 'its arguments are exactly the version\'s qualified flags [%s]' % argv[1:],
-                  argv[1:] == QUALIFIED['flags'])
+                  with_baseline(argv[1:], QUALIFIED['flags'], E))
             check('lifecycle/pinned-launch', 'its environment turns the updater off and carries the recorded account\'s '
                   'profile [%s, %s]' % (env.get('DISABLE_AUTOUPDATER'), env.get('CLAUDE_CONFIG_DIR')),
                   env.get('DISABLE_AUTOUPDATER') == '1' and env.get('CLAUDE_CONFIG_DIR') == profiles['acct-60a'])
@@ -691,15 +739,19 @@ sys.exit(payload.get('code', 0))
             result_line = next((line for line in lines if json.loads(line).get('type') == 'result'), None)
             termination = record.get('termination') or {}
             call = invocation(launch.dispatch_id)
+            answer = json.loads(lines[0]) if lines else {}
             check('artifact/complete', 'a zero exit with its result: the artifact is complete, its terminal record '
-                  'the result the engine printed, bound to its line and the receiver\'s own output digest [%s, %s]'
+                  'the result the engine printed, bound to its line and the receiver\'s own output digest, the stream '
+                  'the initialize answer and then the three scripted lines [%s, %s]'
                   % (artifact.get('verdict'), artifact.get('problems')),
                   artifact.get('verdict') == 'complete' and artifact.get('complete') is True
                   and (artifact.get('terminal') or {}).get('subtype') == 'success'
                   and (artifact.get('terminal') or {}).get('result_digest') == sha(normal_run['text'].encode())
                   and result_line is not None and artifact.get('terminal_receipt') == sha(result_line)
                   and (artifact.get('stream') or {}).get('output_digest') == termination.get('output_digest')
-                  and (artifact.get('stream') or {}).get('lines') == len(lines) == 3)
+                  and (artifact.get('stream') or {}).get('lines') == len(lines) == 4
+                  and answer.get('type') == 'control_response'
+                  and (answer.get('response') or {}).get('subtype') == 'success')
             check('artifact/complete', 'its terminal record\'s tokens are the result\'s modelUsage total [%s]'
                   % (artifact.get('terminal') or {}).get('tokens'), (artifact.get('terminal') or {}).get('tokens') == 5)
             check('artifact/complete', 'the artifact is kept 0600 in the artifacts directory, the same one the runner was '
@@ -827,11 +879,15 @@ sys.exit(payload.get('code', 0))
             flags = entry.get('flags') or []
             declared = OPTIONS['options']
             check('pin/shipped-qualification', 'its flags are the binary\'s own: each an option of the main command, '
-                  'the output format one of its choices, stream JSON with print mode carrying verbose, and the updater '
+                  'the output format one of its choices, stream JSON with print mode carrying verbose, stream JSON input '
+                  '(VELDO-0155), which the binary takes only with stream JSON output in print mode, and the updater '
                   'switch one the binary reads [%s]' % flags,
                   flags == QUALIFIED['flags'] and all(f in declared for f in flags if f.startswith('-'))
                   and flags[flags.index('--output-format') + 1] in declared['--output-format']['choices']
                   and '--print' in flags and '--verbose' in flags
+                  and '--input-format' in flags and flags[flags.index('--input-format'):][:2] == INPUT['flags']
+                  and INPUT['flags'][1] in declared['--input-format']['choices']
+                  and 'requires --print' in INPUT['requires']['text'] and flags[flags.index('--output-format') + 1] == 'stream-json'
                   and set(entry.get('environment') or {}) == {'DISABLE_AUTOUPDATER'} <= set(OPTIONS['environment']))
             rate = FORMATS['events']['rate_limit_event']['fields']['rate_limit_info']['fields']['rateLimitType']['values']
             check('pin/shipped-qualification', 'its terminal protocol, login and reported windows are the binary\'s '
@@ -904,12 +960,13 @@ sys.exit(payload.get('code', 0))
                 script = [c_init(), bad, c_msg('m-%s' % name, 2, 2), c_result(2, 2, 1)]
                 launch, record, artifact, call = artifact_of('acct-60a', 'malformed-' + name, script)
                 check('artifact/malformed-output', '%s line in an otherwise complete stream with a zero exit: the '
-                      'artifact is malformed_output, one of four lines, the result still decoded [%s, %s]'
+                      'artifact is malformed_output, one of five lines (the initialize answer first), the result still decoded '
+                      '[%s, %s]'
                       % (name, artifact.get('verdict'), artifact.get('stream')),
                       record.get('state') == 'exited' and artifact.get('verdict') == 'malformed_output'
                       and artifact.get('problems') == ['malformed_output']
                       and (artifact.get('stream') or {}).get('malformed') == 1
-                      and (artifact.get('stream') or {}).get('lines') == 4
+                      and (artifact.get('stream') or {}).get('lines') == 5
                       and (artifact.get('terminal') or {}).get('subtype') == 'success'
                       and call.get('outcome') == 'failed')
 
@@ -1234,7 +1291,9 @@ sys.exit(payload.get('code', 0))
                 env = own.get('env') or {}
                 check('contained/pinned-exec', '%s: the process the dispatch recorded is the pinned executable, exec\'d '
                       'with exactly its qualified flags, the qualified digest on disk [%s]' % (engine, own.get('argv')),
-                      own.get('argv') == [case['exe']] + list(case['flags']) and process.get('start') == own.get('start')
+                      (own.get('argv') or [None])[:1] == [case['exe']]
+                      and with_baseline(own['argv'][1:], list(case['flags']), E if engine == 'claude' else X)
+                      and process.get('start') == own.get('start')
                       and file_sha(case['exe']) == case['sha256'] and case['sha256'])
                 check('contained/pinned-exec', '%s: with the updater off and the recorded account\'s own profile [%s]'
                       % (engine, env.get('DISABLE_AUTOUPDATER')),
@@ -1515,10 +1574,18 @@ sys.exit(payload.get('code', 0))
                         n += 1
             needs = OPTIONS['requires']['--output-format=stream-json']
             unmet = [a for a in argvs if 'stream-json' in a and needs['with'] in a and needs['needs'] not in a]
+            # VELDO-0155: stream JSON input only with stream JSON output in print mode (the binary refuses it else).
+            for a in argvs:
+                given = a[a.index('--input-format'):][:2] if '--input-format' in a else None
+                output = a[a.index('--output-format') + 1:][:1] if '--output-format' in a else None
+                if given != INPUT['flags'] or '--print' not in a or output != ['stream-json']:
+                    unmet.append(a)
             check('format/fake-argv', 'the fake was started %d times, each only with options the binary\'s main '
-                  'command declares, values among their choices, and stream JSON in print mode with verbose [%s, %s]'
+                  'command declares, values among their choices, stream JSON in print mode with verbose, and stream '
+                  'JSON input with them [%s, %s]'
                   % (len(argvs), undeclared[:3], unmet[:1]),
-                  len(argvs) >= 15 and not undeclared and not unmet and all(a == QUALIFIED['flags'] for a in argvs))
+                  len(argvs) >= 15 and not undeclared and not unmet
+                  and all(with_baseline(a, QUALIFIED['flags'], E) for a in argvs))
     except Exception as exc:  # noqa: BLE001 - recorded against every row, never raised past the suite
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)

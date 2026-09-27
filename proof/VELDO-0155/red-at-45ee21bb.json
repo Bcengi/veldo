@@ -1,0 +1,163 @@
+{
+ "by_assertion": true,
+ "commit": "45ee21bb5ca803c400dfc9feb4cce77fff58664d",
+ "details": [
+  "VELDO-0155 baseline/qualified detail: the run started from the pinned copy with the qualified flags and then exactly the baseline, every option one the binary declares: no setting source, the run's --settings and --mcp-config files, strict MCP and slash commands off [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json']]",
+  "VELDO-0155 baseline/qualified detail: the generated files are the run's own: its settings turn every hook off and its MCP configuration lists no server; both instruction files and auto memory are off by the binary's own switches [{'settings': None, 'mcp': None}, None, None]",
+  "VELDO-0155 baseline/qualified detail: the shipped 2.1.281 record qualifies the version with the module's baseline, every switch in it one the binary's own table reads [[]]",
+  "VELDO-0155 baseline/qualified detail: a version whose record does not list the baseline is refused by name before acceptance, nothing spawned [None]",
+  "VELDO-0155 baseline/planted-settings detail: no settings file of the profile or the clone loaded: only the run's own (user, project and local sources off), and the planted output style is not the run's [['/run/user/1000/v155-wkejms_9/helper/accounts/profiles/acct-155a/settings.json', '/run/user/1000/v155-wkejms_9/state/clones/clone-686f4c32f0c0475ca4e4733609113b62/work/.claude/settings.json', '/run/user/1000/v155-wkejms_9/state/clones/clone-686f4c32f0c0475ca4e4733609113b62/work/.claude/settings.local.json'], None]",
+  "VELDO-0155 baseline/planted-server detail: no MCP server of the profile, the clone or the login's claude.ai connectors is in the init event's list, which holds exactly the run's (none) [None]",
+  "VELDO-0155 baseline/planted-skill detail: no skill of the profile or the clone, and none the binary bundles, is in the init event's skills or slash commands [[]]",
+  "VELDO-0155 baseline/planted-instructions detail: no instruction file of the profile or the clone loaded, per the debug log [['/run/user/1000/v155-wkejms_9/helper/accounts/profiles/acct-155a/CLAUDE.md', '/run/user/1000/v155-wkejms_9/state/clones/clone-686f4c32f0c0475ca4e4733609113b62/work/CLAUDE.md']]",
+  "VELDO-0155 baseline/planted-memory detail: auto memory is off: the init event names no memory directory and the planted MEMORY.md did not load [None, ['/run/user/1000/v155-wkejms_9/helper/accounts/profiles/acct-155a/projects/-run-user-1000-v155-wkejms-9-state-clones-clone-686f4c32f0c0475ca4e4733609113b62-work/memory/MEMORY.md']]",
+  "VELDO-0155 baseline/planted-hook detail: no hook of the profile or the clone registered, per the debug log [[['user', '/run/user/1000/v155-wkejms_9/helper/accounts/profiles/acct-155a/settings.json', {'SessionStart': [{'hooks': [{'type': 'command', 'command': 'echo v155-profile-hook'}]}]}], ['project', '/run/user/1000/v155-wkejms_9/state/clones/clone-686f4c32f0c0475ca4e4733609113b62/work/.claude/settings.json', {'SessionStart': [{'hooks': [{'type': 'command', 'command': 'echo v155-clone-hook'}]}]}]]]",
+  "VELDO-0155 paid-api/read-back detail: the account configured with a subscription token ran with that account's own token as CLAUDE_CODE_OAUTH_TOKEN, never the caller's, and with no other of the planted names [[]]",
+  "VELDO-0155 paid-api/read-back detail: the receiver reported the names it removed, never a value: every planted name for the plain account, the token account's token named as configured [[]]",
+  "VELDO-0155 paid-api/token-file detail: an account whose token file anybody can read is refused by name before acceptance, nothing spawned or reserved [None]",
+  "VELDO-0155 paid-api/stop detail: apiKeySource:ANTHROPIC_API_KEY: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiKeySource:apiKeyHelper: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiKeySource:/login managed key: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiKeySource:user: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiKeySource:project: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiKeySource:org: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiKeySource:temporary: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiKeySource:oauth: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiProvider:bedrock: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiProvider:vertex: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiProvider:foundry: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiProvider:anthropicAws: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiProvider:anthropicGoogleCloud: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiProvider:mantle: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: apiProvider:gateway: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: tokenSource:apiKeyHelper: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: tokenSource:none: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: tokenSource:ANTHROPIC_AUTH_TOKEN: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: tokenSource:CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: tokenSource:CCR_OAUTH_TOKEN_FILE: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: tokenSource:claude.ai: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: profile: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: subscriptionType:Claude API: the run whose initialize answer names it is stopped by name before any prompt is written, no init and no model turn: stopped for its login, the invocation cancelled [None, None, [], 0]",
+  "VELDO-0155 paid-api/stop detail: the answer naming Claude Enterprise confirms the login and releases the prompt [AttributeError]",
+  "VELDO-0155 paid-api/stop detail: the answer naming Claude Team confirms the login and releases the prompt [AttributeError]",
+  "VELDO-0155 paid-api/stop detail: the answer naming Claude Max confirms the login and releases the prompt [AttributeError]",
+  "VELDO-0155 paid-api/stop detail: the answer naming Claude Pro confirms the login and releases the prompt [AttributeError]",
+  "VELDO-0155 paid-api/stop detail: subscription: the initialize request first, its answer confirming the login, then the dispatch packet as the prompt; the run whose init event reports none takes its first turn and completes [[], None, missing_result]",
+  "VELDO-0155 paid-api/stop detail: subscription token: the initialize request first, its answer confirming the login, then the dispatch packet as the prompt; the run whose init event reports none takes its first turn and completes [[], None, missing_result]",
+  "VELDO-0155 paid-api/stop detail: a version whose record does not qualify stream JSON input is refused by name before acceptance, nothing spawned [None]",
+  "VELDO-0155 paid-api/every-init detail: a run confirmed on its login whose second init event names an API key is stopped by name before that turn: one turn taken, the invocation cancelled [[], 0, None]",
+  "VELDO-0155 paid-api/profile-login detail: user_oauth: an Anthropic profile the engine environment reaches (HOME, resolved where the engine resolves it) is refused by name before acceptance, nothing spawned or reserved [None]",
+  "VELDO-0155 paid-api/profile-login detail: oidc_federation: an Anthropic profile the engine environment reaches (XDG_CONFIG_HOME, resolved where the engine resolves it) is refused by name before acceptance, nothing spawned or reserved [None]",
+  "VELDO-0155 paid-api/profile-login detail: relative XDG_CONFIG_HOME: an Anthropic profile the engine environment reaches (XDG_CONFIG_HOME relative, resolved where the engine resolves it) is refused by name before acceptance, nothing spawned or reserved [None]",
+  "VELDO-0155 paid-api/profile-login detail: relative credentials_path: an Anthropic profile the engine environment reaches (HOME, credentials relative, resolved where the engine resolves it) is refused by name before acceptance, nothing spawned or reserved [None]",
+  "VELDO-0155 strip/read-back detail: planted in the receiver's environment, the SSH agent, the session bus and the Git tokens are absent from the engine's [['DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN', 'SSH_AGENT_PID', 'SSH_AUTH_SOCK']]",
+  "VELDO-0155 strip/read-back detail: the receiver reported them removed [[]]",
+  "VELDO-0155 strip/private-runtime-directory detail: the engine's XDG_RUNTIME_DIR is an empty directory of the run's own, 0700 and this account's, the one the receiver reported [{'path': '/run/user/1000', 'dir': True, 'entries': ['.mutter-Xwaylandauth.RVDYU3', 'ICEauthority', 'at-spi', 'bus', 'cc-socks', 'dbus-1', 'dconf', 'doc', 'gcr', 'gdm', 'gnome-remote-desktop', 'gnome-session-leader-fifo', 'gnome-shell', 'gnupg', 'gvfs', 'gvfsd', 'keyring', 'pipewire-0', 'pipewire-0-manager', 'pipewire-0-manager.lock', 'pipewire-0.lock', 'pk-debconf-socket', 'pulse', 'snap.firmware-updater', 'snap.snapd-desktop-integration', 'snapd-session-agent.socket', 'speech-dispatcher', 'systemd', 'update-notifier.pid', 'v155-wkejms_9', 'v41-3620g9ot', 'v41-3tztv8t1', 'v41-9xihkn6s', 'v41-ck7dx98f', 'v41-uqv754j9', 'v60-98hcahje', 'v60-cykfye_1', 'v60-pil3jmkw', 'wayland-0', 'wayland-0.lock'], 'mode': 448, 'uid': 1000}]",
+  "VELDO-0155 strip/private-runtime-directory detail: never the receiver's runtime directory, never the directory holding the run's generated configuration nor one above it [/run/user/1000, /run/user/1000, /none]",
+  "VELDO-0155 strip/private-runtime-directory detail: each run has its own, removed with the run [/run/user/1000, /run/user/1000, {'normal': False, 'second': False}]",
+  "VELDO-0155 strip/user-manager detail: the receiver kept the session bus its own systemd-run and systemctl use: the run was created in its own transient scope in this run's slice, the engine inside it, and systemctl read the scope's result once it was empty, while the engine had no session bus [{'unit': 'veldo-dispatch-680c73412a9d3aef058a6b4930398566.scope', 'slice': 'v155f5b10542.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v155f5b10542.slice/veldo-dispatch-680c73412a9d3aef058a6b4930398566.scope'}, success]"
+ ],
+ "failed_rows": [
+  "VELDO-0155 baseline/qualified",
+  "VELDO-0155 baseline/planted-settings",
+  "VELDO-0155 baseline/planted-server",
+  "VELDO-0155 baseline/planted-skill",
+  "VELDO-0155 baseline/planted-instructions",
+  "VELDO-0155 baseline/planted-memory",
+  "VELDO-0155 baseline/planted-hook",
+  "VELDO-0155 paid-api/read-back",
+  "VELDO-0155 paid-api/token-file",
+  "VELDO-0155 paid-api/stop",
+  "VELDO-0155 paid-api/every-init",
+  "VELDO-0155 paid-api/profile-login",
+  "VELDO-0155 strip/read-back",
+  "VELDO-0155 strip/private-runtime-directory",
+  "VELDO-0155 strip/user-manager"
+ ],
+ "modules": {
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "a32d1791339c7253a4307e03843a2fc365c7f57aee5ef18c940104b827de2229",
+   "now": "c3e8485375116e3d16b124dc67de05e176c8959b2596e5d8275d7b49a12fdf2a"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "b0bb4c68f8a957d6523ce73e047296adf53e77782d18098af1335c7de5d30356",
+   "now": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0155 baseline/qualified",
+   false
+  ],
+  [
+   "VELDO-0155 baseline/planted-settings",
+   false
+  ],
+  [
+   "VELDO-0155 baseline/planted-server",
+   false
+  ],
+  [
+   "VELDO-0155 baseline/planted-skill",
+   false
+  ],
+  [
+   "VELDO-0155 baseline/planted-instructions",
+   false
+  ],
+  [
+   "VELDO-0155 baseline/planted-memory",
+   false
+  ],
+  [
+   "VELDO-0155 baseline/planted-hook",
+   false
+  ],
+  [
+   "VELDO-0155 paid-api/read-back",
+   false
+  ],
+  [
+   "VELDO-0155 paid-api/token-file",
+   false
+  ],
+  [
+   "VELDO-0155 paid-api/stop",
+   false
+  ],
+  [
+   "VELDO-0155 paid-api/every-init",
+   false
+  ],
+  [
+   "VELDO-0155 paid-api/profile-login",
+   false
+  ],
+  [
+   "VELDO-0155 strip/read-back",
+   false
+  ],
+  [
+   "VELDO-0155 strip/private-runtime-directory",
+   false
+  ],
+  [
+   "VELDO-0155 strip/user-manager",
+   false
+  ],
+  [
+   "VELDO-0155 fixture/planted-control",
+   true
+  ],
+  [
+   "VELDO-0155 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 12.531,
+ "spec_id": "VELDO-0155",
+ "suite": "scripts/suites/80_veldo_0155_claude_baseline.py",
+ "tree": "git archive 45ee21bb5ca803c400dfc9feb4cce77fff58664d, unchanged; the current suite file run against it"
+}
