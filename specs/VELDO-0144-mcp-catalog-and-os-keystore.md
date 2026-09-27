@@ -248,3 +248,5 @@ github_pat_, sk-proj- and sk-ant- shapes, which require a separate scanner chang
 a token inside another argument such as docker -e NAME=value or --env NAME=value,
 single-dash flags, and SORT_KEY-style names ending in key being refused remain
 follow-up work. The repository scanner and acceptance criteria are unchanged.
+
+2026-09-27, fifth review follow-up on build-veldo-0144: merged main; restored sig, signature and code query tokens, added authorization, authtoken, accesstoken, passphrase and privatekey credential tokens, refused Bearer/Basic authorization values in every string field, and refined bare credential flags to consume leading-hyphen values except double-dash flags and single-dash -x or -x=VALUE flags. Extended generated refusal and ordinary-save assertions, including pagination and encoding queries, and added independent query-extra and authorization-value mutations. Acceptance criteria and status are unchanged.

@@ -8126,12 +8126,13 @@ def cases():
         '                if False:',
         ['catalog/credential-position-refused'], ())
     add(144, 'mcp144-query-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
-        '            if any(positioned(name, value) for name, value in parse_qsl(url.query, keep_blank_values=True)):',
+        '            if any(positioned(name, value, query=True) for name, value in parse_qsl(url.query, keep_blank_values=True)):',
         '            if False:',
         ['catalog/credential-position-refused'], ())
     add(144, 'mcp144-name-substrings-restored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
         "return (any(part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',\n"
-        "                             'credential', 'credentials', 'auth', 'bearer', 'cookie') for part in tokens)",
+        "                             'credential', 'credentials', 'auth', 'bearer', 'cookie',\n"
+        "                             'authorization', 'authtoken', 'accesstoken', 'passphrase', 'privatekey') for part in tokens)",
         "return (any(part in name.lower() for part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',\n"
         "                             'credential', 'credentials', 'auth', 'bearer', 'cookie'))",
         ['catalog/ordinary-config-saves'], ())
@@ -8140,9 +8141,17 @@ def cases():
         'if not tokens:',
         ['catalog/ordinary-config-saves'], ())
     add(144, 'mcp144-bare-flag-consumes-flag', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
-        "if index + 1 == len(d['arguments']) or d['arguments'][index + 1].startswith('-'):",
-        "if index + 1 == len(d['arguments']):",
+        "if value.startswith('-' * 2) or re.fullmatch(r'-[^-](?:=.*)?', value):",
+        "if False:",
         ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-query-extras-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "or (query and any(part in ('sig', 'signature', 'code') for part in tokens))",
+        'or False',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-authorization-value-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if isinstance(value, str) and value.lower().startswith(('bearer ', 'basic ')):",
+        'if False:',
+        ['catalog/credential-position-refused'], ())
     add(144, 'mcp144-refusal-records-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
         "self.record(dict(about, server=None, field=getattr(error, 'field', None),",
         "self.record(dict(about, field=getattr(error, 'field', None),",

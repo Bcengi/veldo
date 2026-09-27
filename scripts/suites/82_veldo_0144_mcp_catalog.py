@@ -562,8 +562,12 @@ for name in paths:
                 ordinary.append((name, 'environment', {name: {'literal': generated}}))
                 ordinary.append((name, 'arguments', ['-' * 2 + name + '=' + generated]))
                 ordinary.append((name, 'url', 'https://localhost/mcp?' + name + '=' + generated))
-            for name in ('SIG', 'signature', 'code', 'author', 'oauth'):
+            for name in ('author', 'oauth'):
                 ordinary.append((name, 'url', 'https://localhost/mcp?' + name + '=' + generated))
+            ordinary += [('pagination query', 'url', 'https://localhost/mcp?page=2'),
+                         ('encoding query', 'url', 'https://localhost/mcp?encoding=utf8'),
+                         ('bare auth before short flag', 'arguments', ['-' * 2 + 'no-auth', '-x']),
+                         ('bare auth before short equals flag', 'arguments', ['-' * 2 + 'no-auth', '-x=' + generated])]
             ordinary.append(('absolute credential query', 'url', 'https://localhost/mcp?token=' + absolute))
             for index, (label, field, value) in enumerate(ordinary):
                 doc = definition('ordinary-' + str(index), 'http' if field == 'url' else 'stdio', label)
@@ -577,7 +581,8 @@ for name in paths:
 
             position_names = ('apiToken', 'client_secret_value', 'Password', 'service_passwd', 'vendor_apikey',
                               'api_key', 'privateKey', 'accessKey', 'api.key', 'PASS', 'credentials', 'auth',
-                              'service_KEY', 'service_PAT', 'pwd', 'bearer', 'cookie', 'credential', 'APIKey')
+                              'service_KEY', 'service_PAT', 'pwd', 'bearer', 'cookie', 'credential', 'APIKey',
+                              'NGROK_AUTHTOKEN', 'accesstoken', 'DB_PASSPHRASE', 'AUTHORIZATION', 'privatekey')
             doc = definition('credential-references', 'stdio', 'Named references')
             doc['environment'] = {name: {'reference': ref} for name in position_names}
             doc['arguments'] = ['-' * 2 + 'password']  # A bare flag without a following item holds no value.
@@ -611,7 +616,7 @@ for name in paths:
                 position_cases.append(('arguments', [flag + '=' + value]))
                 position_cases.append(('arguments', [flag, value]))
                 position_cases.append(('url', 'https://localhost/mcp?' + name + '=' + value))
-            for name in ('key', '%61pi%5Ftoken'):
+            for name in ('key', '%61pi%5Ftoken', 'sig', 'SIG', 'signature', 'code', 'sas_sig', 'function_code'):
                 position_cases.append(('url', 'https://localhost/mcp?' + name + '=' + position_values[0]))
             position_cases += [('url', 'https://user:' + position_values[0] + '@localhost/mcp'),
                                ('url', 'https://user@localhost/mcp'),
@@ -619,6 +624,27 @@ for name in paths:
                                ('arguments', ['-' * 2 + 'token=']),
                                ('headers', {'Authorization': {'literal': position_values[0]}}),
                                ('headers', {'x-api-key': {'literal': position_values[1]}})]
+            position_cases.append(('arguments', ['-' * 2 + 'api-key', '-' + position_values[0]]))
+            position_cases = [(field, value, 'invalid_input:server_credential_position')
+                              for field, value in position_cases]
+            for scheme in ('Bearer ', 'bEaReR ', 'Basic ', 'bAsIc '):
+                value = scheme + position_values[0]
+                for field in ('id', 'label', 'transport', 'command', 'url', 'arguments', 'hosts', 'read_only_tools',
+                              'environment', 'headers', 'environment-name', 'header-name', 'reference'):
+                    item = value
+                    target = field
+                    if field in ('arguments', 'hosts', 'read_only_tools'):
+                        item = [value]
+                    elif field in ('environment', 'headers'):
+                        item = {'CONFIG': {'literal': value}}
+                    elif field in ('environment-name', 'header-name'):
+                        target = 'environment' if field == 'environment-name' else 'headers'
+                        item = {value: {'reference': ref}}
+                    elif field == 'reference':
+                        target, item = 'environment', {'CONFIG': {'reference': value}}
+                    position_cases.append((target, item, 'invalid_input:server_credential_literal'))
+                position_cases.append(('environment', {'AUTHORIZATION': {'literal': value}},
+                                       'invalid_input:server_credential_literal'))
             store_attempts = []
             if catalog is not None:
                 store_execute = catalog.S.execute
@@ -628,17 +654,17 @@ for name in paths:
                     return store_execute(conn, command, *args, **kwargs)
                 catalog.S.execute = observe_catalog_execute
             try:
-                for index, (field, value) in enumerate(position_cases):
+                for index, (field, value, reason) in enumerate(position_cases):
                     doc = definition('position-' + str(index), 'http' if field in ('url', 'headers') else 'stdio',
                                      'Credential position')
                     doc[field] = value
                     refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
                     check('catalog/credential-position-refused', field + ' case ' + str(index) + ' refuses before the store',
-                          refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_position'
+                          refused[0] == 400 and refused[2].get('refusal') == reason
                           and head() == before and not store_attempts
                           and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
                     check('catalog/refusal-no-value', field + ' position refusal records field and reason',
-                          all(refusal_has_no_value(field, candidate, 'invalid_input:server_credential_position')
+                          all(refusal_has_no_value(field, candidate, reason)
                               for candidate in position_values))
             finally:
                 if catalog is not None:

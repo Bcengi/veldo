@@ -68,28 +68,32 @@ def owner(conn, principal, repository, now):
 
 
 def credential_literal(value):
-    """Catch the repository scanner's known shapes, without its entropy heuristic."""
+    """Catch authorization values and known shapes, without an entropy heuristic."""
     if isinstance(value, dict):
         return any(credential_literal(k) or credential_literal(v) for k, v in value.items())
     if isinstance(value, list):
         return any(credential_literal(v) for v in value)
+    if isinstance(value, str) and value.lower().startswith(('bearer ', 'basic ')):
+        return True
     return isinstance(value, str) and any(rx.search(value) for rx, _ in SS.PATTERNS)
 
 
 def credential_position(d):
     """Guard named credential positions. Ordinary literals are the trusted owner's choice."""
-    def named(name):
+    def named(name, query=False):
         name = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', name)
         name = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', name)
         tokens = [part for part in re.split(r'[_\-.]+', name.lower()) if part]
         if not tokens or tokens[-1] in ('file', 'path', 'dir', 'name', 'port', 'url', 'host', 'id', 'callback'):
             return False
         return (any(part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',
-                             'credential', 'credentials', 'auth', 'bearer', 'cookie') for part in tokens)
-                or tokens[-1] in ('key', 'pat'))
+                             'credential', 'credentials', 'auth', 'bearer', 'cookie',
+                             'authorization', 'authtoken', 'accesstoken', 'passphrase', 'privatekey') for part in tokens)
+                or tokens[-1] in ('key', 'pat')
+                or (query and any(part in ('sig', 'signature', 'code') for part in tokens)))
 
-    def positioned(name, value):
-        return named(name) and not value.startswith(('/', '~/'))
+    def positioned(name, value, query=False):
+        return named(name, query) and not value.startswith(('/', '~/'))
 
     if any('literal' in item and positioned(name, item['literal']) for name, item in d['environment'].items()):
         return 'environment'
@@ -100,9 +104,11 @@ def credential_position(d):
             if argument.startswith('-' * 2):
                 name, equals, value = argument[2:].partition('=')
                 if not equals:
-                    if index + 1 == len(d['arguments']) or d['arguments'][index + 1].startswith('-'):
+                    if index + 1 == len(d['arguments']):
                         continue
                     value = d['arguments'][index + 1]
+                    if value.startswith('-' * 2) or re.fullmatch(r'-[^-](?:=.*)?', value):
+                        continue
                 if positioned(name, value):
                     return 'arguments'
     if d['transport'] == 'http' and isinstance(d['url'], str):
@@ -110,7 +116,7 @@ def credential_position(d):
             url = urlsplit(d['url'])
             if url.username is not None or url.password is not None:
                 return 'url'
-            if any(positioned(name, value) for name, value in parse_qsl(url.query, keep_blank_values=True)):
+            if any(positioned(name, value, query=True) for name, value in parse_qsl(url.query, keep_blank_values=True)):
                 return 'url'
         except ValueError:
             pass  # Transport validation gives malformed URLs their named refusal.
