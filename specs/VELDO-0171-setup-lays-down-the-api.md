@@ -268,3 +268,12 @@ read-only Tailscale capture before the stand-in, allowlist scrubbing and exact r
 background persistence against the suite-owned invocation log after setup exits. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27: implementation preflight blocked at AC2. The three authorized read-only
+Tailscale captures succeeded, but neither JSON status output exposes the operator
+setting or a background-persistence capability. Their required pre-write refusals
+cannot be derived from those observations without inventing a CLI contract. Raw
+captures remain outside the repository; the allowlist-scrubbed capture and precise
+blocker are in proof/VELDO-0171/. No production change, fabricated refusal state,
+or live activation was made. The owner must resolve the observation source and
+capture contract; acceptance criteria and ready status are unchanged.

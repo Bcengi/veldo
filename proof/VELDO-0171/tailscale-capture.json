@@ -1,0 +1,352 @@
+{
+  "blocker": "Neither captured JSON output exposes the operator setting or a background-persistence capability. No derived refusal or post-write state has been fabricated.",
+  "captured": {
+    "serve-status": {
+      "TCP": {
+        "<string:0>": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "<string:0>": {
+          "Handlers": {
+            "<string:0>": {
+              "Proxy": "<string>"
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "AuthURL": "<string>",
+      "BackendState": "Running",
+      "CertDomains": [
+        "<string>"
+      ],
+      "ClientVersion": null,
+      "CurrentTailnet": {
+        "MagicDNSEnabled": true,
+        "MagicDNSSuffix": "<string>",
+        "Name": "<string>"
+      },
+      "ExtraRecords": null,
+      "HaveNodeKey": true,
+      "Health": [],
+      "MagicDNSSuffix": "<string>",
+      "Peer": {
+        "<string:0>": {
+          "Active": false,
+          "Addrs": null,
+          "AllowedIPs": [
+            "<string>",
+            "<string>"
+          ],
+          "Created": "<string>",
+          "CurAddr": "<string>",
+          "DNSName": "<string>",
+          "ExitNode": false,
+          "ExitNodeOption": false,
+          "HostName": "<string>",
+          "ID": "<string>",
+          "InEngine": false,
+          "InMagicSock": true,
+          "InNetworkMap": true,
+          "LastHandshake": "<string>",
+          "LastSeen": "<string>",
+          "LastWrite": "<string>",
+          "NoFileSharingReason": "<string>",
+          "NodeID": 0,
+          "OS": "<string>",
+          "Online": true,
+          "PeerAPIURL": [
+            "<string>",
+            "<string>"
+          ],
+          "PeerRelay": "<string>",
+          "PublicKey": "<string>",
+          "Relay": "<string>",
+          "RxBytes": 0,
+          "TaildropTarget": 0,
+          "TailscaleIPs": [
+            "<string>",
+            "<string>"
+          ],
+          "TxBytes": 0,
+          "UserID": 0
+        },
+        "<string:1>": {
+          "Active": false,
+          "Addrs": null,
+          "AllowedIPs": [
+            "<string>",
+            "<string>"
+          ],
+          "Created": "<string>",
+          "CurAddr": "<string>",
+          "DNSName": "<string>",
+          "ExitNode": false,
+          "ExitNodeOption": false,
+          "HostName": "<string>",
+          "ID": "<string>",
+          "InEngine": false,
+          "InMagicSock": true,
+          "InNetworkMap": true,
+          "KeyExpiry": "<string>",
+          "LastHandshake": "<string>",
+          "LastSeen": "<string>",
+          "LastWrite": "<string>",
+          "NoFileSharingReason": "<string>",
+          "NodeID": 0,
+          "OS": "<string>",
+          "Online": true,
+          "PeerAPIURL": [
+            "<string>",
+            "<string>"
+          ],
+          "PeerRelay": "<string>",
+          "PublicKey": "<string>",
+          "Relay": "<string>",
+          "RxBytes": 0,
+          "TaildropTarget": 0,
+          "TailscaleIPs": [
+            "<string>",
+            "<string>"
+          ],
+          "TxBytes": 0,
+          "UserID": 0
+        },
+        "<string:2>": {
+          "Active": false,
+          "Addrs": null,
+          "AllowedIPs": [
+            "<string>",
+            "<string>"
+          ],
+          "Created": "<string>",
+          "CurAddr": "<string>",
+          "DNSName": "<string>",
+          "ExitNode": false,
+          "ExitNodeOption": false,
+          "HostName": "<string>",
+          "ID": "<string>",
+          "InEngine": false,
+          "InMagicSock": true,
+          "InNetworkMap": true,
+          "KeyExpiry": "<string>",
+          "LastHandshake": "<string>",
+          "LastSeen": "<string>",
+          "LastWrite": "<string>",
+          "NoFileSharingReason": "<string>",
+          "NodeID": 0,
+          "OS": "<string>",
+          "Online": false,
+          "PeerAPIURL": [
+            "<string>",
+            "<string>"
+          ],
+          "PeerRelay": "<string>",
+          "PublicKey": "<string>",
+          "Relay": "<string>",
+          "RxBytes": 0,
+          "TaildropTarget": 0,
+          "TailscaleIPs": [
+            "<string>",
+            "<string>"
+          ],
+          "TxBytes": 0,
+          "UserID": 0
+        }
+      },
+      "Self": {
+        "Active": false,
+        "Addrs": [
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>"
+        ],
+        "AllowedIPs": [
+          "<string>",
+          "<string>"
+        ],
+        "CapMap": {
+          "<string:0>": [
+            true
+          ],
+          "<string:10>": null,
+          "<string:11>": null,
+          "<string:12>": [
+            "<string>"
+          ],
+          "<string:1>": null,
+          "<string:2>": null,
+          "<string:3>": null,
+          "<string:4>": null,
+          "<string:5>": null,
+          "<string:6>": null,
+          "<string:7>": null,
+          "<string:8>": null,
+          "<string:9>": null
+        },
+        "Capabilities": [
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>",
+          "<string>"
+        ],
+        "Created": "<string>",
+        "CurAddr": "<string>",
+        "DNSName": "<string>",
+        "ExitNode": false,
+        "ExitNodeOption": false,
+        "HostName": "<string>",
+        "ID": "<string>",
+        "InEngine": false,
+        "InMagicSock": false,
+        "InNetworkMap": true,
+        "LastHandshake": "<string>",
+        "LastSeen": "<string>",
+        "LastWrite": "<string>",
+        "NoFileSharingReason": "<string>",
+        "NodeID": 0,
+        "OS": "<string>",
+        "Online": true,
+        "PeerAPIURL": [
+          "<string>",
+          "<string>"
+        ],
+        "PeerRelay": "<string>",
+        "PublicKey": "<string>",
+        "Relay": "<string>",
+        "RxBytes": 0,
+        "TaildropTarget": 0,
+        "TailscaleIPs": [
+          "<string>",
+          "<string>"
+        ],
+        "TxBytes": 0,
+        "UserID": 0
+      },
+      "TUN": true,
+      "TailscaleIPs": [
+        "<string>",
+        "<string>"
+      ],
+      "User": {
+        "<string:0>": {
+          "DisplayName": "<string>",
+          "ID": 0,
+          "LoginName": "<string>",
+          "ProfilePicURL": "<string>"
+        }
+      },
+      "Version": "<string>"
+    },
+    "version": "1.102.3\n<string>\n<string>\n<string>\n<string>\n"
+  },
+  "constant_allowlist": {
+    "BackendState": [
+      "NeedsLogin",
+      "NeedsMachineAuth",
+      "NoState",
+      "Running",
+      "Starting",
+      "Stopped"
+    ],
+    "Version": [
+      "1.102.3"
+    ]
+  },
+  "date": "2026-09-27",
+  "derived_states": [],
+  "field_allowlist": [
+    "Active",
+    "Addrs",
+    "AllowFunnel",
+    "AllowedIPs",
+    "AuthURL",
+    "BackendState",
+    "CapMap",
+    "Capabilities",
+    "CertDomains",
+    "ClientVersion",
+    "Created",
+    "CurAddr",
+    "CurrentTailnet",
+    "DNSName",
+    "DisplayName",
+    "ExitNode",
+    "ExitNodeOption",
+    "ExtraRecords",
+    "Foreground",
+    "HTTPS",
+    "Handlers",
+    "HaveNodeKey",
+    "Health",
+    "HostName",
+    "ID",
+    "InEngine",
+    "InMagicSock",
+    "InNetworkMap",
+    "KeyExpiry",
+    "LastHandshake",
+    "LastSeen",
+    "LastWrite",
+    "LoginName",
+    "MagicDNSEnabled",
+    "MagicDNSSuffix",
+    "Name",
+    "NoFileSharingReason",
+    "NodeID",
+    "OS",
+    "Online",
+    "Peer",
+    "PeerAPIURL",
+    "PeerRelay",
+    "ProfilePicURL",
+    "Proxy",
+    "PublicKey",
+    "Relay",
+    "RxBytes",
+    "Self",
+    "TCP",
+    "TUN",
+    "TaildropTarget",
+    "TailscaleIPs",
+    "TxBytes",
+    "User",
+    "UserID",
+    "Version",
+    "Web"
+  ],
+  "field_edits": [],
+  "schema": "veldo.tailscale_capture/v1",
+  "scrub_rules": {
+    "booleans_and_null": "unchanged",
+    "dynamic_keys": "<string:N> with N the map entry ordinal",
+    "numbers": "zero with the original numeric type",
+    "strings": "<string> unless the field and value are in constant_allowlist",
+    "version_output": "first line is the CLI version; other lines are string placeholders"
+  }
+}
