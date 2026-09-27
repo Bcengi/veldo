@@ -46,9 +46,11 @@ Suite `84_veldo_0169_project_handouts`, 27 rows:
 
 `red-at-65125030.json`, `red-at-0a2ba0f9.json`, `red-at-6d2f40a7.json`, `red-at-d22c687e.json`: the
 current suite and its apparatus against the starting tree and every reviewed tree, every failing row
-red by assertion. At d22c687e the claim-kind ownership refuses the hand-built records by entity_owned
-where the rows now expect the Gate's name, the organ refuses the upgrade store's receiver
-(ownership_conflict), and a hand-built claim of an active project is refused. Reproduce with
+red by assertion. At d22c687e, the reviewed tree, a hand-built claim that sets conn.organ_writes
+itself is written for a paused project (the hand-built claim, resume and unpark of every stopped
+state, the record whose id names another unit, the unit moved into a paused project), the generic
+upsert is refused entity_owned rather than by the Gate's name, and the claim receiver and the inbox
+refuse to attach to the earlier store (ownership_conflict). Reproduce with
 proof/VELDO-0169/drive.py and its red option naming the commit.
 
 `mutations.json`: finding 169's mutants with their diffs, a green baseline and a green no-op per

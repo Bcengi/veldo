@@ -878,6 +878,8 @@ def _v169_suite():
                             return 'accepted'
                         except S.StoreRefused as exc:
                             return exc.code
+                        except Exception as exc:  # noqa: BLE001 - a raise is an outcome the row names, never a pass
+                            return 'raised %s' % type(exc).__name__
 
                     def old_put(eid, kind, data):
                         return old_run('upsert_entity', dict(entity_id=eid, kind=kind, data=data), [eid])
