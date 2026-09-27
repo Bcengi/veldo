@@ -972,6 +972,136 @@ def claude_forms(text):
                              "only literals, enums, strings, numbers and booleans and no field naming a tool"}
 
 
+# The emitters that build an event line from their own object literal and then add fields statement by statement,
+# each by (event, the exact text its object starts with, the object's variable, the path of the object in the
+# table's events). A zod schema says what a field may hold, not whether the emitter writes it: a field the emitter
+# writes only under a condition (`...COND&&{field:...}`, `if(COND)VAR.field=...`, or a value ending in `??void 0`
+# or `:void 0`, which JSON drops) is optional whatever the schema or the capture says. system/init writes
+# messaging_socket_path only when the process bound its own cross-session inbox (`if(e.messagingSocketPath!==void 0)`,
+# the path the inbox bound; start-up unsets any inherited CLAUDE_CODE_MESSAGING_SOCKET first): the capture's run bound
+# one, and a worker whose inbox gate is off, which runs --bare, or whose bind fails prints none.
+CLAUDE_EMITTERS = (
+    ('system/init', 'g={type:"system",subtype:"init",cwd:e.cwd,', 'g', ('system/init',)),
+    ('initialize', 'Pe={commands:Zq(e),agents:r.map((de)=>({name:de.agentType,', 'Pe',
+     ('control_response', 'response', 'response')),
+)
+
+
+def _split_top(text, separator):
+    """`text` split at `separator` outside brackets and string literals."""
+    parts, depth, quote, start, i = [], 0, None, 0, 0
+    while i < len(text):
+        c = text[i]
+        if quote:
+            if c == '\\':
+                i += 1
+            elif c == quote:
+                quote = None
+        elif c in '"\'`':
+            quote = c
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            depth -= 1
+        elif depth == 0 and text.startswith(separator, i):
+            parts.append(text[start:i])
+            start = i + len(separator)
+            i = start
+            continue
+        i += 1
+    parts.append(text[start:])
+    return parts
+
+
+def _closing(text, at):
+    """The index just past the bracket that closes the one at `at`."""
+    depth, quote, i = 0, None, at
+    while i < len(text):
+        c = text[i]
+        if quote:
+            if c == '\\':
+                i += 1
+            elif c == quote:
+                quote = None
+        elif c in '"\'`':
+            quote = c
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            depth -= 1
+            if depth == 0:
+                return i + 1
+        i += 1
+    raise Moved('unclosed bracket at %d' % at)
+
+
+def _maybe_undefined(value):
+    """The value itself when it may be `void 0` (a `??void 0` fallback or a `:void 0` branch), else None."""
+    return value if re.search(r'(\?\?|:)void 0$', value) else None
+
+
+def _literal_presence(body, found, condition=None):
+    """Each key of an object literal's body: None when always written, else the condition it is written under."""
+    for part in _split_top(body, ','):
+        part = part.strip()
+        if part.startswith('...'):
+            spread = part[3:]
+            guard = _split_top(spread, '&&')
+            if len(guard) > 1 and guard[-1].startswith('{') and guard[-1].endswith('}'):
+                inner = '&&'.join(guard[:-1])
+                _literal_presence(guard[-1][1:-1], found, inner if condition is None else condition + '&&' + inner)
+            continue
+        m = re.match(r'([A-Za-z_$][A-Za-z0-9_$]*|"[^"]*"):', part)
+        if not m:
+            raise Moved('emitter literal: unreadable member %r' % part[:60])
+        key, value = m.group(1).strip('"'), part[m.end():]
+        found[key] = condition if condition is not None else _maybe_undefined(value)
+
+
+def claude_emitters(text):
+    """Which fields each emitter writes always and which only under a condition, read from its own text."""
+    emitters = {}
+    for event, anchor, variable, path in CLAUDE_EMITTERS:
+        if text.count(anchor) != 1:
+            raise Moved('%s emitter: anchor found %d times' % (event, text.count(anchor)))
+        at = text.index(anchor) + len(variable) + 1
+        end = _closing(text, at)
+        found = {}
+        _literal_presence(text[at + 1:end - 1], found)
+        # The function returns its object, alone (`return g}`) or last in a comma sequence (`,Pe}`).
+        stops = [s for s in (text.find('return %s}' % variable, end), text.find(',%s}' % variable, end)) if s >= 0]
+        stop = min(stops) if stops else -1
+        if stop < 0 or stop - end > 4000:
+            raise Moved('%s emitter: no return of its object' % event)
+        own = re.compile(re.escape(variable) + r'\.([A-Za-z_$][A-Za-z0-9_$]*)=(?!=)')
+        for statement in _split_top(text[end:stop], ';'):
+            statement = statement.strip()
+            if statement.startswith('return '):
+                statement = statement[len('return '):]
+            body, guard = statement, None
+            if statement.startswith('if('):
+                close = _closing(statement, 2)
+                guard, body = statement[3:close - 1], statement[close:]
+                parts = _split_top(guard, ',')
+                for part in parts[:-1]:
+                    m = own.match(part.strip())
+                    if m:
+                        value = part.strip()[m.end():]
+                        found[m.group(1)] = _maybe_undefined(value)
+                guard = parts[-1]
+            for part in _split_top(body, ','):
+                m = own.match(part.strip())
+                if m:
+                    value = part.strip()[m.end():]
+                    found[m.group(1)] = guard if guard is not None else _maybe_undefined(value)
+        if not found:
+            raise Moved('%s emitter: no fields read' % event)
+        emitters[event] = {'anchor': anchor, 'offset': text.index(anchor), 'path': list(path),
+                           'always': sorted(k for k, v in found.items() if v is None),
+                           'conditional': {k: v for k, v in sorted(found.items()) if v is not None}}
+    return emitters
+
+
 def claude(path):
     raw = Path(path).read_bytes()
     text = raw.decode('latin-1')
@@ -1042,7 +1172,8 @@ def claude(path):
     version = Path(path).resolve().name
     return {'binary': str(Path(path).resolve()), 'version': version, 'sha256': _digest(path),
             'source': 'the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)',
-            'events': events, 'notes': notes, 'credential_tables': tables, 'usage_limit': claude_limit(text),
+            'events': events, 'emitters': claude_emitters(text), 'notes': notes, 'credential_tables': tables,
+            'usage_limit': claude_limit(text),
             'tool_forms': claude_forms(text)}
 
 
@@ -1566,6 +1697,17 @@ def reconcile(table, capture_path=CAPTURE):
             item = line['item']
             observe_schema(table['codex']['items'].setdefault(item['type'], {}), [(number, item)],
                            'proof/VELDO-0172/capture.json:streams.codex', 'item.' + item['type'], changes)
+    # A field its emitter writes only under a condition is optional, though the capture's run met the condition.
+    for event, emitter in sorted(table['claude_code'].get('emitters', {}).items()):
+        node = table['claude_code']['events'][emitter['path'][0]]
+        for step in emitter['path'][1:]:
+            node = node['fields'][step]
+        source = 'claude_code.emitters.' + event
+        for key, condition in emitter['conditional'].items():
+            field = node['fields'].get(key)
+            if field is not None and not field.get('optional'):
+                field.update(optional=True, optional_source=source, optional_condition=condition)
+                changes.append({'field': '.'.join(emitter['path'] + [key]), 'change': 'optional', 'source': source})
     def field_counts(node):
         fields = list((node.get('fields') or {}).values())
         counts = {'known': len(fields), 'optional': sum(bool(f.get('optional')) for f in fields),

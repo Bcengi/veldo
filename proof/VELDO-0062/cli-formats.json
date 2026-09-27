@@ -378,6 +378,16 @@
     "lines": [
      3
     ]
+   },
+   {
+    "change": "optional",
+    "field": "control_response.response.response.fast_mode_disabled_reason",
+    "source": "claude_code.emitters.initialize"
+   },
+   {
+    "change": "optional",
+    "field": "system/init.messaging_socket_path",
+    "source": "claude_code.emitters.system/init"
    }
   ],
   "metrics": {
@@ -390,7 +400,7 @@
     "control_response": {
      "from_capture": 29,
      "known": 43,
-     "optional": 14
+     "optional": 15
     },
     "rate_limit_event": {
      "from_capture": 0,
@@ -410,7 +420,7 @@
     "system/init": {
      "from_capture": 1,
      "known": 56,
-     "optional": 26
+     "optional": 27
     }
    },
    "codex": {
@@ -1200,6 +1210,94 @@
     "reason": "the base URLs that point Claude Code at another endpoint, with their selections and companions"
    }
   ],
+  "emitters": {
+   "initialize": {
+    "always": [
+     "account",
+     "agents",
+     "analytics_disabled",
+     "available_output_styles",
+     "commands",
+     "current_permission_mode",
+     "fast_mode_state",
+     "feedback_survey_config",
+     "footer_indicator",
+     "hooks_applied",
+     "ide_rc_auto_enable_gate",
+     "models",
+     "output_style",
+     "pid",
+     "plugins_applied",
+     "proactivity",
+     "remote_control_auto_connect_default",
+     "remote_control_auto_enable",
+     "remote_control_auto_on_by_default",
+     "remote_control_available",
+     "session_state",
+     "user_output_styles_dir",
+     "workspace_trust_recorded"
+    ],
+    "anchor": "Pe={commands:Zq(e),agents:r.map((de)=>({name:de.agentType,",
+    "conditional": {
+     "auto_default_nudge": "oS()&&Me",
+     "fast_mode_disabled_reason": "WM(w??null)??void 0",
+     "permission_mode_from_default_fallback": "oS()",
+     "unavailable_models": "s.length>0"
+    },
+    "offset": 216186270,
+    "path": [
+     "control_response",
+     "response",
+     "response"
+    ]
+   },
+   "system/init": {
+    "always": [
+     "agents",
+     "analytics_disabled",
+     "apiKeySource",
+     "betas",
+     "claude_code_version",
+     "cwd",
+     "fast_mode_disabled_reason",
+     "fast_mode_state",
+     "mcp_servers",
+     "model",
+     "output_style",
+     "permissionMode",
+     "plugins",
+     "product_feedback_disabled",
+     "session_id",
+     "skills",
+     "slash_commands",
+     "subtype",
+     "tools",
+     "type",
+     "uuid"
+    ],
+    "anchor": "g={type:\"system\",subtype:\"init\",cwd:e.cwd,",
+    "conditional": {
+     "capabilities": "e.capabilities",
+     "effort": "e.effort!==void 0",
+     "footer_indicator": "e.footerIndicator",
+     "mcp_server_errors": "r.length>0",
+     "memory_paths": "e.memoryPaths",
+     "messaging_socket_path": "e.messagingSocketPath!==void 0",
+     "per_turn_effort_active": "e.perTurnEffortActive!==void 0",
+     "plugin_errors": "e.pluginErrors.length>0",
+     "plugin_warnings": "e.pluginWarnings.length>0",
+     "powershell_path": "e.powerShellPath!==void 0",
+     "scratchpad_path": "e.scratchpadPath!==void 0",
+     "terminal_slash_commands": "s.length>0",
+     "view_mode": "e.viewMode!==void 0",
+     "worker_epoch": "e.workerEpoch!==void 0&&e.workerEpoch>=1"
+    },
+    "offset": 208882812,
+    "path": [
+     "system/init"
+    ]
+   }
+  },
   "events": {
    "assistant": {
     "fields": {
@@ -2150,6 +2248,9 @@
           "capture_lines": [
            1
           ],
+          "optional": true,
+          "optional_condition": "WM(w??null)??void 0",
+          "optional_source": "claude_code.emitters.initialize",
           "source": "proof/VELDO-0172/capture.json:streams.claude",
           "type": "string"
          },
@@ -3604,6 +3705,9 @@
       "capture_lines": [
        2
       ],
+      "optional": true,
+      "optional_condition": "e.messagingSocketPath!==void 0",
+      "optional_source": "claude_code.emitters.system/init",
       "source": "proof/VELDO-0172/capture.json:streams.claude",
       "type": "string"
      },

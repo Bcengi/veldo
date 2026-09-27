@@ -424,6 +424,9 @@ err.close()
         test_record = {'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {
             VERSION: {'sha256': file_sha(versions / VERSION), 'flags': list(FLAGS),
                       'environment': {'DISABLE_AUTOUPDATER': '1'}, 'baseline': getattr(E, 'BASELINE', None)}}}
+        if hasattr(E, 'session_environment'):
+            # VELDO-0165: the version is qualified with the session names read from the pinned binary.
+            test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
         (mods / 'runtime').mkdir(exist_ok=True)
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'

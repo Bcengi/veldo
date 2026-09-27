@@ -59,6 +59,29 @@ def _v172_suite():
                 regenerated_problems += comparison.conform(line, schema, event, True) if schema else [event + ':table:no-event']
         check('table/capture', regenerated == table and not regenerated_problems,
               'table:regeneration-disagrees: ' + ', '.join(regenerated_problems))
+        # A field the binary's emitter writes only under a condition the capture's run met (system/init's
+        # messaging_socket_path: the run bound its own messaging inbox) may be absent from a worker's line:
+        # each captured line with such a field removed still conforms, in the committed and the rebuilt table.
+        conditional_absent, absent_problems = [], []
+        for event, emitter in table['claude_code'].get('emitters', {}).items():
+            for number, line in enumerate(reference['streams']['claude'], 1):
+                if comparison.event_name(line) != emitter['path'][0]:
+                    continue
+                node = line
+                for step in emitter['path'][1:]:
+                    node = node.get(step) if isinstance(node, dict) else None
+                for key in sorted(set(emitter['conditional']) & set(node or {})):
+                    stripped = json.loads(json.dumps(line))
+                    holder = stripped
+                    for step in emitter['path'][1:]:
+                        holder = holder[step]
+                    del holder[key]
+                    conditional_absent.append('.'.join(emitter['path'] + [key]))
+                    for built in (table, regenerated):
+                        schema = built['claude_code']['events'][emitter['path'][0]]
+                        absent_problems += comparison.conform(stripped, schema, emitter['path'][0], True)
+        check('table/capture', 'system/init.messaging_socket_path' in conditional_absent and not absent_problems,
+              'table:conditional-field-required: %s %s' % (sorted(set(conditional_absent)), absent_problems[:4]))
     else:
         check('table/capture', False, 'table:no-capture-reconciliation')
 

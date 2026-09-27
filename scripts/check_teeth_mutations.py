@@ -8496,6 +8496,9 @@ def cases():
     formats172('required-usage', 'proof/VELDO-0062', 'extract_formats.py',
                "            if len(present) < len(objects) and not field.get('optional'):",
                "            if False:  # defect: trust binary requiredness", 'table/capture')
+    formats172('emitter-required', 'proof/VELDO-0062', 'extract_formats.py',
+               "            if field is not None and not field.get('optional'):",
+               "            if False:  # defect: a field its emitter writes under a condition stays required", 'table/capture')
     return result
 
 
