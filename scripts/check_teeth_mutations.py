@@ -7228,6 +7228,51 @@ def cases():
          "        if revision is not None and (selected[call['server']] is None or call.get('tool') in selected[call['server']]):\n",
          "        if revision is not None:  # defect: a tool the configuration does not give the run is taken as given\n",
          ['decision/unconfigured-call-asks'])
+    # The lead's decision: a call that starts an agent outside the run (any RemoteTrigger call, a durable CronCreate)
+    # asks first, whatever the configuration; both tools are rule 2's constructs too.
+    pool('remote-agent-skipped', 'control_account_limit.py',
+         "    if started:\n",
+         "    if False:  # defect: an agent started outside the run is not asked about\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-agent-text-lines-unread', 'control_account_limit.py',
+         "        shown = _event(line['payload']) if line['stream'] == 'engine' else None\n",
+         "        shown = line['payload'] if line['stream'] == 'engine' and isinstance(line['payload'], dict) else None"
+         "  # defect: a line held as JSON text is not read for an agent started outside the run\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-agent-contradicting-unnamed', 'control_account_limit.py',
+         "        named = contradicting + [\n",
+         "        named = [  # defect: the calls that contradict the configuration are not named beside it\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-trigger-not-outside', 'control_engine_claude.py',
+         "          'remote_agent': {'tools': ('RemoteTrigger',),\n",
+         "          'remote_agent': {'tools': (),  # defect: a RemoteTrigger call starts nothing outside the run\n",
+         ['decision/remote-agent-asks', 'format/tool-forms'])
+    pool('remote-cron-durable-unread', 'control_engine_claude.py',
+         "                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):\n",
+         "                if True:  # defect: a CronCreate's durable field is not read\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-cron-durable-text-missed', 'control_engine_claude.py',
+         "                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):\n",
+         "                if value is not True:  # defect: durable as the text \"true\" is taken as not durable\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-cron-default-durable', 'control_engine_claude.py',
+         "                value = inputs[0].get(durable['field'], False) if isinstance(inputs[0], dict) else None\n",
+         "                value = inputs[0].get(durable['field'], True) if isinstance(inputs[0], dict) else None"
+         "  # defect: a CronCreate that leaves durable out is durable\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-cron-unseen-input-trusted', 'control_engine_claude.py',
+         "            if inputs:\n",
+         "            if not inputs:\n                continue  # defect: a CronCreate named without its input is not durable\n"
+         "            if inputs:\n",
+         ['decision/remote-agent-asks'])
+    pool('nested-remote-dropped', 'control_engine_claude.py',
+         "                'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),\n",
+         "                'cron': ('CronCreate',),  # defect: a RemoteTrigger call is not nested work\n",
+         ['decision/nested-constructs', 'format/tool-forms'])
+    pool('nested-cron-dropped', 'control_engine_claude.py',
+         "                'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),\n",
+         "                'remote': ('RemoteTrigger',),  # defect: a CronCreate is not nested work\n",
+         ['decision/nested-constructs', 'decision/remote-agent-asks', 'format/tool-forms'])
     pool('decision-rule1-skipped', 'control_account_limit.py',
          "    if not write_capable(servers, marks):\n",
          "    if False:  # defect: a run with no write-capable server is decided by its stream\n",

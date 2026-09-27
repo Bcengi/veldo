@@ -1669,6 +1669,10 @@ sys.exit(payload.get('code', 0))
                           (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'remote_agent'
                           and outside(found) == expected
                           and all(c.get('reason') == 'remote_agent' for c in (found or {}).get('calls') or []))
+            found, error = decide(c_rec(routine, True), 'claude_code', [])
+            check('decision/remote-agent-asks', 'the checker\'s routine held as JSON text, no MCP server: decided ask, '
+                  'naming each such line [%s]' % (outside(found) or error), (found or {}).get('basis') == 'remote_agent'
+                  and outside(found) == [(at + 2, 'remote', 'tool:RemoteTrigger'), (at + 4, 'remote', 'tool:RemoteTrigger')])
             # Beside it, a call that contradicts the configuration is named too.
             both = c_rec([r_use('toolu_l', 'RemoteTrigger', action='list'),
                           c_blocks([tool_use('toolu_u', 'mcp__mailer__send')])])

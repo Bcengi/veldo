@@ -350,8 +350,9 @@ TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), '
 # workflow and a workflow's task type; the REPL tool's inner call on a tool_progress; the field a sub-agent's or a
 # forked skill's forwarded message carries, and the progress kinds the CLI forwards that way; and the Skill tool's
 # result when it forked an agent.
-NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),
-                'repl': ('REPL',), 'skill': ('Skill',), 'workflow': ('RunWorkflow', 'Workflow')}
+NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'repl': ('REPL',), 'skill': ('Skill',),
+                'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),
+                'workflow': ('RunWorkflow', 'Workflow')}
 NESTED = {'task_frames': ('system/task_notification', 'system/task_progress', 'system/task_started',
                           'system/task_updated'),
           'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',

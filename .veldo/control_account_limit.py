@@ -258,10 +258,9 @@ def outside(record, provider):
     engine = _engine(provider)
     found = []
     for at, line in enumerate(_checked(record), 1):
-        event = _event(line['payload']) if line['stream'] == 'engine' else None
-        if event is not None:
-            found += [{'sequence': at, 'construct': construct, 'form': form}
-                      for construct, form in engine.remote_agents(event)]
+        shown = _event(line['payload']) if line['stream'] == 'engine' else None
+        found += [{'sequence': at, 'construct': construct, 'form': form}
+                  for construct, form in (engine.remote_agents(shown) if shown is not None else ())]
     return found
 
 
