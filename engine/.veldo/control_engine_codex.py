@@ -622,14 +622,14 @@ def _toml(value):
 def session_environment(executable):
     """Names held by this executable in the stripped session families, read without executing it."""
     return sorted({m.group().decode('ascii') for m in re.finditer(
-        rb'(?:CLAUDE|AI_AGENT|CODEX)[A-Z0-9_]*', Path(executable).read_bytes())})
+        rb'(?<![A-Za-z0-9_])(?:CLAUDE|AI_AGENT|CODEX)(?:(?!(?:CLAUDE|AI_AGENT|CODEX))[A-Z0-9_])*(?![A-Za-z0-9_])', Path(executable).read_bytes())})
 
 
 def qualified_baseline(bound, record=None):
     """The baseline the qualification record lists, which must be this module's BASELINE: a binary not
     qualified with it is refused by name before anything is accepted or spawned."""
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
-    if not record.get('session_environment'):
+    if record.get('session_environment') is None:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     if record.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))

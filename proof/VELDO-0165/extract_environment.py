@@ -20,18 +20,62 @@ PINNED = {
     'codex': ('0.154.0', Path('/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex')),
 }
 NAME = rb'[A-Z][A-Z0-9_]{2,127}'
-# Parent session names observed in the live run and the Codex child environment.
-PARENT = ('CLAUDECODE', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_SESSION_ID',
-          'CLAUDE_CODE_SESSION_ATTENDED', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_EXECPATH',
-          'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_PID',
-          'CLAUDE_EFFORT', 'AI_AGENT', 'CODEX_THREAD_ID', 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE',
-          'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED')
+# Delimited names cannot swallow adjacent Rust or Bun string literals.
+SESSION = rb'(?<![A-Za-z0-9_])(?:CLAUDE|AI_AGENT|CODEX)(?:(?!(?:CLAUDE|AI_AGENT|CODEX))[A-Z0-9_])*(?![A-Za-z0-9_])'
+
+
+def parent_environment(engine, data, names):
+    """Locate the binary's child-environment structure by content, never by byte offset."""
+    if engine == 'claude':
+        arrays = list(re.finditer(rb'var [A-Za-z_$][A-Za-z0-9_$]*=\[(?:"[A-Za-z_][A-Za-z0-9_]*",)+\.\.\.\[\]\];', data))
+        arrays = [m for m in arrays if b'"GIT_EDITOR"' in m.group() and b'"TRACEPARENT"' in m.group()]
+        assert len(arrays) == 1, 'child environment list missing or ambiguous'
+        child = arrays[0]
+        assert b'spawnEnvKeys()' in data[child.end():child.end() + 1000], 'child environment consumer missing'
+        assignments = list(re.finditer(
+            rb'process\.env\.[A-Za-z_][A-Za-z0-9_]*="[^"]*";(?:process\.env\.[A-Za-z_][A-Za-z0-9_]*="[^"]*";)+', data))
+        assignments = [m for m in assignments if b'COREPACK_ENABLE_AUTO_PIN' in m.group()]
+        assert len(assignments) == 1, 'startup child assignments missing or ambiguous'
+        startup = assignments[0]
+        children = re.findall(rb'"([A-Za-z_][A-Za-z0-9_]*)"', child.group())
+        every_child = re.findall(rb'process\.env\.([A-Za-z_][A-Za-z0-9_]*)=', startup.group())
+        parent_names = sorted({n.decode() for n in children + every_child})
+        structures = [{'offset': m.start(), 'text': m.group().decode()} for m in (child, startup)]
+        return parent_names, structures
+    # Rust constructs its child-key array as consecutive stack string slices.
+    # Locate the array containing CODEX_THREAD_ID by decoded content, then retain
+    # every entry, including any future unprefixed entry in that array.
+    slices = list(stack_strings(data))
+    arrays = []
+    for offset, at, raw in slices:
+        if arrays and offset == arrays[-1][-1][0] + 27:
+            arrays[-1].append((offset, at, raw))
+        else:
+            arrays.append([(offset, at, raw)])
+    arrays = [a for a in arrays if any(raw == b'CODEX_THREAD_ID' for _, _, raw in a)]
+    assert len(arrays) == 1 and len(arrays[0]) >= 6, 'Codex child-key array missing or ambiguous'
+    children = arrays[0]
+    parent_names = sorted({raw.decode() for _, _, raw in children})
+    structures = [{'offset': at, 'instruction_offset': offset, 'text': raw.decode()}
+                  for offset, at, raw in children]
+    return parent_names, structures
+
+
+def stack_strings(data):
+    """Bounded x86-64 Rust stack slices: RIP-relative address and adjacent length."""
+    for m in re.finditer(rb'\x48\x8d\x05(.{4})\x48\x89\x84\x24(.{4})\x48\xc7\x84\x24(.{4})(.{4})', data, re.S):
+        address = m.start() + 7 + struct.unpack('<i', m[1])[0]
+        slot, length_slot, extent = (struct.unpack('<I', m[i])[0] for i in (2, 3, 4))
+        if length_slot == slot + 8 and 3 <= extent <= 128 and 0 <= address < len(data):
+            yield m.start(), address, data[address:address + extent]
 
 
 def inventory(data):
     found = {}
 
     def keep(raw, offset):
+        if len(re.findall(rb'CLAUDE|AI_AGENT|CODEX', raw)) > 1:
+            return
         if re.fullmatch(NAME, raw) and (b'_' in raw or raw in (b'CLAUDECODE', b'HOME', b'PATH')):
             found.setdefault(raw.decode('ascii'), set()).add(offset)
     for match in re.finditer(rb'(?<![A-Za-z0-9_])' + NAME + rb'(?![A-Za-z0-9_])', data):
@@ -55,27 +99,22 @@ def inventory(data):
                         at = offset + address - virtual
                         keep(data[at:at + extent], at)
                         break
-    # Session identifiers can be embedded in merged literal runs too.
-    for match in re.finditer(rb'(?:CLAUDE|AI_AGENT|CODEX)[A-Z0-9_]*', data):
-        keep(match.group(), match.start())
-    # Explicit observed names can occur in merged literal runs too.
-    for name in PARENT:
-        raw = name.encode()
-        for match in re.finditer(re.escape(raw), data):
-            keep(raw, match.start())
+    for _, address, raw in stack_strings(data):
+        keep(raw, address)
     return {name: sorted(offsets) for name, offsets in sorted(found.items())}
 
 
 def extract(engine, path):
     data = path.read_bytes()
     names = inventory(data)
+    parents, structures = parent_environment(engine, data, names)
     result = {'schema': 'veldo.environment_inventory/v1', 'engine': engine,
               'version': PINNED[engine][0], 'sha256': 'sha256:' + hashlib.sha256(data).hexdigest(),
               'method': 'uppercase identifier candidates plus ELF string slices; conservative superset',
               'names': names,
               'session_names': sorted({m.group().decode('ascii') for m in re.finditer(
-                  rb'(?:CLAUDE|AI_AGENT|CODEX)[A-Z0-9_]*', data)}),
-              'parent_session_names': [n for n in PARENT if n in names]}
+                  SESSION, data)}),
+              'parent_session_names': parents, 'parent_structures': structures}
     if engine == 'claude':
         anchor = b'let C=e.config.type==="sdk"&&a.CLAUDE_AGENT_SDK_MCP_NO_PREFIX'
         at = data.index(anchor)

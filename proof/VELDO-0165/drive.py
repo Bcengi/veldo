@@ -70,7 +70,8 @@ def one(paths, root):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         source = (ROOT / 'scripts/suites' / SUITE).read_text()
         for module, path in paths.items():
-            anchor = 'ROOT / ".veldo" / "' + module + '"'
+            folder = 'proof/VELDO-0165' if module == 'extract_environment.py' else '.veldo'
+            anchor = 'ROOT / "' + folder + '" / "' + module + '"'
             if source.count(anchor) != 1:
                 raise RuntimeError('suite production-copy anchor moved: ' + module)
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(path) + ')')
@@ -142,7 +143,8 @@ def main():
             source = prepared['source'].read_text()
             (HERE / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
                 source.splitlines(keepends=True), ctm.mutate(source, case).splitlines(keepends=True),
-                n=0, fromfile='a/.veldo/' + case['module'], tofile='b/.veldo/' + case['module'])))
+                n=0, fromfile='a/' + case.get('dir', '.veldo') + '/' + case['module'],
+                tofile='b/' + case.get('dir', '.veldo') + '/' + case['module'])))
             observed = run({case['module']: str(prepared['mutant'])})
             report['mutants'].append(dict(name=case['name'], module='.veldo/' + case['module'], named_rows=case['rows'],
                                           diff='proof/VELDO-0165/%s.diff' % case['name'],

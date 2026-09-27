@@ -38,6 +38,7 @@ footprint:
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0165-engine-launch-hygiene.md"
+  - "specs/VELDO-0062-provider-credentials-and-usage.md"
   - "specs/index.md"
   - "proof/VELDO-0165/*"
 behavior_bearing: true
@@ -166,3 +167,12 @@ scripts/drive.py for the requested red entry point, and the VELDO-0062 and VELDO
 fake qualification writers. The whole selftest and contained-launch suites are pending because their
 real user service manager access conflicts with this task's safety restriction. No gate or real engine
 run was performed. Status unchanged; evidence and remaining checks are in proof/VELDO-0165/README.md.
+
+2026-09-27, review fixes: empty extracted evidence is present; missing or null evidence refuses.
+The adapter's checked configuration is carried through the trusted wrapper after the inherited
+strip. Approval of VELDO-0165 (Telegram 29229) supersedes VELDO-0062's inherited non-login setting
+exception: CLAUDE_CODE_MAX_OUTPUT_TOKENS reaches the engine only when configured. Existing login
+checks remain. The byte extractor locates Claude Code's child-environment array and unconditional
+startup assignments by content; their unprefixed names join AC4's wrapper list. New rows cover
+configured values, unprefixed parent names, empty evidence, extraction completeness, matching
+prefixes, accurate removed-name reports and the refused-baseline metric.

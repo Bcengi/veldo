@@ -25,9 +25,11 @@ def _v165_suite():
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
         'control_engine_codex.py': ROOT / ".veldo" / "control_engine_codex.py",
     }
+    EXTRACTOR = ROOT / "proof/VELDO-0165" / "extract_environment.py"
     ROWS = ('strip/claude', 'strip/codex', 'strip/future-names', 'strip/own-values',
             'refuse/claude', 'refuse/codex', 'mcp/prefixed-tools', 'evidence/qualified',
-            'fixture/extraction', 'fixture/mcp-control')
+            'fixture/extraction', 'fixture/mcp-control', 'strip/configured', 'strip/unprefixed',
+            'evidence/empty', 'evidence/completeness', 'evidence/prefixes', 'report/removed', 'report/refused')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -316,7 +318,8 @@ sys.exit(payload.get('code', 0))
                     'CLAUDE_EFFORT', 'AI_AGENT', 'CODEX_THREAD_ID', 'CLAUDE_AGENT_SDK_MCP_NO_PREFIX')
         future = tuple(p + 'VELDO_FUTURE_' + os.urandom(5).hex().upper()
                        for p in ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX', 'CLAUDE_CODE_'))
-        planted = original + future
+        unprefixed = ('GIT_CONFIG_PARAMETERS', 'TRACEPARENT', 'COREPACK_ENABLE_AUTO_PIN')
+        planted = original + future + unprefixed
         inherited.update({n: 'planted-' + os.urandom(8).hex() for n in planted})
         inherited.update({'CLAUDE_CONFIG_DIR': str(base / 'wrong-claude'),
                           'CODEX_HOME': str(base / 'wrong-codex'),
@@ -327,6 +330,12 @@ sys.exit(payload.get('code', 0))
         token.chmod(0o600)
         configuration = json.loads(config.read_text())
         configuration['subscription_tokens'] = {'acct-c1': str(token)}
+        config.write_text(json.dumps(configuration))
+        configured_values = {'claude': {'CLAUDE_CODE_SUBAGENT_MODEL': 'fixture-' + os.urandom(8).hex()},
+                             'codex': {'CODEX_CA_CERTIFICATE': 'fixture-' + os.urandom(8).hex()}}
+        for engine, values in configured_values.items():
+            configuration['adapters'][engine]['environment'].update(values)
+            inherited.update({n: 'parent-' + os.urandom(8).hex() for n in values})
         config.write_text(json.dumps(configuration))
         inherited['CLAUDE_CODE_OAUTH_TOKEN'] = 'inherited-' + os.urandom(12).hex()
 
@@ -388,6 +397,13 @@ sys.exit(payload.get('code', 0))
             check('strip/future-names', engine + ': unlisted future names removed by all four prefixes',
                   bool(names) and not names.intersection(future))
             env = own.get('env') or {}
+            check('strip/configured', engine + ': configured values replace inherited values exactly',
+                  bool(env) and all(env.get(n) == v for n, v in configured_values[engine].items())
+                  and all(n not in env for other, values in configured_values.items() if other != engine for n in values))
+            check('strip/unprefixed', engine + ': parent child settings outside prefixes removed',
+                  bool(env) and not set(unprefixed).intersection(env))
+            check('report/removed', engine + ': restored names are not reported removed',
+                  bool(report) and not set(report.get('removed') or []).intersection(env))
             profile = 'CLAUDE_CONFIG_DIR' if engine == 'claude' else 'CODEX_HOME'
             check('strip/own-values', engine + ': account profile and baseline restored after strip',
                   env.get(profile) == profiles[account] and env.get('DISABLE_AUTOUPDATER') == '1'
@@ -406,11 +422,13 @@ sys.exit(payload.get('code', 0))
                 ('claude', 'acct-c1', mods / 'runtime' / 'claude-qualification.json', '2.1.281'),
                 ('codex', 'acct-x1', codex_qualification, '0.154.0')):
             original_record = json.loads(path.read_text())
-            for missing in ('strip_prefixes', 'session_environment'):
+            for missing in ('strip_prefixes', 'session_environment', 'null_session_environment'):
                 altered = json.loads(json.dumps(original_record))
                 entry = altered['versions'][version] if engine == 'claude' else altered
                 if missing == 'strip_prefixes':
                     entry['baseline'].pop(missing, None)
+                elif missing == 'null_session_environment':
+                    entry['session_environment'] = None
                 else:
                     entry.pop(missing, None)
                 path.write_text(json.dumps(altered))
@@ -419,12 +437,35 @@ sys.exit(payload.get('code', 0))
                 check('refuse/' + engine, missing + ': refused by name before spawn',
                       error is None and record.get('refusal') == 'missing_evidence:engine_baseline:' + version
                       and record.get('state') == 'refused' and not markers_of(launch.dispatch_id))
+                check('report/refused', engine + ': missing strip evidence counted once',
+                      sum(e.get('metrics', {}).get('engine_baseline_refused', 0)
+                          for e in (launch.messages if launch else [])) == 1)
+            altered = json.loads(json.dumps(original_record))
+            entry = altered['versions'][version] if engine == 'claude' else altered
+            entry['session_environment'] = []
+            path.write_text(json.dumps(altered))
+            launch, error = submit('empty-' + engine, engine, [], via=account)
+            record = finish(launch, via=account)
+            check('evidence/empty', engine + ': empty extracted list is present evidence and launches',
+                  error is None and record.get('state') == 'exited' and len(markers_of(launch.dispatch_id)) == 1)
             path.write_text(json.dumps(original_record))
 
+        extractor = load('v165_extractor', EXTRACTOR if EXTRACTOR.is_file() else TREE / 'proof/VELDO-0165/extract_environment.py')
         for engine, version, module in (('claude', '2.1.281', CLAUDE_ENGINE), ('codex', '0.154.0', CODEX_ENGINE)):
             evidence = json.loads((TREE / 'proof' / 'VELDO-0165' / (engine + '-environment.json')).read_text())
             shipped = json.loads((ROOT / '.veldo' / 'runtime' / (engine + '-qualification.json')).read_text())
             entry = shipped['versions'][version] if engine == 'claude' else shipped
+            extracted, extraction_error = attempt(lambda: extractor.extract(engine, extractor.PINNED[engine][1]))
+            check('evidence/completeness', engine + ': rerun byte extraction equals inventory and covers child structures',
+                  extraction_error is None and extracted == evidence
+                  and all(n.startswith(('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')) or n in L.EXEC_STRIPPED
+                          for n in (extracted or {}).get('parent_session_names', [])))
+            if engine == 'claude':
+                check('evidence/completeness', 'child array and unconditional startup assignments are extracted',
+                      set(unprefixed) | {'GIT_EDITOR', 'BUN_OPTIONS', 'TMPPREFIX', 'NoDefaultCurrentDirectoryInExePath'}
+                      <= set((extracted or {}).get('parent_session_names', [])))
+            check('evidence/prefixes', engine + ': wrapper and qualified baseline use identical prefixes',
+                  list(getattr(L, 'SESSION_PREFIXES', ())) == module.BASELINE.get('strip_prefixes'))
             prefixes = (entry.get('baseline') or {}).get('strip_prefixes') or []
             check('evidence/qualified', engine + ': qualification carries prefixes, names and pinned digest',
                   prefixes == ['CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX']

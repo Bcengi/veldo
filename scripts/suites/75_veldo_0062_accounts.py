@@ -276,18 +276,18 @@ def _v62_suite():
         FAMILIES = ['ANTHROPIC_V62_' + probe, 'OPENAI_V62_' + probe, 'CODEX_V62_' + probe, 'CLAUDE_CODE_USE_V62_' + probe]
 
         def inherited_outcome(name):
-            if name in PROFILE_VARS or name.startswith(FAMILY) or DECIDED.get(name) in ('strip', 'setting'):
+            if name in PROFILE_VARS or name.startswith(FAMILY + ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')) or DECIDED.get(name) in ('strip', 'setting'):
                 return 'strip'
             return 'keep'
         STRIPPED = sorted({n for n in LISTED if inherited_outcome(n) == 'strip'} | set(NINE) | set(REDIRECTS)
-                          | set(FAMILIES))
+                          | set(FAMILIES) | {'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
         # Kept, planted: every kept listed name but the home names (the receiver's own tools need the real
         # ones; they are checked to arrive unchanged), a neutral name, count and threshold settings.
         KEPT = sorted({n for n in LISTED if inherited_outcome(n) == 'keep' and n not in HOME_NAMES}
-                      | {'V62_NEUTRAL_' + probe, 'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
+                      | {'V62_NEUTRAL_' + probe})
         # What the Claude adapter configures: the model table, the settings and a threshold setting, each of
         # which must reach the engine with its configured value; the Codex adapter a setting of its family.
-        CONFIGURED_CLAUDE = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | {'CLAUDE_CODE_IDLE_TOKEN_THRESHOLD'})
+        CONFIGURED_CLAUDE = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | {'CLAUDE_CODE_IDLE_TOKEN_THRESHOLD', 'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
         CONFIGURED_CODEX = ['CODEX_CA_CERTIFICATE', 'RUST_LOG']
         fake = '''#!%s -B
 import json, os, sqlite3, sys, time
@@ -780,7 +780,7 @@ sys.exit(payload.get('code', 0))
                       bool(names) and not leaked)
                 missing = sorted(n for n in KEPT if n not in wanted and values.get(n) != caller[n])
                 homes = sorted(n for n in HOME_NAMES if n in os.environ and values.get(n) != os.environ[n])
-                check('login/no-paid-api', '%s: what is not a login still reached it unchanged: the %d kept names of '
+                check('login/no-paid-api', '%s: names outside the session prefixes still reached it unchanged: the %d kept names of '
                       'the lists (general proxy, CA, runtime, cloud, tool credentials, the not-secret thresholds and '
                       'usage settings), a neutral name, a count setting and the home names [%s, %s]'
                       % (account, len(KEPT), missing[:8], homes), bool(names) and not missing and not homes)

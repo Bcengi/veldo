@@ -8061,7 +8061,7 @@ def cases():
                "    if False:", ['refuse/claude'])
     for engine, source in [('claude', 'entry'), ('codex', 'record')]:
         hygiene165(engine + '-names-unqualified', 'control_engine_' + engine + '.py',
-                   "    if not " + source + ".get('session_environment'):", "    if False:", ['refuse/' + engine])
+                   "    if " + source + ".get('session_environment') is None:", "    if False:", ['refuse/' + engine])
     hygiene165('own-values-lost', 'control_launch.py',
                "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))",
                "    environment.pop(ENGINE_OVERRIDES, None)", ['strip/own-values'])
@@ -8071,6 +8071,24 @@ def cases():
     hygiene165('removed-names-unreported', 'control_launch.py',
                'n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)',
                'n in EXEC_STRIPPED', ['strip/claude', 'strip/codex'])
+    for engine, source in [('claude', 'entry'), ('codex', 'record')]:
+        hygiene165(engine + '-empty-is-missing', 'control_engine_' + engine + '.py',
+                   "    if " + source + ".get('session_environment') is None:",
+                   "    if not " + source + ".get('session_environment'):", ['evidence/empty'])
+    hygiene165('configured-not-restored', 'control_launch.py',
+               "        own = {n: environment[n] for n in self.binding['configured_environment'] if n in environment}",
+               "        own = {}", ['strip/configured'])
+    hygiene165('unprefixed-parent-kept', 'control_launch.py',
+               "'GIT_CONFIG_PARAMETERS', 'COREPACK_ENABLE_AUTO_PIN',",
+               "", ['strip/unprefixed'], also=(("'TRACEPARENT', ", ""),))
+    hygiene165('parent-hand-list', 'extract_environment.py',
+               "    parents, structures = parent_environment(engine, data, names)",
+               "    parents, structures = sorted(n for n in names if n.startswith(PREFIXES)), []",
+               ['evidence/completeness'])
+    result[-1]['dir'] = 'proof/VELDO-0165'
+    hygiene165('refused-not-counted', 'control_launch.py',
+               "int(refusal.startswith('missing_evidence:engine_baseline:'))",
+               "0", ['report/refused'])
     return result
 
 
