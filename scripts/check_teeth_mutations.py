@@ -8037,6 +8037,40 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    # VELDO-0165: the prefix strip is an exec boundary, and both qualifiers require it.
+    def hygiene165(name, module, old, new, rows, also=()):
+        add(165, 'hygiene-' + name, '82_veldo_0165_launch_hygiene.py', module, old, new, rows, also)
+
+    extracted165 = set()
+    for engine165 in ('claude', 'codex'):
+        record165 = json.loads((ROOT / '.veldo' / 'runtime' / (engine165 + '-qualification.json')).read_text())
+        entry165 = record165['versions']['2.1.281'] if engine165 == 'claude' else record165
+        extracted165.update(entry165.get('session_environment') or [])
+    hygiene165('listed-names-only', 'control_launch.py',
+               'name.startswith(SESSION_PREFIXES)',
+               'name in ' + repr(tuple(sorted(extracted165))), ['strip/future-names'])
+    hygiene165('codex-strip-unqualified', 'control_engine_codex.py',
+               "    if record.get('baseline') != BASELINE:",
+               "    if False:", ['refuse/codex'])
+    hygiene165('mcp-override-kept', 'control_launch.py',
+               '        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):',
+               "        if name != 'CLAUDE_AGENT_SDK_MCP_NO_PREFIX' and (name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES)):",
+               ['mcp/prefixed-tools'])
+    hygiene165('claude-strip-unqualified', 'control_engine_claude.py',
+               "    if entry.get('baseline') != BASELINE:",
+               "    if False:", ['refuse/claude'])
+    for engine, source in [('claude', 'entry'), ('codex', 'record')]:
+        hygiene165(engine + '-names-unqualified', 'control_engine_' + engine + '.py',
+                   "    if not " + source + ".get('session_environment'):", "    if False:", ['refuse/' + engine])
+    hygiene165('own-values-lost', 'control_launch.py',
+               "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))",
+               "    environment.pop(ENGINE_OVERRIDES, None)", ['strip/own-values'])
+    hygiene165('strip-not-applied', 'control_launch.py',
+               '    environment = engine_environment(environment)',
+               '    environment = environment', ['strip/claude', 'strip/codex'])
+    hygiene165('removed-names-unreported', 'control_launch.py',
+               'n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)',
+               'n in EXEC_STRIPPED', ['strip/claude', 'strip/codex'])
     return result
 
 

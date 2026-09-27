@@ -571,6 +571,7 @@ def environment(bound):
 # request, proof/VELDO-0156/codex-mentions.json): a skill named in the prompt loads its SKILL.md whatever
 # `skills.include_instructions` says; `skills.bundled.enabled` false keeps the bundled set out, named or not.
 BASELINE = {
+    # VELDO-0165: these prefixes qualify the wrapper's session strip; names are evidence only.
     'strip_prefixes': ['CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX'],
     'strip_names': ['CLAUDE_AGENT_SDK_MCP_NO_PREFIX'],
     'options': ['--ignore-user-config', '--ignore-rules',
@@ -628,7 +629,9 @@ def qualified_baseline(bound, record=None):
     """The baseline the qualification record lists, which must be this module's BASELINE: a binary not
     qualified with it is refused by name before anything is accepted or spawned."""
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
-    if record.get('baseline') != BASELINE or not record.get('session_environment'):
+    if not record.get('session_environment'):
+        raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
+    if record.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     return BASELINE
 

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -632 +632 @@
+-    if not record.get('session_environment'):
++    if False:

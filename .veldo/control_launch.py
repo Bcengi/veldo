@@ -248,7 +248,8 @@ ENGINE_OVERRIDES = 'VELDO_ENGINE_ENVIRONMENT'
 def engine_environment(environment):
     """THE ENVIRONMENT STRIP: an engine launch's environment (one naming ENGINE_RUNTIME) without the SSH agent,
     the session bus and the Git tokens, and with XDG_RUNTIME_DIR the run's own empty runtime directory, never
-    the receiver's; any other environment unchanged. The trusted wrapper applies it to what it execs."""
+    the receiver's. VELDO-0165 also removes every session-prefixed name, then installs only the qualified
+    baseline and account values the receiver carried in ENGINE_OVERRIDES. Other launches are unchanged."""
     runtime = environment.pop(ENGINE_RUNTIME, None)
     if runtime is None:
         return environment

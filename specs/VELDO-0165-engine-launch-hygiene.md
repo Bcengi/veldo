@@ -153,3 +153,16 @@ The bound role's PushNotification grant row moves to VELDO-0127 AC4, whose depen
 VELDO-0173. Only the owner marks a specification ready.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27: implemented the wrapper's prefix strip, then restored only the qualified baseline and
+registered account's own profile and optional subscription token. Both qualification records carry
+the prefixes and extracted session names; missing evidence refuses before spawn. The baseline names
+the MCP override explicitly. The committed byte extractor records identifier candidates with offsets
+and the SDK naming expression from both pinned binaries, without executing either. Suite
+82_veldo_0165_launch_hygiene has eight behavior rows and two fixture controls; all eight behavior rows
+are red by assertion at 65125030, and all nine finding 165 mutations are rejected. The new suite and
+VELDO-0160's account pool suite pass normally and in the empty gate environment. The footprint adds
+scripts/drive.py for the requested red entry point, and the VELDO-0062 and VELDO-0160 suites for their
+fake qualification writers. The whole selftest and contained-launch suites are pending because their
+real user service manager access conflicts with this task's safety restriction. No gate or real engine
+run was performed. Status unchanged; evidence and remaining checks are in proof/VELDO-0165/README.md.

@@ -55,6 +55,9 @@ def inventory(data):
                         at = offset + address - virtual
                         keep(data[at:at + extent], at)
                         break
+    # Session identifiers can be embedded in merged literal runs too.
+    for match in re.finditer(rb'(?:CLAUDE|AI_AGENT|CODEX)[A-Z0-9_]*', data):
+        keep(match.group(), match.start())
     # Explicit observed names can occur in merged literal runs too.
     for name in PARENT:
         raw = name.encode()
@@ -69,11 +72,19 @@ def extract(engine, path):
     result = {'schema': 'veldo.environment_inventory/v1', 'engine': engine,
               'version': PINNED[engine][0], 'sha256': 'sha256:' + hashlib.sha256(data).hexdigest(),
               'method': 'uppercase identifier candidates plus ELF string slices; conservative superset',
-              'names': names, 'parent_session_names': [n for n in PARENT if n in names]}
+              'names': names,
+              'session_names': sorted({m.group().decode('ascii') for m in re.finditer(
+                  rb'(?:CLAUDE|AI_AGENT|CODEX)[A-Z0-9_]*', data)}),
+              'parent_session_names': [n for n in PARENT if n in names]}
     if engine == 'claude':
         anchor = b'let C=e.config.type==="sdk"&&a.CLAUDE_AGENT_SDK_MCP_NO_PREFIX'
         at = data.index(anchor)
-        result['mcp_naming'] = {'offset': at, 'text': data[at:at + 1300].decode('utf-8')}
+        result['mcp_naming'] = {'offset': at, 'text': anchor.decode()}
+        anchors = [b'skipPrefix:C,', b'name:u?J.name:Me', b'`mcp__${']
+        result['mcp_name_anchors'] = []
+        for anchor in anchors:
+            at = data.index(anchor)
+            result['mcp_name_anchors'].append({'offset': at, 'text': anchor.decode()})
     return result
 
 
