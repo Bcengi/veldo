@@ -161,6 +161,67 @@
   "tree": "8f922a18",
   "validate_all": "pass"
  },
+ "review_fix_3": {
+  "engine_copies_identical": {
+   "control_andon.py": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64",
+   "control_assignment.py": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2",
+   "control_claim.py": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d",
+   "control_heartbeat.py": "b1ed1ad6e77eb0a342df5390f43955144442e1ddc89bf0dc532f26eaa922b3ea",
+   "control_store.py": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6"
+  },
+  "full_selftest": {
+   "command": "python3 scripts/selftest.py",
+   "exit_code": 0,
+   "failed": 0,
+   "passed": 6997
+  },
+  "gate_run": false,
+  "git_boundary": "pass",
+  "merged_main": true,
+  "mutation_anchors": "0 bad anchors",
+  "mutations_added": [
+   "handout-store-invariant-skipped",
+   "handout-store-invariant-ignores-resumes",
+   "handout-store-reads-outside-transaction",
+   "handout-store-id-unit-unchecked"
+  ],
+  "mutations_removed": [
+   "handout-organ-write-outside-transaction",
+   "handout-store-claim-ownership-dropped",
+   "handout-store-organ-content-ignored",
+   "handout-store-organ-origin-unchecked"
+  ],
+  "red": {
+   "0a2ba0f9979b137f64be47e57679421d7c3c8ece": 10,
+   "6512503076f231b94485421f91dc663ee0a36649": 26,
+   "6d2f40a7577cc79d693316f620bddf1f5067fe85": 9,
+   "by_assertion": true,
+   "d22c687e9d9c36e93e87409cc2bac95999bd35c9": 5
+  },
+  "review": "rv169c",
+  "reviewer_probes": {
+   "inject_probe": "both cases refused project_not_active:PAUSED, no claim row, unit READY (run with the probe's module path pointed at this worktree and its declare call made optional)",
+   "upgrade_probe": "main phase on main's .veldo, then branch phase: claim receiver and assignment inbox attach OK; its declare line now reports the removed function (AttributeError)"
+  },
+  "rows": 27,
+  "suite": "84_veldo_0169_project_handouts",
+  "teeth": {
+   "133": 21,
+   "134": 36,
+   "169": 21,
+   "31": 19,
+   "35": 12,
+   "37": 61,
+   "41": 35,
+   "53": 52,
+   "64": 36,
+   "68": 19,
+   "75": 30,
+   "76": 26
+  },
+  "tree": "6dd8f15d",
+  "validate_all": "pass"
+ },
  "selected_normal": {
   "affected_suites_passed": 181,
   "failed": 0,
