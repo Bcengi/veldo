@@ -73,7 +73,7 @@ def credential_literal(value):
         return any(credential_literal(k) or credential_literal(v) for k, v in value.items())
     if isinstance(value, list):
         return any(credential_literal(v) for v in value)
-    if isinstance(value, str) and value.lower().startswith(('bearer ', 'basic ')):
+    if isinstance(value, str) and re.fullmatch(r'(?:Bearer \S{16,}|Basic [A-Za-z0-9+/=]{8,})', value, re.IGNORECASE):
         return True
     return isinstance(value, str) and any(rx.search(value) for rx, _ in SS.PATTERNS)
 
@@ -81,6 +81,7 @@ def credential_literal(value):
 def credential_position(d):
     """Guard named credential positions. Ordinary literals are the trusted owner's choice."""
     def named(name, query=False):
+        query_name = name.lower()
         name = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', name)
         name = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', name)
         tokens = [part for part in re.split(r'[_\-.]+', name.lower()) if part]
@@ -90,7 +91,7 @@ def credential_position(d):
                              'credential', 'credentials', 'auth', 'bearer', 'cookie',
                              'authorization', 'authtoken', 'accesstoken', 'passphrase', 'privatekey') for part in tokens)
                 or tokens[-1] in ('key', 'pat')
-                or (query and any(part in ('sig', 'signature', 'code') for part in tokens)))
+                or (query and query_name in ('sig', 'signature', 'code')))
 
     def positioned(name, value, query=False):
         return named(name, query) and not value.startswith(('/', '~/'))

@@ -27,13 +27,17 @@ revision is stored. One named-position function covers environment names, stdio
 flags with inline or following values, HTTP query names, URL userinfo and headers.
 Names split on underscores, hyphens, dots and camelCase boundaries into lower-case
 tokens. Credential tokens include authorization, authtoken, accesstoken, passphrase
-and privatekey. URL query names additionally match sig, signature and code tokens.
+and privatekey. URL query names additionally match sig, signature and code as whole
+parameter names, case-insensitively; country_code, zip_code and other composite
+names do not match those extras.
 Credential tokens match whole tokens, and key or pat match only the last token.
 A final file, path, dir, name, port, url, host, id or callback exempts the name. Absolute filesystem paths starting with / or ~/ are allowed as position
 values. A bare credential flag consumes the following item unless it starts with
 two hyphens or is a single-dash flag of the form -x or -x=VALUE. A single hyphen
-followed by a generated hex value is consumed. A string beginning with Bearer or
-Basic followed by a space, case-insensitively, is refused in every field. Headers
+followed by a generated hex value is consumed. The authorization value rule
+requires the whole value: Bearer plus one space and a single run of at least 16
+non-space characters, or Basic plus one space and a single base64 run of at least
+8 characters, case-insensitively. Ordinary descriptions and labels save. Headers
 remain reference-only. Refusals record the top-level field name and reason, with no server id; a refused id cannot enter either catalog
 observations or observations.jsonl.
 Known shapes reuse the repository scanner's PATTERNS by import. The catalog never
@@ -60,12 +64,17 @@ Suite: `scripts/suites/82_veldo_0144_mcp_catalog.py`. Each row reports once.
 - AC2, `credential/no-value-on-command-line`: The fake executable observes stdin and scans every accessible live process command line; values appear in none.
 - AC2, `credential/no-value-in-records`: During and after writes, a joined scanner process checks the scratch store, WAL, journal, API and signer state, logs and proof. Authority and API fd 1 and fd 2, child stdout and stderr, responses, events, observations and store command inputs contain no value. Lookup stdout must be exactly a candidate value or empty, since it is the runtime value channel.
 - AC2, `credential/keystore-refusals`: Locked, unreachable and missing secret-tool cases refuse by name with no record or file fallback.
-- AC2, `credential/authority-binding`: Stale versions, unauthorized actors, missing passkey/CSRF and a changed value under a signed binding are refused; role removal applies to a live session.
+- AC2, `credential/authority-binding`: Stale versions, unauthorized actors, missing passkey/CSRF and a changed value under a signed binding are refused; role removal applies to a live session. The replay packet is freshly signed
+  immediately before replay with the normal 60 second lifetime, and its refusal
+  must be invalid_input:credential_binding. Authority expiry and check order are unchanged.
 - AC1, AC2, `catalog/observability`: Session and command provenance, revision and credential identities, and operation/refusal counts agree with the driven changes.
 - AC1, AC2, `install/assets`: Scaffold assets, the authority's derived module closure, API handlers and engine copies agree.
 
 - AC1, `catalog/ordinary-config-saves`: All 20 ordinary probe values, the worktree and Mac paths and a Confluence REST URL save with every field compared exactly in the API and store. The probe's environment helper used API_TOKEN; these ordinary values use CONFIG to obey the position rule. Named references and an ordinary generated literal also save exactly. Runtime generated additions exercise author arguments, GIT_AUTHOR_NAME, OAUTH_CALLBACK_PORT, SORT_ORDER, credential file paths, every last-token exemption and a bare no-auth flag followed by a port flag. Pagination and encoding queries and both single-dash flag forms also save. There are 71 saves in this row.
-- AC1, `catalog/credential-position-refused`: Generated hex values, including digest widths previously accepted, and short values refuse by name in environment entries, both stdio flag forms and HTTP queries. CamelCase privateKey and accessKey, dotted api.key, PASS, api-key flags and x-api-key literal headers are included. Userinfo and literal headers also refuse. Query sig, signature and code, the five additional credential tokens, a leading-hyphen credential argument and Bearer/Basic values across every string field are included. There are 167 cases, with credential values generated at runtime. No store command is called and no revision or journal entry is written.
+- AC1, `catalog/credential-position-refused`: Generated hex values, including digest widths previously accepted, and short values refuse by name in environment entries, both stdio flag forms and HTTP queries. CamelCase privateKey and accessKey, dotted api.key, PASS, api-key flags and x-api-key literal headers are included. Userinfo and literal headers also refuse. Query sig, signature and code, the five additional credential tokens, a leading-hyphen credential argument and Bearer/Basic values across every string field are included. There are 171 cases in this row plus one in leading-hyphen-refused, with credential values generated at runtime. No store command is called and no revision or journal entry is written.
+- AC1, `catalog/query-extra-name-saves`: country_code=US, zip_code= and five composite query names save exactly through the API and store.
+- AC1, `catalog/authorization-prose-saves`: a Bearer of news description, Basic tools label, shorter values, trailing words and a non-base64 Basic value save exactly.
+- AC1, `catalog/leading-hyphen-refused`: a bare api-key flag consumes a generated leading-hyphen hex value and refuses before storage.
 - AC1, `catalog/known-shape-refused`: Generated known shapes refuse across string fields, including names and references. All eight existing PATTERNS entries are exercised outside credential positions.
 - AC1, `catalog/refusal-no-value`: Generated values refused in credential positions and every known-shape field appear in neither catalog observations nor observations.jsonl. Both records retain the field name and reason; API and host-command refusals of a generated id omit its value.
 - AC1, `catalog/deleted-reference`: A tombstoned credential cannot satisfy either an environment or header reference. Both refuse by name without storage.
@@ -113,14 +122,14 @@ same driver and positional arguments `red 4baf622f`.
 `red-at-514915a1.json` records the preceding review round's starting commit.
 Earlier red records are retained as historical evidence for their respective review rounds.
 
-Finding 144 registers 37 uniquely named mutations in
-`scripts/check_teeth_mutations.py`. `mutations.json` records the baseline, a
+Finding 144 registers 40 uniquely named mutations in
+`scripts/check_teeth_mutations.py`. The preceding round's `mutations.json` records its baseline, a
 byte-identical copy control for each mutated module, every exact edit and source
 digest, every row outcome and its failure detail. Both declared falsifiers are
 included: `mcp144-overwrite-revision` really overwrites the earlier revision,
 and `mcp144-value-on-argv` passes the generated value as an argument. Every mutant
 fails on its named row by assertion. Reproduce the detailed record with
-`python3 proof/VELDO-0144/drive.py`; the registry checker also rejects all 37 with
+`python3 proof/VELDO-0144/drive.py`; the preceding registry run also rejected all 37 with
 finding 144 and two jobs. Finding 130 also rejects all 100 mutations with two
 jobs after its expanded command-map anchor is repaired. Names are unique across
 the entire mutation registry. The old catalog/credential-literals row and
@@ -133,18 +142,21 @@ matching with substring matching, drop the last-token exemption, consume a
 following flag as a bare flag's value, and record a refused id's value. The first
 three fail ordinary-config-saves and the last fails refusal-no-value. Two further
 mutations drop query extras and the Bearer/Basic value rule; each fails
-credential-position-refused by assertion.
+credential-position-refused by assertion. The current follow-up adds three
+mutations: query extras matching tokens, loose Bearer/Basic prefix matching, and
+skipping a leading-hyphen credential value. Their target rows are respectively
+query-extra-name-saves, authorization-prose-saves and leading-hyphen-refused.
 
 ## Checks and review boundary
 
-The whole selftest ran once with no concurrent worktree writes: 6,886 passed,
+The preceding round's whole selftest ran once with no concurrent worktree writes: 6,886 passed,
 0 failed, exit 0. Both selected selftest runs also have zero failed assertions.
 The dispatcher deliberately returns status 2 for successful scoped runs. These
 observations are not a gate stamp, an approval or a landing decision.
 
-- `82_veldo_0144_mcp_catalog`: 26 rows passed.
-- `71_veldo_0130_api`: 42 rows passed.
-- `python3 scripts/selftest.py`: 6,886 rows passed, zero failed.
+- Previous round, `82_veldo_0144_mcp_catalog`: 26 rows passed.
+- Previous round, `71_veldo_0130_api`: 42 rows passed.
+- Previous round, `python3 scripts/selftest.py`: 6,886 rows passed, zero failed.
 
 The requires registry was regenerated without a content change.
 `python3 .veldo/validate.py all` passes. The Git boundary check reports no

@@ -8156,13 +8156,25 @@ def cases():
         "if False:",
         ['catalog/ordinary-config-saves'], ())
     add(144, 'mcp144-query-extras-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
-        "or (query and any(part in ('sig', 'signature', 'code') for part in tokens))",
+        "or (query and query_name in ('sig', 'signature', 'code'))",
         'or False',
         ['catalog/credential-position-refused'], ())
     add(144, 'mcp144-authorization-value-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
-        "if isinstance(value, str) and value.lower().startswith(('bearer ', 'basic ')):",
+        "if isinstance(value, str) and re.fullmatch(r'(?:Bearer \\S{16,}|Basic [A-Za-z0-9+/=]{8,})', value, re.IGNORECASE):",
         'if False:',
         ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-query-extras-token-match', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "or (query and query_name in ('sig', 'signature', 'code'))",
+        "or (query and any(part in ('sig', 'signature', 'code') for part in tokens))",
+        ['catalog/query-extra-name-saves'], ())
+    add(144, 'mcp144-loose-bearer-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if isinstance(value, str) and re.fullmatch(r'(?:Bearer \\S{16,}|Basic [A-Za-z0-9+/=]{8,})', value, re.IGNORECASE):",
+        "if isinstance(value, str) and value.lower().startswith(('bearer ', 'basic ')):",
+        ['catalog/authorization-prose-saves'], ())
+    add(144, 'mcp144-bare-flag-skips-leading-hyphen-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if value.startswith('-' * 2) or re.fullmatch(r'-[^-](?:=.*)?', value):",
+        "if value.startswith('-'):",
+        ['catalog/leading-hyphen-refused'], ())
     add(144, 'mcp144-refusal-records-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
         "self.record(dict(about, server=None, field=getattr(error, 'field', None),",
         "self.record(dict(about, field=getattr(error, 'field', None),",

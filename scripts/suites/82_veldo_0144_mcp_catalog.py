@@ -47,7 +47,9 @@ def _v144_suite():
              'catalog/observability', 'install/assets', 'catalog/known-shape-refused',
              'catalog/ordinary-config-saves', 'catalog/credential-position-refused', 'catalog/deleted-reference',
              'catalog/credential-domain', 'credential/libsecret-protocol', 'credential/replay-value',
-             'credential/encoding', 'credential/deleted-state', 'catalog/refusal-no-value')
+             'credential/encoding', 'credential/deleted-state', 'catalog/refusal-no-value',
+             'catalog/query-extra-name-saves', 'catalog/authorization-prose-saves',
+             'catalog/leading-hyphen-refused')
     rows = {name: [] for name in names}
 
     def check(row, label, condition):
@@ -569,11 +571,30 @@ for name in paths:
                          ('bare auth before short flag', 'arguments', ['-' * 2 + 'no-auth', '-x']),
                          ('bare auth before short equals flag', 'arguments', ['-' * 2 + 'no-auth', '-x=' + generated])]
             ordinary.append(('absolute credential query', 'url', 'https://localhost/mcp?token=' + absolute))
+            query_saves = [
+                ('country code query', 'url', 'https://localhost/mcp?country_code=US'),
+                ('zip code query', 'url', 'https://localhost/mcp?zip_code='),
+            ]
+            for name in ('sas_sig', 'function_code', 'client_signature', 'CountryCode', 'ZIP_CODE'):
+                query_saves.append((name, 'url', 'https://localhost/mcp?' + name + '=' + generated))
+            prose_saves = [
+                ('Bearer description', 'arguments', ['-' * 2 + 'description', 'Bearer of news']),
+                ('Basic label', 'label', 'Basic tools'),
+                ('short Bearer value', 'label', 'Bearer ' + b64(os.urandom(11))),
+                ('short Basic value', 'label', 'Basic ' + b64(os.urandom(5))),
+                ('Bearer trailing words', 'label', 'Bearer ' + generated + ' news'),
+                ('Basic trailing words', 'label', 'Basic ' + generated + ' tools'),
+                ('Basic non base64 value', 'label', 'Basic ' + generated + '_'),
+            ]
+            ordinary += query_saves + prose_saves
             for index, (label, field, value) in enumerate(ordinary):
                 doc = definition('ordinary-' + str(index), 'http' if field == 'url' else 'stdio', label)
                 doc[field] = {'CONFIG': {'literal': value}} if field == 'environment' and isinstance(value, str) else value
                 saved = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
-                check('catalog/ordinary-config-saves', label + ' saves every field exactly',
+                save_row = ('catalog/query-extra-name-saves' if (label, field, value) in query_saves
+                            else 'catalog/authorization-prose-saves' if (label, field, value) in prose_saves
+                            else 'catalog/ordinary-config-saves')
+                check(save_row, label + ' saves every field exactly',
                       saved[0] == 200 and saved[2].get('revision') == 1
                       and dict(doc, revision=1) in data_of('mcp_server')
                       and call('GET', prefix + 'catalog?server=' + doc['id'] + '&revision=1')[2].get('server')
@@ -616,8 +637,10 @@ for name in paths:
                 position_cases.append(('arguments', [flag + '=' + value]))
                 position_cases.append(('arguments', [flag, value]))
                 position_cases.append(('url', 'https://localhost/mcp?' + name + '=' + value))
-            for name in ('key', '%61pi%5Ftoken', 'sig', 'SIG', 'signature', 'code', 'sas_sig', 'function_code'):
+            for name in ('key', '%61pi%5Ftoken', 'sig', 'SIG', 'signature', 'SiGnAtUrE', 'code', 'CoDe'):
                 position_cases.append(('url', 'https://localhost/mcp?' + name + '=' + position_values[0]))
+            for name in ('sig', 'signature', 'code'):
+                position_cases.append(('url', 'https://localhost/mcp?' + name + '='))
             position_cases += [('url', 'https://user:' + position_values[0] + '@localhost/mcp'),
                                ('url', 'https://user@localhost/mcp'),
                                ('url', 'https://localhost/mcp?key='),
@@ -645,6 +668,9 @@ for name in paths:
                     position_cases.append((target, item, 'invalid_input:server_credential_literal'))
                 position_cases.append(('environment', {'AUTHORIZATION': {'literal': value}},
                                        'invalid_input:server_credential_literal'))
+            for scheme, size in (('Bearer ', 12), ('Basic ', 6)):
+                position_cases.append(('label', scheme + base64.b64encode(os.urandom(size)).decode(),
+                                       'invalid_input:server_credential_literal'))
             store_attempts = []
             if catalog is not None:
                 store_execute = catalog.S.execute
@@ -659,7 +685,10 @@ for name in paths:
                                      'Credential position')
                     doc[field] = value
                     refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
-                    check('catalog/credential-position-refused', field + ' case ' + str(index) + ' refuses before the store',
+                    refusal_row = ('catalog/leading-hyphen-refused'
+                                   if field == 'arguments' and value == ['-' * 2 + 'api-key', '-' + position_values[0]]
+                                   else 'catalog/credential-position-refused')
+                    check(refusal_row, field + ' case ' + str(index) + ' refuses before the store',
                           refused[0] == 400 and refused[2].get('refusal') == reason
                           and head() == before and not store_attempts
                           and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
@@ -771,10 +800,16 @@ for name in paths:
                                 extra={'X-Veldo-Token': ''})
             packet = next((copy.deepcopy(p) for p in packets if p.get('assertion', {}).get('operation') == 'set_mcp_credential'), None)
             if packet is not None:
+                # This replay tests the value binding independently of elapsed suite time.
+                now = time.time()
+                packet['assertion'].update(issued_at=now, expires_at=now + SA.AS.LIFETIME)
+                packet['signature'], packet['domain_signature'] = signer(packet['assertion'])
                 packet['value'] = second_value
                 tampered = Authority().apply(packet)
             else:
                 tampered = {}
+            check('credential/authority-binding', 'fresh replay refuses the value binding, not expiry: ' + str(tampered.get('reason')),
+                  tampered.get('ok') is False and tampered.get('reason') == 'invalid_input:credential_binding')
             check('credential/authority-binding', 'current role, base, passkey, forgery guard and signed value binding are enforced',
                   valid_write and stale[0] == 409 and unauthorized.get('reason') == 'unauthorized:mcp_owner'
                   and unsigned[0] == 401 and missing_csrf[0] == 403
