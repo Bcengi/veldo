@@ -778,20 +778,38 @@ class ControlApi:
         return 200, self._record_page(session['principal'], body['dispatch'], after)
 
     def _record_stream(self, route, body, session, extra, headers):
-        after = _count(body.get('after', '0'), 'after', minimum=0)
-        resume = headers.get('Last-Event-ID')
-        if resume is not None:
-            after = _count(resume, 'last_event_id', minimum=0)
+        # An EventSource reconnecting names the last cursor it received; the stream resumes after it.
+        cursor = headers.get('Last-Event-ID')
+        after = _count(body.get('after', '0') if cursor is None else cursor,
+                       'after' if cursor is None else 'last_event_id', minimum=0)
         answer = self._record_page(session['principal'], body['dispatch'], after)
         stream = RecordStream(session['handle'], session['principal'], session['credential_id'], after, body['dispatch'])
         self._fill_record(stream, answer, always=True)
         with self._lock:
             self._streams.append(stream)
-        state = self.sessions.state(stream.handle)
-        if state != 'live':
-            stream.close('session_expired' if state == 'session_expired' else 'revoked')
+        # A session ended while the stream was filling, before it was registered: closed as a delivery closes it.
+        problem = self._stream_problem(stream, credential=False)
+        if problem is not None:
+            stream.close(problem)
             self.drop(stream)
         return 200, stream
+
+    def _stream_problem(self, stream, credential=True):
+        """Why an open stream must close now, or None: its session ended (session_expired, or revoked for any other
+        end), or, with `credential`, its credential or membership is no longer current (the session is ended)."""
+        session = self.sessions.state(stream.handle)
+        if session != 'live':
+            return 'session_expired' if session == 'session_expired' else 'revoked'
+        if not credential:
+            return None
+        try:
+            problem = self._credential_problem(stream.credential_id, stream.principal)[1]
+        except Refused as exc:
+            return exc.code
+        if not problem:
+            return None
+        self.sessions.end_by_credential(stream.credential_id)
+        return 'revoked' if problem in REVOKED else 'unauthenticated:' + problem
 
     def _fill_record(self, stream, answer, always=False):
         """Queue the record's lines after the stream's cursor, one frame per page (the first frame always),
@@ -814,34 +832,26 @@ class ControlApi:
 
     def deliver_record(self, hint):
         """The launch receiver's record hint (dispatch and last sequence): every open stream of that record is
-        judged again (its session, its credential and membership) and filled to the hinted sequence through
-        `record` for its own member. Returns {filled, closed} or a named refusal."""
+        judged again (its session, its credential and membership) and filled through `record` for its own member,
+        to the lines the record then holds. Returns {filled, closed} or a named refusal."""
         if (not isinstance(hint, dict) or not isinstance(hint.get('dispatch_id'), str) or type(hint.get('seq')) is not int
                 or hint['seq'] < 0):
             return {'refusal': 'invalid_input:record_hint'}
-        filled = closed = 0
+        counts = {'filled': 0, 'closed': 0}
         for stream in [s for s in self.streams() if s.dispatch_id == hint['dispatch_id']]:
-            state = self.sessions.state(stream.handle)
-            if state != 'live':
-                stream.close(state if state == 'session_expired' else 'revoked')
-                closed += 1
-                continue
-            try:
-                why = self._credential_problem(stream.credential_id, stream.principal)[1]
-                if why:
-                    self.sessions.end_by_credential(stream.credential_id)
-                    why = 'revoked' if why in REVOKED else 'unauthenticated:' + why
-                else:
+            problem = self._stream_problem(stream)
+            if problem is None:
+                try:
                     self._fill_record(stream, self._record_page(stream.principal, stream.dispatch_id, stream.cursor))
-                    filled += 1
-            except Refused as exc:
-                why = exc.code
-            if why:
-                stream.close(why)
-                closed += 1
+                    counts['filled'] += 1
+                except Refused as exc:
+                    problem = exc.code
+            if problem is not None:
+                stream.close(problem)
+                counts['closed'] += 1
         with self._lock:
             self._streams = [s for s in self._streams if s.closed is None]
-        return {'filled': filled, 'closed': closed}
+        return counts
 
     def record_streams(self):
         """The live followers of each record (for metrics)."""

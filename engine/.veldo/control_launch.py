@@ -740,8 +740,8 @@ class Receiver:
 
     def launch(self, contract):
         dispatch_id = contract['dispatch_id']
-        self.contract = contract
         record = self.dispatches.record(dispatch_id)
+        self.contract = contract
         if record is None or record['state'] != 'prepared':
             # Not this receiver's to launch: another attempt of it was accepted, refused, ended or is
             # unknown. Nothing is recorded and nothing is spawned.
@@ -1201,9 +1201,9 @@ class Receiver:
                 raise ValueError('no identity line')
             pending += chunk
         line, _, carry = pending.partition(b'\n')
+        message = json.loads(line)
         # VELDO-0141: the wrapper's line is the first line of the run's execution record.
         worker.identity_line = line
-        message = json.loads(line)
         if not isinstance(message, dict) or message.get('schema') != WRAPPER_SCHEMA:
             raise ValueError('not an identity line')
         if D._text(message.get('refused')) and message['refused'].startswith('spawn_failed:'):

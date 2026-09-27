@@ -6917,9 +6917,10 @@ def cases():
            "            and (artifact is None or artifact.get('complete') is True))\n",
            "            and True)  # defect: the completion gate ignores the artifact the exit record binds\n",
            'floor/missing-result')
+    # VELDO-0141 added the execution record to the same call, on its next line.
     claude('claude-exit-artifact-unbound', 'control_launch.py',
-           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)\n",
-           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())"
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,\n",
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(),"
            "  # defect: the exit record binds no artifact\n",
            'artifact/exit-record')
     claude('claude-artifact-unreturned', 'control_launch.py',
@@ -7395,6 +7396,91 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    # VELDO-0141: every worker run's execution record, redacted before it is kept, served live by the API. Each
+    # criterion's declared falsifier first, each on its named row of suite 82, then the seams they rest on.
+    def record141(name, module, old, new, rows, also=()):
+        add(141, name, '82_veldo_0141_execution_record.py', module, old, new, list(rows), also)
+    record141('record-error-stream-discarded', 'control_launch.py',
+              "                    worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,\n"
+              "                                              stderr=subprocess.PIPE,",
+              "                    worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,\n"
+              "                                              stderr=subprocess.DEVNULL,  # defect: the error stream is discarded\n"
+              "                                             ",
+              ['record/claude-complete', 'record/codex-complete'])
+    record141('record-served-unredacted', 'control_execution_record.py',
+              "        text, kinds = redact(raw.decode('utf-8', 'surrogateescape'), self.resolved)\n",
+              "        text, kinds = raw.decode('utf-8', 'surrogateescape'), []  # defect: kept and served before redaction\n",
+              ['api/no-secret-served'])
+    record141('route-summarized-steps', 'control_api_authority.py',
+              "                    'lines': lines, 'cursor'",
+              "                    'lines': [dict(x, payload=(json.loads(x['payload']).get('type') if x['payload'].startswith('{')\n"
+              "                                               else 'output')) for x in lines],  # defect: a summarized step list\n"
+              "                    'cursor'",
+              ['route/served-lines'])
+    record141('redaction-scanner-first', 'control_execution_record.py',
+              "    kinds = set()\n"
+              "    for form, kind in (resolved.forms() if resolved is not None else ()):\n"
+              "        if form in text:\n"
+              "            text = text.replace(form, marker(kind))\n"
+              "            kinds.add(kind)\n"
+              "    for rx, kind in PATTERN_KINDS:\n",
+              "    kinds = set()\n"
+              "    for rx, kind in PATTERN_KINDS:\n",
+              ['redaction/planted-value'],
+              also=[("    return text, sorted(kinds)\n",
+                     "    for form, kind in (resolved.forms() if resolved is not None else ()):  # defect: after the scanner\n"
+                     "        if form in text:\n"
+                     "            text = text.replace(form, marker(kind))\n"
+                     "            kinds.add(kind)\n"
+                     "    return text, sorted(kinds)\n")])
+    record141('record-stream-options-dropped', 'control_engine_claude.py',
+              "    'stream_options': ['--include-partial-messages', '--forward-subagent-text'],\n",
+              "    'stream_options': [],  # defect: a subagent's text and the partial messages never reach the stream\n",
+              ['record/stream-options'])
+    record141('record-hint-unsent', 'control_execution_record.py',
+              "            self.hint(False)\n",
+              "            pass  # defect: the API is told nothing until the run has ended\n",
+              ['api/live'])
+    record141('record-wrapper-line-dropped', 'control_launch.py',
+              "                recorder.line('wrapper', worker.identity_line)\n",
+              "                pass  # defect: the wrapper's identity line is not kept\n",
+              ['record/claude-complete', 'record/codex-complete'])
+    record141('record-exit-uncommitted', 'control_launch.py',
+              "                             execution_record=self.committed)\n",
+              "                             execution_record=None)  # defect: the exit commits nothing of the record\n",
+              ['route/committed'])
+    record141('record-exit-unbound', 'control_dispatch.py',
+              "        record['execution_record'] = params.get('execution_record')\n",
+              "        record['execution_record'] = None  # defect: the dispatch keeps no commitment of its record\n",
+              ['route/committed'])
+    record141('route-digest-unchecked', 'control_execution_record.py',
+              "    if committed is not None:\n        if (",
+              "    if False:  # defect: a record that no longer matches its commitment is served\n        if (",
+              ['route/committed'])
+    record141('route-scope-unchecked', 'control_api_authority.py',
+              "            if not self.CM.scope_covers(member.get('scope'), reservation.get('project')):\n",
+              "            if False:  # defect: any current member reads any run's record\n",
+              ['api/refusals', 'api/service-call'])
+    record141('route-cursor-past-end-served', 'control_execution_record.py',
+              "    if after > len(lines):\n",
+              "    if False:  # defect: a cursor past the end is served as an empty record\n",
+              ['api/refusals'])
+    record141('route-record-hint-unrouted', 'control_api.py',
+              "        if isinstance(hint, dict) and hint.get('schema') == RECORD_HINT_SCHEMA:\n",
+              "        if False:  # defect: a record hint is judged as a journal hint and refused\n",
+              ['api/live'])
+    record141('route-service-call-unlisted', 'control_api_assertion.py',
+              ", 'record': ('principal', 'dispatch_id', 'after', 'limit')}",
+              "}  # defect: the record call is not one the service carries",
+              ['api/service-call'])
+    record141('redaction-token-unresolved', 'control_launch.py',
+              "RESOLVERS = [subscription_token]\n",
+              "RESOLVERS = []  # defect: the subscription token never enters the run's set\n",
+              ['redaction/known-pattern'])
+    record141('redaction-kinds-unnamed', 'control_execution_record.py',
+              "'redacted': kinds, 'payload': text})",
+              "'redacted': [], 'payload': text})  # defect: a line never names what was replaced",
+              ['redaction/kinds-field'])
     return result
 
 
