@@ -1501,6 +1501,7 @@ def _terminal(event):
     return {'subtype': subtype, 'is_error': event['is_error'], 'num_turns': turns, 'session_id': event['session_id'],
             'stop_reason': event.get('stop_reason'), 'errors': list(errors),
             'tokens': _model_tokens(event.get('modelUsage')),
+            'result': text,
             'result_digest': None if text is None else 'sha256:' + hashlib.sha256(text.encode()).hexdigest()}
 
 

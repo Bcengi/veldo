@@ -384,6 +384,8 @@ def _v128_checks(base):
 
         def build(uid):
             """The build station: claim, dispatch, the builder's commits, the gate, then accept_build."""
+            base_commit = git('rev-parse', 'HEAD')
+            spec_path = 'specs/' + uid + '.md'
             generation = claim_op('claim', uid)
             did, cdigest = prepare(uid, 'build', {'unit': uid}, {'holder': 'builder', 'generation': generation},
                                    claim={'entity': CLM.claim_id(repo, uid), 'holder': 'builder', 'generation': generation})
@@ -395,7 +397,9 @@ def _v128_checks(base):
             git('commit', '-q', '-m', 'Implement ' + uid)
             implementation = git('rev-parse', 'HEAD')
             manifest = {'schema': 'veldo.proof/v1', 'spec_id': uid, 'producer': 'builder', 'commit': implementation,
-                        'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [str(source.relative_to(work))]}],
+                        'spec_revision': _v128_sha((work / spec_path).read_bytes()),
+                        'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [{'type': 'unit',
+                            'path': str(source.relative_to(work)), 'digest': _v128_sha(source.read_bytes())}]}],
                         'checks': [{'name': 'unit', 'status': 'passed'}], 'rollback': 'git revert'}
             (work / 'proof' / uid).mkdir(parents=True)
             (work / 'proof' / uid / 'manifest.json').write_text(_v128_json.dumps(manifest, indent=1, sort_keys=True) + '\n')
@@ -405,6 +409,8 @@ def _v128_checks(base):
             printed = _v128_json.dumps({'commit': tip}).encode()
             receiver.exit(did, cdigest, process, terminated(printed), now=_v128_time.time())
             observed = gate(green_dir)
+            proofs.accept(uid, commit=tip, base=base_commit, spec_path=spec_path, manifest=manifest,
+                          observation=observed['observation'], builder='builder')
             floor.accept_build(uid, commit=tip, gate={'green': observed.get('green') is True, 'detail': observed.get('detail')},
                                holder='builder', generation=generation)
             claim_op('release', uid, generation)
@@ -456,7 +462,15 @@ def _v128_checks(base):
         # The build, gate and review floor, by the real writers: one unit passes review and is handed off,
         # one is returned by its review, and one change is refused by a red gate.
         (work / 'README').write_text('v128\n')
-        git('add', '--', 'README')
+        (work / 'specs').mkdir(exist_ok=True)
+        for uid in ('U128-pass', 'U128-return'):
+            (work / 'specs' / (uid + '.md')).write_text('\n'.join([
+                '---', 'schema: veldo.spec/v1', 'id: ' + uid, 'status: ready',
+                'acceptance_criteria:', '  - id: AC1', '    text: The source check passes.',
+                'required_evidence: [unit]', '---', '']))
+        (work / 'scripts').mkdir(exist_ok=True)
+        (work / 'scripts/verify.sh').write_bytes((green_dir / 'scripts/verify.sh').read_bytes())
+        git('add', '--', 'README', 'specs', 'scripts/verify.sh')
         git('commit', '-q', '-m', 'v128 base')
         passing, returning = unit('U128-pass'), unit('U128-return')
         built = {uid: build(uid) for uid in (passing, returning)}

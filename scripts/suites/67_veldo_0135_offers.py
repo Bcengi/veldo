@@ -121,7 +121,9 @@ def _v135_suite():
         (work / '.veldo' / 'policy.yaml').write_text(
             'schema: veldo.policy/v1\nversion: 1\nrisk_tiers:\n' + ''.join(
                 '  %s: {reviews: %d}\n' % (name, tier['reviews']) for name, tier in tiers.items()))
-        (work / 'scripts' / 'verify.sh').write_text('#!/bin/sh\nexec python3 -B check.py\n')
+        (work / 'scripts' / 'verify.sh').write_text('#!/bin/sh\nCHECK_unit="required:python3 -B check.py"\nORDER="unit"\n'
+            'echo "== unit"\npython3 -B check.py || exit 1\necho "   unit: pass"\n'
+            'echo "GATE: GREEN ($(git rev-parse HEAD))"\n')
         (work / 'check.py').write_text(
             'import pathlib, sys\n'
             "bad = [p.name for p in sorted(pathlib.Path('src').glob('*.py')) if 'OK = True' not in p.read_text()]\n"
@@ -242,7 +244,7 @@ def _v135_suite():
         markers = base / 'markers'
         markers.mkdir()
         builder = base / 'builder.py'
-        builder.write_text('''import json, os, sys, importlib.util
+        builder.write_text('''import hashlib, json, os, sys, importlib.util
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('engine_git', sys.argv[1])
 _git_process = importlib.util.module_from_spec(spec)
@@ -260,7 +262,8 @@ git('add', '-A')
 git('commit', '-q', '-m', 'Implement ' + unit)
 implementation = git('rev-parse', 'HEAD')
 manifest = {'schema': 'veldo.proof/v1', 'spec_id': unit, 'producer': 'builder-a', 'commit': implementation,
-            'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': ['src/' + source.name]}],
+            'spec_revision': 'sha256:' + hashlib.sha256(next((work / 'specs').glob(unit + '*.md')).read_bytes()).hexdigest(),
+            'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [{'type': 'unit', 'path': 'src/' + source.name, 'digest': 'sha256:' + hashlib.sha256(source.read_bytes()).hexdigest()}]}],
             'checks': [{'name': 'unit', 'status': 'passed'}], 'rollback': 'git revert'}
 proof = work / 'proof' / unit / 'manifest.json'
 proof.parent.mkdir(parents=True, exist_ok=True)
@@ -340,13 +343,27 @@ sys.stdout.flush()
             """The executor's seams over the real repository: the builder is a real process launched through
             the VELDO-0039 runner under the claim the holder's client was granted."""
 
+            def accept_proof(self, spec, build, gate, proof, context=None):
+                CP = DSP.EX.proof_organ()
+                service = CP.ProofService(S, writer, domain=DOMAIN, repository=REPOSITORY, repo=work,
+                                          principal='floor-service', signer='floor-service', sign=sign)
+                reference = service.record_observation(gate['observation'])
+                try:
+                    accepted = service.accept(spec['id'], commit=build['commit'], base=spec['base'],
+                                              spec_path=spec['spec_path'], manifest=proof, observation=reference,
+                                              builder=self.holder)
+                    return dict(accepted, ok=True, problems=[])
+                except CP.Refused as error:
+                    return {"ok": False, "problems": error.codes}
+
             def __init__(self, holder_id, attempt=1):
                 self.holder, self.attempt, self.root, self.launched = holder_id, attempt, str(work), []
 
             def resolve(self, sid):
                 fm = DSP._Y.front_matter(spec_files[sid].read_text()) or {}
                 return {'id': fm.get('id', sid), 'status': fm.get('status'), 'lane': fm.get('lane'),
-                        'criteria_ids': ['AC1'], 'path': str(spec_files[sid])}
+                        'criteria_ids': ['AC1'], 'path': str(spec_files[sid]), 'base': git('rev-parse', 'HEAD'),
+                        'spec_path': spec_files[sid].relative_to(work).as_posix()}
 
             def run_check(self, spec):
                 return True, 'standalone'
@@ -365,7 +382,12 @@ sys.stdout.flush()
             def gate(self):
                 r = subprocess.run(['bash', str(work / 'scripts' / 'verify.sh')], cwd=str(work), capture_output=True,
                                    text=True, timeout=60)
-                return {'green': r.returncode == 0, 'detail': r.stdout.strip() or 'exit %d' % r.returncode}
+                CP = DSP.EX.proof_organ()
+                observation = {'schema': CP.OBSERVATION_SCHEMA, 'command': list(CP.GATE_COMMAND),
+                               'commit': git('rev-parse', 'HEAD'), 'exit': r.returncode, 'stdout': r.stdout,
+                               'stdout_digest': CP.digest(r.stdout.encode()),
+                               'gate': {'digest': CP.digest((work / 'scripts/verify.sh').read_bytes())}}
+                return {'green': r.returncode == 0, 'detail': r.stdout.strip(), 'observation': observation}
 
             def assemble_proof(self, spec, build):
                 r = GP.run(['git', '-C', str(work), 'cat-file', 'blob',

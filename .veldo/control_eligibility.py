@@ -164,6 +164,7 @@ REGISTRATIONS = (
     ('dispatch.py', 'Dispatcher._dispatch_review', 'review'),
     ('dispatch.py', 'Dispatcher._land', 'publication'),
     ('control_eligibility.py', 'CallHandle.invoke', 'provider_request'),
+    ('control_launch_work.py', 'Runtime._run', 'provider_request'),
 )
 # EVERY COMPLETION CONSUMER, as (module, qualified function). Each reads completion through this
 # module (completion / completion_status); the suite derives the set from call sites.

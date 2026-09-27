@@ -1049,6 +1049,15 @@
    ],
    "regions": "Parent session environment removed at exec, baseline and own login restored, both engines refusing unqualified records, MCP SDK tools keeping their prefixes.",
    "requires_note": "Uses only shared ROOT and expect. Real Runner, receiver, signed store, accounts and wrapper; fake engines and a local stdio MCP server. No service manager or network."
+  },
+  {
+   "name": "82_veldo_0129_worker_wiring",
+   "file": "82_veldo_0129_worker_wiring.py",
+   "requires": [
+    "82_veldo_0129_worker_wiring"
+   ],
+   "regions": "Installed build and independent review through qualified engine adapters, Runner, reservations and proof authority.",
+   "requires_note": "Only shared ROOT and expect. Real contained processes, isolated Git clones, signed SQLite authority records. Fake engines use recorded binary formats. No live credentials or model calls."
   }
  ]
 }
