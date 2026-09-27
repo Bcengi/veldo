@@ -24,6 +24,7 @@
   "VELDO-0165 strip/unprefixed detail: claude: parent child settings outside prefixes removed",
   "VELDO-0165 strip/unprefixed detail: codex: parent child settings outside prefixes removed",
   "VELDO-0165 evidence/completeness detail: claude: rerun byte extraction equals inventory and covers child structures",
+  "VELDO-0165 evidence/completeness detail: codex: rerun byte extraction equals inventory and covers child structures",
   "VELDO-0165 evidence/prefixes detail: claude: wrapper and qualified baseline use identical prefixes",
   "VELDO-0165 evidence/prefixes detail: codex: wrapper and qualified baseline use identical prefixes",
   "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
@@ -31,7 +32,14 @@
   "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
   "VELDO-0165 report/refused detail: codex: missing strip evidence counted once",
   "VELDO-0165 report/refused detail: codex: missing strip evidence counted once",
-  "VELDO-0165 report/refused detail: codex: missing strip evidence counted once"
+  "VELDO-0165 report/refused detail: codex: missing strip evidence counted once",
+  "VELDO-0165 strip/child-environment detail: claude: parent child settings absent; LANG and TERM are the baseline's",
+  "VELDO-0165 strip/child-environment detail: codex: parent child settings absent; LANG and TERM are the baseline's",
+  "VELDO-0165 mcp/configured-refused detail: an adapter configuring the MCP naming switch is refused by name before spawn",
+  "VELDO-0165 evidence/not-a-list detail: claude: session names False refuse as missing evidence",
+  "VELDO-0165 evidence/not-a-list detail: claude: session names '' refuse as missing evidence",
+  "VELDO-0165 evidence/not-a-list detail: codex: session names False refuse as missing evidence",
+  "VELDO-0165 evidence/not-a-list detail: codex: session names '' refuse as missing evidence"
  ],
  "failed_rows": [
   "VELDO-0165 strip/claude",
@@ -46,20 +54,23 @@
   "VELDO-0165 strip/unprefixed",
   "VELDO-0165 evidence/completeness",
   "VELDO-0165 evidence/prefixes",
-  "VELDO-0165 report/refused"
+  "VELDO-0165 report/refused",
+  "VELDO-0165 strip/child-environment",
+  "VELDO-0165 mcp/configured-refused",
+  "VELDO-0165 evidence/not-a-list"
  ],
  "modules": {
   ".veldo/control_engine_claude.py": {
    "at_commit": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444",
-   "now": "b50e99b038985d7f8f9bee4f83be1a1ee7d178612c3797383f3a3a93c46e1a4f"
+   "now": "b280eca4903231634e87780984902a0eeca10f99abbe7fbfd9273d4afdbc871d"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "c0d82741b4b40a5141d87c1ee0f28a05a7bc7e4f7e9bf190f54340539492273a",
-   "now": "67522723ca236e992acc850f33a625a674e02568dc9f266d49cf33514b74b150"
+   "now": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742"
   },
   ".veldo/control_launch.py": {
    "at_commit": "453619ba9d151fbcc47fc1e95d40d4f50615a33e2223e904c981ccd6d68c89d0",
-   "now": "8bf2a63f714e5093f8c939668281982861bcf351e298a70384126c6228767c8b"
+   "now": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
   }
  },
  "preamble_rows": 26,
@@ -131,10 +142,26 @@
   [
    "VELDO-0165 report/refused",
    false
+  ],
+  [
+   "VELDO-0165 strip/child-environment",
+   false
+  ],
+  [
+   "VELDO-0165 mcp/configured-refused",
+   false
+  ],
+  [
+   "VELDO-0165 evidence/not-a-list",
+   false
+  ],
+  [
+   "VELDO-0165 evidence/outside-scan",
+   true
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 15.811,
+ "seconds": 15.166,
  "spec_id": "VELDO-0165",
  "suite": "scripts/suites/82_veldo_0165_launch_hygiene.py",
  "tree": "git archive 6512503076f231b94485421f91dc663ee0a36649, unchanged; the current suite file run against it"
