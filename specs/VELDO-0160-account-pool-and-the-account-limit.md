@@ -194,7 +194,11 @@ that gives no list gives all its tools.
 **The structural rule for the re-run-or-ask decision (the lead's decision).** Three rounds of checks each found
 a new way Claude Code keeps a nested MCP call out of the stream (the REPL tool's inner calls, an agent a
 sub-agent starts, a skill a sub-agent forks, whose messages are dropped and whose end reports no count), so
-rebuilding the calls from the stream cannot be made complete, and the configuration decides first. Rule 1: when
+rebuilding the calls from the stream cannot be made complete, and the configuration decides first. Before rule 1,
+a visible call that contradicts the configuration asks: an MCP call the record shows to a server the run's
+configuration does not list, or to a tool the configuration does not give the run, shows the run did not have the
+configuration the decision reads, so the decision is ask, naming each such line (reason `unconfigured_call`, basis
+`unconfigured_call`), even when every configured server is read-only. Rule 1: when
 the configuration gives the run no MCP server with a tool not marked read-only (no server, or each lists its
 tools and its revision marks every one read-only), the run could not have written through MCP, and the
 decision is re-run whatever the stream shows; a structurally malformed record is still refused by name. Rule 2:
@@ -330,3 +334,13 @@ others check they were decided by the calls; `format/tool-forms` compares the co
 160 mutations (rule 1 skipped, rule 2 skipped, each construct class dropped, and the configuration's tool list
 misread). The authoritative evidence later is a factory-side log of the MCP calls (filed for VELDO-0158). Status
 unchanged.
+
+2026-09-26, the lead's decision on a call the configuration does not give the run: before rule 1, a visible MCP
+call to a server the run's configuration does not list, or to a tool the configuration does not give the run,
+decides ask, naming the line (reason `unconfigured_call`, basis `unconfigured_call`), since it contradicts the
+configuration rule 1 trusts; before this a run configured with only read-only servers that visibly called an
+unlisted server was re-run. The call-by-call rules keep `server_not_configured` for their own callers. New row
+`decision/unconfigured-call-asks` (an unlisted server's call and an unselected read-only tool's call ask with only
+read-only servers configured; the same record calling a listed read-only tool re-runs); `decision/ask` now expects
+the unlisted server's call to be decided by this rule and checks the call-by-call rules still name it. 2 more
+finding 160 mutations (the check skipped, the configuration's tool list ignored). Status unchanged.

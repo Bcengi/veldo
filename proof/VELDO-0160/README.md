@@ -75,6 +75,13 @@ tool's result with status `forked`); and Codex's `collab` (exec's `collab_tool_c
 rules below unchanged, decides, basis `calls`. The authoritative evidence later is a factory-side log of the
 MCP calls themselves (filed for VELDO-0158).
 
+**A call that contradicts the configuration asks first (the lead's decision).** Before rule 1, `decide` reads
+the record's calls and `unconfigured(shown, servers, marks)` names each MCP call to a server the configuration does
+not list, or to a tool of a listed server that the configuration does not give the run (its `tools` list); any
+such call makes the decision `ask`, basis `unconfigured_call`, naming each with reason `unconfigured_call`, its
+server and tool and, for a listed server, its catalog id and revision, even when every configured server is
+read-only. Built-in tools are not MCP calls and are not judged by it.
+
 **The call-by-call rules read a record.** `control_account_limit.decide_by_calls(record, servers,
 marks, provider)` reads a fixture record in the form of the specification's Notes (each line's gapless
 `sequence`, `received_at`, `stream`, `redacted` and `payload`), finds each MCP tool call on the engine
@@ -201,7 +208,7 @@ where the script says, so concurrency is observed rather than timed. No real eng
 |---|---|
 | AC1 | `pool/per-account-isolation` (declared falsifier), `pool/one-registration` (declared), `pool/concurrent` (declared) |
 | AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted`, `limit/claude-rejected-texts` |
-| AC3 | `decision/ask` (declared), `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls`, `decision/no-write-server-reruns`, `decision/nested-work-asks`, `decision/nested-constructs` |
+| AC3 | `decision/ask` (declared), `decision/unconfigured-call-asks`, `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls`, `decision/no-write-server-reruns`, `decision/nested-work-asks`, `decision/nested-constructs` |
 | AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared), `pool/usage-observes`, `pool/selection-order`, `pool/until-earliest` |
 | Install | `install/assets` |
 | Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines`, `format/tool-forms` |
@@ -299,7 +306,13 @@ concurrency of two (three Codex dispatches at once, two on it). `pool/selection-
 Claude Code accounts at 0.7, 0.1, 0.1 (used last) and unknown, the dispatch goes to the 0.1 account used
 least recently and the trace ranks them in exactly that order, unknown last. `pool/until-earliest`: with
 all four limited (resets 900, 600, 1200 s ahead, and one at 300 s on its five-hour window with its weekly
-window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `decision/no-write-server-reruns` (rule 1): the checker's forked skill
+window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `decision/unconfigured-call-asks`
+(before rule 1), for both engines with only read-only servers configured: a visible call to an unlisted server
+(`mailer`) asks, basis `unconfigured_call`, naming that line with no catalog id; with tracker giving only
+`get_issue`, a call to its `search` (marked read-only, not given) asks naming the line with tracker's catalog id
+and revision; the negative control, the same record calling `get_issue` under either configuration, re-runs by
+rule 1. `decision/ask` now expects the unlisted server's call decided by this rule and checks `decide_by_calls`
+still names it `server_not_configured`. `decision/no-write-server-reruns` (rule 1): the checker's forked skill
 (an Agent whose sub-agent runs a forking Skill, the fork's task started and ended with no count, no call shown),
 as objects and as JSON text, with only read-only tools configured (tracker listing `get_issue` and `search`, both
 marked; wiki listing none), a depth-2 agent's hidden MCP write with no server configured, and exec's own
@@ -433,6 +446,8 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | decision-claude-task-first-count-kept | control_engine_claude.py | `decision/subagent-calls` |
 | decision-claude-task-notification-count-unread | control_engine_claude.py | `decision/subagent-calls`, `format/tool-forms` |
 | format-claude-task-count-field-moved | control_engine_claude.py | `decision/subagent-calls`, `format/tool-forms` |
+| decision-unconfigured-call-skipped (the unconfigured-call rule skipped) | control_account_limit.py | `decision/unconfigured-call-asks`, `decision/ask` |
+| decision-unconfigured-tool-ignored | control_account_limit.py | `decision/unconfigured-call-asks` |
 | decision-rule1-skipped (the structural rule: rule 1 skipped) | control_account_limit.py | `decision/no-write-server-reruns` |
 | decision-rule2-skipped (rule 2 skipped) | control_account_limit.py | `decision/nested-work-asks`, `decision/nested-constructs` |
 | decision-listed-tools-ignored | control_account_limit.py | `decision/no-write-server-reruns` |
