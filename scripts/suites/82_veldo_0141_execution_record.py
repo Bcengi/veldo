@@ -1529,6 +1529,37 @@ err.close()
                     finally:
                         api._record_page, api._fill_record = original_page, original_fill
 
+        with region('api/registration-race'):
+            if hasattr(api, '_fill_record'):
+                stream = API.RecordStream('h', 'owner', 'c', 0, 'concurrent-review')
+                entered, release, second_queued, second_started = [threading.Event() for _ in range(4)]
+                original_put = stream.put
+                def held_put(frame):
+                    if frame['cursor'] == 1:
+                        entered.set()
+                        release.wait(3)
+                    original_put(frame)
+                    if frame['cursor'] == 2:
+                        second_queued.set()
+                stream.put = held_put
+                def fill_second():
+                    second_started.set()
+                    api._fill_record(stream, {'lines': [{'seq': 1}, {'seq': 2}], 'total': 2})
+                first = threading.Thread(target=api._fill_record, args=(stream, {'lines': [{'seq': 1}], 'total': 1}))
+                second = threading.Thread(target=fill_second)
+                first.start()
+                ready = entered.wait(3)
+                second.start()
+                second_started.wait(3)
+                second_queued.wait(1)
+                release.set()
+                first.join(3)
+                second.join(3)
+                frames = [stream.next(0), stream.next(0)]
+                check('api/registration-race', 'initial catch-up and concurrent hint keep cursor and frame order',
+                      ready and not first.is_alive() and not second.is_alive()
+                      and [frame.get('cursor') for kind, frame in frames if kind == 'frame'] == [1, 2])
+
         with region('api/slow-reader'):
             if not hasattr(API, 'RecordStream'):
                 check('api/slow-reader', 'record stream exists', False)

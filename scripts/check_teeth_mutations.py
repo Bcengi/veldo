@@ -7596,6 +7596,10 @@ def cases():
               "        self.resolved.paths = ER.clone_paths(self._engine_cwd(argv, contract['dispatch_id'],\n                                                               adapter.get('identity') == 'reported'))\n",
               '        self.resolved.paths = ()  # defect: receiver never snapshots its clone\n',
               ['redaction/clone-relative-paths'])
+    record141('record141-concurrent-fills-interleave', 'control_api.py',
+              '        with stream._condition:\n            self._fill_record_locked(stream, answer, always)\n',
+              '        self._fill_record_locked(stream, answer, always)  # defect: overlapping fills interleave frames\n',
+              ['api/registration-race'])
     return result
 
 
