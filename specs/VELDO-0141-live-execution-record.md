@@ -211,3 +211,26 @@ decides the result. AC1 keeps the complete record and its error-stream falsifier
 the keystore is VELDO-0144's in stage 2, so AC4 names the per-run set of resolved values the receiver
 replaces and tests it with a planted resolver that adds to that set; VELDO-0158 AC3 requires every value
 resolved from the keystore to enter the set. AC4's falsifier is unchanged. Status unchanged.
+
+2026-09-26, build (branch build-veldo-0141 from 3c85f33b): built as the criteria read. The launch receiver pipes
+the worker's error stream (it was discarded) and keeps every run's execution record (new
+`control_execution_record.py`): the wrapper's identity line, each engine output line and each error-stream line,
+in the order read, as one 0600 append-only file per dispatch under the factory state root's `records`, its
+header binding the dispatch, contract, unit, station, project, account and host. Each line is redacted before it
+is kept: first every value of the run's set of resolved credential values (`control_launch.RESOLVERS`, called as
+the worker is spawned; the account's subscription token is the one built in, VELDO-0158 AC3 adds the
+keystore's), then secret_scan's patterns and high-entropy spans, each replaced by a marker naming its kind and the
+line's `redacted` field naming the kinds. After each batch the receiver hints the API's hint socket (the
+receiver's `record_hints`); the exit record commits the record's line count, byte count and digest
+(`control_dispatch.exit`, `execution_record`); a last hint marks the end. The API gains `runs.record` (a page from
+a cursor) and `runs.record_stream` (live, `event: record`, Last-Event-ID resume), both in the events family,
+through the authority's new `record` read (member's scope must cover the run's project; unknown run, cursor past
+the end, a record bound to another run and one not matching its commitment refused by name), carried over the
+service socket (`control_api_assertion.CALLS`, `control_service_api`, `control_client_api`; the service
+configuration may name `records`). Claude Code runs add `--include-partial-messages` and
+`--forward-subagent-text` as the baseline's `stream_options`, read from the 2.1.281 bytes (both boolean, honored
+only with print mode and stream JSON output) and requalified in both qualification records and
+proof/VELDO-0155's table, whose suite now expects them. The footprint gains the files these needed:
+control_dispatch.py (the exit's commitment), control_service_api.py and control_client_api.py (the record call),
+control_engine_claude.py and the Claude qualification records (the stream options), proof/VELDO-0155's extractor
+and table and suite 80 (its baseline check). Proof: suite 82, `proof/VELDO-0141/`. Status unchanged.

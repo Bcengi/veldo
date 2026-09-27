@@ -1089,16 +1089,22 @@ err.close()
                   final[0] == 200 and final[2].get('ended') is True and final[2].get('committed') == committed
                   and committed.get('lines') == len(main_lines) and path.is_file()
                   and committed.get('digest') == file_sha(path) and committed.get('bytes') == path.stat().st_size)
-            # A record that no longer matches its commitment is refused by name, never served.
+            # A record that no longer matches its commitment is refused by name, never served: one line's text
+            # changed in place (the same lines and bytes), and one line more.
             copied = path.read_bytes() if path.is_file() else b''
-            if path.is_file():
-                path.write_bytes(copied + (json.dumps({'seq': len(main_lines) + 1, 'payload': 'x'}) + '\n').encode())
-            tampered = page(main_launch.dispatch_id, 0)
-            if path.is_file():
-                path.write_bytes(copied)
+            tampers = {'a line changed': copied.replace(b'v141 done', b'v141 DONE'),
+                       'a line added': copied + (json.dumps({'seq': len(main_lines) + 1, 'payload': 'x'}) + '\n').encode()}
+            seen = {}
+            for name, data in tampers.items():
+                if path.is_file():
+                    path.write_bytes(data)
+                seen[name] = page(main_launch.dispatch_id, 0)
+                if path.is_file():
+                    path.write_bytes(copied)
             check('route/committed', 'a record whose file no longer matches the committed digest is refused by name '
-                  '[%s %s]' % (tampered[0], refusal(tampered)),
-                  tampered[0] == 500 and refusal(tampered) == 'unknown_outcome:record_digest')
+                  '[%s]' % {n: (s[0], refusal(s)) for n, s in seen.items()},
+                  copied.count(b'v141 done') == 1 and all(s[0] == 500 and refusal(s) == 'unknown_outcome:record_digest'
+                                                          for s in seen.values()))
             check('route/committed', 'the record file is the receiver\'s alone: 0600 in a 0700 directory',
                   path.is_file() and path.stat().st_mode & 0o777 == 0o600 and records_dir.stat().st_mode & 0o777 == 0o700)
 
