@@ -24,7 +24,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0166_*.py"
   - "scripts/suites/75_veldo_0062_accounts.py"
-  - "scripts/suites/78_veldo_0060_claude_adapter.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -112,7 +112,7 @@ diagnostics), filed separately.
 ## Notes
 
 The fixture's source is this real Claude Code 2.1.281 rate_limit_event line, verbatim; the fake Claude
-Code engine in scripts/suites/78_veldo_0060_claude_adapter.py must print a line carrying every field
+Code engine in scripts/suites/75_veldo_0062_accounts.py must print a line carrying every field
 of it, including both windows and their fields:
 
 ```json

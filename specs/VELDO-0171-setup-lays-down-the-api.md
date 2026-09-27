@@ -119,9 +119,9 @@ acceptance_criteria:
       even if setup reports success, and any `funnel` invocation fails the row. The three refusal rows retain their captured source
       evidence; the real Tailscale leg is run once by the lead with the owner and recorded, and fixtures
       never count as it. Falsifier: Have setup run
-      `tailscale funnel` in place of `tailscale serve`, and the tailnet-only row must fail on the invocation log's `funnel` invocation.
+      `tailscale funnel` in place of `tailscale serve`, and the fresh-host row must fail on the invocation log's `funnel` invocation.
     falsified_by: >
-      Have setup run `tailscale funnel` in place of `tailscale serve`, and the tailnet-only row must fail
+      Have setup run `tailscale funnel` in place of `tailscale serve`, and the fresh-host row must fail
       on the invocation log's `funnel` invocation.
   - id: AC3
     text: >

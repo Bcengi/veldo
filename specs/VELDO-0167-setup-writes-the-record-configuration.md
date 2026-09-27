@@ -24,6 +24,8 @@ footprint:
   - ".veldo/control_launch*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
+  - "engine/.veldo/control_execution_record*.py"
+  - ".veldo/control_execution_record*.py"
   - "scripts/suites/*_veldo_0167_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/manifest.json"
@@ -73,12 +75,12 @@ acceptance_criteria:
       service fans it out to every API subscribed at that moment, with the per-subscriber numbering and
       instance VELDO-0130's hint already carries (control_service_api publish); the subscriber registry
       stays the service's private state and no receiver reads it. Setup writes, in place of a fixed
-      `record_hint_sockets` list, the `record_hint_service` key naming the installed service's socket into every receiver
+      `record_hints` list, the `record_hint_service` key naming the installed service's socket into every receiver
       configuration. With a run in progress, subscribe a second API process: its next hint names that run.
-      Falsifier: Have setup write a fixed `record_hint_sockets` list of the subscribers known at setup, and the
+      Falsifier: Have setup write a fixed `record_hints` list of the subscribers known at setup, and the
       late-subscriber row must fail.
     falsified_by: >
-      Have setup write a fixed `record_hint_sockets` list of the subscribers known at setup, and the
+      Have setup write a fixed `record_hints` list of the subscribers known at setup, and the
       late-subscriber row must fail.
   - id: AC3
     text: >
@@ -141,10 +143,10 @@ follows; the record's content and redaction (VELDO-0141).
 
 ## Notes
 
-This specification defines both receiver hint keys: `record_hint_sockets` is a fixed list of API
-subscriber socket paths, and `record_hint_service` is the running authority service's socket path.
-The code at main has neither key to reuse; setup writes `record_hint_service`, and the fixed
-`record_hint_sockets` alternative is used only by AC2's falsifier.
+The two receiver hint keys: `record_hints` is VELDO-0141's fixed list of API hint sockets
+(control_launch reads it on build-veldo-0141), and `record_hint_service`, which this specification
+adds, is the running authority service's socket path. Setup writes `record_hint_service`; the fixed
+`record_hints` list is what AC2's falsifier writes instead.
 
 The hint wakes only: it names the dispatch and the last sequence, and the API reads the lines through
 the record route, so a lost, stale or forged hint changes nothing but the moment the view updates. The

@@ -226,3 +226,6 @@ the reviews and live engine runs of 2026-09-26 and 2026-09-27. Criteria and stat
 2026-09-27, within PLAN-0019 revision 4: depends_on adds VELDO-0171 (factory setup lays the API down on the
 host) and VELDO-0172 (the stream-format tables and fake engines match the live CLIs). Criteria and status
 unchanged.
+
+2026-09-27, within PLAN-0019 revision 4: depends_on adds VELDO-0173 (the tool registry split from
+VELDO-0165). Criteria and status unchanged.

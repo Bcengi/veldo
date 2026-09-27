@@ -41,6 +41,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0056 | Disposable landing candidate construction and failure isolation | ready | critical | dmitry | required | VELDO-0056-disposable-landing-candidates.md |
 | VELDO-0057 | Exact-tip publication and confirmed completion receipt | ready | critical | dmitry | required | VELDO-0057-exact-tip-completion.md |
 | VELDO-0058 | Gate-output isolation and exact tested-tree evidence | ready | critical | dmitry | required | VELDO-0058-isolated-gate-observations.md |
+| VELDO-0059 | Installed full factory journey with real workers and enforcement | ready | critical | dmitry | required | VELDO-0059-installed-floor-slice.md |
 | VELDO-0060 | Claude Code production adapter qualification | ready | critical | dmitry | required | VELDO-0060-claude-code-adapter-qualification.md |
 | VELDO-0061 | Codex production adapter qualification | ready | critical | dmitry | required | VELDO-0061-codex-adapter-qualification.md |
 | VELDO-0062 | Provider subscription logins and live usage accounting | ready | critical | dmitry | required | VELDO-0062-provider-credentials-and-usage.md |
@@ -151,7 +152,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0044 | Checkpoint namespace isolation and bounded contention | draft | critical | dmitry | required | VELDO-0044-checkpoint-isolation.md |
 | VELDO-0048 | Integrity verification, replica restoration, and host-replacement fencing | draft | critical | dmitry | required | VELDO-0048-integrity-and-replica-restoration.md |
 | VELDO-0055 | Release regression receipt consumption | draft | high | dmitry | required | VELDO-0055-release-regression-receipts.md |
-| VELDO-0059 | Installed full factory journey with real workers and enforcement | draft | critical | dmitry | required | VELDO-0059-installed-floor-slice.md |
 | VELDO-0063 | Production governor and lifecycle failure qualification | draft | critical | dmitry | required | VELDO-0063-production-governor-lifecycle.md |
 | VELDO-0070 | Independent decision review bound to full framing and distinct principals | draft | critical | dmitry | required | VELDO-0070-independent-decision-review.md |
 | VELDO-0071 | Governing assumption observations and tripwire review flow | draft | critical | dmitry | required | VELDO-0071-governing-assumptions-tripwires.md |
