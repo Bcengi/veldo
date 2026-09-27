@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W90
 plan_revision: 4
-depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158]
+depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0165]
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
@@ -212,3 +212,11 @@ falsifier is unchanged. Status unchanged.
 2026-09-25, PLAN-0019 revision 4, third review: depends_on adds VELDO-0158, because AC2 verifies each
 server authenticates with exactly its configured credential delivery, which VELDO-0158 now owns after
 its split from VELDO-0144. Criteria and status unchanged.
+
+2026-09-27, PLAN-0019 revision 4, follow-up drafts: depends_on adds VELDO-0165, which passes a Claude Code
+run its launch tool set at launch (the `tools` option) and switches off every other tool the binary
+registers (`disallowedTools`). For AC2 and AC4, that launch tool set is the bound role revision's native
+tools, the owner's grant, which may go beyond VELDO-0165's in-run list; the in-run list is only the default
+before a revision is bound, never a ceiling on this configuration. So AC2's exact handoff and AC4's
+launch-set comparison read the init event against the revision's tools, and a tool the revision grants is
+never switched off by the launch. Criteria and status unchanged.

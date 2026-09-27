@@ -117,3 +117,9 @@ traced back to the line it came from.
 
 2026-09-27: new draft from the live engine runs of 2026-09-26. A draft: only the owner marks a
 specification ready.
+
+2026-09-27: on the independent check of this batch: the two fixes (every window metered, and account
+registration leaving an existing profile directory's mode alone) stay in one specification only because
+splitting them would leave two specifications of one criterion each, below the two a specification holds.
+They share the live run that found them and the account they touch, and each keeps its own criterion and
+falsifier. Still a draft.

@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W132
 plan_revision: 4
-depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0155, VELDO-0156]
+depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0155, VELDO-0156, VELDO-0160]
 placement: [fleet, engine]
 protected_paths: []
 footprint:
@@ -82,19 +82,27 @@ acceptance_criteria:
       fail on the stream.
   - id: AC3
     text: >
-      Claim: The live capture the rows compare against is committed as the runs recorded it, keeping every
-      field and dropping every identifying value. Set and completeness: proof/VELDO-0172 holds the
-      2026-09-26 Claude Code and Codex stream lines (the Claude handshake answer among them) and the Codex
-      login status with the stream it came on, taken from the runs' recorded stream and tap captures, each
-      value that is an identity, credential, path or free text (the account email, session and message
-      ids, paths, the model's reply) replaced by a placeholder of the same type, every key and every
-      value's type kept; its digest
-      and the binary versions it came from are recorded in cli-formats.json. The repository secret scan
-      finds nothing in it, and a check reads every field path of it back against the source capture.
-      Falsifier: Commit the capture with the account email left in, and the identifying-value row must
-      fail.
+      Claim: The live capture the rows compare against is committed with every key and every value's type
+      kept, and no value survives unless it is a named schema constant or a token count. Set and
+      completeness: proof/VELDO-0172 holds the 2026-09-26 Claude Code and Codex stream lines and, of the
+      runs' tap records, only the Claude handshake answer (the control_response to initialize) and the
+      Codex login status with the stream it came on; no other tap record is ever committed. The committed
+      scrubber is an allowlist: every string value becomes a placeholder naming its type unless its field
+      is on the named list of schema constants committed beside it (type, subtype, stop_reason, the CLI
+      and schema versions, model ids, apiKeySource and the subscription label), and a number is kept only
+      in a token-count field, every other number becoming a numeric placeholder. The capture's digest and
+      the binary versions it came from are recorded in cli-formats.json. The suite checks the committed
+      capture (each string on the list or a placeholder, each kept number in a token-count field, no tap
+      record but the two, and the repository secret scan finding nothing) and runs the scrubber over a
+      fixture line planted with values of kinds the source really has, a host name, a pid and a home path,
+      in fields off the list: none survives. The one read-back of every field path against the source
+      capture, which is never committed, is a proof step the lead runs once on the host and records in
+      proof/VELDO-0172, not a suite row. Falsifier: Have the scrubber keep a string whose field is off the
+      list when it matches no known identity pattern, as a denylist would, and the planted-value row must
+      fail on the host name.
     falsified_by: >
-      Commit the capture with the account email left in, and the identifying-value row must fail.
+      Have the scrubber keep a string whose field is off the list when it matches no known identity
+      pattern, as a denylist would, and the planted-value row must fail on the host name.
 required_evidence: [unit, integration]
 rollback: >
   Restore cli-formats.json, extract_formats.py and the fakes from before this change; no engine code or
@@ -132,8 +140,9 @@ the fakes still check against the table alone.
   compare the fakes and the table with it and name each field that moved.
 - Threat model: a fake that prints a shape the real CLI never prints, or leaves out one it does; a table
   that calls a real line malformed or accepts a field the real CLI never sends; a capture that leaks the
-  owner's email or another identifying value into the repository. The installed binaries and the owner's
-  account are trusted.
+  owner's email, a host name, a pid, a path or any other value that is not a schema constant or a token
+  count into the repository; a tap record beyond the two named ones committed. The installed binaries and
+  the owner's account are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); fields a real
   run prints only in states the live runs did not reach (an error result, a tool call); capture files
   planted in the proof directory.
@@ -143,9 +152,21 @@ the fakes still check against the table alone.
 The captures are the ones the lead's live-run driver recorded (real-claude and real-codex, each a stream
 and a tap file), and compare.json is the comparison that found these differences.
 They keep the shapes, not the values: a placeholder keeps a key's type, so the comparison reads the same
-paths the real lines had.
+paths the real lines had. The scrub is an allowlist because a denylist keeps whatever nobody thought to
+name, and the source held values of kinds no list named in advance. The source capture stays on the host
+and is never committed, so the read-back against it can only be a recorded proof step; the suite checks
+what is committed. This specification depends on VELDO-0160 because VELDO-0160 extends the same table and
+extractor (claude_code.tool_forms in cli-formats.json, read by extract_formats.py), so this change
+regenerates and checks the table as VELDO-0160 leaves it.
 
 ## History
 
 2026-09-27: new draft from the live engine runs of 2026-09-26 (the format-table item of the follow-up
 list). A draft: only the owner marks a specification ready.
+
+2026-09-27: amended on the independent check of this batch. AC3 scrubs the committed capture with an
+allowlist: each string value becomes a typed placeholder unless its field is on a named list of schema
+constants, numbers are kept only in token-count fields, and no tap record but the handshake answer and the
+Codex login status is committed. The read-back against the source is a recorded proof step, not a suite
+row. The falsifier plants a value of a kind the source really has, which must not survive. depends_on adds
+VELDO-0160. Still a draft.

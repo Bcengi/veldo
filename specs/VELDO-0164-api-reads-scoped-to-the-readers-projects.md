@@ -47,22 +47,29 @@ acceptance_criteria:
       Claim: A read model and a workflow read serve a member only entities of projects her scope covers.
       Set and completeness: Every entity kind registered in the published read models (control_api_models
       READ_MODELS) declares, beside its owning module, how its project is read: a field of its own data,
-      or the project of the unit, dispatch, request or repository it names. The suite enumerates the
-      registration and requires a rule for every kind, so a kind added later without one fails. A kind
-      whose entities belong to no project (the capability configurations, inbox items not yet routed to a
-      project) is served only to a member whose scope is universal. The workflow read serves a revision
-      only to a member whose scope covers its repository, the scope its editor is judged by. Seed two
-      projects, A and B, with an entity of every registered kind in each; a member scoped to A reads every
-      model and the workflow read and gets every A entity and no B entity. Falsifier: Serve read_model's
-      whole result without the scope filter, and the member-scoped-to-A row must fail on a B entity.
+      or the project of the unit, dispatch, request or repository it names, and every such project-bound
+      kind is filtered to the reader's scope. The suite enumerates the registration and requires a rule
+      for every kind, so a kind added later without one fails. Two kinds belong to no project and are
+      served to every current member: the role and tool configuration records (VELDO-0127) and the
+      default team (VELDO-0162, whose kind declares this rule when it is registered), because they hold no
+      secret (a server's credentials live only in the VELDO-0144 catalog and the host keystore) and a
+      member proposing a team must see the roles and tools she proposes from. Every other project-less
+      kind (inbox items not yet routed to a project) is served only to a member whose scope is universal.
+      The workflow read serves a revision only to a member whose scope covers its repository, the scope
+      its editor is judged by. Seed two projects, A and B, with an entity of every registered
+      project-bound kind in each, plus configuration records and an unrouted inbox item; a member scoped
+      to A reads every model and the workflow read and gets every A entity, no B entity, every
+      configuration record and no unrouted inbox item. Falsifier: Serve read_model's whole result without
+      the scope filter, and the member-scoped-to-A row must fail on a B entity.
     falsified_by: >
       Serve read_model's whole result without the scope filter, and the member-scoped-to-A row must fail
       on a B entity.
   - id: AC2
     text: >
-      Claim: The live event feed lists a member only the changes of projects her scope covers. Set and
+      Claim: The live event feed lists a member only the changes of projects her scope covers and of the
+      kinds served to every member. Set and
       completeness: For each committed journal record after the cursor, `events` lists only the changed
-      entities whose project (by AC1's rule for their kind) the member's scope covers, and only the
+      entities AC1's rule for their kind serves the member, and only the
       published events and revocations of those entities, plus the revocations of her own credentials and
       membership; a record with none of them is left out of the page. The watermark and the publication's
       freshness are served unchanged, so her cursor still advances past records she cannot see. The edge's
@@ -79,11 +86,11 @@ acceptance_criteria:
       Set and completeness: With the same seeded store, the owner's answers from every read model, the
       workflow read and the event feed are compared with the answers VELDO-0130's reader gives before this
       change, entity for entity and record for record, including the project-less kinds. Falsifier: Treat
-      the universal scope as covering no project-less kind, and the owner-unchanged row must fail on a
-      capability configuration.
+      the universal scope as covering no project-less kind but those served to every member, and the
+      owner-unchanged row must fail on an unrouted inbox item.
     falsified_by: >
-      Treat the universal scope as covering no project-less kind, and the owner-unchanged row must fail on
-      a capability configuration.
+      Treat the universal scope as covering no project-less kind but those served to every member, and
+      the owner-unchanged row must fail on an unrouted inbox item.
 required_evidence: [unit, integration]
 rollback: >
   Revert to VELDO-0130's reader, which serves only members whose scope covers a project of this domain;
@@ -118,11 +125,12 @@ a project; hiding the journal's length or the watermark.
 - Normal use: the owner, and later a member scoped to some projects, opens the UI; the API reads models,
   the workflow canvas and the live feed for her session.
 - Threat model: an authenticated current member reading an entity, a change or a revocation of a project
-  outside her scope through any of these reads. The owner's account, the authority service and the store
-  are trusted.
-- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962), such as a
-  member inferring activity from the watermark's growth; forged rows in our own store; a kind whose
-  project changes after it was written.
+  outside her scope through any of these reads, or an unrouted inbox item without a universal scope; a
+  member denied the configuration records or the default team she needs to propose a team. The owner's
+  account, the authority service and the store are trusted.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962), such as a member
+  inferring activity from the watermark's growth; forged rows in our own store; a kind whose project
+  changes after it was written.
 
 ## Notes
 
@@ -135,3 +143,9 @@ with the project name, as the Gate and the record route use it.
 
 2026-09-27: new draft from the Codex whole-project review of 2026-09-26, confirmed in code. A draft: only
 the owner marks a specification ready.
+
+2026-09-27: amended on the independent check of this batch and the lead's decision. The role and tool
+configuration records (VELDO-0127) and the default team are served to every current member, since they
+hold no secrets and a member proposing a team must see them; every project-bound kind is filtered to the
+reader's scope, and every other project-less kind stays universal-scope only. AC3's falsifier now fails on
+an unrouted inbox item, the project-less kind the universal scope still decides. Still a draft.

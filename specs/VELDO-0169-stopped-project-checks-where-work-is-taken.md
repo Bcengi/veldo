@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0169
-title: Every path that hands out work refuses a unit of a stopped project, and a claim on a unit with no project, as the Gate refuses them
+title: Every path that hands out work, found by a census of the claim and station contract writers, refuses a unit of a stopped project, and a claim on a unit with no project, with the Gate's one project check
 status: draft
 risk: critical
 owner: dmitry
@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W129
 plan_revision: 4
-depends_on: [VELDO-0031, VELDO-0064, VELDO-0075, VELDO-0076]
+depends_on: [VELDO-0031, VELDO-0064, VELDO-0075, VELDO-0076, VELDO-0133]
 placement: [contracts, engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -25,9 +25,14 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0169_*.py"
+  - "scripts/suites/58_veldo_0031_claims.py"
+  - "scripts/suites/59_veldo_0031_review.py"
   - "scripts/suites/60_veldo_0064_inbox.py"
+  - "scripts/suites/66_veldo_0047_authority.py"
+  - "scripts/suites/69_veldo_0133_dispositions.py"
   - "scripts/suites/71_veldo_0076_projects.py"
   - "scripts/suites/72_veldo_0075_andon.py"
+  - "scripts/suites/73_veldo_0078_backlog.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -37,54 +42,81 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Record each refused resume or claim with the unit, its project, the refusal the Gate's project check
-    named, and the record versions it was decided from.
+    Record each refused resume, disposition or claim with the unit, its project, the refusal the Gate's
+    project check named, and the record versions it was decided from; record each census run with the
+    writers it found and how each is classified.
   metrics: >
-    Count resumes and claims refused by reason (project_not_active:<state>, owner_not_current,
-    missing_authority:project).
+    Count resumes, dispositions and claims refused by reason (project_not_active:<state>,
+    owner_not_current, missing_authority:project), and writers the census found by class.
   traces: >
-    Join each refusal to the assignment, stop or claim command and the project record version it read.
+    Join each refusal to the assignment, disposition, stop or claim command and the project record
+    version it read.
   error_taxonomy: >
     The refusals are the Gate's own names, unchanged: project_not_active:PAUSED, :CANCELED, :COMPLETED,
     :owner_not_current, :not_a_project and missing_authority:project; a pause committed after the check
-    and before the write refuses as stale_version.
+    and before the write refuses as stale_version. A writer the census does not name, or a handout
+    writer that does not ask the check, fails the census by the writer's module and function.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Resuming a parked unit through its assignment (VELDO-0064) refuses a unit whose project is
-      stopped. Set and completeness: control_assignment's resume asks the shared Gate's project check
-      (control_eligibility.Gate.project_problems) for the parked unit before it writes the new claim, and
-      pins the project and owner records that check read with the transaction's other inputs, as the claim
-      receiver does since VELDO-0076's fix. Drive the resume with the project paused, canceled, completed,
-      with its owner not current, and with a pause committed between the check and the write: each is
-      refused by the Gate's name, the last as stale_version, and no claim is written. Falsifier: Drop the
-      project check from the resume, and the paused-project resume row must fail.
+      Claim: Every engine path that writes a claim or issues a station contract is known, and every one of
+      them that hands out work asks the Gate's one project check. Set and completeness: A census scans the
+      engine's source (engine/.veldo) for every call of the claim organ's transitions
+      (control_claim.transition) and every issue of a station contract, never from a fixed list; today it
+      finds the claim receiver (control_claim.Receiver), the assignment resume, release and disposition of
+      control_assignment (VELDO-0064, VELDO-0133), the heartbeat's renewal (control_heartbeat), and the
+      andon resume's station contract (control_andon). Each writer found is classified in the census as
+      handing out work (a claim, a resume, the disposition's backlog outcome that clears a park, a fresh
+      station contract), which must call control_eligibility.Gate.project_problems before it writes, or as
+      handing out nothing (a release, the renewal of a claim already held), with that reason. The census
+      row fails on a writer it does not name and on a handout writer that does not call the check.
+      Falsifier: Add to control_assignment a second resume path that writes a claim without the check,
+      and the census row must fail on it.
+    falsified_by: >
+      Add to control_assignment a second resume path that writes a claim without the check, and the census
+      row must fail on it.
+  - id: AC2
+    text: >
+      Claim: Resuming a parked unit through its assignment (VELDO-0064), and the backlog outcome of its
+      disposition (VELDO-0133), refuse a unit whose project is stopped. Set and completeness: The resume
+      and the disposition's backlog outcome ask the shared Gate's project check for the parked unit before
+      they write the new claim or clear the park, and pin the project and owner records that check read
+      with the transaction's other inputs, as the claim receiver does since VELDO-0076's fix. Drive each
+      with the project paused, canceled, completed, with its owner not current, and with a pause committed
+      between the check and the write: each is refused by the Gate's name, the last as stale_version, and
+      no claim is written and no park is cleared. The disposition's close and other outcomes, which hand
+      out nothing, are unchanged. Falsifier: Drop the project check from the resume, and the
+      paused-project resume row must fail.
     falsified_by: >
       Drop the project check from the resume, and the paused-project resume row must fail.
-  - id: AC2
+  - id: AC3
     text: >
       Claim: Resuming a unit from an andon stop (VELDO-0075) refuses a unit whose project is stopped. Set
       and completeness: control_andon's resume asks the same project check before it issues the fresh
       station contract and pins what it read the same way. Drive it over the same five project states as
-      AC1: each is refused by the Gate's name, the stop stays stopped and no contract is issued. Falsifier:
+      AC2: each is refused by the Gate's name, the stop stays stopped and no contract is issued. Falsifier:
       Drop the project check from the andon resume, and the paused-project andon row must fail.
     falsified_by: >
       Drop the project check from the andon resume, and the paused-project andon row must fail.
-  - id: AC3
+  - id: AC4
     text: >
       Claim: The claim receiver refuses a claim on a unit that names no project, as every station refuses
       that unit. Set and completeness: The receiver (control_claim) runs the Gate's project check for
       every claim, not only for a unit whose project field is set, so a unit with no project is refused
       missing_authority:project with nothing written, exactly as the Gate refuses it at a station. The
       suite drives a claim on a unit with no project field, one whose project is null, and one with an
-      active project, which is accepted. Falsifier: Skip the check when the unit's project is null, as
-      today, and the no-project claim row must fail.
+      active project, which is accepted. Every suite that claims a unit through control_claim.Receiver,
+      directly or through the authority service (suites 58, 59, 60 of VELDO-0064, 66 of VELDO-0047, 69 of
+      VELDO-0133, 71 of VELDO-0076 and 73 of VELDO-0078, found by a grep of the suites), seeds an active
+      project for the units it claims. Falsifier: Skip the check when the unit's project is null, as today,
+      and the no-project claim row must fail.
     falsified_by: >
       Skip the check when the unit's project is null, as today, and the no-project claim row must fail.
 required_evidence: [unit, integration]
 rollback: >
-  Revert to the earlier resume and claim paths; the Gate still refuses a stopped project's run at its
-  next station, so no stopped project's work is built either way. No automatic rollback is authorized.
+  Revert to the earlier resume, disposition and claim paths; the Gate still refuses a stopped project's
+  run at its next station, so no stopped project's work is built either way. No automatic rollback is
+  authorized.
 ---
 
 ## Intent
@@ -102,20 +134,26 @@ VELDO-0064 writes a fresh claim for a parked unit, and the andon resume of VELDO
 station contract, and neither reads the project's state. The Gate still blocks the run at its next
 station, so nothing is built, but the work is handed out and its holder waits on a stopped project. The
 same review found the receiver accepts a claim on a unit with no project, which the Gate refuses at every
-station (missing_authority:project). This new specification is draft; authoring it supplies neither
-implementation proof nor operational activation.
+station (missing_authority:project). The gaps were found one path at a time, so this specification adds a
+census of every writer of a claim or station contract: the disposition of VELDO-0133 also hands parked
+work out again (its backlog outcome clears the park), and it gets the same single check. This new
+specification is draft; authoring it supplies neither implementation proof nor operational activation.
 
 ## Out of scope
 
-The Gate's project check itself (VELDO-0076, unchanged); the pause and cancel commands; what becomes of a
-stopped project's parked work (VELDO-0133); handing a project to a new owner (Release 3).
+The Gate's project check itself (VELDO-0076, unchanged); the pause and cancel commands; which outcome
+the owner picks for a stopped project's parked work (VELDO-0133's question, unchanged); handing a project
+to a new owner (Release 3); test fixtures that write claims straight into the store without a receiver,
+which are not engine paths.
 
 ## What the reviewer judges
 
-- Normal use: the owner pauses or cancels a project while some of its units are parked on an assignment
-  or held at an andon stop, then someone answers the assignment or the stop; a worker claims a unit.
-- Threat model: work of a stopped project handed out by a resume or a claim; a pause committed between
-  the check and the write missed; a unit with no project claimed. The owner's account, the store and the
+- Normal use: the owner pauses or cancels a project while some of its units are parked on an assignment,
+  waiting on a disposition or held at an andon stop, then someone answers the assignment, the disposition
+  or the stop; a worker claims a unit.
+- Threat model: work of a stopped project handed out by a resume, a disposition or a claim; a new path
+  that hands out work without the check; a pause committed between the check and the write missed; a
+  unit with no project claimed. The owner's account, the store and the
   Gate are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); forged rows in
   our own store; a project record of another kind planted at the project's id (already refused by the
@@ -124,9 +162,18 @@ stopped project's parked work (VELDO-0133); handing a project to a new owner (Re
 ## Notes
 
 Use the one check. The Gate's project_problems already returns the versions it read so a caller can pin
-them, and the claim receiver shows the pattern; a second copy of the rule is the defect this closes.
+them, and the claim receiver shows the pattern; a second copy of the rule is the defect this closes. The
+census reads the source's syntax tree, so a writer added later is found whether or not anyone lists it.
 
 ## History
 
 2026-09-27: new draft from the review rvfix0926 of the Codex-review fixes landed at a4769f68 (items g and
 h of its filed list). A draft: only the owner marks a specification ready.
+
+2026-09-27: amended on the independent check of this batch and the lead's decisions. New AC1: a census of
+every engine writer of a claim or station contract, each classified as handing out work (which must ask
+the Gate's one project check) or handing out nothing, so a path is never missed one at a time again.
+VELDO-0133's disposition, whose backlog outcome hands parked work out again, joins the assignment resume
+under the same check (AC2), and depends_on adds VELDO-0133. The footprint lists every suite that claims a
+unit through control_claim.Receiver (58, 59, 60, 66, 69, 71 and 73, by grep), which AC4 requires to seed
+an active project. The title names the census. Still a draft.

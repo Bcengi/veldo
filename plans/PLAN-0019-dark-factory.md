@@ -930,7 +930,7 @@ work:
     spec: VELDO-0127
     title: Versioned per-role MCP server and tool configuration
     feature_refs: [F7]
-    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158]
+    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0165]
     order: 15127
     release: 1
     stage: 5
@@ -1209,7 +1209,7 @@ work:
     stage: 5
   - item: W125
     spec: VELDO-0165
-    title: A worker engine inherits nothing from a parent Claude Code session and is offered only the tools that act inside its run
+    title: A worker engine inherits nothing from a parent Claude Code or Codex session, and a Claude Code run is offered its launch tool set with every other registered tool switched off
     feature_refs: [F4]
     depends_on: [VELDO-0155, VELDO-0156, VELDO-0160]
     order: 11165
@@ -1225,9 +1225,9 @@ work:
     stage: 1
   - item: W127
     spec: VELDO-0167
-    title: Factory setup writes the execution record's configuration, and a launch receiver hints every API that subscribed to the running service
+    title: Factory setup writes the execution record's configuration, and a launch receiver's record hints reach every API subscribed to the running service through that service
     feature_refs: [F9]
-    depends_on: [VELDO-0130, VELDO-0141]
+    depends_on: [VELDO-0130, VELDO-0141, VELDO-0171]
     order: 15167
     release: 1
     stage: 5
@@ -1241,25 +1241,25 @@ work:
     stage: 3
   - item: W129
     spec: VELDO-0169
-    title: Every path that hands out work refuses a unit of a stopped project, and a claim on a unit with no project, as the Gate refuses them
+    title: Every path that hands out work, found by a census of the claim and station contract writers, refuses a unit of a stopped project, and a claim on a unit with no project, with the Gate's one project check
     feature_refs: [F6]
-    depends_on: [VELDO-0031, VELDO-0064, VELDO-0075, VELDO-0076]
+    depends_on: [VELDO-0031, VELDO-0064, VELDO-0075, VELDO-0076, VELDO-0133]
     order: 14169
     release: 1
     stage: 4
   - item: W130
     spec: VELDO-0170
-    title: A launch receiver configuration that names no host trust stops by name, and factory setup upgrades it
+    title: A launch receiver configuration that names no host trust stops by name, and factory setup's re-run adds the host trust
     feature_refs: [F2]
-    depends_on: [VELDO-0039, VELDO-0047, VELDO-0069]
-    order: 13170
+    depends_on: [VELDO-0039, VELDO-0047, VELDO-0069, VELDO-0171]
+    order: 15170
     release: 1
-    stage: 3
+    stage: 5
   - item: W131
     spec: VELDO-0171
-    title: Factory setup enrolls the API edge and installs the API behind Tailscale Serve, so the owner enrolls his first passkey on a fresh host, and a second run changes nothing
+    title: Factory setup writes the API configuration, enrolls the API edge and installs the API behind Tailscale Serve, so the owner enrolls his first passkey on a fresh host, and a second run changes nothing
     feature_refs: [F9]
-    depends_on: [VELDO-0130, VELDO-0167]
+    depends_on: [VELDO-0130]
     order: 15171
     release: 1
     stage: 5
@@ -1267,7 +1267,7 @@ work:
     spec: VELDO-0172
     title: The engine stream-format tables and every fake engine match the real Claude Code and Codex output recorded in the live runs of 2026-09-26
     feature_refs: [F4]
-    depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0155, VELDO-0156]
+    depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0155, VELDO-0156, VELDO-0160]
     order: 11172
     release: 1
     stage: 1
@@ -1625,7 +1625,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W127 | VELDO-0167 | 1 | 5; built before VELDO-0145 |
 | W128 | VELDO-0168 | 1 | 3; follow-up of the VELDO-0149 review |
 | W129 | VELDO-0169 | 1 | 4; follow-up of the Codex-review fixes |
-| W130 | VELDO-0170 | 1 | 3; follow-up of the Codex-review fixes |
+| W130 | VELDO-0170 | 1 | 5; follow-up of the Codex-review fixes, a step of VELDO-0171's re-run |
 | W131 | VELDO-0171 | 1 | 5; built before VELDO-0145 |
 | W132 | VELDO-0172 | 1 | 1; follow-up of the live engine runs |
 
@@ -1835,3 +1835,14 @@ depends on it, and VELDO-0171 also builds on the standalone VELDO-0139, an edge 
 specifications. W132's VELDO-0172 corrects the stream-format tables and the fake engines to the real Claude
 Code and Codex output of the live runs of 2026-09-26, recorded as a committed capture the rows compare
 with; stage 1, built with the account pool. W44 (VELDO-0059) depends on both.
+
+2026-09-27: within revision 4, the nine follow-up drafts amended on an independent check of the batch and
+the lead's decisions, each still one concern and a draft. W131's VELDO-0171 now writes the API service
+configuration and enrolls the api edge and no longer depends on W127; W127's VELDO-0167 depends on W131
+and adds the record keys, with record hints sent through the running service. VELDO-0171's re-run is the
+one upgrade path: W130's VELDO-0170 drops its own upgrade command, adds its repair as a step of that
+re-run, depends on W131 and moves from stage 3 to stage 5. W125's VELDO-0165 passes the bound role
+revision's native tools at launch, the in-run list being only the default, and W90 (VELDO-0127) depends
+on it. W129's VELDO-0169 adds a census of every claim and station contract writer and W96's disposition
+(VELDO-0133), on which it now depends. W132's VELDO-0172 depends on W120 (VELDO-0160). No function is
+cut, and the graph stays acyclic and stage-ordered.

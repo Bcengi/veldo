@@ -53,8 +53,10 @@ acceptance_criteria:
       (control_channel_presentation.render), the inbox presentation (control_channel_projection.render)
       and the reports (control_telegram_report); the suite holds that list and fails on a send it does not
       name. In each, a brief, risk statement or report body keeps its line breaks, with a carriage return
-      and line feed pair shown as one break; only runs of spaces and tabs inside a line are collapsed. A
-      three-line brief renders as three lines in each renderer. Falsifier: Restore the whole-text
+      and line feed pair shown as one break, and nothing inside a line is collapsed: runs of spaces are
+      kept as written, and a tab is shown escaped by AC2's rule, never collapsed or turned into a space.
+      A three-line brief renders as three lines in each renderer, and a line holding two spaces and a tab
+      keeps both spaces and shows the tab as `<U+0009>`. Falsifier: Restore the whole-text
       whitespace collapse in the decision presentation's brief, and its three-line row must fail.
     falsified_by: >
       Restore the whole-text whitespace collapse in the decision presentation's brief, and its three-line
@@ -64,11 +66,16 @@ acceptance_criteria:
       Claim: Two values that differ only in characters the owner cannot see never look the same to him.
       Set and completeness: In every renderer of AC1, each character of Unicode general category Cf
       (format, which includes the zero-width characters, the byte-order mark and the bidirectional
-      embedding, override and isolate controls) and of category Cc other than the line break, and each of
-      categories Zl and Zp, is shown as its code point in the visible form `<U+XXXX>`; the set comes from
-      the category table of the running Python's unicodedata, so no list is kept by hand. A choice name, a
-      scope and a subject reference that differ from another only by U+200B, U+202E or U+2066 each render
-      differently from it. Falsifier: Pass U+200B through unescaped, and the zero-width row must fail.
+      embedding, override and isolate controls), of category Cc other than the line break (the tab and a
+      carriage return outside a carriage return and line feed pair included), of categories Zl and Zp,
+      and of category Zs other than U+0020 (the non-breaking space U+00A0 and every other space
+      character) is shown as its code point in the visible form `<U+XXXX>`; the set comes from the
+      category table of the running Python's unicodedata, so no list is kept by hand. The escape is one to
+      one: a literal `<` that begins `<U+` in the text is itself shown as `<U+003C>`, so every shown text
+      maps back to exactly one original. A choice name, a scope and a subject reference that differ from
+      another only by U+200B, U+202E, U+2066, a tab in place of a space, U+00A0 in place of a space, or
+      the written characters `<U+200B>` in place of U+200B each render differently from it. Falsifier:
+      Pass U+200B through unescaped, and the zero-width row must fail.
     falsified_by: >
       Pass U+200B through unescaped, and the zero-width row must fail.
   - id: AC3
@@ -123,11 +130,13 @@ answer is matched against a choice (VELDO-0065's folding, unchanged); other chan
 - Normal use: the factory sends the owner a decision presentation, an inbox item or a report on Telegram,
   and he reads it on his phone.
 - Threat model: a brief shown without its line breaks; two values that differ only by an invisible or
-  direction character shown alike; a cut inside a token that looks like the token's end; an earlier
-  receipt that no longer verifies. The owner's account, the store and Telegram are trusted.
+  direction character, a tab, a non-breaking or other space, or a doubled space shown alike; text that
+  spells an escape shown like the character it names; a cut inside a token that looks like the token's
+  end; an earlier receipt that no longer verifies. The owner's account, the store and Telegram are
+  trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962), such as
-  confusable letters from different scripts, which are visible characters; fonts on his phone; a
-  platform limit change.
+  confusable letters from different scripts, which are visible characters; fonts on his phone; a platform
+  limit change.
 
 ## Notes
 
@@ -138,3 +147,9 @@ the original text. The escaped form is plain text, since the presentations carry
 
 2026-09-27: new draft from the follow-up ticket filed on the review of VELDO-0149 (rv149b). A draft: only
 the owner marks a specification ready.
+
+2026-09-27: amended on the independent check of this batch. AC2's escape is one to one: the literal
+`<U+` prefix is itself escaped, so the written characters `<U+200B>` and the real U+200B never look the
+same. One rule for the tab in both criteria: it is escaped as `<U+0009>`, never collapsed, and AC1 no
+longer collapses runs of spaces, which would make two values differing by a doubled space look alike.
+The non-breaking space and every other Zs space but U+0020 are escaped. Still a draft.
