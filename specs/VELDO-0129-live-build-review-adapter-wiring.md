@@ -238,3 +238,9 @@ Worker config and hooks are never used or rewritten. Git calls use the canonical
 Suite 82 adds named attack, artifact binding, hostile config and handoff rows, compares
 review context in full and validates fixture formats recursively with a named missing-usage
 exception. Finding 129 covers these review defects with additional unique mutations.
+
+2026-09-27, review evidence correction: regenerate the base record with independent calls
+to each available interface, including empty proof acceptance. Ten rows fail by assertion;
+seventeen runtime-dependent journeys are explicitly unavailable on that base, replacing
+the earlier blanket red claim. The current suite has 27 rows and finding 129 has fourteen
+mutations, including a nested-context falsifier. No repository gate or model call is claimed.

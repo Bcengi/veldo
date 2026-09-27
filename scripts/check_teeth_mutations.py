@@ -7479,6 +7479,24 @@ def cases():
     add(129, 'worker129-proof-store-optional', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
         '        raise FloorRefused(error.code, error.detail, error.codes) from error',
         '        return {"state": "review"}, unit_data', ['proof/authority'])
+    add(129, 'worker129-follow-gitdir-symlink', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        '        if gitdir.is_symlink():',
+        '        if False and gitdir.is_symlink():', ['build/gitdir-symlink'])
+    add(129, 'worker129-skip-gitdir-checks', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "        if gitdir.is_symlink():\n            raise Refused('invalid_input:build_gitdir/symlink')\n        if not gitdir.is_dir():\n            raise Refused('invalid_input:build_gitdir/not_directory')\n        for name in ('commondir', 'objects/info/alternates', 'objects/info/http-alternates'):\n            if os.path.lexists(gitdir / name):\n                raise Refused('invalid_input:build_gitdir/' + name.rsplit('/', 1)[-1])\n",
+        '', ['build/gitdir-symlink', 'build/gitdir-gitfile', 'build/gitdir-commondir', 'build/gitdir-alternates', 'build/gitdir-missing'])
+    add(129, 'worker129-nested-builder-conversation', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '    record["assignments"][identity] = {"reviewer": reviewer, "attempt": attempt, "state": "open",',
+        '    payload["context"]["builder_conversation"] = ["builder narrative"]\n    record["assignments"][identity] = {"reviewer": reviewer, "attempt": attempt, "state": "open",', ['review/loop-claude', 'review/loop-codex', 'review/reviewer-claude', 'review/reviewer-codex'])
+    add(129, 'worker129-runtime-artifact-unbound', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "    if (P.digest(raw) != (record.get('artifact') or {}).get('digest')\n            or document.get('dispatch_id') != record.get('dispatch_id')):\n        raise Refused(missing if record.get('contract', {}).get('station') == 'build' else 'binding_mismatch:engine_artifact')\n",
+        '', ['artifact/runtime-binding'])
+    add(129, 'worker129-floor-artifact-unbound', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '    if build.get("artifact") is not None:',
+        '    if False and build.get("artifact") is not None:', ['artifact/floor-binding'])
+    add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
+        "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
     return result
 
 

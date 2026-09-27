@@ -9,14 +9,19 @@ init_scaffold, overlays the production module under mutation, and drives the pub
 points. Its SQLite store, journal and reviewer signatures, account registrations, claims,
 reservations, Git commits, isolated clones, receiver processes, containment groups and
 custody restrictions are real. Each run uses a fresh dispatch and clone. The receiver
-records the group before releasing the worker. Collection neutralizes the used clone's
-Git configuration before reading it and imports its objects without moving the source ref.
+records the group before releasing the worker. Build clones are dissociated before launch.
+Collection refuses symlink, gitfile, missing directory, commondir and alternates layouts
+before any Git call. It copies only regular object bytes into an authority-owned bare
+fetch source, fetches the requested commit into a separate authority-owned bare repository,
+and verifies ancestry there. Only then are the objects imported to the source repository.
+Git never opens a worker-owned config or hooks directory, and the source ref never moves.
 
 The engines are fixture executables. Claude is pinned with the production pin operation;
 Codex is qualified as a vendor package. Their output uses the recorded CLI event table in
 proof/VELDO-0062/cli-formats.json, Claude's initialize table in
 proof/VELDO-0155/claude-baseline.json, and Codex's installed event and item tables. The suite
-checks every emitted line. No real engine or model runs, no real credentials are read, and
+checks every emitted line recursively, including nested usage and modelUsage records.
+The missing-usage mode explicitly omits modelUsage as a named negative fixture exception. No real engine or model runs, no real credentials are read, and
 no remote host is contacted. This proves adapter wiring on the landed qualification,
 not a new qualification of vendor binaries or model quality.
 
@@ -24,11 +29,14 @@ not a new qualification of vendor binaries or model quality.
 
 - AC1: build/claude, build/codex. Default builds launch real contained processes in accepted clones, deny key access, return dispatch-bound commits and proof, and record groups before engine work.
 - AC1: build/configuration, installation/assets. Missing configuration refuses; the scaffolder installs the runtime and its existing floor dependencies; engine copies match; fixture output follows the recorded formats.
-- AC2: review/loop-claude, review/loop-codex, review/reviewer-claude, review/reviewer-codex. Both entry points and both engines receive exactly the assignment, committed spec, source diff and accepted proof. The process and reviewer identity differ from the builder. Signed verdicts answer that subject.
+- AC2: review/loop-claude, review/loop-codex, review/reviewer-claude, review/reviewer-codex. Both entry points and both engines receive exactly the assignment, committed spec, source diff and accepted proof. Nested context is compared in full, so builder conversation added inside context fails. The process and reviewer identity differ from the builder. Signed verdicts answer that subject.
+- AC1: build/gitdir-symlink, build/gitdir-gitfile, build/gitdir-commondir, build/gitdir-alternates, build/gitdir-missing. The worker changes its Git layout; collection refuses by name and the source config remains byte-identical. The symlink attack discovers the source through the readable bound store.
+- AC1: build/config-neutralization, build/handoff. Hostile fsmonitor and hooks leave no execution marker; normal build and review reach the actual handoff transition.
 - AC2: review/independence-policy. Self review refuses and the accepted critical policy requires two distinct reviewers.
 - AC3: outcome/nonzero, outcome/missing-build, outcome/missing-review, outcome/malformed-review. Failed exits, absent result artifacts and wrong review subjects refuse. A zero exit cannot manufacture a verdict. Both engines are exercised.
 - AC3: outcome/missing-usage, outcome/reservation. Build and review retain unknown token exposure and their invocation charge. Exhausted allowances prevent process invocation.
 - AC3: proof/authority, proof/empty-acceptance. Stored contextual proof is required by the floor. A committed manifest alone and a hook returning no acceptance cannot offer built work.
+- AC3: artifact/runtime-binding, artifact/floor-binding. Both engines exercise the runtime resolver and the floor acceptance handler with their own artifact, a foreign artifact, a forged path and no artifact. The substitutions refuse missing_evidence:build_artifact.
 - AC3: source/no-completion. Build and review leave the source ref unchanged and create no completion receipt.
 
 Gate observations in this suite are explicit fixtures at the proof service boundary. Gate
@@ -40,15 +48,19 @@ eligibility Gate's settlement trust.
 
 `drive.py` with the red option and `a4769f68` extracts that commit using git archive and
 runs the current suite against its unchanged production code. `red-at-a4769f68.json` records
-all 18 rows false by assertion, one report per name. The base's installed build seam refuses
-because no worker is wired. No production file in the extracted tree is edited.
+ten separately driven rows false by assertion: both build seams, all four review seams,
+missing configuration, default proof authority, empty proof acceptance and installation.
+The remaining seventeen journeys need the absent runtime and are explicitly unavailable,
+not counted as red. Each available row calls its own base interface. No production file in the extracted tree is edited.
 
-Finding 129 registers eight unique mutations. `mutations.json` retains the exact old and
+Finding 129 registers fourteen mutations with names unique across all findings. `mutations.json` retains the exact old and
 new snippets, source and mutant digests, all row observations and each named rejection.
 The declared falsifiers are worker129-build-unwired, worker129-builder-context-reused and
 worker129-exit-manufactures-review. Additional mutations remove subject validation, the
 empty-proof refusal, pre-launch group recording, runtime installation and required stored
-proof. The driver uses temporary copies and checks that failures are assertions rather
+proof. Six review controls follow a symlinked git directory, skip all gitdir checks, add
+builder_conversation inside assignment context, remove runtime artifact binding, remove
+floor artifact binding and run Git with the worker configuration. The driver uses temporary copies and checks that failures are assertions rather
 than fixture setup errors.
 
 ## Installed configuration

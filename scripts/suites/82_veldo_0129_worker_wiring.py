@@ -49,6 +49,26 @@ def _v129_suite():
     slice_name = 'v129%s.slice' % os.urandom(4).hex()
     sessions = []
     writer = None
+    unavailable = {}
+    def empty_acceptance(EX, src, base_commit):
+        # Exercise the executor's real proof boundary with a deliberately empty hook acceptance.
+        class Hooks(EX.LoopSteps):
+            root = src
+            def resolve(self, unit): return {'id': unit, 'status': 'ready'}
+            def build(self, spec, calls=None): return {'ok': True, 'commit': base_commit}
+            def gate(self): return {'green': True}
+            def assemble_proof(self, spec, build): return {'criteria': []}
+            def validate_proof(self, proof): return True, 0
+            def accept_proof(self, *args, **kw): return None
+            def emit(self, *args, **kw): return None
+        class Gate:
+            def decide(self, *args, **kw): return {'eligible': True, 'refusals': []}
+        class Calls:
+            @contextlib.contextmanager
+            def launch(self, *args, **kw): yield None
+        outcome, error = attempt(lambda: EX.Executor(Hooks(), eligibility=Gate(), calls=Calls()).run('empty', stop_after='proof'))
+        check('proof/empty-acceptance', 'empty acceptance halts at proof: ' + str(error),
+              outcome and outcome.get('halted_at') == 'proof' and 'proof_acceptance' in outcome.get('reason', ''))
     try:
         mods = base / 'installed' / '.veldo'
         scaffolder = load('v129_installer', PRODUCTION['init_scaffold.py'])
@@ -58,12 +78,38 @@ def _v129_suite():
             if source.is_file() and (mods / name).exists():
                 shutil.copyfile(source, mods / name)
         EX = load('v129_executor', mods / 'executor.py')
-        # On the base tree, drive the old installed seam and report the missing behavior as assertions.
-        if not (mods / 'control_launch_work.py').is_file():
-            value, refusal = attempt(lambda: EX.LiveLoop(root=base).build({'id': 'VELDO-9129'}))
+        # Base evidence drives each available seam independently. Runtime-only journeys
+        # are reported as unavailable, never assigned another row's assertion result.
+        if not PRODUCTION['control_launch_work.py'].is_file():
+            DSP = load('v129_base_floor', PRODUCTION['dispatch.py'])
+            spec = {'id': 'VELDO-9129', 'status': 'ready'}
+            for engine in ('claude', 'codex'):
+                loop = EX.LiveLoop(root=base)
+                value, refusal = attempt(lambda: loop.build(dict(spec, engine=engine)))
+                check('build/' + engine, 'base LiveLoop.build: ' + str(refusal),
+                      isinstance(value, dict) and bool(value.get('commit')))
+                value, refusal = attempt(lambda: loop.review(dict(spec, engine=engine), {}))
+                check('review/loop-' + engine, 'base LiveLoop.review: ' + str(refusal),
+                      isinstance(value, dict) and value.get('verdict') == 'pass')
+                value, refusal = attempt(lambda: DSP.LiveReviewer().review(dict(spec, engine=engine), {'spec': spec['id']}))
+                check('review/reviewer-' + engine, 'base LiveReviewer.review: ' + str(refusal),
+                      isinstance(value, dict) and value.get('verdict') == 'pass')
+            value, refusal = attempt(lambda: EX.LiveLoop(root=base).build(spec))
+            check('build/configuration', 'base missing configuration refusal: ' + str(refusal),
+                  value is None and 'missing_authority:worker_configuration' in str(refusal))
+            value, refusal = attempt(lambda: EX.LiveLoop(root=base).accept_proof(spec, {'commit': '0' * 40}, {}, {}))
+            check('proof/authority', 'base default proof service: ' + str(value or refusal),
+                  value and value.get('ok') is True and value.get('bundle'))
+            empty_acceptance(EX, base, '0' * 40)
+            check('installation/assets', 'base scaffold installs the runtime', '.veldo/control_launch_work.py' in installed)
             for name in names:
-                check(name, 'installed journey returns artifacts (base seam: %s)' % refusal, value is not None)
+                if not rows[name]:
+                    unavailable[name] = 'requires the absent control_launch_work module and its live dispatch fixture'
             return
+        if not (mods / 'control_launch_work.py').is_file():
+            # Keep testing other boundaries when the installation registration is mutated.
+            # The installation row still observes the original scaffold inventory.
+            shutil.copyfile(PRODUCTION['control_launch_work.py'], mods / 'control_launch_work.py')
         W = load('v129_work', mods / 'control_launch_work.py')
         L, P, S, GP = W.L, W.P, W.L.S, W._git_process
         DSP = load('v129_floor', mods / 'dispatch.py')
@@ -543,24 +589,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
         check('source/no-completion', 'build and review never move the source branch or manufacture completion',
               git('rev-parse', 'HEAD') == base_commit and writer.execute(
                   "SELECT count(*) FROM entities WHERE kind='completion_receipt'").fetchone()[0] == 0)
-        # Exercise the executor's real proof boundary with a deliberately empty hook acceptance.
-        class Hooks(EX.LoopSteps):
-            root = src
-            def resolve(self, unit): return {'id': unit, 'status': 'ready'}
-            def build(self, spec, calls=None): return {'ok': True, 'commit': base_commit}
-            def gate(self): return {'green': True}
-            def assemble_proof(self, spec, build): return {'criteria': []}
-            def validate_proof(self, proof): return True, 0
-            def accept_proof(self, *args, **kw): return None
-            def emit(self, *args, **kw): return None
-        class Gate:
-            def decide(self, *args, **kw): return {'eligible': True, 'refusals': []}
-        class Calls:
-            @contextlib.contextmanager
-            def launch(self, *args, **kw): yield None
-        outcome, error = attempt(lambda: EX.Executor(Hooks(), eligibility=Gate(), calls=Calls()).run('empty', stop_after='proof'))
-        check('proof/empty-acceptance', 'empty acceptance halts at proof: ' + str(error),
-              outcome and outcome.get('halted_at') == 'proof' and 'proof_acceptance' in outcome.get('reason', ''))
+        empty_acceptance(EX, src, base_commit)
         check('installation/assets', 'runtime is registered and engine mirrors match',
               '.veldo/control_launch_work.py' in installed
               and all((TREE / 'engine/.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes()
@@ -620,6 +649,9 @@ sys.exit(7 if mode == 'nonzero' else 0)
             with contextlib.suppress(OSError): os.chmod(directory, 0o700)
         shutil.rmtree(base, ignore_errors=True)
         for row, observations in rows.items():
+            if row in unavailable:
+                print('  VELDO-0129 ' + row + ' unavailable: ' + unavailable[row])
+                continue
             for label, ok in observations:
                 if not ok: print('  VELDO-0129 %s detail: %s' % (row, label))
             expect('VELDO-0129 ' + row, bool(observations) and all(ok for _, ok in observations))

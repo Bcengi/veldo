@@ -11,6 +11,25 @@
   "dispatch.py": "1e8c18cb37d4a3126abdad5222d3fe50c25bd08287ec95ece54369fed2730a45",
   "init_scaffold.py": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
  },
+ "unavailable": [
+  "VELDO-0129 review/independence-policy unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/nonzero unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/missing-build unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/missing-review unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/malformed-review unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/missing-usage unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/reservation unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 source/no-completion unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-symlink unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-gitfile unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-commondir unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-alternates unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-missing unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/config-neutralization unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 artifact/runtime-binding unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 artifact/floor-binding unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/handoff unavailable: requires the absent control_launch_work module and its live dispatch fixture"
+ ],
  "rows": [
   [
    "VELDO-0129 build/claude",
@@ -41,43 +60,11 @@
    false
   ],
   [
-   "VELDO-0129 review/independence-policy",
-   false
-  ],
-  [
-   "VELDO-0129 outcome/nonzero",
-   false
-  ],
-  [
-   "VELDO-0129 outcome/missing-build",
-   false
-  ],
-  [
-   "VELDO-0129 outcome/missing-review",
-   false
-  ],
-  [
-   "VELDO-0129 outcome/malformed-review",
-   false
-  ],
-  [
-   "VELDO-0129 outcome/missing-usage",
-   false
-  ],
-  [
-   "VELDO-0129 outcome/reservation",
-   false
-  ],
-  [
    "VELDO-0129 proof/authority",
    false
   ],
   [
    "VELDO-0129 proof/empty-acceptance",
-   false
-  ],
-  [
-   "VELDO-0129 source/no-completion",
    false
   ],
   [
@@ -93,39 +80,23 @@
   "VELDO-0129 review/loop-codex",
   "VELDO-0129 review/reviewer-claude",
   "VELDO-0129 review/reviewer-codex",
-  "VELDO-0129 review/independence-policy",
-  "VELDO-0129 outcome/nonzero",
-  "VELDO-0129 outcome/missing-build",
-  "VELDO-0129 outcome/missing-review",
-  "VELDO-0129 outcome/malformed-review",
-  "VELDO-0129 outcome/missing-usage",
-  "VELDO-0129 outcome/reservation",
   "VELDO-0129 proof/authority",
   "VELDO-0129 proof/empty-acceptance",
-  "VELDO-0129 source/no-completion",
   "VELDO-0129 installation/assets"
  ],
  "details": [
-  "VELDO-0129 build/claude detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 build/codex detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 build/configuration detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 review/loop-claude detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 review/loop-codex detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 review/reviewer-claude detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 review/reviewer-codex detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 review/independence-policy detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 outcome/nonzero detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 outcome/missing-build detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 outcome/missing-review detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 outcome/malformed-review detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 outcome/missing-usage detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 outcome/reservation detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 proof/authority detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 proof/empty-acceptance detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 source/no-completion detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)",
-  "VELDO-0129 installation/assets detail: installed journey returns artifacts (base seam: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.)"
+  "VELDO-0129 build/claude detail: base LiveLoop.build: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.",
+  "VELDO-0129 build/codex detail: base LiveLoop.build: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.",
+  "VELDO-0129 build/configuration detail: base missing configuration refusal: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.",
+  "VELDO-0129 review/loop-claude detail: base LiveLoop.review: review is a delegated fresh-context agent step; LiveLoop has no reviewer wired. Inject a review callable that dispatches the reviewer and returns its verdict. Refusing to fabricate a verdict.",
+  "VELDO-0129 review/loop-codex detail: base LiveLoop.review: review is a delegated fresh-context agent step; LiveLoop has no reviewer wired. Inject a review callable that dispatches the reviewer and returns its verdict. Refusing to fabricate a verdict.",
+  "VELDO-0129 review/reviewer-claude detail: base LiveReviewer.review: review is a delegated fresh-context step; no reviewer is wired. Inject a reviewer that dispatches a fresh context over the built commit and returns its verdict. Refusing to fabricate a verdict.",
+  "VELDO-0129 review/reviewer-codex detail: base LiveReviewer.review: review is a delegated fresh-context step; no reviewer is wired. Inject a reviewer that dispatches a fresh context over the built commit and returns its verdict. Refusing to fabricate a verdict.",
+  "VELDO-0129 proof/authority detail: base default proof service: {'ok': False, 'problems': ['missing_authority:proof_service'], 'bundle': None}",
+  "VELDO-0129 proof/empty-acceptance detail: empty acceptance halts at proof: None",
+  "VELDO-0129 installation/assets detail: base scaffold installs the runtime"
  ],
  "by_assertion": true,
  "one_report_per_row": true,
- "seconds": 0.164
+ "seconds": 0.412
 }

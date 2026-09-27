@@ -4,6 +4,7 @@ Use the red option with a commit, or no options for mutation evidence. Each suit
 runs in a fresh interpreter. No branch, worktree or production file is rewritten.
 """
 import ast
+import concurrent.futures
 import contextlib
 import hashlib
 import importlib.util
@@ -52,7 +53,8 @@ def one(paths, root):
         exec(compile(source, SUITE, 'exec'), ns)
     mine = [r for r in rows if r[0].startswith(PREFIX)]
     details = [line.strip() for line in out.getvalue().splitlines() if 'detail:' in line and PREFIX in line]
-    return dict(rows=mine, failed_rows=[name for name, ok in mine if not ok], details=details,
+    unavailable = [line.strip() for line in out.getvalue().splitlines() if ' unavailable: ' in line and PREFIX in line]
+    return dict(unavailable=unavailable, rows=mine, failed_rows=[name for name, ok in mine if not ok], details=details,
                 by_assertion=not any('fixture setup did not complete' in d for d in details),
                 one_report_per_row=len(mine) == len({name for name, _ in mine}))
 
@@ -67,12 +69,12 @@ def run(paths=None, root=ROOT):
 
 
 def red(commit):
-    GP = load('red_git', ROOT / '.veldo/git_process.py')
-    resolved = GP.run(['git', 'rev-parse', OPT + 'verify', commit + '^{commit}'],
+    _git_process = load('red_git', ROOT / '.veldo/git_process.py')
+    resolved = _git_process.run(['git', 'rev-parse', OPT + 'verify', commit + '^{commit}'],
                       capture_output=True, text=True, check=True).stdout.strip()
     with tempfile.TemporaryDirectory(prefix='v129-red-') as directory:
         tree = Path(directory)
-        archive = GP.run(['git', 'archive', resolved], capture_output=True, check=True).stdout
+        archive = _git_process.run(['git', 'archive', resolved], capture_output=True, check=True).stdout
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
         observed = run(root=tree)
         digests = {name: hashlib.sha256((tree / '.veldo' / name).read_bytes()).hexdigest()
@@ -88,13 +90,15 @@ def mutations():
     cases = [c for c in driver.cases() if c['finding'] == 129]
     report = dict(schema='veldo.proof-mutations/v1', spec_id='VELDO-0129', baseline=run(), mutants=[])
     with tempfile.TemporaryDirectory(prefix='v129-mutants-') as directory:
-        for case in cases:
+        def observe(case):
             material = driver.materialize(case, 'mutant', Path(directory) / case['name'])
             observed = run({case['module']: str(material['mutant'])})
-            report['mutants'].append(dict(name=case['name'], module=case['module'],
+            return dict(name=case['name'], module=case['module'],
                 source_sha256=material['old_digest'], mutant_sha256=material['new_digest'],
                 edits=[{'old': old, 'new': new} for old, new in driver.edits(case)], named_rows=case['rows'],
-                named_rows_red=all(PREFIX + row in observed['failed_rows'] for row in case['rows']), **observed))
+                named_rows_red=all(PREFIX + row in observed['failed_rows'] for row in case['rows']), **observed)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            report['mutants'] = list(pool.map(observe, cases))
     report['all_rejected'] = all(m['named_rows_red'] and m['by_assertion'] for m in report['mutants'])
     (HERE / 'mutations.json').write_text(json.dumps(report, indent=1) + '\n')
     print(json.dumps({'mutants': len(cases), 'all_rejected': report['all_rejected']}))
