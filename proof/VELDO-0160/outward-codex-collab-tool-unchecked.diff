@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -304 +304 @@
+-    if kind == IN_RUN_COLLAB['item'] and tool not in IN_RUN_COLLAB['tools']:
++    if False:  # defect: a collab tool exec's enum does not list is taken to stay in the run

@@ -53,6 +53,89 @@ the CLI reports, at the granularity it reports it:
   reset stays missing.
 `total_cost_usd` and `costUSD` are never read: subscription usage has no per-call price.
 
+THE ACCOUNT'S LIMIT (VELDO-0160). `limit()` is the last limit the stream stated, with its window, reset
+and signal: a `rate_limit_event` whose status is `rejected` (the stream reports its window exhausted,
+`stream`), or the rate-limit result (`result`): a `result` with `is_error` whose text is the binary's
+usage-limit message, "You've hit your <limit>" and, when it states one, " \u00b7 resets <time> (<zone>)"
+(its limit names are the binary's table of rate-limit windows, LIMIT_NAMES; a name outside it is the
+`unified` window), or one of the binary's other texts for the account refused (LIMIT_REJECTED: "You're
+out of usage credits" with the reset it may state, and the org, seat, service, admin and $0-group texts),
+each the `unified` window. The time is the binary's own format in the zone it names: "3pm" or "3:05pm" for a
+reset within a day (the next such minute), "Sep 28, 3pm" with the year when it is another year. The reset
+is the END of the stated minute (the message truncates to the minute, so the window never reopens before
+it); a message stating none, or a time this reading cannot place, is a window with no reset, and the
+account stays refused until a later observation says otherwise. The rate-limit result is also recorded
+as a window. Any other message (the binary's "Server is temporarily limiting requests (not your usage
+limit)", an overloaded model) is not the account's limit.
+
+TOOL CALLS (VELDO-0160). `tool_calls(event, seen, redacted)` names the MCP tool calls an event of the
+stream shows: each `tool_use` block of an `assistant` message whose name is `mcp__<server>__<tool>`, by
+its id. It reads only the forms the binary's own tables list (proof/VELDO-0062/cli-formats.json,
+claude_code tool_forms): the SDK message union (MESSAGES), the content blocks of an assistant and of a
+user message, the streaming events of a `stream_event` and the built-in tool names (BUILTIN_TOOLS), and
+fails closed on everything else. What may be a tool call and cannot be read is named `unreadable` (an
+assistant message whose content is not a list, a content block that is not an object naming its type, a
+`tool_use` block whose name is not a string, or, on a line whose `redacted` field is set, a `tool_use`
+name that is neither `mcp__...` nor a built-in tool, since the redaction may have replaced it). A
+tool-call form this reading does not recognize is named `unknown` with its form, never taken for no call:
+an `mcp_tool_use`, `server_tool_use` or other server-tool block, a `stream_event` carrying any block that
+is not tool-free (a `tool_use` first), a user `tool_result`, a `tool_progress` or a `tool_use_summary`
+for a call id `seen` never held, a `tool_use` in a user message, and any message, subtype, block or
+streaming event type the tables do not list. The frames the CLI writes outside the message union are
+read by the binary's own table (TOOL_FREE_FRAMES): those whose schema provably carries no tool call
+(`keep_alive`, `control_cancel_request`, `active_goal`, `autocompact_state` and the `post_turn_summary`
+and `task_summary` system messages) are no call, and the rest (a control request or response, the
+transcript mirror) are unknown. `seen` is the ids of every tool call shown so far, to which each
+`tool_use` read is added.
+
+A tool name a frame carries beside the content blocks counts too (TOOL_FIELDS lists every field of the
+binary's messages whose name names a tool, and how it is read): a `tool_progress`'s `tool_name`, the REPL
+tool's inner call, which reaches the stream only as a `tool_progress` of the REPL call carrying a
+`repl_call` the schema omits (an `mcp__` inner name is that MCP call, a built-in one no call, any other
+an unknown call; a `repl_call` that is not an object naming its inner tool is unreadable), a
+`system/task_progress`'s `last_tool_name` and its `workflow_progress` entries' `lastToolName`, and an
+assistant message's `attribution_mcp_server` and `attribution_mcp_tool` (the MCP tool that produced it)
+and `batch_tool_uses` names. Each such name is read as a `tool_use` name is: `mcp__<server>__<tool>` is
+that MCP call; on a redacted line a name neither `mcp__...` nor built in is `unreadable`. The built-in
+names are BUILTIN_TOOL_NAMES and the current name of a tool it lists under an old one (the Agent tool,
+listed as `Task`: BUILTIN_RENAMED).
+
+A SUB-AGENT'S CALLS ARE COUNTED BY ITS TASK (`Tasks`). A sub-agent's own `tool_use` blocks reach the stream
+only from a sub-agent the main thread started: an agent that one of those starts (depth 2 or more) has its
+messages dropped unless the SDK's `forwardSubagentText` option is set, so its calls leave no block, and its
+task's progress names only the last tool of each of its messages. What does reach the stream is each task's
+count of its own calls: the `system/task_progress` and `system/task_notification` frames of a task (keyed by
+the `tool_use_id` of the call that started it, as `system/task_started` names it) carry `usage.tool_uses`,
+which the binary's tracker raises by one for every `tool_use` block of the task's own assistant messages, and
+those messages, when they are forwarded, carry the task's id as their `parent_tool_use_id` (TASK_COUNTS, read
+from the binary into cli-formats.json). `Tasks` compares, for each task, the highest count the stream
+reported with the distinct `tool_use` blocks it showed under that parent; any shortfall is that many calls the
+record cannot name, an unknown call of form `task_tool_uses` naming the task and the shortfall (`unshown`),
+at the line that reported the count. A count frame whose count cannot be read (a `task_progress` without a
+count of calls as a whole number, a `task_notification` whose usage has none, either without the task's id) is
+unreadable, and so is a count lower than one the same task reported before, since a count only rises.
+
+HIDDEN NESTED WORK (VELDO-0160, the structural rule). `nested_work(event)` names each construct through which
+an event shows the run doing work its stream may not show, by class (NESTED_TOOLS and NESTED, the binary's,
+cli-formats.json nested_work): `agent` (the Agent tool, its old name Task, SendMessage to a teammate), `skill`
+(the Skill tool), `repl` (the REPL tool, or its inner call on a tool_progress), `workflow` (the Workflow tool, or
+a task frame of a workflow), each tool wherever a tool that ran is named (a `tool_use` block, streamed or not, a
+tool_progress's tool or REPL inner tool, a task's last tool or its workflow agents', a batch tool name);
+`remote` (the RemoteTrigger tool, a deferred tool that manages the account's cloud agent routines) and `cron`
+(the CronCreate tool, a prompt scheduled to fire later), each wherever a tool is named the same way;
+`task_frames` (any system frame of a task); `nested_progress` (a message that names its task in
+`parent_tool_use_id`, as the CLI forwards a sub-agent's or forked skill's `agent_progress` and `skill_progress`,
+or such a progress frame itself); and `fork` (the Skill tool's result when it forked an agent).
+
+WORK OUTSIDE THE RUN (VELDO-0160, the lead's decision). `remote_agents(event)` names each call through which an
+event shows the run starting an agent outside itself, which may act through the account's claude.ai connectors
+whatever the run's configuration (REMOTE_AGENT, the binary's, cli-formats.json nested_work remote_agent): any
+RemoteTrigger call (`remote`; its create, update and run start a cloud agent routine), and a durable CronCreate
+(`cron`; its prompt persists to the project's scheduled tasks and fires after the run). A CronCreate is durable
+unless the call's own input, a `tool_use` block of an assistant message or the REPL tool's inner call, leaves its
+`durable` field out or gives it a value the binary reads as false; a CronCreate named where its input is not
+given (a streamed block, a tool_progress's tool, a task's last tool) may be durable and is named too.
+
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
 THE PINNED EXECUTABLE, VELDO-0060. A Claude Code adapter names the version it runs (`executable:
@@ -110,6 +193,7 @@ of an account configured to use one reaches the engine as CLAUDE_CODE_OAUTH_TOKE
 configuration (control_launch).
 Standard library only.
 """
+import datetime
 import hashlib
 import json
 import math
@@ -119,6 +203,7 @@ import re
 import shutil
 import stat
 import time
+import zoneinfo
 
 PROVIDER = 'claude_code'
 CREDENTIALS = frozenset((
@@ -168,6 +253,141 @@ SETTINGS = frozenset((
     'CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS', 'CLAUDE_CODE_PROXY_RESOLVES_HOSTS'))
 TOKEN_FIELDS = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
 MODEL_TOKEN_FIELDS = ('inputTokens', 'outputTokens', 'cacheReadInputTokens', 'cacheCreationInputTokens')
+# VELDO-0160: the usage-limit message of the binary's rate-limit result, and its names of the windows
+# (proof/VELDO-0062/cli-formats.json, claude_code usage_limit).
+LIMIT_MESSAGE = "You've hit your "
+LIMIT_NAMES = {'session limit': 'five_hour', 'weekly limit': 'seven_day', 'Opus limit': 'seven_day_opus',
+               'Sonnet limit': 'seven_day_sonnet', 'Fable limit': 'seven_day_overage_included',
+               'usage credit limit': 'overage'}
+LIMIT_WINDOW = 'unified'
+# The binary's other texts for the account refused, which do not start with LIMIT_MESSAGE (cli-formats.json,
+# claude_code usage_limit rejected): each is the `unified` window, its reset the one it states, if any.
+LIMIT_REJECTED = ("You're out of usage credits", 'Your org is out of usage \u00b7 add funds to continue',
+                  'Your org is out of usage \u00b7 contact your admin', "Your seat type doesn't include usage",
+                  "Your seat type doesn't include usage credits", 'This service is disabled for your org',
+                  'Your usage allocation has been disabled by your admin', "Your group's usage limit is set to $0")
+MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+RESETS = re.compile(r'resets (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2}), (?:(?P<year>\d{4}), )?)?'
+                    r'(?P<hour>\d{1,2})(?::(?P<minute>\d{2}))?(?P<half>am|pm) \((?P<zone>[^()]+)\)')
+MCP_PREFIX = 'mcp__'
+# The tool-call forms (VELDO-0160), from the binary's tables (proof/VELDO-0062/cli-formats.json, claude_code
+# tool_forms). MESSAGES: the stream's message types, with the subtype of those that have one (SUBTYPED).
+SUBTYPED = ('system', 'result')
+MESSAGES = frozenset((
+    ('assistant', None), ('auth_status', None), ('command_lifecycle', None), ('conversation_reset', None),
+    ('prompt_suggestion', None), ('rate_limit_event', None), ('result', 'error_during_execution'),
+    ('result', 'error_max_budget_usd'), ('result', 'error_max_structured_output_retries'), ('result', 'error_max_turns'),
+    ('result', 'success'), ('stream_event', None), ('tool_progress', None), ('tool_use_summary', None), ('user', None),
+) + tuple(('system', sub) for sub in (
+    'api_retry', 'background_tasks_changed', 'cloud_session_delta', 'code_change_published', 'commands_changed',
+    'compact_boundary', 'control_request_progress', 'dev_intent', 'elicitation_complete', 'feedback_draft_queued',
+    'files_persisted', 'hook_progress', 'hook_response', 'hook_started', 'informational', 'init',
+    'local_command_output', 'memory_recall', 'mirror_error', 'model_refusal_fallback', 'model_refusal_no_fallback',
+    'notification', 'peer_message_hold', 'per_turn_effort_changed', 'permission_denied', 'plugin_install',
+    'session_state_changed', 'status', 'task_notification', 'task_progress', 'task_started', 'task_updated',
+    'thinking_tokens', 'turn_handoff_available', 'turn_preempted', 'vcs_state_changed', 'worker_shutting_down')))
+# The content blocks, of an assistant message (RESPONSE_BLOCKS) and of a user message (REQUEST_BLOCKS), and
+# of those the ones that are no tool call (TOOL_FREE_BLOCKS: text, reasoning, compaction; a user message's
+# text, images, documents and search results). Every other listed block is a tool call or a tool's result.
+RESPONSE_BLOCKS = ('text', 'tool_use', 'thinking', 'redacted_thinking', 'server_tool_use', 'web_search_tool_result',
+                   'web_fetch_tool_result', 'advisor_tool_result', 'code_execution_tool_result',
+                   'bash_code_execution_tool_result', 'text_editor_code_execution_tool_result',
+                   'tool_search_tool_result', 'mcp_tool_use', 'mcp_tool_result', 'container_upload', 'compaction',
+                   'fallback')
+REQUEST_BLOCKS = ('text', 'image', 'document', 'search_result', 'tool_use', 'tool_result', 'thinking',
+                  'redacted_thinking') + RESPONSE_BLOCKS[4:] + ('mid_conv_system',)
+TOOL_FREE_BLOCKS = frozenset(('text', 'thinking', 'redacted_thinking', 'compaction', 'fallback'))
+TOOL_FREE_REQUEST = TOOL_FREE_BLOCKS | {'image', 'document', 'search_result', 'mid_conv_system'}
+STREAM_EVENTS = ('message_start', 'content_block_start', 'content_block_delta', 'content_block_stop',
+                 'message_delta', 'message_stop')
+# The binary's BUILTIN_TOOL_NAMES: a partial list of its own tools, so a redacted name it omits asks. It predates
+# a rename: its `Task` is the Agent tool's old name (cli-formats.json builtin_renamed), so the tool's current
+# name is built in too (BUILTIN).
+BUILTIN_TOOLS = frozenset(('Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'NotebookEdit', 'WebFetch', 'WebSearch',
+                           'Task', 'TodoWrite', 'TaskCreate', 'TaskUpdate', 'TaskGet', 'TaskList', 'TaskStop', 'Skill',
+                           'REPL', 'JavaScript', 'AskUserQuestion', 'ToolSearch', 'SendUserMessage'))
+BUILTIN_RENAMED = {'Agent': ('Task',)}
+BUILTIN = BUILTIN_TOOLS | frozenset(BUILTIN_RENAMED)
+# The frames the CLI writes outside the SDK message union (cli-formats.json frames) whose schema provably carries
+# no tool call; the others (control requests and responses, the transcript mirror) are unknown calls.
+TOOL_FREE_FRAMES = frozenset((('active_goal', None), ('autocompact_state', None), ('control_cancel_request', None),
+                              ('keep_alive', None), ('system', 'post_turn_summary'), ('system', 'task_summary')))
+# Every field of a stream message whose name names a tool, as the binary's schema declares it (cli-formats.json
+# tool_fields) and as its emitters write it beyond that schema (emitted_tool_fields), and how it is read. `call`:
+# the name of a tool that ran or may run, read as that call (TOOL CALLS in the module docstring). `id`: a call's
+# id, read against the ids shown. `free`: no call of its own: a count, a display or input copy of a block read
+# in the content, a tool the run offers or discovered, a call denied or deferred and never run. `task`: the id of
+# the task a frame or a sub-agent's message belongs to, and `count`: a task's count of its own calls, each read by
+# `Tasks` (TASK_COUNTS).
+TOOL_FIELDS = {
+    'assistant': {'attribution_mcp_tool': 'call', 'batch_tool_uses': 'call', 'context_usage.mcp_tools': 'free',
+                  'message.usage.server_tool_use': 'free', 'parent_tool_use_id': 'task', 'tool_use_meta': 'free',
+                  'wire_tool_inputs': 'free'},
+    'stream_event': {'parent_tool_use_id': 'free'},
+    'system/compact_boundary': {'compact_metadata.pre_compact_discovered_tools': 'free'},
+    'system/informational': {'tool_use_id': 'free'},
+    'system/init': {'tools': 'free'},
+    'system/permission_denied': {'tool_name': 'free', 'tool_use_id': 'free'},
+    'system/task_notification': {'tool_use_id': 'task', 'usage.tool_uses': 'count'},
+    'system/task_progress': {'last_tool_name': 'call', 'tool_use_id': 'task', 'usage.tool_uses': 'count',
+                             'workflow_progress.lastToolName': 'call'},
+    'system/task_started': {'tool_use_id': 'task'},
+    'system/turn_handoff_available': {'tools': 'free'},
+    'tool_progress': {'parent_tool_use_id': 'free', 'repl_call.inner_tool_input': 'free',
+                      'repl_call.inner_tool_name': 'call', 'repl_call.inner_tool_use_id': 'id', 'tool_name': 'call',
+                      'tool_use_id': 'id'},
+    'tool_use_summary': {'preceding_tool_use_ids': 'id'},
+    'user': {'parent_tool_use_id': 'free', 'source_tool_assistant_uuid': 'free', 'source_tool_use_id': 'free',
+             'tool_result_meta': 'free', 'tool_use_result': 'free'},
+}
+# How a task's count of its calls is read (cli-formats.json tool_forms task_counts): the frames that carry the count,
+# the field that holds it, the field of a frame naming its task, and the field of a sub-agent's message naming it.
+TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), 'count': 'usage.tool_uses',
+               'task': 'tool_use_id', 'parent': 'parent_tool_use_id'}
+# The constructs through which a run can do work its stream may not show (VELDO-0160, the structural rule; the
+# binary's, cli-formats.json tool_forms nested_work), by class: the tools that run an agent, a skill, code or a
+# workflow, by every name a frame may give them (NESTED_TOOLS); a task's own frames; the fields a task frame gives a
+# workflow and a workflow's task type; the REPL tool's inner call on a tool_progress; the field a sub-agent's or a
+# forked skill's forwarded message carries, and the progress kinds the CLI forwards that way; and the Skill tool's
+# result when it forked an agent.
+NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'repl': ('REPL',), 'skill': ('Skill',),
+                'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),
+                'workflow': ('RunWorkflow', 'Workflow')}
+NESTED = {'task_frames': ('system/task_notification', 'system/task_progress', 'system/task_started',
+                          'system/task_updated'),
+          'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',
+                       'task_type': 'local_workflow'},
+          'repl': {'tool_progress': 'repl_call'},
+          'forwarded': {'field': 'parent_tool_use_id', 'progress': ('agent_progress', 'skill_progress')},
+          'fork': {'field': 'tool_use_result', 'status': 'forked'},
+          # The calls that start an agent outside the run (remote_agents): any call of these tools, and a CronCreate
+          # unless its input leaves `durable` out (false by default) or gives it a value the binary reads as false.
+          'remote_agent': {'tools': ('RemoteTrigger',),
+                           'durable': {'tool': 'CronCreate', 'field': 'durable', 'off': (False, 'false')}}}
+# The built-in tools whose effects stay inside the run's clone and host session (VELDO-0160, the lead's allowlist; the
+# binary's, cli-formats.json tool_forms in_run), with their aliases: a call of any other built-in tool asks (outward_tools).
+IN_RUN_TOOLS = frozenset(('Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'REPL', 'Read',
+                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write'))
+IN_RUN_ALIASES = {'Agent': ('Task',), 'TaskStop': ('KillBash', 'KillShell'), 'Workflow': ('RunWorkflow',)}
+IN_RUN = IN_RUN_TOOLS | frozenset(alias for names in IN_RUN_ALIASES.values() for alias in names)
+# How an allowlisted call still acts outside the run: the Agent tool with its input's isolation remote, or naming an
+# agent definition that is not built in (an agent file may set isolation remote); a file tool or Bash whose input's
+# `_host` names another machine (routed there only when the remote-tools gate is on, off in this build); a task whose
+# type is not one of the allowlisted tools' (a remote agent is a task of type remote_agent).
+IN_RUN_AGENT = {'tools': ('Agent', 'Task'), 'field': 'isolation', 'values': ('worktree', 'remote'), 'outside': 'remote',
+                'type_field': 'subagent_type',
+                'builtin_types': ('Explore', 'Plan', 'claude', 'claude-code-guide', 'comment-thread-analyst', 'fork',
+                                  'general-purpose', 'statusline-setup', 'web-fetch', 'worker', 'workflow-subagent')}
+IN_RUN_SKILL = {'tool': 'Skill', 'field': 'context', 'inline': 'inline', 'parent': 'parent_tool_use_id'}
+IN_RUN_HOST = {'field': '_host', 'local': ('', 'container', 'this-machine'),
+               'tools': ('Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write')}
+IN_RUN_TASKS = {'field': 'task_type',
+                'in_run': ('in_process_teammate', 'local_agent', 'local_bash', 'local_workflow', 'monitor_ws')}
+TOOL_FIELDS.update({'result/' + sub: {'deferred_tool_use': 'free', 'permission_denials.tool_input': 'free',
+                                      'permission_denials.tool_name': 'free', 'permission_denials.tool_use_id': 'free',
+                                      'usage.server_tool_use': 'free'}
+                    for sub in ('error_during_execution', 'error_max_budget_usd', 'error_max_structured_output_retries',
+                                'error_max_turns', 'success')})
 
 
 def _count(value):
@@ -202,6 +422,512 @@ def receipt(line):
     return 'sha256:' + hashlib.sha256(line).hexdigest()
 
 
+def _zone(name):
+    try:
+        return datetime.timezone.utc if name in ('UTC', 'Etc/UTC', 'GMT') else zoneinfo.ZoneInfo(name)
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+        return None
+
+
+def limit_window(text):
+    """The window a usage-limit message names, or None when the text is not the usage-limit message."""
+    if isinstance(text, str) and text.startswith(LIMIT_REJECTED):
+        return LIMIT_WINDOW
+    if not isinstance(text, str) or not text.startswith(LIMIT_MESSAGE):
+        return None
+    name = text[len(LIMIT_MESSAGE):].split(' \u00b7 ', 1)[0]
+    return LIMIT_NAMES.get(name, LIMIT_WINDOW)
+
+
+def limit_reset(text, now):
+    """The Unix time a usage-limit message says its window resets, the end of the stated minute in the zone
+    it names; None when it states none or it cannot be placed. A time with no date is the next such minute."""
+    found = RESETS.search(text or '')
+    tz = _zone(found['zone']) if found else None
+    if tz is None:
+        return None
+    hour = int(found['hour']) % 12 + (12 if found['half'] == 'pm' else 0)
+    minute = int(found['minute'] or 0)
+    try:
+        today = datetime.datetime.fromtimestamp(now, tz).date()
+        if found['month']:
+            dates = [datetime.date(int(found['year'] or today.year), MONTHS.index(found['month']) + 1, int(found['day']))]
+        else:
+            dates = [today, today + datetime.timedelta(days=1)]
+        for date in dates:
+            end = max(datetime.datetime(date.year, date.month, date.day, hour, minute, fold=fold, tzinfo=tz).timestamp()
+                      for fold in (0, 1)) + 60
+            if found['month'] or end > now:
+                return end
+    except ValueError:
+        return None
+    return None
+
+
+def _unreadable(ident=None):
+    return {'id': ident, 'server': None, 'tool': None, 'unreadable': True}
+
+
+def _unknown(form, ident=None):
+    return {'id': ident, 'server': None, 'tool': None, 'unknown': form}
+
+
+def _named(name, ident, redacted):
+    """The call a tool name a frame carries shows: an `mcp__<server>__<tool>` name is that MCP call; a name that
+    is not a string is unreadable; on a redacted line a name that is neither `mcp__...` nor built in is one the
+    redaction may have replaced (unreadable); any other name is no MCP call."""
+    if not isinstance(name, str):
+        return [_unreadable(ident)]  # A tool call whose tool cannot be read.
+    if name.startswith(MCP_PREFIX):
+        server, _, tool = name[len(MCP_PREFIX):].partition('__')
+        return [{'id': ident, 'server': server, 'tool': tool}]
+    if redacted and name not in BUILTIN:
+        return [_unreadable(ident)]  # the redaction may have replaced an MCP tool's name
+    return []
+
+
+def _repl_call(value, seen):
+    """The call the REPL tool's inner tool call shows (a tool_progress's `repl_call`, which its schema omits):
+    an `mcp__` inner name is that MCP call, a built-in one no MCP call, any other an unknown call; a repl_call
+    that is not an object naming its inner tool is unreadable."""
+    if not isinstance(value, dict) or not isinstance(value.get('inner_tool_name'), str):
+        return [_unreadable()]
+    name, ident = value['inner_tool_name'], value.get('inner_tool_use_id')
+    ident = ident if isinstance(ident, str) else None
+    if ident is not None:
+        seen.add(ident)
+    if name.startswith(MCP_PREFIX):
+        return _named(name, ident, False)
+    return [] if name in BUILTIN else [_unknown('repl_call:' + name, ident)]
+
+
+def _task_progress(event, redacted):
+    """The calls a task's progress names: its last tool (`last_tool_name`) and each workflow agent's
+    (`workflow_progress` entries' `lastToolName`, which the schema omits)."""
+    ident = event.get('tool_use_id') if isinstance(event.get('tool_use_id'), str) else None
+    found = _named(event['last_tool_name'], ident, redacted) if event.get('last_tool_name') is not None else []
+    entries = event.get('workflow_progress')
+    if entries is None:
+        return found
+    if not isinstance(entries, list):
+        return found + [_unreadable(ident)]
+    for entry in entries:
+        if not isinstance(entry, dict):
+            found.append(_unreadable(ident))
+        elif entry.get('lastToolName') is not None:
+            found += _named(entry['lastToolName'], ident, redacted)
+    return found
+
+
+def _attributed(event, seen, redacted):
+    """The calls an assistant message names beside its content: the MCP tool that produced it
+    (`attribution_mcp_server`, `attribution_mcp_tool`) and the batch tool_use blocks it was decomposed from
+    (`batch_tool_uses`, {id, name}); what is there and cannot be read is unreadable."""
+    found = []
+    server, tool = event.get('attribution_mcp_server'), event.get('attribution_mcp_tool')
+    if isinstance(tool, str) and tool.startswith(MCP_PREFIX):
+        found += _named(tool, None, redacted)
+    elif server is not None or tool is not None:
+        if isinstance(server, str) and server and (tool is None or isinstance(tool, str)):
+            found.append({'id': None, 'server': server, 'tool': tool})
+        else:
+            found.append(_unreadable())
+    batch = event.get('batch_tool_uses')
+    if batch is None:
+        return found
+    if not isinstance(batch, list):
+        return found + [_unreadable()]
+    for use in batch:
+        ident = use.get('id') if isinstance(use, dict) and isinstance(use.get('id'), str) else None
+        if ident is not None:
+            seen.add(ident)
+        found += _named(use.get('name') if isinstance(use, dict) else None, ident, redacted)
+    return found
+
+
+def _blocks(content, seen, redacted, user):
+    """The calls a message's content blocks show (the module docstring, TOOL CALLS)."""
+    if user and isinstance(content, str):
+        return []
+    if not isinstance(content, list):
+        return [_unreadable()]  # A message with no readable content may hold a tool call.
+    found = []
+    for block in content:
+        kind = block.get('type') if isinstance(block, dict) else None
+        if not isinstance(kind, str):
+            found.append(_unreadable())
+            continue
+        if kind in (TOOL_FREE_REQUEST if user else TOOL_FREE_BLOCKS):
+            continue
+        if user and kind == 'tool_result':
+            ident = block.get('tool_use_id')
+            if not isinstance(ident, str):
+                found.append(_unreadable())
+            elif ident not in seen:
+                found.append(_unknown('tool_result', ident))  # the result of a call the record never showed
+            continue
+        if user or kind != 'tool_use':
+            found.append(_unknown(kind, block.get('id') if isinstance(block.get('id'), str) else None))
+            continue
+        name, ident = block.get('name'), block.get('id')
+        if isinstance(ident, str):
+            seen.add(ident)
+        found += _named(name, ident, redacted)
+    return found
+
+
+def tool_calls(event, seen, redacted=False):
+    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160); a block that may be
+    a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}, and a tool-call form
+    this reading does not recognize {id, server: None, tool: None, unknown: <form>}. `seen` holds the ids of
+    the tool calls shown so far; each tool_use read is added to it."""
+    kind = event.get('type')
+    tag = (kind, event.get('subtype') if kind in SUBTYPED else None)
+    if tag in TOOL_FREE_FRAMES:
+        return []
+    if tag not in MESSAGES:
+        return [_unknown('message:%s' % '/'.join(str(part) for part in tag if part is not None))]
+    if kind in ('assistant', 'user'):
+        message = event.get('message')
+        found = _blocks(message.get('content') if isinstance(message, dict) else None, seen, redacted, kind == 'user')
+        return found + _attributed(event, seen, redacted) if kind == 'assistant' else found
+    if tag == ('system', 'task_progress'):
+        return _task_progress(event, redacted)
+    if kind == 'stream_event':
+        stream = event.get('event')
+        name = stream.get('type') if isinstance(stream, dict) else None
+        if not isinstance(name, str):
+            return [_unreadable()]
+        if name not in STREAM_EVENTS:
+            return [_unknown('stream_event:' + name)]
+        if name == 'content_block_start':
+            blocks = [stream.get('content_block')]
+        elif name == 'message_start':
+            message = stream.get('message')
+            blocks = message.get('content') if isinstance(message, dict) else None
+        else:
+            return []
+        if not isinstance(blocks, list):
+            return [_unreadable()]
+        found = []
+        for block in blocks:
+            tag = block.get('type') if isinstance(block, dict) else None
+            if not isinstance(tag, str):
+                found.append(_unreadable())
+            elif tag not in TOOL_FREE_BLOCKS:
+                found.append(_unknown('stream_event:' + tag))  # a streamed tool call this reading never reads
+        return found
+    if kind in ('tool_progress', 'tool_use_summary'):
+        ids = [event.get('tool_use_id')] if kind == 'tool_progress' else event.get('preceding_tool_use_ids')
+        if not isinstance(ids, list) or not all(isinstance(ident, str) for ident in ids):
+            return [_unreadable()]
+        found = [_unknown(kind, ident) for ident in ids if ident not in seen]
+        if kind == 'tool_progress':
+            # The tool the progress is of, and the REPL tool's inner call, which reaches the stream only here.
+            found += _named(event.get('tool_name'), ids[0], redacted)
+            if 'repl_call' in event:
+                found += _repl_call(event['repl_call'], seen)
+        return found
+    return []
+
+
+def _named_tools(event, tag):
+    """Every tool name an event gives where a tool that ran or may run is named: a `tool_use` block of its content
+    (streamed or not), a tool_progress's tool and REPL inner tool, a task's last tool and its workflow agents',
+    and an assistant message's batch tool names."""
+    names, blocks = [], None
+    message = event.get('message')
+    if tag in ('assistant', 'user') and isinstance(message, dict):
+        blocks = message.get('content')
+    elif tag == 'stream_event' and isinstance(event.get('event'), dict):
+        stream = event['event']
+        start = stream.get('message') if isinstance(stream.get('message'), dict) else {}
+        blocks = [stream.get('content_block')] + (start['content'] if isinstance(start.get('content'), list) else [])
+    for block in blocks if isinstance(blocks, list) else ():
+        if isinstance(block, dict) and block.get('type') == 'tool_use':
+            names.append(block.get('name'))
+    entries, field = None, None
+    if tag == 'tool_progress':
+        repl = event.get('repl_call')
+        names += [event.get('tool_name'), repl.get('inner_tool_name') if isinstance(repl, dict) else None]
+    elif tag == 'system/task_progress':
+        names.append(event.get('last_tool_name'))
+        entries, field = event.get('workflow_progress'), 'lastToolName'
+    elif tag == 'assistant':
+        entries, field = event.get('batch_tool_uses'), 'name'
+    if isinstance(entries, list):
+        names += [entry.get(field) for entry in entries if isinstance(entry, dict)]
+    return [name for name in names if isinstance(name, str)]
+
+
+def nested_work(event):
+    """[(construct, form)]: each construct through which the event shows the run doing work its stream may not
+    show (NESTED_TOOLS, NESTED): `agent`, `skill`, `repl`, `workflow` for a tool of that class named where a tool
+    that ran is named, `task_frames` for a task's own frame, `workflow` also for a task frame of a workflow,
+    `repl` also for a REPL inner call, `nested_progress` for a message a sub-agent or a forked skill produced (it
+    names its task) or a progress frame of theirs, and `fork` for a forked skill's result."""
+    kind = event.get('type')
+    tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
+    found = []
+    for name in _named_tools(event, tag):
+        found += [(construct, 'tool:' + name) for construct, names in NESTED_TOOLS.items() if name in names]
+    if tag in NESTED['task_frames']:
+        found.append(('task_frames', tag))
+        workflow = NESTED['workflow']
+        if event.get(workflow.get(tag, '')) is not None or event.get('task_type') == workflow['task_type']:
+            found.append(('workflow', tag + ':' + workflow.get(tag, 'task_type')))
+    if tag in NESTED['repl'] and NESTED['repl'][tag] in event:
+        found.append(('repl', tag + ':' + NESTED['repl'][tag]))
+    parent = event.get(NESTED['forwarded']['field'])
+    if isinstance(parent, str) and parent:
+        found.append(('nested_progress', NESTED['forwarded']['field']))
+    data = event.get('data')
+    if kind == 'progress' and isinstance(data, dict) and data.get('type') in NESTED['forwarded']['progress']:
+        found.append(('nested_progress', 'progress:' + data['type']))
+    result = event.get(NESTED['fork']['field'])
+    if kind == 'user' and isinstance(result, dict) and result.get('status') == NESTED['fork']['status']:
+        found.append(('fork', NESTED['fork']['field'] + ':' + NESTED['fork']['status']))
+    return list(dict.fromkeys(found))
+
+
+def remote_agents(event):
+    """[(construct, form)]: each call through which the event shows the run starting an agent outside itself
+    (NESTED['remote_agent']): `remote` for any RemoteTrigger call, `cron` for a CronCreate that may be durable (its
+    own input, where the event gives it, does not leave `durable` out or false), wherever a tool is named."""
+    kind = event.get('type')
+    tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
+    remote = NESTED['remote_agent']
+    durable = remote['durable']
+    # The inputs the event gives of the calls it names: an assistant message's tool_use blocks and the REPL tool's
+    # inner call. Any other place naming the tool gives no input.
+    given = []
+    message = event.get('message')
+    if tag == 'assistant' and isinstance(message, dict) and isinstance(message.get('content'), list):
+        given += [(block.get('name'), block.get('input')) for block in message['content']
+                  if isinstance(block, dict) and block.get('type') == 'tool_use']
+    repl = event.get('repl_call') if tag == 'tool_progress' else None
+    if isinstance(repl, dict):
+        given.append((repl.get('inner_tool_name'), repl.get('inner_tool_input')))
+    names = _named_tools(event, tag)
+    found = []
+    for name in names:
+        if name in remote['tools']:
+            found.append(('remote', 'tool:' + name))
+        elif name == durable['tool']:
+            inputs = [value for tool, value in given if tool == name]
+            if inputs:
+                # This name's own input: durable unless it leaves the field out or gives a value read as false.
+                given.remove((name, inputs[0]))
+                value = inputs[0].get(durable['field'], False) if isinstance(inputs[0], dict) else None
+                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):
+                    continue
+            found.append(('cron', 'tool:%s:%s' % (name, durable['field'])))
+    return list(dict.fromkeys(found))
+
+
+def tool_inputs(event):
+    """[(key, input)]: the input the event gives of each call it names, an assistant or user message's tool_use block
+    and the REPL tool's inner call, so that a frame naming the call elsewhere is judged by its input. The key is the
+    call's id, and for a sub-agent's message (its task's id in parent_tool_use_id) also ('task', task id, tool name),
+    since the task's progress names its last tool without the call's id."""
+    kind = event.get('type')
+    found = []
+    message = event.get('message')
+    parent = event.get(TASK_COUNTS['parent'])
+    if kind in ('assistant', 'user') and isinstance(message, dict) and isinstance(message.get('content'), list):
+        for block in message['content']:
+            if not (isinstance(block, dict) and block.get('type') == 'tool_use' and 'input' in block):
+                continue
+            if isinstance(block.get('id'), str):
+                found.append((block['id'], block['input']))
+            if isinstance(parent, str) and isinstance(block.get('name'), str):
+                found.append((('task', parent, block['name']), block['input']))
+    repl = event.get('repl_call') if kind == 'tool_progress' else None
+    if isinstance(repl, dict) and isinstance(repl.get('inner_tool_use_id'), str) and 'inner_tool_input' in repl:
+        found.append((repl['inner_tool_use_id'], repl['inner_tool_input']))
+    # A workflow's task (its start names the workflow, NESTED['workflow']): its progress's last tool is the label of
+    # its current agent, not a tool, keyed ('workflow', the id of the call that started it).
+    workflow = NESTED['workflow']
+    if kind == 'system' and event.get('subtype') == 'task_started' and isinstance(event.get(TASK_COUNTS['task']), str) \
+            and (event.get(workflow['system/task_started']) is not None or event.get('task_type') == workflow['task_type']):
+        found.append((('workflow', event[TASK_COUNTS['task']]), True))
+    return found
+
+
+def _block_forms(blocks, user):
+    """[(name, id, input, given)] of the tool_use blocks, and ('block:<kind>', ...) of every other block that calls a
+    tool (not tool-free and not a tool's result: a server tool, an API-side MCP call, any block no table lists)."""
+    found = []
+    for block in blocks if isinstance(blocks, list) else ():
+        kind = block.get('type') if isinstance(block, dict) else None
+        if not isinstance(kind, str) or kind in (TOOL_FREE_REQUEST if user else TOOL_FREE_BLOCKS):
+            continue  # a block that cannot be read is the call-by-call rules' (unreadable)
+        if kind == 'tool_use':
+            found.append((block.get('name'), block.get('id'), block.get('input'), 'input' in block))
+        elif not kind.endswith('_result'):
+            found.append(('block:' + kind, None, None, None))
+    return found
+
+
+def _named_calls(event, tag):
+    """Every tool call the event names, as (name, id, input, given): its content's tool_use blocks (their input given,
+    a streamed block's not yet), a tool_progress's tool and the REPL tool's inner call, a task's last tool and its
+    workflow agents', an assistant message's batch tool names; and each other block that calls a tool as
+    ('block:<kind>', None, None, None). A task's last tool is keyed ('task', task id, name), as tool_inputs keys the
+    task's own shown calls."""
+    found, message = [], event.get('message')
+    if tag in ('assistant', 'user') and isinstance(message, dict):
+        found += _block_forms(message.get('content'), tag == 'user')
+    elif tag == 'stream_event' and isinstance(event.get('event'), dict):
+        stream = event['event']
+        start = stream.get('message') if isinstance(stream.get('message'), dict) else {}
+        blocks = [stream.get('content_block')] + (start['content'] if isinstance(start.get('content'), list) else [])
+        found += [(name, ident, None, False) for name, ident, _, _ in _block_forms(blocks, False)]
+    if tag == 'tool_progress':
+        found.append((event.get('tool_name'), event.get('tool_use_id'), None, False))
+        repl = event.get('repl_call')
+        if isinstance(repl, dict):
+            found.append((repl.get('inner_tool_name'), repl.get('inner_tool_use_id'), repl.get('inner_tool_input'),
+                          'inner_tool_input' in repl))
+    elif tag == 'system/task_progress':
+        if event.get('last_tool_name') is not None:
+            task = event.get(TASK_COUNTS['task'])
+            name = event['last_tool_name']
+            found.append((name, ('task', task, name) if isinstance(task, str) and isinstance(name, str) else None,
+                          None, False))
+        entries = event.get('workflow_progress')
+        found += [(entry['lastToolName'], None, None, False) for entry in entries if isinstance(entry, dict)
+                  and entry.get('lastToolName') is not None] if isinstance(entries, list) else []
+    elif tag == 'assistant' and isinstance(event.get('batch_tool_uses'), list):
+        found += [(use.get('name'), use.get('id'), None, False) for use in event['batch_tool_uses'] if isinstance(use, dict)]
+    return found
+
+
+def _outside_input(name, value):
+    """The forms through which an allowlisted call's own input acts outside the run: the Agent tool remote or naming
+    an agent definition that is not built in, a file tool or Bash naming another machine."""
+    # Skill's schema has only skill and args. A definition can supply context independently, so the parent check
+    # below is unconditional. An explicit context in a record must exclude a fork; unreadable input cannot do so.
+    if name == IN_RUN_SKILL['tool'] and (not isinstance(value, dict)
+                                       or value.get(IN_RUN_SKILL['field'], IN_RUN_SKILL['inline']) != IN_RUN_SKILL['inline']):
+        return ['tool:Skill:context']
+    if not isinstance(value, dict):
+        return ['tool:%s:input' % name] if name in IN_RUN_AGENT['tools'] else []
+    found = []
+    if name in IN_RUN_AGENT['tools']:
+        isolation, kind = value.get(IN_RUN_AGENT['field']), value.get(IN_RUN_AGENT['type_field'])
+        local = tuple(v for v in IN_RUN_AGENT['values'] if v != IN_RUN_AGENT['outside'])
+        if isolation is not None and isolation not in local:
+            found.append('tool:%s:%s:%s' % (name, IN_RUN_AGENT['field'], isolation))
+        if kind is not None and kind not in IN_RUN_AGENT['builtin_types']:
+            found.append('tool:%s:%s' % (name, IN_RUN_AGENT['type_field']))
+    host = value.get(IN_RUN_HOST['field'])
+    if name in IN_RUN_HOST['tools'] and isinstance(host, str) and host.strip() not in IN_RUN_HOST['local']:
+        found.append('tool:%s:%s' % (name, IN_RUN_HOST['field']))
+    return found
+
+
+def outward_tools(event, inputs):
+    """[form]: each call the event names that is not shown to stay inside the run (VELDO-0160, the lead's allowlist,
+    rule A): a built-in tool that is not on the allowlist (IN_RUN; `tool:<name>`, a name that cannot be read
+    `tool:unreadable`), any other block that calls a tool (`block:<kind>`), an allowlisted call whose input acts outside
+    the run (_outside_input), an Agent call whose input is neither given here nor by its id elsewhere in the record
+    (`inputs`, {key: [input]}, tool_inputs; it may be remote: an agent a sub-agent starts shows its input only in the
+    sub-agent's forwarded message, and one a deeper agent starts nowhere), a task whose type is not one of the allowlisted tools', and a workflow
+    agent whose isolation is remote. An MCP tool (`mcp__...`) is the configuration's to judge."""
+    kind = event.get('type')
+    tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
+    found = []
+    workflow = tag == 'system/task_progress' and (event.get(NESTED['workflow'][tag]) is not None
+                                                  or ('workflow', event.get(TASK_COUNTS['task'])) in inputs)
+    for name, ident, value, given in _named_calls(event, tag):
+        if workflow and isinstance(ident, tuple) and ident[0] == 'task':
+            continue  # a workflow task's last tool is its current agent's label; its agents' tools are named beside it
+        if not isinstance(name, str):
+            found.append('tool:unreadable')
+            continue
+        if name.startswith('block:'):
+            found.append(name)
+            continue
+        if name.startswith(MCP_PREFIX):
+            continue
+        if name not in IN_RUN:
+            found.append('tool:' + name)
+            continue
+        # A skill definition can fork without saying so in its call. In a sub-agent the fork's messages are
+        # dropped and its end has no tally, so the parent alone is enough to ask under rule A.
+        if name == IN_RUN_SKILL['tool'] and event.get(IN_RUN_SKILL['parent']) is not None:
+            found.append('tool:Skill:parent_tool_use_id')
+        values = [value] if given else list(inputs.get(ident, ())) if isinstance(ident, (str, tuple)) else []
+        if not values and name in IN_RUN_AGENT['tools']:
+            found.append('tool:%s:input_not_given' % name)
+        if not values and name == IN_RUN_SKILL['tool']:
+            values = [None]
+        for each in values:
+            found += _outside_input(name, each)
+    if tag in NESTED['task_frames'] and IN_RUN_TASKS['field'] in event:
+        task_type = event[IN_RUN_TASKS['field']]
+        if task_type not in IN_RUN_TASKS['in_run']:
+            found.append('%s:%s' % (IN_RUN_TASKS['field'], task_type if isinstance(task_type, str) else 'unreadable'))
+    entries = event.get('workflow_progress') if tag == 'system/task_progress' else None
+    for entry in entries if isinstance(entries, list) else ():
+        if isinstance(entry, dict) and entry.get(IN_RUN_AGENT['field']) == IN_RUN_AGENT['outside']:
+            found.append('workflow_progress:%s:%s' % (IN_RUN_AGENT['field'], IN_RUN_AGENT['outside']))
+    return list(dict.fromkeys(found))
+
+
+def _whole(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+class Tasks:
+    """The calls each task of a record reported against the calls the record showed for it (A SUB-AGENT'S CALLS
+    ARE COUNTED BY ITS TASK, in the module docstring). `line(event, sequence)` reads one event and returns what
+    it cannot read ({id, server: None, tool: None, unreadable: True}); `close()` returns each task's shortfall,
+    {id, sequence, server: None, tool: None, unknown: 'task_tool_uses', task, unshown}."""
+
+    def __init__(self):
+        self.reported = {}  # task id -> (the highest count, the sequence of the line that first reported it)
+        self.shown = {}  # task id -> the ids of the tool_use blocks shown under it
+
+    def line(self, event, sequence):
+        kind = event.get('type')
+        if kind == 'assistant':
+            parent = event.get(TASK_COUNTS['parent'])
+            message = event.get('message')
+            content = message.get('content') if isinstance(message, dict) else None
+            if isinstance(parent, str) and isinstance(content, list):
+                shown = self.shown.setdefault(parent, set())
+                shown.update(block['id'] for block in content if isinstance(block, dict)
+                             and block.get('type') == 'tool_use' and isinstance(block.get('id'), str))
+            return []
+        tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else None
+        if tag not in TASK_COUNTS['frames']:
+            return []
+        holder, _, field = TASK_COUNTS['count'].partition('.')
+        usage = event.get(holder)
+        if tag == 'system/task_notification' and usage is None:
+            return []  # a task's end with no usage reports no count
+        task, count = event.get(TASK_COUNTS['task']), usage.get(field) if isinstance(usage, dict) else None
+        if not isinstance(task, str) or not _whole(count):
+            return [_unreadable(task if isinstance(task, str) else None)]
+        highest = self.reported.get(task)
+        if highest is not None and count < highest[0]:
+            return [_unreadable(task)]  # a count only rises: a lower one is not the count this reading knows
+        if highest is None or count > highest[0]:
+            self.reported[task] = (count, sequence)
+        return []
+
+    def close(self):
+        found = []
+        for task, (count, sequence) in self.reported.items():
+            unshown = count - len(self.shown.get(task, ()))
+            if unshown > 0:
+                found.append({'id': task, 'sequence': sequence, 'server': None, 'tool': None,
+                              'unknown': 'task_tool_uses', 'task': task, 'unshown': unshown})
+        return sorted(found, key=lambda call: call['sequence'])
+
+
 class Meter:
     """Reads one invocation's stream line by line. `feed(bytes)` returns the observations the
     complete lines in it make: {'kind': 'usage', 'usage': cumulative {tokens, messages}} or
@@ -218,6 +944,8 @@ class Meter:
         self.prior = prior if _count(prior) else None
         self.session_id = None
         self.session_total = None
+        self.clock = clock
+        self.limited = None
 
     def charged(self):
         """Which case charges this invocation: `whole` when its contract resumes no session, `difference`
@@ -246,6 +974,21 @@ class Meter:
             return None
         return {'provider': PROVIDER, 'id': self.session_id, 'tokens': self.session_total,
                 'charged': self.charged()}
+
+    def limit(self):
+        """{window, reset_at, signal}: the last limit the stream stated (VELDO-0160), or None."""
+        return dict(self.limited) if self.limited else None
+
+    def _result_limit(self, event, seen):
+        """The rate-limit result as its window, exhausted: a result with `is_error` whose text is the
+        usage-limit message, with the reset it states (or none)."""
+        text = event.get('result')
+        window = limit_window(text) if event.get('is_error') is True else None
+        if window is None:
+            return []
+        reset = limit_reset(text, self.clock())
+        self.limited = {'window': window, 'reset_at': reset, 'signal': 'result'}
+        return [dict(seen, kind='window', window_id=window, status='rejected', reset_at=reset, utilization=None)]
 
     def feed(self, chunk):
         self.pending += chunk
@@ -300,9 +1043,10 @@ class Meter:
             self.messages[ident] = tokens
             return [dict(seen, kind='usage', usage=self.cumulative())]
         if kind == 'result':
+            found = self._result_limit(event, seen)
             turns = event.get('num_turns')
             if not _count(turns):
-                return []
+                return found
             running = _model_tokens(event.get('modelUsage'))
             if running is not None:
                 self.session_total = running if self.session_total is None else max(self.session_total, running)
@@ -314,9 +1058,9 @@ class Meter:
                          'tokens': None if total['tokens'] is None and prior['tokens'] is None
                          else max(t for t in (total['tokens'], prior['tokens']) if t is not None)}
                 if total == prior:
-                    return []  # The same total again settles nothing twice.
+                    return found  # The same total again settles nothing twice.
             self.result = total
-            return [dict(seen, kind='usage', usage=self.cumulative())]
+            return found + [dict(seen, kind='usage', usage=self.cumulative())]
         if kind == 'rate_limit_event':
             info = event.get('rate_limit_info')
             info = info if isinstance(info, dict) else {}
@@ -325,6 +1069,13 @@ class Meter:
                 return []
             reset = info.get('resetsAt')
             utilization = info.get('utilization')
+            if status == 'rejected':
+                # VELDO-0160: the stream reports its window exhausted.
+                self.limited = {'window': str(info.get('rateLimitType') or LIMIT_WINDOW),
+                                'reset_at': reset if _number(reset) else None, 'signal': 'stream'}
+            elif (self.limited or {}).get('signal') == 'stream' and self.limited['window'] == str(
+                    info.get('rateLimitType') or LIMIT_WINDOW):
+                self.limited = None  # The same window reported open again: the run is no longer at its limit.
             return [dict(seen, kind='window', window_id=str(info.get('rateLimitType') or 'unified'),
                          status='rejected' if status == 'rejected' else 'allowed',
                          reset_at=reset if _number(reset) else None,

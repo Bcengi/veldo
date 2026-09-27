@@ -1,0 +1,6 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -844,2 +844 @@
+-            found.append(name)
+-            continue
++            continue  # defect: an API server tool block is taken to stay in the run

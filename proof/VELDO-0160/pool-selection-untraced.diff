@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -326 +326 @@
+-                         selection=choice['trace'],
++                         selection=None,  # defect: the choice and the windows it read are not kept

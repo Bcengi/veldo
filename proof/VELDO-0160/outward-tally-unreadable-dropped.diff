@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -303 +303 @@
+-                      for call in tasks.line(counted, at)]
++                      for call in tasks.line(counted, at) if False]  # defect: a count that cannot be read is trusted

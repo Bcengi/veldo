@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -202 +202 @@
+-                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent')}
++                 'tools': ('spawn_agent', 'send_input', 'close_agent')}  # defect: exec's wait is not in the run

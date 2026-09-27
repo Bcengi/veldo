@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -852 +852 @@
+-        if not values and name in IN_RUN_AGENT['tools']:
++        if False:  # defect: an Agent call whose input is not shown is taken to be local

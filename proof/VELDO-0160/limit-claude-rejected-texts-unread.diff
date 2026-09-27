@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -433,2 +432,0 @@
+-    if isinstance(text, str) and text.startswith(LIMIT_REJECTED):
+-        return LIMIT_WINDOW

@@ -584,8 +584,8 @@ def cases():
                 "            elif p['final']:\n                value['charge']['wall_seconds'] = p['usage'].get('wall_seconds', 0)",
                 'partial-final-retained')
     reservation('reservation-report-before-enforcement', 'control_reservation_runtime.py',
-                "        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n            receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                               now=now, final=final, outcome=outcome, receipts=receipts,\n                                               **({'session': session} if session is not None else {}))\n",
-                "        receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                           now=now, final=final, outcome=outcome, receipts=receipts,\n                                           **({'session': session} if session is not None else {}))\n        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n", 'report-failure-stops')
+                "        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n            receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                               now=now, final=final, outcome=outcome, receipts=receipts,\n                                               **({'session': session} if session is not None else {}),\n                                               **({'limit': limit} if limit is not None else {}))\n",
+                "        receipt = self.reservations.report(command_id, invocation, sequence, usage,\n                                           now=now, final=final, outcome=outcome, receipts=receipts,\n                                           **({'session': session} if session is not None else {}),\n                                           **({'limit': limit} if limit is not None else {}))\n        try:\n            reached = now - active['start'] >= active['wall_seconds']\n            if reached:\n                self._stop(active)\n", 'report-failure-stops')
     reservation('reservation-report-error-keeps-worker', 'control_reservation_runtime.py',
                 "            # Reporting, authorization and policy reads must fail closed for the worker.\n            self._stop(active)",
                 "            # Defect: report failure leaves the worker running.\n            pass",
@@ -6885,6 +6885,603 @@ def cases():
             "            % (shown('project'), shown('owner'), shown('execution_repository'), shown('charter'),\n",
             "            % (shown('project'), shown('owner'), 'as proposed', shown('charter'),  # defect: repository not shown\n",
             'answer/owner-sees-every-value')
+
+    # VELDO-0160: each criterion's declared falsifier first, then the threat model's other shapes.
+    def pool(name, module, old, new, rows, also=()):
+        add(160, name, '78_veldo_0160_account_pool.py', module, old, new, rows, also)
+
+    # AC1 (declared falsifiers): two accounts' work under one shared profile; a second registration of one
+    # account accepted; the pool's launches serialized.
+    pool('pool-shared-profile', 'control_accounts.py',
+         "    directory = (record.get('profiles') or {}).get(host)\n",
+         "    directory = (record.get('profiles') or {}).get(host)\n"
+         "    directory = os.path.join(os.path.dirname(directory or '.'), 'shared-' + str(record.get('provider')))"
+         "  # defect: one profile shared by the accounts of a provider\n",
+         ['pool/per-account-isolation'])
+    pool('pool-second-registration-accepted', 'control_accounts.py',
+         "                        raise Refused('duplicate_account:' + other['id'], '%s on %s' % (directory, host))\n",
+         "                        pass  # defect: the same login is registered again under another name\n",
+         ['pool/one-registration'])
+    pool('pool-duplicate-id-unnamed', 'control_accounts.py',
+         "                raise Refused('duplicate_account:' + params['account'], params['account'])\n",
+         "                raise Refused('duplicate_account', params['account'])  # defect: the registered id is not named\n",
+         ['pool/one-registration'])
+    pool('pool-launches-serialized', 'control_account_pool.py',
+         "        if active >= admits:\n",
+         "        if active >= admits or any(r.get('type') == 'worker' and not r.get('retired') for r in records.values()):"
+         "  # defect: one pooled run at a time\n",
+         ['pool/concurrent'])
+    pool('pool-selection-untraced', 'control_reservations.py',
+         "                         selection=choice['trace'],\n",
+         "                         selection=None,  # defect: the choice and the windows it read are not kept\n",
+         ['pool/per-account-isolation'])
+    # AC2 (declared falsifier): a run whose engine ends with its rate-limit result classified as an ordinary failure.
+    pool('limit-result-ordinary', 'control_accounts.py',
+         "    if limit['signal'] == 'stream' and outcome == 'completed':\n",
+         "    if limit['signal'] == 'result':\n"
+         "        return outcome, None  # defect: the engine's rate-limit result is an ordinary failure\n"
+         "    if limit['signal'] == 'stream' and outcome == 'completed':\n",
+         ['limit/rate-limit-result'])
+    pool('limit-claude-result-unread', 'control_engine_claude.py',
+         "        window = limit_window(text) if event.get('is_error') is True else None\n",
+         "        window = None  # defect: the rate-limit result is not read\n",
+         ['limit/rate-limit-result'])
+    pool('limit-claude-any-error-result', 'control_engine_claude.py',
+         "    if not isinstance(text, str) or not text.startswith(LIMIT_MESSAGE):\n",
+         "    if not isinstance(text, str):  # defect: any error result is the account's limit\n",
+         ['limit/rate-limit-result'])
+    pool('limit-claude-reset-minute-start', 'control_engine_claude.py',
+         "                      for fold in (0, 1)) + 60\n",
+         "                      for fold in (0, 1))  # defect: the window reopens at the start of the stated minute\n",
+         ['limit/rate-limit-result'])
+    pool('limit-codex-failed-turn-unread', 'control_engine_codex.py',
+         "            found.extend(self._limited(seen, error.get('message') if isinstance(error, dict) else None, 'result'))\n",
+         "            pass  # defect: the failed turn's usage-limit message is not read\n",
+         ['limit/rate-limit-result'])
+    pool('limit-stream-unclassified', 'control_accounts.py',
+         "    if limit['signal'] == 'stream' and outcome == 'completed':\n",
+         "    if limit['signal'] == 'stream':  # defect: a window the stream reported exhausted is not a limit\n",
+         ['limit/stream-exhausted'])
+    pool('limit-claude-rejected-unread', 'control_engine_claude.py',
+         "            if status == 'rejected':\n                # VELDO-0160: the stream reports its window exhausted.\n",
+         "            if False:  # defect: a rejected window is not the account's limit\n",
+         ['limit/stream-exhausted'])
+    pool('limit-reopened-window-kept', 'control_engine_claude.py',
+         "                self.limited = None  # The same window reported open again: the run is no longer at its limit.\n",
+         "                pass  # defect: a window reported open again still counts as the run's limit\n",
+         ['limit/stream-exhausted'])
+    pool('limit-every-failure', 'control_accounts.py',
+         "    if not isinstance(limit, dict) or limit.get('signal') not in LIMIT_SIGNALS or outcome == 'not_executed':\n",
+         "    if outcome == 'failed':\n"
+         "        return LIMIT_OUTCOME, {'window': 'unified', 'reset_at': None, 'signal': 'stream'}  # defect: every failure\n"
+         "    if not isinstance(limit, dict) or limit.get('signal') not in LIMIT_SIGNALS or outcome == 'not_executed':\n",
+         ['limit/stream-exhausted', 'limit/rate-limit-result'])
+    pool('limit-unreported', 'control_launch.py',
+         "                               limit=limit)\n",
+         "                               limit=None)  # defect: the classification's window and reset are not reported\n",
+         ['limit/stream-exhausted', 'limit/rate-limit-result'])
+    # AC3 (declared falsifier): re-run decided for a record with a call to an MCP tool not marked read-only.
+    pool('decision-ask-reruns', 'control_account_limit.py',
+         "    return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(read)}\n",
+         "    return {'schema': SCHEMA, 'decision': RERUN, 'calls': named, 'mcp_calls': len(read)}  # defect\n",
+         ['decision/ask'])
+    pool('decision-unlisted-server-read-only', 'control_account_limit.py',
+         "            reason = 'server_not_configured'\n",
+         "            continue  # defect: a server the configuration does not list is taken as read-only\n",
+         ['decision/ask'])
+    pool('decision-unmarked-revision-read-only', 'control_account_limit.py',
+         "        elif call.get('tool') in read_only.get(revision, set()):\n",
+         "        elif call.get('tool') in read_only.get(revision, set()) or not read_only.get(revision):"
+         "  # defect: a revision that marks nothing marks everything\n",
+         ['decision/ask'])
+    pool('decision-claude-calls-unread', 'control_engine_claude.py',
+         "    if name.startswith(MCP_PREFIX):\n        server, _, tool =",
+         "    if False:  # defect: Claude Code's MCP tool calls are not read\n        server, _, tool =",
+         ['decision/ask'])
+    pool('decision-codex-calls-unread', 'control_engine_codex.py',
+         "    if kind != MCP_ITEM:\n",
+         "    if True:  # defect: Codex's MCP tool calls are not read\n",
+         ['decision/ask'])
+    pool('decision-call-named-twice', 'control_account_limit.py',
+         "            if key in seen:\n                continue\n",
+         "            if False:  # defect: a call shown twice is counted twice\n                continue\n",
+         ['decision/ask'])
+    pool('decision-read-only-asks', 'control_account_limit.py',
+         "        elif call.get('tool') in read_only.get(revision, set()):\n            continue\n",
+         "        elif False:  # defect: a call to a tool marked read-only asks\n            continue\n",
+         ['decision/rerun'])
+    pool('decision-gap-accepted', 'control_account_limit.py',
+         "        if line['sequence'] != at or isinstance(line['sequence'], bool):\n",
+         "        if isinstance(line['sequence'], bool):  # defect: a gap in the sequence is not refused\n",
+         ['decision/ask'])
+    # The review (fail safe): an engine line the decision cannot read is skipped as though it showed no call.
+    pool('decision-unreadable-line-skipped', 'control_account_limit.py',
+         "                 else [{'unreadable': True}])\n",
+         "                 else [])  # defect: an unreadable line is no call\n",
+         ['decision/unreadable-asks'])
+    pool('decision-unreadable-call-skipped', 'control_account_limit.py',
+         "            if call.get('unreadable'):\n                found.append(",
+         "            if call.get('unreadable'):\n                continue  # defect: the skip restored\n                found.append(",
+         ['decision/unreadable-asks'])
+    pool('decision-event-any-object', 'control_account_limit.py',
+         "    return payload if isinstance(payload, dict) and _text(payload.get('type')) else None\n",
+         "    return payload if isinstance(payload, (dict, list)) else None  # defect: any JSON value is an event\n",
+         ['decision/unreadable-asks'])
+    pool('decision-claude-nameless-call-skipped', 'control_engine_claude.py',
+         "        return [_unreadable(ident)]  # A tool call whose tool cannot be read.\n",
+         "        return []  # defect: a tool call whose name cannot be read is no call\n",
+         ['decision/unreadable-asks'])
+    pool('decision-codex-serverless-call-skipped', 'control_engine_codex.py',
+         "        return [{'id': item.get('id'), 'server': None, 'tool': None, 'unreadable': True}]\n",
+         "        return []  # defect: a tool call whose server cannot be read is no call\n",
+         ['decision/unreadable-asks'])
+    pool('decision-redaction-unread', 'control_account_limit.py',
+         "                              'unreadable': 'redacted_unreadable' if line['redacted'] else 'unreadable'})\n",
+         "                              'unreadable': 'unreadable'})  # defect: the line's redaction is never read\n",
+         ['decision/unreadable-asks'])
+    pool('decision-same-id-first-wins', 'control_account_limit.py',
+         "            key = (call.get('id') if _text(call.get('id')) else ('line', at), call['server'], call['tool'])\n",
+         "            key = call.get('id') if _text(call.get('id')) else ('line', at, call['server'], call['tool'])"
+         "  # defect: an id counts once, whatever tool it names later\n",
+         ['decision/same-id-write'])
+    # The review: Claude Code's rejected-status texts that do not start "You've hit your" are not read.
+    pool('limit-claude-rejected-texts-unread', 'control_engine_claude.py',
+         "    if isinstance(text, str) and text.startswith(LIMIT_REJECTED):\n        return LIMIT_WINDOW\n",
+         "", ['limit/claude-rejected-texts'])
+    # The review's surviving mutants: usage alone is no observation; the order reversed; the latest reset.
+    pool('pool-observed-by-window-only', 'control_account_pool.py',
+         "    return bool((record or {}).get('windows')) or _uses(records, (record or {}).get('id'))[2]\n",
+         "    return bool((record or {}).get('windows'))  # defect: usage alone is not an observation\n",
+         ['pool/usage-observes'])
+    pool('pool-highest-utilization-first', 'control_account_pool.py',
+         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append(((0, -used) if used is not None else (1, 0), active, last, name))  # defect\n",
+         ['pool/selection-order'])
+    pool('pool-most-recently-used-first', 'control_account_pool.py',
+         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append(((0, used) if used is not None else (1, 0), active, -last, name))  # defect\n",
+         ['pool/selection-order'])
+    pool('pool-until-latest-reset', 'control_account_pool.py',
+         "                until = max(resets) if until is None else min(until, max(resets))\n",
+         "                until = max(resets) if until is None else max(until, max(resets))  # defect: the latest\n",
+         ['pool/until-earliest'])
+    pool('pool-until-first-window-reset', 'control_account_pool.py',
+         "                until = max(resets) if until is None else min(until, max(resets))\n",
+         "                until = min(resets) if until is None else min(until, min(resets))"
+         "  # defect: an account reopens at its first window's reset\n",
+         ['pool/until-earliest'])
+    # AC4 (declared falsifiers): an account chosen inside its reported window; the pool read only when the
+    # Runner starts; a second concurrent run admitted on an account with no observation.
+    pool('pool-inside-window', 'control_account_pool.py',
+         "        if limited:\n",
+         "        if limited and False:  # defect: an account inside its reported window is a candidate\n",
+         ['pool/moved-off'])
+    pool('pool-read-at-start', 'control_account_pool.py',
+         "    for record in accounts(conn):\n",
+         "    for record in [r for r in accounts(conn)\n"
+         "                   if r['id'] in _STARTED.setdefault('ids', {a['id'] for a in accounts(conn)})]:"
+         "  # defect: the pool as the Runner started\n",
+         ['pool/added-account'],
+         also=[("SCHEMA = 'veldo.account_selection/v1'\n", "SCHEMA = 'veldo.account_selection/v1'\n_STARTED = {}\n")])
+    pool('pool-unobserved-unbounded', 'control_account_pool.py',
+         "    return (record.get('concurrency') or 1) if observed(record, records) else 1\n",
+         "    return record.get('concurrency') or 1  # defect: unknown admits the account's whole concurrency\n",
+         ['pool/one-run-while-unknown'])
+    pool('pool-usage-unobserved', 'control_account_pool.py',
+         "    return bool((record or {}).get('windows')) or _uses(records, (record or {}).get('id'))[2]\n",
+         "    return True  # defect: an account with no observation counts as observed\n",
+         ['pool/one-run-while-unknown'])
+    pool('pool-concurrency-ignored', 'control_account_pool.py',
+         "        if active >= admits:\n",
+         "        if False:  # defect: an account at its concurrency is a candidate\n",
+         ['pool/moved-off'])
+    pool('pool-reset-unnamed', 'control_account_pool.py',
+         "    return 'no_account_until:%d' % math.ceil(until) if _number(until) else 'no_account'\n",
+         "    return 'no_account'  # defect: the waiting unit is not told the earliest reset\n",
+         ['pool/moved-off'])
+    pool('pool-read-once-per-runner', 'control_launch.py',
+         "        if hasattr(account, 'reserve'):\n",
+         "        if hasattr(account, 'reserve') and not getattr(self, '_pooled', None):\n"
+         "            self._pooled = True  # defect: only the Runner's first dispatch reads the pool\n",
+         ['pool/concurrent', 'pool/added-account'])
+    # Observability: the reasons a waiting dispatch's accounts were passed over, and the counts.
+    pool('pool-refusal-reasons-unobserved', 'control_reservations.py',
+         "                              **({'passed': error.passed} if isinstance(getattr(error, 'passed', None), dict) else {})))\n",
+         "                              **{}))  # defect: the reasons are not observed\n", ['pool/moved-off'])
+    pool('pool-limit-uncounted', 'control_account_pool.py',
+         "        elif record.get('type') == 'invocation' and record.get('outcome') == ACC.LIMIT_OUTCOME:\n",
+         "        elif False:  # defect: runs ended account_limit are not counted\n",
+         ['limit/stream-exhausted', 'limit/rate-limit-result'])
+    pool('pool-dispatches-uncounted', 'control_account_pool.py',
+         "            shown['dispatches'][account] = shown['dispatches'].get(account, 0) + 1\n",
+         "            pass  # defect: dispatches are not counted per account\n", ['pool/per-account-isolation'])
+    # The lead's decision (fail closed): a tool-call form the decision does not recognize is an unknown call.
+    pool('decision-unknown-call-skipped', 'control_account_limit.py',
+         "            if call.get('unknown'):\n                found.append(",
+         "            if call.get('unknown'):\n                continue  # defect: an unknown call is no call\n"
+         "                found.append(",
+         ['decision/unknown-forms'])
+    pool('decision-claude-server-tool-blocks-free', 'control_engine_claude.py',
+         "            found.append(_unknown(kind, block.get('id') if isinstance(block.get('id'), str) else None))\n",
+         "            pass  # defect: an MCP-connector, server-tool or unlisted block is no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-unseen-result-free', 'control_engine_claude.py',
+         "            elif ident not in seen:\n",
+         "            elif False:  # defect: the result of a call the record never showed is no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-streamed-tool-use-free', 'control_engine_claude.py',
+         "            elif tag not in TOOL_FREE_BLOCKS:\n",
+         "            elif False:  # defect: a streamed tool call is no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-unlisted-message-free', 'control_engine_claude.py',
+         "    if tag not in MESSAGES:\n",
+         "    if False:  # defect: a message type the binary does not list is taken as tool-free\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-unlisted-stream-event-free', 'control_engine_claude.py',
+         "        if name not in STREAM_EVENTS:\n",
+         "        if False:  # defect: a streaming event the schema does not name is taken as tool-free\n",
+         ['decision/unknown-forms'])
+    pool('decision-claude-unseen-progress-free', 'control_engine_claude.py',
+         "        found = [_unknown(kind, ident) for ident in ids if ident not in seen]\n",
+         "        found = []  # defect: progress and summaries of calls never shown are no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-codex-unlisted-item-free', 'control_engine_codex.py',
+         "        return [{'id': ident, 'server': None, 'tool': None, 'unknown': kind}]\n",
+         "        return []  # defect: dynamic, sub-agent and unlisted items are no call\n",
+         ['decision/unknown-forms'])
+    pool('decision-codex-unlisted-event-free', 'control_engine_codex.py',
+         "    if name not in EVENTS:\n",
+         "    if False:  # defect: an event type exec does not list is taken as tool-free\n",
+         ['decision/unknown-forms'])
+    pool('decision-redacted-name-trusted', 'control_engine_claude.py',
+         "    if redacted and name not in BUILTIN:\n",
+         "    if False:  # defect: a redacted tool name is taken as it reads\n",
+         ['decision/redacted-name'])
+    pool('decision-redaction-not-passed', 'control_account_limit.py',
+         "        shown = (engine.tool_calls(event, shown_ids, bool(line['redacted'])) if event is not None\n",
+         "        shown = (engine.tool_calls(event, shown_ids, False) if event is not None  # defect: redaction unread\n",
+         ['decision/redacted-name'])
+    # Negative controls of the fail-closed reading: what is tool-free, or a call the record showed, stays no call.
+    pool('decision-shown-ids-per-line', 'control_account_limit.py',
+         "        shown = (engine.tool_calls(event, shown_ids, bool(line['redacted'])) if event is not None\n",
+         "        shown = (engine.tool_calls(event, set(), bool(line['redacted'])) if event is not None  # defect\n",
+         ['decision/tool-free-forms'])
+    pool('decision-claude-tool-ids-unremembered', 'control_engine_claude.py',
+         "        if isinstance(ident, str):\n            seen.add(ident)\n",
+         "        if False:  # defect: the ids of the calls shown are not remembered\n            seen.add(ident)\n",
+         ['decision/tool-free-forms'])
+    pool('decision-codex-builtin-items-ask', 'control_engine_codex.py',
+         "    if kind in TOOL_FREE_ITEMS or kind in BUILTIN_ITEMS:\n",
+         "    if kind in TOOL_FREE_ITEMS:  # defect: exec's own commands and file changes ask\n",
+         ['decision/tool-free-forms'])
+    pool('decision-claude-thinking-asks', 'control_engine_claude.py',
+         "TOOL_FREE_BLOCKS = frozenset(('text', 'thinking', 'redacted_thinking', 'compaction', 'fallback'))\n",
+         "TOOL_FREE_BLOCKS = frozenset(('text', 'compaction', 'fallback'))  # defect: reasoning blocks ask\n",
+         ['decision/tool-free-forms'])
+    # The readers' tables are the binaries' own.
+    pool('format-claude-builtin-table-drifts', 'control_engine_claude.py',
+         "BUILTIN_TOOLS = frozenset(('Bash', 'Read', 'Write',",
+         "BUILTIN_TOOLS = frozenset(('Bash', 'Write',  # defect: a built-in tool dropped\n",
+         ['decision/redacted-name', 'format/tool-forms'])
+    pool('format-codex-dynamic-item-builtin', 'control_engine_codex.py',
+         "BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))\n",
+         "BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search', 'dynamic_tool_call'))  # defect\n",
+         ['decision/unknown-forms', 'format/tool-forms'])
+    # The tool names a Claude Code frame carries beside its content blocks count as those calls.
+    pool('decision-claude-repl-inner-unread', 'control_engine_claude.py',
+         "            if 'repl_call' in event:\n",
+         "            if False:  # defect: the REPL tool's inner calls are not read\n",
+         ['decision/repl-inner-call'])
+    pool('decision-claude-repl-unknown-inner-free', 'control_engine_claude.py',
+         "    return [] if name in BUILTIN else [_unknown('repl_call:' + name, ident)]\n",
+         "    return []  # defect: a REPL inner tool neither mcp__ nor built in is no call\n",
+         ['decision/repl-inner-call'])
+    pool('decision-claude-repl-malformed-free', 'control_engine_claude.py',
+         "    if not isinstance(value, dict) or not isinstance(value.get('inner_tool_name'), str):\n"
+         "        return [_unreadable()]\n",
+         "    if not isinstance(value, dict) or not isinstance(value.get('inner_tool_name'), str):\n"
+         "        return []  # defect: a repl_call that cannot be read is no call\n",
+         ['decision/repl-inner-call'])
+    pool('decision-claude-task-progress-tool-unread', 'control_engine_claude.py',
+         "    if tag == ('system', 'task_progress'):\n",
+         "    if False:  # defect: a task's last tool is not read\n",
+         ['decision/task-progress-tool'])
+    pool('decision-claude-workflow-progress-unread', 'control_engine_claude.py',
+         "        elif entry.get('lastToolName') is not None:\n",
+         "        elif False:  # defect: a workflow agent's last tool is not read\n",
+         ['decision/task-progress-tool'])
+    pool('decision-claude-progress-tool-name-unread', 'control_engine_claude.py',
+         "            found += _named(event.get('tool_name'), ids[0], redacted)\n",
+         "            pass  # defect: the tool a tool_progress is of is not read\n",
+         ['decision/frame-tool-names'])
+    pool('decision-claude-attribution-unread', 'control_engine_claude.py',
+         "    elif server is not None or tool is not None:\n",
+         "    elif False:  # defect: the MCP tool that produced a message is not read\n",
+         ['decision/frame-tool-names'])
+    pool('decision-claude-batch-names-unread', 'control_engine_claude.py',
+         "    batch = event.get('batch_tool_uses')\n",
+         "    batch = None  # defect: the batch tool names are not read\n",
+         ['decision/frame-tool-names'])
+    pool('decision-claude-agent-rename-unread', 'control_engine_claude.py',
+         "BUILTIN = BUILTIN_TOOLS | frozenset(BUILTIN_RENAMED)\n",
+         "BUILTIN = BUILTIN_TOOLS  # defect: the Agent tool's current name is not built in\n",
+         ['decision/redacted-name', 'format/tool-forms'])
+    # The frames outside the message union: the provably tool-free ones are no call, the rest unknown calls.
+    pool('decision-claude-tool-free-frames-ask', 'control_engine_claude.py',
+         "    if tag in TOOL_FREE_FRAMES:\n        return []\n",
+         "",
+         ['decision/tool-free-forms'])
+    pool('decision-claude-control-request-free', 'control_engine_claude.py',
+         "TOOL_FREE_FRAMES = frozenset((('active_goal', None),",
+         "TOOL_FREE_FRAMES = frozenset((('control_request', None), ('active_goal', None),  # defect\n",
+         ['decision/unknown-forms', 'format/tool-forms'])
+    pool('format-claude-tool-field-unlisted', 'control_engine_claude.py',
+         "    'system/init': {'tools': 'free'},\n",
+         "",
+         ['format/tool-forms'])
+    # exec's own sub-agent call is an unknown call.
+    pool('format-codex-collab-item-builtin', 'control_engine_codex.py',
+         "SUBAGENT_ITEMS = frozenset(('collab_tool_call',))\n",
+         "SUBAGENT_ITEMS = frozenset()\nBUILTIN_ITEMS = BUILTIN_ITEMS | {'collab_tool_call'}  # defect\n",
+         ['decision/unknown-forms', 'format/tool-forms'])
+    # BLOCKING (the lead's decision): a depth-2 agent's calls show no block; its task's count of its calls asks for
+    # every call the record does not show under it. The declared falsifier first: the count not read at all.
+    pool('decision-claude-task-counts-unread', 'control_account_limit.py',
+         "    tasks = engine.Tasks() if engine.Tasks is not None else None\n",
+         "    tasks = None  # defect: a task's count of its calls is not read\n",
+         ['decision/subagent-calls', 'decision/task-progress-tool'])
+    pool('decision-claude-task-one-over-allowed', 'control_engine_claude.py',
+         "            if unshown > 0:\n",
+         "            if unshown > 1:  # defect: one call the record does not show is taken for none\n",
+         ['decision/subagent-calls'])
+    pool('decision-claude-task-shown-any-parent', 'control_engine_claude.py',
+         "            if isinstance(parent, str) and isinstance(content, list):\n"
+         "                shown = self.shown.setdefault(parent, set())\n",
+         "            if isinstance(content, list):\n"
+         "                shown = self.shown.setdefault('any', set())  # defect: any message's calls count for a task\n",
+         ['decision/subagent-calls'],
+         also=[("            unshown = count - len(self.shown.get(task, ()))\n",
+                "            unshown = count - len(self.shown.get('any', ()))\n")])
+    pool('decision-claude-task-count-drop-accepted', 'control_engine_claude.py',
+         "        if highest is not None and count < highest[0]:\n",
+         "        if False:  # defect: a count lower than the task reported before is accepted\n",
+         ['decision/subagent-calls'])
+    pool('decision-claude-task-count-unreadable-skipped', 'control_engine_claude.py',
+         "            return [_unreadable(task if isinstance(task, str) else None)]\n",
+         "            return []  # defect: a count frame that cannot be read is skipped\n",
+         ['decision/subagent-calls'])
+    pool('decision-claude-task-first-count-kept', 'control_engine_claude.py',
+         "        if highest is None or count > highest[0]:\n",
+         "        if highest is None:  # defect: the task's first count is kept, not its highest\n",
+         ['decision/subagent-calls'])
+    pool('decision-claude-task-notification-count-unread', 'control_engine_claude.py',
+         "TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'),",
+         "TASK_COUNTS = {'frames': ('system/task_progress',),  # defect: a task's end count is not read\n",
+         ['decision/subagent-calls', 'format/tool-forms'])
+    pool('format-claude-task-count-field-moved', 'control_engine_claude.py',
+         "'count': 'usage.tool_uses',",
+         "'count': 'usage.total_tokens',  # defect: the count is read from another field\n",
+         ['decision/subagent-calls', 'format/tool-forms'])
+    # THE STRUCTURAL RULES (the lead's decision): the configuration decides first, since the stream cannot be made to
+    # show every nested call. Rule 1 skipped; rule 2 skipped; each construct class dropped from rule 2.
+    # The lead's decision: a visible call the configuration does not give the run asks before every other rule.
+    pool('decision-unconfigured-call-skipped', 'control_account_limit.py',
+         "    if contradicting:\n",
+         "    if False:  # defect: a call that contradicts the configuration is not asked about\n",
+         ['decision/unconfigured-call-asks', 'decision/ask'])
+    pool('decision-unconfigured-tool-ignored', 'control_account_limit.py',
+         "        if revision is not None and (selected[call['server']] is None or call.get('tool') in selected[call['server']]):\n",
+         "        if revision is not None:  # defect: a tool the configuration does not give the run is taken as given\n",
+         ['decision/unconfigured-call-asks'])
+    # The lead's decision: a call that starts an agent outside the run (any RemoteTrigger call, a durable CronCreate)
+    # asks first, whatever the configuration; both tools are rule 2's constructs too.
+    pool('remote-agent-skipped', 'control_account_limit.py',
+         "    started = outside(record, provider)\n",
+         "    started = []  # defect: an agent started outside the run is not asked about\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-agent-text-lines-unread', 'control_account_limit.py',
+         "        shown = _event(line['payload']) if line['stream'] == 'engine' else None\n",
+         "        shown = line['payload'] if line['stream'] == 'engine' and isinstance(line['payload'], dict) else None"
+         "  # defect: a line held as JSON text is not read for an agent started outside the run\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-agent-contradicting-unnamed', 'control_account_limit.py',
+         "        named = contradicting + [\n",
+         "        named = [  # defect: the calls that contradict the configuration are not named beside it\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-trigger-not-outside', 'control_engine_claude.py',
+         "          'remote_agent': {'tools': ('RemoteTrigger',),\n",
+         "          'remote_agent': {'tools': (),  # defect: a RemoteTrigger call starts nothing outside the run\n",
+         ['decision/remote-agent-asks', 'format/tool-forms'])
+    pool('remote-cron-durable-unread', 'control_engine_claude.py',
+         "                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):\n",
+         "                if True:  # defect: a CronCreate's durable field is not read\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-cron-durable-text-missed', 'control_engine_claude.py',
+         "                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):\n",
+         "                if value is not True:  # defect: durable as the text \"true\" is taken as not durable\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-cron-default-durable', 'control_engine_claude.py',
+         "                value = inputs[0].get(durable['field'], False) if isinstance(inputs[0], dict) else None\n",
+         "                value = inputs[0].get(durable['field'], True) if isinstance(inputs[0], dict) else None"
+         "  # defect: a CronCreate that leaves durable out is durable\n",
+         ['decision/remote-agent-asks'])
+    pool('remote-cron-unseen-input-trusted', 'control_engine_claude.py',
+         "            if inputs:\n",
+         "            if not inputs:\n                continue  # defect: a CronCreate named without its input is not durable\n"
+         "            if inputs:\n",
+         ['decision/remote-agent-asks'])
+    pool('nested-remote-dropped', 'control_engine_claude.py',
+         "                'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),\n",
+         "                'cron': ('CronCreate',),  # defect: a RemoteTrigger call is not nested work\n",
+         ['decision/nested-constructs', 'format/tool-forms'])
+    pool('nested-cron-dropped', 'control_engine_claude.py',
+         "                'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),\n",
+         "                'remote': ('RemoteTrigger',),  # defect: a CronCreate is not nested work\n",
+         ['decision/nested-constructs', 'decision/remote-agent-asks', 'format/tool-forms'])
+    # The lead's allowlist (rule A, fail closed): a call of a built-in tool the allowlist does not show staying inside
+    # the run asks first, whatever the configuration; declared: rule A skipped, SendMessage allowlisted, an unknown tool
+    # allowed, Agent's remote isolation unchecked.
+    pool('outward-rule-skipped', 'control_account_limit.py',
+         "    leaving = [found for found in outward(record, provider) if (found['sequence'], found['form']) not in named_started]\n",
+         "    leaving = []  # defect: a call the allowlist does not show staying in the run is not asked about\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-sendmessage-allowlisted', 'control_engine_claude.py',
+         "                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write'))\n",
+         "                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write',"
+         " 'SendMessage'))  # defect: SendMessage is taken to stay in the run\n",
+         ['decision/outward-tool-asks', 'format/tool-forms'])
+    pool('outward-unknown-tool-allowed', 'control_engine_claude.py',
+         "        if name not in IN_RUN:\n            found.append('tool:' + name)\n            continue\n",
+         "        if name not in IN_RUN and name in BUILTIN:  # defect: a tool the binary's list does not name is allowed\n"
+         "            found.append('tool:' + name)\n            continue\n        if name not in IN_RUN:\n            continue\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-agent-remote-unchecked', 'control_engine_claude.py',
+         "        if isolation is not None and isolation not in local:\n",
+         "        if False:  # defect: the Agent tool's remote isolation is not read\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-agent-input-assumed', 'control_engine_claude.py',
+         "        if not values and name in IN_RUN_AGENT['tools']:\n",
+         "        if False:  # defect: an Agent call whose input is not shown is taken to be local\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-agent-definition-trusted', 'control_engine_claude.py',
+         "        if kind is not None and kind not in IN_RUN_AGENT['builtin_types']:\n",
+         "        if False:  # defect: an agent definition that is not built in is taken to be local\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-task-type-ignored', 'control_engine_claude.py',
+         "        if task_type not in IN_RUN_TASKS['in_run']:\n",
+         "        if False:  # defect: a remote agent's task is not read\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-host-ignored', 'control_engine_claude.py',
+         "    if name in IN_RUN_HOST['tools'] and isinstance(host, str) and host.strip() not in IN_RUN_HOST['local']:\n",
+         "    if False:  # defect: a call naming another machine is taken to run here\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-server-block-ignored', 'control_engine_claude.py',
+         "        if name.startswith('block:'):\n            found.append(name)\n            continue\n",
+         "        if name.startswith('block:'):\n            continue  # defect: an API server tool block is taken to stay in the run\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-workflow-remote-ignored', 'control_engine_claude.py',
+         "        if isinstance(entry, dict) and entry.get(IN_RUN_AGENT['field']) == IN_RUN_AGENT['outside']:\n",
+         "        if False:  # defect: a workflow agent launched remote is not read\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-task-input-unresolved', 'control_engine_claude.py',
+         "            if isinstance(parent, str) and isinstance(block.get('name'), str):\n",
+         "            if False:  # defect: a sub-agent's shown call does not give its task's last tool its input\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-workflow-label-read', 'control_engine_claude.py',
+         "        if workflow and isinstance(ident, tuple) and ident[0] == 'task':\n",
+         "        if False:  # defect: a workflow task's agent label is read as a tool\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-codex-unknown-item-allowed', 'control_engine_codex.py',
+         "    if kind not in IN_RUN_ITEMS:\n        return ['item:' + kind]\n",
+         "    if kind not in IN_RUN_ITEMS:\n        return []  # defect: an item exec's tables do not list is taken to stay in the run\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-codex-collab-tool-unchecked', 'control_engine_codex.py',
+         "    if kind == IN_RUN_COLLAB['item'] and tool not in IN_RUN_COLLAB['tools']:\n",
+         "    if False:  # defect: a collab tool exec's enum does not list is taken to stay in the run\n",
+         ['decision/outward-tool-asks'])
+    # Rule A reads each task's tally (the checker's probe8 and probe10): declared, the shortfall not consulted in rule A;
+    # and the unreadable or decreasing count dropped, the tally's shortfalls dropped, exec's wait not allowlisted, the
+    # core's wait_agent allowlisted.
+    pool('outward-skill-parent-skipped', 'control_engine_claude.py',
+         "        if name == IN_RUN_SKILL['tool'] and event.get(IN_RUN_SKILL['parent']) is not None:\n",
+         "        if False:  # defect: a sub-agent's Skill may fork unseen but its parent is ignored\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-skill-fork-skipped', 'control_engine_claude.py',
+         "    if name == IN_RUN_SKILL['tool'] and (not isinstance(value, dict)\n",
+         "    if False and (not isinstance(value, dict)\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-tally-unconsulted', 'control_account_limit.py',
+         "    unshown = untallied(record, provider)\n",
+         "    unshown = []  # defect: a task's shortfall is not consulted in rule A\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-tally-unreadable-dropped', 'control_account_limit.py',
+         "                      for call in tasks.line(counted, at)]\n",
+         "                      for call in tasks.line(counted, at) if False]  # defect: a count that cannot be read is trusted\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-tally-shortfall-dropped', 'control_account_limit.py',
+         "                     'unshown': call['unshown']} for call in tasks.close()]\n",
+         "                     'unshown': call['unshown']} for call in tasks.close() if False]"
+         "  # defect: a task's shortfall is not read\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-codex-wait-unlisted', 'control_engine_codex.py',
+         "                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent')}\n",
+         "                 'tools': ('spawn_agent', 'send_input', 'close_agent')}  # defect: exec's wait is not in the run\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-codex-wait-agent-allowed', 'control_engine_codex.py',
+         "                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent')}\n",
+         "                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent', 'wait_agent')}"
+         "  # defect: the core's wait_agent, which exec never writes, is taken to stay in the run\n",
+         ['decision/outward-tool-asks'])
+    pool('decision-rule1-skipped', 'control_account_limit.py',
+         "    if not write_capable(servers, marks):\n",
+         "    if False:  # defect: a run with no write-capable server is decided by its stream\n",
+         ['decision/no-write-server-reruns'])
+    pool('decision-rule2-skipped', 'control_account_limit.py',
+         "    if hidden:\n",
+         "    if False:  # defect: a construct that can run hidden nested work is not asked about\n",
+         ['decision/nested-work-asks', 'decision/nested-constructs'])
+    pool('decision-listed-tools-ignored', 'control_account_limit.py',
+         "                  if selected[name] is None or selected[name] - read_only.get(revision, set()))\n",
+         "                  if True)  # defect: a server's listed tools are taken for all of them\n",
+         ['decision/no-write-server-reruns'])
+    pool('decision-all-tools-read-only', 'control_account_limit.py',
+         "                  if selected[name] is None or selected[name] - read_only.get(revision, set()))\n",
+         "                  if selected[name] and selected[name] - read_only.get(revision, set()))"
+         "  # defect: all tools read as none\n",
+         ['decision/nested-work-asks', 'decision/nested-constructs', 'decision/no-write-server-reruns'])
+    pool('decision-nested-text-lines-unread', 'control_account_limit.py',
+         "        event = _event(line['payload']) if line['stream'] == 'engine' else None\n",
+         "        event = line['payload'] if line['stream'] == 'engine' and isinstance(line['payload'], dict) else None"
+         "  # defect: a line held as JSON text is not read for nested work\n",
+         ['decision/nested-work-asks'])
+    pool('nested-agent-dropped', 'control_engine_claude.py',
+         "NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), ",
+         "NESTED_TOOLS = {  # defect: the agent tools are not nested work\n    ",
+         ['decision/nested-constructs', 'format/tool-forms'])
+    pool('nested-skill-dropped', 'control_engine_claude.py',
+         "'skill': ('Skill',),\n",
+         "\n",
+         ['decision/nested-constructs', 'format/tool-forms'])
+    pool('nested-repl-dropped', 'control_engine_claude.py',
+         "'repl': ('REPL',), ",
+         "",
+         ['decision/nested-constructs', 'format/tool-forms'],
+         also=[("          'repl': {'tool_progress': 'repl_call'},\n", "          'repl': {},\n")])
+    pool('nested-workflow-dropped', 'control_engine_claude.py',
+         "                'workflow': ('RunWorkflow', 'Workflow')}\n",
+         "                }  # defect: the workflow tools are not nested work\n",
+         ['decision/nested-constructs', 'format/tool-forms'],
+         also=[("            found.append(('workflow', tag + ':' + workflow.get(tag, 'task_type')))\n",
+                "            pass\n")])
+    pool('nested-task-frames-dropped', 'control_engine_claude.py',
+         "        found.append(('task_frames', tag))\n",
+         "        pass  # defect: a task's own frames are not nested work\n",
+         ['decision/nested-constructs'])
+    pool('nested-progress-dropped', 'control_engine_claude.py',
+         "        found.append(('nested_progress', NESTED['forwarded']['field']))\n",
+         "        pass  # defect: a sub-agent's or forked skill's forwarded message is not nested work\n",
+         ['decision/nested-constructs', 'decision/nested-work-asks'],
+         also=[("        found.append(('nested_progress', 'progress:' + data['type']))\n", "        pass\n")])
+    pool('nested-fork-dropped', 'control_engine_claude.py',
+         "        found.append(('fork', NESTED['fork']['field'] + ':' + NESTED['fork']['status']))\n",
+         "        pass  # defect: a forked skill's result is not nested work\n",
+         ['decision/nested-constructs'])
+    pool('nested-codex-collab-dropped', 'control_engine_codex.py',
+         "NESTED_ITEMS = {'collab': ('collab_agent_tool_call', 'collab_tool_call'), ",
+         "NESTED_ITEMS = {  # defect: a collab agent call is not nested work\n    ",
+         ['decision/nested-constructs', 'decision/nested-work-asks', 'format/tool-forms'])
+    pool('nested-codex-sub-agent-dropped', 'control_engine_codex.py',
+         "'sub_agent': ('sub_agent_activity',)}\n",
+         "}  # defect: a sub-agent's activity is not nested work\n",
+         ['decision/nested-constructs', 'format/tool-forms'])
+    pool('nested-claude-last-tool-unread', 'control_engine_claude.py',
+         "        names.append(event.get('last_tool_name'))\n",
+         "        pass  # defect: a task's last tool is not read for nested work\n",
+         ['decision/nested-work-asks'])
+    # Installation.
+    pool('pool-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_pool.py",\n', '', ['install/assets'])
+    pool('decision-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_account_limit.py",\n', '',
+         ['install/assets'])
 
     # VELDO-0060: the Claude Code adapter. Each criterion's declared falsifier first, then the threat
     # model's other shapes, each on the row that names it.
