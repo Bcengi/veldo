@@ -94,9 +94,9 @@ profile's and the clone's MCP servers, skills, instruction files and hooks out (
 its source); the other switches keep out what no source covers: the claude.ai connectors of the account's
 login, the bundled skills, the managed instruction files and the flag, plugin and session hooks
 (proof/VELDO-0155/README.md). The baseline's `stream_options` (VELDO-0141) add partial messages and forwarded
-subagent text to the stream, which the execution record keeps. A version is also qualified with stream JSON input (INPUT_FLAGS among its
-flags, else `missing_evidence:engine_input_protocol:<version>` before acceptance), so nothing reaches the
-model until the receiver writes the prompt. `Guard` is the handshake and the stream check: the receiver
+subagent text to the stream, which the execution record keeps. A version is also qualified with stream JSON
+input (INPUT_FLAGS among its flags, else `missing_evidence:engine_input_protocol:<version>` before acceptance),
+so nothing reaches the model until the receiver writes the prompt. `Guard` is the handshake and the stream check: the receiver
 writes the initialize control request first and the prompt only once the binary's answer names a
 subscription login (the first-party backend, no API key, a claude.ai subscription, whose subscriptionType
 is one of the binary's Enterprise, Team, Max and Pro labels, or the account's own subscription token); any
