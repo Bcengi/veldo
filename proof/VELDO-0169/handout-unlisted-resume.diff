@@ -1,6 +1,15 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -512,0 +513,3 @@
-+    def second_resume(self, params, before):
-+        return self.claims.transition(params['resume'], before)
+@@ -471,0 +472,2 @@
++            elif op == 'resume_again':
++                touched.update(self._resume_again(state, entities, current, principal, now, command, params, observation))
+@@ -573,0 +576,9 @@
 +
++    def _resume_again(self, state, entities, current, principal, now, command, params, observation):
++        unit = self.read(params['assignment_id'])['data'].get('unit_id')
++        backlog = entities[unit]['data']['backlog_item_uuid']
++        params['resume'] = dict(action='resume', unit_id=unit, backlog_item_uuid=backlog,
++                                claim_id=self.claims.claim_id(self.ids['repository_uuid'], unit), holder=principal,
++                                generation=0, capabilities=[], repository_uuid=self.ids['repository_uuid'],
++                                parked_on=params['assignment_id'])
++        return {unit, backlog}

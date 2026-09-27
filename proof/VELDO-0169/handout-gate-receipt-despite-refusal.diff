@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -1034 +1034 @@
+-        receipt = None if refusals else self.claims.project_check_receipt(unit, data.get('project'), read)
++        receipt = self.claims.project_check_receipt(unit, data.get('project'), read)

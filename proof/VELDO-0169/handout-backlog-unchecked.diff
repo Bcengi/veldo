@@ -1,4 +1,4 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -835 +834,0 @@
+@@ -848 +847,0 @@
 -            self._check_project(unit, entities, observation)
