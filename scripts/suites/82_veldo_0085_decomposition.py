@@ -720,7 +720,15 @@ def _v85_suite():
                     worker.start()
                 for worker in workers:
                     worker.join(timeout=30)
-                heads = DP.B.unit_heads(conn, REPO, 'UNIT-85-concurrent') if hasattr(DP.B, 'unit_heads') else []
+                heads = []
+                for identity, version, text in conn.execute("SELECT id, version, data FROM entities WHERE kind='accepted_document'"):
+                    head = json.loads(text)
+                    if head.get('repository_uuid') != REPO:
+                        continue
+                    document = allocations.current(AL.version_id(REPO, head['alias'], head['version']))[1] or {}
+                    meta = (CB.GR.Y.front_matter(document.get('content', '')) or {}).get('decomposition', {})
+                    if meta.get('unit') == 'UNIT-85-concurrent':
+                        heads.append((identity, version, head))
                 current = [head for _, _, head in heads if not head.get('superseded_by')]
                 check('publication/concurrent-current', [
                     ('both callers return named outcomes', all(isinstance(r, dict) and
