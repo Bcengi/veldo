@@ -485,9 +485,10 @@ class Launch:
     and its group ended, `heartbeat` the interval and window it watches the worker's heartbeat with
     (VELDO-0041), and `stop()` asks it to stop the dispatch."""
 
-    def __init__(self, child, contract, dispatches, clock):
+    def __init__(self, child, contract, dispatches, clock, records=None):
         self.child, self.contract, self.dispatches, self.clock = child, contract, dispatches, clock
         self.dispatch_id = contract['dispatch_id']
+        self.records = records
         self.pending = b''
         self.messages = []
         self.result = None
@@ -557,6 +558,20 @@ class Launch:
             if self.child.stdin is not None:
                 self.child.stdin.close()
 
+    def _record_commitment(self):
+        """The receiver has been reaped. Bind its final bytes even when it could not report an end."""
+        records = self.records
+        if records is None:
+            database = self.dispatches.conn.execute('PRAGMA database_list').fetchone()[2]
+            records = ER.directory({'store': database})
+        location = ER.path(records, self.dispatch_id)
+        if not os.path.exists(location):
+            return ER.Recorder(records, dict(self.contract, contract_digest=D.digest(self.contract)), None).close()
+        with open(location, 'rb') as handle:
+            data = handle.read()
+        return {'lines': max(0, data.count(b'\n') - 1), 'bytes': len(data),
+                'digest': 'sha256:' + hashlib.sha256(data).hexdigest()}
+
     def _settle(self, lost):
         """The launch result from the record. When the receiver ended without a conclusive record it
         is settled here: still prepared is refused (the receiver spawns only after its acceptance
@@ -569,7 +584,7 @@ class Launch:
                                             expected_state='prepared')
         elif lost and state == 'accepted':
             record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),
-                                             expected_state='accepted')
+                                             expected_state='accepted', execution_record=self._record_commitment())
         state = (record or {}).get('state')
         self.record = record
         self.result = {'running': 'accepted', 'exited': 'accepted', 'refused': 'refused'}.get(state, 'unknown')
@@ -615,7 +630,8 @@ class Launch:
         if record and record['state'] == 'running':
             # The receiver that owned the worker has ended without recording its end.
             record = self.dispatches.unknown(self.dispatch_id, record['contract_digest'], 'outcome_unknown',
-                                             now=self.clock(), expected_state='running')
+                                             now=self.clock(), expected_state='running',
+                                             execution_record=self._record_commitment())
         self.record = record
         return record
 
@@ -630,7 +646,9 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
         launch = Launch(None, contract, dispatches, clock or time.time)
         launch._settle(lost=True)
         return launch
-    launch = Launch(child, contract, dispatches, clock or time.time)
+    with open(config_path) as handle:
+        records = ER.directory(json.load(handle))
+    launch = Launch(child, contract, dispatches, clock or time.time, records=records)
     try:
         # The receiver's stdin stays open as its control channel: Launch.stop writes a stop request on it.
         child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())

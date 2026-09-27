@@ -7553,7 +7553,7 @@ def cases():
               "    for start, end, replacement, kind in []:  # defect: the account identifiers are kept\n",
               ['redaction/account-fields'])
     record141('record141-partials-line-by-line', 'control_execution_record.py',
-              "        if kind in ('content_block_start', 'content_block_delta') and field and isinstance(delta.get(field), str):\n",
+              "        if kind in ('content_block_start', 'content_block_delta') and fields:\n",
               '        if False:  # defect: redact partial messages one line at a time\n',
               ['redaction/partial-blocks'])
     record141('record141-partials-tail-too-short', 'control_execution_record.py',
@@ -7577,7 +7577,7 @@ def cases():
               "            if dispatch is None:\n                raise ER.Refused('missing_evidence:unknown_run', 'no such run')\n            contract = (dispatch or {}).get('contract') or {}\n",
               ['api/scope-before-existence'])
     record141('record141-reader-queue-unbounded', 'control_api.py',
-              '            if len(self._frames) >= self.max_frames or self._queued_bytes + size > self.max_bytes:\n',
+              '            if len(self._frames) >= self.max_frames or (self._frames and self._queued_bytes + size > self.max_bytes):\n',
               '            if False:  # defect: a slow reader retains every frame\n',
               ['api/slow-reader'])
     record141('record141-encoded-forms-skipped', 'control_execution_record.py',
@@ -7597,9 +7597,45 @@ def cases():
               '        self.resolved.paths = ()  # defect: receiver never snapshots its clone\n',
               ['redaction/clone-relative-paths'])
     record141('record141-concurrent-fills-interleave', 'control_api.py',
-              '        with stream._condition:\n            self._fill_record_locked(stream, answer, always)\n',
+              '        with stream._fill_lock:\n            self._fill_record_locked(stream, answer, always)\n',
               '        self._fill_record_locked(stream, answer, always)  # defect: overlapping fills interleave frames\n',
               ['api/registration-race'])
+    record141('record141b-thinking-unassembled', 'control_execution_record.py',
+              "        fields = [field for field, value in delta.items() if field != 'type' and isinstance(value, str)]\n",
+              "        fields = [field for field, value in delta.items() if field not in ('type', 'thinking') and isinstance(value, str)]\n",
+              ['redaction/thinking-and-unknown'])
+    record141('record141b-unknown-delta-released', 'control_execution_record.py',
+              "                block['hold'] |= not known\n",
+              "                block['hold'] = False\n",
+              ['redaction/thinking-and-unknown'])
+    record141('record141b-diff-prefix-unstripped', 'control_execution_record.py',
+              "        if name.startswith(('a/', 'b/')):\n            name = name[2:]\n",
+              '        if False:\n            name = name[2:]\n',
+              ['redaction/live-paths'])
+    record141('record141b-path-snapshot-restored', 'control_execution_record.py',
+              '    return ClonePaths(root, Path(cwd).absolute())\n',
+              '    names = set()\n    for directory_, dirs, files in os.walk(root):\n        names.update(os.path.relpath(os.path.join(directory_, n), root) for n in dirs + files)\n    names |= {os.path.relpath(root / n, cwd) for n in list(names)}\n    return names\n',
+              ['redaction/live-paths'])
+    record141('record141b-count-pages-restored', 'control_execution_record.py',
+              '        if page and size + width > PAGE_BYTES:\n',
+              '        if False:\n',
+              ['api/byte-pages'])
+    record141('record141b-reader-locked-during-page', 'control_api.py',
+              '        with stream._fill_lock:\n            self._fill_record_locked(stream, answer, always)\n',
+              '        with stream._condition:\n            self._fill_record_locked(stream, answer, always)\n',
+              ['api/fast-catchup'])
+    record141('record141b-runner-commitment-omitted', 'control_launch.py',
+              '        records = self.records\n',
+              '        return None\n        records = self.records\n',
+              ['route/runner-unknown'])
+    record141('record141b-offset-base64-omitted', 'control_execution_record.py',
+              '            for offset in range(3):\n',
+              '            for offset in ():\n',
+              ['redaction/offset-encodings'])
+    record141('record141b-lower-hex-omitted', 'control_execution_record.py',
+              '            forms.add(value.encode().hex())\n',
+              '            pass\n',
+              ['redaction/offset-encodings'])
     return result
 
 

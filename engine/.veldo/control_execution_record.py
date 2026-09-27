@@ -75,6 +75,7 @@ SCHEMA = 'veldo.execution_record/v1'
 HINT_SCHEMA = 'veldo.execution_record_hint/v1'
 STREAMS = ('engine', 'stderr', 'wrapper')
 DIRECTORY = 'records'
+PAGE_BYTES = 1024 * 1024
 HINT_SECONDS = 1.0
 
 
@@ -156,6 +157,12 @@ class Resolved:
             forms = {value, value.upper(), base64.b64encode(value.encode()).decode(),
                      base64.urlsafe_b64encode(value.encode()).decode(),
                      urllib.parse.quote(value, safe=''), urllib.parse.quote_plus(value, safe='')}
+            forms.add(value.encode().hex())
+            # A value can begin at any byte offset inside Basic auth or an encoded assignment.
+            for offset in range(3):
+                raw = b' ' * offset + value.encode()
+                for encode64 in (base64.b64encode, base64.urlsafe_b64encode):
+                    forms.add(encode64(raw).decode()[(offset * 8 + 5) // 6:len(raw) * 8 // 6])
             # Nested JSON carries another escaped string inside each enclosing string.
             for _ in range(depth):
                 forms |= {json.dumps(v, ensure_ascii=ascii_)[1:-1] for v in forms for ascii_ in (True, False)}
@@ -226,7 +233,7 @@ def _account_spans(text):
 # alone would be. A slash-joined token that does not start at such a root (the shape of a base64 key,
 # whose `/` falls mid-token) is scored whole, as is every other candidate. The gate's scan
 # (secret_scan.scan_text) is not this step and is unchanged.
-_ROOT = re.compile(r'(?<![A-Za-z0-9+/_\-.~])(?:(?P<url>[A-Za-z][A-Za-z0-9+.\-]*://)|~?/|\.\.?/)')
+_ROOT = re.compile(r'(?<![A-Za-z0-9+/_\-.~])(?:(?P<url>[A-Za-z][A-Za-z0-9+.\-]*://)|~?/|\.{1,3}/)')
 _PATH_STOPS = frozenset('"\'`<>|;,:()[]{}*?$&')
 _URL_STOPS = frozenset('"\'`<>|()[]{}')
 _ESCAPED = 'nrtbfu"'
@@ -286,22 +293,57 @@ def _high_segment(token):
     return _high(token) and not (named and SS._is_digest(named.group(1)))
 
 
+class ClonePaths:
+    """Live membership, anchored by directory descriptors without traversing symlinks."""
+
+    def __init__(self, root, cwd):
+        self.root, self.cwd = str(root), os.path.relpath(cwd, root)
+
+    def __contains__(self, name):
+        if name.startswith(('a/', 'b/')):
+            name = name[2:]
+        if name.startswith('/'):
+            return False
+        return self._exists(name) or self._exists(os.path.join(self.cwd, name))
+
+    def _exists(self, name):
+        parts = os.path.normpath(name).split('/')
+        if not parts or parts[0] == '..':
+            return False
+        fd = None
+        try:
+            fd = os.open(self.root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+            for index, part in enumerate(parts):
+                try:
+                    info = os.lstat(part, dir_fd=fd)
+                except FileNotFoundError:
+                    return index == len(parts) - 1 and not any(
+                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))
+                if index == len(parts) - 1:
+                    return True
+                if not stat.S_ISDIR(info.st_mode):
+                    return False
+                child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+                os.close(fd)
+                fd = child
+        except OSError:
+            return False
+        finally:
+            if fd is not None:
+                os.close(fd)
+        return False
+
+
 def clone_paths(cwd):
-    """Snapshot tracked and working tree paths once, relative to the run's cwd and repository root."""
+    """Locate the clone once; membership observes files created during the run without a tree walk."""
     if not cwd:
-        return frozenset()
+        return ()
     spec = importlib.util.spec_from_file_location('record_git', Path(__file__).with_name('git_process.py'))
     gp = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(gp)
     root = gp.run(['git', '-C', str(cwd), 'rev-parse', '--show-toplevel'], capture_output=True, text=True)
-    root = Path(root.stdout.strip()) if root.returncode == 0 else Path(cwd)
-    tracked = gp.run(['git', '-C', str(root), 'ls-files', '-z'], capture_output=True)
-    names = set(os.fsdecode(n) for n in tracked.stdout.split(b'\0') if n) if tracked.returncode == 0 else set()
-    for directory_, dirs, files in os.walk(root):
-        dirs[:] = [d for d in dirs if d != '.git']
-        names.update(os.path.relpath(os.path.join(directory_, n), root) for n in dirs + files)
-    names |= {os.path.relpath(root / n, cwd) for n in list(names)}
-    return frozenset(names)
+    root = Path(root.stdout.strip()) if root.returncode == 0 else Path(cwd).absolute()
+    return ClonePaths(root, Path(cwd).absolute())
 
 
 _RELATIVE = re.compile(r"[A-Za-z0-9_+./=\-]+")
@@ -450,15 +492,18 @@ class Recorder:
         if kind == 'content_block_start':
             self._flush_blocks(scope, inner.get('index', 0))
             delta = inner.get('content_block') or {}
-        field = {'text': 'text', 'text_delta': 'text', 'input_json_delta': 'partial_json'}.get(delta.get('type'))
-        if kind in ('content_block_start', 'content_block_delta') and field and isinstance(delta.get(field), str):
-            ident = (scope, message, inner.get('index', 0), field)
-            block = self.blocks.setdefault(ident, {'text': '', 'entries': [], 'done': False})
-            start = len(block['text'])
-            block['text'] += delta[field]
-            entry[5] = (block, start, len(block['text']), field)
-            block['entries'].append(entry)
-            self._release_block(block)
+        fields = [field for field, value in delta.items() if field != 'type' and isinstance(value, str)]
+        if kind in ('content_block_start', 'content_block_delta') and fields:
+            entry[5] = set(fields)
+            known = delta.get('type') in ('text', 'text_delta', 'input_json_delta', 'thinking', 'thinking_delta')
+            for field in fields:
+                ident = (scope, message, inner.get('index', 0), field)
+                block = self.blocks.setdefault(ident, {'text': '', 'entries': [], 'done': False, 'hold': False})
+                block['hold'] |= not known
+                start = len(block['text'])
+                block['text'] += delta[field]
+                block['entries'].append((entry, start, len(block['text']), field))
+                self._release_block(block)
         elif kind == 'content_block_stop':
             self._flush_blocks(scope, inner.get('index', 0))
         elif kind == 'message_stop' or event.get('type') in ('assistant', 'result'):
@@ -476,15 +521,14 @@ class Recorder:
     def _release_block(self, block):
         text = block['text']
         spans = _block_spans(text, self.resolved)
-        safe = len(text) if block['done'] else _safe_prefix(text, self.resolved)
+        safe = len(text) if block['done'] else (0 if block['hold'] else _safe_prefix(text, self.resolved))
         for start, end, _kind in spans:
             if start < safe < end:
                 safe = start
         pending = []
-        for entry in block['entries']:
-            _, low, high, field = entry[5]
-            if high > safe:
-                pending.append(entry)
+        for entry, low, high, field in block['entries']:
+            if high > safe or (block['hold'] and not block['done']):
+                pending.append((entry, low, high, field))
                 continue
             value, at, kinds = '', low, set()
             for start, end, kind in spans:
@@ -496,11 +540,14 @@ class Recorder:
             value += text[at:high]
             if kinds:
                 raw = entry[1].decode('utf-8', 'surrogateescape')
-                found = re.search(r'"' + field + r'"\s*:\s*', raw)
+                container = re.search(r'"(?:delta|content_block)"\s*:\s*\{', raw)
+                found = re.compile(re.escape(json.dumps(field)) + r'\s*:\s*').search(raw, container.end())
                 _, end = _DECODER.raw_decode(raw, found.end())
                 raw = raw[:found.end()] + json.dumps(value, ensure_ascii=True) + raw[end:]
-                entry[1], entry[3] = raw.encode('utf-8', 'surrogateescape'), kinds
-            entry[5] = None
+                entry[1], entry[3] = raw.encode('utf-8', 'surrogateescape'), set(entry[3]) | kinds
+            entry[5].discard(field)
+            if not entry[5]:
+                entry[5] = None
         block['entries'] = pending
 
     def _drain(self):
@@ -621,4 +668,11 @@ def read(records, dispatch_id, after, limit, committed=None):
         raise Refused('unknown_outcome:record_digest', 'the record is not the one its exit committed')
     if after > len(lines):
         raise Refused('invalid_input:cursor_past_end', 'the record holds %d lines' % len(lines))
-    return {'header': header, 'lines': lines[after:after + limit], 'total': len(lines)}
+    page, size = [], 0
+    for line in lines[after:after + limit]:
+        width = len(encode(line))
+        if page and size + width > PAGE_BYTES:
+            break
+        page.append(line)
+        size += width
+    return {'header': header, 'lines': page, 'total': len(lines)}

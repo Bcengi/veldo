@@ -77,7 +77,9 @@ def _v141_suite():
             'redaction/paths-kept', 'redaction/path-segment', 'redaction/url-component', 'redaction/account-fields',
             'fixture/planted-control', 'format/fake-lines',
             'redaction/partial-blocks', 'redaction/clone-relative-paths', 'redaction/encoded-values',
-            'api/scope-before-existence', 'api/registration-race', 'api/slow-reader', 'route/unknown-committed')
+            'api/scope-before-existence', 'api/registration-race', 'api/slow-reader', 'route/unknown-committed',
+            'redaction/thinking-and-unknown', 'redaction/live-paths', 'redaction/offset-encodings',
+            'api/byte-pages', 'api/fast-catchup', 'route/runner-unknown')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -1584,8 +1586,8 @@ err.close()
                       and resume[2]['lines'] == main_lines[min(len(received), len(main_lines)):])
                 large = API.RecordStream('h', 'owner', 'c', 0, 'review')
                 large.put({'cursor': 1, 'lines': [{'payload': 'x' * (5 * 1024 * 1024)}]})
-                check('api/slow-reader', 'one oversized frame is refused before queueing',
-                      large.closed == 'slow_reader' and not large._frames)
+                check('api/slow-reader', 'one oversized line can advance an empty queue',
+                      large.closed is None and large.next(0)[0] == 'frame')
 
         with region('route/unknown-committed'):
             # Force the containment observation after a real worker finishes. The unknown transition, journal,
@@ -1619,6 +1621,208 @@ err.close()
                               refusal(page(unknown_launch.dispatch_id, 0)) == 'unknown_outcome:record_digest')
                 finally:
                     location.write_bytes(original)
+
+        with region('redaction/thinking-and-unknown'):
+            if ER is None:
+                check('redaction/thinking-and-unknown', 'recorder exists', False)
+            else:
+                resolved = ER.Resolved()
+                resolved.add(PLANTED_KIND, planted)
+                for dtype, fields in (('thinking_delta', ('thinking',)),
+                                      ('future_delta', ('first', 'second'))):
+                    rid = 'generic-' + dtype
+                    rec = ER.Recorder(base / 'generic-records', {'dispatch_id': rid}, resolved)
+                    content = 'ordinary words ' * 30 + planted + ' next ' + pattern_token + ' done ' * 70
+                    def send_generic(event):
+                        rec.feed('engine', (json.dumps({'type': 'stream_event', 'event': event}) + '\n').encode())
+                    send_generic({'type': 'content_block_start', 'index': 0, 'content_block': {}})
+                    for offset in range(0, len(content), 7):
+                        send_generic({'type': 'content_block_delta', 'index': 0,
+                                      'delta': dict({f: content[offset:offset + 7] for f in fields}, type=dtype)})
+                    live = ER.read(base / 'generic-records', rid, 0, 10000)['lines']
+                    if dtype == 'future_delta':
+                        check('redaction/thinking-and-unknown', 'unknown deltas wait for block stop', len(live) == 1)
+                    send_generic({'type': 'content_block_stop', 'index': 0})
+                    commitment = rec.close()
+                    final = ER.read(base / 'generic-records', rid, 0, 10000, commitment)['lines']
+                    for lines in (live, final):
+                        fragments = {field: '' for field in fields}
+                        clean = True
+                        for line in lines:
+                            delta = json.loads(line['payload'])['event'].get('delta', {})
+                            for field in fields:
+                                fragments[field] += delta.get(field, '')
+                            if delta:
+                                index = line['seq'] - 2
+                                for secret, kind in ((planted, PLANTED_KIND), (pattern_token, 'pattern:github_token')):
+                                    low = content.index(secret)
+                                    if index * 7 < low + len(secret) and (index + 1) * 7 > low:
+                                        clean &= kind in line['redacted']
+                        check('redaction/thinking-and-unknown', 'every affected fragment is redacted live and at end',
+                              clean and all(secret[i:i + 8] not in value for value in fragments.values()
+                                            for secret in (planted, pattern_token) for i in range(len(secret) - 7)))
+                    check('redaction/thinking-and-unknown', 'all original lines survive',
+                          len(final) == 2 + (len(content) + 6) // 7)
+
+        with region('redaction/live-paths'):
+            if ER is None:
+                check('redaction/live-paths', 'recorder exists', False)
+            else:
+                clone = base / 'live-path-clone'
+                directory_ = clone / 'src/components'
+                directory_.mkdir(parents=True)
+                old = 'src/components/ReviewExecutionRecordPanelView.tsx'
+                (clone / old).touch()
+                resolved = ER.Resolved()
+                resolved.paths = ER.clone_paths(clone)
+                new = 'src/components/NewlyCreatedDuringTheRunPanelView.tsx'
+                (clone / new).touch()
+                dash = chr(45) * 2
+                output = '\n'.join(['diff ' + dash + 'git a/' + old + ' b/' + old,
+                                    chr(45) * 3 + ' a/' + old, '+++ b/' + old, '?? ' + new,
+                                    ' .../suites/82_veldo_0141_execution_record.py | 3 +',
+                                    'src/components/new.py'])
+                check('redaction/live-paths', 'diff prefixes, new files, truncations and safe new leaves survive',
+                      ER.redact(output, resolved)[0] == output)
+                opaque = fresh()[:20] + '/' + fresh()
+                outside = base / 'outside-paths'
+                outside.mkdir()
+                hidden = fresh()
+                (outside / hidden).touch()
+                (clone / 'link').symlink_to(outside, target_is_directory=True)
+                check('redaction/live-paths', 'nonexistent opaque keys and symlink escapes remain redacted',
+                      ER.redact(opaque, resolved)[0] == ENTROPY
+                      and hidden not in ER.redact('link/' + hidden, resolved)[0])
+
+        with region('redaction/offset-encodings'):
+            import base64
+            resolved = ER.Resolved() if ER else None
+            if resolved is not None:
+                resolved.add(PLANTED_KIND, planted)
+            variants = [planted.encode().hex()]
+            for prefix in ('u:', 'us:', 'user:', 'KEY=', 'KEYS=', 'KEYSS='):
+                variants.append(base64.b64encode((prefix + planted).encode()).decode())
+            for value in variants:
+                text, kinds = redacted(value, resolved)
+                check('redaction/offset-encodings', 'offset base64 and lowercase hex carry the resolved marker',
+                      value != text and PLANTED_KIND in kinds)
+
+        with region('api/byte-pages'):
+            if ER is None or not hasattr(API, 'RecordStream'):
+                check('api/byte-pages', 'record route exists', False)
+            else:
+                # Serve a large record through the real authorized route with its committed digest.
+                location = Path(ER.path(records_dir, main_launch.dispatch_id))
+                original = location.read_bytes()
+                original_dispatch = writer.execute('SELECT data FROM entities WHERE id=?',
+                                                   ('dispatch:' + main_launch.dispatch_id,)).fetchone()[0]
+                record = json.loads(original_dispatch)
+                lines = [dict(seq=i + 1, stream='engine', at=0, redacted=[], payload='x' * 9000) for i in range(600)]
+                large_data = original.split(b'\n', 1)[0] + b'\n' + b''.join(ER.encode(line) for line in lines)
+                record['execution_record'] = dict(lines=len(lines), bytes=len(large_data),
+                                                  digest='sha256:' + hashlib.sha256(large_data).hexdigest())
+                try:
+                    location.write_bytes(large_data)
+                    writer.execute('UPDATE entities SET data=? WHERE id=?',
+                                   (json.dumps(record), 'dispatch:' + main_launch.dispatch_id))
+                    stream = API.RecordStream('h', 'owner', 'c', 0, main_launch.dispatch_id)
+                    frames = []
+                    def large_reader():
+                        while True:
+                            kind, frame = stream.next(1)
+                            if kind == 'closed':
+                                return
+                            if kind == 'frame':
+                                frames.append(frame)
+                    reader = threading.Thread(target=large_reader)
+                    reader.start()
+                    api._fill_record(stream, api._record_page(stream.principal, stream.dispatch_id, 0), always=True)
+                    reader.join(3)
+                    stream.close('test_end')
+                    reader.join(3)
+                    check('api/byte-pages', '512 by 9 KB is split into byte bounded pages without closure',
+                          stream.closed == 'ended' and len(frames) > 4
+                          and all(len(json.dumps(f).encode()) < 1100000 for f in frames)
+                          and [line for f in frames for line in f['lines']] == lines)
+                    # At least one line, even when a single line exceeds the byte budget.
+                    singleton = ER.Recorder(base / 'oversized', {'dispatch_id': 'one'}, None)
+                    singleton.line('engine', b'x' * (5 * 1024 * 1024))
+                    commitment = singleton.close()
+                    check('api/byte-pages', 'an oversized line advances the authority cursor',
+                          len(ER.read(base / 'oversized', 'one', 0, 512, commitment)['lines']) == 1)
+                finally:
+                    location.write_bytes(original)
+                    writer.execute('UPDATE entities SET data=? WHERE id=?',
+                                   (original_dispatch, 'dispatch:' + main_launch.dispatch_id))
+
+        with region('api/fast-catchup'):
+            if not hasattr(API, 'RecordStream'):
+                check('api/fast-catchup', 'record stream exists', False)
+            else:
+                import types
+                stream = API.RecordStream('h', 'owner', 'c', 0, 'fast')
+                drained = threading.Event()
+                received, readable = [], [True]
+                def fast_page(principal, dispatch, after):
+                    if after and readable[0]:
+                        readable[0] = drained.wait(0.5)
+                        drained.clear()
+                    lines = [dict(seq=i, payload='ordinary output ' * 13)
+                             for i in range(after + 1, min(100000, after + 512) + 1)]
+                    return dict(lines=lines, cursor=lines[-1]['seq'], total=100000, ended=True)
+                fake = types.SimpleNamespace(_record_page=fast_page)
+                fake._fill_record_locked = lambda *a, **k: API.ControlApi._fill_record_locked(fake, *a, **k)
+                def fast_reader():
+                    while True:
+                        kind, frame = stream.next(1)
+                        if kind == 'closed':
+                            return
+                        if kind == 'frame':
+                            received.extend(line['seq'] for line in frame['lines'])
+                            drained.set()
+                reader = threading.Thread(target=fast_reader)
+                reader.start()
+                API.ControlApi._fill_record(fake, stream, fast_page('owner', 'fast', 0), always=True)
+                reader.join(3)
+                stream.close('test_end')
+                reader.join(3)
+                check('api/fast-catchup', 'reader drains while pages are read and catches up 100k lines',
+                      readable[0] and not reader.is_alive() and stream.closed == 'ended'
+                      and received == list(range(1, 100001)))
+
+        with region('route/runner-unknown'):
+            # Run both runner fallback paths over a real journal-backed dispatch and authority route.
+            for state_, reason in (('accepted', 'launch_evidence_missing'), ('running', 'outcome_unknown')):
+                original_dispatch = writer.execute('SELECT data FROM entities WHERE id=?',
+                                                   ('dispatch:' + main_launch.dispatch_id,)).fetchone()[0]
+                dispatch = json.loads(original_dispatch)
+                location = Path(ER.path(records_dir, main_launch.dispatch_id)) if ER else None
+                original_bytes = location.read_bytes() if location and location.exists() else None
+                dispatch.update(state=state_, execution_record=None)
+                writer.execute('UPDATE entities SET data=? WHERE id=?',
+                               (json.dumps(dispatch), 'dispatch:' + main_launch.dispatch_id))
+                launch = L.Launch(None, main_launch.contract, dispatches, time.time)
+                launch.records = str(records_dir)
+                try:
+                    if state_ == 'accepted':
+                        launch._settle(lost=True)
+                        settled = launch.record
+                    else:
+                        settled = launch.wait(timeout=0)
+                    commitment = settled.get('execution_record')
+                    check('route/runner-unknown', reason + ' commits the final bytes',
+                          settled.get('state') == 'unknown' and isinstance(commitment, dict)
+                          and original_bytes is not None and commitment.get('digest') ==
+                          'sha256:' + hashlib.sha256(original_bytes).hexdigest())
+                    if original_bytes is not None:
+                        location.write_bytes(original_bytes.replace(b'engine', b'Engine', 1))
+                        check('route/runner-unknown', reason + ' refuses a changed byte',
+                              refusal(page(main_launch.dispatch_id, 0)) == 'unknown_outcome:record_digest')
+                finally:
+                    if original_bytes is not None:
+                        location.write_bytes(original_bytes)
+                    writer.execute('UPDATE entities SET data=? WHERE id=?',
+                                   (original_dispatch, 'dispatch:' + main_launch.dispatch_id))
 
         with region('format/fake-lines'):
             events = FORMATS['claude_code']['events']

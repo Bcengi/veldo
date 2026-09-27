@@ -32,8 +32,8 @@ boundary (`/`, `~/`, `./`, `../`) segment by segment (split at `/`, a backslash 
 and a URL (`scheme://`) by component (authority, each path segment, each query and fragment key and value), each
 segment judged by the scanner's own rule, so only a segment that is itself high-entropy goes; a segment that is a
 hex digest of a digest width named by a lowercase word (`clone-<32 hex>`, `sha256-<64 hex>`) is kept as the bare
-digest is. A token naming a tracked or working tree path in the run's clone is kept whole by the entropy
-step. Other slash-bearing tokens (including base64 values) and every other candidate are scored whole. The gate's own scan (`secret_scan.scan_text`) is untouched: this is
+digest is. A token naming a live path in the run's clone is kept whole by the entropy
+step, with git diff prefixes removed for lookup and safe new leaves accepted under existing directories. Other slash-bearing tokens (including base64 values) and every other candidate are scored whole. The gate's own scan (`secret_scan.scan_text`) is untouched: this is
 the record's own entropy loop. The set is filled once
 per run, as the worker is spawned, by `control_launch.RESOLVERS`: each `resolver(receiver, contract, adapter,
 environment)` returns `[(kind, value)]` and may deliver its value into the engine's environment. The built-in one
@@ -253,8 +253,9 @@ receive times, order and byte counts survive buffering. The stream queue holds a
 4 MiB of serialized frame data. On overflow the client drains that prefix, receives `slow_reader`, and
 reconnects with its last received cursor.
 
-The receiver snapshots git's tracked files and the working tree once, relative to both repository root
-and engine cwd. Membership exempts only the entropy step: exact values and known patterns still redact.
+The receiver locates the clone root once. At redaction time it checks path membership live, relative to
+both repository root and engine cwd, using directory descriptors and lstat without following symlinks.
+Membership exempts only the entropy step: exact values and known patterns still redact.
 
 
 The refreshed red records cover the original branch base (`red-at-3c85f33b.json`), the merged main base
@@ -286,3 +287,38 @@ than the fixed tail, and arbitrarily long whitespace in an assigned-value patter
 include eight nested JSON layers; the exact set expands with observed escaping depth. A receiver row uses
 a file present only in its bound clone, so falling back to the receiver's own directory is rejected. A two-thread fill test proves that a
 concurrent hint cannot interleave the initial catch-up cursor or frames.
+
+
+## Second review fixes, 2026-09-27
+
+Six new rows exercise the findings from the review at 9dbda25f. All values used to test secret
+redaction are generated at runtime. No credential value is retained in the proof.
+
+| Row | Assertion |
+| --- | --- |
+| redaction/thinking-and-unknown | Seven-character thinking fragments redact both resolved and patterned values, including every affected fragment. An unknown delta with multiple string fields waits for block stop, then redacts each field. |
+| redaction/live-paths | Git diff prefixes, files created after launch, truncated stat paths and safe new leaves survive; opaque slash-bearing values and symlink escapes do not gain path exemptions. |
+| redaction/offset-encodings | Base64 values embedded after Basic auth and assignment prefixes at every byte alignment, plus lowercase hex, receive the exact resolved kind. |
+| api/byte-pages | The authority splits 600 lines of 9 KB into pages below the byte budget, delivered completely without a slow-reader close. A single oversized line still advances the cursor. |
+| api/fast-catchup | A fast reader drains during page reads and receives 100,000 lines in order without reconnecting. |
+| route/runner-unknown | Both runner fallback outcomes commit the final record bytes; changing a byte causes the authority to refuse the record. |
+
+The assembler collects every string field except the delta's type discriminator, keyed by message,
+block and field. Known text, input JSON and thinking fields can release a safe prefix; unknown delta
+types hold all their fields until the block ends. Each line retains all replacement kinds when several
+fields are redacted. Base64 exact forms include the stable substring for all three byte alignments.
+
+Path membership no longer enumerates the tree. Git's a/ and b/ prefixes are removed before checking.
+Directory traversal uses directory descriptors with O_NOFOLLOW at every step. A missing leaf is accepted
+only when its parent exists and the leaf itself does not score as high entropy. Git stat's three-dot
+prefix is a path root, so each remaining segment is scored independently.
+
+Record pages have a 1 MiB encoded-line budget and always contain at least one line when any remain.
+The stream permits one oversized frame in an empty queue, so an oversized line cannot make every
+reconnect fail at the same cursor. A dedicated fill lock serializes concurrent hints and catch-up;
+page reads never hold the condition used by the reader to drain frames. The ordinary 32-frame and
+4 MiB queue limits still close a reader that falls behind.
+
+The runner reads the record only after stopping and reaping the receiver, then commits its byte count,
+complete line count and SHA-256 for launch_evidence_missing and outcome_unknown. If the receiver died
+before opening the record, the runner creates and commits an empty record bound to the dispatch.

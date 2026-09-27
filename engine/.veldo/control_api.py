@@ -256,11 +256,12 @@ class RecordStream(Stream):
         super().__init__(handle, principal, credential_id, cursor)
         self.dispatch_id = dispatch_id
         self._queued_bytes = 0
+        self._fill_lock = threading.Lock()
 
     def put(self, frame):
         with self._condition:
             size = len(json.dumps(frame, ensure_ascii=True).encode())
-            if len(self._frames) >= self.max_frames or self._queued_bytes + size > self.max_bytes:
+            if len(self._frames) >= self.max_frames or (self._frames and self._queued_bytes + size > self.max_bytes):
                 self.close('slow_reader')
                 return
             if self.closed is None:
@@ -837,7 +838,7 @@ class ControlApi:
 
     def _fill_record(self, stream, answer, always=False):
         # Initial catch-up and a concurrent hint share one cursor and one ordered frame queue.
-        with stream._condition:
+        with stream._fill_lock:
             self._fill_record_locked(stream, answer, always)
 
     def _fill_record_locked(self, stream, answer, always=False):
