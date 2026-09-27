@@ -60,7 +60,7 @@ def _v160_suite():
             'decision/unknown-forms', 'decision/redacted-name', 'decision/tool-free-forms', 'format/tool-forms',
             'decision/repl-inner-call', 'decision/task-progress-tool', 'decision/frame-tool-names',
             'decision/subagent-calls', 'decision/no-write-server-reruns', 'decision/nested-work-asks',
-            'decision/nested-constructs', 'decision/unconfigured-call-asks',
+            'decision/nested-constructs', 'decision/unconfigured-call-asks', 'decision/remote-agent-asks',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -1519,6 +1519,9 @@ sys.exit(payload.get('code', 0))
              ['tool:Workflow']),
             ('claude_code', 'workflow', 'a RunWorkflow tool call (its alias)', [c_blocks([tool_use('toolu_f', 'RunWorkflow')])],
              ['tool:RunWorkflow']),
+            ('claude_code', 'cron', 'a CronCreate that is not durable (a prompt scheduled in the session)',
+             [c_blocks([dict(tool_use('toolu_n', 'CronCreate'), input={'cron': '*/5 * * * *', 'prompt': 'p'})])],
+             ['tool:CronCreate']),
             ('claude_code', 'task_frames', 'a background shell task started',
              [c_line('system', subtype='task_started', task_id='b1', tool_use_id=None, description='d',
                      task_type='local_bash')], ['system/task_started']),
@@ -1559,12 +1562,21 @@ sys.exit(payload.get('code', 0))
                   % (hidden(found) or error), hidden(found) == [
                       (len(c_head) + 1, 'task_frames', 'system/task_started'),
                       (len(c_head) + 1, 'workflow', 'system/task_started:workflow_name')])
-            classes = {construct for _, construct, _, _, _ in CONSTRUCTS}
+            # A RemoteTrigger call asks first by the rule for an agent started outside the run
+            # (decision/remote-agent-asks); rule 2's table names it too.
+            remote = c_rec([c_blocks([dict(tool_use('toolu_t', 'RemoteTrigger'), input={'action': 'list'})])])
+            listed = attempt(lambda: LIMIT.nested(remote, 'claude_code'))[0] if LIMIT is not None else None
+            found, error = decide(remote, 'claude_code')
+            check('decision/nested-constructs', 'claude_code, a RemoteTrigger call (remote): rule 2 names exactly that '
+                  'construct, and the decision asks [%s, %s]' % (listed, (found or {}).get('basis') or error),
+                  listed == [{'sequence': len(c_head) + 1, 'construct': 'remote', 'form': 'tool:RemoteTrigger'}]
+                  and (found or {}).get('decision') == 'ask')
+            classes = {construct for _, construct, _, _, _ in CONSTRUCTS} | {'remote'}
             declared = (set(CFORMS.get('nested_work', {}).get('tools') or ())
                         | {key for key in CFORMS.get('nested_work') or {} if key in ('task_frames', 'fork')}
                         | {'nested_progress'} | {key for key in XFORMS.get('nested_work') or {} if key != 'source'})
             check('decision/nested-constructs', 'every construct class the binaries\' tables list is driven [%s]'
-                  % sorted(classes ^ declared), classes == declared and len(classes) == 9)
+                  % sorted(classes ^ declared), classes == declared and len(classes) == 11)
             # Negative control: the same kinds of lines without the construct name no nested work.
             found, error = decide(c_rec([c_blocks([tool_use('toolu_b', 'Bash')]),
                                          c_line('system', subtype='permission_denied', tool_name='Agent',
@@ -1611,6 +1623,96 @@ sys.exit(payload.get('code', 0))
                                                            (found or {}).get('basis'), named(found) or error),
                           (found or {}).get('decision') == 'rerun' and (found or {}).get('calls') == []
                           and (found or {}).get('basis') == 'no_write_capable_server')
+
+        # The lead's decision: a call that starts an agent outside the run (a RemoteTrigger call, whose create and run
+        # start a cloud agent routine that keeps the account's claude.ai connectors, or a durable CronCreate, whose
+        # prompt fires after the run) may act whatever the configuration, so it asks under every configuration.
+        with region('decision/remote-agent-asks'):
+            def r_use(ident, name, **given):
+                return c_blocks([dict(tool_use(ident, name), input=given)])
+
+            def r_done(ident):
+                return c_user([{'type': 'tool_result', 'tool_use_id': ident, 'content': 'ok'}])
+
+            def outside(found):
+                return sorted((c['sequence'], c.get('construct'), c.get('form')) for c in (found or {}).get('calls') or []
+                              if c.get('reason') == 'remote_agent')
+            # The checker's reproduction: a routine created with the account's connectors, then run.
+            routine = [r_use('toolu_q', 'ToolSearch', query='select:RemoteTrigger'), r_done('toolu_q'),
+                       r_use('toolu_c', 'RemoteTrigger', action='create',
+                             body={'prompt': 'comment on CEO-1', 'mcp_connections': ['Atlassian']}), r_done('toolu_c'),
+                       r_use('toolu_r', 'RemoteTrigger', action='run', trigger_id='t'), r_done('toolu_r')]
+            at = len(c_head) + 1
+            CONFIGURATIONS = (('no MCP server', []), ('only read-only tools', READ_ONLY), ('a write-capable server', None))
+            OUTSIDE = (
+                ('a routine created with the account\'s connectors and run (the checker\'s reproduction)', routine,
+                 [(at + 2, 'remote', 'tool:RemoteTrigger'), (at + 4, 'remote', 'tool:RemoteTrigger')]),
+                ('a routine listed (any RemoteTrigger call)', [r_use('toolu_l', 'RemoteTrigger', action='list')],
+                 [(at, 'remote', 'tool:RemoteTrigger')]),
+                ('a durable CronCreate (the checker\'s reproduction)',
+                 [r_use('toolu_k', 'CronCreate', cron='*/5 * * * *', prompt='post a comment', durable=True), r_done('toolu_k')],
+                 [(at, 'cron', 'tool:CronCreate:durable')]),
+                ('a CronCreate durable as the text "true"',
+                 [r_use('toolu_k', 'CronCreate', cron='*/5 * * * *', prompt='p', durable='true')],
+                 [(at, 'cron', 'tool:CronCreate:durable')]),
+                ('a durable CronCreate as the REPL tool\'s inner call',
+                 [r_use('toolu_repl', 'REPL', code='x'),
+                  c_repl(inner('CronCreate', inner_tool_input={'cron': '0 9 * * *', 'prompt': 'p', 'durable': True}))],
+                 [(at + 1, 'cron', 'tool:CronCreate:durable')]),
+                ('a CronCreate named where its input is not given (a task\'s last tool)',
+                 [c_task(last_tool_name='CronCreate')], [(at, 'cron', 'tool:CronCreate:durable')]))
+            for what, lines, expected in OUTSIDE:
+                for label, servers in CONFIGURATIONS:
+                    found, error = decide(c_rec(lines), 'claude_code', servers)
+                    check('decision/remote-agent-asks', '%s, %s configured: decided ask, naming each such line [%s, %s, %s]'
+                          % (what, label, (found or {}).get('decision'), (found or {}).get('basis'), outside(found) or error),
+                          (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'remote_agent'
+                          and outside(found) == expected
+                          and all(c.get('reason') == 'remote_agent' for c in (found or {}).get('calls') or []))
+            # Beside it, a call that contradicts the configuration is named too.
+            both = c_rec([r_use('toolu_l', 'RemoteTrigger', action='list'),
+                          c_blocks([tool_use('toolu_u', 'mcp__mailer__send')])])
+            found, error = decide(both, 'claude_code', READ_ONLY)
+            check('decision/remote-agent-asks', 'a RemoteTrigger call and a call to an unlisted server: decided ask, naming '
+                  'both [%s]' % (forms(found) or error),
+                  (found or {}).get('basis') == 'remote_agent'
+                  and forms(found) == [(at, 'remote_agent', 'tool:RemoteTrigger'), (at + 1, 'unconfigured_call', None)])
+            # Negative controls: a CronCreate that is not durable, and loading RemoteTrigger's schema, start nothing
+            # outside the run: with only read-only tools they re-run, and with a write-capable server rule 2 decides.
+            session = (('its durable field left out', {}), ('durable false', {'durable': False}),
+                       ('durable as the text "false"', {'durable': 'false'}))
+            for what, given in session:
+                lines = [r_use('toolu_n', 'CronCreate', cron='*/5 * * * *', prompt='p', **given), r_done('toolu_n')]
+                found, error = decide(c_rec(lines), 'claude_code', READ_ONLY)
+                again, _ = decide(c_rec(lines), 'claude_code')
+                check('decision/remote-agent-asks', 'a CronCreate with %s: re-run with only read-only tools, and asked '
+                      'by rule 2 with a write-capable server [%s, %s]' % (what, (found or {}).get('basis') or error,
+                                                                           hidden(again)),
+                      (found or {}).get('decision') == 'rerun' and (found or {}).get('basis') == 'no_write_capable_server'
+                      and (again or {}).get('basis') == 'nested_work' and hidden(again) == [(at, 'cron', 'tool:CronCreate')])
+            found, error = decide(c_rec(routine[:2]), 'claude_code', READ_ONLY)
+            check('decision/remote-agent-asks', 'RemoteTrigger\'s schema loaded and never called: re-run [%s, %s]'
+                  % ((found or {}).get('basis'), error), (found or {}).get('decision') == 'rerun'
+                  and (found or {}).get('basis') == 'no_write_capable_server')
+            # The checker's normal runs keep their decisions.
+            with_agent = [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1),
+                          c_child('t1', [tool_use('a1', 'mcp__tracker__get_issue')]),
+                          dict(c_user([{'type': 'tool_result', 'tool_use_id': 'a1', 'content': 'ok'}]), parent_tool_use_id='t1'),
+                          t_done('t1', {'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}), t_result('t1')]
+            reads = [r_use('toolu_a', 'Read', file_path='/work/README'), r_done('toolu_a'),
+                     c_blocks([tool_use('toolu_m', 'mcp__tracker__get_issue')]), r_done('toolu_m'),
+                     r_use('toolu_b', 'Bash', command='ls'), r_done('toolu_b')]
+            for what, lines, servers, decision, basis in (
+                    ('an Agent whose one call is read-only, only read-only tools', with_agent, READ_ONLY, 'rerun',
+                     'no_write_capable_server'),
+                    ('an Agent with no MCP server', with_agent[:1] + with_agent[-1:], [], 'rerun', 'no_write_capable_server'),
+                    ('reads only, a write-capable server', reads, None, 'rerun', 'calls'),
+                    ('an Agent, a write-capable server', with_agent, None, 'ask', 'nested_work')):
+                found, error = decide(c_rec(lines), 'claude_code', servers)
+                check('decision/remote-agent-asks', 'the checker\'s normal run, %s: decided %s by %s [%s, %s]'
+                      % (what, decision, basis, (found or {}).get('decision'), (found or {}).get('basis') or error),
+                      (found or {}).get('decision') == decision and (found or {}).get('basis') == basis
+                      and outside(found) == [])
 
         # The readers' tables are the binaries' own; each listed fixture form is one they list, each unlisted one not.
         with region('format/tool-forms'):
@@ -1685,7 +1787,9 @@ sys.exit(payload.get('code', 0))
                   and json.loads(json.dumps(module_nested)) == binary_nested
                   and {k: sorted(v) for k, v in (getattr(XE, 'NESTED_ITEMS', None) or {}).items()}
                   == {k: v for k, v in x_nested.items() if k != 'source'}
-                  and set(c_nested.get('tools') or ()) == {'agent', 'repl', 'skill', 'workflow'}
+                  and set(c_nested.get('tools') or ()) == {'agent', 'cron', 'remote', 'repl', 'skill', 'workflow'}
+                  and c_nested.get('remote_agent') == {'tools': ['RemoteTrigger'], 'durable': {
+                      'tool': 'CronCreate', 'field': 'durable', 'off': [False, 'false']}}
                   and c_nested.get('tools', {}).get('agent', [])[:1] == ['Agent']
                   and 'system/task_started' in (c_nested.get('task_frames') or ()))
             exec_items = set(XFORMS.get('exec_items') or ())
