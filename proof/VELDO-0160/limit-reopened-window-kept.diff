@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -747 +747 @@
+@@ -831 +831 @@
 -                self.limited = None  # The same window reported open again: the run is no longer at its limit.
 +                pass  # defect: a window reported open again still counts as the run's limit

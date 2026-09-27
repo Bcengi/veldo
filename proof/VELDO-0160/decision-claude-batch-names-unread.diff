@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -449 +449 @@
+@@ -474 +474 @@
 -    batch = event.get('batch_tool_uses')
 +    batch = None  # defect: the batch tool names are not read

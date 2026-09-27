@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -614 +614 @@
+-        found.append(('task_frames', tag))
++        pass  # defect: a task's own frames are not nested work

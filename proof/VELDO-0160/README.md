@@ -324,26 +324,26 @@ the construct tables (`NESTED_TOOLS`, `NESTED`, Codex's `NESTED_ITEMS`) to equal
 `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
-Plain run after the nested-agent fix: 53 passed (26 preamble, 27 rows) in 19.8 s. Stage environment run
-(`env -i`, the stage's variables, TZ=UTC): 53 passed in 25.2 s. After the merge the fake `claude` is
+Plain run after the structural rule: 56 passed (26 preamble, 30 rows) in 18.8 s. Stage environment run
+(`env -i`, the stage's variables, TZ=UTC): 56 passed in 24.7 s. After the merge the fake `claude` is
 installed, pinned and qualified as version 2.1.281 under the factory state root and the fake Codex is a
 qualified vendor package (VELDO-0060, VELDO-0061), as suite 75 does.
 
 ## Red record
 
 `red-at-52f817d5.json`: the current suite over `git archive 52f817d5` (main before this work),
-unchanged, regenerated after the nested-agent fix. All 25 behavior rows fail by their own
+unchanged, regenerated after the structural rule. All 28 behavior rows fail by their own
 assertion: there is no account pool (the Runner given
 a pool refuses `invalid_input` and nothing is dispatched), the same login registers twice under two
 names and a second record of an id is refused unnamed, no run is classified `account_limit` (each limited
 run ends `failed`), Claude Code's rate-limit result records no window, there is no decision module, the
-readers have no tool-call form tables, and the scaffold lays down neither new module. The two `format/*` rows are green there, as they must be:
+readers have no tool-call form tables and no construct tables, and the scaffold lays down neither new module. The two `format/*` rows are green there, as they must be:
 they check the suite's own fixtures against the extracted table, not production.
 
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 86 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 2423 s, after the nested-agent fix).
+`drive.py` records `mutations.json` and one applied diff per mutant. All 101 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 2866 s, after the structural rule).
 
 | Mutant | Module | Named rows |
 |---|---|---|
@@ -433,12 +433,27 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | decision-claude-task-first-count-kept | control_engine_claude.py | `decision/subagent-calls` |
 | decision-claude-task-notification-count-unread | control_engine_claude.py | `decision/subagent-calls`, `format/tool-forms` |
 | format-claude-task-count-field-moved | control_engine_claude.py | `decision/subagent-calls`, `format/tool-forms` |
+| decision-rule1-skipped (the structural rule: rule 1 skipped) | control_account_limit.py | `decision/no-write-server-reruns` |
+| decision-rule2-skipped (rule 2 skipped) | control_account_limit.py | `decision/nested-work-asks`, `decision/nested-constructs` |
+| decision-listed-tools-ignored | control_account_limit.py | `decision/no-write-server-reruns` |
+| decision-all-tools-read-only | control_account_limit.py | `decision/nested-work-asks`, `decision/nested-constructs`, `decision/no-write-server-reruns` |
+| decision-nested-text-lines-unread | control_account_limit.py | `decision/nested-work-asks` |
+| nested-agent-dropped (class dropped from rule 2) | control_engine_claude.py | `decision/nested-constructs`, `format/tool-forms` |
+| nested-skill-dropped | control_engine_claude.py | `decision/nested-constructs`, `format/tool-forms` |
+| nested-repl-dropped | control_engine_claude.py | `decision/nested-constructs`, `format/tool-forms` |
+| nested-workflow-dropped | control_engine_claude.py | `decision/nested-constructs`, `format/tool-forms` |
+| nested-task-frames-dropped | control_engine_claude.py | `decision/nested-constructs` |
+| nested-progress-dropped | control_engine_claude.py | `decision/nested-constructs`, `decision/nested-work-asks` |
+| nested-fork-dropped | control_engine_claude.py | `decision/nested-constructs` |
+| nested-codex-collab-dropped | control_engine_codex.py | `decision/nested-constructs`, `decision/nested-work-asks`, `format/tool-forms` |
+| nested-codex-sub-agent-dropped | control_engine_codex.py | `decision/nested-constructs`, `format/tool-forms` |
+| nested-claude-last-tool-unread | control_engine_claude.py | `decision/nested-work-asks` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 86 rejected after the nested-agent fix (78 before it, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 101 rejected after the structural rule (86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
 
-Suites run after the nested-agent fix, plain and under the stage environment, all green:
-`78_veldo_0160_account_pool` (27 rows), `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
+Suites run after the structural rule, plain and under the stage environment, all green:
+`78_veldo_0160_account_pool` (30 rows), `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`
 (20) and `75_veldo_0062_accounts` (22); `extract_formats.py --check` matches the installed binaries. After the
 second check's round `58_veldo_0036_reservations` (10) was also green; no module it reads changed since. Before the merge the suites of
 every module this touches and every suite that reads `init_scaffold.py` were run green as well.

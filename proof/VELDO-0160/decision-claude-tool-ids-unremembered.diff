@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -487 +487 @@
+@@ -512 +512 @@
 -        if isinstance(ident, str):
 +        if False:  # defect: the ids of the calls shown are not remembered

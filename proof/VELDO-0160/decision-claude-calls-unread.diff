@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -395 +395 @@
+@@ -420 +420 @@
 -    if name.startswith(MCP_PREFIX):
 +    if False:  # defect: Claude Code's MCP tool calls are not read

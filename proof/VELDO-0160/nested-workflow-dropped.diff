@@ -1,0 +1,8 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -317 +317 @@
+-                'workflow': ('RunWorkflow', 'Workflow')}
++                }  # defect: the workflow tools are not nested work
+@@ -617 +617 @@
+-            found.append(('workflow', tag + ':' + workflow.get(tag, 'task_type')))
++            pass

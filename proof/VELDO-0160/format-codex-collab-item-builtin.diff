@@ -1,6 +1,6 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -150 +150,2 @@
+@@ -155 +155,2 @@
 -SUBAGENT_ITEMS = frozenset(('collab_tool_call',))
 +SUBAGENT_ITEMS = frozenset()
 +BUILTIN_ITEMS = BUILTIN_ITEMS | {'collab_tool_call'}  # defect

@@ -1,0 +1,8 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -316 +316 @@
+-NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'repl': ('REPL',), 'skill': ('Skill',),
++NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'skill': ('Skill',),
+@@ -322 +322 @@
+-          'repl': {'tool_progress': 'repl_call'},
++          'repl': {},

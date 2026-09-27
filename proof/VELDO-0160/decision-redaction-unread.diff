@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -148 +148 @@
+@@ -178 +178 @@
 -                              'unreadable': 'redacted_unreadable' if line['redacted'] else 'unreadable'})
 +                              'unreadable': 'unreadable'})  # defect: the line's redaction is never read

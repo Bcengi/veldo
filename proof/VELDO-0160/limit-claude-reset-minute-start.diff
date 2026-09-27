@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -373 +373 @@
+@@ -398 +398 @@
 -                      for fold in (0, 1)) + 60
 +                      for fold in (0, 1))  # defect: the window reopens at the start of the stated minute
