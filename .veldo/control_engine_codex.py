@@ -191,6 +191,12 @@ SUBAGENT_ITEMS = frozenset(('collab_tool_call',))
 NESTED_ITEMS = {'collab': ('collab_agent_tool_call', 'collab_tool_call'), 'sub_agent': ('sub_agent_activity',)}
 # exec reports no task counting its sub-agents' calls: its own sub-agent call is already an unknown call above.
 Tasks = None
+# The known in-run kinds (VELDO-0160, the lead's allowlist; cli-formats.json codex tool_forms in_run): exec's own items,
+# and for its sub-agent call the collab tools of exec's CollabTool enum, each an agent thread of this process. An item
+# or collab tool these do not list asks (outward_tools).
+IN_RUN_ITEMS = frozenset(('agent_message', 'collab_tool_call', 'command_execution', 'error', 'file_change',
+                          'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'))
+IN_RUN_COLLAB = {'item': 'collab_tool_call', 'field': 'tool', 'tools': ('spawn_agent', 'send_input', 'close_agent')}
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
                       r'(?P<year>\d{4}) )?(?P<hour>\d{1,2}):(?P<minute>\d{2}) (?P<half>AM|PM)\.')
 
@@ -273,6 +279,27 @@ def nested_work(event):
 def remote_agents(event):
     """[]: exec's items (its table, cli-formats.json exec_items) hold no call that starts an agent outside the run
     (Claude Code's interface; the module docstring)."""
+    return []
+
+
+def tool_inputs(event):
+    """[]: exec's items carry their own input (Claude Code's interface)."""
+    return []
+
+
+def outward_tools(event, inputs=None):
+    """[form]: the item an event shows that is not a known in-run kind (VELDO-0160, the lead's allowlist, rule A): an
+    item type exec's own items do not list (`item:<type>`), or a sub-agent call whose collab tool exec's CollabTool enum
+    does not list (`item:collab_tool_call:<tool>`). An item that cannot be read is the call-by-call rules'."""
+    item = event.get('item') if event.get('type') in ITEM_EVENTS else None
+    kind = item.get('type') if isinstance(item, dict) else None
+    if not isinstance(kind, str):
+        return []
+    if kind not in IN_RUN_ITEMS:
+        return ['item:' + kind]
+    tool = item.get(IN_RUN_COLLAB['field'])
+    if kind == IN_RUN_COLLAB['item'] and tool not in IN_RUN_COLLAB['tools']:
+        return ['item:%s:%s' % (kind, tool if isinstance(tool, str) else 'unreadable')]
     return []
 
 

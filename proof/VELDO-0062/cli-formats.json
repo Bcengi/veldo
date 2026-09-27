@@ -3013,7 +3013,11 @@
       "Agent",
       "Task"
      ],
-     "type_field": "subagent_type"
+     "type_field": "subagent_type",
+     "values": [
+      "worktree",
+      "remote"
+     ]
     },
     "aliases": {
      "Agent": [

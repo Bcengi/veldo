@@ -364,6 +364,24 @@ NESTED = {'task_frames': ('system/task_notification', 'system/task_progress', 's
           # unless its input leaves `durable` out (false by default) or gives it a value the binary reads as false.
           'remote_agent': {'tools': ('RemoteTrigger',),
                            'durable': {'tool': 'CronCreate', 'field': 'durable', 'off': (False, 'false')}}}
+# The built-in tools whose effects stay inside the run's clone and host session (VELDO-0160, the lead's allowlist; the
+# binary's, cli-formats.json tool_forms in_run), with their aliases: a call of any other built-in tool asks (outward_tools).
+IN_RUN_TOOLS = frozenset(('Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'REPL', 'Read',
+                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write'))
+IN_RUN_ALIASES = {'Agent': ('Task',), 'TaskStop': ('KillBash', 'KillShell'), 'Workflow': ('RunWorkflow',)}
+IN_RUN = IN_RUN_TOOLS | frozenset(alias for names in IN_RUN_ALIASES.values() for alias in names)
+# How an allowlisted call still acts outside the run: the Agent tool with its input's isolation remote, or naming an
+# agent definition that is not built in (an agent file may set isolation remote); a file tool or Bash whose input's
+# `_host` names another machine (routed there only when the remote-tools gate is on, off in this build); a task whose
+# type is not one of the allowlisted tools' (a remote agent is a task of type remote_agent).
+IN_RUN_AGENT = {'tools': ('Agent', 'Task'), 'field': 'isolation', 'values': ('worktree', 'remote'), 'outside': 'remote',
+                'type_field': 'subagent_type',
+                'builtin_types': ('Explore', 'Plan', 'claude', 'claude-code-guide', 'comment-thread-analyst', 'fork',
+                                  'general-purpose', 'statusline-setup', 'web-fetch', 'worker', 'workflow-subagent')}
+IN_RUN_HOST = {'field': '_host', 'local': ('', 'container', 'this-machine'),
+               'tools': ('Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write')}
+IN_RUN_TASKS = {'field': 'task_type',
+                'in_run': ('in_process_teammate', 'local_agent', 'local_bash', 'local_workflow', 'monitor_ws')}
 TOOL_FIELDS.update({'result/' + sub: {'deferred_tool_use': 'free', 'permission_denials.tool_input': 'free',
                                       'permission_denials.tool_name': 'free', 'permission_denials.tool_use_id': 'free',
                                       'usage.server_tool_use': 'free'}
@@ -703,6 +721,136 @@ def remote_agents(event):
                 if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):
                     continue
             found.append(('cron', 'tool:%s:%s' % (name, durable['field'])))
+    return list(dict.fromkeys(found))
+
+
+def tool_inputs(event):
+    """[(key, input)]: the input the event gives of each call it names, an assistant or user message's tool_use block
+    and the REPL tool's inner call, so that a frame naming the call elsewhere is judged by its input. The key is the
+    call's id, and for a sub-agent's message (its task's id in parent_tool_use_id) also ('task', task id, tool name),
+    since the task's progress names its last tool without the call's id."""
+    kind = event.get('type')
+    found = []
+    message = event.get('message')
+    parent = event.get(TASK_COUNTS['parent'])
+    if kind in ('assistant', 'user') and isinstance(message, dict) and isinstance(message.get('content'), list):
+        for block in message['content']:
+            if not (isinstance(block, dict) and block.get('type') == 'tool_use' and 'input' in block):
+                continue
+            if isinstance(block.get('id'), str):
+                found.append((block['id'], block['input']))
+            if isinstance(parent, str) and isinstance(block.get('name'), str):
+                found.append((('task', parent, block['name']), block['input']))
+    repl = event.get('repl_call') if kind == 'tool_progress' else None
+    if isinstance(repl, dict) and isinstance(repl.get('inner_tool_use_id'), str) and 'inner_tool_input' in repl:
+        found.append((repl['inner_tool_use_id'], repl['inner_tool_input']))
+    return found
+
+
+def _block_forms(blocks, user):
+    """[(name, id, input, given)] of the tool_use blocks, and ('block:<kind>', ...) of every other block that calls a
+    tool (not tool-free and not a tool's result: a server tool, an API-side MCP call, any block no table lists)."""
+    found = []
+    for block in blocks if isinstance(blocks, list) else ():
+        kind = block.get('type') if isinstance(block, dict) else None
+        if not isinstance(kind, str) or kind in (TOOL_FREE_REQUEST if user else TOOL_FREE_BLOCKS):
+            continue  # a block that cannot be read is the call-by-call rules' (unreadable)
+        if kind == 'tool_use':
+            found.append((block.get('name'), block.get('id'), block.get('input'), 'input' in block))
+        elif not kind.endswith('_result'):
+            found.append(('block:' + kind, None, None, None))
+    return found
+
+
+def _named_calls(event, tag):
+    """Every tool call the event names, as (name, id, input, given): its content's tool_use blocks (their input given,
+    a streamed block's not yet), a tool_progress's tool and the REPL tool's inner call, a task's last tool and its
+    workflow agents', an assistant message's batch tool names; and each other block that calls a tool as
+    ('block:<kind>', None, None, None). A task's last tool is keyed ('task', task id, name), as tool_inputs keys the
+    task's own shown calls."""
+    found, message = [], event.get('message')
+    if tag in ('assistant', 'user') and isinstance(message, dict):
+        found += _block_forms(message.get('content'), tag == 'user')
+    elif tag == 'stream_event' and isinstance(event.get('event'), dict):
+        stream = event['event']
+        start = stream.get('message') if isinstance(stream.get('message'), dict) else {}
+        blocks = [stream.get('content_block')] + (start['content'] if isinstance(start.get('content'), list) else [])
+        found += [(name, ident, None, False) for name, ident, _, _ in _block_forms(blocks, False)]
+    if tag == 'tool_progress':
+        found.append((event.get('tool_name'), event.get('tool_use_id'), None, False))
+        repl = event.get('repl_call')
+        if isinstance(repl, dict):
+            found.append((repl.get('inner_tool_name'), repl.get('inner_tool_use_id'), repl.get('inner_tool_input'),
+                          'inner_tool_input' in repl))
+    elif tag == 'system/task_progress':
+        if event.get('last_tool_name') is not None:
+            task = event.get(TASK_COUNTS['task'])
+            name = event['last_tool_name']
+            found.append((name, ('task', task, name) if isinstance(task, str) and isinstance(name, str) else None,
+                          None, False))
+        entries = event.get('workflow_progress')
+        found += [(entry['lastToolName'], None, None, False) for entry in entries if isinstance(entry, dict)
+                  and entry.get('lastToolName') is not None] if isinstance(entries, list) else []
+    elif tag == 'assistant' and isinstance(event.get('batch_tool_uses'), list):
+        found += [(use.get('name'), use.get('id'), None, False) for use in event['batch_tool_uses'] if isinstance(use, dict)]
+    return found
+
+
+def _outside_input(name, value):
+    """The forms through which an allowlisted call's own input acts outside the run: the Agent tool remote or naming
+    an agent definition that is not built in, a file tool or Bash naming another machine."""
+    if not isinstance(value, dict):
+        return ['tool:%s:input' % name] if name in IN_RUN_AGENT['tools'] else []
+    found = []
+    if name in IN_RUN_AGENT['tools']:
+        isolation, kind = value.get(IN_RUN_AGENT['field']), value.get(IN_RUN_AGENT['type_field'])
+        local = tuple(v for v in IN_RUN_AGENT['values'] if v != IN_RUN_AGENT['outside'])
+        if isolation is not None and isolation not in local:
+            found.append('tool:%s:%s:%s' % (name, IN_RUN_AGENT['field'], isolation))
+        if kind is not None and kind not in IN_RUN_AGENT['builtin_types']:
+            found.append('tool:%s:%s' % (name, IN_RUN_AGENT['type_field']))
+    host = value.get(IN_RUN_HOST['field'])
+    if name in IN_RUN_HOST['tools'] and isinstance(host, str) and host.strip() not in IN_RUN_HOST['local']:
+        found.append('tool:%s:%s' % (name, IN_RUN_HOST['field']))
+    return found
+
+
+def outward_tools(event, inputs):
+    """[form]: each call the event names that is not shown to stay inside the run (VELDO-0160, the lead's allowlist,
+    rule A): a built-in tool that is not on the allowlist (IN_RUN; `tool:<name>`, a name that cannot be read
+    `tool:unreadable`), any other block that calls a tool (`block:<kind>`), an allowlisted call whose input acts outside
+    the run (_outside_input), an Agent call whose input is neither given here nor by its id elsewhere in the record
+    (`inputs`, {key: [input]}, tool_inputs; it may be remote: an agent a sub-agent starts shows its input only in the
+    sub-agent's forwarded message, and one a deeper agent starts nowhere), a task whose type is not one of the allowlisted tools', and a workflow
+    agent whose isolation is remote. An MCP tool (`mcp__...`) is the configuration's to judge."""
+    kind = event.get('type')
+    tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
+    found = []
+    for name, ident, value, given in _named_calls(event, tag):
+        if not isinstance(name, str):
+            found.append('tool:unreadable')
+            continue
+        if name.startswith('block:'):
+            found.append(name)
+            continue
+        if name.startswith(MCP_PREFIX):
+            continue
+        if name not in IN_RUN:
+            found.append('tool:' + name)
+            continue
+        values = [value] if given else list(inputs.get(ident, ())) if isinstance(ident, (str, tuple)) else []
+        if not values and name in IN_RUN_AGENT['tools']:
+            found.append('tool:%s:input_not_given' % name)
+        for each in values:
+            found += _outside_input(name, each)
+    if tag in NESTED['task_frames'] and IN_RUN_TASKS['field'] in event:
+        task_type = event[IN_RUN_TASKS['field']]
+        if task_type not in IN_RUN_TASKS['in_run']:
+            found.append('%s:%s' % (IN_RUN_TASKS['field'], task_type if isinstance(task_type, str) else 'unreadable'))
+    entries = event.get('workflow_progress') if tag == 'system/task_progress' else None
+    for entry in entries if isinstance(entries, list) else ():
+        if isinstance(entry, dict) and entry.get(IN_RUN_AGENT['field']) == IN_RUN_AGENT['outside']:
+            found.append('workflow_progress:%s:%s' % (IN_RUN_AGENT['field'], IN_RUN_AGENT['outside']))
     return list(dict.fromkeys(found))
 
 

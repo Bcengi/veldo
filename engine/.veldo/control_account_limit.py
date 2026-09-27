@@ -264,6 +264,21 @@ def outside(record, provider):
     return found
 
 
+def outward(record, provider):
+    """[{sequence, form}]: each engine line whose event names a call not shown to stay inside the run (rule A, the
+    engine module's `outward_tools` over the inputs every line gives by call id), each form once per line. A line that
+    is not a readable event is left to the rules after this one."""
+    engine = _engine(provider)
+    events = [(at, _event(line['payload']) if line['stream'] == 'engine' else None)
+              for at, line in enumerate(_checked(record), 1)]
+    inputs = {}
+    for _, event in events:
+        for ident, value in engine.tool_inputs(event) if event is not None else ():
+            inputs.setdefault(ident, []).append(value)
+    return [{'sequence': at, 'form': form} for at, event in events if event is not None
+            for form in engine.outward_tools(event, inputs)]
+
+
 def decide_by_calls(record, servers, marks, provider):
     """The call-by-call rules (the module docstring's third rule): ask for each call the record shows to a tool
     not marked read-only, each engine line it cannot read and each form it does not recognize."""
@@ -320,13 +335,19 @@ def decide(record, servers, marks, provider):
     contradicting = unconfigured(shown, servers, marks)
     read = [call for call in shown if not call.get('unreadable') and not call.get('unknown')]
     started = outside(record, provider)
-    if started:
-        # An agent started outside the run may act whatever the configuration: ask, naming each such line.
+    # Rule A: a call the allowlist does not show staying inside the run, unless the remote_agent rule names it already.
+    named_started = {(found['sequence'], found['form']) for found in started}
+    leaving = [found for found in outward(record, provider) if (found['sequence'], found['form']) not in named_started]
+    if started or leaving:
+        # An agent started outside the run, or a call that may act outside it, may act whatever the configuration: ask,
+        # naming each such line.
         named = contradicting + [
             {'sequence': found['sequence'], 'server': None, 'tool': None, 'catalog_id': None, 'revision': None,
-             'reason': 'remote_agent', 'construct': found['construct'], 'form': found['form']} for found in started]
+             'reason': 'remote_agent', 'construct': found['construct'], 'form': found['form']} for found in started] + [
+            {'sequence': found['sequence'], 'server': None, 'tool': None, 'catalog_id': None, 'revision': None,
+             'reason': 'outward_tool', 'form': found['form']} for found in leaving]
         return {'schema': SCHEMA, 'decision': ASK, 'calls': sorted(named, key=lambda call: call['sequence']),
-                'mcp_calls': len(read), 'basis': 'remote_agent'}
+                'mcp_calls': len(read), 'basis': 'remote_agent' if started else 'outward_tool'}
     if contradicting:
         # A visible call the configuration does not give the run contradicts the configuration: ask, naming each.
         return {'schema': SCHEMA, 'decision': ASK, 'calls': contradicting, 'mcp_calls': len(read),

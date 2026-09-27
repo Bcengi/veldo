@@ -682,6 +682,7 @@ def _in_run(text, renamed):
         raise Moved('claude built-in agents moved')
     return {'tools': sorted(tools), 'aliases': aliases,
             'agent': {'tools': sorted([renamed[0]['name']] + list(renamed[0]['aliases'])), 'field': 'isolation',
+                      'values': json.loads(CLAUDE_IN_RUN_CONDITIONS['agent_input'][0][len('isolation:z('):].split(')')[0]),
                       'outside': 'remote', 'type_field': 'subagent_type', 'builtin_types': sorted(set(builtin))},
             'host': {'field': '_host', 'local': ['', 'container', 'this-machine'], 'tools': sorted(remote),
                      'routed': False},

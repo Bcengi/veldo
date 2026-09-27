@@ -1004,6 +1004,18 @@ sys.exit(payload.get('code', 0))
                     record[len(head)]['redacted'] = kinds
                     found, error = decide(record, provider)
                     expected = [(len(head) + 1, None, None, None, None, 'redacted_unreadable' if kinds else 'unreadable')]
+                    if payload is nameless and provider == 'claude_code':
+                        # A built-in call whose tool cannot be read is not shown to stay in the run: rule A asks first
+                        # (decision/outward-tool-asks), and the call-by-call rules still name it unreadable.
+                        alone, _ = by_calls(record, provider)
+                        leaving = sorted((c['sequence'], c['reason'], c.get('form')) for c in (found or {}).get('calls') or [])
+                        check('decision/unreadable-asks', '%s, an engine line holding a write with %s: decided ask by '
+                              'rule A, and the call-by-call rules name it unreadable [%s, %s, %s]'
+                              % (provider, label, (found or {}).get('basis'), leaving or error, named(alone)),
+                              (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'outward_tool'
+                              and leaving == [(len(head) + 1, 'outward_tool', 'tool:unreadable')]
+                              and (alone or {}).get('decision') == 'ask' and named(alone) == expected)
+                        continue
                     check('decision/unreadable-asks', '%s, an engine line holding a write with %s: decided ask, naming that '
                           'line [%s, %s]' % (provider, label, (found or {}).get('decision'), named(found) or error),
                           spanned != text and (found or {}).get('decision') == 'ask' and named(found) == expected)
@@ -1552,6 +1564,15 @@ sys.exit(payload.get('code', 0))
                 found, error = decide(record, provider)
                 head = c_head if provider == 'claude_code' else x_head
                 want = [(len(head) + len(lines), construct, form) for form in expected]
+                if (found or {}).get('basis') == 'outward_tool':
+                    # A construct that is not on the allowlist (SendMessage, the core's items exec does not print) asks
+                    # first by rule A (decision/outward-tool-asks); rule 2's table names it too.
+                    listed = attempt(lambda: LIMIT.nested(record, provider))[0]
+                    check('decision/nested-constructs', '%s, %s (%s): rule 2 names exactly that construct, and rule A '
+                          'asks first [%s, %s]' % (provider, what, construct, listed, forms(found)),
+                          (found or {}).get('decision') == 'ask' and [(n['sequence'], n['construct'], n['form'])
+                                                                      for n in listed or ()] == want)
+                    continue
                 check('decision/nested-constructs', '%s, %s (%s): decided ask, naming exactly that construct [%s]'
                       % (provider, what, construct, hidden(found) or error),
                       (found or {}).get('decision') == 'ask' and hidden(found) == want)
