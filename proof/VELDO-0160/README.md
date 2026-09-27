@@ -111,6 +111,18 @@ provider)` runs the engine module's `Tasks` over the record: a shortfall (form `
 `task_tool_uses:unreadable`) makes the decision `ask` under every configuration, reason and basis `outward_tool`. A
 sub-agent whose calls are all shown and allowlisted still re-runs. Codex reports no such count (`Tasks` is None).
 
+**Rule A asks for a sub-agent's Skill even without a tally.** Probe11 b6's fork runs outside the loop that sends
+`task_progress`, its end notification carries no usage, and the fork's messages are dropped unless
+`forwardSubagentText` is set. Every Skill call carrying `parent_tool_use_id` therefore asks, form
+`tool:Skill:parent_tool_use_id`, under every configuration. The input check also asks, form `tool:Skill:context`,
+when input cannot be read or carries a `context` other than `inline`. Both use reason and basis `outward_tool`.
+The 2.1.281 Skill input schema contains only `skill` and optional `args`, no fork field. The extractor pins that
+schema, its connection to Skill's `inputSchema`, and `P9t`, which resolves the skill definition's `getContext` or
+`context` with default `inline`, and the fork dispatch that tests its result. The recorded `context` check is
+conservative handling of an explicit indication, not a claim that this binary accepts a context input. Per the
+lead's decision, a top-level Skill with ordinary input and no fork indication still re-runs without a write-capable
+server. The parent check covers a sub-agent's Skill even when the input has no indication of the definition's fork.
+
 **Codex's `wait` is exec's own.** exec's CollabTool enum has four variants; `wait` is missing from the variant literal
 run only because the compiler shares its four-byte literal. `extract_formats.py` reads the enum from its serializer
 in the 0.154.0 bytes: the one switch (lea rcx to its jump table, movsxd, add, jmp rax) whose cases load the run's own
@@ -363,21 +375,17 @@ window to 1500 s) the dispatch is refused `no_account_until` the 600 s reset. `d
 `get_issue`, a call to its `search` (marked read-only, not given) asks naming the line with tracker's catalog id
 and revision; the negative control, the same record calling `get_issue` under either configuration, re-runs by
 rule 1. `decision/ask` now expects the unlisted server's call decided by this rule and checks `decide_by_calls`
-still names it `server_not_configured`. `decision/no-write-server-reruns` (rule 1): the checker's forked skill
-(an Agent whose sub-agent runs a forking Skill, the fork's task started and ended with no count, no call shown),
-as objects and as JSON text, with only read-only tools configured (tracker listing `get_issue` and `search`, both
-marked; wiki listing none), a depth-2 agent's hidden MCP write with no server configured, and exec's own
-sub-agent call with no server configured each decide re-run, basis `no_write_capable_server`, naming nothing; a
-record with a sequence gap is still refused by name, a server whose `tools` is neither `all` nor a list is
-refused `invalid_input:configuration`; the negative controls: the forked skill with a server giving a listed tool
-not marked read-only, all its tools, its tools unlisted, or a tool of a revision that marks nothing is
-write-capable and asks. `decision/nested-work-asks` (rule 2): the forked skill (as objects and as JSON text) with
-the default write-capable servers asks, basis `nested_work`, naming exactly its ten constructs on eight lines (the Agent
-call, both tasks' frames, the sub-agent's forwarded Skill call and the fork's result, the task's last tool Skill),
-while the call-by-call rules alone see no call in it; a normal run whose Agent's calls are all shown and
-read-only asks naming the Agent line first (the call-by-call rules alone re-run it); a depth-2 agent's hidden
-write asks naming both its constructs and its task's unshown calls; Codex's `collab_tool_call` asks naming it as
-nested work and as an unknown call. `decision/nested-constructs`: each of 16 records holding one construct alone
+still names it `server_not_configured`. `decision/no-write-server-reruns` (rule 1): a top-level Skill with no fork, as objects and JSON text, with no
+server or only read-only tools configured (tracker listing `get_issue` and `search`, both marked; wiki listing
+none), a depth-1 agent whose calls are all shown and allowlisted, and exec's own sub-agent call with no server
+configured each decide re-run, basis `no_write_capable_server`, naming nothing. A record with a sequence gap and
+a server whose `tools` is neither `all` nor a list are still refused by name. A top-level Skill with a server giving
+a listed tool not marked read-only, all its tools, its tools unlisted, or a tool of a revision that marks nothing
+asks by rule 2. `decision/nested-work-asks` (rule 2): the top-level Skill with the default write-capable servers asks,
+basis `nested_work`, naming its Skill construct. The call-by-call rules alone see no call in the sub-agent's forked
+Skill record; rule A now asks for its parent instead. A normal run whose Agent's calls are shown and read-only asks
+by rule 2; a depth-2 agent's hidden write asks first by rule A for its task's unshown calls; Codex's
+`collab_tool_call` asks naming it as nested work and as an unknown call. `decision/nested-constructs`: each of 16 records holding one construct alone
 (Agent, Task, SendMessage, Skill, a REPL call, a REPL inner call on another tool's heartbeat, Workflow,
 RunWorkflow, a background shell task started, a task moved to the background, a sub-agent's message, a forked
 skill's progress frame, a forked skill's result; Codex's `collab_tool_call`, `collab_agent_tool_call` and
@@ -410,6 +418,13 @@ judged by its heartbeat's id, by a streamed start, by its sub-agent's shown call
 built-in agent, and a workflow task whose last tool is its agent's label; every Codex item and collab tool exec lists
 re-runs; the normal runs keep their decisions and name no outward tool. `format/tool-forms` also requires the
 allowlist, the Agent tool's isolation, the `_host` field and the in-run task types to equal `in_run`, the gate off.
+The Skill review fix extends `decision/outward-tool-asks`: both probe11 b6 records (with and without the fork's
+task frames), as objects and JSON text, ask under no server, read-only servers and write-capable servers, naming
+exactly the Skill call's parent. The original `forked` record moves here from the rerun rows. Explicit fork,
+unknown or unreadable context and unreadable input ask under all three configurations; explicit inline input
+still re-runs without a write-capable server. Probe12's normal general-purpose and Explore agents, with every
+Read, Grep, Bash, Edit and Glob call shown and counted, still re-run under no server and read-only servers.
+`format/tool-forms` compares the Skill conditions and pins the input fields and absence of a fork input field.
 `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
@@ -426,7 +441,7 @@ qualified vendor package (VELDO-0060, VELDO-0061), as suite 75 does.
 ## Red record
 
 `red-at-52f817d5.json`: the current suite over `git archive 52f817d5` (main before this work),
-unchanged, regenerated after rule A's tally. All 31 behavior rows fail by their own
+unchanged, regenerated after the Skill fork fix. All 31 behavior rows fail by their own
 assertion: there is no account pool (the Runner given
 a pool refuses `invalid_input` and nothing is dispatched), the same login registers twice under two
 names and a second record of an id is refused unnamed, no run is classified `account_limit` (each limited
@@ -437,7 +452,7 @@ they check the suite's own fixtures against the extracted table, not production.
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 132 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 3646 s, after rule A's tally; 127 in 3453 s after rule A).
+`drive.py` records `mutations.json` and one applied diff per mutant. The prior tally round recorded 132 turning their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 3646 s, after rule A's tally; 127 in 3453 s after rule A).
 
 | Mutant | Module | Named rows |
 |---|---|---|
@@ -573,6 +588,13 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | outward-tally-shortfall-dropped | control_account_limit.py | `decision/outward-tool-asks` |
 | outward-codex-wait-unlisted | control_engine_codex.py | `decision/outward-tool-asks` |
 | outward-codex-wait-agent-allowed | control_engine_codex.py | `decision/outward-tool-asks` |
+| outward-skill-parent-skipped | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-skill-fork-skipped | control_engine_claude.py | `decision/outward-tool-asks` |
+
+The Skill fork review's `skill-fork-mutations.json` records both new mutations against the current source,
+with the exact applied diffs, source digests, named assertion failures and green baseline and unchanged-copy
+controls. The parent mutant re-runs probe11 b6 with no server; the fork mutant re-runs a Skill input carrying
+`context: fork` with no server. Both failures are in `decision/outward-tool-asks`.
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
 `limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 132 rejected after rule A's tally and exec's wait (127 after rule A, 113 after the remote-agent rule, 103 after the unconfigured-call rule, 101 after the structural rule, 86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
@@ -587,3 +609,8 @@ rule, `78_veldo_0160_account_pool` (31 rows; no other suite reads `control_accou
 (20) and `75_veldo_0062_accounts` (22); `extract_formats.py --check` matches the installed binaries. After the
 second check's round `58_veldo_0036_reservations` (10) was also green; no module it reads changed since. Before the merge the suites of
 every module this touches and every suite that reads `init_scaffold.py` were run green as well.
+
+Skill fork review validation: suite `78_veldo_0160_account_pool` has 33 passing rows and 26 passing shared
+preamble checks. Its standalone selftest exits 2 to mark a partial run, with zero failed checks. Format extraction
+matches the installed binaries, the engine and installed reader are byte-identical, and repository validation
+passes. No model or gate was run; this records the requested local checks and is not a gate stamp.
