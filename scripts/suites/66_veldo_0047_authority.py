@@ -867,6 +867,7 @@ def _v47_suite():
                 connections.append(launch_reader)
                 launch_writer.command_registry['claim_operation'] = {
                     'transition': CLM.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
+                V169 = load('v0047_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
                 for principal in ('runner', 'launch-receiver'):
                     put(principal, 'membership', dict(principal_type='service', roles=['reservation_service'],
                                                       scope=[REPOSITORY], revoked_at=None, expires_at=None), conn=launch_writer)
@@ -886,7 +887,7 @@ def _v47_suite():
                 put('admission:' + LAUNCH_UNIT, 'admission', dict(unit=LAUNCH_UNIT, state='accepted',
                                                                   scope_digest='sha256:scope-' + LAUNCH_UNIT), conn=launch_writer)
                 claim_entity = CLM.claim_id(REPOSITORY, LAUNCH_UNIT)
-                S.execute(launch_writer, dict(
+                S.execute(launch_writer, V169.receipted(CLM, S, launch_writer, DOMAIN, dict(
                     command_id='claim-launch-' + run_id, principal=HOLDER, operation='claim_operation',
                     nonce='claim-launch-' + run_id, artifact_digests=[],
                     expected_versions={LAUNCH_UNIT: version_of(launch_writer, LAUNCH_UNIT),
@@ -894,7 +895,7 @@ def _v47_suite():
                                        claim_entity: 0},
                     parameters=dict(action='claim', unit_id=LAUNCH_UNIT, backlog_item_uuid='backlog:' + LAUNCH_UNIT,
                                     claim_id=claim_entity, holder=HOLDER, generation=0, capabilities=[],
-                                    repository_uuid=REPOSITORY)), HOLDER, journal_sign, 1)
+                                    repository_uuid=REPOSITORY))), HOLDER, journal_sign, 1)
                 receiver_config_path = ((report.get('receiver') or {}).get('configs') or {}).get(REPOSITORY)
                 installed_receiver = (report.get('receiver') or {}).get('executable')
                 IL, runner, launch, errors = None, None, None, {}

@@ -27,6 +27,14 @@ takes no new assignment. The project and owner records that check read are pinne
 transaction. Renew, release and use of an existing claim are not new assignments; running work
 follows the host stop policy.
 
+Project-check receipts (VELDO-0169). Every transition that hands work out (HANDOUTS: a claim, a
+resume, and the unpark of a disposition's backlog outcome) is refused by name unless its parameters
+carry the receipt control_eligibility.Gate.project_problems produces when it finds no problem
+(project_check_receipt): missing_evidence:project_check without one, stale_subject:project_check with
+one for another unit or project, or naming a version this transaction did not pin and read. The
+check is here, at the one writer of a claim, so a path that forgets the Gate's check writes
+nothing. Park, release, renew and use hand nothing out and need no receipt.
+
 Receiver.apply plugs into control_client.Authority. Its inner command signature
 identifies an active stored member independently of the transport credential.
 Protected use records acceptance at this receiver; it is not a landing permit and
@@ -49,6 +57,9 @@ CM = organ('control_membership')
 AC = CM.AC
 CL = organ('claim')
 OPERATIONS = ('claim', 'renew', 'release', 'use', 'inspect')
+# The transitions that hand work out (VELDO-0169): each requires a project-check receipt.
+HANDOUTS = ('claim', 'resume', 'unpark')
+PROJECT_CHECK_SCHEMA = 'veldo.project_check/v1'
 # Rereads of one command whose pinned versions kept moving; past this the conflict is the answer.
 ATTEMPTS = 16
 
@@ -91,8 +102,37 @@ def ownership(data, unit, backlog, action='inspect'):
     return 'owned' if live == 'live' else 'ownership_uncertain'
 
 
+def project_check_receipt(unit, project, read):
+    """VELDO-0169: the evidence that the Gate's project check found no problem for `unit` of `project`,
+    bound to the {entity id: version} it was decided from. Only control_eligibility.Gate.project_problems
+    makes one, and only when it refuses nothing."""
+    return {'schema': PROJECT_CHECK_SCHEMA, 'unit': unit, 'project': project, 'read': dict(read)}
+
+
+def project_check_problem(receipt, unit, before):
+    """VELDO-0169: None when `receipt` is the Gate's project check of `unit` and names exactly the
+    versions this store transaction pinned and read in `before`, else the refusal: a handout without a
+    receipt is missing_evidence:project_check; one for another unit or project, or for a version this
+    transaction does not hold, is stale_subject:project_check."""
+    if (not isinstance(receipt, dict) or receipt.get('schema') != PROJECT_CHECK_SCHEMA
+            or not isinstance(receipt.get('read'), dict)):
+        return 'missing_evidence:project_check'
+    project = ((before.get(unit) or {}).get('data') or {}).get('project')
+    read = receipt['read']
+    if (receipt.get('unit') != unit or unit not in before or receipt.get('project') != project
+            or 'project:' + str(project) not in read
+            or any(eid not in before or before[eid].get('version') != version for eid, version in read.items())):
+        return 'stale_subject:project_check'
+    return None
+
+
 def transition(params, before):
     unit, backlog, cid = params['unit_id'], params['backlog_item_uuid'], params['claim_id']
+    if params['action'] in HANDOUTS:
+        # VELDO-0169: nothing hands work out without the Gate's project check, read in this transaction.
+        problem = project_check_problem(params.get('project_check'), unit, before)
+        if problem is not None:
+            raise S.StoreRefused(problem, 'a handout carries the Gate\'s project check of this unit, read in this transaction')
     u, b = before[unit]['data'], before[backlog]['data']
     current = before.get(cid, {}).get('data', {})
     status = ownership(current, u, b, params['action'])
@@ -162,8 +202,11 @@ class Receiver:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self.gate = None
-        S.COMMAND_REGISTRY['claim_operation'] = {
-            'transition': transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
+        # On this receiver's own connection: the claim transitions run inside the store transaction with
+        # the Gate over that same connection, so a handout's project check is read in the transaction
+        # that writes it (VELDO-0169).
+        conn.command_registry['claim_operation'] = {
+            'transaction_transition': self._in_transaction, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 
     def apply(self, packet):
         command = packet.get('command', {}) if isinstance(packet, dict) else {}
@@ -202,6 +245,19 @@ class Receiver:
                                 repository_uuid=self.ids['repository_uuid'],
                                 authority_generation=self.authority_generation)
         return self.gate.project_problems(unit)
+
+    def _in_transaction(self, conn, params, before):
+        """claim_operation inside its store transaction. A handout asks the Gate's project check again
+        on the transaction's own connection and hands the claim organ that receipt; renew, release and
+        use hand nothing out and go to the organ as they are."""
+        if conn is not self.conn or not conn.in_transaction:
+            raise S.StoreRefused('wrong_connection', 'the claim is written in this receiver\'s store transaction')
+        if params['action'] in HANDOUTS:
+            refusals, _read, receipt = self._project_problems(params['unit_id'])
+            if refusals:
+                raise S.StoreRefused(refusals[0], 'the unit\'s project takes no new assignment')
+            return transition(dict(params, project_check=receipt), before)
+        return transition(params, before)
 
     def _pins_moved(self, pinned):
         entities = S.materialized_state(self.conn)['entities']
@@ -254,15 +310,20 @@ class Receiver:
             # VELDO-0076: a paused, canceled or completed project takes no new assignment. The check is the
             # one every station makes; the project and owner records it read are pinned with the rest, so
             # a pause committed before this claim refuses it by name, never after it.
-            refusals, read = self._project_problems(unit)
+            refusals, read, _receipt = self._project_problems(unit)
             versions.update(read)
             observation.update(project=u['data'].get('project'), accepted_versions=dict(versions))
             if refusals:
                 raise S.StoreRefused(refusals[0], 'the unit\'s project takes no new assignment')
+            params = dict(action='claim', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
+                          holder=principal, generation=command['generation'], capabilities=command['capabilities'],
+                          repository_uuid=self.ids['repository_uuid'])
+        else:
+            # Renew, release and use of a claim already held hand nothing out.
+            params = dict(action=command['operation'], unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
+                          holder=principal, generation=command['generation'], capabilities=command['capabilities'],
+                          repository_uuid=self.ids['repository_uuid'])
         observation['accepted_versions'] = versions
-        params = dict(action=command['operation'], unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
-                      holder=principal, generation=command['generation'], capabilities=command['capabilities'],
-                      repository_uuid=self.ids['repository_uuid'])
         stored = dict(command_id=command['command_id'], principal=principal, operation='claim_operation',
                       parameters=params, expected_versions=versions, artifact_digests=[], nonce=command['nonce'])
         result = S.execute(self.conn, stored, self.journal_signer, self.sign, self.authority_generation)

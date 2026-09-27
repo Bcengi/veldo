@@ -298,6 +298,17 @@ def _v128_checks(base):
         CLM = A.claims
         A.conn.command_registry['claim_operation'] = {'transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
+        V169 = _v128_load('v0128_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
+        # VELDO-0169: the claim organ hands out a unit only on the Gate's project check, so the project the
+        # units name is activated by its owner, as a real factory's is.
+        PJ = _v128_load('v128_projects', organs / 'control_project.py')
+        PJ.Projects(A.S, A.CM, A.conn, ids, 'authority', A.journal_sign, stop=lambda dispatch, reason: dict(outcome='stopped')).apply(
+            A.signed_command('owner', dict(ids, operation='activate', principal='owner', command_id=A.next_id('project'),
+                                           nonce=A.next_id('project-nonce'), project='project-a', owner='owner',
+                                           charter=dict(purpose='Report the factory', exclusions=['billing']),
+                                           execution_repository=repo, authority_policy={'grooming': ['project_owner']},
+                                           coordination_budget=dict(capacity=4, invocations=40, wall_seconds=3600,
+                                                                    owner_minutes=120))))
         proofs = CP.ProofService(A.S, A.conn, domain=domain, repository=repo, repo=str(work), principal='proof-service',
                                  signer='authority', sign=A.journal_sign)
         A.fixture(DSP.review_policy_id(repo), 'review_policy', {
@@ -318,12 +329,12 @@ def _v128_checks(base):
         def claim_op(action, uid, generation=0):
             cid = CLM.claim_id(repo, uid)
             ids_ = [uid, 'backlog:' + uid, cid]
-            A.S.execute(A.conn, dict(command_id=A.next_id('claim'), principal='builder', operation='claim_operation',
+            A.S.execute(A.conn, V169.receipted(CLM, A.S, A.conn, domain, dict(command_id=A.next_id('claim'), principal='builder', operation='claim_operation',
                                      nonce=A.next_id('claim-nonce'), artifact_digests=[],
                                      expected_versions={i: (entity(i) or {}).get('version', 0) for i in ids_},
                                      parameters=dict(action=action, unit_id=uid, backlog_item_uuid='backlog:' + uid,
                                                      claim_id=cid, holder='builder', generation=generation,
-                                                     capabilities=[], repository_uuid=repo)), 'authority', A.journal_sign, 1)
+                                                     capabilities=[], repository_uuid=repo))), 'authority', A.journal_sign, 1)
             return (entity(cid) or {}).get('data', {}).get('generation')
 
         pids = [41280]

@@ -564,18 +564,31 @@ class Inbox:
                                  repository_uuid=self.ids['repository_uuid'], parked_on=aid)
         return cid
 
-    def _check_project(self, unit, entities, observation):
-        """Use the Gate's one rule and keep its exact read versions for the commit and refusal."""
+    def _project_gate(self):
         if self.gate is None:
             eligibility = self.claims.organ('control_eligibility')
             self.gate = eligibility.Gate(self.store, self.conn, domain_uuid=self.ids['domain_uuid'],
                                          repository_uuid=self.ids['repository_uuid'],
                                          authority_generation=self.authority_generation)
-        refusals, read = self.gate.project_problems(unit)
+        return self.gate
+
+    def _check_project(self, unit, entities, observation):
+        """Use the Gate's one rule and keep its exact read versions for the commit and refusal."""
+        refusals, read, _receipt = self._project_gate().project_problems(unit)
         observation.update(unit_id=unit, project=entities[unit]['data'].get('project'),
                            project_versions=read, accepted_versions=dict(read))
         if refusals:
             raise Refused(refusals[0], 'the project takes no new work')
+
+    def _project_receipt(self, unit):
+        """VELDO-0169: inside the store transaction that hands `unit` out, the Gate's project check read
+        again on that transaction's connection; its receipt is what the claim organ requires."""
+        if not self.conn.in_transaction:
+            raise self.store.StoreRefused('wrong_connection', 'a handout is checked inside its store transaction')
+        refusals, _read, receipt = self._project_gate().project_problems(unit)
+        if refusals:
+            raise self.store.StoreRefused(refusals[0], 'the project takes no new work')
+        return receipt
 
     def _resume(self, state, entities, current, principal, now, command, params, observation):
         """The inputs a resume binds: the claim principal's eligibility, every input admission
@@ -889,7 +902,8 @@ class Inbox:
         if op == 'resume':
             if data['request_version'] != params['request_version'] or data['state'] != 'SUBMITTED':
                 raise refused('stale_subject', 'the assignment no longer admits at this request version')
-            return self.claims.transition(params['resume'], before)
+            receipt = self._project_receipt(params['resume']['unit_id'])
+            return self.claims.transition(dict(params['resume'], project_check=receipt), before)
         if op == 'ask':
             if data['request_version'] != params['request_version']:
                 raise refused('stale_subject', 'the assignment changed while the question was opened')
@@ -980,7 +994,8 @@ class Inbox:
                     raise refused('transition_refused', why)
                 changes[eid] = {'kind': kind, 'data': dict(current, state='CANCELED', disposition=mark)}
         if 'unpark' in plan:
-            changes.update(self.claims.transition(plan['unpark'], before))
+            receipt = self._project_receipt(plan['unpark']['unit_id'])
+            changes.update(self.claims.transition(dict(plan['unpark'], project_check=receipt), before))
         return changes
 
     # -- readers ---------------------------------------------------------------------------

@@ -153,6 +153,7 @@ def _v155_suite():
         member('owner', 'person', ['project_owner'])
         writer.command_registry['claim_operation'] = {'transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
+        V169 = load('v0155_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
 
         # The owner's Claude Code accounts: a plain one, one configured with a subscription token, one whose
         # token file anybody can read, one per Anthropic profile row, and one whose login a fixture scripts.
@@ -185,13 +186,13 @@ def _v155_suite():
                                    now=time.time())
             cid = CLM.claim_id(REPOSITORY, unit)
             serial[0] += 1
-            S.execute(writer, dict(command_id='claim-%d' % serial[0], principal=HOLDER, operation='claim_operation',
+            S.execute(writer, V169.receipted(CLM, S, writer, DOMAIN, dict(command_id='claim-%d' % serial[0], principal=HOLDER, operation='claim_operation',
                                    nonce='claim-%d' % serial[0], artifact_digests=[],
                                    expected_versions={unit: entity(unit)['version'],
                                                       'backlog:' + unit: entity('backlog:' + unit)['version'], cid: 0},
                                    parameters=dict(action='claim', unit_id=unit, backlog_item_uuid='backlog:' + unit,
                                                    claim_id=cid, holder=HOLDER, generation=0, capabilities=[],
-                                                   repository_uuid=REPOSITORY)), HOLDER, sign, 1)
+                                                   repository_uuid=REPOSITORY))), HOLDER, sign, 1)
             return unit
 
         # THE PLANTED ITEMS. In the source repository, so every clone carries them: project and local settings

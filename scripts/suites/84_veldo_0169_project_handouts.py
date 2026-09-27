@@ -21,6 +21,7 @@ def _v169_suite():
         'control_assignment.py': ROOT / ".veldo" / "control_assignment.py",
         'control_claim.py': ROOT / ".veldo" / "control_claim.py",
         'control_andon.py': ROOT / ".veldo" / "control_andon.py",
+        'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
     }
     rows = {}
 
@@ -33,105 +34,97 @@ def _v169_suite():
         spec.loader.exec_module(mod)
         return mod
 
-    def census():
-        """Find calls and registrations by AST, then classify each discovered site.
+    CEN = load('v169_census', ROOT / 'scripts' / 'suites' / 'support' / 'v169_census.py')
 
-        Discovery scans every engine module. Classification is deliberately closed: a new
-        call site has to acquire a reason and a checked entry path, even in a known method.
-        The call graph follows this class's helpers to Gate.project_problems.
-        """
-        found, functions, failures = {}, {}, []
+    def engine_sources():
+        """Every engine module's source; a mutation replaces its installed copy, read in its place."""
+        sources = {}
         for path in sorted((ROOT / 'engine' / '.veldo').glob('*.py')):
-            # Engine is the census source; a mutation replaces its corresponding installed asset.
             replacement = production.get(path.name)
-            source = (replacement if replacement is not None and replacement != ROOT / '.veldo' / path.name
-                      else path).read_text()
-            tree = ast.parse(source)
-            parents = {child: node for node in ast.walk(tree) for child in ast.iter_child_nodes(node)}
-            def context(node):
-                names = []
-                while node in parents:
-                    node = parents[node]
-                    if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
-                        names.append(node.name)
-                return '.'.join(reversed(names))
-            aliases = {'claims', 'CLM', 'control_claim'}
-            for node in ast.walk(tree):
-                if isinstance(node, ast.Import):
-                    aliases.update(a.asname or a.name for a in node.names if a.name == 'control_claim')
-                if isinstance(node, ast.ImportFrom) and node.module == 'control_claim':
-                    aliases.update(a.asname or a.name for a in node.names if a.name == 'transition')
-                if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
-                    if any(isinstance(a, ast.Constant) and a.value == 'control_claim' for a in node.value.args):
-                        aliases.update(ast.unparse(t) for t in node.targets)
-            for node in ast.walk(tree):
-                owner = context(node)
-                if isinstance(node, ast.FunctionDef):
-                    functions[(path.stem, owner + '.' + node.name if owner else node.name)] = node
-                target = None
-                if isinstance(node, ast.Call):
-                    call = ast.unparse(node.func)
-                    if (call.endswith('.transition') and call.rsplit('.', 2)[-2] in aliases
-                            or isinstance(node.func, ast.Name) and node.func.id in aliases - {'claims', 'CLM', 'control_claim'}):
-                        target = 'claim:' + ast.unparse(node.args[0])
-                if isinstance(node, ast.Dict):
-                    pairs = {k.value: v for k, v in zip(node.keys, node.values) if isinstance(k, ast.Constant)}
-                    if 'transition' in pairs and ast.unparse(pairs['transition']) == 'transition' and path.stem == 'control_claim':
-                        target = 'claim:registered'
-                    kind = pairs.get('kind')
-                    if kind is not None and (ast.unparse(kind) == 'CONTRACT_KIND' and path.stem == 'control_andon'
-                                             or isinstance(kind, ast.Constant) and kind.value == 'andon_station_contract'):
-                        target = 'station:issued'
-                if target:
-                    key = (path.stem, owner, target)
-                    if key in found:
-                        failures.append('duplicate writer ' + repr(key))
-                    found[key] = node.lineno
-        classes = {
-            ('control_claim', 'Receiver.__init__', 'claim:registered'):
-                ('handout', 'Receiver._apply', 'claim; renew, release and use hand out nothing'),
-            ('control_assignment', 'Inbox._transition', "claim:params['release']"):
-                ('nothing', None, 'release of a held claim to park it'),
-            ('control_assignment', 'Inbox._transition', "claim:params['resume']"):
-                ('handout', 'Inbox._resume', 'fresh claim on parked work'),
-            ('control_assignment', 'Inbox._dispose_changes', "claim:plan['unpark']"):
-                ('handout', 'Inbox._dispose', 'backlog outcome clears the park'),
-            ('control_andon', 'Andon._transition', 'station:issued'):
-                ('handout', 'Andon.resume', 'fresh station contract'),
-        }
-        # Renewal's argument is discovered, not reproduced as a source-text constant.
-        for key in found:
-            if key[:2] == ('control_heartbeat', 'Renewals._transition') and key[2].startswith("claim:dict(action='renew',"):
-                classes[key] = ('nothing', None, 'renewal of the claim already held')
-        def checked(module, entry, seen=()):
-            if entry in seen:
-                return False
-            fn = functions.get((module, entry))
-            if fn is None:
-                return False
-            for call in (n for n in ast.walk(fn) if isinstance(n, ast.Call)):
-                name = ast.unparse(call.func)
-                if name.endswith('.project_problems'):
-                    return True
-                if name.startswith('self.') and checked(module, entry.rsplit('.', 1)[0] + '.' + name[5:], seen + (entry,)):
-                    return True
-            return False
-        records = []
-        for key, line in found.items():
-            classification = classes.get(key)
-            if classification is None:
-                failures.append('unclassified writer ' + repr(key))
-                continue
-            kind, entry, reason = classification
-            if kind == 'handout' and not checked(key[0], entry):
-                failures.append('unchecked writer ' + key[0] + '.' + entry)
-            records.append(dict(module=key[0], function=key[1], site=key[2], line=line,
-                                classification=kind, entry=entry, reason=reason))
-        for key in classes.keys() - found.keys():
-            failures.append('classified writer disappeared ' + repr(key))
+            use = replacement if replacement is not None and replacement != ROOT / '.veldo' / path.name else path
+            sources[path.stem] = use.read_text()
+        return sources
+
+    def planted(sources):
+        """The reviewer's planted writers (rv169a) and more of the same shape, each over these sources."""
+        a, n = sources['control_assignment'], sources['control_andon']
+        start = a.find('    def _resume(self, state, entities, current, principal, now, command, params, observation):')
+        end = a.find('\n    def ', start + 10)
+        original = a[start:end]
+        again = original.replace('def _resume(', 'def _resume_again(').replace(
+            '        self._check_project(unit, entities, observation)\n', '')
+
+        def edit(text, old, new):
+            if start < 0 or text.count(old) != 1 or '_check_project' in again:
+                raise LookupError(old[:60])
+            return text.replace(old, new)
+        wired = edit(edit(a, "            elif op == 'resume':\n",
+                          "            elif op == 'resume_again':\n"
+                          "                touched.update(self._resume_again(state, entities, current, principal, now, command, params, observation))\n"
+                          "            elif op == 'resume':\n"), original, original + again)
+        fast = lambda body: {'control_fastlane': 'class Fast:\n    def __init__(self, inbox):\n        self.inbox = inbox\n' + body}
+        yield 'resume-again-shared-writer', 'Inbox._resume_again', {'control_assignment': wired}
+        yield 'resume-again-own-writer', 'Inbox._transition', {'control_assignment': edit(
+            wired, "        if op == 'resume':\n", "        if op == 'resume_again':\n"
+            "            return self.claims.transition(params['resume'], before)\n        if op == 'resume':\n")}
+        yield 'module-local-alias', 'Fast.take', fast(
+            '    def take(self, params, before):\n        organ = self.inbox.claims\n        return organ.transition(params, before)\n')
+        yield 'renamed-attribute', 'Fast.take', fast(
+            '    def take(self, params, before):\n        return self.inbox.claim_organ.transition(params, before)\n')
+        yield 'getattr-call', 'Fast.take', fast(
+            "    def take(self, params, before):\n        return getattr(self.inbox.claims, 'transition')(params, before)\n")
+        yield 'plain-attribute', 'Fast.take', fast(
+            '    def take(self, params, before):\n        return self.inbox.claims.transition(params, before)\n')
+        yield 'bound-method-alias', 'Fast.take', fast(
+            '    def take(self, params, before):\n        write = self.inbox.claims.transition\n        return write(params, before)\n')
+        yield 'dynamic-getattr', 'Fast.take', fast(
+            '    def take(self, name, params, before):\n        return getattr(self.inbox.claims, name)(params, before)\n')
+        yield 'bare-registration', 'Fast.attach', fast(
+            "    def attach(self, conn):\n        conn.command_registry['fast'] = {'transition': self.inbox.claims.transition}\n")
+        yield 'minted-receipt', 'Fast.take', fast(
+            "    def take(self, unit):\n        return self.inbox.claims.project_check_receipt(unit, 'p', {})\n")
+        yield 'andon-second-resume', 'Andon.resume_quick', {'control_andon': edit(
+            n, '    def run(self):\n',
+            "    def resume_quick(self, sid, contract, permission, evidence, expected, command_id):\n"
+            "        self._commit(dict(action='resume', stop_id=sid, unit_id=contract['unit'], contract=contract,\n"
+            "                          permission=permission, evidence=evidence), expected, self.journal_signer, command_id, command_id)\n\n"
+            '    def run(self):\n')}
+        yield 'contract-without-writer', 'Andon.quick_contract', {'control_andon': edit(
+            n, '    def run(self):\n',
+            "    def quick_contract(self, contract):\n"
+            "        return {contract['contract_id']: {'kind': CONTRACT_KIND, 'data': contract}}\n\n"
+            '    def run(self):\n')}
+        yield 'check-in-a-branch', 'Inbox._transition', {'control_assignment': edit(
+            a, "            receipt = self._project_receipt(params['resume']['unit_id'])\n",
+            "            receipt = None\n            if data.get('urgent'):\n"
+            "                receipt = self._project_receipt(params['resume']['unit_id'])\n")}
+
+    def census():
+        sources = engine_sources()
+        records, failures = CEN.census(sources)
         print('  VELDO-0169 census: ' + json.dumps(dict(writers=records, failures=failures,
               counts=dict(collections.Counter(r['classification'] for r in records))), sort_keys=True))
-        check('census/writers', '; '.join(failures) or 'all discovered writers classified and checked', not failures)
+        check('census/writers', '; '.join(failures) or 'every discovered writer classified and checked', not failures)
+        # What AC1 says the census finds today, so a census that finds nothing cannot pass.
+        def found(module, classification, action=None, writer=CEN.ORGAN):
+            return any(r['module'] == module and r['classification'] == classification and r['writer'] == writer
+                       and (action is None or action in r.get('actions', ())) for r in records)
+        for module, classification, action, writer in (
+                ('control_claim', 'handout', 'claim', CEN.ORGAN), ('control_assignment', 'handout', 'resume', CEN.ORGAN),
+                ('control_assignment', 'handout', 'unpark', CEN.ORGAN), ('control_andon', 'handout', None, CEN.CONSTRUCTOR),
+                ('control_assignment', 'nothing', 'park', CEN.ORGAN), ('control_claim', 'nothing', 'release', CEN.ORGAN),
+                ('control_heartbeat', 'nothing', 'renew', CEN.ORGAN)):
+            check('census/writers', 'finds %s %s %s' % (module, classification, action or writer),
+                  found(module, classification, action, writer))
+        try:
+            variants = list(planted(sources))
+        except LookupError as missing:
+            check('census/planted', 'planted writers built on these sources (%s)' % missing, False)
+            variants = []
+        for name, function, change in variants:
+            _, planted_failures = CEN.census(dict(sources, **change))
+            check('census/planted', name + ' refused at ' + function,
+                  any(('.' + function + ':') in f for f in planted_failures))
 
     census()
     with tempfile.TemporaryDirectory(prefix='v169-', dir='/dev/shm') as directory:
