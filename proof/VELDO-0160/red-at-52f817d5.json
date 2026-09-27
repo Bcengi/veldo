@@ -30,7 +30,7 @@
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 7:09am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 8:09am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
@@ -156,7 +156,7 @@
   "VELDO-0160 decision/subagent-calls detail: a depth-2 agent whose reply was one hidden MCP write, named as its last tool: the shortfalls name [('t2', 1)] [no call-by-call decision]",
   "VELDO-0160 decision/no-write-server-reruns detail: the checker's forked skill, only read-only tools configured: decided re-run whatever the stream shows [None, None, no decision module]",
   "VELDO-0160 decision/no-write-server-reruns detail: the checker's forked skill as JSON text, only read-only tools configured: decided re-run whatever the stream shows [None, None, no decision module]",
-  "VELDO-0160 decision/no-write-server-reruns detail: a depth-2 agent's hidden MCP write, no MCP server configured: decided re-run whatever the stream shows [None, None, no decision module]",
+  "VELDO-0160 decision/no-write-server-reruns detail: a depth-1 agent whose calls are all shown and allowlisted, no MCP server configured: decided re-run whatever the stream shows [None, None, no decision module]",
   "VELDO-0160 decision/no-write-server-reruns detail: exec's own sub-agent call, no MCP server configured: decided re-run whatever the stream shows [None, None, no decision module]",
   "VELDO-0160 decision/no-write-server-reruns detail: a record with a gap in its sequence is still refused by name [no decision module]",
   "VELDO-0160 decision/no-write-server-reruns detail: a server whose tools are neither all nor a list is refused by name [no decision module]",
@@ -168,7 +168,7 @@
   "VELDO-0160 decision/nested-work-asks detail: the checker's forked skill (as JSON text), a write-capable server configured: decided ask, naming each construct line [None, None, no decision module]",
   "VELDO-0160 decision/nested-work-asks detail: the call-by-call rules alone see no call in it [None, no call-by-call decision]",
   "VELDO-0160 decision/nested-work-asks detail: a normal run whose Agent's calls are all shown and read-only, a write-capable server configured: decided ask, naming the Agent line [None, no decision module]",
-  "VELDO-0160 decision/nested-work-asks detail: a depth-2 agent's hidden MCP write: decided ask, naming the constructs beside the calls the call-by-call rules name [no decision module]",
+  "VELDO-0160 decision/nested-work-asks detail: a depth-2 agent's hidden MCP write: decided ask by rule A first, naming the task's shortfall (decision/outward-tool-asks) [None, no decision module]",
   "VELDO-0160 decision/nested-work-asks detail: codex, exec's own sub-agent call: decided ask, naming it as nested work and as an unknown call [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: claude_code, an Agent tool call (agent): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: claude_code, a Task tool call (its old name) (agent): decided ask, naming exactly that construct [no decision module]",
@@ -310,6 +310,9 @@
   "VELDO-0160 decision/outward-tool-asks detail: codex, a sub-agent call whose collab tool exec's enum does not list, no MCP server configured: decided ask, naming that line [None, None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: codex, a sub-agent call whose collab tool exec's enum does not list, only read-only tools configured: decided ask, naming that line [None, None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: codex, a sub-agent call whose collab tool exec's enum does not list, a write-capable server configured: decided ask, naming that line [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: codex, a sub-agent call naming the core's tool wait_agent, which exec's enum does not list, no MCP server configured: decided ask, naming that line [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: codex, a sub-agent call naming the core's tool wait_agent, which exec's enum does not list, only read-only tools configured: decided ask, naming that line [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: codex, a sub-agent call naming the core's tool wait_agent, which exec's enum does not list, a write-capable server configured: decided ask, naming that line [None, None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: claude_code, a RemoteTrigger run (probe7), no MCP server: decided ask by the remote_agent rule, its line named once [None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: claude_code: the allowlist the reader holds is the binary's own, the lead's tools and their aliases, with no LS tool in this build [['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'KillBash', 'KillShell', 'Monitor', 'NotebookEdit', 'REPL', 'Read', 'RunWorkflow', 'Skill', 'Task', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']]",
   "VELDO-0160 decision/outward-tool-asks detail: claude_code, the allowlisted Agent, no MCP server configured: re-run [None, no decision module]",
@@ -361,10 +364,29 @@
   "VELDO-0160 decision/outward-tool-asks detail: claude_code, a sub-agent's last tool Agent, judged by the call the sub-agent's message shows, no MCP server: re-run [None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: claude_code, a workflow's task whose progress gives its current agent's label as its last tool, no MCP server: re-run [None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: claude_code, an Agent with isolation worktree and a built-in agent, no MCP server: re-run [None, no decision module]",
-  "VELDO-0160 decision/outward-tool-asks detail: codex: the known in-run kinds the reader holds are exec's own items and collab tools [['agent_message', 'collab_tool_call', 'command_execution', 'error', 'file_change', 'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'], ['spawn_agent', 'send_input', 'close_agent']]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a depth-2 Explore agent, 2 calls unshown, its last tool Read (probe8), no MCP server configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a depth-2 Explore agent, 2 calls unshown, its last tool Read (probe8), only read-only tools configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a depth-2 Explore agent, 2 calls unshown, its last tool Read (probe8), a write-capable server configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a Workflow, 3 calls unshown, its agent's last tool Read (probe10), no MCP server configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a Workflow, 3 calls unshown, its agent's last tool Read (probe10), only read-only tools configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a Workflow, 3 calls unshown, its agent's last tool Read (probe10), a write-capable server configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a task whose count cannot be read, no MCP server configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a task whose count cannot be read, only read-only tools configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a task whose count cannot be read, a write-capable server configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a task whose count goes down, no MCP server configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a task whose count goes down, only read-only tools configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a task whose count goes down, a write-capable server configured: decided ask, naming the tally [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a sub-agent whose calls are all shown and allowlisted, no MCP server configured: re-run [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a sub-agent whose calls are all shown and allowlisted, only read-only tools configured: re-run [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a normal run whose Explore agent's one call is shown (probe8), no MCP server configured: re-run [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: claude_code, a normal run whose Explore agent's one call is shown (probe8), only read-only tools configured: re-run [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: codex, a normal run that spawns, waits on and closes an agent, no MCP server configured: re-run [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: codex, a normal run that spawns, waits on and closes an agent, only read-only tools configured: re-run [None, None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: codex: the known in-run kinds the reader holds are exec's own items and collab tools [['agent_message', 'collab_tool_call', 'command_execution', 'error', 'file_change', 'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'], ['spawn_agent', 'send_input', 'wait', 'close_agent']]",
   "VELDO-0160 decision/outward-tool-asks detail: codex, exec's agent_message, only read-only tools configured: re-run [None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: codex, exec's collab_tool_call spawn_agent, only read-only tools configured: re-run [None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: codex, exec's collab_tool_call send_input, only read-only tools configured: re-run [None, no decision module]",
+  "VELDO-0160 decision/outward-tool-asks detail: codex, exec's collab_tool_call wait, only read-only tools configured: re-run [None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: codex, exec's collab_tool_call close_agent, only read-only tools configured: re-run [None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: codex, exec's command_execution, only read-only tools configured: re-run [None, no decision module]",
   "VELDO-0160 decision/outward-tool-asks detail: codex, exec's error, only read-only tools configured: re-run [None, no decision module]",
@@ -436,7 +458,7 @@
  "modules": {
   ".veldo/control_account_limit.py": {
    "at_commit": null,
-   "now": "d459f5ff9b3cfe80a52990733914a79e7ed988a2d500d62214a345f6426c136a"
+   "now": "f51fc764e7a3710e5a60a2e14212b234f0f36662447026480dd06ee7104b2f55"
   },
   ".veldo/control_account_pool.py": {
    "at_commit": null,
@@ -452,7 +474,7 @@
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
-   "now": "f1c140c8ea0323d8dff0592193bc48512e5b7207e11597a31ca1e0c6cc50bb1c"
+   "now": "c0d82741b4b40a5141d87c1ee0f28a05a7bc7e4f7e9bf190f54340539492273a"
   },
   ".veldo/control_launch.py": {
    "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
@@ -607,7 +629,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 33.827,
+ "seconds": 34.061,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"

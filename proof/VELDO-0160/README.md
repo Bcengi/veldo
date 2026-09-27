@@ -100,8 +100,25 @@ tool, `tool:unreadable`, `block:<kind>` for a tool-call block other than `tool_u
 remote-tools gate is compiled off), `task_type:<type>` for a task type outside the allowlisted tools' (`remote_agent`
 among them) and `workflow_progress:isolation:remote`. A workflow task's last tool is its current agent's label and is
 not read as a tool. Codex: `item:<type>` for an item exec's own items do not list and
-`item:collab_tool_call:<tool>` for a collab tool exec's CollabTool enum does not list (spawn_agent, send_input,
+`item:collab_tool_call:<tool>` for a collab tool exec's CollabTool enum does not list (spawn_agent, send_input, wait,
 close_agent). A line the remote_agent rule names is not named again.
+
+**Rule A reads each task's tally.** The calls a depth-2 agent or a workflow agent makes are never shown, so no
+allowlist can show them staying inside the run; before this only the call-by-call rules read each task's count, and
+with no write-capable server rule 1 decided re-run first (the checker's probe8 and probe10). `untallied(record,
+provider)` runs the engine module's `Tasks` over the record: a shortfall (form `task_tool_uses`, with its `task` and
+`unshown`, at the line that reported the count) or a count that cannot be read or goes down (form
+`task_tool_uses:unreadable`) makes the decision `ask` under every configuration, reason and basis `outward_tool`. A
+sub-agent whose calls are all shown and allowlisted still re-runs. Codex reports no such count (`Tasks` is None).
+
+**Codex's `wait` is exec's own.** exec's CollabTool enum has four variants; `wait` is missing from the variant literal
+run only because the compiler shares its four-byte literal. `extract_formats.py` reads the enum from its serializer
+in the 0.154.0 bytes: the one switch (lea rcx to its jump table, movsxd, add, jmp rax) whose cases load the run's own
+literals, each case's literal and length (lea rdx, mov ecx), which gives spawn_agent, send_input, wait, close_agent
+(the core's own nine-variant collab enum is another switch, loading its own copies). The core's wait tool waits on
+agent ids from spawn_agent, or on a mailbox update from a live agent of the current root thread tree (its
+descriptions, pinned once each), so a wait stays in the run and is allowlisted. `wait_agent` is the core's tool name;
+exec writes it as `wait` and never names it in a collab_tool_call, so it still asks.
 
 **A call that contradicts the configuration asks next (the lead's decision).** Before rule 1, `decide` reads
 the record's calls and `unconfigured(shown, servers, marks)` names each MCP call to a server the configuration does
@@ -551,6 +568,11 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | outward-workflow-label-read | control_engine_claude.py | `decision/outward-tool-asks` |
 | outward-codex-unknown-item-allowed | control_engine_codex.py | `decision/outward-tool-asks` |
 | outward-codex-collab-tool-unchecked | control_engine_codex.py | `decision/outward-tool-asks` |
+| outward-tally-unconsulted (the shortfall not consulted in rule A, declared) | control_account_limit.py | `decision/outward-tool-asks` |
+| outward-tally-unreadable-dropped | control_account_limit.py | `decision/outward-tool-asks` |
+| outward-tally-shortfall-dropped | control_account_limit.py | `decision/outward-tool-asks` |
+| outward-codex-wait-unlisted | control_engine_codex.py | `decision/outward-tool-asks` |
+| outward-codex-wait-agent-allowed | control_engine_codex.py | `decision/outward-tool-asks` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
 `limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 127 rejected after rule A (113 after the remote-agent rule, 103 after the unconfigured-call rule, 101 after the structural rule, 86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
