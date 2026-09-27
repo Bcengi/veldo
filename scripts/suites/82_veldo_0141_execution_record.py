@@ -6,8 +6,8 @@ Run: python3 scripts/selftest.py --suite 82_veldo_0141_execution_record
 Only shared ROOT and expect are consumed. One temporary tree in the owner's runtime directory holds the installed
 .veldo copy the suite loads AND the launch receiver, wrapper and clone entrance execute, so a registered mutation of
 a production module reaches all of them. Real: a SQLite control store with OpenSSH journal signatures, memberships
-enrolled through VELDO-0025's signed commands (the owner's bootstrap, the runner, the launch receiver and a member
-of another project), the owner's account records over profiles the local helper prepares, VELDO-0036 reservations,
+enrolled through VELDO-0025's signed commands (the owner's bootstrap and a member of another project; the runner and
+the launch receiver hold the reservation service role as VELDO-0062's suites write it), the owner's account records over profiles the local helper prepares, VELDO-0036 reservations,
 VELDO-0052's Gate, VELDO-0031 claims, a Git source bound to the store, VELDO-0042 clones confined with Landlock, the
 VELDO-0039 Runner and receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's
 systemd user manager in a slice of the run's own, and the VELDO-0130 API: passkeys registered and signed in through
@@ -147,7 +147,7 @@ def _v141_suite():
         people = base / 'people'
         people.mkdir(mode=0o700)
         public = {}
-        for who in ('owner', 'outsider', 'runner', 'launch-receiver'):
+        for who in ('owner', 'outsider'):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v141-' + who, '-f', str(people / who)],
                            check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
             public[who] = ' '.join((people / (who + '.pub')).read_text().split()[:2])
@@ -181,8 +181,8 @@ def _v141_suite():
                                    artifact_digests=[], expected_versions={identity: current['version'] if current else 0},
                                    parameters=dict(entity_id=identity, kind=kind, data=data)), 'setup', sign, 1)
 
-        # Membership through VELDO-0025's signed commands: the owner's bootstrap (steward and project owner), then
-        # the runner and the launch receiver (services of the repository) and a person of another project.
+        # Membership through VELDO-0025's signed commands: the owner's bootstrap (steward and project owner), then a
+        # person of another project.
         def envelope(command, principal):
             now = CM.authority_state(S, writer)
             return dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal=principal,
@@ -202,12 +202,14 @@ def _v141_suite():
         admin('owner', 'enroll_principal', {'principal': 'owner', 'principal_type': 'person',
                                             'roles': ['membership_steward', 'project_owner'], 'public_key': public['owner'],
                                             'independence_group': 'owner', 'scope': '*'})
-        for who, kind, roles, scope in (('runner', 'service', ['reservation_service'], [REPOSITORY]),
-                                        ('launch-receiver', 'service', ['reservation_service'], [REPOSITORY]),
-                                        ('outsider', 'person', ['project_owner'], [OTHER])):
-            admin('owner', 'enroll_principal', {'principal': who, 'principal_type': kind, 'roles': roles,
-                                                'public_key': public[who], 'independence_group': who, 'scope': scope},
-                  enrollee=who)
+        admin('owner', 'enroll_principal', {'principal': 'outsider', 'principal_type': 'person', 'roles': ['project_owner'],
+                                            'public_key': public['outsider'], 'independence_group': 'outsider',
+                                            'scope': [OTHER]}, enrollee='outsider')
+        # The runner and the launch receiver hold the reservation service role, which no membership command grants
+        # (control_reservations.service_authority reads it from the member's record): written as VELDO-0062's suites do.
+        for who in ('runner', 'launch-receiver'):
+            put(who, 'membership', dict(principal_type='service', roles=['reservation_service'], scope=[REPOSITORY],
+                                        revoked_at=None, expires_at=None))
         writer.command_registry['claim_operation'] = {'transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -759,27 +761,40 @@ err.close()
 
         MARK = re.compile(r'\[REDACTED:([^\]]+)\]')
 
-        def justified(gap, resolved):
-            """Whether a removed span is one AC4 redacts: a resolved value, or what the scanner finds."""
-            if gap in resolved or any(json.dumps(v)[1:-1] == gap for v in resolved):
-                return True
-            if any(rx.fullmatch(gap) for rx, _ in SS.PATTERNS):
-                return True
-            return bool(SS._CANDIDATE.fullmatch(gap)) and not SS._is_digest(gap) and SS.shannon(gap) >= SS.ENTROPY_THRESHOLD
+        def _pattern(rx):
+            source = rx.pattern
+            return '(?i:%s)' % source[4:] if source.startswith('(?i)') else '(?:%s)' % source
 
-        def same(payload, emitted, resolved=()):
-            """Whether a kept payload is the emitted line with only redacted spans replaced, each justified."""
+        def same(payload, emitted, resolved=None):
+            """Whether a kept payload is the emitted line with only redacted spans replaced, each span what its marker
+            names: a value of `resolved` ({kind: value}) in a form a line carries it, a match of one of the scanner's
+            patterns, or a high-entropy span of its candidate shape (never a hex digest's)."""
+            resolved = resolved or {}
             if not isinstance(payload, str):
                 return False
             if '[REDACTED:' not in payload:
                 return payload == emitted
-            pieces = MARK.split(payload)
-            texts = pieces[0::2]
-            shape = '^' + '(.+?)'.join(re.escape(t) for t in texts) + '$'
-            found = re.match(shape, emitted, re.DOTALL)
-            return bool(found) and all(justified(g, resolved) for g in found.groups())
+            parts, shape, kinds = MARK.split(payload), '^', []
+            for at, part in enumerate(parts):
+                if at % 2 == 0:
+                    shape += re.escape(part)
+                    continue
+                kinds.append(part)
+                if part in resolved:
+                    value = resolved[part]
+                    forms = {value, json.dumps(value)[1:-1], json.dumps(value, ensure_ascii=False)[1:-1]}
+                    shape += '(' + '|'.join(re.escape(f) for f in sorted(forms, key=len, reverse=True)) + ')'
+                elif part.startswith('pattern:'):
+                    shape += '(' + '|'.join(_pattern(rx) for rx, _ in SS.PATTERNS) + ')'
+                elif part == 'entropy':
+                    shape += '(' + SS._CANDIDATE.pattern + ')'
+                else:
+                    return False
+            found = re.match(shape + '$', emitted, re.DOTALL)
+            return bool(found) and all(kind != 'entropy' or (not SS._is_digest(gap) and SS.shannon(gap) >= SS.ENTROPY_THRESHOLD)
+                                       for kind, gap in zip(kinds, found.groups()))
 
-        def judge(dispatch_id, own, resolved=()):
+        def judge(dispatch_id, own, resolved=None):
             """The complete-record check: every line the engine printed on each stream, in order, the wrapper's
             identity line first, gapless sequences in the receiver's time order; [] when it holds, else what not."""
             header, lines = kept(dispatch_id)
@@ -889,8 +904,9 @@ err.close()
                   and len(results) == 4 and any(r.get('is_error') is True for r in results)
                   and 'v141 command output' in text and 'v141 command error' in text and 'v141 failing error' in text
                   and (main_own.get('lines') or {}).get('stderr')
-                  and all(line in [x['payload'] for x in lines if x['stream'] == 'stderr']
-                          for line in main_own['lines']['stderr']))
+                  and [x['payload'] for x in lines if x['stream'] == 'stderr'] and all(
+                      same(k, w) for k, w in zip([x['payload'] for x in lines if x['stream'] == 'stderr'],
+                                                 main_own['lines']['stderr'])))
             edited = markers / ('%s.edited' % main_own.get('pid'))
             check('record/claude-complete', 'the edit the record shows was made in the clone\'s file',
                   edited.is_file() and EDIT['new'] in edited.read_text() and EDIT['old'] not in edited.read_text())
@@ -1141,7 +1157,8 @@ err.close()
             check('redaction/exact-set', 'a low-entropy word no resolver named is kept as printed: the receiver replaces '
                   'exactly the run\'s set [%s]' % [x.get('payload')[-60:] for x in controlled],
                   len(controlled) == 2 and all(control_word in x['payload'] for x in controlled))
-            judged = judge(planted_launch.dispatch_id, planted_own, resolved=(planted, token_value))
+            judged = judge(planted_launch.dispatch_id, planted_own,
+                           resolved={PLANTED_KIND: planted, 'subscription_token': token_value})
             check('redaction/exact-set', 'and every other line is the printed one with only redacted spans replaced [%s]'
                   % judged, not judged)
 
