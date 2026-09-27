@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -838 +838 @@
+-        if workflow and isinstance(ident, tuple) and ident[0] == 'task':
++        if False:  # defect: a workflow task's agent label is read as a tool

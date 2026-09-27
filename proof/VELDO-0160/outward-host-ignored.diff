@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -819 +819 @@
+-    if name in IN_RUN_HOST['tools'] and isinstance(host, str) and host.strip() not in IN_RUN_HOST['local']:
++    if False:  # defect: a call naming another machine is taken to run here

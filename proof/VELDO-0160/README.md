@@ -86,6 +86,23 @@ decision `ask` under every configuration, basis `remote_agent`, naming each such
 `construct` and `form`, beside the calls that contradict the configuration. Codex exec's item table lists no such item
 (`remote_agents` names none there). RemoteTrigger and CronCreate are also rule 2's constructs (`remote`, `cron`).
 
+**Rule A, the lead's allowlist, asks alongside it (fail closed).** `outward(record, provider)` reads every engine line
+with the engine module's `outward_tools`, over the inputs every line gives by call id (`tool_inputs`, and for a
+sub-agent's shown call its task and tool name): any call of a built-in tool that the allowlist (`IN_RUN`, read from the
+bytes into `cli-formats.json` `tool_forms` `in_run`) does not show staying inside the run makes the decision `ask`
+under every configuration, basis `outward_tool` (or `remote_agent` when that rule names a line too), naming each line
+with reason `outward_tool` and its `form`. Claude Code's allowlist: Read, Write, Edit, NotebookEdit, Glob, Grep,
+TodoWrite, ToolSearch, Bash, TaskStop (KillShell, KillBash), Monitor, WebFetch, WebSearch, Agent (Task), Skill, REPL,
+Workflow (RunWorkflow), CronCreate; the binary has no LS tool. Forms: `tool:<name>` for any other built-in or unknown
+tool, `tool:unreadable`, `block:<kind>` for a tool-call block other than `tool_use`, `tool:Agent:isolation:remote`,
+`tool:Agent:subagent_type` (a definition that is not built in may set isolation remote), `tool:Agent:input_not_given`
+(an agent a sub-agent's own sub-agent starts), `tool:<name>:_host` (another machine; inert while the binary's
+remote-tools gate is compiled off), `task_type:<type>` for a task type outside the allowlisted tools' (`remote_agent`
+among them) and `workflow_progress:isolation:remote`. A workflow task's last tool is its current agent's label and is
+not read as a tool. Codex: `item:<type>` for an item exec's own items do not list and
+`item:collab_tool_call:<tool>` for a collab tool exec's CollabTool enum does not list (spawn_agent, send_input,
+close_agent). A line the remote_agent rule names is not named again.
+
 **A call that contradicts the configuration asks next (the lead's decision).** Before rule 1, `decide` reads
 the record's calls and `unconfigured(shown, servers, marks)` names each MCP call to a server the configuration does
 not list, or to a tool of a listed server that the configuration does not give the run (its `tools` list); any
@@ -225,7 +242,7 @@ where the script says, so concurrency is observed rather than timed. No real eng
 |---|---|
 | AC1 | `pool/per-account-isolation` (declared falsifier), `pool/one-registration` (declared), `pool/concurrent` (declared) |
 | AC2 | `limit/rate-limit-result` (declared), `limit/stream-exhausted`, `limit/claude-rejected-texts` |
-| AC3 | `decision/ask` (declared), `decision/unconfigured-call-asks`, `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls`, `decision/no-write-server-reruns`, `decision/nested-work-asks`, `decision/nested-constructs`, `decision/remote-agent-asks` |
+| AC3 | `decision/ask` (declared), `decision/unconfigured-call-asks`, `decision/rerun`, `decision/unreadable-asks`, `decision/same-id-write`, `decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms`, `decision/repl-inner-call`, `decision/task-progress-tool`, `decision/frame-tool-names`, `decision/subagent-calls`, `decision/no-write-server-reruns`, `decision/nested-work-asks`, `decision/nested-constructs`, `decision/remote-agent-asks`, `decision/outward-tool-asks` |
 | AC4 | `pool/moved-off`, `pool/added-account`, `pool/one-run-while-unknown` (each declared), `pool/usage-observes`, `pool/selection-order`, `pool/until-earliest` |
 | Install | `install/assets` |
 | Fixtures | `format/claude-fake-lines`, `format/codex-fake-lines`, `format/tool-forms` |
@@ -363,11 +380,24 @@ CronCreate with `durable` left out, false, or the text "false" re-runs with only
 2 (`cron`) with a write-capable server; RemoteTrigger's schema loaded and never called re-runs; the checker's normal
 runs (an Agent whose one call is read-only under read-only tools, an Agent with no server, reads only under a
 write-capable server, an Agent under a write-capable server) keep their decisions and name no remote agent.
+`decision/outward-tool-asks` (rule A): the checker's probe7 (SendMessage to a Remote Control session, to a cloud
+session by name, to a local peer session; the Agent tool with isolation remote) and every outward form above (the
+claude.ai-writing tools Artifact, ArtifactData, ArtifactComments, Projects, ClaudeDesign, DesignSync,
+ShareOnboardingGuide, memory_write and SendFile, self_hosted_runner_spawn_local, PushNotification, a teammate
+SendMessage, the Task alias remote, a custom agent, a depth-2 agent, a remote agent's task, a remote workflow agent, a
+Bash `_host`, a server tool block, an unreadable name, an unknown future tool; for Codex a future item, the core's
+collab item, an unlisted collab tool) ask naming exactly that line under no MCP server, only read-only tools and a
+write-capable server; a RemoteTrigger run is named once, by the remote_agent rule; the allowlist the readers hold is
+the binaries' own; every allowlisted tool and alias re-runs under no server and only read-only tools, as do an Agent
+judged by its heartbeat's id, by a streamed start, by its sub-agent's shown call, with worktree isolation and a
+built-in agent, and a workflow task whose last tool is its agent's label; every Codex item and collab tool exec lists
+re-runs; the normal runs keep their decisions and name no outward tool. `format/tool-forms` also requires the
+allowlist, the Agent tool's isolation, the `_host` field and the in-run task types to equal `in_run`, the gate off.
 `install/assets`: the scaffold lays down both new
 modules (not validator substrate) and every engine copy of a module this work touches is identical.
 
-Plain run after the remote-agent rule: 58 passed (26 preamble, 32 rows) in 18.9 s. Stage environment run
-(`env -i`, the stage's variables, TZ=UTC): 58 passed in 25.0 s. After the merge with main (VELDO-0155 and
+Plain run after rule A: 59 passed (26 preamble, 33 rows) in 19.4 s. Stage environment run
+(`env -i`, the stage's variables, TZ=UTC): 59 passed in 25.5 s. After the merge with main (VELDO-0155 and
 VELDO-0156) the fake `claude` is qualified with `--input-format stream-json` and the engine module's
 everything-off baseline, as `bind()` requires, and answers the initialize control request with a claude.ai
 subscription login (`subscriptionType` Claude Max, `apiProvider` firstParty); the fake Codex answers `login status`
@@ -379,7 +409,7 @@ qualified vendor package (VELDO-0060, VELDO-0061), as suite 75 does.
 ## Red record
 
 `red-at-52f817d5.json`: the current suite over `git archive 52f817d5` (main before this work),
-unchanged, regenerated after the remote-agent rule. All 30 behavior rows fail by their own
+unchanged, regenerated after rule A. All 31 behavior rows fail by their own
 assertion: there is no account pool (the Runner given
 a pool refuses `invalid_input` and nothing is dispatched), the same login registers twice under two
 names and a second record of an id is refused unnamed, no run is classified `account_limit` (each limited
@@ -390,7 +420,7 @@ they check the suite's own fixtures against the extracted table, not production.
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 113 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 3102 s, after the remote-agent rule).
+`drive.py` records `mutations.json` and one applied diff per mutant. All 127 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (after rule A).
 
 | Mutant | Module | Named rows |
 |---|---|---|
@@ -507,12 +537,26 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | remote-cron-unseen-input-trusted | control_engine_claude.py | `decision/remote-agent-asks` |
 | nested-remote-dropped (class dropped from rule 2) | control_engine_claude.py | `decision/nested-constructs`, `format/tool-forms` |
 | nested-cron-dropped | control_engine_claude.py | `decision/nested-constructs`, `decision/remote-agent-asks`, `format/tool-forms` |
+| outward-rule-skipped (rule A skipped, declared) | control_account_limit.py | `decision/outward-tool-asks` |
+| outward-sendmessage-allowlisted (declared) | control_engine_claude.py | `decision/outward-tool-asks`, `format/tool-forms` |
+| outward-unknown-tool-allowed (declared) | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-agent-remote-unchecked (declared) | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-agent-input-assumed | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-agent-definition-trusted | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-task-type-ignored | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-host-ignored | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-server-block-ignored | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-workflow-remote-ignored | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-task-input-unresolved | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-workflow-label-read | control_engine_claude.py | `decision/outward-tool-asks` |
+| outward-codex-unknown-item-allowed | control_engine_codex.py | `decision/outward-tool-asks` |
+| outward-codex-collab-tool-unchecked | control_engine_codex.py | `decision/outward-tool-asks` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 113 rejected after the remote-agent rule (103 after the unconfigured-call rule, 101 after the structural rule, 86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 127 rejected after rule A (113 after the remote-agent rule, 103 after the unconfigured-call rule, 101 after the structural rule, 86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
 
-Suites run after the merge with main (VELDO-0155, VELDO-0156) and the remote-agent rule, plain and under the stage
-environment, all green: `78_veldo_0160_account_pool` (32 rows), `78_veldo_0060_claude_adapter` (34),
+Suites run after rule A, plain and under the stage
+environment, all green: `78_veldo_0160_account_pool` (33 rows), `78_veldo_0060_claude_adapter` (34),
 `79_veldo_0061_codex_adapter` (20), `80_veldo_0155_claude_baseline` (17), `81_veldo_0156_codex_baseline` (21) and
 `75_veldo_0062_accounts` (22); `extract_formats.py --check` matches the installed binaries. After the unconfigured-call
 rule, `78_veldo_0160_account_pool` (31 rows; no other suite reads `control_account_limit.py`); after the structural rule, `78_veldo_0060_claude_adapter` (34), `79_veldo_0061_codex_adapter`

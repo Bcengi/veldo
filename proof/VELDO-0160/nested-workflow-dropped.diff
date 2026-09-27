@@ -3,6 +3,6 @@
 @@ -355 +355 @@
 -                'workflow': ('RunWorkflow', 'Workflow')}
 +                }  # defect: the workflow tools are not nested work
-@@ -659 +659 @@
+@@ -677 +677 @@
 -            found.append(('workflow', tag + ':' + workflow.get(tag, 'task_type')))
 +            pass

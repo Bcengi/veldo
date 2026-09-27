@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -377 +377 @@
+@@ -404 +404 @@
 -            found.extend(self._limited(seen, error.get('message') if isinstance(error, dict) else None, 'result'))
 +            pass  # defect: the failed turn's usage-limit message is not read

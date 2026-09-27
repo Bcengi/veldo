@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -498 +498 @@
+@@ -516 +516 @@
 -        elif entry.get('lastToolName') is not None:
 +        elif False:  # defect: a workflow agent's last tool is not read

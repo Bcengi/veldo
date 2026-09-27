@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -670 +670 @@
+@@ -688 +688 @@
 -        found.append(('fork', NESTED['fork']['field'] + ':' + NESTED['fork']['status']))
 +        pass  # defect: a forked skill's result is not nested work
