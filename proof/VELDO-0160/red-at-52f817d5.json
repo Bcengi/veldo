@@ -30,7 +30,7 @@
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 1:44am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 3:47am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
@@ -101,7 +101,7 @@
   "VELDO-0160 format/tool-forms detail: claude_code: every field of the binary's messages that names a tool, declared or emitted, is in the reader's table, and the tool names that ran are read as calls [[('assistant', 'attribution_mcp_tool'), ('assistant', 'batch_tool_uses'), ('assistant', 'context_usage.mcp_tools'), ('assistant', 'message.usage.server_tool_use'), ('assistant', 'parent_tool_use_id'), ('assistant', 'tool_use_meta')], []]",
   "VELDO-0160 format/tool-forms detail: claude_code: a task's count of its calls is read from the frames, fields and parent the binary writes it in, and codex reports none [['system/task_notification', 'system/task_progress'], {}, []]",
   "VELDO-0160 format/tool-forms detail: claude_code: the frames outside the message union the reader takes as tool-free are the ones whose schema provably carries no tool call [[('active_goal', None), ('autocompact_state', None), ('control_cancel_request', None), ('control_request', None), ('control_response', None), ('keep_alive', None), ('system', 'post_turn_summary'), ('system', 'task_summary'), ('transcript_mirror', None)], []]",
-  "VELDO-0160 format/tool-forms detail: the construct tables that can run hidden nested work are the binaries' own [['agent', 'repl', 'skill', 'workflow'], ['collab', 'source', 'sub_agent']]",
+  "VELDO-0160 format/tool-forms detail: the construct tables that can run hidden nested work are the binaries' own [['agent', 'cron', 'remote', 'repl', 'skill', 'workflow'], ['collab', 'source', 'sub_agent']]",
   "VELDO-0160 format/tool-forms detail: codex: the reader's item and event tables are exec's own, its own collab_tool_call a sub-agent call [['', 'agent_message', 'collab_tool_call', 'command_execution', 'error', 'file_change', 'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'], ['error', 'item.completed', 'item.started', 'item.updated', 'thread.started', 'turn.completed', 'turn.failed', 'turn.started']]",
   "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [None, no call-by-call decision, None MCP calls]",
   "VELDO-0160 decision/repl-inner-call detail: an MCP write inside the REPL tool, in its end phase only: decided ask [None, no call-by-call decision, None MCP calls]",
@@ -177,6 +177,7 @@
   "VELDO-0160 decision/nested-constructs detail: claude_code, a REPL inner call on a heartbeat of another tool (repl): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: claude_code, a Workflow tool call (workflow): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: claude_code, a RunWorkflow tool call (its alias) (workflow): decided ask, naming exactly that construct [no decision module]",
+  "VELDO-0160 decision/nested-constructs detail: claude_code, a CronCreate that is not durable (a prompt scheduled in the session) (cron): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: claude_code, a background shell task started (task_frames): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: claude_code, a task moved to the background (task_frames): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: claude_code, a message a sub-agent produced (nested_progress): decided ask, naming exactly that construct [no decision module]",
@@ -186,6 +187,7 @@
   "VELDO-0160 decision/nested-constructs detail: codex, the core's collab agent call (collab): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: codex, the core's sub-agent activity (sub_agent): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: a workflow's task started: a task frame and a workflow's [no decision module]",
+  "VELDO-0160 decision/nested-constructs detail: claude_code, a RemoteTrigger call (remote): rule 2 names exactly that construct, and the decision asks [None, no decision module]",
   "VELDO-0160 decision/nested-constructs detail: a Bash call, a denied Agent call and its result name no nested work [None, no decision module]",
   "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [None, None, no decision module]",
   "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [None, None, no decision module]",
@@ -195,6 +197,34 @@
   "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [None, None, no decision module]",
   "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a listed read-only tool, only read-only servers configured: decided re-run [None, None, no decision module]",
   "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to the one tool the configuration gives, only read-only servers configured: decided re-run [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a routine created with the account's connectors and run (the checker's reproduction), no MCP server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a routine created with the account's connectors and run (the checker's reproduction), only read-only tools configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a routine created with the account's connectors and run (the checker's reproduction), a write-capable server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a routine listed (any RemoteTrigger call), no MCP server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a routine listed (any RemoteTrigger call), only read-only tools configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a routine listed (any RemoteTrigger call), a write-capable server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a durable CronCreate (the checker's reproduction), no MCP server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a durable CronCreate (the checker's reproduction), only read-only tools configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a durable CronCreate (the checker's reproduction), a write-capable server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate durable as the text \"true\", no MCP server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate durable as the text \"true\", only read-only tools configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate durable as the text \"true\", a write-capable server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a durable CronCreate as the REPL tool's inner call, no MCP server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a durable CronCreate as the REPL tool's inner call, only read-only tools configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a durable CronCreate as the REPL tool's inner call, a write-capable server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate named where its input is not given (a task's last tool), no MCP server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate named where its input is not given (a task's last tool), only read-only tools configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate named where its input is not given (a task's last tool), a write-capable server configured: decided ask, naming each such line [None, None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: the checker's routine held as JSON text, no MCP server: decided ask, naming each such line [no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a RemoteTrigger call and a call to an unlisted server: decided ask, naming both [no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate with its durable field left out: re-run with only read-only tools, and asked by rule 2 with a write-capable server [no decision module, []]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate with durable false: re-run with only read-only tools, and asked by rule 2 with a write-capable server [no decision module, []]",
+  "VELDO-0160 decision/remote-agent-asks detail: a CronCreate with durable as the text \"false\": re-run with only read-only tools, and asked by rule 2 with a write-capable server [no decision module, []]",
+  "VELDO-0160 decision/remote-agent-asks detail: RemoteTrigger's schema loaded and never called: re-run [None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: the checker's normal run, an Agent whose one call is read-only, only read-only tools: decided rerun by no_write_capable_server [None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: the checker's normal run, an Agent with no MCP server: decided rerun by no_write_capable_server [None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: the checker's normal run, reads only, a write-capable server: decided rerun by calls [None, no decision module]",
+  "VELDO-0160 decision/remote-agent-asks detail: the checker's normal run, an Agent, a write-capable server: decided ask by nested_work [None, no decision module]",
   "VELDO-0160 pool/moved-off detail: acct-c1's CLI reported its window exhausted, recorded with its reset [{}]",
   "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
   "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
@@ -239,6 +269,7 @@
   "VELDO-0160 decision/nested-work-asks",
   "VELDO-0160 decision/nested-constructs",
   "VELDO-0160 decision/unconfigured-call-asks",
+  "VELDO-0160 decision/remote-agent-asks",
   "VELDO-0160 pool/moved-off",
   "VELDO-0160 pool/added-account",
   "VELDO-0160 pool/one-run-while-unknown",
@@ -250,7 +281,7 @@
  "modules": {
   ".veldo/control_account_limit.py": {
    "at_commit": null,
-   "now": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
+   "now": "114ee0c7ca12f0ef391a35759a407a2a3ceb3d6a291b80acc92898e1a2ae3654"
   },
   ".veldo/control_account_pool.py": {
    "at_commit": null,
@@ -262,15 +293,15 @@
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "9a9b490e53e57873ab2aaaa71f548e0c0721ce69dfd2ef3536064e99d494462e",
-   "now": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
+   "now": "a5ad0760ab23b735d574ac0553deb7c1dea4d1c8d8dcf7513f7279f79b42b573"
   },
   ".veldo/control_engine_codex.py": {
    "at_commit": "9dd518fb3f1e3f657b9b2f6b46db7fb8315093d7420459d7f2e9aec36bcd8712",
-   "now": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
+   "now": "840041bcabf24b437640d0de155b91467e2f034f18561bc6d6769a9093566815"
   },
   ".veldo/control_launch.py": {
    "at_commit": "cabf546cee5b0310b8e7fbf8c567197b498b58f7e5ae89416be491dd071d4a66",
-   "now": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502"
+   "now": "6132eb51cf1fcaa9fadd9de915cedda36578265bb195b379962acbb996614270"
   },
   ".veldo/control_reservation_runtime.py": {
    "at_commit": "edae4a25ec26031d041376ec64c5ccea3575eb5fc7b22a448fd2fc6d9674774b",
@@ -376,6 +407,10 @@
    false
   ],
   [
+   "VELDO-0160 decision/remote-agent-asks",
+   false
+  ],
+  [
    "VELDO-0160 pool/moved-off",
    false
   ],
@@ -413,7 +448,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 34.225,
+ "seconds": 34.459,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"
