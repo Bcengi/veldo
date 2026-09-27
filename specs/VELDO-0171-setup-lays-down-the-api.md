@@ -109,7 +109,9 @@ acceptance_criteria:
       sockets (none beyond loopback) and the Serve status. The suite drives a stand-in CLI that prints the
       outputs from proof/VELDO-0171/tailscale-capture.json exactly. Before building the stand-in, a
       recorded proof step runs only read-only commands on the owner's host: `tailscale version`,
-      `tailscale status --json` and `tailscale serve status --json`; their capture is scrubbed by a
+      `tailscale status --json`, `tailscale serve status --json`, `tailscale debug prefs` (its
+      OperatorUser field is the operator setting) and `tailscale serve --help` (its listing of `--bg` is
+      the background persistence evidence); their capture is scrubbed by a
       named field allowlist as in VELDO-0172 and committed at that path. The stand-in replays exactly
       those captured outputs for the captured states. Each refusal state and the status after
       `serve --bg` are field edits of the captured JSON, each edit listed in
@@ -277,3 +279,9 @@ captures remain outside the repository; the allowlist-scrubbed capture and preci
 blocker are in proof/VELDO-0171/. No production change, fabricated refusal state,
 or live activation was made. The owner must resolve the observation source and
 capture contract; acceptance criteria and ready status are unchanged.
+
+2026-09-27, build: the three read-only commands cannot show the operator setting or `--bg` support, so the
+builder stopped before writing code. AC2 adds two read-only sources: `tailscale debug prefs` (OperatorUser) and
+`tailscale serve --help` (lists `--bg`). Back to draft for the owner's re-mark.
+
+2026-09-27: marked ready again by the owner (Telegram 29237, "Ok" after the explanation in 29235 and 29236).
