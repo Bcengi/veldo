@@ -4238,6 +4238,7 @@
      "tools": [
       "spawn_agent",
       "send_input",
+      "wait",
       "close_agent"
      ]
     },
@@ -4252,7 +4253,7 @@
      "todo_list",
      "web_search"
     ],
-    "source": "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent call), and the collab tools of exec's CollabTool enum (its variant literals between its usage field run and its item id field), each an agent thread of this process; an item or collab tool these do not list is not a known in-run kind"
+    "source": "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent call), and the collab tools of exec's CollabTool enum (read from its serializer, whose cases load its variant literals: the run between its usage field run and its item id field, and `wait`, whose literal the compiler shares), each an agent thread of this process or a wait on one (the core's wait tool waits on agent ids from spawn_agent, or on a live agent of the current root thread tree); an item or collab tool these do not list is not a known in-run kind"
    },
    "nested_work": {
     "collab": [

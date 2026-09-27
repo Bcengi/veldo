@@ -1452,7 +1452,10 @@ sys.exit(payload.get('code', 0))
                      READ_ONLY),
                     ('the checker\'s forked skill as JSON text, only read-only tools configured', c_rec(forked, True),
                      'claude_code', READ_ONLY),
-                    ('a depth-2 agent\'s hidden MCP write, no MCP server configured', c_rec(nested), 'claude_code', []),
+                    ('a depth-1 agent whose calls are all shown and allowlisted, no MCP server configured',
+                     c_rec([c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), c_child('t1', [tool_use('c1', 'Read')]),
+                            t_progress('t1', 'Read', 1), t_done('t1', {'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}),
+                            t_result('t1')]), 'claude_code', []),
                     ('exec\'s own sub-agent call, no MCP server configured', x_rec(x_collab), 'codex', [])):
                 found, error = decide(record, provider, servers)
                 check('decision/no-write-server-reruns', '%s: decided re-run whatever the stream shows [%s, %s, %s]'
@@ -1504,11 +1507,10 @@ sys.exit(payload.get('code', 0))
                   and hidden(found)[:1] == [(len(c_head) + 1, 'agent', 'tool:Agent')]
                   and by_calls(c_rec(normal), 'claude_code')[0].get('decision') == 'rerun')
             found, error = decide(c_rec(nested), 'claude_code')
-            check('decision/nested-work-asks', 'a depth-2 agent\'s hidden MCP write: decided ask, naming the constructs '
-                  'beside the calls the call-by-call rules name [%s]' % (forms(found) or error),
-                  (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
-                  and (len(c_head) + 6, 'unknown_call', 'task_tool_uses') in forms(found)
-                  and (len(c_head) + 1, 'agent', 'tool:Agent') in hidden(found))
+            check('decision/nested-work-asks', 'a depth-2 agent\'s hidden MCP write: decided ask by rule A first, naming '
+                  'the task\'s shortfall (decision/outward-tool-asks) [%s, %s]' % ((found or {}).get('basis'), forms(found) or error),
+                  (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'outward_tool'
+                  and (len(c_head) + 6, 'outward_tool', 'task_tool_uses') in forms(found))
             found, error = decide(x_rec(x_collab), 'codex')
             check('decision/nested-work-asks', 'codex, exec\'s own sub-agent call: decided ask, naming it as nested work '
                   'and as an unknown call [%s]' % (forms(found) or error),
@@ -1683,6 +1685,8 @@ sys.exit(payload.get('code', 0))
                  [(at + 1, 'cron', 'tool:CronCreate:durable')]),
                 ('a CronCreate named where its input is not given (a task\'s last tool)',
                  [c_task(last_tool_name='CronCreate')], [(at, 'cron', 'tool:CronCreate:durable')]))
+            # The task whose last tool is a CronCreate counts one call the record does not show: rule A names it beside.
+            BESIDE = {'a CronCreate named where its input is not given (a task\'s last tool)': [(at, 'outward_tool', 'task_tool_uses')]}
             for what, lines, expected in OUTSIDE:
                 for label, servers in CONFIGURATIONS:
                     found, error = decide(c_rec(lines), 'claude_code', servers)
@@ -1690,7 +1694,7 @@ sys.exit(payload.get('code', 0))
                           % (what, label, (found or {}).get('decision'), (found or {}).get('basis'), outside(found) or error),
                           (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'remote_agent'
                           and outside(found) == expected
-                          and all(c.get('reason') == 'remote_agent' for c in (found or {}).get('calls') or []))
+                          and [c for c in forms(found) if c[1] != 'remote_agent'] == BESIDE.get(what, []))
             found, error = decide(c_rec(routine, True), 'claude_code', [])
             check('decision/remote-agent-asks', 'the checker\'s routine held as JSON text, no MCP server: decided ask, '
                   'naming each such line [%s]' % (outside(found) or error), (found or {}).get('basis') == 'remote_agent'
@@ -1780,13 +1784,13 @@ sys.exit(payload.get('code', 0))
                  [(at, 'tool:Agent:subagent_type')]),
                 ('an agent a sub-agent started, its input not shown (a depth-2 agent)',
                  [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), t_progress('t1', 'Agent', 1)],
-                 [(at + 2, 'tool:Agent:input_not_given')]),
+                 [(at + 2, 'task_tool_uses'), (at + 2, 'tool:Agent:input_not_given')]),
                 ('a remote agent\'s task started (its launch, from any tool)',
                  [dict(t_started('t9', 1), task_type='remote_agent')], [(at, 'task_type:remote_agent')]),
                 ('a workflow agent launched remote',
                  [c_task(last_tool_name='review', workflow_progress=[{'type': 'workflow_agent', 'index': 0,
                                                                      'isolation': 'remote'}])],
-                 [(at, 'workflow_progress:isolation:remote')]),
+                 [(at, 'task_tool_uses'), (at, 'workflow_progress:isolation:remote')]),
                 ('a Bash call naming another machine (_host)', called('Bash', 'toolu_b', command='ls', _host='mac-mini'),
                  [(at, 'tool:Bash:_host')]),
                 ('an API server tool block', [c_blocks([{'type': 'server_tool_use', 'id': 'srvtoolu_1', 'name': 'advisor',
@@ -1816,7 +1820,10 @@ sys.exit(payload.get('code', 0))
                  [(len(x_head) + 1, 'item:collab_agent_tool_call')]),
                 ('a sub-agent call whose collab tool exec\'s enum does not list',
                  [x_any('collab_tool_call', 'item_m', tool='send_message', status='in_progress')],
-                 [(len(x_head) + 1, 'item:collab_tool_call:send_message')])]
+                 [(len(x_head) + 1, 'item:collab_tool_call:send_message')]),
+                ('a sub-agent call naming the core\'s tool wait_agent, which exec\'s enum does not list',
+                 [x_any('collab_tool_call', 'item_m', tool='wait_agent', status='in_progress')],
+                 [(len(x_head) + 1, 'item:collab_tool_call:wait_agent')])]
             for what, lines, expected in X_OUTWARD:
                 for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY),
                                        ('a write-capable server', WRITE_CAPABLE)):
@@ -1875,13 +1882,81 @@ sys.exit(payload.get('code', 0))
                 check('decision/outward-tool-asks', 'claude_code, %s, no MCP server: re-run [%s, %s]'
                       % (what, (found or {}).get('basis'), leaving(found) or error),
                       (found or {}).get('decision') == 'rerun' and (found or {}).get('basis') == 'no_write_capable_server')
+            # Rule A reads each task's tally too: the calls a depth-2 agent or a workflow agent makes are never shown, so
+            # the allowlist cannot show them staying inside the run. A shortfall, or a count that cannot be read or goes
+            # down, asks whatever the configuration, naming the line that reported it (the checker's probe8 and probe10).
+            def tallied(found):
+                return sorted((c['sequence'], c.get('form'), c.get('task'), c.get('unshown'))
+                              for c in (found or {}).get('calls') or []
+                              if c.get('reason') == 'outward_tool' and str(c.get('form')).startswith('task_tool_uses'))
+            one = {'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}
+            TALLIES = [
+                ('a depth-2 Explore agent, 2 calls unshown, its last tool Read (probe8)',
+                 [c_blocks([tool_use('a1', 'Agent')]), t_started('a1', 1),
+                  c_child('a1', [dict(tool_use('a2', 'Agent'), input={'prompt': 'q', 'subagent_type': 'Explore'})]),
+                  t_started('a2', 2), t_progress('a2', 'Read', 2), t_done('a2', dict(one, tool_uses=2)),
+                  t_result('a2', 'a1'), t_done('a1', one), t_result('a1')],
+                 [(at + 4, 'task_tool_uses', 'a2', 2)]),
+                ('a Workflow, 3 calls unshown, its agent\'s last tool Read (probe10)',
+                 [r_use('toolu_w', 'Workflow', script='x'),
+                  dict(t_started('toolu_w', 1), task_type='local_workflow', workflow_name='x'),
+                  t_progress('toolu_w', 'agent-1', 3, workflow_progress=[{'label': 'agent-1', 'lastToolName': 'Read'}]),
+                  t_done('toolu_w', dict(one, tool_uses=3)), r_done('toolu_w')],
+                 [(at + 2, 'task_tool_uses', 'toolu_w', 3)]),
+                ('a task whose count cannot be read',
+                 [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), c_child('t1', [tool_use('c1', 'Read')]),
+                  t_progress('t1', 'Read', None, usage=dict(one, tool_uses='one')), t_result('t1')],
+                 [(at + 3, 'task_tool_uses:unreadable', 't1', None)]),
+                ('a task whose count goes down',
+                 [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), c_child('t1', [tool_use('c1', 'Read')]),
+                  t_progress('t1', 'Read', 1), t_progress('t1', 'Read', 0), t_result('t1')],
+                 [(at + 4, 'task_tool_uses:unreadable', 't1', None)])]
+            for what, lines, expected in TALLIES:
+                for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY),
+                                       ('a write-capable server', WRITE_CAPABLE)):
+                    found, error = decide(c_rec(lines), 'claude_code', servers)
+                    check('decision/outward-tool-asks', 'claude_code, %s, %s configured: decided ask, naming the tally '
+                          '[%s, %s, %s]' % (what, label, (found or {}).get('decision'), (found or {}).get('basis'),
+                                            tallied(found) or error),
+                          (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'outward_tool'
+                          and tallied(found) == expected)
+            # Negative controls: a sub-agent whose calls are all shown and allowlisted, and a normal run with one, re-run.
+            for what, lines in (
+                    ('a sub-agent whose calls are all shown and allowlisted',
+                     [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1),
+                      c_child('t1', [tool_use('c1', 'Read'), tool_use('c2', 'Grep')]), t_progress('t1', 'Grep', 2),
+                      t_done('t1', dict(one, tool_uses=2)), t_result('t1')]),
+                    ('a normal run whose Explore agent\'s one call is shown (probe8)',
+                     called('Read', 'toolu_r', file_path='/w/a.py') + called('Edit', 'toolu_e', file_path='/w/a.py',
+                                                                            old_string='a', new_string='b')
+                     + called('Bash', 'toolu_b', command='pytest -q')
+                     + [r_use('a1', 'Agent', prompt='find', subagent_type='Explore', description='d'), t_started('a1', 1),
+                        c_child('a1', [tool_use('c1', 'Glob')]), t_progress('a1', 'Glob', 1), t_done('a1', one),
+                        r_done('a1')])):
+                for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY)):
+                    found, error = decide(c_rec(lines), 'claude_code', servers)
+                    check('decision/outward-tool-asks', 'claude_code, %s, %s configured: re-run [%s, %s, %s]'
+                          % (what, label, (found or {}).get('decision'), (found or {}).get('basis'), leaving(found) or error),
+                          (found or {}).get('decision') == 'rerun' and (found or {}).get('basis') == 'no_write_capable_server')
+            # Codex: a normal run that spawns an agent, waits on it and closes it re-runs (exec's collab tool wait waits
+            # only on agents of the run's own thread tree).
+            x_normal = [x_any('command_execution', 'item_1', command='bash -lc ls', status='completed'),
+                        x_any('collab_tool_call', 'item_s', tool='spawn_agent', status='completed'),
+                        x_any('collab_tool_call', 'item_w', tool='wait', status='completed'),
+                        x_any('collab_tool_call', 'item_c', tool='close_agent', status='completed')]
+            for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY)):
+                found, error = decide(x_rec(x_normal), 'codex', servers)
+                check('decision/outward-tool-asks', 'codex, a normal run that spawns, waits on and closes an agent, %s '
+                      'configured: re-run [%s, %s, %s]' % (label, (found or {}).get('decision'), (found or {}).get('basis'),
+                                                           leaving(found) or error),
+                      (found or {}).get('decision') == 'rerun' and (found or {}).get('basis') == 'no_write_capable_server')
             # Codex: every item exec lists and each collab tool its enum lists, with no MCP server, re-runs.
             x_items = sorted(X_IN_RUN.get('items') or ())
             x_tools = list((X_IN_RUN.get('collab') or {}).get('tools') or ())
             x_engine = (getattr(LIMIT, 'ENGINES', None) or {}).get('codex') if LIMIT is not None else None
             check('decision/outward-tool-asks', 'codex: the known in-run kinds the reader holds are exec\'s own items and '
                   'collab tools [%s, %s]' % (x_items, x_tools),
-                  x_items == sorted(XFORMS.get('exec_items') or ()) and x_tools == ['spawn_agent', 'send_input', 'close_agent']
+                  x_items == sorted(XFORMS.get('exec_items') or ()) and x_tools == ['spawn_agent', 'send_input', 'wait', 'close_agent']
                   and x_engine is not None and sorted(getattr(x_engine, 'IN_RUN_ITEMS', ())) == x_items
                   and list((getattr(x_engine, 'IN_RUN_COLLAB', None) or {}).get('tools') or ()) == x_tools)
             for kind in x_items:

@@ -192,11 +192,14 @@ NESTED_ITEMS = {'collab': ('collab_agent_tool_call', 'collab_tool_call'), 'sub_a
 # exec reports no task counting its sub-agents' calls: its own sub-agent call is already an unknown call above.
 Tasks = None
 # The known in-run kinds (VELDO-0160, the lead's allowlist; cli-formats.json codex tool_forms in_run): exec's own items,
-# and for its sub-agent call the collab tools of exec's CollabTool enum, each an agent thread of this process. An item
-# or collab tool these do not list asks (outward_tools).
+# and for its sub-agent call the collab tools of exec's CollabTool enum (read from its serializer), each an agent
+# thread of this process or a wait on one (`wait`: the core's wait tool waits on agent ids from spawn_agent, or on a
+# live agent of the current root thread tree). An item or collab tool these do not list asks (outward_tools); the
+# core's own tool name wait_agent is not one exec writes, so it asks.
 IN_RUN_ITEMS = frozenset(('agent_message', 'collab_tool_call', 'command_execution', 'error', 'file_change',
                           'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'))
-IN_RUN_COLLAB = {'item': 'collab_tool_call', 'field': 'tool', 'tools': ('spawn_agent', 'send_input', 'close_agent')}
+IN_RUN_COLLAB = {'item': 'collab_tool_call', 'field': 'tool',
+                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent')}
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
                       r'(?P<year>\d{4}) )?(?P<hour>\d{1,2}):(?P<minute>\d{2}) (?P<half>AM|PM)\.')
 

@@ -13,6 +13,13 @@ create, update and run start a cloud agent routine, and a durable CronCreate, wh
 decision is `ask`, basis `remote_agent`, naming each such line with its `construct` and `form` (reason
 `remote_agent`) beside the calls that contradict the configuration (the next rule).
 
+A CALL THE ALLOWLIST DOES NOT SHOW STAYING INSIDE THE RUN ASKS, ALONGSIDE IT (rule A, the lead's decision). Any
+built-in tool call the engine module's allowlist does not show staying inside the run's clone and host session
+(`outward`, its `outward_tools`) decides `ask`, basis `outward_tool`, whatever the configuration. The calls a depth-2
+agent or a workflow agent makes are never shown, so rule A also reads each task's tally (`untallied`, the engine
+module's `Tasks`): a shortfall (form `task_tool_uses`, with its `task` and `unshown`), or a count that cannot be read
+or goes down (form `task_tool_uses:unreadable`), may be an outward call and asks the same, reason `outward_tool`.
+
 A CALL THAT CONTRADICTS THE CONFIGURATION ASKS, BEFORE THE STRUCTURAL RULES (the lead's decision). A visible MCP call
 to a server the configuration does not list, or to a tool the configuration does not give the run (`unconfigured`),
 shows the configuration is not what the run had: the decision is `ask`, basis `unconfigured_call`, naming each
@@ -279,6 +286,25 @@ def outward(record, provider):
             for form in engine.outward_tools(event, inputs)]
 
 
+def untallied(record, provider):
+    """[{sequence, form, task, unshown}]: the calls each task the stream reports counted and the record does not show
+    (rule A, the engine module's `Tasks`, the same tally the call-by-call rules read): a shortfall, form
+    `task_tool_uses` with its `unshown`, at the line that reported the count, and a count frame whose count cannot be
+    read or is lower than the task reported before, form `task_tool_uses:unreadable` (`unshown` None). An engine
+    whose stream reports no such count has none."""
+    engine = _engine(provider)
+    if engine.Tasks is None:
+        return []
+    tasks, found = engine.Tasks(), []
+    for at, line in enumerate(_checked(record), 1):
+        event = _event(line['payload']) if line['stream'] == 'engine' else None
+        if event is not None:
+            found += [{'sequence': at, 'form': 'task_tool_uses:unreadable', 'task': call.get('id'), 'unshown': None}
+                      for call in tasks.line(event, at)]
+    return found + [{'sequence': call['sequence'], 'form': call['unknown'], 'task': call['task'],
+                     'unshown': call['unshown']} for call in tasks.close()]
+
+
 def decide_by_calls(record, servers, marks, provider):
     """The call-by-call rules (the module docstring's third rule): ask for each call the record shows to a tool
     not marked read-only, each engine line it cannot read and each form it does not recognize."""
@@ -338,14 +364,20 @@ def decide(record, servers, marks, provider):
     # Rule A: a call the allowlist does not show staying inside the run, unless the remote_agent rule names it already.
     named_started = {(found['sequence'], found['form']) for found in started}
     leaving = [found for found in outward(record, provider) if (found['sequence'], found['form']) not in named_started]
-    if started or leaving:
+    # Rule A also reads each task's tally: calls a depth-2 agent or a workflow agent made are never shown, so the
+    # allowlist cannot show them staying inside the run; a shortfall, or a count that cannot be read, may be outward.
+    unshown = untallied(record, provider)
+    if started or leaving or unshown:
         # An agent started outside the run, or a call that may act outside it, may act whatever the configuration: ask,
         # naming each such line.
         named = contradicting + [
             {'sequence': found['sequence'], 'server': None, 'tool': None, 'catalog_id': None, 'revision': None,
              'reason': 'remote_agent', 'construct': found['construct'], 'form': found['form']} for found in started] + [
             {'sequence': found['sequence'], 'server': None, 'tool': None, 'catalog_id': None, 'revision': None,
-             'reason': 'outward_tool', 'form': found['form']} for found in leaving]
+             'reason': 'outward_tool', 'form': found['form']} for found in leaving] + [
+            {'sequence': found['sequence'], 'server': None, 'tool': None, 'catalog_id': None, 'revision': None,
+             'reason': 'outward_tool', 'form': found['form'], 'task': found['task'], 'unshown': found['unshown']}
+            for found in unshown]
         return {'schema': SCHEMA, 'decision': ASK, 'calls': sorted(named, key=lambda call: call['sequence']),
                 'mcp_calls': len(read), 'basis': 'remote_agent' if started else 'outward_tool'}
     if contradicting:

@@ -1064,6 +1064,93 @@ CODEX_NESTED = {'collab': ((b'CollabAgentToolCallItemreceiver_thread_ids', 'coll
 CODEX_IN_RUN_COLLAB = (b'reasoning_output_tokensspawn_agentsend_inputclose_agentidThreadEvent',
                        ('spawn_agent', 'send_input', 'close_agent'))
 CODEX_IN_RUN_SPAWN = b'Spawn a sub-agent for a well-scoped task.'
+# The enum's `wait` variant is not in that run: the compiler keeps one copy of a short literal, and exec's `wait` is
+# the one its other uses share. exec's serializer for the enum names every variant: a switch on the variant (lea rcx
+# to its jump table, movsxd, add, jmp rax) whose cases each load one variant's literal (lea rdx) and its length (mov
+# ecx, here or at the case it jumps to). The wait variant only waits: the core's wait tool waits on agent ids from
+# spawn_agent, or for a mailbox update from a live agent of the current root thread tree, the run's own agents.
+CODEX_COLLAB_SWITCH = re.compile(rb'\x48\x8d\x0d(.{4})\x48\x63\x04\x81\x48\x01\xc8\xff\xe0', re.DOTALL)
+CODEX_COLLAB_WAIT = (b'Agent ids to wait on. Pass multiple ids to wait for whichever finishes first.',
+                     b'Live agents visible in the current root thread tree.')
+CODEX_COLLAB_WAITS = ('wait',)
+
+
+def _segments(raw):
+    """[(file offset, virtual address, file size, executable)]: the ELF file's loadable segments."""
+    if raw[:5] != b'\x7fELF\x02' or raw[5] != 1:
+        raise Moved('codex is not a little-endian 64-bit ELF file')
+    offset, size, count = (int.from_bytes(raw[0x20:0x28], 'little'), int.from_bytes(raw[0x36:0x38], 'little'),
+                           int.from_bytes(raw[0x38:0x3a], 'little'))
+    found = []
+    for at in range(offset, offset + size * count, size):
+        if int.from_bytes(raw[at:at + 4], 'little') == 1:
+            flags = int.from_bytes(raw[at + 4:at + 8], 'little')
+            found.append(tuple(int.from_bytes(raw[at + k:at + k + 8], 'little') for k in (8, 16, 32)) + (bool(flags & 1),))
+    return found
+
+
+def _file_offset(segments, address):
+    for offset, virtual, size, _ in segments:
+        if virtual <= address < virtual + size:
+            return offset + address - virtual
+    return None
+
+
+def _rel32(raw, at):
+    return int.from_bytes(raw[at:at + 4], 'little', signed=True)
+
+
+def _switch_cases(raw, segments, at, virtual):
+    """[(file offset, literal)]: the literals the switch at file offset `at` (virtual address `virtual`) loads, case by
+    case, or None when it is not a switch whose every case loads a literal and its length."""
+    table = virtual + 7 + _rel32(raw, at + 3)
+    table_at, start = _file_offset(segments, table), virtual + 16
+    if table_at is None:
+        return None
+    cases = []
+    while len(cases) < 64:
+        target = table + _rel32(raw, table_at + 4 * len(cases))
+        case = _file_offset(segments, target)
+        if not start <= target < start + 256 or case is None or raw[case:case + 3] != b'\x48\x8d\x15':
+            break
+        literal = target + 7 + _rel32(raw, case + 3)
+        after = case + 7
+        if raw[after] == 0xeb:
+            after = after + 2 + int.from_bytes(raw[after + 1:after + 2], 'little', signed=True)
+        literal_at = _file_offset(segments, literal)
+        if raw[after] != 0xb9 or literal_at is None:
+            return None
+        length = int.from_bytes(raw[after + 1:after + 5], 'little')
+        text = raw[literal_at:literal_at + length]
+        if not 0 < length <= 64 or not re.fullmatch(rb'[a-z_]+', text):
+            return None
+        cases.append((literal_at, text.decode()))
+    return cases or None
+
+
+def codex_collab_tools(raw, tools):
+    """The variants of exec's CollabTool enum, read from its serializer: the one switch whose cases load the literals of
+    the variant run itself (`tools`, at their places in the run; the core's own collab enum loads its own copies); the
+    variants beyond the run are the waits the core's wait tool describes."""
+    segments = _segments(raw)
+    at = raw.find(CODEX_IN_RUN_COLLAB[0]) + len(b'reasoning_output_tokens')
+    places = set()
+    for tool in tools:
+        places.add((at, tool))
+        at += len(tool)
+    found = []
+    for offset, virtual, size, executable in segments:
+        if not executable:
+            continue
+        for match in CODEX_COLLAB_SWITCH.finditer(raw, offset, offset + size):
+            cases = _switch_cases(raw, segments, match.start(), virtual + match.start() - offset)
+            if cases is not None and places <= set(cases):
+                found.append([tool for _, tool in cases])
+    if len(found) != 1 or len(set(found[0])) != len(found[0]) \
+            or sorted(set(found[0]) - set(tools)) != sorted(CODEX_COLLAB_WAITS) \
+            or any(raw.count(literal) != 1 for literal in CODEX_COLLAB_WAIT):
+        raise Moved('codex collab tool serializer moved')
+    return found[0]
 
 
 def codex_in_run(raw, exec_items):
@@ -1071,12 +1158,15 @@ def codex_in_run(raw, exec_items):
     if raw.count(run) != 1 or ('reasoning_output_tokens' + ''.join(tools) + 'idThreadEvent').encode() != run \
             or raw.count(CODEX_IN_RUN_SPAWN) != 1 or 'collab_tool_call' not in exec_items:
         raise Moved('codex collab tools moved')
-    return {'items': sorted(exec_items), 'collab': {'item': 'collab_tool_call', 'field': 'tool', 'tools': list(tools)},
+    return {'items': sorted(exec_items),
+            'collab': {'item': 'collab_tool_call', 'field': 'tool', 'tools': codex_collab_tools(raw, tools)},
             'source': "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP "
                       "call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent "
-                      "call), and the collab tools of exec's CollabTool enum (its variant literals between its usage "
-                      "field run and its item id field), each an agent thread of this process; an item or collab tool "
-                      "these do not list is not a known in-run kind"}
+                      "call), and the collab tools of exec's CollabTool enum (read from its serializer, whose cases "
+                      "load its variant literals: the run between its usage field run and its item id field, and "
+                      "`wait`, whose literal the compiler shares), each an agent thread of this process or a wait on "
+                      "one (the core's wait tool waits on agent ids from spawn_agent, or on a live agent of the "
+                      "current root thread tree); an item or collab tool these do not list is not a known in-run kind"}
 
 
 def codex_forms(raw):
