@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -303 +303 @@
+@@ -344 +344 @@
 -    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):
 +    for start, end, replacement, kind in []:  # defect: the account identifiers are kept

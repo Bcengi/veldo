@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -876 +876 @@
+@@ -900 +900 @@
 -                             execution_record=self.committed)
 +                             execution_record=None)  # defect: the exit commits nothing of the record

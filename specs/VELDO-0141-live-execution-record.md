@@ -262,3 +262,11 @@ register before filling and recheck after registration; slow readers close as `s
 or byte bound and resume from their last received cursor. Scope precedes unknown-run disclosure.
 Unknown outcomes commit the received record's count, size and digest, just as exited runs do.
 Suite 82 adds an assertion row for each finding, with finding-141 mutations for each regression.
+
+2026-09-27, proof hardening: the clone snapshot follows the bound executable arguments, including a
+configured clone entrance. Partial-block checks include initial text, unbounded pattern widths and
+interleaved messages. Nested JSON forms expand to the escaping depth observed in the stream. The
+reviewed tree fails exactly the seven new rows by assertion; the branch bases fail all behavior rows.
+
+2026-09-27, subscription concurrency: initial catch-up and delivery hints serialize each record stream's
+cursor update and frame queue insertion. A two-thread row and mutation reject interleaved frames.

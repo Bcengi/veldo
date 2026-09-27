@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -455 +455 @@
+@@ -610 +610 @@
 -    if not isinstance(header, dict) or header.get('schema') != SCHEMA or header.get('dispatch_id') != dispatch_id:
 +    if not isinstance(header, dict) or header.get('schema') != SCHEMA:  # defect: any run's record is served

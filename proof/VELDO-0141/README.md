@@ -32,8 +32,8 @@ boundary (`/`, `~/`, `./`, `../`) segment by segment (split at `/`, a backslash 
 and a URL (`scheme://`) by component (authority, each path segment, each query and fragment key and value), each
 segment judged by the scanner's own rule, so only a segment that is itself high-entropy goes; a segment that is a
 hex digest of a digest width named by a lowercase word (`clone-<32 hex>`, `sha256-<64 hex>`) is kept as the bare
-digest is. A slash-joined token that does not start at such a root (a base64 key's shape, `/` mid-token) and every
-other candidate are scored whole, as before. The gate's own scan (`secret_scan.scan_text`) is untouched: this is
+digest is. A token naming a tracked or working tree path in the run's clone is kept whole by the entropy
+step. Other slash-bearing tokens (including base64 values) and every other candidate are scored whole. The gate's own scan (`secret_scan.scan_text`) is untouched: this is
 the record's own entropy loop. The set is filled once
 per run, as the worker is spawned, by `control_launch.RESOLVERS`: each `resolver(receiver, contract, adapter,
 environment)` returns `[(kind, value)]` and may deliver its value into the engine's environment. The built-in one
@@ -181,13 +181,16 @@ rest of `account` kept; an init line's account and organization uuid and email a
 directory kept. `format/fake-lines`: every event line the fakes printed has the binary's own fields and
 required fields, Codex's items their table's fields, and the error-stream warning is the binary's text.
 
-Plain run: 46 passed (26 preamble, 20 rows) in about 12 seconds; under the gate's environment the same. Every
-suite that loads a module this change touched (48, from `01_warp_0101_reviewer_notes` to this one) passes, plainly
-and under the gate's environment.
+Current suite: 53 passed (26 preamble, 27 rows), zero failures. All 95 suites selected through module
+dependencies passed, and the 20 suites directly naming a changed module were repeated against the final
+implementation with zero failures. Each used the selftest suite selector and returned its documented
+partial-run status 2. [checks.json](checks.json) lists every suite and result. Repository validation passed;
+the five changed engine modules are byte-identical to their installed copies. The repository gate was not
+run, as instructed.
 
 ## Red record
 
-`red-at-3c85f33b.json`: the current suite over `git archive 3c85f33b`, unchanged. All 18 behavior rows fail by
+`red-at-3c85f33b.json`: the current suite over `git archive 3c85f33b`, unchanged. All 25 behavior rows fail by
 their own assertions (none raised): that tree's receiver discards the error stream and keeps nothing of a run,
 its API has no record route and no record call, its dispatch commits no record and its Claude Code baseline has
 no stream options. The two fixture rows are green there, as they must be.
@@ -195,7 +198,7 @@ no stream options. The two fixture rows are green there, as they must be.
 ## Mutations (finding 141)
 
 Registered in `scripts/check_teeth_mutations.py`, each declared falsifier first; `drive.py` records
-`mutations.json` and one applied diff per mutant. `check_teeth_mutations.py --finding 141 --jobs 2`: all 22
+`mutations.json` and one applied diff per mutant. `check_teeth_mutations.py --finding 141 --jobs 2`: all 34
 rejected, each on its named rows.
 
 | Mutant | Module | Named rows |
@@ -252,3 +255,34 @@ reconnects with its last received cursor.
 
 The receiver snapshots git's tracked files and the working tree once, relative to both repository root
 and engine cwd. Membership exempts only the entropy step: exact values and known patterns still redact.
+
+
+The refreshed red records cover the original branch base (`red-at-3c85f33b.json`), the merged main base
+(`red-at-a4769f68.json`), and the reviewed tree (`red-at-e9e418d8.json`). The two bases fail all 25 behavior
+rows by assertion; the reviewed tree fails exactly the seven new rows by assertion. Fixture controls stay
+green. The reviewer's original partial-message reproduction also reports neither planted value nor
+GitHub-shaped value recoverable, with both redaction kinds on the affected lines.
+
+The proof driver runs two isolated subprocesses at a time. Every baseline and module no-op is green;
+every registered mutant is rejected by its named row, by assertion. The additional twelve mutations are:
+
+| Mutant | Named row |
+|---|---|
+| record141-partials-line-by-line | redaction/partial-blocks |
+| record141-partials-tail-too-short | redaction/partial-blocks |
+| record141-clone-path-check-skipped | redaction/clone-relative-paths |
+| record141-handshake-id-scored | redaction/clone-relative-paths |
+| record141-stream-registers-after-fill | api/registration-race |
+| record141-existence-before-scope | api/scope-before-existence |
+| record141-reader-queue-unbounded | api/slow-reader |
+| record141-encoded-forms-skipped | redaction/encoded-values |
+| record141-unknown-record-unbound | route/unknown-committed |
+| record141-unknown-record-uncommitted | route/unknown-committed |
+| record141-receiver-clone-unlisted | redaction/clone-relative-paths |
+| record141-concurrent-fills-interleave | api/registration-race |
+
+The partial-block row additionally covers nonempty initial text, patterns and entropy candidates longer
+than the fixed tail, and arbitrarily long whitespace in an assigned-value pattern. Encoded-value tests
+include eight nested JSON layers; the exact set expands with observed escaping depth. A receiver row uses
+a file present only in its bound clone, so falling back to the receiver's own directory is rejected. A two-thread fill test proves that a
+concurrent hint cannot interleave the initial catch-up cursor or frames.

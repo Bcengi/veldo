@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -707,2 +707 @@
+-        self.resolved.paths = ER.clone_paths(self._engine_cwd(argv, contract['dispatch_id'],
+-                                                               adapter.get('identity') == 'reported'))
++        self.resolved.paths = ()  # defect: receiver never snapshots its clone

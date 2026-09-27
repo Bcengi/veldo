@@ -1,0 +1,9 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -807,0 +808 @@
++        self._fill_record(stream, answer, always=True)
+@@ -810,4 +810,0 @@
+-        self._fill_record(stream, answer, always=True)
+-        # Catch an end hint delivered after the first page read, before registration.
+-        if stream.closed is None:
+-            self._fill_record(stream, self._record_page(stream.principal, stream.dispatch_id, stream.cursor))
