@@ -5399,6 +5399,15 @@ def cases():
             "        return (True and entry.get('principal_type') == 'person'  # defect: a revoked owner is current\n",
             ['owner-revoked'])
 
+    # Codex review of 3c85f33b (P2): a signed claim through the claim receiver took a paused or canceled
+    # project's unit. The receiver skips the project check; the shared check it calls reads nothing.
+    project('claim-ignores-project', 'control_claim.py',
+            "        if command['operation'] == 'claim' and u['data'].get('project') is not None:\n",
+            "        if False:  # defect: a claim never asks the unit's project\n", ['paused-claim', 'canceled-claim'])
+    project('claim-project-check-empty', 'control_eligibility.py',
+            "        return self._project_problems(data.get('project'), record, member), read\n",
+            "        return [], read  # defect: the boundary's project check refuses nothing\n",
+            ['paused-claim', 'canceled-claim'])
     # VELDO-0138: each criterion's declared falsifier first, then the threat model's other shapes.
     def service_channel(name, module, old, new, row, also=()):
         add(138, name, '71_veldo_0138_channel_service.py', module, old, new, [row], also)
