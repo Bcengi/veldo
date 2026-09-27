@@ -7334,6 +7334,31 @@ def cases():
          "    if kind == IN_RUN_COLLAB['item'] and tool not in IN_RUN_COLLAB['tools']:\n",
          "    if False:  # defect: a collab tool exec's enum does not list is taken to stay in the run\n",
          ['decision/outward-tool-asks'])
+    # Rule A reads each task's tally (the checker's probe8 and probe10): declared, the shortfall not consulted in rule A;
+    # and the unreadable or decreasing count dropped, the tally's shortfalls dropped, exec's wait not allowlisted, the
+    # core's wait_agent allowlisted.
+    pool('outward-tally-unconsulted', 'control_account_limit.py',
+         "    unshown = untallied(record, provider)\n",
+         "    unshown = []  # defect: a task's shortfall is not consulted in rule A\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-tally-unreadable-dropped', 'control_account_limit.py',
+         "                      for call in tasks.line(event, at)]\n",
+         "                      for call in tasks.line(event, at) if False]  # defect: a count that cannot be read is trusted\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-tally-shortfall-dropped', 'control_account_limit.py',
+         "                     'unshown': call['unshown']} for call in tasks.close()]\n",
+         "                     'unshown': call['unshown']} for call in tasks.close() if False]"
+         "  # defect: a task's shortfall is not read\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-codex-wait-unlisted', 'control_engine_codex.py',
+         "                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent')}\n",
+         "                 'tools': ('spawn_agent', 'send_input', 'close_agent')}  # defect: exec's wait is not in the run\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-codex-wait-agent-allowed', 'control_engine_codex.py',
+         "                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent')}\n",
+         "                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent', 'wait_agent')}"
+         "  # defect: the core's wait_agent, which exec never writes, is taken to stay in the run\n",
+         ['decision/outward-tool-asks'])
     pool('decision-rule1-skipped', 'control_account_limit.py',
          "    if not write_capable(servers, marks):\n",
          "    if False:  # defect: a run with no write-capable server is decided by its stream\n",
