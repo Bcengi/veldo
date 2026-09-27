@@ -3,11 +3,13 @@
  "commit": "3c85f33b2f51f505cfed69d03272f9c077436478",
  "details": [
   "VELDO-0076 detail: project/paused-claim: a signed claim of its unit is refused by name; nothing is written and the unit stays READY",
-  "VELDO-0076 detail: project/canceled-claim: its unit is still READY (the cancel records a disposition, it moves no unit); a signed claim of it is refused by name; nothing is written and no claim exists; the receiver observes the refusals by name"
+  "VELDO-0076 detail: project/canceled-claim: its unit is still READY (the cancel records a disposition, it moves no unit); a signed claim of it is refused by name; nothing is written and no claim exists; the receiver observes the refusals by name",
+  "VELDO-0076 detail: project/paused-mid-claim: the claim is refused by name; nothing is written after the pause and the unit stays READY with no claim"
  ],
  "failed_rows": [
   "VELDO-0076 project/paused-claim",
-  "VELDO-0076 project/canceled-claim"
+  "VELDO-0076 project/canceled-claim",
+  "VELDO-0076 project/paused-mid-claim"
  ],
  "modules": {
   ".veldo/control_claim.py": {
@@ -130,6 +132,10 @@
    false
   ],
   [
+   "VELDO-0076 project/paused-mid-claim",
+   false
+  ],
+  [
    "VELDO-0076 ran/install/assets",
    true
   ],
@@ -156,10 +162,14 @@
   [
    "VELDO-0076 ran/project/paused-claim",
    true
+  ],
+  [
+   "VELDO-0076 ran/project/paused-mid-claim",
+   true
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 3.751,
+ "seconds": 3.778,
  "spec_id": "VELDO-0076",
  "suite": "scripts/suites/71_veldo_0076_projects.py",
  "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"

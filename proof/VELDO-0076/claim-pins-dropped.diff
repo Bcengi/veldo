@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -257 +257 @@
+-            versions.update(read)
++            pass  # defect: the records the project check read are not pinned
