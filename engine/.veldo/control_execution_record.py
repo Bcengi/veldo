@@ -133,12 +133,12 @@ class Resolved:
     def __init__(self):
         self._values = {}
         self.paths = frozenset()
-        self._forms = None
+        self._forms = {}
 
     def add(self, kind, value):
         if isinstance(value, str) and value and isinstance(kind, str) and kind:
             self._values.setdefault(value, kind)
-            self._forms = None
+            self._forms = {}
 
     def kinds(self):
         return sorted(set(self._values.values()))
@@ -146,23 +146,24 @@ class Resolved:
     def __len__(self):
         return len(self._values)
 
-    def forms(self):
+    def forms(self, text=''):
         """(form, kind), longest first: each value as printed and as a JSON string carries it."""
-        if self._forms is not None:
-            return self._forms
+        depth = max(4, max((len(m.group()) for m in re.finditer(r'\\+', text)), default=0).bit_length() + 1)
+        if depth in self._forms:
+            return self._forms[depth]
         found = {}
         for value, kind in self._values.items():
             forms = {value, value.upper(), base64.b64encode(value.encode()).decode(),
                      base64.urlsafe_b64encode(value.encode()).decode(),
                      urllib.parse.quote(value, safe=''), urllib.parse.quote_plus(value, safe='')}
             # Nested JSON carries another escaped string inside each enclosing string.
-            for _ in range(4):
+            for _ in range(depth):
                 forms |= {json.dumps(v, ensure_ascii=ascii_)[1:-1] for v in forms for ascii_ in (True, False)}
             for form in forms:
                 if form:
                     found.setdefault(form, kind)
-        self._forms = sorted(found.items(), key=lambda item: (-len(item[0]), item[0]))
-        return self._forms
+        self._forms[depth] = sorted(found.items(), key=lambda item: (-len(item[0]), item[0]))
+        return self._forms[depth]
 
 
 # ACCOUNT IDENTIFIERS, BY FIELD. The engine's handshake answer (Claude Code's initialize control response,
@@ -336,7 +337,7 @@ def redact(text, resolved):
     init line's account identifiers by field, the scanner's known patterns and the high-entropy spans
     (by component in a path or URL) replaced; `kinds` the sorted kinds replaced."""
     kinds = set()
-    for form, kind in (resolved.forms() if resolved is not None else ()):
+    for form, kind in (resolved.forms(text) if resolved is not None else ()):
         if form in text:
             text = text.replace(form, marker(kind))
             kinds.add(kind)
@@ -363,7 +364,7 @@ def _block_spans(text, resolved):
         for start, end in reversed(matches):
             spans.append((start, end, kind))
             text = text[:start] + ' ' * (end - start) + text[end:]
-    for form, kind in resolved.forms() if resolved is not None else ():
+    for form, kind in resolved.forms(text) if resolved is not None else ():
         take([(m.start(), m.end()) for m in re.finditer(re.escape(form), text)], kind)
     for rx, kind in PATTERN_KINDS:
         take([(m.start(), m.end()) for m in rx.finditer(text)], kind)
@@ -374,14 +375,14 @@ def _block_spans(text, resolved):
 def _safe_prefix(text, resolved):
     """Keep the longest exact form and fixed pattern width. Unbounded patterns retain their open start,
     and entropy retains the entire last lexical candidate, however long it grows."""
-    tail = max([256] + [len(form) for form, _ in resolved.forms()] if resolved is not None else [256])
+    tail = max([256] + [len(form) for form, _ in resolved.forms(text)] if resolved is not None else [256])
     safe = max(0, len(text) - tail)
     # All scanner patterns start inside this alphabet, except private-key headers and quoted assignments.
     for match in re.finditer(r'[A-Za-z0-9+/=_\-.]+', text):
         if match.start() < safe < match.end():
             safe = match.start()
     # These two patterns may contain arbitrarily much whitespace; retain their incomplete starts.
-    for match in re.finditer(r'(?i)(?:-{5}BEGIN [A-Z ]*|\b(?:password|passwd|secret|api[_-]?key|token)\s*[:=]\s*[\'"][^\"\'\s]*)$', text):
+    for match in re.finditer(r'(?i)(?:-{5}BEGIN [A-Z ]*|\b(?:password|passwd|secret|api[_-]?key|token)\s*(?:[:=]\s*(?:[\'"][^\"\'\s]*)?)?)$', text):
         safe = min(safe, match.start())
     return safe
 
@@ -446,8 +447,11 @@ class Recorder:
             self.messages[scope] = (inner.get('message') or {}).get('id')
         message = event.get('message_id') or self.messages.get(scope)
         delta = inner.get('delta') or {}
-        field = {'text_delta': 'text', 'input_json_delta': 'partial_json'}.get(delta.get('type'))
-        if kind == 'content_block_delta' and field and isinstance(delta.get(field), str):
+        if kind == 'content_block_start':
+            self._flush_blocks(scope, inner.get('index', 0))
+            delta = inner.get('content_block') or {}
+        field = {'text': 'text', 'text_delta': 'text', 'input_json_delta': 'partial_json'}.get(delta.get('type'))
+        if kind in ('content_block_start', 'content_block_delta') and field and isinstance(delta.get(field), str):
             ident = (scope, message, inner.get('index', 0), field)
             block = self.blocks.setdefault(ident, {'text': '', 'entries': [], 'done': False})
             start = len(block['text'])

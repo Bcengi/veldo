@@ -18,6 +18,7 @@ baseline carries no stream options, so the rows fail by their own assertions.
     python3 -B proof/VELDO-0141/drive.py --red <pre-change commit>
 """
 import ast
+import concurrent.futures
 import contextlib
 import difflib
 import hashlib
@@ -134,25 +135,31 @@ def main():
     report = {'schema': 'veldo.proof-mutations/v1', 'spec_id': 'VELDO-0141', 'suite': 'scripts/suites/' + SUITE,
               'registry': 'scripts/check_teeth_mutations.py --finding %d' % FINDING, 'baseline': run(), 'noop': None,
               'mutants': []}
-    with tempfile.TemporaryDirectory(prefix='v141-drive-') as directory:
+    with tempfile.TemporaryDirectory(prefix='v141-drive-') as directory, concurrent.futures.ThreadPoolExecutor(
+            max_workers=2) as pool:
         report['noop'] = {}
         for module in sorted({c['module'] for c in cases}):
             case = next(c for c in cases if c['module'] == module)
             noop = ctm.materialize(case, 'noop', Path(directory) / ('noop-' + module))
-            report['noop'][module] = dict(run({module: str(noop['mutant'])}), source_sha256=noop['old_digest'],
-                                          copy_sha256=noop['new_digest'])
+            report['noop'][module] = dict(pending=pool.submit(run, {module: str(noop['mutant'])}),
+                                          source_sha256=noop['old_digest'], copy_sha256=noop['new_digest'])
         for case in cases:
             prepared = ctm.materialize(case, 'mutant', Path(directory) / case['name'])
             source = prepared['source'].read_text()
             (HERE / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
                 source.splitlines(keepends=True), ctm.mutate(source, case).splitlines(keepends=True),
                 n=0, fromfile='a/.veldo/' + case['module'], tofile='b/.veldo/' + case['module'])))
-            observed = run({case['module']: str(prepared['mutant'])})
+            pending = pool.submit(run, {case['module']: str(prepared['mutant'])})
             report['mutants'].append(dict(name=case['name'], module='.veldo/' + case['module'], named_rows=case['rows'],
                                           diff='proof/VELDO-0141/%s.diff' % case['name'],
                                           source_sha256=prepared['old_digest'], mutant_sha256=prepared['new_digest'],
-                                          named_row_red=all(PREFIX + r in observed['failed_rows'] for r in case['rows']),
-                                          by_assertion=not _raised(observed), **observed))
+                                          pending=pending))
+        for result in report['noop'].values():
+            result.update(result.pop('pending').result())
+        for result in report['mutants']:
+            observed = result.pop('pending').result()
+            result.update(observed, by_assertion=not _raised(observed),
+                          named_row_red=all(PREFIX + r in observed['failed_rows'] for r in result['named_rows']))
     report['all_named_rows_red'] = all(m['named_row_red'] for m in report['mutants'])
     report['all_by_assertion'] = all(m['by_assertion'] for m in report['mutants'])
     report['controls_green'] = not report['baseline']['failed_rows'] and all(

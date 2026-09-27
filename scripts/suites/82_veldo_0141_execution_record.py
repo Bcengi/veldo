@@ -263,6 +263,9 @@ def _v141_suite():
         EDIT = {'path': 'NOTES.md', 'old': 'first draft of the notes', 'new': 'second draft of the notes'}
         src = base / 'source'
         GP.run(['git', 'init', '-q', str(src)], check=True, capture_output=True)
+        relative_file = 'worker_sources/components/traceback_execution_record_review.py'
+        (src / relative_file).parent.mkdir(parents=True)
+        (src / relative_file).write_text('review file\n')
         (src / EDIT['path']).write_text('# notes\n' + EDIT['old'] + '\n')
         GP.run(['git', '-C', str(src), 'add', '-A', '-f'], check=True, capture_output=True)
         GP.run(['git', '-C', str(src), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'], check=True,
@@ -852,7 +855,7 @@ err.close()
         CLAUDE_PAYLOAD = {'task': 'work the unit', 'pace': 0.12,
                           'command': "printf 'v141 command output\\n'; printf 'v141 command error\\n' >&2",
                           'failing': "printf 'v141 failing error\\n' >&2; exit 3",
-                          'edit': dict(EDIT), 'subagent': 'v141 subagent text', 'say': ['v141 done']}
+                          'edit': dict(EDIT), 'subagent': 'v141 subagent text', 'say': ['v141 done', relative_file]}
 
         ended = {'writes': []}
 
@@ -1383,6 +1386,38 @@ err.close()
                 check('redaction/partial-blocks', 'every fragment of each value has a named replacement',
                       clean and all(planted not in value and pattern_token not in value for value in joined.values())
                       and all(not any(word in value for word in planted.split('.')) for value in joined.values()))
+                recorder = ER.Recorder(directory_, {'dispatch_id': 'start-review'}, resolved)
+                for event in ({'type': 'content_block_start', 'index': 0,
+                               'content_block': {'type': 'text', 'text': planted[:4]}},
+                              {'type': 'content_block_delta', 'index': 0,
+                               'delta': {'type': 'text_delta', 'text': planted[4:]}},
+                              {'type': 'content_block_stop', 'index': 0}):
+                    recorder.feed('engine', (json.dumps({'type': 'stream_event', 'event': event}) + '\n').encode())
+                committed = recorder.close()
+                lines = ER.read(directory_, 'start-review', 0, 100, committed=committed)['lines']
+                check('redaction/partial-blocks', 'initial block text participates in delta redaction',
+                      len(lines) == 3 and all(PLANTED_KIND in line['redacted'] for line in lines[:2]))
+                # Patterns can grow beyond any fixed tail, including whitespace before an assigned value.
+                recorder = ER.Recorder(directory_, {'dispatch_id': 'unbounded-review'}, resolved)
+                recorder.feed('engine', (json.dumps({'type': 'stream_event', 'event': {'type': 'content_block_start',
+                    'index': 0, 'content_block': {}}}) + '\n').encode())
+                opaque = fresh() * 20
+                assigned = 'to' + 'ken' + ' ' * 600 + '= ' + chr(34) + 'low' * 6 + chr(34)
+                long_pattern = pattern_token + 'a' * 600
+                content = assigned + ' next ' + long_pattern + ' next ' + opaque + ' done'
+                for offset in range(0, len(content), 7):
+                    recorder.feed('engine', (json.dumps({'type': 'stream_event', 'event': {
+                        'type': 'content_block_delta', 'index': 0,
+                        'delta': {'type': 'text_delta', 'text': content[offset:offset + 7]}}}) + '\n').encode())
+                committed = recorder.close()
+                lines = ER.read(directory_, 'unbounded-review', 0, 10000, committed=committed)['lines']
+                deltas = [line for line in lines if 'text_delta' in line['payload']]
+                expected = [(0, len(assigned), 'pattern:credential_assigned_as_a_literal'),
+                            (content.index(long_pattern), content.index(long_pattern) + len(long_pattern), 'pattern:github_token'),
+                            (content.index(opaque), content.index(opaque) + len(opaque), 'entropy')]
+                check('redaction/partial-blocks', 'unbounded pattern and entropy spans never release an affected fragment',
+                      all(kind in line['redacted'] for i, line in enumerate(deltas) for low, high, kind in expected
+                          if i * 7 < high and (i + 1) * 7 > low))
                 # Interleaved message identities and message-end flushing without a block stop.
                 recorder = ER.Recorder(directory_, {'dispatch_id': 'interleaved-review'}, resolved)
                 for parent in ('first', 'second'):
@@ -1403,6 +1438,9 @@ err.close()
                                             if 'text_delta' in line['payload']))
 
         with region('redaction/clone-relative-paths'):
+            check('redaction/clone-relative-paths', 'receiver uses its bound clone, not its own working directory',
+                  any(relative_file in line['payload'] for line in main_lines)
+                  and any(relative_file in line['payload'] for line in all_pages(main_launch.dispatch_id)[0]))
             if ER is None or not hasattr(ER, 'clone_paths'):
                 check('redaction/clone-relative-paths', 'clone path snapshot exists', False)
             else:
@@ -1447,6 +1485,10 @@ err.close()
                 resolved.add(PLANTED_KIND, value)
             variants = [base64.b64encode(value.encode()).decode(), urllib.parse.quote(value, safe=''),
                         urllib.parse.quote_plus(value), value.upper(), json.dumps(json.dumps({'value': value}))]
+            nested = json.dumps({'value': value})
+            for _ in range(8):
+                nested = json.dumps(nested)
+                variants.append(nested)
             for variant in variants:
                 kept_, kinds = redacted(variant, resolved)
                 check('redaction/encoded-values', 'encoded resolved value has an exact named replacement',

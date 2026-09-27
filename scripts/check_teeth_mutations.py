@@ -7464,7 +7464,7 @@ def cases():
               ['route/served-lines'])
     record141('redaction-scanner-first', 'control_execution_record.py',
               "    kinds = set()\n"
-              "    for form, kind in (resolved.forms() if resolved is not None else ()):\n"
+              "    for form, kind in (resolved.forms(text) if resolved is not None else ()):\n"
               "        if form in text:\n"
               "            text = text.replace(form, marker(kind))\n"
               "            kinds.add(kind)\n"
@@ -7473,7 +7473,7 @@ def cases():
               "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
               ['redaction/planted-value'],
               also=[("    return text, sorted(kinds)\n",
-                     "    for form, kind in (resolved.forms() if resolved is not None else ()):  # defect: after the scanner\n"
+                     "    for form, kind in (resolved.forms(text) if resolved is not None else ()):  # defect: after the scanner\n"
                      "        if form in text:\n"
                      "            text = text.replace(form, marker(kind))\n"
                      "            kinds.add(kind)\n"
@@ -7553,7 +7553,7 @@ def cases():
               "    for start, end, replacement, kind in []:  # defect: the account identifiers are kept\n",
               ['redaction/account-fields'])
     record141('record141-partials-line-by-line', 'control_execution_record.py',
-              "        if kind == 'content_block_delta' and field and isinstance(delta.get(field), str):\n",
+              "        if kind in ('content_block_start', 'content_block_delta') and field and isinstance(delta.get(field), str):\n",
               '        if False:  # defect: redact partial messages one line at a time\n',
               ['redaction/partial-blocks'])
     record141('record141-partials-tail-too-short', 'control_execution_record.py',
@@ -7592,6 +7592,10 @@ def cases():
               "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=self.committed)\n",
               "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=None)\n",
               ['route/unknown-committed'])
+    record141('record141-receiver-clone-unlisted', 'control_launch.py',
+              "        self.resolved.paths = ER.clone_paths(self._engine_cwd(argv, contract['dispatch_id'],\n                                                               adapter.get('identity') == 'reported'))\n",
+              '        self.resolved.paths = ()  # defect: receiver never snapshots its clone\n',
+              ['redaction/clone-relative-paths'])
     return result
 
 

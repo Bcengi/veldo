@@ -703,7 +703,8 @@ class Receiver:
                   'unit': contract['unit'], 'station': contract['station'],
                   'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
                   'host': self.host}
-        self.resolved.paths = ER.clone_paths(self._engine_cwd(adapter['argv'], contract['dispatch_id'],
+        argv = (self.binding or {}).get('argv', adapter['argv'])
+        self.resolved.paths = ER.clone_paths(self._engine_cwd(argv, contract['dispatch_id'],
                                                                adapter.get('identity') == 'reported'))
         self.recorder = ER.Recorder(ER.directory(self.config), header, self.resolved,
                                     hints=self.config.get('record_hints') or ())
