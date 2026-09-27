@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -145 +145 @@
+@@ -151 +151 @@
 -        if line['sequence'] != at or isinstance(line['sequence'], bool):
 +        if isinstance(line['sequence'], bool):  # defect: a gap in the sequence is not refused

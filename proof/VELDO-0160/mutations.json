@@ -91,6 +91,10 @@
     true
    ],
    [
+    "VELDO-0160 decision/unconfigured-call-asks",
+    true
+   ],
+   [
     "VELDO-0160 pool/moved-off",
     true
    ],
@@ -127,17 +131,17 @@
     true
    ]
   ],
-  "seconds": 25.397
+  "seconds": 24.632
  },
  "controls_green": true,
  "mutants": [
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-ir0jux_m/helper/accounts/profiles/shared-claude_code, acct-c1]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-c2: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-ir0jux_m/helper/accounts/profiles/shared-claude_code, acct-c2]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-c3: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-ir0jux_m/helper/accounts/profiles/shared-claude_code, acct-c3]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-x1: the engine ran on exactly its own account's registered profile (CODEX_HOME) and no other provider's, named as that account [/dev/shm/v160-ir0jux_m/helper/accounts/profiles/shared-codex, acct-x1]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-np5xw5bh/helper/accounts/profiles/shared-claude_code, acct-c1]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-c2: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-np5xw5bh/helper/accounts/profiles/shared-claude_code, acct-c2]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-c3: the engine ran on exactly its own account's registered profile (CLAUDE_CONFIG_DIR) and no other provider's, named as that account [/dev/shm/v160-np5xw5bh/helper/accounts/profiles/shared-claude_code, acct-c3]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-x1: the engine ran on exactly its own account's registered profile (CODEX_HOME) and no other provider's, named as that account [/dev/shm/v160-np5xw5bh/helper/accounts/profiles/shared-codex, acct-x1]",
     "VELDO-0160 pool/per-account-isolation detail: the four engines ran on four different profiles [2]"
    ],
    "diff": "proof/VELDO-0160/pool-shared-profile.diff",
@@ -238,6 +242,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -274,7 +282,7 @@
      true
     ]
    ],
-   "seconds": 24.961,
+   "seconds": 24.949,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -381,6 +389,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -417,7 +429,7 @@
      true
     ]
    ],
-   "seconds": 24.917,
+   "seconds": 25.028,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -523,6 +535,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -559,7 +575,7 @@
      true
     ]
    ],
-   "seconds": 25.033,
+   "seconds": 24.925,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -573,10 +589,10 @@
     "VELDO-0160 pool/per-account-isolation detail: the metrics count one dispatch on each account [{'acct-c1': 1}]",
     "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': 7, 'acct-c2': None, 'acct-c3': None, 'acct-x1': None}]",
     "VELDO-0160 pool/concurrent detail: the four dispatches were each accepted and running before any ended [[('claude', None, 'accepted'), ('claude', 'no_account', None), ('claude', 'no_account', None), ('codex', 'no_account', None)]]",
-    "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(1790464634.3352807, 1790464634.3932352), (None, None), (None, None), (None, None)]]",
+    "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(1790469773.140788, 1790469773.1998296), (None, None), (None, None), (None, None)]]",
     "VELDO-0160 pool/concurrent detail: the four engine processes were alive at the same time [1]",
-    "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[('acct-c2', None), (None, 'no_account_until:1790464646')]]",
-    "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [no_account_until:1790464646, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_unobserved:one_run', 'acct-c3': 'account_unobserved:one_run'}]",
+    "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[('acct-c2', None), (None, 'no_account_until:1790469785')]]",
+    "VELDO-0160 pool/moved-off detail: with the other two at their concurrency, the next dispatch waits: refused before anything is prepared, \"no account until\" acct-c1's reported reset, acct-c1 passed over at its limit [no_account_until:1790469785, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_unobserved:one_run', 'acct-c3': 'account_unobserved:one_run'}]",
     "VELDO-0160 pool/moved-off detail: at its reported reset acct-c1 takes work again [['acct-c3', None], (None, 'no_account')]",
     "VELDO-0160 pool/added-account detail: the three Claude Code accounts are each running a worker [['acct-c1', None, None]]",
     "VELDO-0160 pool/added-account detail: the next dispatch launched on the new account [None, no_account]",
@@ -688,6 +704,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -724,7 +744,7 @@
      true
     ]
    ],
-   "seconds": 36.778,
+   "seconds": 36.664,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -835,6 +855,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -871,7 +895,7 @@
      true
     ]
    ],
-   "seconds": 25.311,
+   "seconds": 24.414,
    "source_sha256": "308d51b7700b7193f7ba43c322b7f2d44d2f6a6cec543e204fc9a3e57d604491"
   },
   {
@@ -881,7 +905,7 @@
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 12:49am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 2:14am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, rejected]",
@@ -990,6 +1014,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1026,7 +1054,7 @@
      true
     ]
    ],
-   "seconds": 24.931,
+   "seconds": 24.98,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -1035,7 +1063,7 @@
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [failed, None]",
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{}]",
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 12:49am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 2:15am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
@@ -1144,6 +1172,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1180,7 +1212,7 @@
      true
     ]
    ],
-   "seconds": 25.043,
+   "seconds": 25.042,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -1286,6 +1318,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1322,15 +1358,15 @@
      true
     ]
    ],
-   "seconds": 25.037,
+   "seconds": 25.145,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [account_limit, {'reset_at': 1790472000.0, 'signal': 'result', 'window': 'five_hour'}]",
-    "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{'observed_at': 1790464791.322451, 'reset_at': 1790472000.0, 'source_dispatch': 'dispatch/VELDO-16004-acct-l2-87/97a960d806cc42208c24c9be9395eb2e', 'status': 'rejected', 'utilization': None}]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 12:50am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': 1790470200.0, 'signal': 'result', 'window': 'unified'}, rejected]"
+    "VELDO-0160 limit/rate-limit-result detail: Claude Code: the run is classified account_limit with its window and reset time [account_limit, {'reset_at': 1790477160.0, 'signal': 'result', 'window': 'five_hour'}]",
+    "VELDO-0160 limit/rate-limit-result detail: Claude Code: the window and reset time are recorded on the account, exhausted [{'observed_at': 1790469929.1110404, 'reset_at': 1790477160.0, 'source_dispatch': 'dispatch/VELDO-16004-acct-l2-87/ef2ec4e765814ebbaace1b15e2d51883', 'status': 'rejected', 'utilization': None}]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 2:15am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': 1790475300.0, 'signal': 'result', 'window': 'unified'}, rejected]"
    ],
    "diff": "proof/VELDO-0160/limit-claude-reset-minute-start.diff",
    "failed_rows": [
@@ -1431,6 +1467,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1467,7 +1507,7 @@
      true
     ]
    ],
-   "seconds": 25.055,
+   "seconds": 24.789,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -1575,6 +1615,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1611,7 +1655,7 @@
      true
     ]
    ],
-   "seconds": 24.938,
+   "seconds": 25.06,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -1720,6 +1764,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1756,7 +1804,7 @@
      true
     ]
    ],
-   "seconds": 25.003,
+   "seconds": 25.014,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -1863,6 +1911,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -1899,13 +1951,13 @@
      true
     ]
    ],
-   "seconds": 25.018,
+   "seconds": 25.008,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 limit/stream-exhausted detail: Claude Code (a window reported exhausted, then open again): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [account_limit, {'reset_at': 1790472127, 'signal': 'stream', 'window': 'five_hour'}, ['five_hour']]"
+    "VELDO-0160 limit/stream-exhausted detail: Claude Code (a window reported exhausted, then open again): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [account_limit, {'reset_at': 1790477265, 'signal': 'stream', 'window': 'five_hour'}, ['five_hour']]"
    ],
    "diff": "proof/VELDO-0160/limit-reopened-window-kept.diff",
    "failed_rows": [
@@ -2005,6 +2057,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2041,7 +2097,7 @@
      true
     ]
    ],
-   "seconds": 24.949,
+   "seconds": 24.919,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -2059,7 +2115,7 @@
     "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [{'unified': 1}]",
     "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, []]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 12:52am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 2:17am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, account_limit, {'reset_at': None, 'signal': 'stream', 'window': 'unified'}, rejected]",
@@ -2170,6 +2226,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2206,7 +2266,7 @@
      true
     ]
    ],
-   "seconds": 24.986,
+   "seconds": 25.091,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   {
@@ -2220,7 +2280,7 @@
     "VELDO-0160 limit/rate-limit-result detail: Claude Code: the metrics count the run ended account_limit on its account and window [None]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [None, None]",
     "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 12:52am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 2:18am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, None, None, rejected]",
@@ -2338,6 +2398,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -2374,7 +2438,7 @@
      true
     ]
    ],
-   "seconds": 24.412,
+   "seconds": 24.247,
    "source_sha256": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502"
   },
   {
@@ -2382,10 +2446,10 @@
    "details": [
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool not marked read-only: decided ask, naming exactly that call [rerun, [(5, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, [(3, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only')]]",
-    "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [rerun, [(3, 'mailer', 'send', None, None, 'server_not_configured')]]",
+    "VELDO-0160 decision/ask detail: claude_code, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [rerun, [(3, 'mailer', 'send', None, None, 'server_not_configured')]]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool not marked read-only: decided ask, naming exactly that call [rerun, [(5, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, [(3, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only')]]",
-    "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [rerun, [(3, 'mailer', 'send', None, None, 'server_not_configured')]]",
+    "VELDO-0160 decision/ask detail: codex, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [rerun, [(3, 'mailer', 'send', None, None, 'server_not_configured')]]",
     "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with its JSON text truncated: decided ask, naming that line [rerun, [(3, None, None, None, None, 'unreadable')]]",
     "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with a redacted span in place of its input, breaking the JSON: decided ask, naming that line [rerun, [(3, None, None, None, None, 'redacted_unreadable')]]",
     "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with the whole payload redacted: decided ask, naming that line [rerun, [(3, None, None, None, None, 'redacted_unreadable')]]",
@@ -2477,7 +2541,7 @@
     "VELDO-0160 decision/subagent-calls"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "f6766cfa29663e427c9e3818304180cbed907d12a40096d7f9b45fcb4ce5be85",
+   "mutant_sha256": "6436434eb4bd5e115dae68320be58a3e577e80f881ef52c0c1f10578992da3e7",
    "name": "decision-ask-reruns",
    "named_row_red": true,
    "named_rows": [
@@ -2570,6 +2634,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2606,21 +2674,21 @@
      true
     ]
    ],
-   "seconds": 24.596,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.781,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [rerun, None]",
-    "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [rerun, None]"
+    "VELDO-0160 decision/ask detail: claude_code, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [rerun, None]",
+    "VELDO-0160 decision/ask detail: codex, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [rerun, None]"
    ],
    "diff": "proof/VELDO-0160/decision-unlisted-server-read-only.diff",
    "failed_rows": [
     "VELDO-0160 decision/ask"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "1ea8fb4881d6fcf736616937b96c1fc9eec0946c5acb8dc2e0e75adb98c7d5b1",
+   "mutant_sha256": "fde90144907da0183c375f70d175e857ca8663c00f5f0e886f199e42aa45f770",
    "name": "decision-unlisted-server-read-only",
    "named_row_red": true,
    "named_rows": [
@@ -2713,6 +2781,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2749,8 +2821,8 @@
      true
     ]
    ],
-   "seconds": 24.918,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.943,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -2769,7 +2841,7 @@
     "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "4d2be19b41d75f91d7d7840dab22dfe485d4bc49c931e7e53e54b798344411fb",
+   "mutant_sha256": "6581796f76f0b8b81d482f2e1e3f27405cc71d922a9a93aeb989112fc671f732",
    "name": "decision-unmarked-revision-read-only",
    "named_row_red": true,
    "named_rows": [
@@ -2862,6 +2934,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -2898,8 +2974,8 @@
      true
     ]
    ],
-   "seconds": 25.277,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.978,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -2908,6 +2984,7 @@
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool not marked read-only: decided ask, naming exactly that call [rerun, None]",
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, None]",
     "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [rerun, None]",
+    "VELDO-0160 decision/ask detail: claude_code, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [rerun, None]",
     "VELDO-0160 decision/same-id-write detail: claude_code: the id shown read-only and then naming a write is decided ask, naming the write [rerun, None]",
     "VELDO-0160 decision/redacted-name detail: a redacted line whose tool_use is named 'mcp__tracker__get_issue': decided re-run [ask, [(3, None, None, None, None, 'redacted_unreadable')]]",
     "VELDO-0160 decision/repl-inner-call detail: an MCP write made inside the REPL tool (the checker's reproduction): decided ask [rerun, None, 0 MCP calls]",
@@ -2931,7 +3008,9 @@
     "VELDO-0160 decision/subagent-calls detail: a task_progress without its task's id: decided ask [ask, [(9, 'unreadable', None, None, None)], 0 MCP calls]",
     "VELDO-0160 decision/subagent-calls detail: a task end whose usage has no count of calls: decided ask [ask, [(9, 'unreadable', None, None, None)], 0 MCP calls]",
     "VELDO-0160 decision/subagent-calls detail: a task end whose count is lower than its progress reported: decided ask [ask, [(9, 'unreadable', None, None, None)], 0 MCP calls]",
-    "VELDO-0160 decision/subagent-calls detail: a depth-2 agent whose reply was one hidden MCP write, named as its last tool: decided ask [ask, [(6, 'unknown_call', None, None, 'task_tool_uses')], 0 MCP calls]"
+    "VELDO-0160 decision/subagent-calls detail: a depth-2 agent whose reply was one hidden MCP write, named as its last tool: decided ask [ask, [(6, 'unknown_call', None, None, 'task_tool_uses')], 0 MCP calls]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [rerun, no_write_capable_server, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [rerun, no_write_capable_server, None]"
    ],
    "diff": "proof/VELDO-0160/decision-claude-calls-unread.diff",
    "failed_rows": [
@@ -2942,7 +3021,8 @@
     "VELDO-0160 decision/repl-inner-call",
     "VELDO-0160 decision/task-progress-tool",
     "VELDO-0160 decision/frame-tool-names",
-    "VELDO-0160 decision/subagent-calls"
+    "VELDO-0160 decision/subagent-calls",
+    "VELDO-0160 decision/unconfigured-call-asks"
    ],
    "module": ".veldo/control_engine_claude.py",
    "mutant_sha256": "a55f4401aeeb8fdc84d33e8a4497e92bcc06939850d02925c26f9b5073a088d7",
@@ -3038,6 +3118,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3074,7 +3158,7 @@
      true
     ]
    ],
-   "seconds": 24.925,
+   "seconds": 25.012,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -3084,15 +3168,19 @@
     "VELDO-0160 decision/ask detail: codex, a call to a tool not marked read-only: decided ask, naming exactly that call [ask, [(3, None, None, None, None, 'unknown_call'), (4, None, None, None, None, 'unknown_call'), (5, None, None, None, None, 'unknown_call'), (6, None, None, None, None, 'unknown_call')]]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [ask, [(3, None, None, None, None, 'unknown_call'), (4, None, None, None, None, 'unknown_call')]]",
     "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, None, None, None, None, 'unknown_call'), (4, None, None, None, None, 'unknown_call')]]",
+    "VELDO-0160 decision/ask detail: codex, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [ask, [(3, None, None, None, None, 'unknown_call'), (4, None, None, None, None, 'unknown_call')]]",
     "VELDO-0160 decision/unreadable-asks detail: codex, an engine line holding a write with a tool call whose server is not a string: decided ask, naming that line [ask, [(3, None, None, None, None, 'unknown_call')]]",
-    "VELDO-0160 decision/same-id-write detail: codex: the id shown read-only and then naming a write is decided ask, naming the write [ask, [(3, None, None, None, None, 'unknown_call'), (4, None, None, None, None, 'unknown_call')]]"
+    "VELDO-0160 decision/same-id-write detail: codex: the id shown read-only and then naming a write is decided ask, naming the write [ask, [(3, None, None, None, None, 'unknown_call'), (4, None, None, None, None, 'unknown_call')]]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [rerun, no_write_capable_server, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [rerun, no_write_capable_server, None]"
    ],
    "diff": "proof/VELDO-0160/decision-codex-calls-unread.diff",
    "failed_rows": [
     "VELDO-0160 decision/rerun",
     "VELDO-0160 decision/ask",
     "VELDO-0160 decision/unreadable-asks",
-    "VELDO-0160 decision/same-id-write"
+    "VELDO-0160 decision/same-id-write",
+    "VELDO-0160 decision/unconfigured-call-asks"
    ],
    "module": ".veldo/control_engine_codex.py",
    "mutant_sha256": "435ed29418ce56dc2811940e03972ab469e0491253af09369e352a1027db0ad2",
@@ -3188,6 +3276,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3224,7 +3316,7 @@
      true
     ]
    ],
-   "seconds": 24.974,
+   "seconds": 25.18,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -3234,10 +3326,12 @@
     "VELDO-0160 decision/rerun detail: codex, only calls to tools marked read-only: decided re-run, naming no call [rerun, None]",
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool not marked read-only: decided ask, naming exactly that call [ask, [(5, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only'), (6, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [ask, [(3, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only'), (4, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only')]]",
-    "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured'), (4, 'mailer', 'send', None, None, 'server_not_configured')]]",
+    "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'unconfigured_call'), (4, 'mailer', 'send', None, None, 'unconfigured_call')]]",
+    "VELDO-0160 decision/ask detail: claude_code, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured'), (4, 'mailer', 'send', None, None, 'server_not_configured')]]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool not marked read-only: decided ask, naming exactly that call [ask, [(5, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only'), (6, 'tracker', 'add_comment', 'mcp_server:tracker', 3, 'not_marked_read_only')]]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [ask, [(3, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only'), (4, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only')]]",
-    "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured'), (4, 'mailer', 'send', None, None, 'server_not_configured')]]",
+    "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'unconfigured_call'), (4, 'mailer', 'send', None, None, 'unconfigured_call')]]",
+    "VELDO-0160 decision/ask detail: codex, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured'), (4, 'mailer', 'send', None, None, 'server_not_configured')]]",
     "VELDO-0160 decision/task-progress-tool detail: the same last tool on two progress lines is one call: decided ask [ask, [(6, 'not_marked_read_only', 'wiki', 'write_page', None), (6, 'unknown_call', None, None, 'task_tool_uses'), (7, 'not_marked_read_only', 'wiki', 'write_page', None)], 2 MCP calls]",
     "VELDO-0160 decision/frame-tool-names detail: an MCP write and its heartbeat are one call: decided ask [ask, [(3, 'not_marked_read_only', 'tracker', 'add_comment', None), (4, 'not_marked_read_only', 'tracker', 'add_comment', None)], 2 MCP calls]"
    ],
@@ -3249,7 +3343,7 @@
     "VELDO-0160 decision/frame-tool-names"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "e4e88d0a57ae519776fd9d9b57110cba81f16095a32e8d3c52b29fae1671faaf",
+   "mutant_sha256": "6135078088fd9166bd3ec8bc8f6da39ae612c0bfc0253c8e5f1deae30b6c4cee",
    "name": "decision-call-named-twice",
    "named_row_red": true,
    "named_rows": [
@@ -3342,6 +3436,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3378,8 +3476,8 @@
      true
     ]
    ],
-   "seconds": 24.922,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.917,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -3420,7 +3518,7 @@
     "VELDO-0160 decision/nested-work-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "c488d8337ad9cf7de4ee6ee29d08211b27d3f3822391608739032f6778a373f2",
+   "mutant_sha256": "bebaa039a90aa55d401e5c0fb56e53203eb07b0a8af2d7b5638ecabe198f30a2",
    "name": "decision-read-only-asks",
    "named_row_red": true,
    "named_rows": [
@@ -3513,6 +3611,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3549,8 +3651,8 @@
      true
     ]
    ],
-   "seconds": 24.98,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.014,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -3565,7 +3667,7 @@
     "VELDO-0160 decision/no-write-server-reruns"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "6dcc0839dc1ffb23cf961f2b3777428c159afbc6b7aee83bf50f03f91d55c4ba",
+   "mutant_sha256": "33082937a104fd85c96d4cb00712a649bab65e96b6d9dc54c7d63d26c6443982",
    "name": "decision-gap-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -3658,6 +3760,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3694,8 +3800,8 @@
      true
     ]
    ],
-   "seconds": 25.092,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.955,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -3714,7 +3820,7 @@
     "VELDO-0160 decision/unreadable-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "61f7fcf9abd4f636ed9efe3dc492006b3a5cb1f75d00515a96d5ca59c3b56706",
+   "mutant_sha256": "f960a6a767a8f0c5461ff58c14810d391d8f4a4d670ca269defcb4bde6a8f298",
    "name": "decision-unreadable-line-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -3807,6 +3913,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -3843,8 +3953,8 @@
      true
     ]
    ],
-   "seconds": 24.94,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.88,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -3893,7 +4003,7 @@
     "VELDO-0160 decision/subagent-calls"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "65c31c841bde2e8b2311d085a636a5275ad3d3842ffc9bea6bd1935bbbb500cd",
+   "mutant_sha256": "40a19be43ce5dfeefc33cfbed95e61b80eb73a07a399bbdfae3a4cd34f2160f2",
    "name": "decision-unreadable-call-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -3986,6 +4096,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4022,8 +4136,8 @@
      true
     ]
    ],
-   "seconds": 25.092,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.986,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -4036,7 +4150,7 @@
     "VELDO-0160 decision/unreadable-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "adeee7d967db7053f64c80bf83d00144a72a7db40ee654512d3dd39f9e811c84",
+   "mutant_sha256": "dbae9c30443e9ad51acfc333c7eaa1bfdee8b3ed3e87ad9a9c6cbbb0ec25ee7a",
    "name": "decision-event-any-object",
    "named_row_red": true,
    "named_rows": [
@@ -4129,6 +4243,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4165,8 +4283,8 @@
      true
     ]
    ],
-   "seconds": 24.721,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.12,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -4273,6 +4391,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4309,7 +4431,7 @@
      true
     ]
    ],
-   "seconds": 25.209,
+   "seconds": 24.984,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -4415,6 +4537,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4451,7 +4577,7 @@
      true
     ]
    ],
-   "seconds": 25.042,
+   "seconds": 25.131,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -4470,7 +4596,7 @@
     "VELDO-0160 decision/redacted-name"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "066ce30a00e451b6d0ce1fe5d7ecfc4834b045715f109c3acf120a74567c138f",
+   "mutant_sha256": "1f117a052b235f7a0879be73dce8ad71242dfb53ded09aed31eedd095b46c026",
    "name": "decision-redaction-unread",
    "named_row_red": true,
    "named_rows": [
@@ -4563,6 +4689,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4599,8 +4729,8 @@
      true
     ]
    ],
-   "seconds": 25.091,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.951,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -4613,7 +4743,7 @@
     "VELDO-0160 decision/same-id-write"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "4fe2e8a1027bae64abbd9c4ab657a641c26e988b9d44f9df59b68cd10673a930",
+   "mutant_sha256": "e0f03f2cb29ddf7ed417566428a2729801bc6a4bfe7aed1c7da15aa2b169dc7a",
    "name": "decision-same-id-first-wins",
    "named_row_red": true,
    "named_rows": [
@@ -4706,6 +4836,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4742,13 +4876,13 @@
      true
     ]
    ],
-   "seconds": 24.929,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.047,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 12:59am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
+    "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 2:25am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
     "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, failed, None, None]",
@@ -4856,6 +4990,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -4892,7 +5030,7 @@
      true
     ]
    ],
-   "seconds": 25.131,
+   "seconds": 25.002,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -4998,6 +5136,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5034,7 +5176,7 @@
      true
     ]
    ],
-   "seconds": 24.522,
+   "seconds": 24.725,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -5141,6 +5283,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5177,7 +5323,7 @@
      true
     ]
    ],
-   "seconds": 25.31,
+   "seconds": 25.11,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -5284,6 +5430,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5320,13 +5470,13 @@
      true
     ]
    ],
-   "seconds": 25.097,
+   "seconds": 24.98,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790466938, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour', 'acct-c4': 'account_limit:five_hour'}]"
+    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790472076, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour', 'acct-c4': 'account_limit:five_hour'}]"
    ],
    "diff": "proof/VELDO-0160/pool-until-latest-reset.diff",
    "failed_rows": [
@@ -5426,6 +5576,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5462,13 +5616,13 @@
      true
     ]
    ],
-   "seconds": 24.97,
+   "seconds": 25.056,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790465763, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour', 'acct-c4': 'account_limit:five_hour'}]"
+    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790470901, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour', 'acct-c4': 'account_limit:five_hour'}]"
    ],
    "diff": "proof/VELDO-0160/pool-until-first-window-reset.diff",
    "failed_rows": [
@@ -5568,6 +5722,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5604,7 +5762,7 @@
      true
     ]
    ],
-   "seconds": 24.798,
+   "seconds": 25.175,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -5714,6 +5872,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -5750,7 +5912,7 @@
      true
     ]
    ],
-   "seconds": 25.161,
+   "seconds": 25.199,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -5762,7 +5924,7 @@
     "VELDO-0160 pool/one-run-while-unknown detail: after it the waiting unit launched on the new account, its second run at once [None, no_account]",
     "VELDO-0160 pool/usage-observes detail: observed by its usage alone, acct-x2 admits its concurrency: three Codex dispatches run at once, two of them on acct-x2 [[('acct-x1', None), (None, 'no_account'), (None, 'no_account')]]",
     "VELDO-0160 pool/selection-order detail: the candidates are ranked lowest utilization first, least recently used first among equals, the unknown last [['acct-c3', 'acct-c2', 'acct-c1']]",
-    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790466127, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour'}]"
+    "VELDO-0160 pool/until-earliest detail: with every Claude Code account at its limit the dispatch waits until the earliest reopening, acct-c2's in 600 s, not acct-c3's five-hour reset in 300 s (its weekly window stays exhausted to 1500 s) nor the latest [no_account_until:1790471265, {'acct-c1': 'account_limit:five_hour', 'acct-c2': 'account_limit:five_hour', 'acct-c3': 'account_limit:five_hour'}]"
    ],
    "diff": "proof/VELDO-0160/pool-read-at-start.diff",
    "failed_rows": [
@@ -5866,6 +6028,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -5902,7 +6068,7 @@
      true
     ]
    ],
-   "seconds": 38.726,
+   "seconds": 38.575,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -6009,6 +6175,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6045,7 +6215,7 @@
      true
     ]
    ],
-   "seconds": 25.236,
+   "seconds": 25.095,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -6152,6 +6322,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6188,14 +6362,14 @@
      true
     ]
    ],
-   "seconds": 25.085,
+   "seconds": 25.069,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0160 pool/per-account-isolation detail: the pool spread the three Claude Code dispatches over the three Claude Code accounts and the Codex one onto the Codex account [['acct-c1', 'acct-c2', 'acct-c1', 'acct-x1']]",
-    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the invocation was reserved and settled on that account, with the tokens its own CLI reported [acct-c1, {'invocations': 1, 'messages': 1, 'tokens': 15, 'wall_seconds': 0.443339}]",
+    "VELDO-0160 pool/per-account-isolation detail: acct-c1: the invocation was reserved and settled on that account, with the tokens its own CLI reported [acct-c1, {'invocations': 1, 'messages': 1, 'tokens': 15, 'wall_seconds': 0.423103}]",
     "VELDO-0160 pool/per-account-isolation detail: the four engines ran on four different profiles [3]",
     "VELDO-0160 pool/per-account-isolation detail: the metrics count one dispatch on each account [{'acct-c1': 2, 'acct-c2': 1, 'acct-x1': 1}]",
     "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': 22, 'acct-c2': 11, 'acct-c3': None, 'acct-x1': 19}]",
@@ -6313,6 +6487,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -6349,7 +6527,7 @@
      true
     ]
    ],
-   "seconds": 40.229,
+   "seconds": 40.351,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -6457,6 +6635,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -6493,7 +6675,7 @@
      true
     ]
    ],
-   "seconds": 24.693,
+   "seconds": 24.633,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -6507,7 +6689,7 @@
     "VELDO-0160 pool/per-account-isolation detail: the metrics count one dispatch on each account [{'acct-c1': 1}]",
     "VELDO-0160 pool/per-account-isolation detail: each account's shown usage is its own run's tokens [{'acct-c1': 7, 'acct-c2': None, 'acct-c3': None, 'acct-x1': None}]",
     "VELDO-0160 pool/concurrent detail: the four dispatches were each accepted and running before any ended [[('claude', None, 'accepted'), ('claude', 'invalid_input', None), ('claude', 'invalid_input', None), ('codex', 'invalid_input', None)]]",
-    "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(1790465649.4932086, 1790465649.5547364), (None, None), (None, None), (None, None)]]",
+    "VELDO-0160 pool/concurrent detail: the four runs' recorded start and end times overlap [[(1790470787.5556781, 1790470787.6135645), (None, None), (None, None), (None, None)]]",
     "VELDO-0160 pool/concurrent detail: the four engine processes were alive at the same time [1]",
     "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
     "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
@@ -6630,6 +6812,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -6666,13 +6852,13 @@
      true
     ]
    ],
-   "seconds": 35.329,
+   "seconds": 35.473,
    "source_sha256": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [{'schema': 'veldo.reservations/v1', 'operation': 'pooled_worker', 'domain': 'domain-160', 'repository': 'repository-160', 'request': 'worker/dispatch/VELDO-16002-wait/84621530b20d431a8fdfbf7bce631254', 'subject': 'reservation:worker:[\"domain-160\",\"dispatch/VELDO-16002-wait/84621530b20d431a8fdfbf7bce631254\"]', 'accepted_versions': {'reservation:worker:[\"domain-160\",\"dispatch/VELDO-16002-wait/84621530b20d431a8fdfbf7bce631254\"]': 0}, 'outcome': 'refused', 'refusal': 'no_account_until:1790465697'}]"
+    "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [{'schema': 'veldo.reservations/v1', 'operation': 'pooled_worker', 'domain': 'domain-160', 'repository': 'repository-160', 'request': 'worker/dispatch/VELDO-16002-wait/43ea3fe28f1647cd9df6d9ce1fcf5cce', 'subject': 'reservation:worker:[\"domain-160\",\"dispatch/VELDO-16002-wait/43ea3fe28f1647cd9df6d9ce1fcf5cce\"]', 'accepted_versions': {'reservation:worker:[\"domain-160\",\"dispatch/VELDO-16002-wait/43ea3fe28f1647cd9df6d9ce1fcf5cce\"]': 0}, 'outcome': 'refused', 'refusal': 'no_account_until:1790470835'}]"
    ],
    "diff": "proof/VELDO-0160/pool-refusal-reasons-unobserved.diff",
    "failed_rows": [
@@ -6772,6 +6958,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      false
     ],
@@ -6808,7 +6998,7 @@
      true
     ]
    ],
-   "seconds": 24.711,
+   "seconds": 24.426,
    "source_sha256": "308d51b7700b7193f7ba43c322b7f2d44d2f6a6cec543e204fc9a3e57d604491"
   },
   {
@@ -6919,6 +7109,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -6955,7 +7149,7 @@
      true
     ]
    ],
-   "seconds": 25.066,
+   "seconds": 24.956,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -7061,6 +7255,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7097,7 +7295,7 @@
      true
     ]
    ],
-   "seconds": 24.815,
+   "seconds": 25.065,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   {
@@ -7135,7 +7333,7 @@
     "VELDO-0160 decision/nested-work-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "60d13f342b4e52819431724a4ad30b95ef4383582c9a98eded511fa412eb058d",
+   "mutant_sha256": "8584795cf557d101233ff752ced39759d20bdb6ff73257e430865eb815d0cd5b",
    "name": "decision-unknown-call-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -7228,6 +7426,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7264,8 +7466,8 @@
      true
     ]
    ],
-   "seconds": 24.988,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.035,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -7374,6 +7576,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7410,7 +7616,7 @@
      true
     ]
    ],
-   "seconds": 25.022,
+   "seconds": 25.079,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -7516,6 +7722,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7552,7 +7762,7 @@
      true
     ]
    ],
-   "seconds": 25.063,
+   "seconds": 24.997,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -7659,6 +7869,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7695,7 +7909,7 @@
      true
     ]
    ],
-   "seconds": 24.935,
+   "seconds": 24.857,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -7805,6 +8019,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7841,7 +8059,7 @@
      true
     ]
    ],
-   "seconds": 24.854,
+   "seconds": 25.007,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -7947,6 +8165,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -7983,7 +8205,7 @@
      true
     ]
    ],
-   "seconds": 25.254,
+   "seconds": 24.908,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -8090,6 +8312,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8126,7 +8352,7 @@
      true
     ]
    ],
-   "seconds": 24.874,
+   "seconds": 25.039,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -8238,6 +8464,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8274,7 +8504,7 @@
      true
     ]
    ],
-   "seconds": 24.952,
+   "seconds": 25.128,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -8380,6 +8610,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8416,7 +8650,7 @@
      true
     ]
    ],
-   "seconds": 25.02,
+   "seconds": 25.073,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -8523,6 +8757,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8559,7 +8797,7 @@
      true
     ]
    ],
-   "seconds": 25.012,
+   "seconds": 24.755,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -8573,7 +8811,7 @@
     "VELDO-0160 decision/redacted-name"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "79be80ed43f2a0705833757fa81517930bd79eb0cd1a6b593771c3938e2b1896",
+   "mutant_sha256": "a110e8d4ee6ae1fcbd97899866d13cd854201b7b216f324a47f777630241c8b9",
    "name": "decision-redaction-not-passed",
    "named_row_red": true,
    "named_rows": [
@@ -8666,6 +8904,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8702,8 +8944,8 @@
      true
     ]
    ],
-   "seconds": 24.973,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.043,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -8761,7 +9003,7 @@
     "VELDO-0160 decision/nested-constructs"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "4bc0a72206934e291c35053d41534735e39af898dacf70c5bc5f6ddeb700c401",
+   "mutant_sha256": "34fc11798e1324acbb9ac8eb238d5d90fe6ba821470c94036c036243ae508442",
    "name": "decision-shown-ids-per-line",
    "named_row_red": true,
    "named_rows": [
@@ -8854,6 +9096,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -8890,8 +9136,8 @@
      true
     ]
    ],
-   "seconds": 25.18,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.154,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -9042,6 +9288,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -9078,7 +9328,7 @@
      true
     ]
    ],
-   "seconds": 24.841,
+   "seconds": 24.984,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -9184,6 +9434,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -9220,7 +9474,7 @@
      true
     ]
    ],
-   "seconds": 26.568,
+   "seconds": 25.103,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -9326,6 +9580,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -9362,7 +9620,7 @@
      true
     ]
    ],
-   "seconds": 26.37,
+   "seconds": 24.911,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -9476,6 +9734,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -9512,7 +9774,7 @@
      true
     ]
    ],
-   "seconds": 27.106,
+   "seconds": 24.998,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -9621,6 +9883,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -9657,7 +9923,7 @@
      true
     ]
    ],
-   "seconds": 26.343,
+   "seconds": 24.996,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -9769,6 +10035,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -9805,7 +10075,7 @@
      true
     ]
    ],
-   "seconds": 26.669,
+   "seconds": 24.998,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -9911,6 +10181,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -9947,7 +10221,7 @@
      true
     ]
    ],
-   "seconds": 26.55,
+   "seconds": 25.185,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -10055,6 +10329,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -10091,7 +10369,7 @@
      true
     ]
    ],
-   "seconds": 27.757,
+   "seconds": 24.709,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -10216,6 +10494,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -10252,7 +10534,7 @@
      true
     ]
    ],
-   "seconds": 25.565,
+   "seconds": 25.115,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -10358,6 +10640,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -10394,7 +10680,7 @@
      true
     ]
    ],
-   "seconds": 26.169,
+   "seconds": 24.901,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -10500,6 +10786,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -10536,7 +10826,7 @@
      true
     ]
    ],
-   "seconds": 25.86,
+   "seconds": 24.982,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -10643,6 +10933,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -10679,7 +10973,7 @@
      true
     ]
    ],
-   "seconds": 26.294,
+   "seconds": 25.211,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -10785,6 +11079,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -10821,7 +11119,7 @@
      true
     ]
    ],
-   "seconds": 26.415,
+   "seconds": 24.795,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -10930,6 +11228,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -10966,7 +11268,7 @@
      true
     ]
    ],
-   "seconds": 29.538,
+   "seconds": 25.165,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -11072,6 +11374,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -11108,7 +11414,7 @@
      true
     ]
    ],
-   "seconds": 27.224,
+   "seconds": 24.935,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -11217,6 +11523,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -11253,7 +11563,7 @@
      true
     ]
    ],
-   "seconds": 25.386,
+   "seconds": 24.896,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -11359,6 +11669,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -11395,7 +11709,7 @@
      true
     ]
    ],
-   "seconds": 26.204,
+   "seconds": 24.988,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -11506,6 +11820,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -11542,7 +11860,7 @@
      true
     ]
    ],
-   "seconds": 25.931,
+   "seconds": 25.044,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -11587,7 +11905,7 @@
     "VELDO-0160 decision/nested-work-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "fa003e0bebee7e6b9ce7f80f6f57604120930930354a97d47baecd4c423da34f",
+   "mutant_sha256": "cfdd5d0f8395e3d194a04eba8ba3a3d8e184ef145ec060c7cd18fb69377ad0e8",
    "name": "decision-claude-task-counts-unread",
    "named_row_red": true,
    "named_rows": [
@@ -11681,6 +11999,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -11717,8 +12039,8 @@
      true
     ]
    ],
-   "seconds": 25.851,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.022,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -11835,6 +12157,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -11871,7 +12197,7 @@
      true
     ]
    ],
-   "seconds": 26.227,
+   "seconds": 24.955,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -11995,6 +12321,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -12031,7 +12361,7 @@
      true
     ]
    ],
-   "seconds": 25.69,
+   "seconds": 24.957,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -12138,6 +12468,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -12174,7 +12508,7 @@
      true
     ]
    ],
-   "seconds": 26.384,
+   "seconds": 24.884,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -12291,6 +12625,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -12327,7 +12665,7 @@
      true
     ]
    ],
-   "seconds": 25.773,
+   "seconds": 25.049,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -12438,6 +12776,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -12474,7 +12816,7 @@
      true
     ]
    ],
-   "seconds": 25.602,
+   "seconds": 25.061,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -12588,6 +12930,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -12624,7 +12970,7 @@
      true
     ]
    ],
-   "seconds": 26.84,
+   "seconds": 24.958,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -12748,6 +13094,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -12784,8 +13134,308 @@
      true
     ]
    ],
-   "seconds": 26.614,
+   "seconds": 24.967,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured')]]",
+    "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [ask, [(3, 'mailer', 'send', None, None, 'server_not_configured')]]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [rerun, no_write_capable_server, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [rerun, no_write_capable_server, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [rerun, no_write_capable_server, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [rerun, no_write_capable_server, None]"
+   ],
+   "diff": "proof/VELDO-0160/decision-unconfigured-call-skipped.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/ask",
+    "VELDO-0160 decision/unconfigured-call-asks"
+   ],
+   "module": ".veldo/control_account_limit.py",
+   "mutant_sha256": "ef7b5d3105a24e801823ac0a4abf25921f3024cec785325aacd3e1ad7e97e285",
+   "name": "decision-unconfigured-call-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/unconfigured-call-asks",
+    "decision/ask"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     false
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 decision/subagent-calls",
+     true
+    ],
+    [
+     "VELDO-0160 decision/no-write-server-reruns",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-work-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-constructs",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     false
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.077,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [rerun, no_write_capable_server, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [rerun, no_write_capable_server, None]"
+   ],
+   "diff": "proof/VELDO-0160/decision-unconfigured-tool-ignored.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/unconfigured-call-asks"
+   ],
+   "module": ".veldo/control_account_limit.py",
+   "mutant_sha256": "064bd1c8723e1fb50bda11d8b3137d91beed9f70a09a92ac5c27b6e5eeb8f943",
+   "name": "decision-unconfigured-tool-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/unconfigured-call-asks"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 decision/subagent-calls",
+     true
+    ],
+    [
+     "VELDO-0160 decision/no-write-server-reruns",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-work-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-constructs",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     false
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.348,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -12793,14 +13443,19 @@
     "VELDO-0160 decision/no-write-server-reruns detail: the checker's forked skill, only read-only tools configured: decided re-run whatever the stream shows [ask, nested_work, [(3, None, None, None, None, 'nested_work'), (4, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (7, None, None, None, None, 'nested_work'), (8, None, None, None, None, 'nested_work'), (9, None, None, None, None, 'nested_work'), (10, None, None, None, None, 'nested_work')]]",
     "VELDO-0160 decision/no-write-server-reruns detail: the checker's forked skill as JSON text, only read-only tools configured: decided re-run whatever the stream shows [ask, nested_work, [(3, None, None, None, None, 'nested_work'), (4, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (7, None, None, None, None, 'nested_work'), (8, None, None, None, None, 'nested_work'), (9, None, None, None, None, 'nested_work'), (10, None, None, None, None, 'nested_work')]]",
     "VELDO-0160 decision/no-write-server-reruns detail: a depth-2 agent's hidden MCP write, no MCP server configured: decided re-run whatever the stream shows [ask, nested_work, [(3, None, None, None, None, 'nested_work'), (4, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (7, None, None, None, None, 'nested_work'), (8, None, None, None, None, 'nested_work'), (8, None, None, None, None, 'unknown_call'), (9, None, None, None, None, 'nested_work'), (10, None, None, None, None, 'nested_work'), (11, None, None, None, None, 'nested_work')]]",
-    "VELDO-0160 decision/no-write-server-reruns detail: exec's own sub-agent call, no MCP server configured: decided re-run whatever the stream shows [ask, nested_work, [(3, None, None, None, None, 'nested_work'), (3, None, None, None, None, 'unknown_call')]]"
+    "VELDO-0160 decision/no-write-server-reruns detail: exec's own sub-agent call, no MCP server configured: decided re-run whatever the stream shows [ask, nested_work, [(3, None, None, None, None, 'nested_work'), (3, None, None, None, None, 'unknown_call')]]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a listed read-only tool, only read-only servers configured: decided re-run [rerun, calls, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to the one tool the configuration gives, only read-only servers configured: decided re-run [rerun, calls, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a listed read-only tool, only read-only servers configured: decided re-run [rerun, calls, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to the one tool the configuration gives, only read-only servers configured: decided re-run [rerun, calls, None]"
    ],
    "diff": "proof/VELDO-0160/decision-rule1-skipped.diff",
    "failed_rows": [
-    "VELDO-0160 decision/no-write-server-reruns"
+    "VELDO-0160 decision/no-write-server-reruns",
+    "VELDO-0160 decision/unconfigured-call-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "6cb61a93fb137e61cb172ac7a97c988c68d61c20fadf2b61e98b962fd9c62830",
+   "mutant_sha256": "fedaffd1d64ede9dd874bc765e1323c1e37f3713bc0db86c21f532e9bcc915b0",
    "name": "decision-rule1-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -12893,6 +13548,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -12929,8 +13588,8 @@
      true
     ]
    ],
-   "seconds": 26.076,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.563,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -12969,7 +13628,7 @@
     "VELDO-0160 decision/nested-constructs"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "8d22bd6215c6c178b4e821408e8d879e45e49def58724cf842b452046bc56ab3",
+   "mutant_sha256": "bd0a6a0da278aeddc795d8f5d8242e79c7977bd738d437cd610c9f00522fa2a4",
    "name": "decision-rule2-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -13063,6 +13722,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -13099,21 +13762,30 @@
      true
     ]
    ],
-   "seconds": 25.954,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.906,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0160 decision/no-write-server-reruns detail: the checker's forked skill, only read-only tools configured: decided re-run whatever the stream shows [ask, nested_work, [(3, None, None, None, None, 'nested_work'), (4, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (7, None, None, None, None, 'nested_work'), (8, None, None, None, None, 'nested_work'), (9, None, None, None, None, 'nested_work'), (10, None, None, None, None, 'nested_work')]]",
-    "VELDO-0160 decision/no-write-server-reruns detail: the checker's forked skill as JSON text, only read-only tools configured: decided re-run whatever the stream shows [ask, nested_work, [(3, None, None, None, None, 'nested_work'), (4, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (7, None, None, None, None, 'nested_work'), (8, None, None, None, None, 'nested_work'), (9, None, None, None, None, 'nested_work'), (10, None, None, None, None, 'nested_work')]]"
+    "VELDO-0160 decision/no-write-server-reruns detail: the checker's forked skill as JSON text, only read-only tools configured: decided re-run whatever the stream shows [ask, nested_work, [(3, None, None, None, None, 'nested_work'), (4, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (5, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (6, None, None, None, None, 'nested_work'), (7, None, None, None, None, 'nested_work'), (8, None, None, None, None, 'nested_work'), (9, None, None, None, None, 'nested_work'), (10, None, None, None, None, 'nested_work')]]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [ask, unconfigured_call, [(3, 'mailer', 'send', None, None, 'unconfigured_call')]]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [ask, unconfigured_call, [(3, 'tracker', 'search', 'mcp_server:tracker', 3, 'unconfigured_call')]]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a listed read-only tool, only read-only servers configured: decided re-run [rerun, calls, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to the one tool the configuration gives, only read-only servers configured: decided re-run [rerun, calls, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [ask, unconfigured_call, [(3, 'mailer', 'send', None, None, 'unconfigured_call')]]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [ask, unconfigured_call, [(3, 'tracker', 'search', 'mcp_server:tracker', 3, 'unconfigured_call')]]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a listed read-only tool, only read-only servers configured: decided re-run [rerun, calls, None]",
+    "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to the one tool the configuration gives, only read-only servers configured: decided re-run [rerun, calls, None]"
    ],
    "diff": "proof/VELDO-0160/decision-listed-tools-ignored.diff",
    "failed_rows": [
-    "VELDO-0160 decision/no-write-server-reruns"
+    "VELDO-0160 decision/no-write-server-reruns",
+    "VELDO-0160 decision/unconfigured-call-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "9904410e35ac2fac50691fd2c3b87a054db30ae39f12c7059b0d0b9c31200a2f",
+   "mutant_sha256": "cba0e18663464b528ccb251303e9cd8ca7ff477513a4d5321357bdaf9e9007e2",
    "name": "decision-listed-tools-ignored",
    "named_row_red": true,
    "named_rows": [
@@ -13206,6 +13878,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     false
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -13242,8 +13918,8 @@
      true
     ]
    ],
-   "seconds": 28.617,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.02,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -13254,10 +13930,8 @@
     "VELDO-0160 decision/rerun detail: codex, only calls to tools marked read-only: decided re-run, naming no call [rerun, None]",
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool not marked read-only: decided ask, naming exactly that call [rerun, None]",
     "VELDO-0160 decision/ask detail: claude_code, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, None]",
-    "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [rerun, None]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool not marked read-only: decided ask, naming exactly that call [rerun, None]",
     "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [rerun, None]",
-    "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [rerun, None]",
     "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with its JSON text truncated: decided ask, naming that line [rerun, None]",
     "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with a redacted span in place of its input, breaking the JSON: decided ask, naming that line [rerun, None]",
     "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with the whole payload redacted: decided ask, naming that line [rerun, None]",
@@ -13307,7 +13981,7 @@
     "VELDO-0160 decision/nested-constructs"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "e0c4c03af8ca30709cc68584520d2002376930bda7be9974b60a336045642f79",
+   "mutant_sha256": "147dd934c569910684e206fd16728604010421e704c3c9f986be2e28f874ea5f",
    "name": "decision-all-tools-read-only",
    "named_row_red": true,
    "named_rows": [
@@ -13402,6 +14076,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -13438,8 +14116,8 @@
      true
     ]
    ],
-   "seconds": 28.434,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.096,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -13451,7 +14129,7 @@
     "VELDO-0160 decision/nested-work-asks"
    ],
    "module": ".veldo/control_account_limit.py",
-   "mutant_sha256": "087450cd786dbdce06f8655e08cf07146c13c258e02cba5409c4ea18af9bb090",
+   "mutant_sha256": "4afa63fb962ce01d6132a83da40445315db0bf9623817e6b6921a0cac17122eb",
    "name": "decision-nested-text-lines-unread",
    "named_row_red": true,
    "named_rows": [
@@ -13544,6 +14222,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -13580,8 +14262,8 @@
      true
     ]
    ],
-   "seconds": 27.404,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 24.978,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   {
    "by_assertion": true,
@@ -13696,6 +14378,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -13732,7 +14418,7 @@
      true
     ]
    ],
-   "seconds": 25.921,
+   "seconds": 24.905,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -13844,6 +14530,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -13880,7 +14570,7 @@
      true
     ]
    ],
-   "seconds": 26.393,
+   "seconds": 25.013,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -13990,6 +14680,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -14026,7 +14720,7 @@
      true
     ]
    ],
-   "seconds": 28.319,
+   "seconds": 25.056,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -14137,6 +14831,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -14173,7 +14871,7 @@
      true
     ]
    ],
-   "seconds": 25.713,
+   "seconds": 25.096,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -14284,6 +14982,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -14320,7 +15022,7 @@
      true
     ]
    ],
-   "seconds": 25.903,
+   "seconds": 24.886,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -14431,6 +15133,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -14467,7 +15173,7 @@
      true
     ]
    ],
-   "seconds": 25.8,
+   "seconds": 25.037,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -14573,6 +15279,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -14609,7 +15319,7 @@
      true
     ]
    ],
-   "seconds": 26.743,
+   "seconds": 24.934,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -14722,6 +15432,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -14758,7 +15472,7 @@
      true
     ]
    ],
-   "seconds": 26.527,
+   "seconds": 25.033,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -14867,6 +15581,10 @@
      false
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -14903,7 +15621,7 @@
      true
     ]
    ],
-   "seconds": 26.38,
+   "seconds": 24.955,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   {
@@ -15010,6 +15728,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -15046,7 +15768,7 @@
      true
     ]
    ],
-   "seconds": 26.374,
+   "seconds": 25.011,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   {
@@ -15152,6 +15874,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -15188,7 +15914,7 @@
      true
     ]
    ],
-   "seconds": 25.241,
+   "seconds": 24.96,
    "source_sha256": "5e90deb4aa512408b5ffa963a9bd8ae8248b424693103ee8c937f79137c80f92"
   },
   {
@@ -15294,6 +16020,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -15330,7 +16060,7 @@
      true
     ]
    ],
-   "seconds": 28.804,
+   "seconds": 24.998,
    "source_sha256": "5e90deb4aa512408b5ffa963a9bd8ae8248b424693103ee8c937f79137c80f92"
   }
  ],
@@ -15342,7 +16072,8 @@
    "decision-claude-calls-unread",
    "decision-codex-calls-unread",
    "decision-call-named-twice",
-   "decision-gap-accepted"
+   "decision-gap-accepted",
+   "decision-unconfigured-call-skipped"
   ],
   "decision/frame-tool-names": [
    "decision-claude-progress-tool-name-unread",
@@ -15413,6 +16144,10 @@
    "decision-codex-builtin-items-ask",
    "decision-claude-thinking-asks",
    "decision-claude-tool-free-frames-ask"
+  ],
+  "decision/unconfigured-call-asks": [
+   "decision-unconfigured-call-skipped",
+   "decision-unconfigured-tool-ignored"
   ],
   "decision/unknown-forms": [
    "decision-unknown-call-skipped",
@@ -15518,7 +16253,7 @@
  },
  "noop": {
   "control_account_limit.py": {
-   "copy_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308",
+   "copy_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -15608,6 +16343,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -15644,8 +16383,8 @@
      true
     ]
    ],
-   "seconds": 25.289,
-   "source_sha256": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "seconds": 25.058,
+   "source_sha256": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   "control_account_pool.py": {
    "copy_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4",
@@ -15738,6 +16477,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -15774,7 +16517,7 @@
      true
     ]
    ],
-   "seconds": 24.843,
+   "seconds": 25.002,
    "source_sha256": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4"
   },
   "control_accounts.py": {
@@ -15868,6 +16611,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -15904,7 +16651,7 @@
      true
     ]
    ],
-   "seconds": 24.682,
+   "seconds": 24.894,
    "source_sha256": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1"
   },
   "control_engine_claude.py": {
@@ -15998,6 +16745,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -16034,7 +16785,7 @@
      true
     ]
    ],
-   "seconds": 25.133,
+   "seconds": 25.115,
    "source_sha256": "e7734e6f7c571c50ee313a5cada3b92de3d59a6c03755780ea44bb9166119df2"
   },
   "control_engine_codex.py": {
@@ -16128,6 +16879,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -16164,7 +16919,7 @@
      true
     ]
    ],
-   "seconds": 24.989,
+   "seconds": 24.935,
    "source_sha256": "ff41e7541d3e8c9109222a72da64fd02afd46e6abbfe8d6106f1bd98874a44ff"
   },
   "control_launch.py": {
@@ -16258,6 +17013,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -16294,7 +17053,7 @@
      true
     ]
    ],
-   "seconds": 24.967,
+   "seconds": 24.954,
    "source_sha256": "1addeb50fe62ddff615d1125cd09f81f5f0e85365715bc0cc6721ac628fde502"
   },
   "control_reservations.py": {
@@ -16388,6 +17147,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -16424,7 +17187,7 @@
      true
     ]
    ],
-   "seconds": 25.111,
+   "seconds": 25.073,
    "source_sha256": "308d51b7700b7193f7ba43c322b7f2d44d2f6a6cec543e204fc9a3e57d604491"
   },
   "init_scaffold.py": {
@@ -16518,6 +17281,10 @@
      true
     ],
     [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
      "VELDO-0160 pool/moved-off",
      true
     ],
@@ -16554,13 +17321,13 @@
      true
     ]
    ],
-   "seconds": 24.932,
+   "seconds": 25.01,
    "source_sha256": "5e90deb4aa512408b5ffa963a9bd8ae8248b424693103ee8c937f79137c80f92"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 160",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 2865.803,
+ "serial_seconds": 2848.433,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py"
 }

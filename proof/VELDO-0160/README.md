@@ -356,7 +356,7 @@ they check the suite's own fixtures against the extracted table, not production.
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 101 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 2866 s, after the structural rule).
+`drive.py` records `mutations.json` and one applied diff per mutant. All 103 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 2848 s, after the unconfigured-call rule).
 
 | Mutant | Module | Named rows |
 |---|---|---|

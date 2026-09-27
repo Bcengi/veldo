@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -232 +232 @@
+@@ -238 +238 @@
 -        event = _event(line['payload']) if line['stream'] == 'engine' else None
 +        event = line['payload'] if line['stream'] == 'engine' and isinstance(line['payload'], dict) else None  # defect: a line held as JSON text is not read for nested work
