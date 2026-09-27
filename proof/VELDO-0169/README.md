@@ -1,73 +1,53 @@
 # VELDO-0169 proof
 
-Implemented from 6512503076f231b94485421f91dc663ee0a36649 on build-veldo-0169.
+Implemented from 6512503076f231b94485421f91dc663ee0a36649 on build-veldo-0169; revised in the
+review-fix round of review rv169a, from 0a2ba0f9 merged with main.
 
-Assignment resume and the backlog disposition call the eligibility Gate's project check,
-then pin the exact project and owner versions it returned in the inbox transaction. Andon
-constructs that same eligibility Gate on its ingress connection, separately from its channel
-Gate, and checks before issuing a station contract. A concurrent pause or owner change
-refuses as stale_version. Every claim asks the project check, including units whose project
-field is absent or null. Refusal observations retain project identity and read versions;
-counters retain refusal names. The three engine assets and installed copies are identical.
-No new engine asset needs scaffold registration.
+**The runtime guard.** control_eligibility.Gate.project_problems now answers (refusals, read,
+receipt). The receipt exists only when nothing is refused: control_claim.project_check_receipt of the
+unit, its project and the versions the check read. The claim organ (control_claim.transition) refuses
+a claim, resume or unpark (control_claim.HANDOUTS) without one as missing_evidence:project_check, and
+one for another unit or project, or naming a version the writing transaction did not pin and read,
+as stale_subject:project_check; nothing is written. The andon's one station contract writer,
+Andon.issue_station_contract, applies the same check (control_claim.project_check_problem). Every
+handout asks the check again inside its own store transaction: the inbox's resume and unpark writes,
+the andon resume's write, and the claim receiver's transaction transition, now registered on the
+receiver's own connection. The checks before the transaction stay, and their read versions are
+pinned, so a pause or owner change after the check is stale_version. An andon resume race that is
+not a project race is stale_subject again. Park, release, renew and use need no receipt.
 
-Suite: `82_veldo_0169_project_handouts`, registered with its own prerequisite closure.
+**The census** (scripts/suites/support/v169_census.py) reads the engine's syntax trees. It follows
+every reference to a callable named transition on any receiver, getattr and aliases included, keeps
+the calls that can bind the organ's own signature, and refuses a reference that escapes or a bare
+registration. It follows every call of the station contract writer and refuses an entity of its
+kind written anywhere else. It refuses any getattr, attrgetter or methodcaller it cannot resolve.
+Each writer is classified by its enclosing function and by the action followed to where its
+parameters are built, narrowed by the guards on the path. A handout writer, and every place that
+builds its parameters, must make the Gate's check before it on every path. There is no writer table.
 
-| Criterion | Rows and observations |
+Suite `84_veldo_0169_project_handouts` (renumbered from 82, which main uses), 22 rows:
+
+| Criterion | Rows |
 | :--- | :--- |
-| AC1 | `census/writers`: AST scan of all engine Python source finds six writer sites, four handing out work and two handing out nothing. Every site is named by module, function and argument; unknown sites fail. Handout entries reach the shared project check through their own helpers. The census records each classification and reason, with counts. |
-| AC2 | `resume/PAUSED`, `resume/CANCELED`, `resume/COMPLETED`, `resume/owner_not_current`, `resume/race`, and the corresponding five `dispose/` rows. Signed commands refuse by the Gate's exact name, preserve claim, park, assignment, unit and backlog records, and record the read versions. Each race row commits both a real pause and, separately, a real owner-role change between check and write; both refuse stale_version. Every row has an active-project control. Close and other still apply on a paused project. |
-| AC3 | The same five `andon/` rows, using real raised stops, presented requests and API settlements. Refused resumes preserve the stop and unit and issue no contract. Active controls issue a fresh contract. Project and owner races each refuse stale_version. |
-| AC4 | `claim/absent` and `claim/null`: signed claims refuse missing_authority:project, agree with the Gate and write nothing; an active-project claim succeeds beside each. Existing claim and andon fixtures seed active projects. Suites 71 and 73 already did so. |
+| AC1 | `census/writers` (no failure, and what AC1 says it finds today); `census/planted`: the reviewer's planted writers and more of their shape, each refused at the planted function: the resume copy dispatched only, with its own write and through the resume's write, a local alias, a renamed attribute, getattr, a plain attribute, a bound-method alias, a dynamic getattr, a bare registration, a minted receipt, a second andon resume, a contract written without its writer, the check inside a branch. |
+| AC2, AC3 | The five `resume/`, `dispose/` and `andon/` rows each, unchanged in intent, with active controls. |
+| AC4 | `claim/absent`, `claim/null`. |
+| Lead decisions | `guard/receipt`: no receipt, another unit's, unpinned reads and an older project version refused at the organ and the station contract writer, with current-receipt controls; `guard/resume-again`: the reviewer's copy wired into OPERATIONS, the dispatch and `_transition` refused at run time (own write: missing_evidence, through the resume's write: stale_subject), the real resume still taking the work; `andon/subject-race`. |
 
-The suite uses generated OpenSSH keys, real SQLite stores and production project, membership,
-claim, inbox, andon, presentation, settlement and intake writers. Accepted unit and backlog
-records use the claim organ's admission fixture seam; no claimed, parked, stopped, answered,
-settled or project lifecycle record is fabricated. Completion for assignment cases happens
-while the claim is held, before opening the assignment, since completion correctly refuses an
-outstanding submitted assignment. All channel traffic uses the guarded loopback Bot API.
-No model, real login, credential or Telegram service is used.
+The reviewer's `new-station-contract-kind` plant (a new kind name) is not statically a station
+contract and stays green; nothing reads that kind as one.
 
-`red-at-65125030.json` records the current suite against an unchanged git archive of the
-starting commit: all 18 rows red by assertion, no exceptions. Reproduce with scripts/drive.py
-and its red option naming 65125030.
+Sixteen fixture suites that commit claim_operation straight through the organ now carry the Gate's
+receipt through scripts/suites/support/v169_claims.py. Suite 71 claims its project-less unit while
+it is of an active project and then points it elsewhere; suite 72_veldo_0128 activates the project
+its units name.
 
-`mutations.json` records ten finding-169 mutants, the green baseline and one green no-op
-copy per changed production module. Each mutant has its exact diff beside the report and
-fails its named row by assertion. Names are prefixed handout and unique across the registry:
-unlisted resume, unchecked resume, unchecked backlog disposition, unchecked andon resume,
-null-project claim bypass, project and owner pins dropped independently from assignment and
-andon transactions, and renamed andon stale_version. The unlisted writer, unchecked resume and andon, and null-claim bypass cover every
-criterion's declared falsifier.
+`red-at-65125030.json`: the current suite and its census against the starting tree: 21 rows red by
+assertion; andon/subject-race is green there, since the original behavior is what it restores.
+`red-at-0a2ba0f9.json`: against the reviewed commit, census/writers, census/planted, guard/receipt,
+guard/resume-again and andon/subject-race red by assertion. Reproduce with
+`python3 proof/VELDO-0169/drive.py --red <commit>`.
 
-Validation:
-
-- New suite: 18 passed; shared preamble: 26 passed.
-- Eight affected suites: 181 passed including the preamble, zero failures.
-- Those eight plus the new suite under the requested stripped environment: 199 passed,
-  zero failures. HOME and TMPDIR are temporary paths in /dev/shm.
-- Full selftest: all 122 suites, 6878 passed, zero failures. The successful full run used
-  TMPDIR=/dev/shm and unbuffered output, with ordinary bytecode behavior.
-- Git boundary: pass, no findings. Footprint: nothing outside. Mutation anchors: zero bad
-  anchors. Validator all: pass. Engine copies: byte-identical.
-- Partial suite runs are regression observations, not a gate stamp.
-
-The canonical gate is not run, as instructed. No verification stamp is claimed. Independent
-review, approval and landing remain the reviewer's work; the specification stays ready.
-
-The first full selftest completed with 6877 passed and one failed row:
-`VELDO-0040 containment/exit-notified`. That unchanged row includes an exit-notification
-latency bound below 0.75 seconds. Its suite passed unchanged on an immediate isolated rerun:
-20 suite rows plus 26 preamble rows, zero failures. The full run is repeated under the
-requested stripped environment before completion; no containment code or test is changed.
-
-An additional whole-suite attempt under the stripped environment stopped in the unchanged
-`12_warp_1210_hardening_four` fixture at `_m10_r12_fifo_at`: PYTHONDONTWRITEBYTECODE prevented
-the cache directory that its FIFO fixture assumes a warming subprocess creates. This was a
-FileNotFoundError, not a VELDO-0169 assertion failure. The required nine selected suites passed
-under that environment. The full rerun keeps ordinary bytecode behavior and uses /dev/shm for
-temporary files. No legacy fixture is modified.
-
-The final whole-suite rerun passed: 6878 passed, zero failed. No containment or legacy
-fixture code was changed. `validation.json` retains the successful results and the earlier
-failed and interrupted attempts. The two-job finding-169 checker rejects all ten mutants.
+`mutations.json`: 23 finding-169 mutants with their diffs, a green baseline and a green no-op per
+changed module; every named row red by assertion. `validation.json` holds the checks. The canonical
+gate is not run and no stamp is claimed; the specification stays ready.

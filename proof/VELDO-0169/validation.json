@@ -1,104 +1,149 @@
 {
-  "spec_id": "VELDO-0169",
-  "full_run_tree": "bac2a962",
-  "suite_count": 122,
-  "selected_suites": [
-    "58_veldo_0031_claims",
-    "59_veldo_0031_review",
-    "60_veldo_0064_inbox",
-    "66_veldo_0047_authority",
-    "69_veldo_0133_dispositions",
-    "71_veldo_0076_projects",
-    "72_veldo_0075_andon",
-    "73_veldo_0078_backlog",
-    "82_veldo_0169_project_handouts"
+ "checks": {
+  "footprint": "nothing outside",
+  "git_boundary": "pass, no findings",
+  "mutation_anchors": "0 bad anchors",
+  "mutation_finding": 169,
+  "mutations_rejected": 10,
+  "validate_all": "pass"
+ },
+ "containment_recheck": {
+  "failed": 0,
+  "partial_exit_code": 2,
+  "passed": 46,
+  "suite": "63_veldo_0040_containment"
+ },
+ "engine_copies": {
+  "control_andon.py": {
+   "engine_identical": true,
+   "sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5"
+  },
+  "control_assignment.py": {
+   "engine_identical": true,
+   "sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea"
+  },
+  "control_claim.py": {
+   "engine_identical": true,
+   "sha256": "c779130a8c27a2cec4ed5ffb97fe559dc8cc8541f88a4ef8386ec5231d9a6dfc"
+  }
+ },
+ "full_run_tree": "bac2a962",
+ "full_runs": [
+  {
+   "command": "python3 scripts/selftest.py",
+   "exit_code": 1,
+   "failed": 1,
+   "failed_rows": [
+    "VELDO-0040 containment/exit-notified"
+   ],
+   "passed": 6877
+  },
+  {
+   "command": "python3 scripts/selftest.py",
+   "completed": false,
+   "environment": "same stripped environment as selected suites",
+   "error": "FileNotFoundError in 12_warp_1210_hardening_four._m10_r12_fifo_at: bytecode cache parent absent with PYTHONDONTWRITEBYTECODE=1",
+   "exit_code": 1
+  },
+  {
+   "command": "python3 scripts/selftest.py",
+   "environment_overrides": {
+    "PYTHONUNBUFFERED": "1",
+    "TMPDIR": "/dev/shm"
+   },
+   "exit_code": 0,
+   "failed": 0,
+   "failed_rows": [],
+   "passed": 6878
+  }
+ ],
+ "gate_run": false,
+ "red": {
+  "by_assertion": true,
+  "commit": "6512503076f231b94485421f91dc663ee0a36649",
+  "rows_red": 18
+ },
+ "review_fix": {
+  "engine_copies_identical": [
+   "control_claim.py",
+   "control_assignment.py",
+   "control_andon.py",
+   "control_eligibility.py"
   ],
-  "selected_normal": {
-    "affected_suites_passed": 181,
-    "new_suite_with_preamble_passed": 44,
-    "failed": 0,
-    "partial_exit_code": 2
+  "full_selftest": {
+   "command": "python3 scripts/selftest.py",
+   "exit_code": 0,
+   "failed": 0,
+   "passed": 6963
   },
-  "selected_stripped_environment": {
-    "passed": 199,
-    "failed": 0,
-    "partial_exit_code": 2,
-    "environment": {
-      "PATH": "/usr/bin:/usr/bin:/bin",
-      "HOME": "/dev/shm/veldo-0169-home",
-      "TMPDIR": "/dev/shm",
-      "LANG": "C.UTF-8",
-      "LC_ALL": "C.UTF-8",
-      "TZ": "UTC",
-      "PYTHONDONTWRITEBYTECODE": "1",
-      "PYTHONNOUSERSITE": "1",
-      "PYTHONHASHSEED": "0",
-      "GIT_CONFIG_NOSYSTEM": "1",
-      "GIT_CONFIG_GLOBAL": "/dev/null",
-      "GIT_TERMINAL_PROMPT": "0"
-    }
-  },
-  "full_runs": [
-    {
-      "command": "python3 scripts/selftest.py",
-      "passed": 6877,
-      "failed": 1,
-      "exit_code": 1,
-      "failed_rows": [
-        "VELDO-0040 containment/exit-notified"
-      ]
-    },
-    {
-      "command": "python3 scripts/selftest.py",
-      "environment": "same stripped environment as selected suites",
-      "exit_code": 1,
-      "completed": false,
-      "error": "FileNotFoundError in 12_warp_1210_hardening_four._m10_r12_fifo_at: bytecode cache parent absent with PYTHONDONTWRITEBYTECODE=1"
-    },
-    {
-      "command": "python3 scripts/selftest.py",
-      "environment_overrides": {
-        "TMPDIR": "/dev/shm",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "passed": 6878,
-      "failed": 0,
-      "exit_code": 0,
-      "failed_rows": []
-    }
-  ],
-  "containment_recheck": {
-    "suite": "63_veldo_0040_containment",
-    "passed": 46,
-    "failed": 0,
-    "partial_exit_code": 2
-  },
-  "checks": {
-    "git_boundary": "pass, no findings",
-    "footprint": "nothing outside",
-    "mutation_anchors": "0 bad anchors",
-    "validate_all": "pass",
-    "mutation_finding": 169,
-    "mutations_rejected": 10
-  },
-  "engine_copies": {
-    "control_claim.py": {
-      "sha256": "c779130a8c27a2cec4ed5ffb97fe559dc8cc8541f88a4ef8386ec5231d9a6dfc",
-      "engine_identical": true
-    },
-    "control_assignment.py": {
-      "sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea",
-      "engine_identical": true
-    },
-    "control_andon.py": {
-      "sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5",
-      "engine_identical": true
-    }
-  },
+  "gate_run": false,
+  "git_boundary": "pass",
+  "merged_main": true,
+  "parser_boundary": "pass",
   "red": {
-    "commit": "6512503076f231b94485421f91dc663ee0a36649",
-    "rows_red": 18,
-    "by_assertion": true
+   "0a2ba0f9979b137f64be47e57679421d7c3c8ece": 5,
+   "6512503076f231b94485421f91dc663ee0a36649": 21,
+   "by_assertion": true
   },
-  "gate_run": false
+  "review": "rv169a",
+  "rows": 22,
+  "suite": "84_veldo_0169_project_handouts",
+  "teeth": {
+   "133": 21,
+   "134": 36,
+   "169": 23,
+   "31": 19,
+   "52": 49,
+   "53": 52,
+   "54": 59,
+   "64": 36,
+   "68": 19,
+   "69": 17,
+   "75": 30,
+   "76": 26,
+   "78": 30,
+   "85": 19
+  },
+  "tree": "8aac2358",
+  "validate_all": "pass",
+  "writer_boundary": "pass"
+ },
+ "selected_normal": {
+  "affected_suites_passed": 181,
+  "failed": 0,
+  "new_suite_with_preamble_passed": 44,
+  "partial_exit_code": 2
+ },
+ "selected_stripped_environment": {
+  "environment": {
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_TERMINAL_PROMPT": "0",
+   "HOME": "/dev/shm/veldo-0169-home",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "PATH": "/usr/bin:/usr/bin:/bin",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONHASHSEED": "0",
+   "PYTHONNOUSERSITE": "1",
+   "TMPDIR": "/dev/shm",
+   "TZ": "UTC"
+  },
+  "failed": 0,
+  "partial_exit_code": 2,
+  "passed": 199
+ },
+ "selected_suites": [
+  "58_veldo_0031_claims",
+  "59_veldo_0031_review",
+  "60_veldo_0064_inbox",
+  "66_veldo_0047_authority",
+  "69_veldo_0133_dispositions",
+  "71_veldo_0076_projects",
+  "72_veldo_0075_andon",
+  "73_veldo_0078_backlog",
+  "82_veldo_0169_project_handouts"
+ ],
+ "spec_id": "VELDO-0169",
+ "suite_count": 122
 }
