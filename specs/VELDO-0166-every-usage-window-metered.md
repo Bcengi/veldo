@@ -24,7 +24,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0166_*.py"
   - "scripts/suites/75_veldo_0062_accounts.py"
-  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/suites/78_veldo_0060_claude_adapter.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
