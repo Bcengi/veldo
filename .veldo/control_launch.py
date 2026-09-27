@@ -241,6 +241,8 @@ EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', '
 ENGINE_RUNTIME = 'VELDO_ENGINE_RUNTIME_DIR'
 RUN_CONFIG, RUN_RUNTIME = 'config', 'runtime'
 TOKEN_VARIABLE = 'CLAUDE_CODE_OAUTH_TOKEN'
+SESSION_PREFIXES = ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')
+ENGINE_OVERRIDES = 'VELDO_ENGINE_ENVIRONMENT'
 
 
 def engine_environment(environment):
@@ -250,8 +252,10 @@ def engine_environment(environment):
     runtime = environment.pop(ENGINE_RUNTIME, None)
     if runtime is None:
         return environment
-    for name in EXEC_STRIPPED:
-        environment.pop(name, None)
+    for name in list(environment):
+        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
+            environment.pop(name, None)
+    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))
     environment['XDG_RUNTIME_DIR'] = runtime
     return environment
 
@@ -1008,12 +1012,22 @@ class Receiver:
         token = self.token
         if token is not None:
             environment[TOKEN_VARIABLE] = token
+        # Only the qualified settings and this account's own login survive the session strip.
+        own = dict(self.binding['environment'], **extra['environment'])
+        profile_name, profile_directory = ACC.profile(self.login['record'], self.host)
+        own[profile_name] = profile_directory
+        if token is not None:
+            own[TOKEN_VARIABLE] = token
+        environment[ENGINE_OVERRIDES] = json.dumps(own, sort_keys=True)
         environment[ENGINE_RUNTIME] = run['runtime']
         self.emit({'event': 'baseline', 'baseline': {
+            'dispatch_id': dispatch_id,
+            'executable': {k: self.binding[k] for k in ('engine', 'version', 'sha256')},
+            'strip_prefixes': list(SESSION_PREFIXES),
             'options': list(extra['argv']), 'environment': sorted(extra['environment']),
             'files': sorted(extra['files']), 'run': run, 'token': token is not None,
             'removed': sorted(set(n for n in os.environ if n not in environment)
-                              | set(n for n in EXEC_STRIPPED if n in environment))}})
+                              | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))}})
         return argv, environment
 
     def _invoke(self, contract, acceptance, adapter):

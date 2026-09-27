@@ -376,7 +376,9 @@ sys.exit(payload.get('code', 0))
                 'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
                 'environment': {'DISABLE_AUTOUPDATER': '1'},
                 # VELDO-0155: the version is qualified with the everything-off baseline.
-                **({'baseline': L.ENGINES['claude_code'].BASELINE}
+                **({'baseline': L.ENGINES['claude_code'].BASELINE,
+                    'session_environment': (L.ENGINES['claude_code'].session_environment(versions / '2.1.281')
+                                            if hasattr(L.ENGINES['claude_code'], 'session_environment') else [])}
                    if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'BASELINE') else {})}}}))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)

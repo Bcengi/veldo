@@ -460,6 +460,8 @@ out.close()
             VERSION: {'sha256': FAKE_SHA, 'flags': list(FLAGS), 'environment': {'DISABLE_AUTOUPDATER': '1'}}}}
         if getattr(E, 'BASELINE', None) is not None:
             test_record['versions'][VERSION]['baseline'] = E.BASELINE
+            if hasattr(E, 'session_environment'):
+                test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
         (mods / 'runtime').mkdir()
         record_path = mods / 'runtime' / 'claude-qualification.json'
         record_path.write_text(json.dumps(test_record, indent=1))

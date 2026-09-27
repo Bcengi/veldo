@@ -496,7 +496,7 @@ def qualification(executable, flags=FLAGS):
     return {'schema': QUALIFICATION_SCHEMA, 'engine': PROVIDER, 'package': PACKAGE, 'package_version': version,
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
-            'baseline': BASELINE,
+            'baseline': BASELINE, 'session_environment': session_environment(executable),
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',
@@ -571,6 +571,8 @@ def environment(bound):
 # request, proof/VELDO-0156/codex-mentions.json): a skill named in the prompt loads its SKILL.md whatever
 # `skills.include_instructions` says; `skills.bundled.enabled` false keeps the bundled set out, named or not.
 BASELINE = {
+    'strip_prefixes': ['CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX'],
+    'strip_names': ['CLAUDE_AGENT_SDK_MCP_NO_PREFIX'],
     'options': ['--ignore-user-config', '--ignore-rules',
                 '--disable', 'apps'],
     'configuration': {'project_doc_max_bytes': 0, 'forced_login_method': 'chatgpt',
@@ -616,11 +618,17 @@ def _toml(value):
     raise Refused('invalid_input:generated_configuration')
 
 
+def session_environment(executable):
+    """Names held by this executable in the stripped session families, read without executing it."""
+    return sorted({m.group().decode('ascii') for m in re.finditer(
+        rb'(?:CLAUDE|AI_AGENT|CODEX)[A-Z0-9_]*', Path(executable).read_bytes())})
+
+
 def qualified_baseline(bound, record=None):
     """The baseline the qualification record lists, which must be this module's BASELINE: a binary not
     qualified with it is refused by name before anything is accepted or spawned."""
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
-    if record.get('baseline') != BASELINE:
+    if record.get('baseline') != BASELINE or not record.get('session_environment'):
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     return BASELINE
 

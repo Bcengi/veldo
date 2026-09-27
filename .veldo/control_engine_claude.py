@@ -1229,6 +1229,8 @@ def environment(bound, record=None):
 # and CLAUDE_CODE_DISABLE_AUTO_MEMORY, and `disableAllHooks` in the generated settings. Neither bare
 # mode (it refuses subscription logins) nor safe mode (it ignores the `--mcp-config` servers) is used.
 BASELINE = {
+    'strip_prefixes': ['CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX'],
+    'strip_names': ['CLAUDE_AGENT_SDK_MCP_NO_PREFIX'],
     'options': ['--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands'],
     'settings_option': '--settings',
     'mcp_option': '--mcp-config',
@@ -1263,11 +1265,17 @@ def input_protocol(flags):
     return any(tuple(flags[at:at + 2]) == INPUT_FLAGS for at in range(len(flags) - 1))
 
 
+def session_environment(executable):
+    """Names held by this executable in the stripped session families, read without executing it."""
+    return sorted({m.group().decode('ascii') for m in re.finditer(
+        rb'(?:CLAUDE|AI_AGENT|CODEX)[A-Z0-9_]*', Path(executable).read_bytes())})
+
+
 def qualified_baseline(bound, record=None):
     """The baseline the version's qualification record lists, which must be this module's BASELINE: a
     version not qualified with it is refused by name before anything is accepted or spawned."""
     entry = qualified(bound['version'], record)
-    if entry.get('baseline') != BASELINE:
+    if entry.get('baseline') != BASELINE or not entry.get('session_environment'):
         raise Refused('missing_evidence:engine_baseline:%s' % bound['version'],
                       'the version is not qualified with the everything-off baseline')
     return BASELINE

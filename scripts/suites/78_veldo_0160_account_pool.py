@@ -297,6 +297,8 @@ sys.exit(payload.get('code', 0))
         CLAUDE_ENGINE = getattr(L, 'ENGINES', {}).get('claude_code')
         if getattr(CLAUDE_ENGINE, 'BASELINE', None) is not None:
             claude_record['versions']['2.1.281']['baseline'] = CLAUDE_ENGINE.BASELINE
+            if hasattr(CLAUDE_ENGINE, 'session_environment'):
+                claude_record['versions']['2.1.281']['session_environment'] = CLAUDE_ENGINE.session_environment(versions / '2.1.281')
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
