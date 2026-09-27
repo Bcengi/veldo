@@ -1,0 +1,5 @@
+--- a/.veldo/control_decomposition_binding.py
++++ b/.veldo/control_decomposition_binding.py
+@@ -49 +49 @@
+-        if not head.get('superseded_by'):
++        if True:

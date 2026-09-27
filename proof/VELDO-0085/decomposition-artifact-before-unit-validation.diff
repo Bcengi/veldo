@@ -1,6 +1,6 @@
 --- a/.veldo/control_decomposition.py
 +++ b/.veldo/control_decomposition.py
-@@ -91,0 +92,4 @@
+@@ -100,0 +101,4 @@
 +        al.allocate(dict(request_id=command['command_id'], principal=principal,
 +                         repository_uuid=bl.ids['repository_uuid'], workspace=str(bl.workspace),
 +                         source=raw['source'], role=raw['role'], slug='early', content=b'early artifact'),

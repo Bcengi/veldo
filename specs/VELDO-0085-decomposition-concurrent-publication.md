@@ -199,3 +199,10 @@ at prepare. These remain outside this review-fix scope.
 
 The alias regression fixture now installs the binding reader and document parser consumed
 by allocation, so its isolated module directory exercises the complete production dependency set.
+
+Review-fix verification: all twelve decomposition rows pass, all sixteen finding 85
+mutations fail their named rows by assertion, and both red records are regenerated.
+The alias and backlog regression suites pass. Git boundary checking reports no violations;
+all 233 engine pairs are byte-identical; repository validation passes. The whole selftest
+completed once with no failing row. `proof/VELDO-0085/review-checks.json` and its logs retain
+the exact results. No repository gate, independent approval or push is claimed.

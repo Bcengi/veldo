@@ -31,6 +31,22 @@
     true
    ],
    [
+    "VELDO-0085 refusals/service-class",
+    true
+   ],
+   [
+    "VELDO-0085 dependencies/current-specification",
+    true
+   ],
+   [
+    "VELDO-0085 dependencies/prepare-mismatch",
+    true
+   ],
+   [
+    "VELDO-0085 publication/concurrent-current",
+    true
+   ],
+   [
     "VELDO-0085 publication/stale-input",
     true
    ],
@@ -39,7 +55,7 @@
     true
    ]
   ],
-  "seconds": 2.317
+  "seconds": 3.479
  },
  "controls_green": true,
  "mutants": [
@@ -52,6 +68,10 @@
     "VELDO-0085 detail: priority/fresh-growth: prerequisite publications accepted",
     "VELDO-0085 detail: dependencies/eligibility: prerequisite publications accepted",
     "VELDO-0085 detail: publication/other-process: prerequisite publications accepted",
+    "VELDO-0085 detail: refusals/service-class: each service refusal returns by name; every refusal observed; reason counts increment",
+    "VELDO-0085 detail: dependencies/current-specification: all twin publications accepted; dependent names only current specification",
+    "VELDO-0085 detail: dependencies/prepare-mismatch: new dependency revision accepted; prepare refuses stale dependency by name",
+    "VELDO-0085 detail: publication/concurrent-current: both callers return named outcomes; both source revisions published; exactly one current specification; earlier commit superseded by later",
     "VELDO-0085 detail: publication/stale-input: prerequisite publication accepted"
    ],
    "diff": "proof/VELDO-0085/decomposition-artifact-before-unit-validation.diff",
@@ -62,10 +82,14 @@
     "VELDO-0085 priority/fresh-growth",
     "VELDO-0085 dependencies/eligibility",
     "VELDO-0085 publication/other-process",
+    "VELDO-0085 refusals/service-class",
+    "VELDO-0085 dependencies/current-specification",
+    "VELDO-0085 dependencies/prepare-mismatch",
+    "VELDO-0085 publication/concurrent-current",
     "VELDO-0085 publication/stale-input"
    ],
    "module": ".veldo/control_decomposition.py",
-   "mutant_sha256": "a0be66f01424bfd1200ab07720b30dc059004de9fd1c74f41f3ba386ad21e7de",
+   "mutant_sha256": "1069c1adeeb771aee578ddfa0e473c09627dc2d723c206f74eaee6cb0b84c288",
    "name": "decomposition-artifact-before-unit-validation",
    "named_row_red": true,
    "named_rows": [
@@ -98,6 +122,22 @@
      false
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     false
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     false
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      false
     ],
@@ -106,8 +146,8 @@
      true
     ]
    ],
-   "seconds": 1.142,
-   "source_sha256": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c"
+   "seconds": 1.803,
+   "source_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
   },
   {
    "by_assertion": true,
@@ -117,6 +157,10 @@
     "VELDO-0085 detail: priority/fresh-growth: prerequisite publications accepted",
     "VELDO-0085 detail: dependencies/eligibility: prerequisite publications accepted",
     "VELDO-0085 detail: publication/other-process: prerequisite publications accepted",
+    "VELDO-0085 detail: refusals/service-class: each service refusal returns by name; every refusal observed; reason counts increment",
+    "VELDO-0085 detail: dependencies/current-specification: all twin publications accepted; dependent names only current specification",
+    "VELDO-0085 detail: dependencies/prepare-mismatch: new dependency revision accepted; prepare refuses stale dependency by name",
+    "VELDO-0085 detail: publication/concurrent-current: both callers return named outcomes; both source revisions published; exactly one current specification; earlier commit superseded by later",
     "VELDO-0085 detail: publication/stale-input: prerequisite publication accepted"
    ],
    "diff": "proof/VELDO-0085/decomposition-checkout-maximum.diff",
@@ -126,10 +170,14 @@
     "VELDO-0085 priority/fresh-growth",
     "VELDO-0085 dependencies/eligibility",
     "VELDO-0085 publication/other-process",
+    "VELDO-0085 refusals/service-class",
+    "VELDO-0085 dependencies/current-specification",
+    "VELDO-0085 dependencies/prepare-mismatch",
+    "VELDO-0085 publication/concurrent-current",
     "VELDO-0085 publication/stale-input"
    ],
    "module": ".veldo/control_alias.py",
-   "mutant_sha256": "399c51263890c888a34046fe4322a55fdf39425b363e3fc2ed5cca3821696bb6",
+   "mutant_sha256": "5000ca86b7cff25a47707fbe23778f67f4709613a6f9be8a7ddfd7e4f19a824d",
    "name": "decomposition-checkout-maximum",
    "named_row_red": true,
    "named_rows": [
@@ -162,6 +210,22 @@
      false
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     false
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     false
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      false
     ],
@@ -170,20 +234,32 @@
      true
     ]
    ],
-   "seconds": 1.151,
-   "source_sha256": "cc4bf67b69f5343ac33d97546d50a6a400c5bf0ce18e7f6e67bd65d546b18075"
+   "seconds": 1.766,
+   "source_sha256": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0085 detail: dependencies/eligibility: specification declares its generated dependency"
+    "VELDO-0085 detail: binding/one-owner: accepted preparation and owner admission; one primary revision and item per unit",
+    "VELDO-0085 detail: dependencies/eligibility: priority accepted; generated dependency reached the unit; eligibility consumes and refuses unresolved dependency; specification declares its generated dependency; independent unit eligible",
+    "VELDO-0085 detail: priority/fresh-growth: append remains planned until fresh priority; already approved sibling continues; renewed priority makes new unit executable",
+    "VELDO-0085 detail: publication/other-process: reader process completed; exact versions, digests, ownership and complete bytes; dependency edge visible in another process",
+    "VELDO-0085 detail: refusals/service-class: each service refusal returns by name; every refusal observed; total refused increments; reason counts increment",
+    "VELDO-0085 detail: dependencies/current-specification: dependent names only current specification",
+    "VELDO-0085 detail: publication/stale-input: stale executable bytes refused"
    ],
    "diff": "proof/VELDO-0085/decomposition-omit-generated-dependency.diff",
    "failed_rows": [
-    "VELDO-0085 dependencies/eligibility"
+    "VELDO-0085 binding/one-owner",
+    "VELDO-0085 dependencies/eligibility",
+    "VELDO-0085 priority/fresh-growth",
+    "VELDO-0085 publication/other-process",
+    "VELDO-0085 refusals/service-class",
+    "VELDO-0085 dependencies/current-specification",
+    "VELDO-0085 publication/stale-input"
    ],
    "module": ".veldo/control_decomposition.py",
-   "mutant_sha256": "9495b5dd01651aa0933b68b4836346b2da9dc5908f369c78275659df1bf7d6c7",
+   "mutant_sha256": "a28b184fd1d7dfd4ccf806a21490f002746d69973da8e9ba893715dfe6bb9df4",
    "name": "decomposition-omit-generated-dependency",
    "named_row_red": true,
    "named_rows": [
@@ -201,7 +277,7 @@
     ],
     [
      "VELDO-0085 binding/one-owner",
-     true
+     false
     ],
     [
      "VELDO-0085 dependencies/eligibility",
@@ -209,23 +285,39 @@
     ],
     [
      "VELDO-0085 priority/fresh-growth",
-     true
+     false
     ],
     [
      "VELDO-0085 publication/other-process",
+     false
+    ],
+    [
+     "VELDO-0085 refusals/service-class",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
      true
     ],
     [
      "VELDO-0085 publication/stale-input",
-     true
+     false
     ],
     [
      "VELDO-0085 install/assets",
      true
     ]
    ],
-   "seconds": 2.372,
-   "source_sha256": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c"
+   "seconds": 3.19,
+   "source_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
   },
   {
    "by_assertion": true,
@@ -243,7 +335,7 @@
     "VELDO-0085 publication/other-process"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "c989f95f0babe84b6750b23bcb7a2c22d0411a692a212130d16eee7b028e8309",
+   "mutant_sha256": "d53d5babecdff4d991363089775288509ce89ddb218e8eeaadea06e18cecc0d4",
    "name": "decomposition-cross-item-authority",
    "named_row_red": true,
    "named_rows": [
@@ -276,6 +368,22 @@
      false
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -284,8 +392,8 @@
      true
     ]
    ],
-   "seconds": 2.035,
-   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+   "seconds": 3.159,
+   "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
    "by_assertion": true,
@@ -293,17 +401,19 @@
     "VELDO-0085 detail: binding/one-owner: accepted preparation and owner admission; duplicate primary revisions refused; one primary revision and item per unit",
     "VELDO-0085 detail: dependencies/eligibility: priority accepted; generated dependency reached the unit; eligibility consumes and refuses unresolved dependency; independent unit eligible",
     "VELDO-0085 detail: priority/fresh-growth: append remains planned until fresh priority; already approved sibling continues; renewed priority makes new unit executable",
-    "VELDO-0085 detail: publication/other-process: reader process completed; exact versions, digests, ownership and complete bytes; dependency edge visible in another process"
+    "VELDO-0085 detail: publication/other-process: reader process completed; exact versions, digests, ownership and complete bytes; dependency edge visible in another process",
+    "VELDO-0085 detail: refusals/service-class: each service refusal returns by name; every refusal observed; reason counts increment"
    ],
    "diff": "proof/VELDO-0085/decomposition-primary-revision-shared.diff",
    "failed_rows": [
     "VELDO-0085 binding/one-owner",
     "VELDO-0085 dependencies/eligibility",
     "VELDO-0085 priority/fresh-growth",
-    "VELDO-0085 publication/other-process"
+    "VELDO-0085 publication/other-process",
+    "VELDO-0085 refusals/service-class"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "91fe2ab0896e3ec0fde92bfb285dc7130289f158c90c89fe38f27b11f598b747",
+   "mutant_sha256": "7f6eae8bacf972a2980644c5063a85baa6367162ec232471d96f0ee7208ccc4f",
    "name": "decomposition-primary-revision-shared",
    "named_row_red": true,
    "named_rows": [
@@ -336,6 +446,22 @@
      false
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -344,8 +470,8 @@
      true
     ]
    ],
-   "seconds": 2.256,
-   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+   "seconds": 3.279,
+   "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
    "by_assertion": true,
@@ -357,7 +483,7 @@
     "VELDO-0085 priority/fresh-growth"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "275f9877723c8931b5bd084c934c0ed44f94889e222a669d3c40d059e21f22c8",
+   "mutant_sha256": "2a129c347f262b601b7aee1e7b9113d04f4f839b2ecd78c11e030d6c87ef74e6",
    "name": "decomposition-appended-unit-ready",
    "named_row_red": true,
    "named_rows": [
@@ -390,6 +516,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -398,8 +540,8 @@
      true
     ]
    ],
-   "seconds": 2.372,
-   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+   "seconds": 3.47,
+   "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
    "by_assertion": true,
@@ -407,17 +549,19 @@
     "VELDO-0085 detail: binding/one-owner: accepted preparation and owner admission",
     "VELDO-0085 detail: dependencies/eligibility: priority accepted; generated dependency reached the unit; eligibility consumes and refuses unresolved dependency; independent unit eligible",
     "VELDO-0085 detail: priority/fresh-growth: append remains planned until fresh priority; already approved sibling continues; renewed priority makes new unit executable",
-    "VELDO-0085 detail: publication/other-process: dependency edge visible in another process"
+    "VELDO-0085 detail: publication/other-process: dependency edge visible in another process",
+    "VELDO-0085 detail: refusals/service-class: each service refusal returns by name; every refusal observed; reason counts increment"
    ],
    "diff": "proof/VELDO-0085/decomposition-unit-dependency-lost.diff",
    "failed_rows": [
     "VELDO-0085 binding/one-owner",
     "VELDO-0085 dependencies/eligibility",
     "VELDO-0085 priority/fresh-growth",
-    "VELDO-0085 publication/other-process"
+    "VELDO-0085 publication/other-process",
+    "VELDO-0085 refusals/service-class"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "f5dcc8bc2fada30850b08ba2fadcb752a3458eed1920200c01ab333b84815352",
+   "mutant_sha256": "5e17bd7349f45a1ea1edd75c5f9ba0905f48c8b9d1d06a2f2824cce395b80cb3",
    "name": "decomposition-unit-dependency-lost",
    "named_row_red": true,
    "named_rows": [
@@ -450,6 +594,22 @@
      false
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -458,8 +618,8 @@
      true
     ]
    ],
-   "seconds": 2.184,
-   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+   "seconds": 3.09,
+   "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
    "by_assertion": true,
@@ -471,7 +631,7 @@
     "VELDO-0085 publication/stale-input"
    ],
    "module": ".veldo/control_decomposition_binding.py",
-   "mutant_sha256": "f8be29a1ecb1ffcfbebfc65bf6ce0ef9895ed28b22a5d112128de03cf3f14e15",
+   "mutant_sha256": "262833922dbfb8af213b5c0c90d0c79bc285518efec76b69609ef75425160075",
    "name": "decomposition-stale-bytes-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -504,6 +664,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      false
     ],
@@ -512,8 +688,8 @@
      true
     ]
    ],
-   "seconds": 2.432,
-   "source_sha256": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b"
+   "seconds": 3.244,
+   "source_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
   },
   {
    "by_assertion": true,
@@ -525,7 +701,7 @@
     "VELDO-0085 publication/stale-input"
    ],
    "module": ".veldo/control_decomposition_binding.py",
-   "mutant_sha256": "b0a05f01753cf42a2d3f6797f3532a4f0c3d62d33ce8acff54af8e3bc3313081",
+   "mutant_sha256": "a43aa19c285b1e2f2ea1fa8629ba803f86b27abdf231ae143efd11be738bc015",
    "name": "decomposition-unpublished-input",
    "named_row_red": true,
    "named_rows": [
@@ -558,6 +734,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      false
     ],
@@ -566,8 +758,8 @@
      true
     ]
    ],
-   "seconds": 2.308,
-   "source_sha256": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b"
+   "seconds": 3.331,
+   "source_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
   },
   {
    "by_assertion": true,
@@ -612,6 +804,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      false
     ],
@@ -620,7 +828,7 @@
      true
     ]
    ],
-   "seconds": 2.351,
+   "seconds": 4.303,
    "source_sha256": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78"
   },
   {
@@ -633,7 +841,7 @@
     "VELDO-0085 publication/stale-input"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "902f36b5e9d24279c6c5ecfca73ebfc55ffe9d01be0a1c508f7eb3aa9cf301e5",
+   "mutant_sha256": "286e5b720c5496269811a7b633bed0e165fbab858239a70b0660a01fa3fa19ae",
    "name": "decomposition-admission-unbound",
    "named_row_red": true,
    "named_rows": [
@@ -666,6 +874,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      false
     ],
@@ -674,8 +898,294 @@
      true
     ]
    ],
-   "seconds": 2.515,
-   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+   "seconds": 4.818,
+   "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: refusals/service-class: each service refusal returns by name; every refusal observed; total refused increments; reason counts increment"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-private-refusal-class-only.diff",
+   "failed_rows": [
+    "VELDO-0085 refusals/service-class"
+   ],
+   "module": ".veldo/control_decomposition.py",
+   "mutant_sha256": "203b153b4099f1e77067432e5e355f5c6e7c69bfc903d3eb0f62b1a811661dd1",
+   "name": "decomposition-private-refusal-class-only",
+   "named_row_red": true,
+   "named_rows": [
+    "refusals/service-class"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 refusals/service-class",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 3.487,
+   "source_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: dependencies/current-specification: all twin publications accepted; dependent names only current specification",
+    "VELDO-0085 detail: dependencies/prepare-mismatch: prepare refuses stale dependency by name"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-first-specification-match.diff",
+   "failed_rows": [
+    "VELDO-0085 dependencies/current-specification",
+    "VELDO-0085 dependencies/prepare-mismatch"
+   ],
+   "module": ".veldo/control_decomposition_binding.py",
+   "mutant_sha256": "af44f0e12ececcbeea1cebb5fb9dce899cfd589f101cf928d35e0f328a30b6a4",
+   "name": "decomposition-first-specification-match",
+   "named_row_red": true,
+   "named_rows": [
+    "dependencies/current-specification"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     false
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 3.376,
+   "source_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: dependencies/prepare-mismatch: prepare refuses stale dependency by name; refused prepare creates no units"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-prepare-dependency-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0085 dependencies/prepare-mismatch"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "de589b6afb8b6e4bb1454e42c0c24b01c1fccb0384a777ce04e65366f3eaf75a",
+   "name": "decomposition-prepare-dependency-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "dependencies/prepare-mismatch"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     false
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 3.551,
+   "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: dependencies/current-specification: old head names superseding alias; dependent names only current specification",
+    "VELDO-0085 detail: dependencies/prepare-mismatch: prepare refuses stale dependency by name; refused prepare creates no units",
+    "VELDO-0085 detail: publication/concurrent-current: exactly one current specification; earlier commit superseded by later"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-supersession-omitted.diff",
+   "failed_rows": [
+    "VELDO-0085 dependencies/current-specification",
+    "VELDO-0085 dependencies/prepare-mismatch",
+    "VELDO-0085 publication/concurrent-current"
+   ],
+   "module": ".veldo/control_alias.py",
+   "mutant_sha256": "f8d26ea25bc8de12ec3c7ba1f0b2cfcd4daa351dce24d360e269e9515b67667a",
+   "name": "decomposition-supersession-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "publication/concurrent-current"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     false
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     false
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 3.543,
+   "source_sha256": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353"
   },
   {
    "by_assertion": true,
@@ -720,6 +1230,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -728,7 +1254,7 @@
      false
     ]
    ],
-   "seconds": 2.338,
+   "seconds": 3.383,
    "source_sha256": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4"
   }
  ],
@@ -740,9 +1266,15 @@
    "decomposition-cross-item-authority",
    "decomposition-primary-revision-shared"
   ],
+  "dependencies/current-specification": [
+   "decomposition-first-specification-match"
+  ],
   "dependencies/eligibility": [
    "decomposition-omit-generated-dependency",
    "decomposition-unit-dependency-lost"
+  ],
+  "dependencies/prepare-mismatch": [
+   "decomposition-prepare-dependency-unchecked"
   ],
   "fields/invalid-id-no-artifact": [
    "decomposition-artifact-before-unit-validation"
@@ -753,16 +1285,22 @@
   "priority/fresh-growth": [
    "decomposition-appended-unit-ready"
   ],
+  "publication/concurrent-current": [
+   "decomposition-supersession-omitted"
+  ],
   "publication/stale-input": [
    "decomposition-stale-bytes-accepted",
    "decomposition-unpublished-input",
    "decomposition-eligibility-unbound",
    "decomposition-admission-unbound"
+  ],
+  "refusals/service-class": [
+   "decomposition-private-refusal-class-only"
   ]
  },
  "noop": {
   "control_alias.py": {
-   "copy_sha256": "cc4bf67b69f5343ac33d97546d50a6a400c5bf0ce18e7f6e67bd65d546b18075",
+   "copy_sha256": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -792,6 +1330,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -800,11 +1354,11 @@
      true
     ]
    ],
-   "seconds": 2.29,
-   "source_sha256": "cc4bf67b69f5343ac33d97546d50a6a400c5bf0ce18e7f6e67bd65d546b18075"
+   "seconds": 4.053,
+   "source_sha256": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353"
   },
   "control_backlog.py": {
-   "copy_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4",
+   "copy_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -834,6 +1388,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -842,11 +1412,11 @@
      true
     ]
    ],
-   "seconds": 2.335,
-   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+   "seconds": 5.71,
+   "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   "control_decomposition.py": {
-   "copy_sha256": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c",
+   "copy_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -876,6 +1446,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -884,11 +1470,11 @@
      true
     ]
    ],
-   "seconds": 2.316,
-   "source_sha256": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c"
+   "seconds": 5.672,
+   "source_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
   },
   "control_decomposition_binding.py": {
-   "copy_sha256": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b",
+   "copy_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -918,6 +1504,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -926,8 +1528,8 @@
      true
     ]
    ],
-   "seconds": 2.312,
-   "source_sha256": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b"
+   "seconds": 5.487,
+   "source_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
   },
   "control_eligibility.py": {
    "copy_sha256": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78",
@@ -960,6 +1562,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -968,7 +1586,7 @@
      true
     ]
    ],
-   "seconds": 2.34,
+   "seconds": 7.265,
    "source_sha256": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78"
   },
   "init_scaffold.py": {
@@ -1002,6 +1620,22 @@
      true
     ],
     [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
      "VELDO-0085 publication/stale-input",
      true
     ],
@@ -1010,13 +1644,13 @@
      true
     ]
    ],
-   "seconds": 2.37,
+   "seconds": 4.764,
    "source_sha256": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 85",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 41.736,
+ "serial_seconds": 89.223,
  "spec_id": "VELDO-0085",
  "suite": "scripts/suites/82_veldo_0085_decomposition.py"
 }

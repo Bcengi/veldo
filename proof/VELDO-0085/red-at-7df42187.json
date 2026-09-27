@@ -9,7 +9,11 @@
   "VELDO-0085 detail: publication/other-process: publication service exists",
   "VELDO-0085 detail: publication/stale-input: publication service exists",
   "VELDO-0085 detail: dependencies/eligibility: publication service exists",
-  "VELDO-0085 detail: install/assets: publication service exists"
+  "VELDO-0085 detail: install/assets: publication service exists",
+  "VELDO-0085 detail: refusals/service-class: publication service exists",
+  "VELDO-0085 detail: dependencies/current-specification: publication service exists",
+  "VELDO-0085 detail: dependencies/prepare-mismatch: publication service exists",
+  "VELDO-0085 detail: publication/concurrent-current: publication service exists"
  ],
  "failed_rows": [
   "VELDO-0085 fields/invalid-id-no-artifact",
@@ -19,24 +23,28 @@
   "VELDO-0085 publication/other-process",
   "VELDO-0085 publication/stale-input",
   "VELDO-0085 dependencies/eligibility",
-  "VELDO-0085 install/assets"
+  "VELDO-0085 install/assets",
+  "VELDO-0085 refusals/service-class",
+  "VELDO-0085 dependencies/current-specification",
+  "VELDO-0085 dependencies/prepare-mismatch",
+  "VELDO-0085 publication/concurrent-current"
  ],
  "modules": {
   ".veldo/control_alias.py": {
    "at_commit": "4c28378d6a2fec67547d8179ffa11c1bf69771f5ad1572c668df2ee7fc311868",
-   "now": "cc4bf67b69f5343ac33d97546d50a6a400c5bf0ce18e7f6e67bd65d546b18075"
+   "now": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353"
   },
   ".veldo/control_backlog.py": {
    "at_commit": "1f65e72cbfd78e55cf514d1d2f0971b95c87b9c408048ad9d9c4aa32d370d8ff",
-   "now": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+   "now": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   ".veldo/control_decomposition.py": {
    "at_commit": null,
-   "now": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c"
+   "now": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
   },
   ".veldo/control_decomposition_binding.py": {
    "at_commit": null,
-   "now": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b"
+   "now": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
   },
   ".veldo/control_eligibility.py": {
    "at_commit": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e",
@@ -80,10 +88,26 @@
   [
    "VELDO-0085 install/assets",
    false
+  ],
+  [
+   "VELDO-0085 refusals/service-class",
+   false
+  ],
+  [
+   "VELDO-0085 dependencies/current-specification",
+   false
+  ],
+  [
+   "VELDO-0085 dependencies/prepare-mismatch",
+   false
+  ],
+  [
+   "VELDO-0085 publication/concurrent-current",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.178,
+ "seconds": 1.19,
  "spec_id": "VELDO-0085",
  "suite": "scripts/suites/82_veldo_0085_decomposition.py",
  "tree": "git archive 7df42187524b329a2241e056e125fa3043e19df5, unchanged; the current suite file run against it"
