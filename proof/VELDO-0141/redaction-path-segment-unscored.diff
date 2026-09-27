@@ -1,0 +1,5 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -287 +287 @@
+-        for low, high in segments:
++        for low, high in ():  # defect: a secret inside a path or URL is never judged

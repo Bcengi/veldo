@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -309 +309 @@
+@@ -457 +457 @@
 -    if committed is not None:
 +    if False:  # defect: a record that no longer matches its commitment is served

@@ -1,11 +1,11 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -153,4 +152,0 @@
+@@ -299,4 +298,0 @@
 -    for form, kind in (resolved.forms() if resolved is not None else ()):
 -        if form in text:
 -            text = text.replace(form, marker(kind))
 -            kinds.add(kind)
-@@ -166,0 +163,4 @@
+@@ -314,0 +311,4 @@
 +    for form, kind in (resolved.forms() if resolved is not None else ()):  # defect: after the scanner
 +        if form in text:
 +            text = text.replace(form, marker(kind))
