@@ -248,9 +248,12 @@ class LiveLoop(LoopSteps):
     executor asks for acceptance only with the floor enabled, and there accept_proof without a proof
     service refuses (missing_authority:proof_service); the pre-factory loop is unchanged."""
 
-    def __init__(self, root=ROOT, proofs=None, installation=None):
+    def __init__(self, root=ROOT, proofs=None, installation=None, configuration=None, runtime=None):
         self.root = Path(root)
         self.proofs = proofs
+        self.configuration, self.runtime = configuration, runtime
+        self.work_root = self.root
+        self.built = None
         # VELDO-0058: a directory holding the trusted scripts/verify.sh; by default the verifier of
         # the base commit resolve() found, laid down from Git objects outside the workspace.
         self.installation = str(installation) if installation is not None else None
@@ -291,11 +294,21 @@ class LiveLoop(LoopSteps):
             capture_output=True, text=True, cwd=str(self.root))
         return (r.returncode == 0, (r.stdout + r.stderr).strip())
 
+    def worker(self):
+        if self.runtime is None:
+            W = _load_module("veldo_worker_exec", ".veldo/control_launch_work.py")
+            try:
+                self.runtime = W.configured(self.root, self.configuration)
+            except W.Refused as error:
+                raise ExecutorError(error.code + ": Inject an installed worker configuration") from error
+        self.proofs = self.runtime.proofs
+        return self.runtime
+
     def build(self, spec, calls=None):
-        raise ExecutorError(
-            "build is a delegated agent step; LiveLoop has no agent wired. Inject "
-            "a build callable that dispatches the implementer and returns its "
-            "commit and evidence. Refusing to fabricate a build.")
+        result = self.worker().build(spec, calls)
+        self.built = result
+        self.work_root = Path(result["workspace"])
+        return result
 
     def gate(self):
         """The canonical gate, run once and OBSERVED (VELDO-0050): green only on exit 0, a terminal
@@ -316,7 +329,7 @@ class LiveLoop(LoopSteps):
                 # gate reads a range from them (the proof service is handed the spec's base commit
                 # explicitly, and merge_ready reads the spec). HEAD, its tree, the index and every
                 # file outside .git stay bound.
-                observed, _reference = CV.observe_gate(self.root, installed, Path(directory) / "gate",
+                observed, _reference = CV.observe_gate(self.work_root, installed, Path(directory) / "gate",
                                                        bind_refs=False)
             except CV.Refused as error:
                 return {"green": False, "detail": "gate not run: %s" % error.code}
@@ -341,6 +354,8 @@ class LiveLoop(LoopSteps):
         committed = proof_organ().committed_manifest(self.root, (build or {}).get("commit"), spec.get("id"))
         if committed is not None:
             return committed
+        if isinstance((build or {}).get("proof"), dict):
+            return build["proof"]
         evidence = (build or {}).get("evidence") or {}
         criteria = []
         for cid in spec.get("criteria_ids") or []:
@@ -378,7 +393,7 @@ class LiveLoop(LoopSteps):
         sid = (spec or {}).get("id")
         commit = (build or {}).get("commit")
         observation = (gate or {}).get("observation")
-        builder = (context or {}).get("holder")
+        builder = (context or {}).get("holder") or (build or {}).get("producer")
         if self.proofs is not None:
             try:
                 accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),
@@ -391,10 +406,7 @@ class LiveLoop(LoopSteps):
         return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}
 
     def review(self, spec, proof, calls=None):
-        raise ExecutorError(
-            "review is a delegated fresh-context agent step; LiveLoop has no "
-            "reviewer wired. Inject a review callable that dispatches the "
-            "reviewer and returns its verdict. Refusing to fabricate a verdict.")
+        return self.worker().review(spec, calls)
 
     def merge_ready(self, spec, proof, verdict):
         """Ready unless the change touches a human lane or protected paths that
@@ -737,6 +749,8 @@ class Executor:
             # names every problem. The pre-factory loop (no Gate) keeps its structural check alone.
             accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)
                         if gate is not None else None)
+            if gate is not None and not accepted:
+                accepted = {"ok": False, "problems": ["missing_authority:proof_acceptance"]}
             if accepted is not None and not accepted.get("ok"):
                 problems = list(accepted.get("problems") or ["unknown_outcome:proof"])
                 record("proof", False, cycle=cycle, errors=p_err, refusals=problems)

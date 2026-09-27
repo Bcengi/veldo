@@ -27,6 +27,10 @@ footprint:
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
   - "scripts/suites/*_veldo_0129_*.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0129-live-build-review-adapter-wiring.md"
@@ -195,3 +199,12 @@ through. With no dependency left in a later stage, W92 returns to stage 1. Statu
 everything-off baseline, the paid-API guard and the environment strip split out of VELDO-0060 AC5 and
 VELDO-0061 AC5, so real build and review still run only behind them, as they did when those guards were
 part of the adapters this specification depends on. Criteria and status unchanged.
+
+
+2026-09-27, implementation on build-veldo-0129: wire the installed entry points through
+control_launch_work, the existing Runner, receiver, qualification and reservation boundary.
+The runtime constructs the proof service and floor authority. Engine reviews use an artifact
+bound to the dispatch, with the exact accepted spec, source diff and proof as their fresh input.
+The footprint adds init_scaffold.py and its copies because AC1 installs the new runtime module,
+and scripts/check_teeth_mutations.py to register AC1 to AC3 falsifiers as finding 129.
+The factory loop remains VELDO-0154. Status unchanged; proof collection is in progress.
