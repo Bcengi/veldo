@@ -34,6 +34,7 @@ footprint:
   - "scripts/suites/79_veldo_0061_codex_adapter.py"
   - "scripts/suites/80_veldo_0155_claude_baseline.py"
   - "scripts/suites/81_veldo_0156_codex_baseline.py"
+  - "scripts/suites/82_veldo_0129_worker_wiring.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -183,3 +184,13 @@ VELDO-0062 passes 22/22 and VELDO-0165 passes 17/17. Finding 165 rejects all 15 
 all 50, finding 61 all 30 and finding 155 all 25, each with two jobs. Both base red records were
 regenerated and fail by assertion. Proof records and exact diffs are in proof/VELDO-0165.
 No canonical gate, real engine run or push was performed. Status remains ready for independent review.
+
+2026-09-27, second review fixes: on the lead's decision that a worker's environment is configured and
+never ambient, the extractor decodes Codex 0.154.0's unified exec pairs by content (NO_COLOR, TERM,
+LANG, LC_CTYPE, LC_ALL, COLORTERM, PAGER, GIT_PAGER, GH_PAGER and CODEX_CI) and Claude Code's
+default OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE assignment; every unprefixed one joins
+AC4's wrapper list, and both baselines set LANG=C.UTF-8 and TERM=dumb after the strip. Session names
+are now read as GNU strings reads them, outside executable sections, and a row compares them with
+an independent strings and readelf scan. An adapter configuring CLAUDE_AGENT_SDK_MCP_NO_PREFIX is
+refused by name, and session names that are not a list refuse as missing evidence. The footprint
+adds the merged VELDO-0129 suite for its fake qualification writer.

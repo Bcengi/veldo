@@ -8073,7 +8073,8 @@ def cases():
                "    if False:", ['refuse/claude'])
     for engine, source in [('claude', 'entry'), ('codex', 'record')]:
         hygiene165(engine + '-names-unqualified', 'control_engine_' + engine + '.py',
-                   "    if " + source + ".get('session_environment') is None:", "    if False:", ['refuse/' + engine])
+                   "    if not isinstance(" + source + ".get('session_environment'), list):", "    if False:",
+                   ['refuse/' + engine])
     hygiene165('own-values-lost', 'control_launch.py',
                "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))",
                "    environment.pop(ENGINE_OVERRIDES, None)", ['strip/own-values'])
@@ -8085,8 +8086,11 @@ def cases():
                'n in EXEC_STRIPPED', ['strip/claude', 'strip/codex'])
     for engine, source in [('claude', 'entry'), ('codex', 'record')]:
         hygiene165(engine + '-empty-is-missing', 'control_engine_' + engine + '.py',
-                   "    if " + source + ".get('session_environment') is None:",
+                   "    if not isinstance(" + source + ".get('session_environment'), list):",
                    "    if not " + source + ".get('session_environment'):", ['evidence/empty'])
+        hygiene165(engine + '-evidence-any-type', 'control_engine_' + engine + '.py',
+                   "    if not isinstance(" + source + ".get('session_environment'), list):",
+                   "    if " + source + ".get('session_environment') is None:", ['evidence/not-a-list'])
     hygiene165('configured-not-restored', 'control_launch.py',
                "        own = {n: environment[n] for n in self.binding['configured_environment'] if n in environment}",
                "        own = {}", ['strip/configured'])
@@ -8098,6 +8102,24 @@ def cases():
                "    parents, structures = [n for n in ('CLAUDECODE', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_SESSION_ATTENDED', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_PID', 'CLAUDE_EFFORT', 'AI_AGENT', 'CODEX_THREAD_ID', 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED') if n in names], []",
                ['evidence/completeness'])
     result[-1]['dir'] = 'proof/VELDO-0165'
+    hygiene165('extractor-drops-suffix', 'extract_environment.py',
+               '            if SHAPE.fullmatch(piece):',
+               "            if SHAPE.fullmatch(piece) and not piece.endswith(b'_ID'):", ['evidence/outside-scan'])
+    result[-1]['dir'] = 'proof/VELDO-0165'
+    hygiene165('codex-child-settings-kept', 'control_launch.py',
+               "                 'NO_COLOR', 'TERM', 'LANG', 'LC_CTYPE', 'LC_ALL', 'COLORTERM', 'PAGER', 'GIT_PAGER', 'GH_PAGER')",
+               "                 )", ['strip/child-environment', 'evidence/completeness'])
+    hygiene165('metrics-default-kept', 'control_launch.py',
+               "                 'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE',\n", "",
+               ['strip/child-environment', 'evidence/completeness'])
+    hygiene165('claude-locale-unconfigured', 'control_engine_claude.py',
+               "                    'LANG': 'C.UTF-8', 'TERM': 'dumb'},\n", "                    },\n",
+               ['strip/child-environment'])
+    hygiene165('codex-locale-unconfigured', 'control_engine_codex.py',
+               "    'environment': {'LANG': 'C.UTF-8', 'TERM': 'dumb'},\n", "    'environment': {},\n",
+               ['strip/child-environment'])
+    hygiene165('mcp-configured-accepted', 'control_launch.py',
+               '        if renaming:', '        if False:', ['mcp/configured-refused'])
     hygiene165('refused-not-counted', 'control_launch.py',
                "int(refusal.startswith('missing_evidence:engine_baseline:'))",
                "0", ['report/refused'])
