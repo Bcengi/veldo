@@ -1,0 +1,334 @@
+{
+ "by_assertion": true,
+ "commit": "6512503076f231b94485421f91dc663ee0a36649",
+ "details": [
+  "VELDO-0172 table/capture detail: control_response:table:no-event, system/init.messaging_socket_path:table:unknown, assistant.message.diagnostics:table:unknown, assistant.message.input_transformations:table:unknown, assistant.message.usage.server_tool_use:table:required",
+  "VELDO-0172 table/capture detail: capture:digest-mismatch",
+  "VELDO-0172 table/capture detail: table:no-capture-reconciliation",
+  "VELDO-0172 fake/capture detail: 75_veldo_0062_accounts.py:control_response:table:no-event, system/init.agents:fake:missing, system/init.agents[]:fake:missing, system/init.analytics_disabled:fake:missing, system/init.capabilities:fake:missing, system/init.capabilities[]:fake:missing, system/init.fast_mode_disabled_reason:fake:missing, system/init.fast_mode_state:fake:missing, system/init.messaging_socket_path:fake:missing, system/init.per_turn_effort_active:fake:missing, system/init.plugins[]:fake:missing, system/init.plugins[].name:fake:missing, system/init.plugins[].path:fake:missing, system/init.plugins[].source:fake:missing, system/init.product_feedback_disabled:fake:missing, system/init.view_mode:fake:missing, system/init.mcp_servers[]:fake:added, system/init.mcp_servers[].name:fake:added, system/init.mcp_servers[].status:fake:added, assistant.message.container:fake:missing, assistant.message.content[]:fake:missing, assistant.message.content[].text:fake:missing, assistant.message.content[].type:fake:missing, assistant.message.context_management:fake:missing, assistant.message.diagnostics:fake:missing, assistant.message.input_transformations:fake:missing, assistant.message.stop_details:fake:missing, assistant.message.usage.inference_geo:fake:missing, assistant.request_id:fake:missing, assistant.timestamp:fake:missing, assistant.message.usage.server_tool_use:fake:added, assistant.message.usage.server_tool_use.web_fetch_requests:fake:added, assistant.message.usage.server_tool_use.web_search_requests:fake:added, rate_limit_event.rate_limit_info.isUsingOverage:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour.resetsAt:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour.utilization:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day.resetsAt:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day.utilization:fake:missing, rate_limit_event.rate_limit_info.utilization:fake:missing, result/success.api_error_status:fake:missing, result/success.fast_mode_disabled_reason:fake:missing, result/success.fast_mode_state:fake:missing, result/success.first_content_frame_ms:fake:missing, result/success.modelUsage.*.canonicalModel:fake:missing, result/success.modelUsage.*.costBasis:fake:missing, result/success.modelUsage.*.provider:fake:missing, result/success.modelUsage.*.thinkingTokens:fake:missing, result/success.queued_turn_count:fake:missing, result/success.result_index:fake:missing, result/success.subagent_stats:fake:missing, result/success.subagent_stats.by_type:fake:missing, result/success.subagent_stats.completed:fake:missing, result/success.subagent_stats.failed:fake:missing, result/success.subagent_stats.killed:fake:missing, result/success.subagent_stats.killed.parent:fake:missing, result/success.subagent_stats.killed.system:fake:missing, result/success.subagent_stats.killed.user:fake:missing, result/success.subagent_stats.max_depth:fake:missing, result/success.subagent_stats.refused:fake:missing, result/success.subagent_stats.refused.budget:fake:missing, result/success.subagent_stats.refused.concurrency_limit:fake:missing, result/success.subagent_stats.refused.depth_limit:fake:missing, result/success.subagent_stats.requested:fake:missing, result/success.subagent_stats.requested.background:fake:missing, result/success.subagent_stats.requested.foreground:fake:missing, result/success.subagent_stats.requested.unset:fake:missing, result/success.subagent_stats.spawned:fake:missing, result/success.subagent_stats.spawned_by_subagents:fake:missing, result/success.subagent_stats.started_in_background:fake:missing, result/success.terminal_reason:fake:missing, result/success.time_to_request_ms:fake:missing, result/success.ttft_ms:fake:missing, result/success.ttft_stream_ms:fake:missing, result/success.usage.inference_geo:fake:missing, result/success.usage.iterations:fake:missing, result/success.usage.iterations[]:fake:missing, result/success.usage.iterations[].cache_creation:fake:missing, result/success.usage.iterations[].cache_creation.ephemeral_1h_input_tokens:fake:missing, result/success.usage.iterations[].cache_creation.ephemeral_5m_input_tokens:fake:missing, result/success.usage.iterations[].cache_creation_input_tokens:fake:missing, result/success.usage.iterations[].cache_read_input_tokens:fake:missing, result/success.usage.iterations[].input_tokens:fake:missing, result/success.usage.iterations[].output_tokens:fake:missing, result/success.usage.iterations[].type:fake:missing, result/success.usage.output_tokens_details:fake:missing, result/success.usage.output_tokens_details.thinking_tokens:fake:missing, result/success.usage.speed:fake:missing, control_response:fake:subscription-label, login_status:stdout:fake:wrong-stream, login_status:stderr:fake:wrong-stream, login_status:fake:subscription-status",
+  "VELDO-0172 fake/capture detail: 78_veldo_0060_claude_adapter.py:control_response:table:no-event, system/init.agents:fake:missing, system/init.agents[]:fake:missing, system/init.analytics_disabled:fake:missing, system/init.capabilities:fake:missing, system/init.capabilities[]:fake:missing, system/init.fast_mode_disabled_reason:fake:missing, system/init.fast_mode_state:fake:missing, system/init.messaging_socket_path:fake:missing, system/init.per_turn_effort_active:fake:missing, system/init.plugins[]:fake:missing, system/init.plugins[].name:fake:missing, system/init.plugins[].path:fake:missing, system/init.plugins[].source:fake:missing, system/init.product_feedback_disabled:fake:missing, system/init.view_mode:fake:missing, assistant.message.container:fake:missing, assistant.message.content[]:fake:missing, assistant.message.content[].text:fake:missing, assistant.message.content[].type:fake:missing, assistant.message.context_management:fake:missing, assistant.message.diagnostics:fake:missing, assistant.message.input_transformations:fake:missing, assistant.message.stop_details:fake:missing, assistant.message.usage.inference_geo:fake:missing, assistant.request_id:fake:missing, assistant.timestamp:fake:missing, assistant.message.usage.server_tool_use:fake:added, assistant.message.usage.server_tool_use.web_fetch_requests:fake:added, assistant.message.usage.server_tool_use.web_search_requests:fake:added, rate_limit_event.rate_limit_info.isUsingOverage:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour.resetsAt:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour.utilization:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day.resetsAt:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day.utilization:fake:missing, rate_limit_event.rate_limit_info.utilization:fake:missing, result/success.api_error_status:fake:missing, result/success.fast_mode_disabled_reason:fake:missing, result/success.fast_mode_state:fake:missing, result/success.first_content_frame_ms:fake:missing, result/success.modelUsage.*.canonicalModel:fake:missing, result/success.modelUsage.*.costBasis:fake:missing, result/success.modelUsage.*.provider:fake:missing, result/success.modelUsage.*.thinkingTokens:fake:missing, result/success.queued_turn_count:fake:missing, result/success.result_index:fake:missing, result/success.subagent_stats:fake:missing, result/success.subagent_stats.by_type:fake:missing, result/success.subagent_stats.completed:fake:missing, result/success.subagent_stats.failed:fake:missing, result/success.subagent_stats.killed:fake:missing, result/success.subagent_stats.killed.parent:fake:missing, result/success.subagent_stats.killed.system:fake:missing, result/success.subagent_stats.killed.user:fake:missing, result/success.subagent_stats.max_depth:fake:missing, result/success.subagent_stats.refused:fake:missing, result/success.subagent_stats.refused.budget:fake:missing, result/success.subagent_stats.refused.concurrency_limit:fake:missing, result/success.subagent_stats.refused.depth_limit:fake:missing, result/success.subagent_stats.requested:fake:missing, result/success.subagent_stats.requested.background:fake:missing, result/success.subagent_stats.requested.foreground:fake:missing, result/success.subagent_stats.requested.unset:fake:missing, result/success.subagent_stats.spawned:fake:missing, result/success.subagent_stats.spawned_by_subagents:fake:missing, result/success.subagent_stats.started_in_background:fake:missing, result/success.terminal_reason:fake:missing, result/success.time_to_request_ms:fake:missing, result/success.ttft_ms:fake:missing, result/success.ttft_stream_ms:fake:missing, result/success.usage.inference_geo:fake:missing, result/success.usage.iterations:fake:missing, result/success.usage.iterations[]:fake:missing, result/success.usage.iterations[].cache_creation:fake:missing, result/success.usage.iterations[].cache_creation.ephemeral_1h_input_tokens:fake:missing, result/success.usage.iterations[].cache_creation.ephemeral_5m_input_tokens:fake:missing, result/success.usage.iterations[].cache_creation_input_tokens:fake:missing, result/success.usage.iterations[].cache_read_input_tokens:fake:missing, result/success.usage.iterations[].input_tokens:fake:missing, result/success.usage.iterations[].output_tokens:fake:missing, result/success.usage.iterations[].type:fake:missing, result/success.usage.output_tokens_details:fake:missing, result/success.usage.output_tokens_details.thinking_tokens:fake:missing, result/success.usage.speed:fake:missing, control_response:fake:subscription-label, item.completed.item.text:fake:missing, turn.completed.usage.cache_write_input_tokens:fake:missing, login_status:stdout:fake:wrong-stream, login_status:stderr:fake:wrong-stream, login_status:fake:subscription-status",
+  "VELDO-0172 fake/capture detail: 78_veldo_0160_account_pool.py:control_response:table:no-event, system/init.agents:fake:missing, system/init.agents[]:fake:missing, system/init.analytics_disabled:fake:missing, system/init.capabilities:fake:missing, system/init.capabilities[]:fake:missing, system/init.fast_mode_disabled_reason:fake:missing, system/init.fast_mode_state:fake:missing, system/init.messaging_socket_path:fake:missing, system/init.per_turn_effort_active:fake:missing, system/init.plugins[]:fake:missing, system/init.plugins[].name:fake:missing, system/init.plugins[].path:fake:missing, system/init.plugins[].source:fake:missing, system/init.product_feedback_disabled:fake:missing, system/init.view_mode:fake:missing, system/init.mcp_servers[]:fake:added, system/init.mcp_servers[].name:fake:added, system/init.mcp_servers[].status:fake:added, assistant.message.container:fake:missing, assistant.message.content[]:fake:missing, assistant.message.content[].text:fake:missing, assistant.message.content[].type:fake:missing, assistant.message.context_management:fake:missing, assistant.message.diagnostics:fake:missing, assistant.message.input_transformations:fake:missing, assistant.message.stop_details:fake:missing, assistant.message.usage.inference_geo:fake:missing, assistant.request_id:fake:missing, assistant.timestamp:fake:missing, assistant.message.usage.server_tool_use:fake:added, assistant.message.usage.server_tool_use.web_fetch_requests:fake:added, assistant.message.usage.server_tool_use.web_search_requests:fake:added, rate_limit_event.rate_limit_info.isUsingOverage:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour.resetsAt:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.five_hour.utilization:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day.resetsAt:fake:missing, rate_limit_event.rate_limit_info.unifiedWindows.seven_day.utilization:fake:missing, rate_limit_event.rate_limit_info.utilization:fake:missing, result/success.api_error_status:fake:missing, result/success.fast_mode_disabled_reason:fake:missing, result/success.fast_mode_state:fake:missing, result/success.first_content_frame_ms:fake:missing, result/success.modelUsage.*.canonicalModel:fake:missing, result/success.modelUsage.*.costBasis:fake:missing, result/success.modelUsage.*.provider:fake:missing, result/success.modelUsage.*.thinkingTokens:fake:missing, result/success.queued_turn_count:fake:missing, result/success.result_index:fake:missing, result/success.subagent_stats:fake:missing, result/success.subagent_stats.by_type:fake:missing, result/success.subagent_stats.completed:fake:missing, result/success.subagent_stats.failed:fake:missing, result/success.subagent_stats.killed:fake:missing, result/success.subagent_stats.killed.parent:fake:missing, result/success.subagent_stats.killed.system:fake:missing, result/success.subagent_stats.killed.user:fake:missing, result/success.subagent_stats.max_depth:fake:missing, result/success.subagent_stats.refused:fake:missing, result/success.subagent_stats.refused.budget:fake:missing, result/success.subagent_stats.refused.concurrency_limit:fake:missing, result/success.subagent_stats.refused.depth_limit:fake:missing, result/success.subagent_stats.requested:fake:missing, result/success.subagent_stats.requested.background:fake:missing, result/success.subagent_stats.requested.foreground:fake:missing, result/success.subagent_stats.requested.unset:fake:missing, result/success.subagent_stats.spawned:fake:missing, result/success.subagent_stats.spawned_by_subagents:fake:missing, result/success.subagent_stats.started_in_background:fake:missing, result/success.terminal_reason:fake:missing, result/success.time_to_request_ms:fake:missing, result/success.ttft_ms:fake:missing, result/success.ttft_stream_ms:fake:missing, result/success.usage.inference_geo:fake:missing, result/success.usage.iterations:fake:missing, result/success.usage.iterations[]:fake:missing, result/success.usage.iterations[].cache_creation:fake:missing, result/success.usage.iterations[].cache_creation.ephemeral_1h_input_tokens:fake:missing, result/success.usage.iterations[].cache_creation.ephemeral_5m_input_tokens:fake:missing, result/success.usage.iterations[].cache_creation_input_tokens:fake:missing, result/success.usage.iterations[].cache_read_input_tokens:fake:missing, result/success.usage.iterations[].input_tokens:fake:missing, result/success.usage.iterations[].output_tokens:fake:missing, result/success.usage.iterations[].type:fake:missing, result/success.usage.output_tokens_details:fake:missing, result/success.usage.output_tokens_details.thinking_tokens:fake:missing, result/success.usage.speed:fake:missing, control_response:fake:subscription-label",
+  "VELDO-0172 fake/capture detail: 79_veldo_0061_codex_adapter.py:item.completed.item.text:fake:missing, turn.completed.usage.cache_write_input_tokens:fake:missing, login_status:stdout:fake:wrong-stream, login_status:stderr:fake:wrong-stream, login_status:fake:subscription-status",
+  "VELDO-0172 fake/capture detail: 80_veldo_0155_claude_baseline.py:control_response:table:no-event, system/init.agents[]:fake:missing, system/init.analytics_disabled:fake:missing, system/init.capabilities:fake:missing, system/init.capabilities[]:fake:missing, system/init.fast_mode_disabled_reason:fake:missing, system/init.fast_mode_state:fake:missing, system/init.messaging_socket_path:fake:missing, system/init.per_turn_effort_active:fake:missing, system/init.plugins[]:fake:missing, system/init.plugins[].name:fake:missing, system/init.plugins[].path:fake:missing, system/init.plugins[].source:fake:missing, system/init.product_feedback_disabled:fake:missing, system/init.view_mode:fake:missing, assistant.message.usage.cache_creation:table:required, assistant.message.usage.server_tool_use:table:required, assistant.message.usage.service_tier:table:required, assistant.message.container:fake:missing, assistant.message.content[]:fake:missing, assistant.message.content[].text:fake:missing, assistant.message.content[].type:fake:missing, assistant.message.context_management:fake:missing, assistant.message.diagnostics:fake:missing, assistant.message.input_transformations:fake:missing, assistant.message.stop_details:fake:missing, assistant.message.usage.cache_creation:fake:missing, assistant.message.usage.cache_creation.ephemeral_1h_input_tokens:fake:missing, assistant.message.usage.cache_creation.ephemeral_5m_input_tokens:fake:missing, assistant.message.usage.inference_geo:fake:missing, assistant.message.usage.service_tier:fake:missing, assistant.request_id:fake:missing, assistant.timestamp:fake:missing, result/success.usage.cache_creation:table:required, result/success.usage.server_tool_use:table:required, result/success.usage.service_tier:table:required, result/success.api_error_status:fake:missing, result/success.fast_mode_disabled_reason:fake:missing, result/success.fast_mode_state:fake:missing, result/success.first_content_frame_ms:fake:missing, result/success.modelUsage.*.canonicalModel:fake:missing, result/success.modelUsage.*.costBasis:fake:missing, result/success.modelUsage.*.provider:fake:missing, result/success.modelUsage.*.thinkingTokens:fake:missing, result/success.queued_turn_count:fake:missing, result/success.result_index:fake:missing, result/success.subagent_stats:fake:missing, result/success.subagent_stats.by_type:fake:missing, result/success.subagent_stats.completed:fake:missing, result/success.subagent_stats.failed:fake:missing, result/success.subagent_stats.killed:fake:missing, result/success.subagent_stats.killed.parent:fake:missing, result/success.subagent_stats.killed.system:fake:missing, result/success.subagent_stats.killed.user:fake:missing, result/success.subagent_stats.max_depth:fake:missing, result/success.subagent_stats.refused:fake:missing, result/success.subagent_stats.refused.budget:fake:missing, result/success.subagent_stats.refused.concurrency_limit:fake:missing, result/success.subagent_stats.refused.depth_limit:fake:missing, result/success.subagent_stats.requested:fake:missing, result/success.subagent_stats.requested.background:fake:missing, result/success.subagent_stats.requested.foreground:fake:missing, result/success.subagent_stats.requested.unset:fake:missing, result/success.subagent_stats.spawned:fake:missing, result/success.subagent_stats.spawned_by_subagents:fake:missing, result/success.subagent_stats.started_in_background:fake:missing, result/success.terminal_reason:fake:missing, result/success.time_to_request_ms:fake:missing, result/success.ttft_ms:fake:missing, result/success.ttft_stream_ms:fake:missing, result/success.usage.cache_creation:fake:missing, result/success.usage.cache_creation.ephemeral_1h_input_tokens:fake:missing, result/success.usage.cache_creation.ephemeral_5m_input_tokens:fake:missing, result/success.usage.inference_geo:fake:missing, result/success.usage.iterations:fake:missing, result/success.usage.iterations[]:fake:missing, result/success.usage.iterations[].cache_creation:fake:missing, result/success.usage.iterations[].cache_creation.ephemeral_1h_input_tokens:fake:missing, result/success.usage.iterations[].cache_creation.ephemeral_5m_input_tokens:fake:missing, result/success.usage.iterations[].cache_creation_input_tokens:fake:missing, result/success.usage.iterations[].cache_read_input_tokens:fake:missing, result/success.usage.iterations[].input_tokens:fake:missing, result/success.usage.iterations[].output_tokens:fake:missing, result/success.usage.iterations[].type:fake:missing, result/success.usage.output_tokens_details:fake:missing, result/success.usage.output_tokens_details.thinking_tokens:fake:missing, result/success.usage.server_tool_use:fake:missing, result/success.usage.server_tool_use.web_fetch_requests:fake:missing, result/success.usage.server_tool_use.web_search_requests:fake:missing, result/success.usage.service_tier:fake:missing, result/success.usage.speed:fake:missing, control_response:fake:subscription-label, assistant:fake:streamed-output-count",
+  "VELDO-0172 fake/capture detail: 81_veldo_0156_codex_baseline.py:item.completed.item.text:fake:missing, turn.completed.usage.cache_write_input_tokens:fake:missing, login_status:stdout:fake:wrong-stream, login_status:stderr:fake:wrong-stream, login_status:fake:subscription-status",
+  "VELDO-0172 fake/capture detail: census:capture-event-not-printed",
+  "VELDO-0172 capture/allowlist detail: capture:absent",
+  "VELDO-0172 capture/planted detail: scrubber:absent"
+ ],
+ "failed_rows": [
+  "VELDO-0172 table/capture",
+  "VELDO-0172 fake/capture",
+  "VELDO-0172 capture/allowlist",
+  "VELDO-0172 capture/planted"
+ ],
+ "modules": {
+  "proof/VELDO-0062/extract_formats.py": {
+   "at_commit": "d72bfcfb2ef7fd171caf54ac5e2d0394b44541e40b63bc2209c0ad6389f9c9b2",
+   "now": "884904611ee24e8049f58975709724cd47c5d273d40bf62d19be2ac9904043e6"
+  },
+  "proof/VELDO-0172/scrub.py": {
+   "at_commit": null,
+   "now": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8"
+  },
+  "scripts/suites/79_veldo_0061_codex_adapter.py": {
+   "at_commit": "c403dce0b6702492d529bcd006578152fb85cbf66899f10e899c30c05852de8d",
+   "now": "bffca908e2bcc5115a4232bd4ed3e1f0df10c39f9ff947daefd061624da9163a"
+  }
+ },
+ "preamble_rows": 26,
+ "readback": {
+  "census": [
+   "75_veldo_0062_accounts.py",
+   "78_veldo_0060_claude_adapter.py",
+   "78_veldo_0160_account_pool.py",
+   "79_veldo_0061_codex_adapter.py",
+   "80_veldo_0155_claude_baseline.py",
+   "81_veldo_0156_codex_baseline.py"
+  ],
+  "fake_lines": [
+   {
+    "engine": "claude",
+    "event": "system/init",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "75_veldo_0062_accounts.py"
+   },
+   {
+    "engine": "claude",
+    "event": "assistant",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "75_veldo_0062_accounts.py"
+   },
+   {
+    "engine": "claude",
+    "event": "rate_limit_event",
+    "line": 4,
+    "row": "fake/capture",
+    "suite": "75_veldo_0062_accounts.py"
+   },
+   {
+    "engine": "claude",
+    "event": "result/success",
+    "line": 5,
+    "row": "fake/capture",
+    "suite": "75_veldo_0062_accounts.py"
+   },
+   {
+    "engine": "codex",
+    "event": "thread.started",
+    "line": 1,
+    "row": "fake/capture",
+    "suite": "75_veldo_0062_accounts.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.started",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "75_veldo_0062_accounts.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.completed",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "75_veldo_0062_accounts.py"
+   },
+   {
+    "engine": "claude",
+    "event": "system/init",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "claude",
+    "event": "assistant",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "claude",
+    "event": "rate_limit_event",
+    "line": 4,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "claude",
+    "event": "result/success",
+    "line": 5,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "thread.started",
+    "line": 1,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.started",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "item.completed",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "item.completed",
+    "line": 4,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.completed",
+    "line": 5,
+    "row": "fake/capture",
+    "suite": "78_veldo_0060_claude_adapter.py"
+   },
+   {
+    "engine": "claude",
+    "event": "system/init",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "78_veldo_0160_account_pool.py"
+   },
+   {
+    "engine": "claude",
+    "event": "assistant",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "78_veldo_0160_account_pool.py"
+   },
+   {
+    "engine": "claude",
+    "event": "rate_limit_event",
+    "line": 4,
+    "row": "fake/capture",
+    "suite": "78_veldo_0160_account_pool.py"
+   },
+   {
+    "engine": "claude",
+    "event": "result/success",
+    "line": 5,
+    "row": "fake/capture",
+    "suite": "78_veldo_0160_account_pool.py"
+   },
+   {
+    "engine": "codex",
+    "event": "thread.started",
+    "line": 1,
+    "row": "fake/capture",
+    "suite": "78_veldo_0160_account_pool.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.started",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "78_veldo_0160_account_pool.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.completed",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "78_veldo_0160_account_pool.py"
+   },
+   {
+    "engine": "codex",
+    "event": "thread.started",
+    "line": 1,
+    "row": "fake/capture",
+    "suite": "79_veldo_0061_codex_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.started",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "79_veldo_0061_codex_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "item.started",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "79_veldo_0061_codex_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "item.completed",
+    "line": 4,
+    "row": "fake/capture",
+    "suite": "79_veldo_0061_codex_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "item.completed",
+    "line": 5,
+    "row": "fake/capture",
+    "suite": "79_veldo_0061_codex_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "item.completed",
+    "line": 6,
+    "row": "fake/capture",
+    "suite": "79_veldo_0061_codex_adapter.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.completed",
+    "line": 7,
+    "row": "fake/capture",
+    "suite": "79_veldo_0061_codex_adapter.py"
+   },
+   {
+    "engine": "claude",
+    "event": "system/init",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "80_veldo_0155_claude_baseline.py"
+   },
+   {
+    "engine": "claude",
+    "event": "assistant",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "80_veldo_0155_claude_baseline.py"
+   },
+   {
+    "engine": "claude",
+    "event": "result/success",
+    "line": 4,
+    "row": "fake/capture",
+    "suite": "80_veldo_0155_claude_baseline.py"
+   },
+   {
+    "engine": "codex",
+    "event": "thread.started",
+    "line": 1,
+    "row": "fake/capture",
+    "suite": "81_veldo_0156_codex_baseline.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.started",
+    "line": 2,
+    "row": "fake/capture",
+    "suite": "81_veldo_0156_codex_baseline.py"
+   },
+   {
+    "engine": "codex",
+    "event": "item.completed",
+    "line": 3,
+    "row": "fake/capture",
+    "suite": "81_veldo_0156_codex_baseline.py"
+   },
+   {
+    "engine": "codex",
+    "event": "turn.completed",
+    "line": 4,
+    "row": "fake/capture",
+    "suite": "81_veldo_0156_codex_baseline.py"
+   }
+  ],
+  "field_metrics": {}
+ },
+ "rows": [
+  [
+   "VELDO-0172 table/capture",
+   false
+  ],
+  [
+   "VELDO-0172 fake/capture",
+   false
+  ],
+  [
+   "VELDO-0172 capture/allowlist",
+   false
+  ],
+  [
+   "VELDO-0172 capture/planted",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 191.317,
+ "spec_id": "VELDO-0172",
+ "suite": "scripts/suites/82_veldo_0172_live_formats.py",
+ "tree": "git archive 6512503076f231b94485421f91dc663ee0a36649, unchanged; the current suite file run against it"
+}

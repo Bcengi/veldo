@@ -3,76 +3,6 @@
   "changes": [
    {
     "change": "known",
-    "field": "control_response",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response.pending_permission_requests",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response.pending_user_dialog_requests",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response.request_id",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response.response",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response.response.account",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response.response.account.apiProvider",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response.response.account.email",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.response.response.account.subscriptionType",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
     "field": "control_response.response.response.agents",
     "lines": [
      1
@@ -346,20 +276,6 @@
    },
    {
     "change": "known",
-    "field": "control_response.response.subtype",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
-    "field": "control_response.type",
-    "lines": [
-     1
-    ]
-   },
-   {
-    "change": "known",
     "field": "system/init.messaging_socket_path",
     "lines": [
      2
@@ -434,8 +350,112 @@
     "lines": [
      3
     ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.id",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.text",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.type",
+    "lines": [
+     3
+    ]
    }
   ],
+  "metrics": {
+   "claude_code": {
+    "assistant": {
+     "from_capture": 4,
+     "known": 150,
+     "optional": 67
+    },
+    "control_response": {
+     "from_capture": 29,
+     "known": 43,
+     "optional": 14
+    },
+    "rate_limit_event": {
+     "from_capture": 0,
+     "known": 33,
+     "optional": 20
+    },
+    "result/error": {
+     "from_capture": 0,
+     "known": 79,
+     "optional": 23
+    },
+    "result/success": {
+     "from_capture": 0,
+     "known": 100,
+     "optional": 42
+    },
+    "system/init": {
+     "from_capture": 1,
+     "known": 56,
+     "optional": 26
+    }
+   },
+   "codex": {
+    "error": {
+     "from_capture": 0,
+     "known": 2,
+     "optional": 0
+    },
+    "item.completed": {
+     "from_capture": 3,
+     "known": 5,
+     "optional": 0
+    },
+    "item.started": {
+     "from_capture": 0,
+     "known": 2,
+     "optional": 0
+    },
+    "item.updated": {
+     "from_capture": 0,
+     "known": 2,
+     "optional": 0
+    },
+    "thread.started": {
+     "from_capture": 0,
+     "known": 2,
+     "optional": 0
+    },
+    "turn.completed": {
+     "from_capture": 0,
+     "known": 7,
+     "optional": 5
+    },
+    "turn.failed": {
+     "from_capture": 0,
+     "known": 3,
+     "optional": 0
+    },
+    "turn.started": {
+     "from_capture": 0,
+     "known": 1,
+     "optional": 0
+    }
+   }
+  },
   "path": "proof/VELDO-0172/capture.json",
   "recorded_run": "2026-09-26",
   "sha256": "sha256:8f5b8eb50df11324ebdf50834e1018c0a2bbc93f653d81b5a69327e20808c8e3",
@@ -1992,71 +2012,60 @@
     "type": "object"
    },
    "control_response": {
-    "capture_lines": [
-     1
-    ],
     "fields": {
      "response": {
-      "capture_lines": [
-       1
-      ],
       "fields": {
        "pending_permission_requests": {
-        "capture_lines": [
-         1
-        ],
-        "items": {},
-        "source": "proof/VELDO-0172/capture.json:streams.claude",
+        "items": {
+         "ref": "$T",
+         "type": "any"
+        },
+        "optional": true,
+        "ref": "Ty",
         "type": "array"
        },
        "pending_user_dialog_requests": {
-        "capture_lines": [
-         1
-        ],
-        "items": {},
-        "source": "proof/VELDO-0172/capture.json:streams.claude",
+        "items": {
+         "ref": "$T",
+         "type": "any"
+        },
+        "optional": true,
+        "ref": "fy",
         "type": "array"
        },
        "request_id": {
-        "capture_lines": [
-         1
-        ],
-        "source": "proof/VELDO-0172/capture.json:streams.claude",
         "type": "string"
        },
        "response": {
-        "capture_lines": [
-         1
-        ],
+        "anchor": "account:{email:ie?.email,organization:ie?.organization,subscriptionType:ie?.subscription,tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}",
         "fields": {
          "account": {
-          "capture_lines": [
-           1
-          ],
           "fields": {
+           "apiKeySource": {
+            "optional": true,
+            "type": "string"
+           },
            "apiProvider": {
-            "capture_lines": [
-             1
-            ],
-            "source": "proof/VELDO-0172/capture.json:streams.claude",
+            "optional": false,
             "type": "string"
            },
            "email": {
-            "capture_lines": [
-             1
-            ],
-            "source": "proof/VELDO-0172/capture.json:streams.claude",
+            "optional": true,
+            "type": "string"
+           },
+           "organization": {
+            "optional": true,
             "type": "string"
            },
            "subscriptionType": {
-            "capture_lines": [
-             1
-            ],
-            "source": "proof/VELDO-0172/capture.json:streams.claude",
+            "optional": true,
+            "type": "string"
+           },
+           "tokenSource": {
+            "optional": true,
             "type": "string"
            }
           },
-          "source": "proof/VELDO-0172/capture.json:streams.claude",
           "type": "object"
          },
          "agents": {
@@ -2326,29 +2335,23 @@
           "type": "string"
          }
         },
-        "source": "proof/VELDO-0172/capture.json:streams.claude",
+        "optional": true,
+        "source": "initialize success payload; account emitter in the binary",
         "type": "object"
        },
        "subtype": {
-        "capture_lines": [
-         1
-        ],
-        "source": "proof/VELDO-0172/capture.json:streams.claude",
-        "type": "string"
+        "type": "literal",
+        "value": "success"
        }
       },
-      "source": "proof/VELDO-0172/capture.json:streams.claude",
+      "ref": "_Y",
       "type": "object"
      },
      "type": {
-      "capture_lines": [
-       1
-      ],
-      "source": "proof/VELDO-0172/capture.json:streams.claude",
-      "type": "string"
+      "type": "literal",
+      "value": "control_response"
      }
     },
-    "source": "proof/VELDO-0172/capture.json:streams.claude",
     "type": "object"
    },
    "rate_limit_event": {
@@ -5074,6 +5077,36 @@
    }
   },
   "items": {
+   "agent_message": {
+    "capture_lines": [
+     3
+    ],
+    "fields": {
+     "id": {
+      "capture_lines": [
+       3
+      ],
+      "source": "proof/VELDO-0172/capture.json:streams.codex",
+      "type": "string"
+     },
+     "text": {
+      "capture_lines": [
+       3
+      ],
+      "source": "proof/VELDO-0172/capture.json:streams.codex",
+      "type": "string"
+     },
+     "type": {
+      "capture_lines": [
+       3
+      ],
+      "source": "proof/VELDO-0172/capture.json:streams.codex",
+      "type": "string"
+     }
+    },
+    "source": "proof/VELDO-0172/capture.json:streams.codex",
+    "type": "object"
+   },
    "mcp_tool_call": {
     "fields": {
      "arguments": {

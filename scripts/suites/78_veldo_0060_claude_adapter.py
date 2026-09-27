@@ -113,6 +113,11 @@ def _v60_suite():
     def file_sha(path):
         return sha(Path(path).read_bytes())
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     base = Path(tempfile.mkdtemp(prefix='v60-', dir=runtime if os.path.isdir(runtime) else None))
@@ -250,7 +255,7 @@ import json, os, signal, sqlite3, subprocess, sys, time
 from pathlib import Path
 if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
-    print('Logged in using ChatGPT')
+    print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
 store, markers, domain = %(store)r, Path(%(markers)r), %(domain)r
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
@@ -289,8 +294,9 @@ def stream_input():
         message = json.loads(line)
         if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
             answer = {'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
-                      'response': {'account': {'subscriptionType': 'Claude Max', 'apiProvider': 'firstParty'},
+                      'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},
                                    'pid': os.getpid()}}}
+            answer = complete_event(answer)
             data = (json.dumps(answer) + chr(10)).encode()
             out.write(data)
             out.flush()
@@ -344,6 +350,7 @@ out.close()
 (markers / ('%%d.done' %% os.getpid())).write_text('done')
 sys.exit(payload.get('code', 0))
 ''' % {'python': sys.executable, 'store': str(db), 'markers': str(markers), 'domain': DOMAIN}
+        fake = fake_formats.embed(fake)
         # The installer's layout: ~/.local/share/claude/versions/<version>, here a directory of this run's.
         versions = base / 'home' / '.local' / 'share' / 'claude' / 'versions'
         versions.mkdir(parents=True)
@@ -629,6 +636,7 @@ sys.exit(payload.get('code', 0))
                     'cache_creation': {'ephemeral_5m_input_tokens': create, 'ephemeral_1h_input_tokens': 0},
                     'server_tool_use': {'web_search_requests': 0, 'web_fetch_requests': 0}, 'service_tier': 'standard'}
 
+        @live_step
         def c_init():
             return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': VERSION,
                              'cwd': '/work', 'tools': ['Read', 'Edit', 'Bash'], 'mcp_servers': [],
@@ -636,6 +644,7 @@ sys.exit(payload.get('code', 0))
                              'output_style': 'default', 'skills': [], 'plugins': [], 'uuid': str(uuid.uuid4()),
                              'session_id': SESSION}}
 
+        @live_step
         def c_msg(mid, inp, out):
             return {'line': {'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()),
                              'session_id': SESSION,
@@ -643,6 +652,7 @@ sys.exit(payload.get('code', 0))
                                          'content': [], 'stop_reason': None, 'stop_sequence': None,
                                          'usage': c_usage(inp, out)}}}
 
+        @live_step
         def c_result(inp, out, turns, text='done'):
             return {'line': {
                 'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4, 'is_error': False,
@@ -663,6 +673,7 @@ sys.exit(payload.get('code', 0))
                 'permission_denials': [], 'errors': ['the run ended at its turn limit'], 'uuid': str(uuid.uuid4()),
                 'session_id': SESSION}}
 
+        @live_step
         def c_rate(status, reset, kind='five_hour'):
             return {'line': {'type': 'rate_limit_event', 'rate_limit_info': {'status': status, 'rateLimitType': kind,
                                                                              'resetsAt': int(reset)},
@@ -1177,8 +1188,8 @@ sys.exit(payload.get('code', 0))
         def x_normal(ident, inp=900, out=100):
             lines = [{'type': 'thread.started', 'thread_id': ident}, {'type': 'turn.started'},
                      {'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'reasoning'}},
-                     {'type': 'item.completed', 'item': {'id': 'item_1', 'type': 'agent_message'}},
-                     {'type': 'turn.completed', 'usage': {'input_tokens': inp, 'cached_input_tokens': 0,
+                     {'type': 'item.completed', 'item': {'id': 'item_1', 'type': 'agent_message', 'text': 'done'}},
+                     {'type': 'turn.completed', 'usage': {'input_tokens': inp, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0,
                                                           'output_tokens': out, 'reasoning_output_tokens': 0}}]
             codex_lines.extend(lines)
             return [{'line': line} for line in lines]
@@ -1524,6 +1535,7 @@ sys.exit(payload.get('code', 0))
                   and {'system/init', 'assistant', 'result/success', 'result/error', 'rate_limit_event'} <= kinds)
             codex_events = json.loads((TREE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())['codex']['events']
             codex_items = json.loads((TREE / 'proof' / 'VELDO-0061' / 'codex-exec.json').read_text())['item']
+            codex_items['items'].update(json.loads((TREE / 'proof/VELDO-0062/cli-formats.json').read_text())['codex']['items'])
             codex_problems = [p for line in codex_lines for p in (
                 conform(line, codex_events[line['type']], line['type']) if line.get('type') in codex_events
                 else [str(line.get('type')) + ': an event exec does not print'])]
@@ -1590,6 +1602,8 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        if globals().get('__engine_observer__'):
+            __engine_observer__(locals())
         # The contained rows' scopes: the run's slice stopped, its failed units cleared, nothing installed.
         with contextlib.suppress(Exception):
             subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,

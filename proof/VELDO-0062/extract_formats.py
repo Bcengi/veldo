@@ -985,6 +985,24 @@ def claude(path):
             raise Moved('%s: anchor found %d times' % (name, text.count(anchor)))
         schema, _ = Reader(js, depth=4).parse(text.index(anchor))
         events[name] = schema
+    # The initialize success answer is a control response. Its generic payload is a record;
+    # the account emitter names the optional fields absent from this subscription capture.
+    control_anchor = 'd({type:R("control_response"),response:Fe([_Y(),mY()])})'
+    account_anchor = ('account:{email:ie?.email,organization:ie?.organization,subscriptionType:ie?.subscription,'
+                      'tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}')
+    for anchor in (control_anchor, account_anchor):
+        if text.count(anchor) != 1:
+            raise Moved('initialize answer anchor moved')
+    control, _ = Reader(js, depth=4).parse(text.index(control_anchor))
+    success = control['fields']['response']['anyOf'][0]
+    control['fields']['response'] = success
+    account = {name: {'type': 'string', 'optional': expression.startswith('ie?.')}
+               for name, expression in re.findall(r'(\w+):(ie\?\.\w+|He\(\))', account_anchor)}
+    success['fields']['response'] = {'type': 'object', 'optional': True,
+                                     'fields': {'account': {'type': 'object', 'fields': account}},
+                                     'source': 'initialize success payload; account emitter in the binary',
+                                     'anchor': account_anchor}
+    events['control_response'] = control
     tables = []
     for name, anchor, decision, reason in CLAUDE_TABLES:
         at = text.find(anchor)
@@ -1543,10 +1561,27 @@ def reconcile(table, capture_path=CAPTURE):
         for event, samples in groups.items():
             source = 'proof/VELDO-0172/capture.json:streams.' + engine
             observe_schema(events.setdefault(event, {}), samples, source, event, changes)
+    for number, line in enumerate(capture['streams']['codex'], 1):
+        if isinstance(line.get('item'), dict):
+            item = line['item']
+            observe_schema(table['codex']['items'].setdefault(item['type'], {}), [(number, item)],
+                           'proof/VELDO-0172/capture.json:streams.codex', 'item.' + item['type'], changes)
+    def field_counts(node):
+        fields = list((node.get('fields') or {}).values())
+        counts = {'known': len(fields), 'optional': sum(bool(f.get('optional')) for f in fields),
+                  'from_capture': sum('capture_lines' in f for f in fields)}
+        children = fields + [node[k] for k in ('items', 'values', 'observed') if isinstance(node.get(k), dict)]
+        children += node.get('anyOf', [])
+        for child in children:
+            for key, count in field_counts(child).items():
+                counts[key] += count
+        return counts
+    metrics = {section: {event: field_counts(schema) for event, schema in table[section]['events'].items()}
+               for section in ('claude_code', 'codex')}
     table['capture'] = {'path': 'proof/VELDO-0172/capture.json', 'sha256': _digest(capture_path),
                         'recorded_run': '2026-09-26',
                         'versions': {key: table[key]['version'] for key in ('claude_code', 'codex')},
-                        'changes': changes}
+                        'changes': changes, 'metrics': metrics}
     return table
 
 

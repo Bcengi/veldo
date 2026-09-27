@@ -83,6 +83,11 @@ def _v61_suite():
         spec.loader.exec_module(module)
         return module
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     run_id = os.urandom(4).hex()
     slice_name = 'v61%s.slice' % run_id
@@ -246,7 +251,7 @@ while time.monotonic() < end:
 ''')
         fake = ('#!%s -B\n' % sys.executable) + common + '''if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
-    print('Logged in using ChatGPT')
+    print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
 markers = sys.argv[-1]
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
@@ -288,6 +293,7 @@ printed.close()
 mark(markers, tag, 'exit', {'at': time.monotonic()})
 sys.exit(payload.get('code', 0))
 ''' % str(child)
+        fake = fake_formats.embed(fake)
 
         def package(name, version='0.154.0-linux-x64', extra=b''):
             """A fake Codex vendor package: its manifest and the vendored binary at the real package path."""
@@ -391,7 +397,7 @@ sys.exit(payload.get('code', 0))
             return {'type': event, 'item': dict({'id': ident, 'type': kind}, **fields)}
 
         def completed(input_tokens, output_tokens, **more):
-            usage = dict({'input_tokens': input_tokens, 'cached_input_tokens': 0, 'output_tokens': output_tokens,
+            usage = dict({'input_tokens': input_tokens, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0, 'output_tokens': output_tokens,
                           'reasoning_output_tokens': 0}, **more)
             return {'type': 'turn.completed', 'usage': usage}
 
@@ -403,7 +409,7 @@ sys.exit(payload.get('code', 0))
                     item('item.completed', 'item_0', 'command_execution', aggregated_output='README\n', exit_code=0,
                          status='completed'),
                     item('item.completed', 'item_1', 'reasoning'),
-                    item('item.completed', 'item_2', 'agent_message'),
+                    item('item.completed', 'item_2', 'agent_message', text='done'),
                     completed(input_tokens, output_tokens)]
 
         def job(script, code=0, deadline=40, resume=None, **payload):
@@ -1044,7 +1050,7 @@ sys.exit(payload.get('code', 0))
 
         # the fixtures
         with region('format/codex-fake-lines'):
-            events, kinds = FORMATS['events'], EXEC['item']['items']
+            events, kinds = FORMATS['events'], dict(EXEC['item']['items'], **FORMATS['items'])
 
             def conform(value, schema):
                 kind = schema.get('type')
@@ -1092,6 +1098,8 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        if globals().get('__engine_observer__'):
+            __engine_observer__(locals())
         for launch in launches:
             with contextlib.suppress(Exception):
                 if launch.child is not None and launch.child.poll() is None:

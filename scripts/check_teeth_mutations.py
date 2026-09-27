@@ -8037,6 +8037,27 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    def formats172(name, directory, module, old, new, row):
+        add(172, 'formats172-' + name, '82_veldo_0172_live_formats.py', module, old, new, [row])
+        result[-1]['dir'] = directory
+        result[-1]['timeout'] = 300  # this census drives six real launch suites
+
+    formats172('binary-only', 'proof/VELDO-0062', 'extract_formats.py',
+               "    capture = json.loads(Path(capture_path).read_text())",
+               "    return table  # defect: regenerate from the binary alone\n"
+               "    capture = json.loads(Path(capture_path).read_text())", 'table/capture')
+    formats172('login-stdout', 'scripts/suites', '79_veldo_0061_codex_adapter.py',
+               "    print('Logged in using ChatGPT', file=sys.stderr)",
+               "    print('Logged in using ChatGPT')", 'fake/capture')
+    formats172('denylist-string', 'proof/VELDO-0172', 'scrub.py',
+               "        return value if value in rules['strings'].get(field, []) else '<string>'",
+               "        return value if '/' not in value else '<string>'", 'capture/planted')
+    formats172('keep-pid', 'proof/VELDO-0172', 'scrub.py',
+               "return value if field in rules['token_counts'] else (0.0 if isinstance(value, float) else 0)",
+               "return value", 'capture/planted')
+    formats172('required-usage', 'proof/VELDO-0062', 'extract_formats.py',
+               "            if len(present) < len(objects) and not field.get('optional'):",
+               "            if False:  # defect: trust binary requiredness", 'table/capture')
     return result
 
 
@@ -8153,7 +8174,7 @@ def main():
         command = [sys.executable, __file__, '--worker', case['name']]
         if path:
             command += ['--mutant', str(path)]
-        proc = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        proc = subprocess.run(command, capture_output=True, text=True, timeout=case.get('timeout', 120))
         if proc.returncode:
             raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
         return json.loads(proc.stdout)

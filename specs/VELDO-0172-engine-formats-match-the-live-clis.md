@@ -27,6 +27,7 @@ footprint:
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/drive.py"
   - "specs/VELDO-0172-engine-formats-match-the-live-clis.md"
   - "specs/index.md"
   - "proof/VELDO-0172/*"
@@ -184,3 +185,7 @@ and exactly the two named tap answers. Host read-back preserves every selected k
 checks all non-allowlisted source strings by literal grep. The extractor reconciles the binary schemas
 with the scrubbed capture and records its digest, versions and field-level line provenance. Proof and
 fake-engine comparisons are in progress; status unchanged.
+
+2026-09-27: footprint adds `scripts/drive.py`, absent at the base commit, for the required red-record
+and mutation proof commands. This driver records only VELDO-0172 and uses the existing mutation registry
+and Git process boundary. No production engine module changes.
