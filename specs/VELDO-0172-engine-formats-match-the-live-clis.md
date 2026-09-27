@@ -189,3 +189,9 @@ fake-engine comparisons are in progress; status unchanged.
 2026-09-27: footprint adds `scripts/drive.py`, absent at the base commit, for the required red-record
 and mutation proof commands. This driver records only VELDO-0172 and uses the existing mutation registry
 and Git process boundary. No production engine module changes.
+
+2026-09-27: completed the six-suite fake census and comparison rows. Nine selected suites pass normally
+and in the clean gate environment. The unchanged base at 65125030 fails all four behavior rows by
+assertion. Finding 0172 rejects five mutations on their named rows, with a green baseline and three
+green no-op controls. The host read-back records 462 matching typed paths and no literal matches among
+810 non-allowlisted source strings. Final whole selftest pending; status unchanged.

@@ -1,6 +1,6 @@
 # VELDO-0172 proof
 
-Implementation in progress. The scrubbed capture contains the two engine streams, the Claude initialize
+The scrubbed capture contains the two engine streams, the Claude initialize
 answer and the Codex login status with its observed stream. No other tap record is retained.
 
 `allowlist.json` names the only string fields and values preserved and the token-count fields preserved.
@@ -53,6 +53,15 @@ extraction matches the table; validation, Git boundary, footprint and anchor che
 inventory has zero outstanding findings, and the captured content has zero scanner findings.
 
 The red replay at `65125030` records all four behavior rows failing by assertion, without observer
-errors. Finding 0172 rejects all five registered mutations. Fresh baseline and no-op controls and the
-full mutation report are being recorded. The final whole selftest remains pending. The canonical gate
-was not run, as instructed.
+errors. Finding 0172 rejects all five registered mutations. `mutations.json` records a green baseline,
+three green no-op copies and all five mutations failing their named rows by assertion:
+
+| Mutation | Failing row |
+|---|---|
+| `formats172-binary-only` | `table/capture` |
+| `formats172-login-stdout` | `fake/capture` |
+| `formats172-denylist-string` | `capture/planted` |
+| `formats172-keep-pid` | `capture/planted` |
+| `formats172-required-usage` | `table/capture` |
+
+The final whole selftest remains pending. The canonical gate was not run, as instructed.

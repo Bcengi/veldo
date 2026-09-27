@@ -135,6 +135,13 @@
  },
  "engine_copies": "All corresponding .veldo Python files and engine copies compared byte-identical.",
  "gate": "Not run, as instructed.",
+ "mutations": {
+  "all_by_assertion": true,
+  "all_named_rows_red": true,
+  "controls_green": true,
+  "noop_controls": 3,
+  "rejected": 5
+ },
  "normal_suites": [
   {
    "exit": 2,
@@ -209,6 +216,16 @@
    ]
   }
  ],
+ "red": {
+  "by_assertion": true,
+  "commit": "6512503076f231b94485421f91dc663ee0a36649",
+  "failed_rows": [
+   "VELDO-0172 table/capture",
+   "VELDO-0172 fake/capture",
+   "VELDO-0172 capture/allowlist",
+   "VELDO-0172 capture/planted"
+  ]
+ },
  "schema": "veldo.verification-record/v1",
  "spec_id": "VELDO-0172",
  "whole_selftest": "pending"

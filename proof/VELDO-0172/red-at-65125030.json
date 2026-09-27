@@ -327,7 +327,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 191.317,
+ "seconds": 121.513,
  "spec_id": "VELDO-0172",
  "suite": "scripts/suites/82_veldo_0172_live_formats.py",
  "tree": "git archive 6512503076f231b94485421f91dc663ee0a36649, unchanged; the current suite file run against it"
