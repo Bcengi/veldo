@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -689 +689 @@
+-                           workspace=self.config.get('workspace'), settlement_trust=settlements)
++                           workspace=self.config.get('workspace'))  # defect: the recheck trusts no settlement

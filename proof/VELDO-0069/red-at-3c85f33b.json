@@ -1,0 +1,82 @@
+{
+ "by_assertion": true,
+ "commit": "3c85f33b2f51f505cfed69d03272f9c077436478",
+ "details": [
+  "VELDO-0069 launch/receiver-recheck detail: a receiver configured with no host trust refuses it by name (unsigned_decision) and spawns nothing [observed {\"result\": \"refused\", \"state\": \"refused\", \"refusal\": \"stale_input:approvals; stale_input:decisions; stale_input:settlements; unsigned_decision:decision:D-9601\", \"ran\": false, \"states\": [\"prepared\", \"refused\"]}]",
+  "VELDO-0069 launch/receiver-recheck detail: a receiver naming a host trust that is absent refuses by name (host_trust_required) and spawns nothing [observed {\"result\": \"refused\", \"state\": \"refused\", \"refusal\": \"stale_input:approvals; stale_input:decisions; stale_input:settlements; unsigned_decision:decision:D-9601\", \"ran\": false, \"states\": [\"prepared\", \"refused\"]}]",
+  "VELDO-0069 launch/receiver-recheck detail: the receiver naming this host's trust accepts, launches and reaps it: its recheck verified the same signed settlement [observed {\"result\": \"refused\", \"state\": \"refused\", \"refusal\": \"stale_input:approvals; stale_input:decisions; stale_input:settlements; unsigned_decision:decision:D-9601\", \"ran\": false, \"states\": [\"prepared\", \"refused\"]}]"
+ ],
+ "failed_rows": [
+  "VELDO-0069 launch/receiver-recheck"
+ ],
+ "modules": {
+  ".veldo/control_decision_dependency.py": {
+   "at_commit": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382",
+   "now": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7",
+   "now": "e167c611fe81f233f909ec67bfa393c3b875395fd68dbdcd6a3e412920da8f3f"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20",
+   "now": "caf8970a1a145a2b003d88a02acf9ab2944c13a80c526e782aa0cbd381bfd4d3"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
+   "now": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
+  },
+  ".veldo/plan.py": {
+   "at_commit": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea",
+   "now": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0069 binding/one-transaction",
+   true
+  ],
+  [
+   "VELDO-0069 eligibility/resolved-request",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/wrong-framing",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/wrong-subject",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/wrong-version",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/unsupported-subject-stops",
+   true
+  ],
+  [
+   "VELDO-0069 consumers/inline-bypass",
+   true
+  ],
+  [
+   "VELDO-0069 refusal/future-revision",
+   true
+  ],
+  [
+   "VELDO-0069 binding/owner-ruling",
+   true
+  ],
+  [
+   "VELDO-0069 launch/receiver-recheck",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 6.503,
+ "spec_id": "VELDO-0069",
+ "suite": "scripts/suites/70_veldo_0069_bindings.py",
+ "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"
+}

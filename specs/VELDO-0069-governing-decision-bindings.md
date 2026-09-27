@@ -177,7 +177,7 @@ are not checked against the record. New rows `refusal/future-revision` (red at 5
 `decision_ruling` at every consumer). Mutations `future-revision-accepted` and `ruling-forced-approve`;
 `binding-choice-generic` re-aimed as `binding-choice-forced-accept` on the ruling row.
 
-2026-09-26, Codex review of main 3c85f33b (research/codex-reviews/ask-20260926-215030, P1): work the front
+2026-09-26, Codex review of main 3c85f33b (ask-20260926-215030, finding P1): work the front
 door cleared on a signed owner settlement was refused `unsigned_decision` at launch, because the launch
 receiver's recheck built its Gate with no settlement trust. The footprint gains `control_launch.py`,
 `control_service.py` and `control_eligibility.py` (engine, installed and pack copies) and the VELDO-0047

@@ -55,8 +55,8 @@ rows red, by assertion (no section raised).
 the work and refused the genuine question as already_settled. `binding/owner-ruling` is green there: that
 tree already signed the owner's ruling, and the row's teeth are `ruling-forced-approve`.
 
-`python3 -B proof/VELDO-0069/drive.py` regenerates `mutations.json` and the diffs: 13 mutants, each reds
-its named row by assertion, baseline and a no-op copy of each of the three mutated modules green.
+`python3 -B proof/VELDO-0069/drive.py` regenerates `mutations.json` and the diffs: 16 mutants, each reds
+its named row by assertion, baseline and a no-op copy of each of the five mutated modules green.
 Registry: `scripts/check_teeth_mutations.py --finding 69`.
 
 | Row | Criterion | Mutations (declared falsifier first) |
@@ -70,6 +70,30 @@ Registry: `scripts/check_teeth_mutations.py --finding 69`.
 | `refusal/unsupported-subject-stops` | threat model | `unsupported-subject-bound`, `unsupported-subject-terms-accepted` |
 | `refusal/future-revision` | threat model | `future-revision-accepted` |
 | `consumers/inline-bypass` | AC3 | `inline-status-authority`, `inline-status-authority-at-stations`, `record-status-authority` |
+| `launch/receiver-recheck` | AC1, the launch consumer | `receiver-gate-untrusted`, `receiver-absent-trust-unnamed`, `ticket-collection-tuples` |
+| VELDO-0047 `authority/receiver-configured-with-host-profile` | AC1, the installer | `installer-receiver-without-host-trust` (registry only) |
+
+## Codex review of 3c85f33b (2026-09-26)
+
+Finding P1 of the Codex review ask-20260926-215030: the launch receiver's
+recheck built its Gate with no settlement trust, so work the front door cleared on a signed owner
+settlement was refused `unsigned_decision` at launch; the nine rows passed because each supplies trust
+to its own Gate. The receiver's configuration now names this host's trust file (`host_trust`, written by
+`control_service.install`), and `Receiver._settlement_trust` derives the signers as
+`control_eligibility.enrolled_gate` does. Driving the real receiver process found a second defect on
+the same path: the Gate's collection identities were tuples and the ticket reaches the receiver as JSON,
+so any unit with an approval, decision or settlement was refused `stale_input`. They are lists now.
+
+Row `launch/receiver-recheck`: after the AC1 Telegram settlement, the real runner prepares a build of
+VELDO-9601 through the suite's front-door Gate, and the real receiver process
+(`control_launch.py <config>`) is handed it three times. With no `host_trust` it refuses
+`unsigned_decision:decision:D-9601` and spawns nothing. With a `host_trust` that is absent it refuses
+`host_trust_required`. With this host's trust (settlement signers outside the workspace) it accepts,
+spawns the worker through the trusted wrapper and records `exited`.
+
+`red-at-3c85f33b.json`: the current suite against the reviewed tree. Only `launch/receiver-recheck` is
+red, by assertion: all three launches were refused
+`stale_input:approvals; stale_input:decisions; stale_input:settlements; unsigned_decision:decision:D-9601`.
 
 ## Known limits
 
