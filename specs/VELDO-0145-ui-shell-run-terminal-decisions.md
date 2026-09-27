@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W105
 plan_revision: 4
-depends_on: [VELDO-0130, VELDO-0141]
+depends_on: [VELDO-0130, VELDO-0141, VELDO-0167]
 placement: [loop, distribution]
 protected_paths: []
 footprint:
@@ -146,3 +146,7 @@ streams from a cursor on the receiver's hint and never serves a line before reda
 
 2026-09-25, PLAN-0019 revision 4 review: AC2 owns the live terminal screen outright; VELDO-0141 AC3 is
 now the record route's contract that this screen reads, so VELDO-0141 no longer waits on this build.
+
+2026-09-27, within PLAN-0019 revision 4: depends_on adds VELDO-0167, which has factory setup write the
+execution record's configuration the live terminal reads through, so the screen works on a host that
+factory setup laid down. Criteria and status unchanged.

@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170]
     order: 16059
     release: 1
     stage: 6
@@ -1051,7 +1051,7 @@ work:
     spec: VELDO-0145
     title: The UI shell, the live run terminal and the decisions screen on phone and desktop
     feature_refs: [F9]
-    depends_on: [VELDO-0130, VELDO-0141]
+    depends_on: [VELDO-0130, VELDO-0141, VELDO-0167]
     order: 15145
     release: 1
     stage: 5
@@ -1199,6 +1199,62 @@ work:
     order: 15163
     release: 1
     stage: 5
+  - item: W124
+    spec: VELDO-0164
+    title: The API's read models, workflow read and event feed serve a member only the projects her scope covers
+    feature_refs: [F9]
+    depends_on: [VELDO-0076, VELDO-0130]
+    order: 15164
+    release: 1
+    stage: 5
+  - item: W125
+    spec: VELDO-0165
+    title: A worker engine inherits nothing from a parent Claude Code session and is offered only the tools that act inside its run
+    feature_refs: [F4]
+    depends_on: [VELDO-0155, VELDO-0156, VELDO-0160]
+    order: 11165
+    release: 1
+    stage: 1
+  - item: W126
+    spec: VELDO-0166
+    title: The Claude Code meter records every usage window a run reports, and adding an account leaves an existing profile directory as it is
+    feature_refs: [F4]
+    depends_on: [VELDO-0060, VELDO-0062, VELDO-0160]
+    order: 11166
+    release: 1
+    stage: 1
+  - item: W127
+    spec: VELDO-0167
+    title: Factory setup writes the execution record's configuration, and a launch receiver hints every API that subscribed to the running service
+    feature_refs: [F9]
+    depends_on: [VELDO-0130, VELDO-0141]
+    order: 15167
+    release: 1
+    stage: 5
+  - item: W128
+    spec: VELDO-0168
+    title: Telegram presentations keep their line breaks, show invisible and direction characters escaped, and mark a cut inside a long token
+    feature_refs: [F5]
+    depends_on: [VELDO-0064, VELDO-0065, VELDO-0128]
+    order: 13168
+    release: 1
+    stage: 3
+  - item: W129
+    spec: VELDO-0169
+    title: Every path that hands out work refuses a unit of a stopped project, and a claim on a unit with no project, as the Gate refuses them
+    feature_refs: [F6]
+    depends_on: [VELDO-0031, VELDO-0064, VELDO-0075, VELDO-0076]
+    order: 14169
+    release: 1
+    stage: 4
+  - item: W130
+    spec: VELDO-0170
+    title: A launch receiver configuration that names no host trust stops by name, and factory setup upgrades it
+    feature_refs: [F2]
+    depends_on: [VELDO-0039, VELDO-0047, VELDO-0069]
+    order: 13170
+    release: 1
+    stage: 3
 
 regression:
   journeys:
@@ -1547,6 +1603,13 @@ These are writing-only allocations; no specification status or existing evidence
 | W121 | VELDO-0161 | 1 | 5 |
 | W122 | VELDO-0162 | 1 | 5; the configuration and team routes |
 | W123 | VELDO-0163 | 1 | 5; the role and team form, moved earlier from VELDO-0131 |
+| W124 | VELDO-0164 | 1 | 5; follow-up of the Codex whole-project review |
+| W125 | VELDO-0165 | 1 | 1; follow-up of the live engine runs |
+| W126 | VELDO-0166 | 1 | 1; follow-up of the live engine runs |
+| W127 | VELDO-0167 | 1 | 5; built before VELDO-0145 |
+| W128 | VELDO-0168 | 1 | 3; follow-up of the VELDO-0149 review |
+| W129 | VELDO-0169 | 1 | 4; follow-up of the Codex-review fixes |
+| W130 | VELDO-0170 | 1 | 3; follow-up of the Codex-review fixes |
 
 ## Related baseline and follow-up disposition
 
@@ -1725,3 +1788,21 @@ project's inbox, and applies the PM's route (a new project, an existing project,
 owner when it is unclear). It now depends on W73's VELDO-0088 (the PM run), W114's
 VELDO-0154 (the loop that starts its cycle), W91's VELDO-0128 (the progress report) and W93's VELDO-0130
 (the read the UI uses), so W112 moves from stage 4 to stage 5; none of them depends on it.
+
+2026-09-27: within revision 4, seven follow-up drafts from the reviews and the live engine runs of
+2026-09-26 and 2026-09-27, each one concern, adding function and cutting none. W124's VELDO-0164 scopes the
+API's read models, workflow read and event feed to the reader's projects (the Codex whole-project review
+found a member scoped to one project could read every project); stage 5. W125's VELDO-0165 strips the
+variables a parent Claude Code session passes its children and passes VELDO-0160's in-run tool list to
+the engine at launch, both in the qualified baseline; stage 1. W126's VELDO-0166 meters every window a
+rate-limit event reports and stops account registration changing an existing profile directory's mode;
+stage 1. W127's VELDO-0167 has factory setup write VELDO-0141's record configuration, with receivers
+hinting the API processes the service's subscriber registry lists; stage 5, and W105 (VELDO-0145) depends
+on it, since the live terminal reads through it. W128's VELDO-0168 keeps line breaks in Telegram
+presentations and shows invisible and direction characters escaped; stage 3. W129's VELDO-0169 adds the
+Gate's project check to the assignment and andon resumes and to a claim on a unit with no project; stage
+4. W130's VELDO-0170 gives a receiver configuration without host trust a named stop and an upgrade
+through factory setup; stage 3. VELDO-0167 and VELDO-0170 also build on the standalone VELDO-0139, an edge
+kept in the specifications. W44 (VELDO-0059) depends on all seven. In section 12's order, VELDO-0165 and
+VELDO-0166 are built with the account pool in the first stage, VELDO-0167 before VELDO-0145, and
+VELDO-0168 before the owner's first use of the factory, as the review that filed it asked.
