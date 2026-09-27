@@ -2992,6 +2992,100 @@
     ]
    ],
    "frames_source": "the StdoutMessage members outside the SDK message union (everything the CLI writes in stream-json mode), each with whether its schema provably carries no tool call: only literals, enums, strings, numbers and booleans and no field naming a tool",
+   "in_run": {
+    "agent": {
+     "builtin_types": [
+      "Explore",
+      "Plan",
+      "claude",
+      "claude-code-guide",
+      "comment-thread-analyst",
+      "fork",
+      "general-purpose",
+      "statusline-setup",
+      "web-fetch",
+      "worker",
+      "workflow-subagent"
+     ],
+     "field": "isolation",
+     "outside": "remote",
+     "tools": [
+      "Agent",
+      "Task"
+     ],
+     "type_field": "subagent_type"
+    },
+    "aliases": {
+     "Agent": [
+      "Task"
+     ],
+     "TaskStop": [
+      "KillBash",
+      "KillShell"
+     ],
+     "Workflow": [
+      "RunWorkflow"
+     ]
+    },
+    "host": {
+     "field": "_host",
+     "local": [
+      "",
+      "container",
+      "this-machine"
+     ],
+     "routed": false,
+     "tools": [
+      "Bash",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+     ]
+    },
+    "source": "the built-in tools whose effects stay inside the run's clone and host session (each name's binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the notebook edit, the session checklist, the deferred-tool loader, Bash and its background companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs (Agent, Skill, REPL, Workflow, CronCreate); the Agent tool is remote when its input's isolation is remote or, with none given, when the agent definition its subagent_type names says so (no built-in definition sets isolation; builtin_types), and a remote agent is a task of type remote_agent; the file tools and Bash take a _host naming another machine, routed there only when the remote-tools gate is on, which this build compiles off (routed false); the task types of the allowlisted tools, from the binary's task table. The binary has no LS tool.",
+    "task_types": {
+     "field": "task_type",
+     "in_run": [
+      "in_process_teammate",
+      "local_agent",
+      "local_bash",
+      "local_workflow",
+      "monitor_ws"
+     ],
+     "table": [
+      "auto_mode_scan",
+      "dream",
+      "in_process_teammate",
+      "local_agent",
+      "local_bash",
+      "local_workflow",
+      "monitor_ws",
+      "remote_agent"
+     ]
+    },
+    "tools": [
+     "Agent",
+     "Bash",
+     "CronCreate",
+     "Edit",
+     "Glob",
+     "Grep",
+     "Monitor",
+     "NotebookEdit",
+     "REPL",
+     "Read",
+     "Skill",
+     "TaskStop",
+     "TodoWrite",
+     "ToolSearch",
+     "WebFetch",
+     "WebSearch",
+     "Workflow",
+     "Write"
+    ]
+   },
    "messages": [
     [
      "assistant",
@@ -4132,6 +4226,29 @@
     "collab_tool_call",
     "error"
    ],
+   "in_run": {
+    "collab": {
+     "field": "tool",
+     "item": "collab_tool_call",
+     "tools": [
+      "spawn_agent",
+      "send_input",
+      "close_agent"
+     ]
+    },
+    "items": [
+     "agent_message",
+     "collab_tool_call",
+     "command_execution",
+     "error",
+     "file_change",
+     "mcp_tool_call",
+     "reasoning",
+     "todo_list",
+     "web_search"
+    ],
+    "source": "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent call), and the collab tools of exec's CollabTool enum (its variant literals between its usage field run and its item id field), each an agent thread of this process; an item or collab tool these do not list is not a known in-run kind"
+   },
    "nested_work": {
     "collab": [
      "collab_agent_tool_call",

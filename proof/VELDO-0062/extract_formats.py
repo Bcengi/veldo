@@ -559,6 +559,146 @@ CLAUDE_NESTED = {
 }
 
 
+# VELDO-0160, the lead's allowlist (fail closed): the built-in tools whose effects stay inside the run's clone and host
+# session, each as (name, why, its name's binding, its definition's own text), each occurring once in this build. The
+# file tools, Glob and Grep, the notebook edit, the session checklist, the deferred-tool loader; Bash and its
+# background companions (TaskStop, aliased KillShell and KillBash, which kills a background task; Monitor, which runs a
+# command through Bash's permission check or reads a WebSocket); the read-only web fetch and search; and rule 2's
+# constructs (the Agent tool unless remote, the Skill, REPL and Workflow tools, CronCreate unless durable, which the
+# remote_agent rule asks for). The binary has no LS tool: no binding names one.
+CLAUDE_IN_RUN = (
+    ('Read', 'reads a local file', 'var lt="Read",',
+     'name:lt,ruleContentField:"file_path",searchHint:"read files, images, PDFs, notebooks",remoteExecution:{supported:!0,'),
+    ('Write', 'writes a local file', 'var vn="Write";',
+     'name:vn,ruleContentField:"file_path",searchHint:"create or overwrite files",remoteExecution:{supported:!0,'),
+    ('Edit', 'edits a local file', 'var Pt="Edit",',
+     'name:Pt,ruleContentField:"file_path",searchHint:"modify file contents in place",remoteExecution:{supported:!0,'),
+    ('NotebookEdit', 'edits a local notebook', 'var lc="NotebookEdit";',
+     'name:lc,ruleContentField:"notebook_path",searchHint:"edit Jupyter notebook cells (.ipynb)",'),
+    ('Glob', 'finds local files', 'var oo="Glob";',
+     'name:oo,searchHint:"find files by name pattern or wildcard",backgrounding:"never",maxResultSizeChars:1e5,'
+     'async description(){return Uwr(void 0)},remoteExecution:{supported:!0}'),
+    ('Grep', 'searches local files', 'var zr="Grep";',
+     'name:zr,searchHint:"search file contents with regex (ripgrep)",remoteExecution:{supported:!0}'),
+    ('TodoWrite', 'the session checklist', 'var nb="TodoWrite";', 'name:nb,searchHint:"manage the session task checklist",'),
+    ('ToolSearch', 'loads a deferred tool\'s schema', 'var xa="ToolSearch",',
+     'name:xa,backgrounding:"never",maxResultSizeChars:1e5,async description(){return G0n()},'),
+    ('Bash', 'the shell', 'var Be="Bash";',
+     'name:Be,enablesCodeExecution:!0,ruleContentField:"command",searchHint:"execute shell commands",'
+     'remoteExecution:{supported:!0,'),
+    ('TaskStop', 'kills a background task (Bash\'s companion)', 'var Om="TaskStop",',
+     'name:Om,searchHint:"kill a running background task",aliases:["KillShell","KillBash"],'),
+    ('Monitor', 'streams a background command or a WebSocket (Bash\'s companion)', 'var Za="Monitor";',
+     'name:Za,enablesCodeExecution:!0,maxResultSizeChars:1e4,shouldDefer:!0,userFacingName(){return"Monitor"},'),
+    ('WebFetch', 'fetches a URL', 'var Wr="WebFetch",',
+     'name:Wr,ruleContentField:"url",searchHint:"fetch and extract content from a URL",'),
+    ('WebSearch', 'searches the web', 'var eI="WebSearch";', 'name:eI,searchHint:"search the web for current information",'),
+    ('Agent', 'a local agent (rule 2), unless remote', 'var mt="Agent",', 'name:mt,searchHint:"delegate work to a subagent",aliases:['),
+    ('Skill', 'a skill (rule 2)', 'var go="Skill",', 'name:go,searchHint:"invoke a slash-command skill"'),
+    ('REPL', 'code whose inner calls the stream names (rule 2)', 'var za="REPL";',
+     'tool_name:za,parent_tool_use_id:T.parentToolUseID||null,elapsed_time_seconds:0,repl_call:{'),
+    ('Workflow', 'local workflow agents (rule 2)', 'var Ed="Workflow";',
+     'name:Ed,aliases:["RunWorkflow"],searchHint:"orchestrate subagents'),
+    ('CronCreate', 'a prompt in this session (rule 2), unless durable', 'var iy="CronCreate",',
+     'name:iy,searchHint:"schedule a recurring or one-shot prompt",'),
+)
+# How an allowlisted call can still act outside the run, each by the exact text of this build (once each). The Agent
+# tool runs remote when its input's `isolation` is "remote" (`agent_input`) or, with none given, when the agent
+# definition its `subagent_type` names says so (`agent_resolved`; an agent file may set isolation remote,
+# `agent_file`); no built-in agent definition sets isolation. A remote agent is a task of type `remote_agent`
+# (`remote_task`), and every task but an observer agent is reported by a task_started naming its type
+# (`task_started`, `task_type`, `observer`). The file tools and Bash take a `_host` naming another machine
+# (`host_field`, `host_request`, `host_local`, `host_local_test`), routed there only when the remote-tools gate is on
+# (`host_route`), and this build's gate is off (`host_gate`, `host_gate_value`).
+CLAUDE_IN_RUN_CONDITIONS = {
+    'agent_input': ('isolation:z(["worktree","remote"]).optional().describe(\'Isolation mode. "worktree" creates a '
+                    'temporary git worktree so the agent works on an isolated copy of the repo. "remote" launches the '
+                    'agent in a remote cloud environment', 1),
+    'agent_resolved': ('function an(n){let{agent:e,isolation:h,restricted:g}=n,p=h??e.isolation;', 1),
+    'agent_file': ('let Pe=["worktree","remote"],Le=r.isolation,De;', 1),
+    'remote_task': ('var Kbe={name:"RemoteAgentTask",type:"remote_agent",', 1),
+    'task_started': ('subtype:"task_started",task_id:e.id,owned_by_subagent:zt(e),tool_use_id:e.toolUseId,', 1),
+    'task_type': ('task_type:e.type,workflow_name:', 1),
+    'observer': ('function fu(e){return e.type==="local_agent"&&"isObserver"in e&&e.isObserver===!0}', 1),
+    'host_field': ('var Jr="_host",', 1),
+    'host_request': ('function sqe(e){let{[Jr]:r,...n}=e;if(typeof r!=="string")return{requested:void 0,input:e};'
+                     'let s=r.trim();return{requested:s===""||VE(s)?void 0:s,input:n}}', 1),
+    'host_local': ('var Len="device",Ki=["container","this-machine"],', 1),
+    'host_local_test': ('function VE(e){return Ki.some((r)=>r===e)}', 1),
+    'host_route': ('if(!$j(e).supported||!Ih())return{kind:"local",input:n};', 1),
+    'host_gate': ('async function eY(){return Ih()&&await Nd()}function SG(){return Ih()&&_s()}function Ih(){return cNn()}', 1),
+    'host_gate_value': ('function cNn(){return!1}', 1),
+}
+# The task types of the allowlisted tools, from the binary's task table (`name:"...Task",type:"..."`): an agent, a
+# teammate an agent starts, a background shell or command, a workflow, a Monitor's WebSocket.
+CLAUDE_IN_RUN_TASKS = ('in_process_teammate', 'local_agent', 'local_bash', 'local_workflow', 'monitor_ws')
+
+
+def _in_run(text, renamed):
+    """The allowlist (VELDO-0160, the lead's decision), each tool checked against this build's text: {tools, aliases,
+    agent, host, task_types}."""
+    tools, aliases, remote = [], {}, []
+    for name, _, binding, definition in CLAUDE_IN_RUN:
+        for anchor in (binding, definition):
+            if text.count(anchor) != 1:
+                raise Moved('claude in-run tool %s: anchor %r found %d times' % (name, anchor, text.count(anchor)))
+        variable = re.match(r'var ([A-Za-z_$][\w$]*)="([^"]*)"', binding)
+        if variable is None or variable.group(2) != name or not re.match(
+                r'(?:name|tool_name):' + re.escape(variable.group(1)) + ',', definition):
+            raise Moved('claude in-run tool %s: its definition does not name its binding' % name)
+        at = text.index(definition)
+        listed = re.match(r'name:[\w$]+,(?:[^{}]*?,)?aliases:\[([^\]]*)\]', text[at:at + 400])
+        named = [json.loads(alias) for alias in listed.group(1).split(',') if alias.startswith('"')] if listed else []
+        if name == renamed[0]['name']:
+            named = list(renamed[0]['aliases'])
+        tools.append(name)
+        if named:
+            aliases[name] = sorted(named)
+        if 'remoteExecution:{supported:!0' in definition:
+            remote.append(name)
+    for key, (anchor, sites) in CLAUDE_IN_RUN_CONDITIONS.items():
+        if text.count(anchor) != sites:
+            raise Moved('claude in-run condition %s: anchor found %d times' % (key, text.count(anchor)))
+    table = dict((kind, name) for name, kind in re.findall(r'name:"([A-Za-z]+Task)",type:"([a-z_]+)"', text))
+    if 'remote_agent' not in table or not set(CLAUDE_IN_RUN_TASKS) <= set(table):
+        raise Moved('claude task table moved')
+    # The built-in agent definitions (source "built-in"), each by its agentType, none of which sets an isolation.
+    builtin = []
+    for m in re.finditer(r'agentType:("[A-Za-z_-]+"|[A-Za-z_$][\w$]{0,4})[,}]', text):
+        window = text[m.start():m.start() + 3000]
+        if not 0 <= window.find('source:"built-in"') < 2500:
+            continue
+        after = window.find('agentType:', 20)
+        if 'isolation:' in window[:after if after > 0 else 3000]:
+            raise Moved('claude built-in agent %s sets an isolation' % m.group(1))
+        value = m.group(1)
+        if not value.startswith('"'):
+            bound = re.search(r'(?:var |,|;)%s="([^"]+)"' % re.escape(value), text)
+            if bound is None:
+                raise Moved('claude built-in agent type %s unbound' % value)
+            value = json.dumps(bound.group(1))
+        builtin.append(json.loads(value))
+    if not {'general-purpose', 'Explore', 'Plan'} <= set(builtin):
+        raise Moved('claude built-in agents moved')
+    return {'tools': sorted(tools), 'aliases': aliases,
+            'agent': {'tools': sorted([renamed[0]['name']] + list(renamed[0]['aliases'])), 'field': 'isolation',
+                      'outside': 'remote', 'type_field': 'subagent_type', 'builtin_types': sorted(set(builtin))},
+            'host': {'field': '_host', 'local': ['', 'container', 'this-machine'], 'tools': sorted(remote),
+                     'routed': False},
+            'task_types': {'field': 'task_type', 'in_run': sorted(CLAUDE_IN_RUN_TASKS),
+                           'table': sorted(table)},
+            'source': "the built-in tools whose effects stay inside the run's clone and host session (each name's "
+                      "binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the "
+                      "notebook edit, the session checklist, the deferred-tool loader, Bash and its background "
+                      "companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs "
+                      "(Agent, Skill, REPL, Workflow, CronCreate); the Agent tool is remote when its input's isolation "
+                      "is remote or, with none given, when the agent definition its subagent_type names says so (no "
+                      "built-in definition sets isolation; builtin_types), and a remote agent is a task of type "
+                      "remote_agent; the file tools and Bash take a _host naming another machine, routed there only "
+                      "when the remote-tools gate is on, which this build compiles off (routed false); the task types "
+                      "of the allowlisted tools, from the binary's task table. The binary has no LS tool."}
+
+
 def _tags(schema):
     """The (type, subtype) pairs a message schema admits."""
     if schema.get('type') == 'union':
@@ -797,6 +937,7 @@ def claude_forms(text):
             'emitted_tool_fields': _emitted(text), 'frames': claude_frames(text),
             'task_counts': _task_counts(text, {tag: sorted(paths) for tag, paths in fields.items()}),
             'nested_work': _nested(text, _builtin_renamed(text, builtin), tops),
+            'in_run': _in_run(text, _builtin_renamed(text, builtin)),
             'source': "the SDK message union of the stream (each member's type and subtype), the content block "
                       "unions of an assistant and of a user message (the modelled blocks, then the type tags "
                       "the binary lists), the streaming events the stream_event schema names, and the binary's "
@@ -910,6 +1051,30 @@ CODEX_NESTED = {'collab': ((b'CollabAgentToolCallItemreceiver_thread_ids', 'coll
                 'sub_agent': ((b'SubAgentActivityItemagent_thread_id', 'sub_agent_activity'),)}
 
 
+# VELDO-0160, the lead's allowlist (fail closed): exec's items are the run's own work (its messages, reasoning,
+# to-do lists and errors, its shell commands, file changes and web searches, an MCP call the configuration judges,
+# and its own sub-agent call), and a sub-agent call is in the run only for the collab tools exec's own CollabTool
+# enum lists: its variant literals, placed between exec's usage field run and its item id field before its
+# ThreadEvent name, each an agent thread of this process (`Spawn a sub-agent for a well-scoped task.`). A tag the
+# run does not hold (a collab tool exec may name elsewhere) is not listed and asks.
+CODEX_IN_RUN_COLLAB = (b'reasoning_output_tokensspawn_agentsend_inputclose_agentidThreadEvent',
+                       ('spawn_agent', 'send_input', 'close_agent'))
+CODEX_IN_RUN_SPAWN = b'Spawn a sub-agent for a well-scoped task.'
+
+
+def codex_in_run(raw, exec_items):
+    run, tools = CODEX_IN_RUN_COLLAB
+    if raw.count(run) != 1 or ('reasoning_output_tokens' + ''.join(tools) + 'idThreadEvent').encode() != run \
+            or raw.count(CODEX_IN_RUN_SPAWN) != 1 or 'collab_tool_call' not in exec_items:
+        raise Moved('codex collab tools moved')
+    return {'items': sorted(exec_items), 'collab': {'item': 'collab_tool_call', 'field': 'tool', 'tools': list(tools)},
+            'source': "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP "
+                      "call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent "
+                      "call), and the collab tools of exec's CollabTool enum (its variant literals between its usage "
+                      "field run and its item id field), each an agent thread of this process; an item or collab tool "
+                      "these do not list is not a known in-run kind"}
+
+
 def codex_forms(raw):
     head, run, names = CODEX_EXEC_ITEMS
     if head not in raw or run not in raw or ''.join(names).encode() != run:
@@ -930,7 +1095,7 @@ def codex_forms(raw):
                         "(collab_tool_call) and the core's items whose struct names another thread (a collab agent "
                         "call's receiver_thread_ids, a sub-agent activity's agent_thread_id)")
     return {'exec_items': list(names) + [CODEX_EXEC_COLLAB[1], 'error'], 'thread_items': list(thread_names),
-            'nested_work': nested,
+            'nested_work': nested, 'in_run': codex_in_run(raw, list(names) + [CODEX_EXEC_COLLAB[1], 'error']),
             'source': "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's "
                       "ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) "
                       "and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as "
