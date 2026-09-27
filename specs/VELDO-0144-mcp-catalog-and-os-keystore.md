@@ -204,3 +204,32 @@ state. The signed assertion excludes the value; the request signer receives the
 request through pipes. This clarifies the earlier signer statement. The canonical
 gate is intentionally not run under the implementation request; scoped checks
 and proof remain observations for independent review, not a landing approval.
+
+
+2026-09-27, third review fix on build-veldo-0144: main was already merged.
+The catalog check now guards credential positions and known token shapes. One
+named-position function covers credential names in environment entries, both
+stdio flag forms, HTTP query parameters, URL userinfo and reference-only headers.
+Known shapes reuse the repository scanner's PATTERNS by import. The catalog no
+longer calls scan_text or uses entropy. The repository scanner is unchanged.
+A secret the owner types as an ordinary literal elsewhere is the owner's choice;
+the owner is trusted under the threat model. This check catches mistakes in
+credential positions and known shapes, without claiming to identify every secret.
+
+The ordinary-config-saves row preserves all 20 ordinary values from the reviewer's
+probe, plus the requested worktree and Mac paths and a Confluence REST URL. The
+probe's environment helper used API_TOKEN even for ordinary IDs and public keys;
+the row uses CONFIG for those values so that it obeys the named-position rule.
+Every saved field is compared exactly through both the API and store. Generated
+hex and short values exercise the credential-position-refused row, which also
+asserts that the store command was never called. Deleted credential metadata no
+longer satisfies a reference; catalog/deleted-reference proves the named refusal.
+
+The former catalog/credential-literals row and
+mcp144-catalog-literal-accepted mutation are replaced by
+catalog/known-shape-refused and mcp144-known-shape-accepted. They now test known
+shapes independently of credential positions, including every existing PATTERNS
+entry. The mcp144-entropy-restored mutation makes ordinary-config-saves fail.
+Three separate position mutations make credential-position-refused fail, and
+mcp144-deleted-reference-accepted makes deleted-reference fail. No row or mutation
+continues to require entropy refusal. Status and acceptance criteria are unchanged.

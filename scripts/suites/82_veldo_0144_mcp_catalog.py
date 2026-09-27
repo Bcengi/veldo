@@ -44,7 +44,8 @@ def _v144_suite():
              'catalog/stale-unauthorized', 'catalog/invalid', 'catalog/atlassian', 'credential/write',
              'credential/replace-delete', 'credential/read-back', 'credential/no-value-on-command-line',
              'credential/no-value-in-records', 'credential/keystore-refusals', 'credential/authority-binding',
-             'catalog/observability', 'install/assets', 'catalog/credential-literals',
+             'catalog/observability', 'install/assets', 'catalog/known-shape-refused',
+             'catalog/ordinary-config-saves', 'catalog/credential-position-refused', 'catalog/deleted-reference',
              'catalog/credential-domain', 'credential/libsecret-protocol', 'credential/replay-value',
              'credential/encoding', 'credential/deleted-state')
     rows = {name: [] for name in names}
@@ -515,18 +516,132 @@ for name in paths:
             check('catalog/invalid', 'invalid transports, fields and value/reference shapes store no definition',
                   saves[0][0] == 200 and all(malformed) and head() == before)
 
+            # The probe used API_TOKEN for ordinary data. Use CONFIG so position and content are distinct.
+            ordinary = [
+                ('uuid cloudId', 'environment', ('5c04fb27-13f8-4d0f-ae1' 'b-be13e14a815a')),
+                ('atlassian url', 'url', ('https://mcp.atlassian.' 'com/v1/sse')),
+                ('long public api path', 'url', ('https://api.github.com' '/repos/bcengi-engineer' 'ing/veldo-dark-factory' '/contents')),
+                ('filesystem server args', 'arguments', ['-y', ('@modelcontextprotocol/' 'server-filesystem'), ('/home/dmitry/projects/' 'veldo-worktrees')]),
+                ('allowed dirs flag', 'arguments', ['-' * 2 + ('allowed-directories=/h' 'ome/dmitry/projects/my' 'day/research/codex-rev' 'iews')]),
+                ('google sheet id', 'environment', ('1BxiMVs0XRA5nFMdKvBdBZ' 'jgmUUqptlbs74OgvE2upms')),
+                ('google drive folder id', 'environment', ('1A2B3C4D5E6F7G8H9I0JKL' 'mnopQRstuvWX')),
+                ('git sha repo pin', 'environment', ('6e1c725f63d18cf78e9a9c' '974aa108800abd656d')),
+                ('github node id', 'environment', 'R_kgDOJ7x2lQ'),
+                ('aws region/arn', 'environment', ('arn:aws:iam::123456789' '012:role/VeldoMcpReadO' 'nlyRole')),
+                ('jira cloud id url', 'url', ('https://api.atlassian.' 'com/ex/jira/5c04fb27-1' '3f8-4d0f-ae1b-be13e14a' '815a/rest/api/3')),
+                ('confluence space path', 'url', ('https://bcengi.atlassi' 'an.net/wiki/spaces/COE' '/pages/295862273/Ava-R' 'esearch')),
+                ('npm scoped package with version', 'arguments', ['-y', ('@atlassian/mcp-atlassi' 'an-remote-server@1.4.2')]),
+                ('docker image digest', 'arguments', ['run', ('ghcr.io/github/github-' 'mcp-server@sha256:0000' '0000000000000000000000' '0000000000000000000000' '0000000000000001')]),
+                ('SSH public key fingerprint', 'environment', ('SHA256:uNiVztksCsDhcc0' 'u9e8BujQXVUpKZIDTMczCv' 'j3tD2s')),
+                ('public ed25519 key', 'environment', ('ssh-ed25519 AAAAC3NzaC' '1lZDI1NTE5AAAAIOMqqnkV' 'zrm0SdG6UOoqKLsabgH5C9' 'okWi0dh2l9GKJl')),
+                ('base64 json config', 'environment', ('eyJtb2RlIjogInJlYWQiLC' 'AicHJvamVjdCI6ICJDRU8i' 'fQ==')),
+                ('webflow collection id', 'environment', ('6811521ddca74f46536b11' '3b')),
+                ('long snake env value', 'environment', ('bcengi_production_read' 'only_reporting_warehou' 'se')),
+                ('mixed case path segment', 'arguments', ['-' * 2 + ('config=/home/dmitry/.c' 'onfig/VeldoFactory/Mcp' 'Servers/AtlassianReadO' 'nly.json')]),
+                ('worktree path', 'arguments', [('/home/dmitry/projects/' 'veldo-worktrees/build-' 'veldo-0144')]),
+                ('mac application support', 'arguments', [('/Users/dmitry/Library/' 'Application Support/Ve' 'ldo')]),
+                ('confluence REST URL', 'url', ('https://api.atlassian.' 'com/ex/confluence/5c04' 'fb27-13f8-4d0f-ae1b-be' '13e14a815a/wiki/rest/a' 'pi')),
+            ]
+            for index, (label, field, value) in enumerate(ordinary):
+                doc = definition('ordinary-' + str(index), 'http' if field == 'url' else 'stdio', label)
+                doc[field] = {'CONFIG': {'literal': value}} if field == 'environment' else value
+                saved = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
+                check('catalog/ordinary-config-saves', label + ' saves every field exactly',
+                      saved[0] == 200 and saved[2].get('revision') == 1
+                      and dict(doc, revision=1) in data_of('mcp_server')
+                      and call('GET', prefix + 'catalog?server=' + doc['id'] + '&revision=1')[2].get('server')
+                      == dict(doc, revision=1))
+
+            position_names = ('aPi_ToKeN', 'client_secret_value', 'Password', 'service_passwd', 'vendor_apikey',
+                              'api_key', 'access_key_id', 'private_key_file', 'credentials', 'Authorization',
+                              'service_KEY', 'service_PAT')
+            doc = definition('credential-references', 'stdio', 'Named references')
+            doc['environment'] = {name: {'reference': ref} for name in position_names}
+            doc['arguments'] = ['-' * 2 + 'password']  # A bare flag without a following item holds no value.
+            # Unrecognized literals elsewhere are the trusted owner's choice, even when they have high entropy.
+            doc['environment']['CONFIG'] = {'literal': b64(os.urandom(48))}
+            saved = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
+            check('catalog/ordinary-config-saves', 'named references and an ordinary random literal save exactly',
+                  saved[0] == 200 and dict(doc, revision=1) in data_of('mcp_server')
+                  and call('GET', prefix + 'catalog?server=' + doc['id'] + '&revision=1')[2].get('server')
+                  == dict(doc, revision=1))
+
             before = head()
+            position_values = [os.urandom(size).hex() for size in (32, 33, 16, 3)]
+            position_cases = []
+            for index, name in enumerate(position_names):
+                value = position_values[index % len(position_values)]
+                position_cases.append(('environment', {name: {'literal': value}}))
+                flag = '-' * 2 + name.replace('_', '-')
+                position_cases.append(('arguments', [flag + '=' + value]))
+                position_cases.append(('arguments', [flag, value]))
+                position_cases.append(('url', 'https://localhost/mcp?' + name + '=' + value))
+            for name in ('key', 'SIG', 'signature', 'code', '%61pi%5Ftoken'):
+                position_cases.append(('url', 'https://localhost/mcp?' + name + '=' + position_values[0]))
+            position_cases += [('url', 'https://user:' + position_values[0] + '@localhost/mcp'),
+                               ('url', 'https://user@localhost/mcp'),
+                               ('url', 'https://localhost/mcp?key='),
+                               ('arguments', ['-' * 2 + 'token=']),
+                               ('headers', {'Authorization': {'literal': position_values[0]}})]
+            store_attempts = []
+            if catalog is not None:
+                store_execute = catalog.S.execute
+
+                def observe_catalog_execute(conn, command, *args, **kwargs):
+                    store_attempts.append(command.get('operation'))
+                    return store_execute(conn, command, *args, **kwargs)
+                catalog.S.execute = observe_catalog_execute
+            try:
+                for index, (field, value) in enumerate(position_cases):
+                    doc = definition('position-' + str(index), 'http' if field in ('url', 'headers') else 'stdio',
+                                     'Credential position')
+                    doc[field] = value
+                    refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
+                    check('catalog/credential-position-refused', field + ' case ' + str(index) + ' refuses before the store',
+                          refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_position'
+                          and head() == before and not store_attempts
+                          and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
+            finally:
+                if catalog is not None:
+                    catalog.S.execute = store_execute
+
             shaped = 'gh' + 'p_' + os.urandom(18).hex()
-            for shape in ('environment', 'arguments', 'url'):
-                doc = definition('literal-' + shape, 'http' if shape == 'url' else 'stdio', 'refuse literal')
+            for shape in ('environment', 'arguments', 'url', 'id', 'label', 'command', 'hosts', 'read_only_tools',
+                          'environment-name', 'header-name', 'reference'):
+                doc = definition('literal-' + shape, 'http' if shape in ('url', 'header-name') else 'stdio', 'refuse literal')
                 if shape == 'environment':
-                    doc[shape]['ACCESS'] = {'literal': shaped}
-                elif shape == 'arguments':
-                    doc[shape] = ['-' * 2 + 'token=' + shaped]
+                    doc[shape]['CONFIG'] = {'literal': shaped}
+                elif shape in ('arguments', 'hosts', 'read_only_tools'):
+                    doc[shape] = [shaped]
+                elif shape == 'url':
+                    doc[shape] += '?ordinary=' + shaped
+                elif shape == 'environment-name':
+                    doc['environment'][shaped] = {'literal': 'read'}
+                elif shape == 'header-name':
+                    doc['headers'][shaped] = {'reference': ref}
+                elif shape == 'reference':
+                    doc['environment']['CONFIG'] = {'reference': 'keychain:' + shaped}
                 else:
-                    doc[shape] += '?token=' + shaped
+                    doc[shape] = shaped
                 refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
-                check('catalog/credential-literals', shape + ' is refused before any write',
+                check('catalog/known-shape-refused', shape + ' is refused before any write',
+                      refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_literal'
+                      and head() == before and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
+            known_shapes = [
+                '-' * 5 + 'BEGIN ' + 'PRIVATE KEY' + '-' * 5,
+                'sk' + '_live_' + os.urandom(12).hex(),
+                'gh' + 'p_' + os.urandom(18).hex(),
+                'xox' + 'b-' + os.urandom(12).hex(),
+                'AK' + 'IA' + os.urandom(8).hex().upper(),
+                'AI' + 'za' + os.urandom(18).hex()[:35],
+                'ey' + 'J' + os.urandom(8).hex() + '.' + os.urandom(8).hex() + '.',
+                'pass' + 'word=' + chr(34) + os.urandom(12).hex() + chr(34),
+            ]
+            for index, shaped in enumerate(known_shapes):
+                doc = definition('provider-' + str(index), 'stdio', 'Provider shape')
+                doc['environment']['CONFIG'] = {'literal': shaped}
+                refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
+                check('catalog/known-shape-refused', 'known shape ' + str(index) + ' refuses by name without storage',
                       refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_literal'
                       and head() == before and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
             foreign = 'keychain:veldo/' + hashlib.sha256(('another-domain/atlassian').encode()).hexdigest()
@@ -548,6 +663,15 @@ for name in paths:
                   and head() == replay_head and len(calls()) == replay_calls)
 
             host_command('delete_mcp_credential', dict(id='replay', base=1))
+            deleted_head = head()
+            deleted_ref = next((d['reference'] for d in data_of('credential') if d['id'] == 'replay'), 'keychain:absent')
+            for field, name in (('environment', 'API_TOKEN'), ('headers', 'Authorization')):
+                doc = definition('deleted-' + field, 'http', 'Deleted reference')
+                doc[field][name] = {'reference': deleted_ref}
+                refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
+                check('catalog/deleted-reference', field + ' cannot reference tombstoned metadata',
+                      refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_reference'
+                      and head() == deleted_head and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
             recreate_id = A.next_id('recreate')
             recreated = host_command('set_mcp_credential', dict(replay_params, base=2), command_id=recreate_id)
             recreated_again = host_command('set_mcp_credential', dict(replay_params, base=2), command_id=recreate_id)
@@ -620,7 +744,7 @@ for name in paths:
             cmetrics = cv.metrics() if cv is not None else {}
             mmetrics = catalog.metrics() if catalog is not None else {}
             check('catalog/observability', 'save and credential observations join actor, revision, session and command; metrics count operations',
-                  mmetrics.get('revisions') == 8 and cmetrics.get('written') == 6 and cmetrics.get('replaced') == 1
+                  mmetrics.get('revisions') == 9 + len(ordinary) and cmetrics.get('written') == 6 and cmetrics.get('replaced') == 1
                   and cmetrics.get('deleted') == 2 and len(cmetrics.get('refused', {})) >= 3
                   and any(r.get('session') and r.get('command_id') and r.get('actor') == 'owner' and r.get('revision') == 2
                           for r in getattr(catalog, 'observations', []))

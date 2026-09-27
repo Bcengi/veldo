@@ -7512,10 +7512,30 @@ def cases():
         "                    self.keystore.set(ref.split(':', 1)[1], value)",
         "                    print(value)\n                    self.keystore.set(ref.split(':', 1)[1], value)",
         ['credential/no-value-in-records'], ())
-    add(144, 'mcp144-catalog-literal-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+    add(144, 'mcp144-known-shape-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
         '    if credential_literal(d):',
         '    if False:',
-        ['catalog/credential-literals'], ())
+        ['catalog/known-shape-refused'], ())
+    add(144, 'mcp144-entropy-restored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        'return isinstance(value, str) and any(rx.search(value) for rx, _ in SS.PATTERNS)',
+        'return isinstance(value, str) and bool(SS.scan_text(value))',
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-environment-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    if any(named(name) and 'literal' in item for name, item in d['environment'].items()):",
+        '    if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-argument-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "                if named(name) and (equals or index + 1 < len(d['arguments'])):",
+        '                if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-query-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '            if any(named(name, query=True) for name, _ in parse_qsl(url.query, keep_blank_values=True)):',
+        '            if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-deleted-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if (not credential.get('deleted') and row[0] == 'credential:' + digest",
+        "if (row[0] == 'credential:' + digest",
+        ['catalog/deleted-reference'], ())
     add(144, 'mcp144-foreign-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
         '            if not recorded:',
         '            if False:',

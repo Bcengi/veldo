@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import re
 import time
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlsplit
 
 
 def organ(name):
@@ -68,13 +68,43 @@ def owner(conn, principal, repository, now):
 
 
 def credential_literal(value):
+    """Catch the repository scanner's known shapes, without its entropy heuristic."""
     if isinstance(value, dict):
-        if set(value) == {'reference'} and reference(value['reference']):
-            return False
-        return any(SS.scan_text(str(k)) or credential_literal(v) for k, v in value.items())
+        return any(credential_literal(k) or credential_literal(v) for k, v in value.items())
     if isinstance(value, list):
         return any(credential_literal(v) for v in value)
-    return isinstance(value, str) and bool(SS.scan_text(value))
+    return isinstance(value, str) and any(rx.search(value) for rx, _ in SS.PATTERNS)
+
+
+def credential_position(d):
+    """Guard named credential positions. Ordinary literals are the trusted owner's choice."""
+    def named(name, query=False):
+        name = name.upper().replace('-', '_')
+        return (any(part in name for part in ('TOKEN', 'SECRET', 'PASSWORD', 'PASSWD', 'APIKEY',
+                                             'API_KEY', 'ACCESS_KEY', 'PRIVATE_KEY', 'CREDENTIAL', 'AUTH'))
+                or name.endswith(('_KEY', '_PAT'))
+                or (query and name in ('KEY', 'SIG', 'SIGNATURE', 'CODE')))
+
+    if any(named(name) and 'literal' in item for name, item in d['environment'].items()):
+        return True
+    if any('literal' in item for item in d['headers'].values()):
+        return True
+    if d['transport'] == 'stdio':
+        for index, argument in enumerate(d['arguments']):
+            if argument.startswith('-' * 2):
+                name, equals, _ = argument[2:].partition('=')
+                if named(name) and (equals or index + 1 < len(d['arguments'])):
+                    return True
+    if d['transport'] == 'http' and isinstance(d['url'], str):
+        try:
+            url = urlsplit(d['url'])
+            if url.username is not None or url.password is not None:
+                return True
+            if any(named(name, query=True) for name, _ in parse_qsl(url.query, keep_blank_values=True)):
+                return True
+        except ValueError:
+            pass  # Transport validation gives malformed URLs their named refusal.
+    return False
 
 
 def validate(definition):
@@ -94,20 +124,22 @@ def validate(definition):
         if isinstance(values, dict):
             for value in values.values():
                 # Explicit tags distinguish a literal from a reference, without guessing its shape.
-                allowed = ('reference',) if field == 'headers' else ('literal', 'reference')
+                allowed = ('literal', 'reference')
                 valid = valid and isinstance(value, dict) and len(value) == 1 and next(iter(value)) in allowed
                 if isinstance(value, dict) and len(value) == 1:
                     kind, item = next(iter(value.items()))
                     valid = valid and (reference(item) if kind == 'reference' else isinstance(item, str))
     if not valid:
         raise Refused('invalid_input:server_definition')
+    if credential_position(d):
+        raise Refused('invalid_input:server_credential_position')
     if d['transport'] == 'stdio':
         valid = text(d['command']) and d['url'] is None and not d['headers']
     else:
         try:
             url = urlsplit(d['url']) if isinstance(d['url'], str) else None
             valid = (url is not None and url.scheme in ('http', 'https') and bool(url.hostname)
-                     and url.username is None and url.password is None and not url.fragment
+                     and not url.fragment
                      and d['command'] is None and d['arguments'] == [])
         except ValueError:
             valid = False
@@ -128,7 +160,8 @@ def transition(conn, params, before):
             for row in conn.execute("SELECT id, data FROM entities WHERE kind='credential'"):
                 credential = json.loads(row[1])
                 digest = hashlib.sha256((domain + '/' + credential['id']).encode()).hexdigest()
-                if row[0] == 'credential:' + digest and credential.get('reference') == ref == 'keychain:veldo/' + digest:
+                if (not credential.get('deleted') and row[0] == 'credential:' + digest
+                        and credential.get('reference') == ref == 'keychain:veldo/' + digest):
                     recorded = True
             if not recorded:
                 raise Refused('invalid_input:server_credential_reference')
