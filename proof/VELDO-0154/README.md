@@ -71,3 +71,8 @@ footprint and History say so.
   assertion.
 - `mutations.json` and one `.diff` per mutation: finding 154 in `scripts/check_teeth_mutations.py`, driven by
   `drive.py` (baseline and no-op controls green, each mutant red on its named row by assertion).
+- Checks run on e401b725: suite 83 and the suites of every module touched (47, 36, 39, 40, 41, 62, 160, 60, 61,
+  155, 156, 129, 141, 138, 130, 139, 140, 128, 144, 76) through `selftest.py --suite`, each green, once in this
+  account's environment and once under the gate's (`env -i` with the gate's variables);
+  `check_teeth_mutations.py --finding 154 --jobs 2` rejects all ten; `check_git_boundary.py` passes; every
+  registered mutation anchor occurs once; `validate.py all` passes; the whole `selftest.py`: 6981 passed, 0 failed.
