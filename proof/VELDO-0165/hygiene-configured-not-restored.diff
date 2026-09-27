@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1021 +1021 @@
+-        own = {n: environment[n] for n in self.binding['configured_environment'] if n in environment}
++        own = {}

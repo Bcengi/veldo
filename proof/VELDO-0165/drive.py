@@ -146,7 +146,7 @@ def main():
                 n=0, fromfile='a/' + case.get('dir', '.veldo') + '/' + case['module'],
                 tofile='b/' + case.get('dir', '.veldo') + '/' + case['module'])))
             observed = run({case['module']: str(prepared['mutant'])})
-            report['mutants'].append(dict(name=case['name'], module='.veldo/' + case['module'], named_rows=case['rows'],
+            report['mutants'].append(dict(name=case['name'], module=case.get('dir', '.veldo') + '/' + case['module'], named_rows=case['rows'],
                                           diff='proof/VELDO-0165/%s.diff' % case['name'],
                                           source_sha256=prepared['old_digest'], mutant_sha256=prepared['new_digest'],
                                           named_row_red=all(PREFIX + r in observed['failed_rows'] for r in case['rows']),

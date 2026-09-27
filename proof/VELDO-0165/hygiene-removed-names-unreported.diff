@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1031 +1031 @@
--                              | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))}})
-+                              | set(n for n in environment if n in EXEC_STRIPPED))}})
+@@ -1037 +1037 @@
+-                              | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
++                              | set(n for n in environment if n in EXEC_STRIPPED))

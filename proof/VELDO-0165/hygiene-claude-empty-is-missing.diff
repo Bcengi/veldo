@@ -2,4 +2,4 @@
 +++ b/.veldo/control_engine_claude.py
 @@ -1279 +1279 @@
 -    if entry.get('session_environment') is None:
-+    if False:
++    if not entry.get('session_environment'):
