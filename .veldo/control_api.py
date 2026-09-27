@@ -71,9 +71,9 @@ member; the authority refuses a member whose scope does not cover the run's proj
 past the end by name. `runs.record_stream` serves the same lines live as text/event-stream (`event: record`,
 each frame's id its cursor, so an EventSource resumes with Last-Event-ID): filled from the cursor at once, then
 woken by the launch receiver's record hint (control_execution_record.HINT_SCHEMA, which `deliver` routes to
-`deliver_record`) and filled to the hinted sequence through `record`, page after page; it closes as `ended`
-once the run has ended and every line to the committed count is out. A session that ends closes it as the
-event stream closes (session_expired, revoked). Lines are served as the receiver kept them, already redacted;
+`deliver_record`) and filled through `record`, page after page, to the lines the record then holds; it closes as
+`ended` once the run has ended and every line to the committed count is out. A session that ends closes it as
+the event stream closes (signed_out, session_expired, revoked). Lines are served as the receiver kept them, already redacted;
 this process never holds an unredacted line. Nothing is polled.
 
 ACTIONS (AC4). The UI action contract is control_api_models.ACTIONS: each action with a route is a POST
