@@ -315,6 +315,20 @@ for name in paths:
                                       capture_output=True, timeout=15)
                 return done.returncode == 0
 
+            commandline_checks = []
+
+            def commandlines_safe():
+                inspected = 0
+                for path in Path('/proc').glob('[0-9]*/cmdline'):
+                    try:
+                        commandline = path.read_bytes()
+                    except OSError:
+                        continue
+                    inspected += 1
+                    if any(value.encode() in commandline for value in candidates):
+                        return False
+                return inspected > 0
+
             scan_results = []
             scanning = threading.Event()
             scanning.set()
@@ -355,6 +369,7 @@ for name in paths:
                     check('credential/replace-delete', 'deletion clears the keystore item and runtime resolution refuses',
                           valid_write and gone[0] == 200 and later is None and failure == 'SecretError'
                           and not list(fake.glob('item-*')))
+                commandline_checks.append(commandlines_safe())
                 refused = call('GET', prefix + 'credentials?id=atlassian')
                 check('credential/read-back', stage + ': read-back is refused by name',
                       valid_write and refused[0] == 403 and refused[2].get('refusal') == 'unauthorized:credential_read_back')
@@ -480,6 +495,7 @@ for name in paths:
             check('credential/no-value-on-command-line', 'the fake reads the exact value from stdin and checks every live process argv',
                   valid_write and len(writes) >= 3 and any(c['input_digest'] == hashlib.sha256(first_value.encode()).hexdigest()
                                                          for c in writes)
+                  and len(commandline_checks) == 3 and all(commandline_checks) and commandlines_safe()
                   and all(not c['exposed'] for c in observed)
                   and all(all(v not in json.dumps(c['argv']) for v in candidates) for c in observed))
             events = call('GET', '/api/v1/domains/mcp-domain/events?after=0')

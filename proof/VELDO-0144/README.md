@@ -24,24 +24,22 @@ assets; changed engine modules are byte-identical to their repository copies.
 
 Suite: `scripts/suites/82_veldo_0144_mcp_catalog.py`. Each row reports once.
 
-| Criterion | Row | Observed behavior |
-|:---|:---|:---|
-| AC1 | `catalog/stdio` | Both revisions round trip every field through the API and SQLite. |
-| AC1 | `catalog/http` | Both HTTP revisions preserve URL, reference headers and every other field. |
-| AC1 | `catalog/host-command` | Host-signed service commands create two revisions of each transport. |
-| AC1 | `catalog/immutable-history` | All four API revisions survive later saves and remain selectable by id and revision. |
-| AC1 | `catalog/stale-unauthorized` | Stale saves, another actor, forged signatures and a live session whose owner role was removed are refused without writes. |
-| AC1 | `catalog/invalid` | Invalid transports, fields and literal/reference shapes are refused without writes. |
-| AC1, AC2 | `catalog/atlassian` | Atlassian uses the ordinary HTTP catalog schema and a resolvable keystore reference. |
-| AC2 | `credential/write` | A real TLS passkey request writes exactly five metadata fields; keychain resolution returns the generated value in an opaque handle. |
-| AC2 | `credential/replace-delete` | Replacement resolves only the new value; deletion removes the item and resolution refuses. |
-| AC2 | `credential/read-back` | API reads after write, replacement and deletion all refuse by name. |
-| AC2 | `credential/no-value-on-command-line` | The fake executable observes stdin and scans every accessible live process command line; values appear in none. |
-| AC2 | `credential/no-value-in-records` | During and after writes, a joined scanner process checks the scratch store, WAL, journal, API and signer state, logs and proof. Responses, events, observations and actual store command inputs contain no value. |
-| AC2 | `credential/keystore-refusals` | Locked, unreachable and missing secret-tool cases refuse by name with no record or file fallback. |
-| AC2 | `credential/authority-binding` | Stale versions, unauthorized actors, missing passkey/CSRF and a changed value under a signed binding are refused; role removal applies to a live session. |
-| AC1, AC2 | `catalog/observability` | Session and command provenance, revision and credential identities, and operation/refusal counts agree with the driven changes. |
-| AC1, AC2 | `install/assets` | Scaffold assets, the authority's derived module closure, API handlers and engine copies agree. |
+- AC1, `catalog/stdio`: Both revisions round trip every field through the API and SQLite.
+- AC1, `catalog/http`: Both HTTP revisions preserve URL, reference headers and every other field.
+- AC1, `catalog/host-command`: Host-signed service commands create two revisions of each transport.
+- AC1, `catalog/immutable-history`: All four API revisions survive later saves and remain selectable by id and revision.
+- AC1, `catalog/stale-unauthorized`: Stale saves, another actor, forged signatures and a live session whose owner role was removed are refused without writes.
+- AC1, `catalog/invalid`: Invalid transports, fields and literal/reference shapes are refused without writes.
+- AC1, AC2, `catalog/atlassian`: Atlassian uses the ordinary HTTP catalog schema and a resolvable keystore reference.
+- AC2, `credential/write`: A real TLS passkey request writes exactly five metadata fields; keychain resolution returns the generated value in an opaque handle.
+- AC2, `credential/replace-delete`: Replacement resolves only the new value; deletion removes the item and resolution refuses.
+- AC2, `credential/read-back`: API reads after write, replacement and deletion all refuse by name.
+- AC2, `credential/no-value-on-command-line`: The fake executable observes stdin and scans every accessible live process command line; values appear in none.
+- AC2, `credential/no-value-in-records`: During and after writes, a joined scanner process checks the scratch store, WAL, journal, API and signer state, logs and proof. Responses, events, observations and actual store command inputs contain no value.
+- AC2, `credential/keystore-refusals`: Locked, unreachable and missing secret-tool cases refuse by name with no record or file fallback.
+- AC2, `credential/authority-binding`: Stale versions, unauthorized actors, missing passkey/CSRF and a changed value under a signed binding are refused; role removal applies to a live session.
+- AC1, AC2, `catalog/observability`: Session and command provenance, revision and credential identities, and operation/refusal counts agree with the driven changes.
+- AC1, AC2, `install/assets`: Scaffold assets, the authority's derived module closure, API handlers and engine copies agree.
 
 ## Interfaces and isolation
 
@@ -87,17 +85,15 @@ All selected selftest runs have zero failed assertions. The dispatcher deliberat
 returns status 2 for successful scoped runs. These observations are not a passing
 aggregate unit record, a gate stamp, an approval or a landing decision.
 
-| Suite | Own rows passed |
-|:---|---:|
-| `82_veldo_0144_mcp_catalog` | 16 |
-| `71_veldo_0130_api` | 41 |
-| `66_veldo_0047_authority` | 30 |
-| `01_warp_0101_reviewer_notes` | 611 |
-| `03_plugin_extension_loading_runner` | 261 |
-| `26_veldo_0009_install_stamp` | 32 |
-| `51_parser_boundary` | 25 |
-| `52_writer_boundary` | 10 |
-| `53_veldo_0123_mutations` | 14 |
+- `82_veldo_0144_mcp_catalog`: 16 rows passed.
+- `71_veldo_0130_api`: 41 rows passed.
+- `66_veldo_0047_authority`: 30 rows passed.
+- `01_warp_0101_reviewer_notes`: 611 rows passed.
+- `03_plugin_extension_loading_runner`: 261 rows passed.
+- `26_veldo_0009_install_stamp`: 32 rows passed.
+- `51_parser_boundary`: 25 rows passed.
+- `52_writer_boundary`: 10 rows passed.
+- `53_veldo_0123_mutations`: 14 rows passed.
 
 The requires registry was regenerated. `python3 .veldo/validate.py all` passes.
 `checks.json` retains check outcomes and implementation file digests. The canonical

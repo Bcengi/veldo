@@ -147,7 +147,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 2.274,
+ "seconds": 2.534,
  "spec_id": "VELDO-0144",
  "suite": "scripts/suites/82_veldo_0144_mcp_catalog.py",
  "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"

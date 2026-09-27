@@ -1,0 +1,89 @@
+{
+ "engine_copies_identical": true,
+ "gate": {
+  "reason": "The implementation request prohibits running the canonical gate.",
+  "run": false
+ },
+ "mutations": {
+  "finding": 144,
+  "jobs": 2,
+  "registry": "scripts/check_teeth_mutations.py",
+  "rejected": 16
+ },
+ "production_commit": "e894eac5",
+ "production_sha256": {
+  ".veldo/control_api.py": "f50fa0797dc0931b53a397949f4c96a41000335184b46dbe1c8ffc4e423cdb73",
+  ".veldo/control_api_assertion.py": "f77c7e890ebb5515ee2bedfac40ffd31366846205fde130746bef1a7a76ad17e",
+  ".veldo/control_api_authority.py": "52ec766d842e8ceea426aa783c4d944b9fa9ec3696a8877c8d88b041ae737163",
+  ".veldo/control_api_models.py": "3b9c3d767cd5dd4a3815fc3edac2b9dd7c9b30785f9fb5497d433b96cc38d93a",
+  ".veldo/control_credential.py": "708d303732c824420938081a69dbf8118f89f27ff85778b6728a89c0d2aca321",
+  ".veldo/control_credential_keystore.py": "31adcc3f86fb45ce01b01fb12540e4f1023797e7d318e61d75a77bdc6b1d29d4",
+  ".veldo/control_mcp_catalog.py": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78",
+  ".veldo/control_service.py": "d40c51c98aebb0d96d7b28bc6128ee8757409e0230e6b79dfc67893571d0288c",
+  ".veldo/control_service_api.py": "5fb5a240461200b78e4eb62f9aad245985c6f628b92223424b6fdab2d5971f8d",
+  ".veldo/init_scaffold.py": "3a9374afb50947e14dbf0dc53c1da0f7f31c06e002634fc89478183be830f159"
+ },
+ "red": {
+  "commit": "3c85f33b2f51f505cfed69d03272f9c077436478",
+  "rows_red_by_assertion": 16
+ },
+ "schema": "veldo.scoped-observations/v1",
+ "selftest_scope": "Scoped runs return status 2 with zero failed assertions; no aggregate verification or passed unit-evidence record is claimed.",
+ "spec_id": "VELDO-0144",
+ "suite_sha256": "7fbb3184c0c19b1065bceb6b36aaf7bc3aaaff1d0b42757fd6b58552059be3dc",
+ "suites": [
+  {
+   "failed": 0,
+   "name": "82_veldo_0144_mcp_catalog",
+   "own_rows_passed": 16
+  },
+  {
+   "failed": 0,
+   "name": "71_veldo_0130_api",
+   "own_rows_passed": 41
+  },
+  {
+   "failed": 0,
+   "name": "66_veldo_0047_authority",
+   "own_rows_passed": 30
+  },
+  {
+   "failed": 0,
+   "name": "01_warp_0101_reviewer_notes",
+   "own_rows_passed": 611
+  },
+  {
+   "failed": 0,
+   "name": "03_plugin_extension_loading_runner",
+   "own_rows_passed": 261
+  },
+  {
+   "failed": 0,
+   "name": "26_veldo_0009_install_stamp",
+   "own_rows_passed": 32
+  },
+  {
+   "failed": 0,
+   "name": "51_parser_boundary",
+   "own_rows_passed": 25
+  },
+  {
+   "failed": 0,
+   "name": "52_writer_boundary",
+   "own_rows_passed": 10
+  },
+  {
+   "failed": 0,
+   "name": "53_veldo_0123_mutations",
+   "own_rows_passed": 14
+  }
+ ],
+ "validation": {
+  "command": [
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "exit_code": 0
+ }
+}

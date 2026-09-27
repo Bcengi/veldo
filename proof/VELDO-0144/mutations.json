@@ -1,0 +1,2084 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0144 catalog/stdio",
+    true
+   ],
+   [
+    "VELDO-0144 catalog/http",
+    true
+   ],
+   [
+    "VELDO-0144 catalog/host-command",
+    true
+   ],
+   [
+    "VELDO-0144 catalog/immutable-history",
+    true
+   ],
+   [
+    "VELDO-0144 catalog/stale-unauthorized",
+    true
+   ],
+   [
+    "VELDO-0144 catalog/invalid",
+    true
+   ],
+   [
+    "VELDO-0144 catalog/atlassian",
+    true
+   ],
+   [
+    "VELDO-0144 credential/write",
+    true
+   ],
+   [
+    "VELDO-0144 credential/replace-delete",
+    true
+   ],
+   [
+    "VELDO-0144 credential/read-back",
+    true
+   ],
+   [
+    "VELDO-0144 credential/no-value-on-command-line",
+    true
+   ],
+   [
+    "VELDO-0144 credential/no-value-in-records",
+    true
+   ],
+   [
+    "VELDO-0144 credential/keystore-refusals",
+    true
+   ],
+   [
+    "VELDO-0144 credential/authority-binding",
+    true
+   ],
+   [
+    "VELDO-0144 catalog/observability",
+    true
+   ],
+   [
+    "VELDO-0144 install/assets",
+    true
+   ]
+  ],
+  "seconds": 6.346
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: catalog/stdio: every field of revision 2 round trips through API and SQLite",
+    "VELDO-0144 detail: catalog/http: every field of revision 2 round trips through API and SQLite",
+    "VELDO-0144 detail: catalog/immutable-history: both revisions of both transports survive byte for byte after the later save"
+   ],
+   "edits": [
+    [
+     "    rid = revision_id(domain, d['id'], revision)\n    if entity(conn, rid) is not None:\n        raise Refused('stale_version:immutable_mcp_server')",
+     "    rid = revision_id(domain, d['id'], max(1, revision - 1))"
+    ],
+    [
+     "            rid = revision_id(self.domain, definition['id'], base + 1)\n            expected = {hid: base, rid: 0}",
+     "            rid = revision_id(self.domain, definition['id'], max(1, base))\n            expected = {hid: base, rid: (entity(self.conn, rid) or {}).get('version', 0)}"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 catalog/stdio",
+    "VELDO-0144 catalog/http",
+    "VELDO-0144 catalog/immutable-history"
+   ],
+   "module": ".veldo/control_mcp_catalog.py",
+   "mutant_sha256": "e1231c0c25b1784e9e4efa6982779c27af675f5f6192c403e3fc3382535136cf",
+   "name": "mcp144-overwrite-revision",
+   "named_row_red": true,
+   "named_rows": [
+    "catalog/immutable-history"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.328,
+   "source_sha256": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: catalog/atlassian: Atlassian is an ordinary http definition with its reference resolvable in the keystore",
+    "VELDO-0144 detail: credential/write: TLS passkey write stores only the five metadata fields and resolves through keychain; the opaque runtime handle prints only its reference",
+    "VELDO-0144 detail: credential/replace-delete: replacement keeps the reference and resolves only the new value; deletion clears the keystore item and runtime resolution refuses",
+    "VELDO-0144 detail: credential/no-value-on-command-line: the fake reads the exact value from stdin and checks every live process argv",
+    "VELDO-0144 detail: credential/no-value-in-records: during and after writes no value appears in store, journal, feed, proof or logs [True, 200, True, False, False, True]"
+   ],
+   "edits": [
+    [
+     "        argv += ['application', 'veldo', 'credential', name]",
+     "        argv += ['application', 'veldo', 'credential', name]\n        if value is not None:\n            argv += [value]"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 catalog/atlassian",
+    "VELDO-0144 credential/write",
+    "VELDO-0144 credential/replace-delete",
+    "VELDO-0144 credential/no-value-on-command-line",
+    "VELDO-0144 credential/no-value-in-records"
+   ],
+   "module": ".veldo/control_credential_keystore.py",
+   "mutant_sha256": "0e031f24f9e68e384f5a728c16a0708e4bf8e7475ded034bef54716769bc8711",
+   "name": "mcp144-value-on-argv",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/no-value-on-command-line"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     false
+    ],
+    [
+     "VELDO-0144 credential/write",
+     false
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     false
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     false
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     false
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.429,
+   "source_sha256": "31adcc3f86fb45ce01b01fb12540e4f1023797e7d318e61d75a77bdc6b1d29d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: credential/write: TLS passkey write stores only the five metadata fields and resolves through keychain",
+    "VELDO-0144 detail: credential/no-value-in-records: during and after writes no value appears in store, journal, feed, proof or logs [True, 200, True, False, False, True]"
+   ],
+   "edits": [
+    [
+     "                    data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal)",
+     "                    data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal, value=value)"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 credential/write",
+    "VELDO-0144 credential/no-value-in-records"
+   ],
+   "module": ".veldo/control_credential.py",
+   "mutant_sha256": "f0ae52cae1b08addb81fbd3c13b6d8c95765276d892f22080db6a9304058fc2a",
+   "name": "mcp144-value-in-record",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/no-value-in-records"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     false
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     false
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.422,
+   "source_sha256": "708d303732c824420938081a69dbf8118f89f27ff85778b6728a89c0d2aca321"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: catalog/stale-unauthorized: stale, unauthorized and forged saves refuse by name and write nothing; a live passkey session whose owner role was removed cannot write",
+    "VELDO-0144 detail: catalog/invalid: invalid transports, fields and value/reference shapes store no definition",
+    "VELDO-0144 detail: credential/authority-binding: current role, base, passkey, forgery guard and signed value binding are enforced; a live passkey session whose owner role was removed cannot write",
+    "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations"
+   ],
+   "edits": [
+    [
+     "    if (not AC.active_member(member, now)[0] or member.get('principal_type') != 'person'\n            or 'project_owner' not in (member.get('roles') or [])",
+     "    if (not AC.active_member(member, now)[0]"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 catalog/stale-unauthorized",
+    "VELDO-0144 catalog/invalid",
+    "VELDO-0144 credential/authority-binding",
+    "VELDO-0144 catalog/observability"
+   ],
+   "module": ".veldo/control_mcp_catalog.py",
+   "mutant_sha256": "4f7b6bc2384530eb61965af2fc0be37a00a6ae5fc26803670eacb69413661902",
+   "name": "mcp144-owner-check-off",
+   "named_row_red": true,
+   "named_rows": [
+    "catalog/stale-unauthorized",
+    "credential/authority-binding"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     false
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.446,
+   "source_sha256": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: catalog/stdio: every field of revision 1 round trips through API and SQLite; every field of revision 2 round trips through API and SQLite",
+    "VELDO-0144 detail: catalog/host-command: stdio host-signed authority command stores revision 1; stdio host-signed authority command stores revision 2",
+    "VELDO-0144 detail: catalog/immutable-history: both revisions of both transports survive byte for byte after the later save"
+   ],
+   "edits": [
+    [
+     "'data': dict(d, revision=revision)",
+     "'data': dict(d, revision=revision, arguments=[])"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 catalog/stdio",
+    "VELDO-0144 catalog/host-command",
+    "VELDO-0144 catalog/immutable-history"
+   ],
+   "module": ".veldo/control_mcp_catalog.py",
+   "mutant_sha256": "9cf0050c1dbd4e3a1df4cc4f3ea6d9ba9f0189e36efbdaac04fe1b3b0652c994",
+   "name": "mcp144-stdio-arguments-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "catalog/stdio"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.131,
+   "source_sha256": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: catalog/http: every field of revision 1 round trips through API and SQLite; every field of revision 2 round trips through API and SQLite",
+    "VELDO-0144 detail: catalog/host-command: http host-signed authority command stores revision 1; http host-signed authority command stores revision 2",
+    "VELDO-0144 detail: catalog/immutable-history: both revisions of both transports survive byte for byte after the later save",
+    "VELDO-0144 detail: catalog/atlassian: Atlassian is an ordinary http definition with its reference resolvable in the keystore"
+   ],
+   "edits": [
+    [
+     "'data': dict(d, revision=revision)",
+     "'data': dict(d, revision=revision, headers={})"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 catalog/http",
+    "VELDO-0144 catalog/host-command",
+    "VELDO-0144 catalog/immutable-history",
+    "VELDO-0144 catalog/atlassian"
+   ],
+   "module": ".veldo/control_mcp_catalog.py",
+   "mutant_sha256": "305565ef6d0f4b44cd2385517f88e977c5e777f33d843a6b90993f1a557980c5",
+   "name": "mcp144-http-headers-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "catalog/http",
+    "catalog/atlassian"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     false
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 5.97,
+   "source_sha256": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: catalog/invalid: invalid transports, fields and value/reference shapes store no definition",
+    "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations"
+   ],
+   "edits": [
+    [
+     "    valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')",
+     "    if d['transport'] == 'connector':\n        return\n    valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 catalog/invalid",
+    "VELDO-0144 catalog/observability"
+   ],
+   "module": ".veldo/control_mcp_catalog.py",
+   "mutant_sha256": "b7af8933d6898fdec4c91465392211a24ceafee4c99bc9ca233bb71ffeec6a19",
+   "name": "mcp144-invalid-transport-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "catalog/invalid"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     false
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.038,
+   "source_sha256": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: credential/replace-delete: deletion clears the keystore item and runtime resolution refuses"
+   ],
+   "edits": [
+    [
+     "        self._run('clear', name)",
+     "        return None"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 credential/replace-delete"
+   ],
+   "module": ".veldo/control_credential_keystore.py",
+   "mutant_sha256": "ae696cd1139c10e85399894980bf0b2251c7a7cabf65407e8f502d8b890e2f87",
+   "name": "mcp144-delete-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/replace-delete"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     false
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.034,
+   "source_sha256": "31adcc3f86fb45ce01b01fb12540e4f1023797e7d318e61d75a77bdc6b1d29d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: credential/replace-delete: replacement keeps the reference and resolves only the new value",
+    "VELDO-0144 detail: credential/no-value-on-command-line: the fake reads the exact value from stdin and checks every live process argv"
+   ],
+   "edits": [
+    [
+     "        self._run('store', name, value)",
+     "        if self.get('keychain', name) is None:\n            self._run('store', name, value)"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 credential/replace-delete",
+    "VELDO-0144 credential/no-value-on-command-line"
+   ],
+   "module": ".veldo/control_credential_keystore.py",
+   "mutant_sha256": "15d7ea2a520e84aa570a5e5d59cf261642f074c4663bfe0b2e1ca527f40eadca",
+   "name": "mcp144-replace-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/replace-delete"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     false
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     false
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.116,
+   "source_sha256": "31adcc3f86fb45ce01b01fb12540e4f1023797e7d318e61d75a77bdc6b1d29d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: credential/keystore-refusals: locked refuses by name, commits no record and has no fallback; unreachable refuses by name, commits no record and has no fallback; missing executable refuses without touching any real keystore",
+    "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations"
+   ],
+   "edits": [
+    [
+     "        if done.returncode:\n",
+     "        if done.returncode and b'locked' not in done.stderr.lower():\n"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 credential/keystore-refusals",
+    "VELDO-0144 catalog/observability"
+   ],
+   "module": ".veldo/control_credential_keystore.py",
+   "mutant_sha256": "8f9057f17f5b14adebfbf9f601fcf280a22d2aadedcdcbb86eff12a15c9a3770",
+   "name": "mcp144-locked-success",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/keystore-refusals"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     false
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     false
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.059,
+   "source_sha256": "31adcc3f86fb45ce01b01fb12540e4f1023797e7d318e61d75a77bdc6b1d29d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: credential/read-back: written: read-back is refused by name; replaced: read-back is refused by name; deleted: read-back is refused by name"
+   ],
+   "edits": [
+    [
+     "        raise Refused('unauthorized:credential_read_back', 'credentials are write-only')",
+     "        return 200, {'outcome': 'read_back_allowed'}"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 credential/read-back"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "515f60c2a5be44930adb1d2c12dea270b0f35f317cb78440ddd236aa74bd5939",
+   "name": "mcp144-read-back-allowed",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/read-back"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     false
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.102,
+   "source_sha256": "f50fa0797dc0931b53a397949f4c96a41000335184b46dbe1c8ffc4e423cdb73"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: credential/authority-binding: current role, base, passkey, forgery guard and signed value binding are enforced",
+    "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations"
+   ],
+   "edits": [
+    [
+     "or not hmac.compare_digest(hashlib.sha256(value.encode()).hexdigest(), bound)",
+     "or False"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 credential/authority-binding",
+    "VELDO-0144 catalog/observability"
+   ],
+   "module": ".veldo/control_api_authority.py",
+   "mutant_sha256": "f9a443145c3d4d4099e349ee297d05fbbf0f150a641b6dcbae99362b0fd69c6d",
+   "name": "mcp144-value-binding-off",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/authority-binding"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     false
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.085,
+   "source_sha256": "52ec766d842e8ceea426aa783c4d944b9fa9ec3696a8877c8d88b041ae737163"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: catalog/host-command: stdio host-signed authority command stores revision 1; stdio host-signed authority command stores revision 2; http host-signed authority command stores revision 1; http host-signed authority command stores revision 2",
+    "VELDO-0144 detail: catalog/stale-unauthorized: stale, unauthorized and forged saves refuse by name and write nothing",
+    "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations"
+   ],
+   "edits": [
+    [
+     "            elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:",
+     "            elif command.get('operation') in SA.AUTH.CV.OPERATIONS:"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 catalog/host-command",
+    "VELDO-0144 catalog/stale-unauthorized",
+    "VELDO-0144 catalog/observability"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "4734f8d647a52713ff15821236d3406c6b0101e72f0455a9a878c95a7b6ad9fb",
+   "name": "mcp144-host-command-unwired",
+   "named_row_red": true,
+   "named_rows": [
+    "catalog/host-command"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     false
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.053,
+   "source_sha256": "d40c51c98aebb0d96d7b28bc6128ee8757409e0230e6b79dfc67893571d0288c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: credential/no-value-in-records: during and after writes no value appears in store, journal, feed, proof or logs [True, 200, True, True, False, False]"
+   ],
+   "edits": [
+    [
+     "        self.record(dict(about, outcome=outcome, seq=saved['seq']))",
+     "        self.record(dict(about, outcome=outcome, seq=saved['seq'], value=value))"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 credential/no-value-in-records"
+   ],
+   "module": ".veldo/control_credential.py",
+   "mutant_sha256": "5e9a75c3805b3ab8bf96f2ecf8e603f4da3212e47757da79899cc4a18ead4b70",
+   "name": "mcp144-credential-log-value",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/no-value-in-records"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     false
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.07,
+   "source_sha256": "708d303732c824420938081a69dbf8118f89f27ff85778b6728a89c0d2aca321"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: catalog/stale-unauthorized: stale, unauthorized and forged saves refuse by name and write nothing",
+    "VELDO-0144 detail: catalog/invalid: invalid transports, fields and value/reference shapes store no definition",
+    "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations"
+   ],
+   "edits": [
+    [
+     "            rid = revision_id(self.domain, definition['id'], base + 1)",
+     "            base = (entity(self.conn, hid) or {}).get('version', 0)\n            rid = revision_id(self.domain, definition['id'], base + 1)"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 catalog/stale-unauthorized",
+    "VELDO-0144 catalog/invalid",
+    "VELDO-0144 catalog/observability"
+   ],
+   "module": ".veldo/control_mcp_catalog.py",
+   "mutant_sha256": "bb282d987aa8184b30b66b311f6d144f232af0f4a1966c8fbb60bf0d529e0d76",
+   "name": "mcp144-stale-base-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "catalog/stale-unauthorized"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     false
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     false
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.03,
+   "source_sha256": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0144 detail: credential/no-value-in-records: during and after writes no value appears in store, journal, feed, proof or logs [True, 200, True, True, True, True]"
+   ],
+   "edits": [
+    [
+     "            stored = {k: v for k, v in params.items() if k != 'value'}",
+     "            stored = dict(params)"
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0144 credential/no-value-in-records"
+   ],
+   "module": ".veldo/control_credential.py",
+   "mutant_sha256": "5226dd9a9a83277a13879ad924a4a759c9cf19795ccbfebc314ed29207b006f2",
+   "name": "mcp144-value-in-command-digest",
+   "named_row_red": true,
+   "named_rows": [
+    "credential/no-value-in-records"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     false
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.098,
+   "source_sha256": "708d303732c824420938081a69dbf8118f89f27ff85778b6728a89c0d2aca321"
+  }
+ ],
+ "mutations_per_row": {
+  "catalog/atlassian": [
+   "mcp144-http-headers-dropped"
+  ],
+  "catalog/host-command": [
+   "mcp144-host-command-unwired"
+  ],
+  "catalog/http": [
+   "mcp144-http-headers-dropped"
+  ],
+  "catalog/immutable-history": [
+   "mcp144-overwrite-revision"
+  ],
+  "catalog/invalid": [
+   "mcp144-invalid-transport-accepted"
+  ],
+  "catalog/stale-unauthorized": [
+   "mcp144-owner-check-off",
+   "mcp144-stale-base-ignored"
+  ],
+  "catalog/stdio": [
+   "mcp144-stdio-arguments-dropped"
+  ],
+  "credential/authority-binding": [
+   "mcp144-owner-check-off",
+   "mcp144-value-binding-off"
+  ],
+  "credential/keystore-refusals": [
+   "mcp144-locked-success"
+  ],
+  "credential/no-value-in-records": [
+   "mcp144-value-in-record",
+   "mcp144-credential-log-value",
+   "mcp144-value-in-command-digest"
+  ],
+  "credential/no-value-on-command-line": [
+   "mcp144-value-on-argv"
+  ],
+  "credential/read-back": [
+   "mcp144-read-back-allowed"
+  ],
+  "credential/replace-delete": [
+   "mcp144-delete-kept",
+   "mcp144-replace-kept"
+  ]
+ },
+ "noop": {
+  "control_api.py": {
+   "copy_sha256": "f50fa0797dc0931b53a397949f4c96a41000335184b46dbe1c8ffc4e423cdb73",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.445,
+   "source_sha256": "f50fa0797dc0931b53a397949f4c96a41000335184b46dbe1c8ffc4e423cdb73"
+  },
+  "control_api_authority.py": {
+   "copy_sha256": "52ec766d842e8ceea426aa783c4d944b9fa9ec3696a8877c8d88b041ae737163",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.308,
+   "source_sha256": "52ec766d842e8ceea426aa783c4d944b9fa9ec3696a8877c8d88b041ae737163"
+  },
+  "control_credential.py": {
+   "copy_sha256": "708d303732c824420938081a69dbf8118f89f27ff85778b6728a89c0d2aca321",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.289,
+   "source_sha256": "708d303732c824420938081a69dbf8118f89f27ff85778b6728a89c0d2aca321"
+  },
+  "control_credential_keystore.py": {
+   "copy_sha256": "31adcc3f86fb45ce01b01fb12540e4f1023797e7d318e61d75a77bdc6b1d29d4",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.233,
+   "source_sha256": "31adcc3f86fb45ce01b01fb12540e4f1023797e7d318e61d75a77bdc6b1d29d4"
+  },
+  "control_mcp_catalog.py": {
+   "copy_sha256": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.22,
+   "source_sha256": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78"
+  },
+  "control_service.py": {
+   "copy_sha256": "d40c51c98aebb0d96d7b28bc6128ee8757409e0230e6b79dfc67893571d0288c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0144 catalog/stdio",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/http",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/host-command",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/immutable-history",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/stale-unauthorized",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/invalid",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/atlassian",
+     true
+    ],
+    [
+     "VELDO-0144 credential/write",
+     true
+    ],
+    [
+     "VELDO-0144 credential/replace-delete",
+     true
+    ],
+    [
+     "VELDO-0144 credential/read-back",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-on-command-line",
+     true
+    ],
+    [
+     "VELDO-0144 credential/no-value-in-records",
+     true
+    ],
+    [
+     "VELDO-0144 credential/keystore-refusals",
+     true
+    ],
+    [
+     "VELDO-0144 credential/authority-binding",
+     true
+    ],
+    [
+     "VELDO-0144 catalog/observability",
+     true
+    ],
+    [
+     "VELDO-0144 install/assets",
+     true
+    ]
+   ],
+   "seconds": 6.209,
+   "source_sha256": "d40c51c98aebb0d96d7b28bc6128ee8757409e0230e6b79dfc67893571d0288c"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py, finding 144",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 142.461,
+ "spec_id": "VELDO-0144",
+ "suite": "scripts/suites/82_veldo_0144_mcp_catalog.py"
+}
