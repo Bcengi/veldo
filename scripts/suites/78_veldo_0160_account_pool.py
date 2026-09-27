@@ -1484,6 +1484,26 @@ sys.exit(payload.get('code', 0))
                       (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
                       and hidden(found) == [(len(c_head) + 1, 'skill', 'tool:Skill')]
                       and named(found) == [(len(c_head) + 1, None, None, None, None, 'nested_work')])
+            # Preserve rule 2's forwarded-message and last-tool coverage after the forked Skill moves to rule A.
+            # This agent's one call is shown, so its tally is complete and rule A allows it.
+            forwarded = [c_blocks([dict(tool_use('t1', 'Agent'), input={'prompt': 'p', 'subagent_type': 'general-purpose'})]),
+                         t_started('t1', 1),
+                         c_child('t1', [dict(tool_use('t2', 'Agent'), input={'prompt': 'q', 'subagent_type': 'Explore'})]),
+                         t_progress('t1', 'Agent', 1), t_result('t2', 't1'),
+                         t_done('t1', {'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}), t_result('t1')]
+            at = len(c_head) + 1
+            expected = [(at, 'agent', 'tool:Agent'), (at + 1, 'task_frames', 'system/task_started'),
+                        (at + 2, 'agent', 'tool:Agent'), (at + 2, 'nested_progress', 'parent_tool_use_id'),
+                        (at + 3, 'agent', 'tool:Agent'), (at + 3, 'task_frames', 'system/task_progress'),
+                        (at + 4, 'nested_progress', 'parent_tool_use_id'),
+                        (at + 5, 'task_frames', 'system/task_notification')]
+            for as_text in (False, True):
+                found, error = decide(c_rec(forwarded, as_text), 'claude_code')
+                check('decision/nested-work-asks', 'a shown Agent call under a sub-agent, JSON text %s: '
+                      'ask by rule 2, naming every construct including forwarded messages and the last tool [%s, %s]'
+                      % (as_text, (found or {}).get('basis'), hidden(found) or error),
+                      (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
+                      and hidden(found) == expected)
             found, error = by_calls(c_rec(forked), 'claude_code')
             check('decision/nested-work-asks', 'the call-by-call rules alone see no call in it [%s, %s]'
                   % ((found or {}).get('decision'), named(found) or error),

@@ -139,7 +139,7 @@
     true
    ]
   ],
-  "seconds": 25.578
+  "seconds": 25.253
  },
  "controls_green": true,
  "mutants": [
@@ -305,7 +305,7 @@
      true
     ]
    ],
-   "seconds": 25.102,
+   "seconds": 24.943,
    "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
   },
   {
@@ -473,7 +473,7 @@
      true
     ]
    ],
-   "seconds": 25.853,
+   "seconds": 25.009,
    "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
   }
  ],
@@ -616,7 +616,7 @@
     true
    ]
   ],
-  "seconds": 24.992,
+  "seconds": 25.887,
   "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
  },
  "schema": "veldo.proof-mutations/v1",

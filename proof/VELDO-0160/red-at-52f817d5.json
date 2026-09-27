@@ -30,7 +30,7 @@
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 9:54am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 10:25am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
@@ -167,6 +167,8 @@
   "VELDO-0160 decision/no-write-server-reruns detail: the top-level Skill with a server giving a revision that marks nothing: write-capable, decided ask [None, None, no decision module]",
   "VELDO-0160 decision/nested-work-asks detail: a top-level Skill with no fork and a write-capable server: decided ask by rule 2 [None, no decision module]",
   "VELDO-0160 decision/nested-work-asks detail: a top-level Skill with no fork and a write-capable server: decided ask by rule 2 [None, no decision module]",
+  "VELDO-0160 decision/nested-work-asks detail: a shown Agent call under a sub-agent, JSON text False: ask by rule 2, naming every construct including forwarded messages and the last tool [None, no decision module]",
+  "VELDO-0160 decision/nested-work-asks detail: a shown Agent call under a sub-agent, JSON text True: ask by rule 2, naming every construct including forwarded messages and the last tool [None, no decision module]",
   "VELDO-0160 decision/nested-work-asks detail: the call-by-call rules alone see no call in it [None, no call-by-call decision]",
   "VELDO-0160 decision/nested-work-asks detail: a normal run whose Agent's calls are all shown and read-only, a write-capable server configured: decided ask, naming the Agent line [None, no decision module]",
   "VELDO-0160 decision/nested-work-asks detail: a depth-2 agent's hidden MCP write: decided ask by rule A first, naming the task's shortfall (decision/outward-tool-asks) [None, no decision module]",
@@ -661,7 +663,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 34.826,
+ "seconds": 34.189,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"

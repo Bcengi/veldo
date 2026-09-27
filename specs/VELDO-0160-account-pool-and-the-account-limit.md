@@ -438,3 +438,5 @@ schema and the definition's context resolver. The forked record moves from `deci
 read-only servers and write-capable servers. Top-level Skill with no fork still re-runs without a write-capable
 server and asks by rule 2 with one; probe12's normal general-purpose and Explore run still re-runs. Two mutations
 skip the parent and fork checks independently. Status unchanged.
+The rule 2 row retains exact forwarded-message and last-tool coverage through a fully shown nested Agent record,
+after the full mutation run exposed the assertion lost when the forked Skill moved to rule A.

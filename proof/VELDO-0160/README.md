@@ -382,7 +382,8 @@ configured each decide re-run, basis `no_write_capable_server`, naming nothing. 
 a server whose `tools` is neither `all` nor a list are still refused by name. A top-level Skill with a server giving
 a listed tool not marked read-only, all its tools, its tools unlisted, or a tool of a revision that marks nothing
 asks by rule 2. `decision/nested-work-asks` (rule 2): the top-level Skill with the default write-capable servers asks,
-basis `nested_work`, naming its Skill construct. The call-by-call rules alone see no call in the sub-agent's forked
+basis `nested_work`, naming its Skill construct. A fully shown nested Agent call names every construct, including
+its forwarded messages and the task's last tool. The call-by-call rules alone see no call in the sub-agent's forked
 Skill record; rule A now asks for its parent instead. A normal run whose Agent's calls are shown and read-only asks
 by rule 2; a depth-2 agent's hidden write asks first by rule A for its task's unshown calls; Codex's
 `collab_tool_call` asks naming it as nested work and as an unknown call. `decision/nested-constructs`: each of 16 records holding one construct alone
@@ -614,3 +615,8 @@ Skill fork review validation: suite `78_veldo_0160_account_pool` has 33 passing 
 preamble checks. Its standalone selftest exits 2 to mark a partial run, with zero failed checks. Format extraction
 matches the installed binaries, the engine and installed reader are byte-identical, and repository validation
 passes. No model or gate was run; this records the requested local checks and is not a gate stamp.
+
+The first full mutation run caught a coverage regression after the forked Skill fixture moved to rule A:
+`nested-progress-dropped` still failed `decision/nested-constructs` but no longer failed its other named row,
+`decision/nested-work-asks`. That row now checks every construct of a fully shown nested Agent record, preserving
+both its forwarded-message and last-tool assertions without relying on a Skill that rule A decides first.
