@@ -7220,6 +7220,15 @@ def cases():
          ['decision/subagent-calls', 'format/tool-forms'])
     # THE STRUCTURAL RULES (the lead's decision): the configuration decides first, since the stream cannot be made to
     # show every nested call. Rule 1 skipped; rule 2 skipped; each construct class dropped from rule 2.
+    # The lead's decision: a visible call the configuration does not give the run asks before every other rule.
+    pool('decision-unconfigured-call-skipped', 'control_account_limit.py',
+         "    if contradicting:\n",
+         "    if False:  # defect: a call that contradicts the configuration is not asked about\n",
+         ['decision/unconfigured-call-asks', 'decision/ask'])
+    pool('decision-unconfigured-tool-ignored', 'control_account_limit.py',
+         "        if revision is not None and (selected[call['server']] is None or call.get('tool') in selected[call['server']]):\n",
+         "        if revision is not None:  # defect: a tool the configuration does not give the run is taken as given\n",
+         ['decision/unconfigured-call-asks'])
     pool('decision-rule1-skipped', 'control_account_limit.py',
          "    if not write_capable(servers, marks):\n",
          "    if False:  # defect: a run with no write-capable server is decided by its stream\n",
