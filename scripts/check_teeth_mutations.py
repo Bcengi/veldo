@@ -8080,6 +8080,19 @@ def cases():
     decomposition('admission-unbound', 'control_backlog.py',
         "            problems += DP.problems(conn, self.ids['repository_uuid'], unit(conn, entry['unit']) or {}, self.workspace)",
         "            problems += []", ['publication/stale-input'])
+    decomposition('private-refusal-class-only', 'control_decomposition.py',
+        "self.CB = SimpleNamespace(**backlog._unit_entry.__func__.__globals__)",
+        "self.CB = _organ('control_backlog')",
+        ['refusals/service-class'])
+    decomposition('first-specification-match', 'control_decomposition_binding.py',
+        "        if not head.get('superseded_by'):", "        if True:",
+        ['dependencies/current-specification'])
+    decomposition('prepare-dependency-unchecked', 'control_backlog.py',
+        "            if None in current_dependencies or bound['specification_dependencies'] != current_dependencies:",
+        "            if False:", ['dependencies/prepare-mismatch'])
+    decomposition('supersession-omitted', 'control_alias.py',
+        "            changes[identity] = {'kind': 'accepted_document', 'data': dict(old, superseded_by=alias)}",
+        "            pass", ['publication/concurrent-current'])
     decomposition('service-not-installed', 'init_scaffold.py',
         '    ".veldo/control_decomposition.py",\n', '', ['install/assets'])
 

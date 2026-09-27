@@ -461,7 +461,8 @@ def _v85_suite():
 
             labels = ('fields/invalid-id-no-artifact', 'binding/one-owner', 'priority/fresh-growth',
                       'aliases/authority-counter', 'publication/other-process', 'publication/stale-input',
-                      'dependencies/eligibility', 'install/assets')
+                      'dependencies/eligibility', 'install/assets', 'refusals/service-class',
+                      'dependencies/current-specification', 'dependencies/prepare-mismatch', 'publication/concurrent-current')
             if not (mods / 'control_decomposition.py').is_file():
                 for label in labels:
                     check(label, [('publication service exists', False)])
@@ -632,6 +633,105 @@ def _v85_suite():
                                 AL.version_id(REPO, e['specification'], 1))[1]['content'].encode()
                             for e in entries)),
                         ('dependency edge visible in another process', seen.get('UNIT-85-second', {}).get('dependencies') == ['UNIT-85-first'])])
+
+            with region('refusals/service-class'):
+                before_count = decomposition.counts['refused']
+                before_reasons = dict(getattr(decomposition, 'refused_by_reason', {}))
+                before_observations = len(decomposition.observations)
+                bad_spec = raw('UNIT-85-bad-spec')
+                bad_spec['front']['id'] = '../invalid'
+                cases = [(dict(raw('UNIT-85-scope'), scope=['payments']), 'out_of_scope:payments'),
+                         (raw('UNIT-85-first'), 'already_exists:UNIT-85-first'),
+                         (dict(raw('UNIT-85-empty'), eligible_holders=[]), 'invalid_input:unit'),
+                         (bad_spec, 'invalid_input:specification')]
+                results = [attempt(lambda entry=entry: publish(main_item, entry)) for entry, _ in cases]
+                observations = decomposition.observations[before_observations:]
+                check('refusals/service-class', [
+                    ('each service refusal returns by name', all(isinstance(r, dict) and r == {'ok': False, 'reason': reason}
+                        for r, (_, reason) in zip(results, cases))),
+                    ('every refusal observed', [o.get('refusal') for o in observations] == [r for _, r in cases]
+                     and all(o.get('outcome') == 'refused' for o in observations)),
+                    ('total refused increments', decomposition.counts['refused'] == before_count + len(cases)),
+                    ('reason counts increment', all(getattr(decomposition, 'refused_by_reason', {}).get(reason, 0)
+                        == before_reasons.get(reason, 0) + 1 for _, reason in cases))])
+
+            with region('dependencies/current-specification', 'dependencies/prepare-mismatch'):
+                _, twin_item = take('closed')
+                old = publish(twin_item, raw('UNIT-85-twin'))
+                new = publish(twin_item, raw('UNIT-85-twin', revision='2'))
+                dependent = publish(twin_item, raw('UNIT-85-twin-dependent', ['UNIT-85-twin']))
+                old_alias = old.get('unit', {}).get('specification')
+                new_alias = new.get('unit', {}).get('specification')
+                dep_alias = dependent.get('unit', {}).get('specification')
+                dep_doc = allocations.current(AL.version_id(REPO, dep_alias, 1))[1] or {}
+                check('dependencies/current-specification', [
+                    ('all twin publications accepted', all(r.get('ok') for r in (old, new, dependent))),
+                    ('old head names superseding alias', (allocations.current(AL.head_id(REPO, old_alias))[1] or {}).get('superseded_by') == new_alias),
+                    ('dependent names only current specification', CB.GR.Y.front_matter(dep_doc.get('content', '')).get('depends_on') == [new_alias])])
+                latest = publish(twin_item, raw('UNIT-85-twin', revision='3'))
+                stale_prepare = attempt(lambda: bop('pm', 'prepare', twin_item,
+                    units=[latest.get('unit', {}), dependent.get('unit', {})]))
+                check('dependencies/prepare-mismatch', [
+                    ('new dependency revision accepted', latest.get('ok')),
+                    ('prepare refuses stale dependency by name', isinstance(stale_prepare, dict) and
+                     stale_prepare.get('reason') == 'binding_mismatch:dependency_specification'),
+                    ('refused prepare creates no units', data_of('UNIT-85-twin') == {} and data_of('UNIT-85-twin-dependent') == {})])
+
+            with region('publication/concurrent-current'):
+                _, concurrent_item = take('running')
+                packets = []
+                for revision in ('a', 'b'):
+                    packets.append(signed('pm', dict(ids, operation='publish_decomposition', principal='pm',
+                        command_id=next_id('concurrent'), item=concurrent_item,
+                        item_version=item(concurrent_item)['version'], unit=raw('UNIT-85-concurrent', revision=revision))))
+                barrier = threading.Barrier(2)
+                verify_lock = threading.Lock()
+                results = [None, None]
+
+                def concurrent_publish(index):
+                    connection = None
+                    try:
+                        connection = S.open_store(str(db))
+                        backlog = CB.Backlog(S, CM, connection, ids, 'authority', journal_sign, workspace=str(work))
+                        allocator = AL.attach(S, connection, DOMAIN, {REPO: str(work)})
+                        with verify_lock:
+                            materializer = DOC.Publisher(allocator, work, verify=verify, host_identity='fixture-host')
+                        author = allocator.author_allocation
+                        first_attempt = [True]
+
+                        def synchronized(*args, **kwargs):
+                            plan = author(*args, **kwargs)
+                            if first_attempt[0]:
+                                first_attempt[0] = False
+                                barrier.wait(timeout=20)
+                            return plan
+
+                        allocator.author_allocation = synchronized
+                        results[index] = DP.Decomposition(backlog, allocator, materializer).publish(packets[index])
+                    except Exception as error:
+                        results[index] = ('error', type(error).__name__)
+                        barrier.abort()
+                    finally:
+                        if connection is not None:
+                            connection.close()
+
+                workers = [threading.Thread(target=concurrent_publish, args=(i,)) for i in range(2)]
+                for worker in workers:
+                    worker.start()
+                for worker in workers:
+                    worker.join(timeout=30)
+                heads = DP.B.unit_heads(conn, REPO, 'UNIT-85-concurrent') if hasattr(DP.B, 'unit_heads') else []
+                current = [head for _, _, head in heads if not head.get('superseded_by')]
+                check('publication/concurrent-current', [
+                    ('both callers return named outcomes', all(isinstance(r, dict) and
+                        (r.get('ok') or r.get('reason') == 'stale_subject:specification_superseded') for r in results)),
+                    ('both source revisions published', len(heads) == 2 and all(
+                        (allocations.current(AL.publication_id(REPO, h['alias'], 1))[1] or {}).get('state') == 'published'
+                        for _, _, h in heads)),
+                    ('exactly one current specification', len(current) == 1),
+                    ('earlier commit superseded by later', len(current) == 1 and all(
+                        h == current[0] or h.get('superseded_by') == current[0]['alias'] for _, _, h in heads)),
+                    ('workers reaped', not any(worker.is_alive() for worker in workers))])
 
             with region('publication/stale-input'):
                 if not first.get('ok'):

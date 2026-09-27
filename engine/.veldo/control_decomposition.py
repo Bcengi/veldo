@@ -12,11 +12,12 @@ Dependencies name already published units of this same item or existing units;
 the specification carries their aliases and the unit carries their execution IDs.
 
 Publication uses VELDO-0037's pending obligation and exact materializer. Recovery
-and multi-author concurrency qualification remain Release 2. This service does
+and broader multi-author concurrency qualification remain Release 2. Concurrent
+source revisions serialize in the allocator and supersede the earlier specification. This service does
 not change admission, spend, review or landing authority.
 """
 import importlib.util
-import json
+from types import SimpleNamespace
 from pathlib import Path
 
 
@@ -27,7 +28,6 @@ def _organ(name):
     return module
 
 
-CB = _organ('control_backlog')
 B = _organ('control_decomposition_binding')
 Y = _organ('yamlish')
 UNIT_FIELDS = ('unit', 'scope', 'requirements', 'eligible_holders')
@@ -39,6 +39,10 @@ class Decomposition:
         if backlog.conn is not allocations.conn or publisher.service is not allocations:
             raise ValueError('decomposition uses one authority connection')
         self.backlog, self.allocations, self.publisher = backlog, allocations, publisher
+        # File-loaded backlog modules need not appear in sys.modules. Reuse the
+        # actual method globals so its exception identity and helpers stay together.
+        self.CB = SimpleNamespace(**backlog._unit_entry.__func__.__globals__)
+        self.refused_by_reason = {}
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
 
@@ -46,6 +50,7 @@ class Decomposition:
         return self.allocations.pending()
 
     def publish(self, packet):
+        CB = self.CB
         command = packet.get('command', {}) if isinstance(packet, dict) else {}
         raw = command.get('unit')
         event = dict(self.backlog.ids, operation='publish_decomposition', item=command.get('item'),
@@ -57,10 +62,14 @@ class Decomposition:
         event.update(outcome='accepted' if result['ok'] else 'refused', refusal=result.get('reason'),
                      taxonomy=None if result['ok'] else CB.taxonomy(result.get('reason')))
         self.counts[event['outcome']] += 1
+        if not result['ok']:
+            reason = result['reason']
+            self.refused_by_reason[reason] = self.refused_by_reason.get(reason, 0) + 1
         self.observations.append(event)
         return result
 
     def _publish(self, packet, command, event):
+        CB = self.CB
         bl, al = self.backlog, self.allocations
         if (command.get('operation') != 'publish_decomposition'
                 or any(command.get(k) != v for k, v in bl.ids.items())):
@@ -94,7 +103,8 @@ class Decomposition:
             raise CB.Refused('invalid_input:unit_id', problem)
         entry = {k: raw[k] for k in UNIT_FIELDS}
         # Ask the backlog's own field, scope and identity validator before any artifact.
-        bl._unit_entry(bl.conn, item, dict(entry, specification='VELDO-0000'), set())
+        proposed_id = raw['front'].get('id', 'VELDO-0000') if isinstance(raw['front'], dict) else 'VELDO-0000'
+        bl._unit_entry(bl.conn, item, dict(entry, specification=proposed_id), set())
         if not isinstance(raw['front'], dict) or not isinstance(raw['body'], str):
             raise CB.Refused('invalid_input:document')
         if not isinstance(raw['dependencies'], list) or any(CB.CL.unit_id_problem(d) for d in raw['dependencies']):
@@ -105,17 +115,11 @@ class Decomposition:
             raise CB.Refused('invalid_input:role')
         spec_dependencies = []
         for dep in raw['dependencies']:
+            alias = B.current_specification(bl.conn, bl.ids['repository_uuid'], dep)
+            bound, errors = B.binding(bl.conn, bl.ids['repository_uuid'], alias, bl.workspace) if alias else (None, [])
             unit = CB.unit(bl.conn, dep)
-            if unit and unit.get('specification_document'):
-                bound = unit['specification_document']
-            else:
+            if errors or (bound and not unit and bound['backlog_item'] != item['uuid']):
                 bound = None
-                for (text,) in bl.conn.execute("SELECT data FROM entities WHERE kind='accepted_document'"):
-                    head = json.loads(text)
-                    candidate, errors = B.binding(bl.conn, bl.ids['repository_uuid'], head['alias'], bl.workspace)
-                    if not errors and candidate and candidate['unit'] == dep and candidate['backlog_item'] == item['uuid']:
-                        bound = candidate
-                        break
             if bound is None:
                 raise CB.Refused('missing_evidence:dependency')
             spec_dependencies.append(bound['alias'])

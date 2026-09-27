@@ -27,6 +27,43 @@ def head_id(repository, alias):
     return 'document/%s/%s' % (repository, alias)
 
 
+def unit_heads(conn, repository, unit):
+    """Accepted heads for a unit, including superseded history, in this snapshot."""
+    found = []
+    for identity, version, text in conn.execute("SELECT id, version, data FROM entities WHERE kind='accepted_document'"):
+        head = json.loads(text)
+        if head.get('repository_uuid') != repository or head.get('kind') != 'specification':
+            continue
+        document = row(conn, identity + '@%d' % head['version'])
+        try:
+            meta = (_front_matter(document['content']) or {}).get('decomposition', {}) if document else {}
+        except ValueError:
+            continue
+        if isinstance(meta, dict) and meta.get('unit') == unit:
+            found.append((identity, version, head))
+    return found
+
+
+def current_specification(conn, repository, unit):
+    for _, _, head in unit_heads(conn, repository, unit):
+        if not head.get('superseded_by'):
+            return head['alias']
+    return None
+
+
+def supersession(conn, repository, content):
+    """Heads to replace, rederived by the allocator under its authority lock."""
+    try:
+        front = _front_matter(content) or {}
+        meta = front.get('decomposition')
+    except ValueError:
+        return []
+    if front.get('schema') != 'veldo.spec/v1' or not isinstance(meta, dict) or not meta.get('unit'):
+        return []
+    return [(identity, version, head) for identity, version, head in unit_heads(conn, repository, meta['unit'])
+            if not head.get('superseded_by')]
+
+
 def binding(conn, repository, alias, workspace):
     """The current complete published specification and its decomposition metadata.
 
@@ -37,6 +74,8 @@ def binding(conn, repository, alias, workspace):
     head = row(conn, hid)
     if head is None:
         return None, []
+    if head.get('superseded_by'):
+        return None, ['stale_subject:specification_superseded']
     version = head['version']
     document = row(conn, hid + '@%d' % version)
     obligation = row(conn, 'publication/%s/%s@%d' % (repository, alias, version))

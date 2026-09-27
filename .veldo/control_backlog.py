@@ -588,6 +588,11 @@ class Backlog:
             if (bound['backlog_item'] != data['uuid'] or bound['unit'] != name
                     or any(bound[k] != raw[k] for k in ('scope', 'requirements', 'eligible_holders'))):
                 raise Refused('invalid_input:unit_ownership')
+        if bound is not None:
+            current_dependencies = [DP.current_specification(conn, self.ids['repository_uuid'], dep)
+                                    for dep in bound['dependencies']]
+            if None in current_dependencies or bound['specification_dependencies'] != current_dependencies:
+                raise Refused('binding_mismatch:dependency_specification')
         result = {k: (list(raw[k]) if isinstance(raw[k], list) else raw[k]) for k in raw}
         if bound is not None:
             result['document'] = bound

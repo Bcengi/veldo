@@ -80,6 +80,7 @@ def _sibling(alias, name):
 SN = _sibling('alias_snapshot', 'control_snapshot.py')
 RS = _sibling('alias_readset', 'control_readset.py')
 CLAIM = _sibling('alias_claim', 'claim.py')
+DP = _sibling('alias_decomposition_binding', 'control_decomposition_binding.py')
 _git_process = SN._git_process
 SCHEMA = 'veldo.control_alias/v1'
 OPERATIONS = ('enable_artifact_kind', 'allocate_document', 'edit_document', 'record_publication')
@@ -465,6 +466,7 @@ class Allocations:
         expected = {kind_id(repository, kind_name): kind_version, alias_id(repository, alias): 0,
                     source_id(repository, key): 0, head_id(repository, alias): 0,
                     version_id(repository, alias, 1): 0, publication_id(repository, alias, 1): 0}
+        expected.update({identity: version for identity, version, _ in DP.supersession(self.conn, repository, text)})
         command = self._command('alias.allocate:%s:%d' % (request['request_id'], kind_version),
                                 request['principal'], 'allocate_document', parameters, expected)
         return command, {'alias': alias, 'path': path, 'source_key': key,
@@ -664,7 +666,7 @@ class Allocations:
         key = source_key(repository, source, role)
         record = {'schema': SCHEMA, 'repository_uuid': repository, 'alias': alias, 'kind': kind_name,
                   'role': role, 'path': path, 'source': source, 'source_key': key}
-        return {
+        changes = {
             counter: {'kind': 'artifact_kind', 'data': dict(kind, next=number + 1)},
             alias_id(repository, alias): {'kind': 'alias_reservation', 'data': dict(record, number=number)},
             source_id(repository, key): {'kind': 'alias_source', 'data': dict(record, version=1, digest=digest)},
@@ -675,6 +677,11 @@ class Allocations:
                 'repository_uuid': repository, 'alias': alias, 'path': path, 'version': 1, 'digest': digest,
                 'state': 'pending', 'observed_digest': None}},
         }
+        for identity, version, old in DP.supersession(conn, repository, p['content']):
+            if identity not in before or before[identity]['version'] != version:
+                self._refuse('stale_version', 'the current unit specification changed')
+            changes[identity] = {'kind': 'accepted_document', 'data': dict(old, superseded_by=alias)}
+        return changes
 
     def _t_edit(self, conn, p, before):
         repository = self._guard(conn, p)

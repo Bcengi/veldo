@@ -112,6 +112,26 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+In normal use, a signed decomposition publishes complete specifications for an admitted
+backlog item's proposed units. Authority allocation preserves source identity and historical
+aliases. Each unit has one current specification: accepting a new source revision supersedes
+the earlier specification in the same authority transaction, including when publishers race.
+Dependencies resolve to current unit specifications, and preparation refuses a specification
+whose declared dependency aliases disagree with those current specifications. Ordinary
+backlog refusals return named outcomes with observations and counts by reason.
+
+The threat model includes invalid unit fields, scope and ownership conflicts, repeated unit
+IDs, stale or unpublished bytes, competing source revisions, and dependency bindings that
+became obsolete between publication and preparation. The reviewer judges real authority
+transactions, materialized bytes and the production admission and eligibility paths using
+the criteria below and their driven negative controls.
+
+Recovery after interrupted publication, broader concurrent-author matrices, extra channel
+activation and the filed integration limitations in History remain out of scope. These
+checks confer no independent review, human approval or landing authority.
+
 ## Notes
 
 0037 owns the only alias counter and source mapping. This consumer publishes the PM
@@ -159,3 +179,19 @@ publication and dependency checks. It also gains the mutation registry and
 modules are scaffolded; every changed engine module has an identical installed copy.
 Suite `82_veldo_0085_decomposition` and proof in `proof/VELDO-0085/` cover the three
 criteria. Status stays ready; no independent approval, merge or full gate is claimed.
+
+2026-09-27, review fixes: publication reuses the passed backlog service's module and refusal
+class, returning and observing all ordinary refusals with counts by reason. The allocator
+supersedes earlier specifications for the same unit in its authority transaction; concurrent
+allocations serialize through its counter and compare-and-swap retry. Dependency publication
+resolves only the current specification, and the production unit validator refuses obsolete
+dependency aliases as `binding_mismatch:dependency_specification` during prepare. Four new
+rows cover the refusal paths, twin specifications, stale dependency preparation and two
+concurrent publications. Four unique finding 85 mutations exercise these checks. The reviewer
+judgment section adds normal use, threat model and scope prose; criteria text is unchanged.
+
+Filed for later, not fixed here: decomposition is not yet wired to Telegram or the API;
+a dependency on a prepared unit in another item is accepted; a Gate with no workspace refuses
+every bound unit as `stale_subject:specification_bytes`; eligibility reads the binding from
+the live connection rather than its snapshot; the same unit ID in two items is refused only
+at prepare. These remain outside this review-fix scope.
