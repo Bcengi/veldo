@@ -93,6 +93,8 @@ def _s37_run():
         # Literal anchors are required by the registered mutation driver.
         for name, source in {
             'control_alias.py': ROOT / ".veldo" / "control_alias.py",
+            'control_decomposition_binding.py': ROOT / '.veldo/control_decomposition_binding.py',
+            'yamlish.py': ROOT / '.veldo/yamlish.py',
             'control_document.py': ROOT / ".veldo" / "control_document.py",
             'control_snapshot.py': ROOT / '.veldo/control_snapshot.py',
             'control_enrollment.py': ROOT / '.veldo/control_enrollment.py',

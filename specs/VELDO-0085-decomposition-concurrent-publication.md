@@ -36,6 +36,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0085_*.py"
+  - "scripts/suites/59_veldo_0037_aliases.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0085-decomposition-concurrent-publication.md"
@@ -114,7 +115,7 @@ No automatic recovery, extra channel activation or broader host qualification is
 
 ## What the reviewer judges
 
-In normal use, a signed decomposition publishes complete specifications for an admitted
+In normal use, a signed decomposition publishes complete specifications for one
 backlog item's proposed units. Authority allocation preserves source identity and historical
 aliases. Each unit has one current specification: accepting a new source revision supersedes
 the earlier specification in the same authority transaction, including when publishers race.
@@ -126,7 +127,7 @@ The threat model includes invalid unit fields, scope and ownership conflicts, re
 IDs, stale or unpublished bytes, competing source revisions, and dependency bindings that
 became obsolete between publication and preparation. The reviewer judges real authority
 transactions, materialized bytes and the production admission and eligibility paths using
-the criteria below and their driven negative controls.
+the declared criteria and their driven negative controls.
 
 Recovery after interrupted publication, broader concurrent-author matrices, extra channel
 activation and the filed integration limitations in History remain out of scope. These
@@ -195,3 +196,6 @@ a dependency on a prepared unit in another item is accepted; a Gate with no work
 every bound unit as `stale_subject:specification_bytes`; eligibility reads the binding from
 the live connection rather than its snapshot; the same unit ID in two items is refused only
 at prepare. These remain outside this review-fix scope.
+
+The alias regression fixture now installs the binding reader and document parser consumed
+by allocation, so its isolated module directory exercises the complete production dependency set.

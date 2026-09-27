@@ -667,7 +667,7 @@ def _v85_suite():
                 check('dependencies/current-specification', [
                     ('all twin publications accepted', all(r.get('ok') for r in (old, new, dependent))),
                     ('old head names superseding alias', (allocations.current(AL.head_id(REPO, old_alias))[1] or {}).get('superseded_by') == new_alias),
-                    ('dependent names only current specification', CB.GR.Y.front_matter(dep_doc.get('content', '')).get('depends_on') == [new_alias])])
+                    ('dependent names only current specification', (CB.GR.Y.front_matter(dep_doc.get('content', '')) or {}).get('depends_on') == [new_alias])])
                 latest = publish(twin_item, raw('UNIT-85-twin', revision='3'))
                 stale_prepare = attempt(lambda: bop('pm', 'prepare', twin_item,
                     units=[latest.get('unit', {}), dependent.get('unit', {})]))
