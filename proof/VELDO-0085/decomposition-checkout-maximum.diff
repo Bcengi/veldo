@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -455 +455 @@
+-        number = kind['next']
++        number = accepted_maximum(self.paths[repository], _git_process.check_output(['git', '-C', self.paths[repository], 'rev-parse', 'HEAD']).decode().strip(), kind) + 1

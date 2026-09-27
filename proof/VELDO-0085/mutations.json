@@ -1,0 +1,1022 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0085 fields/invalid-id-no-artifact",
+    true
+   ],
+   [
+    "VELDO-0085 aliases/authority-counter",
+    true
+   ],
+   [
+    "VELDO-0085 binding/one-owner",
+    true
+   ],
+   [
+    "VELDO-0085 dependencies/eligibility",
+    true
+   ],
+   [
+    "VELDO-0085 priority/fresh-growth",
+    true
+   ],
+   [
+    "VELDO-0085 publication/other-process",
+    true
+   ],
+   [
+    "VELDO-0085 publication/stale-input",
+    true
+   ],
+   [
+    "VELDO-0085 install/assets",
+    true
+   ]
+  ],
+  "seconds": 2.317
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: fields/invalid-id-no-artifact: invalid IDs are named; no reservation or document written",
+    "VELDO-0085 detail: aliases/authority-counter: identical source reuses; distinct tuples get the next authority aliases; each source maps exactly",
+    "VELDO-0085 detail: binding/one-owner: prerequisite publications accepted",
+    "VELDO-0085 detail: priority/fresh-growth: prerequisite publications accepted",
+    "VELDO-0085 detail: dependencies/eligibility: prerequisite publications accepted",
+    "VELDO-0085 detail: publication/other-process: prerequisite publications accepted",
+    "VELDO-0085 detail: publication/stale-input: prerequisite publication accepted"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-artifact-before-unit-validation.diff",
+   "failed_rows": [
+    "VELDO-0085 fields/invalid-id-no-artifact",
+    "VELDO-0085 aliases/authority-counter",
+    "VELDO-0085 binding/one-owner",
+    "VELDO-0085 priority/fresh-growth",
+    "VELDO-0085 dependencies/eligibility",
+    "VELDO-0085 publication/other-process",
+    "VELDO-0085 publication/stale-input"
+   ],
+   "module": ".veldo/control_decomposition.py",
+   "mutant_sha256": "a0be66f01424bfd1200ab07720b30dc059004de9fd1c74f41f3ba386ad21e7de",
+   "name": "decomposition-artifact-before-unit-validation",
+   "named_row_red": true,
+   "named_rows": [
+    "fields/invalid-id-no-artifact"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     false
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     false
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     false
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     false
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     false
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     false
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 1.142,
+   "source_sha256": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: aliases/authority-counter: distinct tuples get the next authority aliases; counter advanced without checkout history commits; each source maps exactly",
+    "VELDO-0085 detail: binding/one-owner: prerequisite publications accepted",
+    "VELDO-0085 detail: priority/fresh-growth: prerequisite publications accepted",
+    "VELDO-0085 detail: dependencies/eligibility: prerequisite publications accepted",
+    "VELDO-0085 detail: publication/other-process: prerequisite publications accepted",
+    "VELDO-0085 detail: publication/stale-input: prerequisite publication accepted"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-checkout-maximum.diff",
+   "failed_rows": [
+    "VELDO-0085 aliases/authority-counter",
+    "VELDO-0085 binding/one-owner",
+    "VELDO-0085 priority/fresh-growth",
+    "VELDO-0085 dependencies/eligibility",
+    "VELDO-0085 publication/other-process",
+    "VELDO-0085 publication/stale-input"
+   ],
+   "module": ".veldo/control_alias.py",
+   "mutant_sha256": "399c51263890c888a34046fe4322a55fdf39425b363e3fc2ed5cca3821696bb6",
+   "name": "decomposition-checkout-maximum",
+   "named_row_red": true,
+   "named_rows": [
+    "aliases/authority-counter"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     false
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     false
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     false
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     false
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     false
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 1.151,
+   "source_sha256": "cc4bf67b69f5343ac33d97546d50a6a400c5bf0ce18e7f6e67bd65d546b18075"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: dependencies/eligibility: specification declares its generated dependency"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-omit-generated-dependency.diff",
+   "failed_rows": [
+    "VELDO-0085 dependencies/eligibility"
+   ],
+   "module": ".veldo/control_decomposition.py",
+   "mutant_sha256": "9495b5dd01651aa0933b68b4836346b2da9dc5908f369c78275659df1bf7d6c7",
+   "name": "decomposition-omit-generated-dependency",
+   "named_row_red": true,
+   "named_rows": [
+    "dependencies/eligibility"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     false
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.372,
+   "source_sha256": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: binding/one-owner: accepted preparation and owner admission; authority cannot combine across items; one primary revision and item per unit",
+    "VELDO-0085 detail: dependencies/eligibility: priority accepted; generated dependency reached the unit; eligibility consumes and refuses unresolved dependency; independent unit eligible",
+    "VELDO-0085 detail: priority/fresh-growth: append remains planned until fresh priority; already approved sibling continues; renewed priority makes new unit executable",
+    "VELDO-0085 detail: publication/other-process: reader process completed; exact versions, digests, ownership and complete bytes; dependency edge visible in another process"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-cross-item-authority.diff",
+   "failed_rows": [
+    "VELDO-0085 binding/one-owner",
+    "VELDO-0085 dependencies/eligibility",
+    "VELDO-0085 priority/fresh-growth",
+    "VELDO-0085 publication/other-process"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "c989f95f0babe84b6750b23bcb7a2c22d0411a692a212130d16eee7b028e8309",
+   "name": "decomposition-cross-item-authority",
+   "named_row_red": true,
+   "named_rows": [
+    "binding/one-owner"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     false
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     false
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     false
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.035,
+   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: binding/one-owner: accepted preparation and owner admission; duplicate primary revisions refused; one primary revision and item per unit",
+    "VELDO-0085 detail: dependencies/eligibility: priority accepted; generated dependency reached the unit; eligibility consumes and refuses unresolved dependency; independent unit eligible",
+    "VELDO-0085 detail: priority/fresh-growth: append remains planned until fresh priority; already approved sibling continues; renewed priority makes new unit executable",
+    "VELDO-0085 detail: publication/other-process: reader process completed; exact versions, digests, ownership and complete bytes; dependency edge visible in another process"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-primary-revision-shared.diff",
+   "failed_rows": [
+    "VELDO-0085 binding/one-owner",
+    "VELDO-0085 dependencies/eligibility",
+    "VELDO-0085 priority/fresh-growth",
+    "VELDO-0085 publication/other-process"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "91fe2ab0896e3ec0fde92bfb285dc7130289f158c90c89fe38f27b11f598b747",
+   "name": "decomposition-primary-revision-shared",
+   "named_row_red": true,
+   "named_rows": [
+    "binding/one-owner"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     false
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     false
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     false
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.256,
+   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: priority/fresh-growth: append remains planned until fresh priority; renewed priority makes new unit executable"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-appended-unit-ready.diff",
+   "failed_rows": [
+    "VELDO-0085 priority/fresh-growth"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "275f9877723c8931b5bd084c934c0ed44f94889e222a669d3c40d059e21f22c8",
+   "name": "decomposition-appended-unit-ready",
+   "named_row_red": true,
+   "named_rows": [
+    "priority/fresh-growth"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     false
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.372,
+   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: binding/one-owner: accepted preparation and owner admission",
+    "VELDO-0085 detail: dependencies/eligibility: priority accepted; generated dependency reached the unit; eligibility consumes and refuses unresolved dependency; independent unit eligible",
+    "VELDO-0085 detail: priority/fresh-growth: append remains planned until fresh priority; already approved sibling continues; renewed priority makes new unit executable",
+    "VELDO-0085 detail: publication/other-process: dependency edge visible in another process"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-unit-dependency-lost.diff",
+   "failed_rows": [
+    "VELDO-0085 binding/one-owner",
+    "VELDO-0085 dependencies/eligibility",
+    "VELDO-0085 priority/fresh-growth",
+    "VELDO-0085 publication/other-process"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "f5dcc8bc2fada30850b08ba2fadcb752a3458eed1920200c01ab333b84815352",
+   "name": "decomposition-unit-dependency-lost",
+   "named_row_red": true,
+   "named_rows": [
+    "dependencies/eligibility"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     false
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     false
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     false
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     false
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.184,
+   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: publication/stale-input: stale executable bytes refused; local edit cannot be prepared; unpublished newest version cannot be prepared; grooming local bytes cannot confer publication authority; no admission or execution input created"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-stale-bytes-accepted.diff",
+   "failed_rows": [
+    "VELDO-0085 publication/stale-input"
+   ],
+   "module": ".veldo/control_decomposition_binding.py",
+   "mutant_sha256": "f8be29a1ecb1ffcfbebfc65bf6ce0ef9895ed28b22a5d112128de03cf3f14e15",
+   "name": "decomposition-stale-bytes-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "publication/stale-input"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     false
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.432,
+   "source_sha256": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: publication/stale-input: unpublished newest version cannot be prepared"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-unpublished-input.diff",
+   "failed_rows": [
+    "VELDO-0085 publication/stale-input"
+   ],
+   "module": ".veldo/control_decomposition_binding.py",
+   "mutant_sha256": "b0a05f01753cf42a2d3f6797f3532a4f0c3d62d33ce8acff54af8e3bc3313081",
+   "name": "decomposition-unpublished-input",
+   "named_row_red": true,
+   "named_rows": [
+    "publication/stale-input"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     false
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.308,
+   "source_sha256": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: publication/stale-input: stale executable bytes refused"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-eligibility-unbound.diff",
+   "failed_rows": [
+    "VELDO-0085 publication/stale-input"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "99ac50b89840ac0ed4e0716ccdca777c6a93c2d41b8e55435a62041260b03dd4",
+   "name": "decomposition-eligibility-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "publication/stale-input"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     false
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.351,
+   "source_sha256": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: publication/stale-input: grooming local bytes cannot confer publication authority"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-admission-unbound.diff",
+   "failed_rows": [
+    "VELDO-0085 publication/stale-input"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "902f36b5e9d24279c6c5ecfca73ebfc55ffe9d01be0a1c508f7eb3aa9cf301e5",
+   "name": "decomposition-admission-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "publication/stale-input"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     false
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.515,
+   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: install/assets: registered and exact installed assets"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-service-not-installed.diff",
+   "failed_rows": [
+    "VELDO-0085 install/assets"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "f72bb06e59aa9eab49e552b22c59bab507b67d2e344f001a5cbc75873678997a",
+   "name": "decomposition-service-not-installed",
+   "named_row_red": true,
+   "named_rows": [
+    "install/assets"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     false
+    ]
+   ],
+   "seconds": 2.338,
+   "source_sha256": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4"
+  }
+ ],
+ "mutations_per_row": {
+  "aliases/authority-counter": [
+   "decomposition-checkout-maximum"
+  ],
+  "binding/one-owner": [
+   "decomposition-cross-item-authority",
+   "decomposition-primary-revision-shared"
+  ],
+  "dependencies/eligibility": [
+   "decomposition-omit-generated-dependency",
+   "decomposition-unit-dependency-lost"
+  ],
+  "fields/invalid-id-no-artifact": [
+   "decomposition-artifact-before-unit-validation"
+  ],
+  "install/assets": [
+   "decomposition-service-not-installed"
+  ],
+  "priority/fresh-growth": [
+   "decomposition-appended-unit-ready"
+  ],
+  "publication/stale-input": [
+   "decomposition-stale-bytes-accepted",
+   "decomposition-unpublished-input",
+   "decomposition-eligibility-unbound",
+   "decomposition-admission-unbound"
+  ]
+ },
+ "noop": {
+  "control_alias.py": {
+   "copy_sha256": "cc4bf67b69f5343ac33d97546d50a6a400c5bf0ce18e7f6e67bd65d546b18075",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.29,
+   "source_sha256": "cc4bf67b69f5343ac33d97546d50a6a400c5bf0ce18e7f6e67bd65d546b18075"
+  },
+  "control_backlog.py": {
+   "copy_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.335,
+   "source_sha256": "54c4d2cb0fd9bf3e961962fc9a0296dc500d7e22f5b59b8c98dc9ef2b11f59d4"
+  },
+  "control_decomposition.py": {
+   "copy_sha256": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.316,
+   "source_sha256": "f54ed21400ce86ee3410814cb0683fe7cae129e7ff8f3873d86555b1c5c5443c"
+  },
+  "control_decomposition_binding.py": {
+   "copy_sha256": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.312,
+   "source_sha256": "0255e10520265769e21347956321a675691ae54e20148e3725847b930d80366b"
+  },
+  "control_eligibility.py": {
+   "copy_sha256": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.34,
+   "source_sha256": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 2.37,
+   "source_sha256": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 85",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 41.736,
+ "spec_id": "VELDO-0085",
+ "suite": "scripts/suites/82_veldo_0085_decomposition.py"
+}

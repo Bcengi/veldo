@@ -1,0 +1,5 @@
+--- a/.veldo/control_decomposition_binding.py
++++ b/.veldo/control_decomposition_binding.py
+@@ -43 +43 @@
+-    if not document or not obligation or obligation.get('state') != 'published':
++    if not document or not obligation or False:

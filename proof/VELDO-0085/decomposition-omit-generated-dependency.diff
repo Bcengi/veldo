@@ -1,0 +1,5 @@
+--- a/.veldo/control_decomposition.py
++++ b/.veldo/control_decomposition.py
+@@ -121 +121 @@
+-            spec_dependencies.append(bound['alias'])
++            pass

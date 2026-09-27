@@ -1,0 +1,258 @@
+{
+ "environment": {
+  "PATH": "/usr/bin:/usr/bin:/bin",
+  "HOME": "/dev/shm/veldo-0085-home",
+  "TMPDIR": "/dev/shm",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "TZ": "UTC",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONNOUSERSITE": "1",
+  "PYTHONHASHSEED": "0",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_TERMINAL_PROMPT": "0"
+ },
+ "results": [
+  {
+   "suite": "01_warp_0101_reviewer_notes",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 637,
+   "failed": 0,
+   "log": "normal-01_warp_0101_reviewer_notes.log",
+   "seconds": 7.81
+  },
+  {
+   "suite": "01_warp_0101_reviewer_notes",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 637,
+   "failed": 0,
+   "log": "gate-environment-01_warp_0101_reviewer_notes.log",
+   "seconds": 7.74
+  },
+  {
+   "suite": "03_plugin_extension_loading_runner",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 898,
+   "failed": 0,
+   "log": "normal-03_plugin_extension_loading_runner.log",
+   "seconds": 14.34
+  },
+  {
+   "suite": "03_plugin_extension_loading_runner",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 898,
+   "failed": 0,
+   "log": "gate-environment-03_plugin_extension_loading_runner.log",
+   "seconds": 14.0
+  },
+  {
+   "suite": "26_veldo_0009_install_stamp",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 58,
+   "failed": 0,
+   "log": "normal-26_veldo_0009_install_stamp.log",
+   "seconds": 0.39
+  },
+  {
+   "suite": "26_veldo_0009_install_stamp",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 58,
+   "failed": 0,
+   "log": "gate-environment-26_veldo_0009_install_stamp.log",
+   "seconds": 0.42
+  },
+  {
+   "suite": "30_veldo_0017_entity_lifecycle",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 55,
+   "failed": 0,
+   "log": "normal-30_veldo_0017_entity_lifecycle.log",
+   "seconds": 0.2
+  },
+  {
+   "suite": "30_veldo_0017_entity_lifecycle",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 55,
+   "failed": 0,
+   "log": "gate-environment-30_veldo_0017_entity_lifecycle.log",
+   "seconds": 0.2
+  },
+  {
+   "suite": "50_git_environment",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 30,
+   "failed": 0,
+   "log": "normal-50_git_environment.log",
+   "seconds": 2.03
+  },
+  {
+   "suite": "50_git_environment",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 30,
+   "failed": 0,
+   "log": "gate-environment-50_git_environment.log",
+   "seconds": 2.04
+  },
+  {
+   "suite": "51_parser_boundary",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 51,
+   "failed": 0,
+   "log": "normal-51_parser_boundary.log",
+   "seconds": 4.24
+  },
+  {
+   "suite": "51_parser_boundary",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 51,
+   "failed": 0,
+   "log": "gate-environment-51_parser_boundary.log",
+   "seconds": 4.15
+  },
+  {
+   "suite": "52_writer_boundary",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 36,
+   "failed": 0,
+   "log": "normal-52_writer_boundary.log",
+   "seconds": 6.45
+  },
+  {
+   "suite": "52_writer_boundary",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 36,
+   "failed": 0,
+   "log": "gate-environment-52_writer_boundary.log",
+   "seconds": 6.5
+  },
+  {
+   "suite": "59_veldo_0037_aliases",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 67,
+   "failed": 0,
+   "log": "normal-59_veldo_0037_aliases.log",
+   "seconds": 13.71
+  },
+  {
+   "suite": "59_veldo_0037_aliases",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 67,
+   "failed": 0,
+   "log": "gate-environment-59_veldo_0037_aliases.log",
+   "seconds": 9.97
+  },
+  {
+   "suite": "60_veldo_0052_eligibility",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 80,
+   "failed": 0,
+   "log": "normal-60_veldo_0052_eligibility.log",
+   "seconds": 1.16
+  },
+  {
+   "suite": "60_veldo_0052_eligibility",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 80,
+   "failed": 0,
+   "log": "gate-environment-60_veldo_0052_eligibility.log",
+   "seconds": 2.42
+  },
+  {
+   "suite": "60_veldo_0053_architecture",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 65,
+   "failed": 0,
+   "log": "normal-60_veldo_0053_architecture.log",
+   "seconds": 2.3
+  },
+  {
+   "suite": "60_veldo_0053_architecture",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 65,
+   "failed": 0,
+   "log": "gate-environment-60_veldo_0053_architecture.log",
+   "seconds": 3.17
+  },
+  {
+   "suite": "73_veldo_0078_backlog",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 46,
+   "failed": 0,
+   "log": "normal-73_veldo_0078_backlog.log",
+   "seconds": 6.28
+  },
+  {
+   "suite": "73_veldo_0078_backlog",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 46,
+   "failed": 0,
+   "log": "gate-environment-73_veldo_0078_backlog.log",
+   "seconds": 6.56
+  },
+  {
+   "suite": "76_veldo_0079_grooming",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 48,
+   "failed": 0,
+   "log": "normal-76_veldo_0079_grooming.log",
+   "seconds": 14.06
+  },
+  {
+   "suite": "76_veldo_0079_grooming",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 48,
+   "failed": 0,
+   "log": "gate-environment-76_veldo_0079_grooming.log",
+   "seconds": 13.97
+  },
+  {
+   "suite": "82_veldo_0085_decomposition",
+   "environment": "normal",
+   "exit": 2,
+   "passed": 34,
+   "failed": 0,
+   "log": "normal-82_veldo_0085_decomposition.log",
+   "seconds": 2.15
+  },
+  {
+   "suite": "82_veldo_0085_decomposition",
+   "environment": "gate-environment",
+   "exit": 2,
+   "passed": 34,
+   "failed": 0,
+   "log": "gate-environment-82_veldo_0085_decomposition.log",
+   "seconds": 2.43
+  }
+ ],
+ "not_run": [
+  {
+   "suite": "53_veldo_0123_mutations",
+   "reason": "Executes scripts/verify.sh in fixture trees; user forbids running scripts/verify.sh. Finding 85 was driven directly with two jobs instead."
+  }
+ ]
+}
