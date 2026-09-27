@@ -859,18 +859,12 @@ def _v47_suite():
             # reservations) runs in this suite; everything past the invocation is the installed program.
             with region('authority/installed-receiver-launches'):
                 LAUNCH_UNIT, HOLDER, ACCOUNT = 'unit-47-launch', 'builder-47', 'acct-47'
-                # VELDO-0169: the store binds the claim organ to the one file it was declared from, and the
-                # installed receiver's renewals declare it from the installation, so the fixture's claim is
-                # decided by the installed organ too, as every claim of an installed factory is.
-                installed_organ = Path((report.get('receiver') or {}).get('executable') or mods / 'control_launch.py').parent
-                CLM = load('v47_claim', installed_organ / 'control_claim.py')
+                CLM = load('v47_claim', mods / 'control_claim.py')
                 RES = load('v47_reservations', mods / 'control_reservations.py')
                 launch_writer = S.open_store(str(store_path))
                 connections.append(launch_writer)
                 launch_reader = S.open_store(str(store_path), mode='r')
                 connections.append(launch_reader)
-                # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
-                CLM.declare(launch_writer)
                 launch_writer.command_registry['claim_operation'] = {
                     'transaction_transition': CLM.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
                 for principal in ('runner', 'launch-receiver'):

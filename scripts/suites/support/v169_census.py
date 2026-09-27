@@ -688,7 +688,8 @@ class Census:
 
     def claim_bypass(self, module):
         """Every claim goes through the organ: an entity of the claim kind built outside control_claim is
-        refused (the store refuses it at run time too, control_store.declare_organ)."""
+        refused (at run time the store's commit path refuses one that hands out work of a stopped project,
+        control_store.handout_problem)."""
         if module.stem == ORGAN_MODULE or self.kind is NOVALUE:
             return
         for node in module.nodes:

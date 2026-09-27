@@ -219,8 +219,6 @@ class Renewals:
     def __init__(self, dispatches, dispatch):
         self.dispatches, self.D = dispatches, dispatch
         self.observations, self.counts = [], {'accepted': 0, 'refused': 0}
-        # VELDO-0169: the claim organ decides every claim record, the renewals this one commits too.
-        dispatch.CLM.declare(dispatches.conn)
         dispatches.conn.command_registry[OPERATION] = {'transaction_transition': self._transition,
                                                        'writes': ('entities', 'journal', 'commands', 'nonces')}
 

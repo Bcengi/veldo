@@ -23,7 +23,6 @@ def _v31_load(name, path):
     return mod
 
 
-_v31_rows = _v31_load('v31_v169_rows', ROOT / 'scripts' / 'suites' / 'support' / 'v169_rows.py')
 _v31_start = _v31_time.monotonic()
 with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
     _v31_base = _v31_Path(_v31_dir)
@@ -85,10 +84,6 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
 
     def _v31_write(eid, kind, data):
         global _v31_serial
-        if kind == 'claim':
-            # VELDO-0169: only the claim organ decides a claim, so a claim in a state the fixture sets is
-            # a forged row, planted around execute in one write transaction (support/v169_rows.py).
-            return _v31_rows.plant(_v31_S, _v31_conn, eid, kind, data)
         _v31_serial += 1
         entity = _v31_S.materialized_state(_v31_conn)['entities'].get(eid, {})
         return _v31_S.execute(_v31_conn, dict(command_id='fixture-' + str(_v31_serial), principal='owner',

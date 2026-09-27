@@ -223,13 +223,7 @@ def _v69_suite():
                                               'public_key': public['pm'], 'independence_group': 'pm',
                                               'scope': ['project-a']}, enrollee='pm')
 
-        ROWS = load('v69_v169_rows', ROOT / 'scripts' / 'suites' / 'support' / 'v169_rows.py')
-
         def fixture(eid, kind, data):
-            if kind == 'claim':
-                # VELDO-0169: only the claim organ decides a claim, so a claim in a state the fixture sets is
-                # a forged row, planted around execute in one write transaction (support/v169_rows.py).
-                return ROWS.plant(S, conn, eid, kind, data)
             row = conn.execute('SELECT version FROM entities WHERE id=?', (eid,)).fetchone()
             return S.execute(conn, dict(command_id=next_id('fixture'), principal='authority', operation='upsert_entity',
                                         parameters=dict(entity_id=eid, kind=kind, data=data),

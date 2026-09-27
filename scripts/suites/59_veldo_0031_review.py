@@ -28,9 +28,6 @@ def load(name, path):
     return mod
 
 
-_v31r_rows = load('v0031r_v169_rows', ROOT / 'scripts' / 'suites' / 'support' / 'v169_rows.py')
-
-
 class Fixture:
     def __init__(self, units=('unit', '__land_lock__')):
         self.tmp = tempfile.TemporaryDirectory(prefix='v31r-')
@@ -100,10 +97,6 @@ class Fixture:
         return self.S.materialized_state(self.conn)['entities']
 
     def write(self, eid, kind, data):
-        if kind == 'claim':
-            # VELDO-0169: only the claim organ decides a claim, so a claim in a state the fixture sets is
-            # a forged row, planted around execute in one write transaction (support/v169_rows.py).
-            return _v31r_rows.plant(self.S, self.conn, eid, kind, data)
         # The fixture SETS the record. A live heartbeat (review_r3) may commit a renew between this
         # read and the write; that moved version is not the fixture's answer, so it reads again.
         for _ in range(16):

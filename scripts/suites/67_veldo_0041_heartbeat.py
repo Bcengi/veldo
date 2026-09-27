@@ -124,8 +124,6 @@ def _v41_suite():
             put(principal, 'membership', dict(principal_type='service', roles=['reservation_service'],
                                               scope=[REPOSITORY], revoked_at=None, expires_at=None))
         put('project:p1', 'project', dict(name='heartbeat'))
-        # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
-        CLM.declare(writer)
         writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 

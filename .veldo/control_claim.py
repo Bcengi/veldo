@@ -28,18 +28,17 @@ transaction. Renew, release and use of an existing claim are not new assignments
 follows the host stop policy.
 
 The claim organ (VELDO-0169). Every claim record is decided by one function of this module,
-`_decide`, declared to the store as the organ of the claim kind (declare, control_store's
-declare_organ): the store writes an entity of kind claim only when it is exactly what `_decide`
-returned inside the same command transaction, so a record any other code builds is refused
-entity_owned. Every service reaches it through `transition(conn, params, before)` inside its own
-store transaction, which is itself a store transaction transition. For every transition that hands
-work out (HANDOUTS: a claim, a resume, and the unpark of a disposition's backlog outcome) the organ
-asks the shared eligibility Gate's project check (control_eligibility.Gate.project_problems) for the
+`transition(conn, params, before)`, which every service calls inside its own store transaction
+and which is itself a store transaction transition. For every transition that hands work
+out (HANDOUTS: a claim, a resume, and the unpark of a disposition's backlog outcome) the organ asks
+the shared eligibility Gate's project check (control_eligibility.Gate.project_problems) for the
 unit, on the transaction's own connection while that transaction holds the write lock, and refuses
-by the Gate's own name with nothing written when it finds any problem. The callers ask the same
-check before they build the command, to name a refusal early and to pin the records it read; the
-organ trusts none of that and passes nothing through. Park, release, renew and use hand nothing
-out and are not checked.
+by the Gate's own name with nothing written when it finds any problem, before any other reason.
+The store holds the same invariant in its commit path for every writer of a claim record
+(control_store.handout_problem), whoever built the record; the organ's check refuses earlier, by
+the same name. The callers ask the same check before they build the command, to name a refusal
+early and to pin the records it read. Park, release, renew and use hand nothing out and are not
+checked.
 
 Receiver.apply plugs into control_client.Authority. Its inner command signature
 identifies an active stored member independently of the transport credential.
@@ -63,9 +62,8 @@ CM = organ('control_membership')
 AC = CM.AC
 CL = organ('claim')
 OPERATIONS = ('claim', 'renew', 'release', 'use', 'inspect')
-# The claim kind and its organ's owner name in the store (VELDO-0169, control_store.declare_organ).
+# The record kind the claim organ decides (VELDO-0169).
 KIND = 'claim'
-OWNER = 'claim'
 # The transitions that hand work out (VELDO-0169): the organ asks the Gate's project check for each.
 HANDOUTS = ('claim', 'resume', 'unpark')
 # Rereads of one command whose pinned versions kept moving; past this the conflict is the answer.
@@ -113,20 +111,6 @@ def ownership(data, unit, backlog, action='inspect'):
 _ELIGIBILITY = []
 
 
-def declare(conn):
-    """VELDO-0169: declare in the store on `conn` that `_decide` decides every entity of kind claim
-    (control_store.declare_organ; idempotent, persisted for every connection to that store). Every
-    service that writes a claim declares it when it attaches."""
-    return S.declare_organ(conn, OWNER, KIND, _decide)
-
-
-def transition(conn, params, before):
-    """The claim organ, as a store transaction transition: the changes `_decide` makes for `params`
-    over the command's `before`, inside the command transaction open on `conn` and recorded by the
-    store as the organ's, so they are the only claim records that transaction may write."""
-    return S.organ_write(conn, KIND, _decide, params, before)
-
-
 def _project_gate(conn):
     """The shared eligibility Gate over `conn`, for its project check alone, which reads the unit, its
     project record and the owner's membership and no domain or repository coordinate. Kept on the
@@ -139,9 +123,10 @@ def _project_gate(conn):
     return gate
 
 
-def _decide(conn, params, before):
-    """Every claim record's one decision. A handout first asks the Gate's project check of its unit on
-    the transaction's connection, inside the transaction that writes it, and is refused by the Gate's
+def transition(conn, params, before):
+    """The claim organ, as a store transaction transition: every claim record's one decision, for
+    `params` over the command's `before`, inside the command transaction open on `conn`. A handout
+    first asks the Gate's project check of its unit on that connection, and is refused by the Gate's
     own name when the check finds a problem."""
     if params['action'] in HANDOUTS:
         refusals, _read = _project_gate(conn).project_problems(params['unit_id'])
@@ -222,7 +207,6 @@ class Receiver:
         self.counts = {'accepted': 0, 'refused': 0}
         self.gate = None
         # VELDO-0169: the claim organ decides every claim record, on this receiver's own connection.
-        declare(conn)
         conn.command_registry['claim_operation'] = {
             'transaction_transition': self._in_transaction, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 

@@ -97,8 +97,6 @@ def _v39_suite():
         member('revoked-service', revoked_at=1)
         member('elsewhere-service', scope=['another-repository'])
         put('project:p1', 'project', dict(name='dispatch'))
-        # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
-        CLM.declare(writer)
         writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 

@@ -171,8 +171,6 @@ def _v76_suite():
                                             revoked_at=1 if who == 'rex' else None, expires_at=None))
                 if who in public:
                     put('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
-            # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
-            CLM.declare(writer)
             writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                           'writes': ('entities', 'journal', 'commands', 'nonces')}
 

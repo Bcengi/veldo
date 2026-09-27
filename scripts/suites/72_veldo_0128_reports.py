@@ -296,8 +296,6 @@ def _v128_checks(base):
         receiver = D.Dispatches(A.S, A.conn, domain=domain, repository=repo, principal='receiver', signer='authority',
                                 sign=A.journal_sign)
         CLM = A.claims
-        # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
-        CLM.declare(A.conn)
         A.conn.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
         # VELDO-0169: the claim organ hands out a unit only on the Gate's project check, so the project the

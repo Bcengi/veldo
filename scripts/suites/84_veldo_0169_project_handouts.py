@@ -1,10 +1,11 @@
-"""VELDO-0169: census and signed handouts over the Gate's project check, and the claim organ's ownership.
+"""VELDO-0169: census and signed handouts over the Gate's project check, the claim organ's, and the store's.
 
 Only ROOT and expect come from shared. Projects, memberships, claims, parks, answers,
 stops, settlements and contracts use their production writers. Admitted units and backlog
 items are the claim organ's accepted-admission fixture seam. The paths that forget the caller's
 check are the claim organ registered bare on the suite's connection and the station contract writer
-called from a probe command, as a new engine path would reach them. A second process (the owner's
+called from a probe command, as a new engine path would reach them; the paths that skip the organ
+are transitions that build a claim record by hand and the generic upsert. A second process (the owner's
 project commands, written below as _V169_FLIPPER) pauses and resumes a project while claims run. No model
 or external host.
 """
@@ -91,8 +92,8 @@ def _v169_suite():
     DECLARED = (['census/writers', 'census/planted']
                 + [p + '/' + s for p in ('resume', 'dispose', 'andon')
                    for s in ('PAUSED', 'CANCELED', 'COMPLETED', 'owner_not_current', 'race')]
-                + ['claim/absent', 'claim/null', 'organ/stopped', 'organ/outside', 'organ/ownership', 'guard/forge',
-                   'organ/race', 'guard/resume-again', 'andon/subject-race'])
+                + ['claim/absent', 'claim/null', 'organ/stopped', 'organ/outside', 'store/invariant', 'guard/forge',
+                   'organ/race', 'guard/resume-again', 'andon/subject-race', 'store/upgrade'])
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, path)
@@ -473,6 +474,52 @@ def _v169_suite():
                     params['parked_on'] = parked_on
                 return run(DIRECT, params, pins(uid))
 
+            HAND = 'v169_hand_built'
+
+            def hand_built(conn, params, before):
+                # A transition that builds its claim record by hand, as any module could, and says what it likes
+                # about itself on the connection (the reviewer's inject probe, rv169c): only the store decides.
+                conn.organ_writes = {params['claim']: S.digest_of({'kind': 'claim', 'data': params['data']})}
+                return dict({params['claim']: {'kind': 'claim', 'data': params['data']}}, **params['also'])
+            ing.conn.command_registry[HAND] = {'transaction_transition': hand_built,
+                                               'writes': ('entities', 'journal', 'commands', 'nonces')}
+
+            def record(uid, handout, parked_on=None, unit_id=None):
+                """The claim record a handout (or a renewal or release) of `uid` writes, built by hand."""
+                current = dict((entity(claims.claim_id(repository, uid)) or {}).get('data') or {})
+                named = unit_id or uid
+                if handout in ('claim', 'resume'):
+                    data = dict(unit_id=named, backlog_item_uuid='backlog:' + named, repository_uuid=repository,
+                                holder='worker', generation=current.get('generation', 0) + 1, state='owned',
+                                heartbeat_at=claims.CL._now())
+                    if handout == 'resume':
+                        data['resumed_from'] = parked_on
+                    return data
+                if handout == 'unpark':
+                    return dict({k: v for k, v in current.items() if k != 'parked_on'}, state='released', holder=None,
+                                unparked_from=parked_on)
+                if handout == 'renew':
+                    return dict(current, heartbeat_at=claims.CL._now())
+                return dict(current, state='released', holder=None)
+
+            def hand(uid, handout, parked_on=None, also=None, unit_id=None):
+                """(outcome, nothing written) of a hand-built claim record of `uid`, with `also` in the same write; a
+                claim or resume also marks the unit claimed and its backlog item active, as the organ's own does."""
+                also = dict(also or {})
+                if handout in ('claim', 'resume'):
+                    held = also.get(uid) or entity(uid)
+                    also[uid] = {'kind': 'execution_unit', 'data': dict(held['data'], state='CLAIMED')}
+                    also['backlog:' + uid] = {'kind': 'backlog_item', 'data': dict(entity('backlog:' + uid)['data'], state='ACTIVE')}
+                params = dict(claim=claims.claim_id(repository, uid), data=record(uid, handout, parked_on, unit_id),
+                              also=also)
+                versions = dict(pins(uid), **{eid: (entity(eid) or {}).get('version', 0) for eid in params['also']})
+                return run(HAND, params, versions)
+
+            def ineligible(uid, name):
+                """A unit of project `name` the worker may not hold, so the claim organ has a second reason to refuse."""
+                unit(uid, name)
+                A.fixture(uid, 'execution_unit', dict(entity(uid)['data'], eligible_holders=['someone-else']))
+
             def parks(uids, name, stop=None):
                 """Units of project `name`, each claimed, parked on an assignment and answered in turn (an opener
                 holds one claim), and the assignment each waits on; `stop` runs after the last claim and before
@@ -531,9 +578,17 @@ def _v169_suite():
                             ('claim', direct(fresh, 'claim')),
                             ('resume', direct(parked_u, 'resume', parked_on=source[parked_u])),
                             ('unpark', direct(parked_u, 'unpark', parked_on=source[parked_u])),
-                            ('station contract', station(fresh))):
+                            ('station contract', station(fresh)),
+                            ('hand-built claim', hand(fresh, 'claim')),
+                            ('hand-built resume', hand(parked_u, 'resume', source[parked_u])),
+                            ('hand-built unpark', hand(parked_u, 'unpark', source[parked_u]))):
                         check(row, '%s: %s refused as %s, nothing written' % (state, label, outcome),
                               outcome == expected and unchanged)
+                    # The organ's own check refuses first: a unit the worker may not hold is refused by the Gate's name.
+                    ineligible(fresh + '-other', name)
+                    outcome, unchanged = direct(fresh + '-other', 'claim')
+                    check(row, '%s: the organ names the project before any other reason (%s)' % (state, outcome),
+                          outcome == expected and unchanged)
                     if state == 'owner_not_current':
                         A.admin('steward', 'change_roles', dict(principal='project-owner', roles=['project_owner']))
                 live = 'p-organ-active'
@@ -545,13 +600,20 @@ def _v169_suite():
                                        ('unpark', direct('u-organ-active-unpark', 'unpark', parked_on=source['u-organ-active-unpark'])[0])):
                     check(row, 'control: the same %s of an active project is taken (%s)' % (label, outcome),
                           ready and outcome == 'accepted')
+                unit('u-organ-active-hand', live)
+                outcome, _ = hand('u-organ-active-hand', 'claim')
+                check(row, 'control: a hand-built claim of an active project is written (%s)' % outcome, outcome == 'accepted')
+                ineligible('u-organ-active-other', live)
+                outcome, _ = direct('u-organ-active-other', 'claim')
+                check(row, 'control: the organ refuses the unit the worker may not hold (%s)' % outcome, outcome == 'not_authorized')
                 outcome, _ = station('u-organ-active')
                 check(row, 'control: the station contract writer issues it for an active project (%s)' % outcome,
                       outcome == 'accepted' and issued and list(issued[-1]) == ['andon-station-contract:v169-probe:u-organ-active'])
                 release_held()
 
             with region('organ/outside'):
-                # No organ decision and no station contract is made before the write transaction holds its lock.
+                # No station contract is issued before the write transaction holds its lock (a claim record is
+                # decided wherever it is built, and the store checks it in the commit path: store/invariant).
                 row = 'organ/outside'
                 release_held()
                 name, uid = 'p-organ-outside', 'u-organ-outside'
@@ -561,9 +623,8 @@ def _v169_suite():
                               claim_id=claims.claim_id(repository, uid), holder='worker', generation=0,
                               capabilities=[], repository_uuid=repository)
                 snapshot = {eid: dict(record) for eid, record in S.materialized_state(ing.conn)['entities'].items()}
-                for label, attempt in (('the claim organ', lambda: claims.transition(ing.conn, params, snapshot)),
-                                       ('the station contract writer', lambda: andon.issue_station_contract(
-                                           dict(contract_id='andon-station-contract:v169-outside', unit=uid), snapshot))):
+                for label, attempt in (('the station contract writer', lambda: andon.issue_station_contract(
+                                           dict(contract_id='andon-station-contract:v169-outside', unit=uid), snapshot)),):
                     try:
                         attempt()
                         outcome = 'decided outside a transaction'
@@ -577,47 +638,50 @@ def _v169_suite():
                 check(row, 'control: the same claim inside its transaction is taken (%s)' % outcome, outcome == 'accepted')
                 release_held()
 
-            with region('organ/ownership', 'guard/forge'):
-                # Only the claim organ decides a claim: the store refuses any other writer of kind claim by name.
-                row = 'organ/ownership'
+            with region('store/invariant', 'guard/forge'):
+                # The store's commit path refuses every claim record that hands out work of a stopped project, whoever
+                # built it: the reviewer's inject probe, a claim built by hand, the generic upsert, a resume and an
+                # unpark built by hand, a record whose id names another unit than its fields, and one transaction
+                # that moves a unit into a paused project and claims it. A renewal and a release of a claim already
+                # held pass unchanged, and a claim built by hand for an active project is written.
+                row = 'store/invariant'
                 release_held()
-                organs = getattr(S, 'entity_organs', lambda conn: {})(ing.conn)
-                check(row, 'the store holds the claim organ\'s declaration', (organs.get('claim') or ())[1:4] == (
-                    'claim', '_decide', str((mods / 'control_claim.py').resolve())))
-                name, uid, cid = 'p-organ-owned', 'u-organ-owned', claims.claim_id(repository, 'u-organ-owned')
-                check(row, 'project activated by its owner', activate(name).get('ok'))
-                unit(uid, name)
-                built = dict(state='owned', holder='worker', unit_id=uid, backlog_item_uuid='backlog:' + uid,
-                             repository_uuid=repository, generation=1, heartbeat_at='2026-09-27T00:00:00Z')
-                ing.conn.command_registry['v169_hand_claim'] = {
-                    'transition': lambda params, before: {params['claim']: {'kind': 'claim', 'data': params['data']}},
-                    'writes': ('entities', 'journal', 'commands', 'nonces')}
-
-                def edited(conn, params, before):
-                    changes = claims.transition(conn, params, before)
-                    return dict(changes, **{params['claim_id']: {'kind': 'claim', 'data': dict(
-                        changes[params['claim_id']]['data'], holder='someone-else')}})
-                ing.conn.command_registry['v169_edited_claim'] = {'transaction_transition': edited,
-                                                                  'writes': ('entities', 'journal', 'commands', 'nonces')}
-
-                def foreign(conn, params, before):
-                    return claims.S.organ_write(conn, 'claim', lambda c, p, b: {p['claim_id']: {'kind': 'claim', 'data': {}}},
-                                                params, before)
-                ing.conn.command_registry['v169_foreign_organ'] = {'transaction_transition': foreign,
-                                                                   'writes': ('entities', 'journal', 'commands', 'nonces')}
-                claim_params = dict(action='claim', unit_id=uid, backlog_item_uuid='backlog:' + uid, claim_id=cid,
-                                    holder='worker', generation=0, capabilities=[], repository_uuid=repository)
-                for label, operation, params, expected in (
-                        ('a claim entity built by hand', 'v169_hand_claim', dict(claim=cid, data=built), 'entity_owned'),
-                        ('a claim written by the generic upsert', 'upsert_entity', dict(entity_id=cid, kind='claim', data=built),
-                         'entity_owned'),
-                        ('the organ\'s claim edited on the way out', 'v169_edited_claim', claim_params, 'entity_owned'),
-                        ('another function offered as the organ', 'v169_foreign_organ', claim_params, 'foreign_transition')):
-                    outcome, unchanged = run(operation, params, pins(uid))
+                name, live = 'p-store-paused', 'p-store-live'
+                check(row, 'projects activated by their owner', activate(name).get('ok') and activate(live).get('ok'))
+                ready, source = parks(['u-store-parked'], name)
+                check(row, 'a real park on an answered assignment', ready)
+                unit('u-store-held', name)
+                check(row, 'a claim held before the pause', claim('u-store-held').get('ok'))
+                for uid in ('u-store-fresh', 'u-store-live', 'u-store-moved'):
+                    unit(uid, live if uid != 'u-store-fresh' else name)
+                check(row, 'the owner paused the project', change(name, 'pause').get('ok'))
+                expected = 'project_not_active:PAUSED'
+                fresh_cid = claims.claim_id(repository, 'u-store-fresh')
+                moved = {'u-store-moved': {'kind': 'execution_unit', 'data': dict(entity('u-store-moved')['data'],
+                                                                                  project=name)}}
+                built = record('u-store-fresh', 'claim')
+                for label, (outcome, unchanged) in (
+                        ('the inject probe (a hand-built claim that sets conn.organ_writes itself)',
+                         hand('u-store-fresh', 'claim')),
+                        ('a claim entity built by hand, alone', run(HAND, dict(claim=fresh_cid, data=built, also={}),
+                                                                   pins('u-store-fresh'))),
+                        ('a claim written by the generic upsert', run('upsert_entity', dict(entity_id=fresh_cid, kind='claim',
+                                                                                            data=built), pins('u-store-fresh'))),
+                        ('a resume built by hand', hand('u-store-parked', 'resume', source['u-store-parked'])),
+                        ('an unpark built by hand', hand('u-store-parked', 'unpark', source['u-store-parked'])),
+                        ('a record whose id names the paused unit and whose fields name an active one',
+                         hand('u-store-fresh', 'claim', unit_id='u-store-live')),
+                        ('one transaction moving an active unit into the paused project and claiming it',
+                         hand('u-store-moved', 'claim', also=moved))):
                     check(row, '%s refused as %s, nothing written' % (label, outcome), outcome == expected and unchanged)
-                outcome, _ = run(DIRECT, claim_params, pins(uid))
-                check(row, 'control: the organ\'s own claim of the same unit is written (%s)' % outcome, outcome == 'accepted'
-                      and (entity(cid) or {}).get('data', {}).get('holder') == 'worker')
+                check(row, 'no claim of the paused project\'s fresh unit exists', entity(fresh_cid) is None)
+                for label in ('renew', 'release'):
+                    outcome, _ = hand('u-store-held', label)
+                    check(row, 'a %s of the claim held before the pause passes (%s)' % (label, outcome), outcome == 'accepted')
+                outcome, _ = hand('u-store-live', 'claim')
+                check(row, 'control: a claim built by hand for an active project is written (%s)' % outcome,
+                      outcome == 'accepted' and (entity(claims.claim_id(repository, 'u-store-live')) or {}).get(
+                          'data', {}).get('holder') == 'worker')
                 release_held()
 
                 # The forge probe (rv169b) on a paused project, with no receipt anywhere to forge: a claim carrying a
@@ -638,8 +702,7 @@ def _v169_suite():
                         ('a literal project check', direct('u-forge', 'claim', project_check=literal), 'project_not_active:PAUSED'),
                         ('another unit\'s check, rewritten', direct('u-forge', 'claim', project_check=rewritten),
                          'project_not_active:PAUSED'),
-                        ('a claim entity built by hand', run('v169_hand_claim', dict(claim=fcid, data=dict(
-                            built, unit_id='u-forge', backlog_item_uuid='backlog:u-forge')), pins('u-forge')), 'entity_owned')):
+                        ('a claim entity built by hand', hand('u-forge', 'claim'), 'project_not_active:PAUSED')):
                     check(row, '%s on the paused project refused as %s, nothing written' % (label, outcome),
                           outcome == expected and unchanged)
                 check(row, 'no claim of the paused project\'s unit exists', entity(fcid) is None
@@ -661,6 +724,9 @@ def _v169_suite():
                 first = direct('u-race-seq', 'claim')[0]
                 release_held()
                 paused = change(name, 'pause').get('ok')
+                # The worker may no longer hold the unit either, so only the organ's own check, made in this
+                # transaction, names the project.
+                A.fixture('u-race-seq', 'execution_unit', dict(entity('u-race-seq')['data'], eligible_holders=['someone-else']))
                 second = direct('u-race-seq', 'claim')[0]
                 check(row, 'a claim taken, released, the project paused: the next claim is refused (%s, %s)' % (first, second),
                       first == 'accepted' and paused and second == 'project_not_active:PAUSED')
@@ -786,6 +852,94 @@ def _v169_suite():
                 check(row, 'stop and unit unchanged, no station contract', before == {eid: entity(eid) for eid in watched}
                       and count == ing.conn.execute('SELECT count(*) FROM entities WHERE kind=?', ('andon_station_contract',)).fetchone()[0])
                 check(row, 'control: the same stop then resumes', action().get('outcome') == 'resumed')
+
+            with region('store/upgrade'):
+                # A store written before VELDO-0169 (the reviewer's upgrade probe, rv169c): claims held, released and
+                # parked on units that name no project, as main's claim organ wrote them. This branch's claim
+                # receiver and assignment inbox attach to it unchanged, the held claim is renewed and released, and a
+                # new claim is refused by the Gate's name until its unit's project is active.
+                row = 'store/upgrade'
+                PLANT = load('v169_rows', ROOT / 'scripts' / 'suites' / 'support' / 'v169_rows.py')
+                (base / 'upgrade' / 'authority').mkdir(parents=True)
+                old = S.open_store(str(base / 'upgrade' / 'authority' / 'control.sqlite3'))
+                try:
+                    old_ids = dict(domain_uuid='domain-upgrade', repository_uuid='repo-upgrade', store_uuid='store-upgrade')
+                    old_repo = old_ids['repository_uuid']
+
+                    def old_entity(eid):
+                        return S.materialized_state(old)['entities'].get(eid)
+
+                    def old_run(operation, params, ids):
+                        try:
+                            S.execute(old, dict(command_id=A.next_id('upgrade'), principal='authority', operation=operation,
+                                                parameters=params, artifact_digests=[], nonce=A.next_id('upgrade-n'),
+                                                expected_versions={eid: (old_entity(eid) or {}).get('version', 0) for eid in ids}),
+                                      'authority', A.journal_sign, 1)
+                            return 'accepted'
+                        except S.StoreRefused as exc:
+                            return exc.code
+
+                    def old_put(eid, kind, data):
+                        return old_run('upsert_entity', dict(entity_id=eid, kind=kind, data=data), [eid])
+
+                    old_put('holder-u', 'membership', dict(principal_type='service', roles=[], scope=[old_repo],
+                                                           revoked_at=None, expires_at=None))
+                    units = ('u-old-held', 'u-old-released', 'u-old-parked')
+                    for uid in units:
+                        old_put('backlog:' + uid, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=old_repo))
+                        old_put(uid, 'execution_unit', dict(state='READY', repository_uuid=old_repo, backlog_item_uuid='backlog:' + uid,
+                                                            requirements=[], eligible_holders=['holder-u']))
+
+                    def organ(uid, action, generation=0, **extra):
+                        return dict(action=action, unit_id=uid, backlog_item_uuid='backlog:' + uid,
+                                    claim_id=claims.claim_id(old_repo, uid), holder='holder-u', generation=generation,
+                                    capabilities=[], repository_uuid=old_repo, **extra)
+
+                    # main's claim organ is this branch's claims._changes, byte for byte; its records are planted as a
+                    # store written before the handout invariant holds them.
+                    for uid, then in (('u-old-held', None), ('u-old-released', 'release'), ('u-old-parked', 'park')):
+                        for action in ('claim',) + ((then,) if then else ()):
+                            current = S.materialized_state(old)['entities']
+                            generation = (current.get(claims.claim_id(old_repo, uid)) or {}).get('data', {}).get('generation', 0)
+                            for eid, entity_ in claims._changes(organ(uid, action, generation, parked_on='assignment:old'),
+                                                                current).items():
+                                PLANT.plant(S, old, eid, entity_['kind'], entity_['data'])
+                    held = {uid: (old_entity(claims.claim_id(old_repo, uid)) or {}).get('data', {}) for uid in units}
+                    check(row, 'the store holds a held, a released and a parked claim (%s)' % {
+                          k: (v.get('state'), v.get('parked_on')) for k, v in held.items()},
+                          [(held[u].get('state'), held[u].get('parked_on')) for u in units]
+                          == [('owned', None), ('released', None), ('released', 'assignment:old')])
+                    for label, attach in (('the claim receiver', lambda: claims.Receiver(old, old_ids, 'authority', A.journal_sign)),
+                                          ('the assignment inbox', lambda: type(inbox)(S, inbox.membership, claims, inbox.contract, old,
+                                                                                       dict(old_ids), 'authority', A.journal_sign))):
+                        try:
+                            attach()
+                            outcome = 'attached'
+                        except Exception as exc:  # noqa: BLE001 - a refusal at attach is the defect this row names
+                            outcome = '%s %s' % (type(exc).__name__, getattr(exc, 'code', exc))
+                        check(row, '%s attaches to the earlier store (%s)' % (label, outcome), outcome == 'attached')
+                    old.command_registry[DIRECT] = {'transaction_transition': claims.transition,
+                                                    'writes': ('entities', 'journal', 'commands', 'nonces')}
+
+                    def old_organ(uid, action, **extra):
+                        cid = claims.claim_id(old_repo, uid)
+                        generation = (old_entity(cid) or {}).get('data', {}).get('generation', 0)
+                        return old_run(DIRECT, organ(uid, action, generation, **extra), [uid, 'backlog:' + uid, cid])
+                    renewed, released = old_organ('u-old-held', 'renew'), old_organ('u-old-held', 'release')
+                    check(row, 'the claim held before the upgrade is renewed and released (%s, %s)' % (renewed, released),
+                          renewed == released == 'accepted')
+                    before = S.materialized_state(old)
+                    refused = old_organ('u-old-released', 'claim')
+                    check(row, 'a new claim of a unit naming no project is refused by the Gate\'s name (%s)' % refused,
+                          refused == 'missing_authority:project' and before == S.materialized_state(old))
+                    old_put('owner-u', 'membership', dict(principal_type='person', roles=['project_owner'], scope='*',
+                                                          revoked_at=None, expires_at=None))
+                    old_put('project:p-upgrade', 'project', dict(name='p-upgrade', state='ACTIVE', owner='owner-u'))
+                    old_put('u-old-released', 'execution_unit', dict(old_entity('u-old-released')['data'], project='p-upgrade'))
+                    taken = old_organ('u-old-released', 'claim')
+                    check(row, 'control: with its project active the same unit is claimed (%s)' % taken, taken == 'accepted')
+                finally:
+                    old.close()
         finally:
             if ing is not None:
                 ing.conn.close()

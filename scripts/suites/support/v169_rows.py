@@ -1,13 +1,12 @@
-"""VELDO-0169: a claim record in a state no command decides, written around execute.
+"""VELDO-0169: records of a store written before the handout invariant, planted around execute.
 
-Since VELDO-0169 the claim organ (control_claim) decides every entity of kind claim, and the store
-refuses every other writer of one (control_store.declare_organ), the generic upsert_entity among
-them. A suite that drives the claim organ or the claim client against a claim no transition makes
-(an uncertain state, a heartbeat from the future or the distant past, a holder or generation set by
-hand) plants that row the way 59_veldo_0037_aliases plants a revision no command could have
-accepted: around execute, in its own write transaction, with the entity digest and the next version
-the store itself computes, so every reader decodes it exactly as a committed row. It is a forged
-row and is never journaled; the suites that plant one say so where they do.
+Since VELDO-0169 the store refuses, in its commit path, every claim record that hands out work of a
+unit whose project the eligibility Gate refuses (control_store.handout_problem), so this branch's
+code cannot write the claims an earlier store holds on units that name no project. Suite 84's
+upgrade row plants them as main's claim organ decided them, the way 59_veldo_0037_aliases plants a
+revision no command could have accepted: around execute, in its own write transaction, with the
+entity digest and the next version the store itself computes, so every reader decodes each one
+exactly as a committed row. They are never journaled.
 """
 import json
 

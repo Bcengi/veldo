@@ -346,8 +346,6 @@ class Inbox:
         self.states = states
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
-        # VELDO-0169: the claim organ decides every claim record this inbox's transactions write.
-        claims.declare(conn)
         conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction,
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
 

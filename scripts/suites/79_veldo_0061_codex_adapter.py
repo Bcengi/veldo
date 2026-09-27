@@ -153,8 +153,6 @@ def _v61_suite():
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
         member('floor-service', 'service', ['result_acceptance'])
-        # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
-        CLM.declare(writer)
         writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -606,10 +604,7 @@ sys.exit(payload.get('code', 0))
             # Phase 5: a receiver installed with a Codex module that lacks one protocol name.
             for name, missing in (('protocol-registration', 'REGISTRATION'), ('protocol-terminal', 'Terminal')):
                 tree = base / name / '.veldo'
-                # VELDO-0169: the store binds the claim organ to the one file it was declared from, so this second
-                # installation on the same store reaches that same organ file (a copy of it is refused at attach).
-                shutil.copytree(mods, tree, ignore=shutil.ignore_patterns('control_claim.py'))
-                (tree / 'control_claim.py').symlink_to(mods / 'control_claim.py')
+                shutil.copytree(mods, tree)
                 with open(tree / 'control_engine_codex.py', 'a') as handle:
                     handle.write('\nglobals().pop(%r, None)  # this installation lacks one protocol name\n' % missing)
                 via[0] = load('v61_launch_' + missing, tree / 'control_launch.py')

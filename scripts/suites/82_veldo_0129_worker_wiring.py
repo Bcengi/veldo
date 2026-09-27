@@ -184,8 +184,6 @@ def _v129_suite():
             accounts.register('register/' + account, fields['account'], fields['provider'], fields['label'],
                               fields['profiles'], now=time.time())
             res.configure('policy/' + account, 'account', account, ceiling, now=time.time())
-        # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
-        L.D.CLM.declare(writer)
         writer.command_registry['claim_operation'] = {'transaction_transition': L.D.CLM.transition,
                                                        'writes': ('entities', 'journal', 'commands', 'nonces')}
         def admit(unit, risk='standard'):
