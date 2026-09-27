@@ -1,0 +1,1341 @@
+{
+  "schema": "veldo.review-validation/v1",
+  "spec_id": "VELDO-0141",
+  "reviewed_commit": "7469b64aff66bcec44fb79d9ab1bdfd20753f3d7",
+  "merge_commit": "c50ae6e5b4620aaf6545d20450cef6f0e8ed94b2",
+  "implementation_commit": "e094a137985b76dec81b717b35554a68efb1de9f",
+  "new_rows": [
+    "config/malformed",
+    "config/incomplete",
+    "config/missing-file"
+  ],
+  "record_suite": {
+    "rows": 39,
+    "command": "python3 scripts/selftest.py --suite 82_veldo_0141_execution_record",
+    "exit_code": 2,
+    "scope": "partial",
+    "passed": 65,
+    "failed": 0
+  },
+  "main_outcomes": {
+    "main_commit": "6512503076f231b94485421f91dc663ee0a36649",
+    "scope": "Main launcher and real receiver with an in-memory prepared dispatch settlement seam",
+    "observations": [
+      {
+        "case": "malformed",
+        "result": "refused",
+        "refusal": "receiver_unavailable",
+        "receiver_reaped": true
+      },
+      {
+        "case": "incomplete",
+        "result": "refused",
+        "refusal": "receiver_unavailable",
+        "receiver_reaped": true
+      },
+      {
+        "case": "missing-file",
+        "result": "refused",
+        "refusal": "receiver_unavailable",
+        "receiver_reaped": true
+      }
+    ]
+  },
+  "reviewed_tree_red": {
+    "scope": "Current suite with reviewed control_launch.py substituted",
+    "exit_code": 0,
+    "failure_mode": "assertion",
+    "results": {
+      "count": 65,
+      "observations": [
+        [
+          "good spec accepted",
+          true
+        ],
+        [
+          "spec without criteria rejected",
+          true
+        ],
+        [
+          "unknown evidence kind rejected",
+          true
+        ],
+        [
+          "bad status rejected",
+          true
+        ],
+        [
+          "invented proof criterion rejected",
+          true
+        ],
+        [
+          "missing proof criterion rejected",
+          true
+        ],
+        [
+          "absent required evidence rejected",
+          true
+        ],
+        [
+          "passed-without-evidence rejected",
+          true
+        ],
+        [
+          "bad verdict value rejected",
+          true
+        ],
+        [
+          "good plan accepted",
+          true
+        ],
+        [
+          "plan dependency cycle rejected",
+          true
+        ],
+        [
+          "dangling dependency rejected",
+          true
+        ],
+        [
+          "unknown outcome ref rejected",
+          true
+        ],
+        [
+          "unknown feature ref rejected",
+          true
+        ],
+        [
+          "undeclared depends_on rejected",
+          true
+        ],
+        [
+          "ready without approval rejected",
+          true
+        ],
+        [
+          "decision without blocks rejected",
+          true
+        ],
+        [
+          "decision blocking unknown spec rejected",
+          true
+        ],
+        [
+          "duplicate work spec rejected",
+          true
+        ],
+        [
+          "bad release mode rejected",
+          true
+        ],
+        [
+          "mirror mismatch rejected",
+          true
+        ],
+        [
+          "correct mirror accepted",
+          true
+        ],
+        [
+          "spec binding to wrong plan rejected",
+          true
+        ],
+        [
+          "spec claiming missing work item rejected",
+          true
+        ],
+        [
+          "spec plan without work rejected",
+          true
+        ],
+        [
+          "correct spec binding accepted",
+          true
+        ],
+        [
+          "VELDO-0141 record/claude-complete",
+          true
+        ],
+        [
+          "VELDO-0141 record/codex-complete",
+          true
+        ],
+        [
+          "VELDO-0141 record/stream-options",
+          true
+        ],
+        [
+          "VELDO-0141 api/live",
+          true
+        ],
+        [
+          "VELDO-0141 api/cursor",
+          true
+        ],
+        [
+          "VELDO-0141 api/refusals",
+          true
+        ],
+        [
+          "VELDO-0141 api/no-secret-served",
+          true
+        ],
+        [
+          "VELDO-0141 api/service-call",
+          true
+        ],
+        [
+          "VELDO-0141 route/served-lines",
+          true
+        ],
+        [
+          "VELDO-0141 route/committed",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/planted-value",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/known-pattern",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/kinds-field",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/exact-set",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/paths-kept",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/path-segment",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/url-component",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/account-fields",
+          true
+        ],
+        [
+          "VELDO-0141 fixture/planted-control",
+          true
+        ],
+        [
+          "VELDO-0141 format/fake-lines",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/partial-blocks",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/clone-relative-paths",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/encoded-values",
+          true
+        ],
+        [
+          "VELDO-0141 api/scope-before-existence",
+          true
+        ],
+        [
+          "VELDO-0141 api/registration-race",
+          true
+        ],
+        [
+          "VELDO-0141 api/slow-reader",
+          true
+        ],
+        [
+          "VELDO-0141 route/unknown-committed",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/thinking-and-unknown",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/live-paths",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/offset-encodings",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/clone-leaf-candidates",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/uppercase-hex",
+          true
+        ],
+        [
+          "VELDO-0141 redaction/clone-without-git",
+          true
+        ],
+        [
+          "VELDO-0141 api/byte-pages",
+          true
+        ],
+        [
+          "VELDO-0141 api/fast-catchup",
+          true
+        ],
+        [
+          "VELDO-0141 route/runner-unknown",
+          true
+        ],
+        [
+          "VELDO-0141 config/malformed",
+          false
+        ],
+        [
+          "VELDO-0141 config/incomplete",
+          false
+        ],
+        [
+          "VELDO-0141 config/missing-file",
+          false
+        ]
+      ],
+      "row_names": [
+        "good spec accepted",
+        "spec without criteria rejected",
+        "unknown evidence kind rejected",
+        "bad status rejected",
+        "invented proof criterion rejected",
+        "missing proof criterion rejected",
+        "absent required evidence rejected",
+        "passed-without-evidence rejected",
+        "bad verdict value rejected",
+        "good plan accepted",
+        "plan dependency cycle rejected",
+        "dangling dependency rejected",
+        "unknown outcome ref rejected",
+        "unknown feature ref rejected",
+        "undeclared depends_on rejected",
+        "ready without approval rejected",
+        "decision without blocks rejected",
+        "decision blocking unknown spec rejected",
+        "duplicate work spec rejected",
+        "bad release mode rejected",
+        "mirror mismatch rejected",
+        "correct mirror accepted",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "correct spec binding accepted",
+        "VELDO-0141 record/claude-complete",
+        "VELDO-0141 record/codex-complete",
+        "VELDO-0141 record/stream-options",
+        "VELDO-0141 api/live",
+        "VELDO-0141 api/cursor",
+        "VELDO-0141 api/refusals",
+        "VELDO-0141 api/no-secret-served",
+        "VELDO-0141 api/service-call",
+        "VELDO-0141 route/served-lines",
+        "VELDO-0141 route/committed",
+        "VELDO-0141 redaction/planted-value",
+        "VELDO-0141 redaction/known-pattern",
+        "VELDO-0141 redaction/kinds-field",
+        "VELDO-0141 redaction/exact-set",
+        "VELDO-0141 redaction/paths-kept",
+        "VELDO-0141 redaction/path-segment",
+        "VELDO-0141 redaction/url-component",
+        "VELDO-0141 redaction/account-fields",
+        "VELDO-0141 fixture/planted-control",
+        "VELDO-0141 format/fake-lines",
+        "VELDO-0141 redaction/partial-blocks",
+        "VELDO-0141 redaction/clone-relative-paths",
+        "VELDO-0141 redaction/encoded-values",
+        "VELDO-0141 api/scope-before-existence",
+        "VELDO-0141 api/registration-race",
+        "VELDO-0141 api/slow-reader",
+        "VELDO-0141 route/unknown-committed",
+        "VELDO-0141 redaction/thinking-and-unknown",
+        "VELDO-0141 redaction/live-paths",
+        "VELDO-0141 redaction/offset-encodings",
+        "VELDO-0141 redaction/clone-leaf-candidates",
+        "VELDO-0141 redaction/uppercase-hex",
+        "VELDO-0141 redaction/clone-without-git",
+        "VELDO-0141 api/byte-pages",
+        "VELDO-0141 api/fast-catchup",
+        "VELDO-0141 route/runner-unknown",
+        "VELDO-0141 config/malformed",
+        "VELDO-0141 config/incomplete",
+        "VELDO-0141 config/missing-file"
+      ],
+      "failed_rows": [
+        "VELDO-0141 config/malformed",
+        "VELDO-0141 config/incomplete",
+        "VELDO-0141 config/missing-file"
+      ],
+      "failed_details": [],
+      "targets": {
+        "config/malformed": [
+          false
+        ],
+        "config/incomplete": [
+          false
+        ],
+        "config/missing-file": [
+          false
+        ]
+      }
+    }
+  },
+  "mutation_registry_names_unique": 1912,
+  "mutations": {
+    "141": {
+      "command": "python3 scripts/check_teeth_mutations.py --finding 141 --jobs 2",
+      "exit_code": 0,
+      "summary": {
+        "mutations_rejected": 49,
+        "green_suites": {
+          "82_veldo_0141_execution_record.py": 65
+        }
+      },
+      "results": [
+        {
+          "finding": 141,
+          "mutation": "record-error-stream-discarded",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 record/claude-complete",
+            "VELDO-0141 record/codex-complete",
+            "VELDO-0141 redaction/planted-value",
+            "VELDO-0141 redaction/known-pattern",
+            "VELDO-0141 redaction/exact-set"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record-served-unredacted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/no-secret-served",
+            "VELDO-0141 redaction/planted-value",
+            "VELDO-0141 redaction/known-pattern",
+            "VELDO-0141 redaction/kinds-field",
+            "VELDO-0141 redaction/account-fields"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "route-summarized-steps",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/no-secret-served",
+            "VELDO-0141 api/service-call",
+            "VELDO-0141 route/served-lines",
+            "VELDO-0141 redaction/clone-relative-paths",
+            "VELDO-0141 api/byte-pages"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "redaction-scanner-first",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/no-secret-served",
+            "VELDO-0141 redaction/planted-value",
+            "VELDO-0141 redaction/known-pattern",
+            "VELDO-0141 redaction/path-segment",
+            "VELDO-0141 redaction/encoded-values",
+            "VELDO-0141 redaction/offset-encodings"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record-stream-options-dropped",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 record/stream-options"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record-hint-unsent",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/live"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record-wrapper-line-dropped",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 record/claude-complete",
+            "VELDO-0141 record/codex-complete",
+            "VELDO-0141 redaction/planted-value",
+            "VELDO-0141 redaction/exact-set"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record-exit-uncommitted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 route/committed"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record-exit-unbound",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 route/committed"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "route-digest-unchecked",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 route/committed",
+            "VELDO-0141 route/unknown-committed",
+            "VELDO-0141 route/runner-unknown"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "route-scope-unchecked",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/refusals",
+            "VELDO-0141 api/service-call",
+            "VELDO-0141 api/scope-before-existence"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "route-binding-unchecked",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 route/committed"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "route-cursor-past-end-served",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/refusals"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "route-record-hint-unrouted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/live",
+            "VELDO-0141 route/served-lines"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "route-service-call-unlisted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/service-call"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "redaction-token-unresolved",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/planted-value",
+            "VELDO-0141 redaction/known-pattern"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "redaction-kinds-unnamed",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/planted-value",
+            "VELDO-0141 redaction/known-pattern",
+            "VELDO-0141 redaction/kinds-field",
+            "VELDO-0141 redaction/account-fields",
+            "VELDO-0141 redaction/partial-blocks",
+            "VELDO-0141 redaction/thinking-and-unknown"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "redaction-path-scored-whole",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/paths-kept",
+            "VELDO-0141 redaction/path-segment",
+            "VELDO-0141 redaction/url-component",
+            "VELDO-0141 redaction/account-fields",
+            "VELDO-0141 redaction/live-paths"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "redaction-path-segment-unscored",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/path-segment",
+            "VELDO-0141 redaction/url-component"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "redaction-named-digest-scored",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/paths-kept",
+            "VELDO-0141 redaction/account-fields"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "redaction-url-query-whole",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/url-component"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "redaction-account-fields-kept",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/account-fields"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-partials-line-by-line",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/partial-blocks",
+            "VELDO-0141 redaction/thinking-and-unknown"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-partials-tail-too-short",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/partial-blocks",
+            "VELDO-0141 redaction/thinking-and-unknown"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-clone-path-check-skipped",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/clone-relative-paths",
+            "VELDO-0141 redaction/live-paths",
+            "VELDO-0141 redaction/clone-leaf-candidates",
+            "VELDO-0141 redaction/clone-without-git"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-handshake-id-scored",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/clone-relative-paths"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-stream-registers-after-fill",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/registration-race"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-existence-before-scope",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/scope-before-existence"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-reader-queue-unbounded",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/slow-reader"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-encoded-forms-skipped",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/encoded-values",
+            "VELDO-0141 redaction/offset-encodings",
+            "VELDO-0141 redaction/uppercase-hex"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-unknown-record-unbound",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 route/unknown-committed",
+            "VELDO-0141 route/runner-unknown"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-unknown-record-uncommitted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 route/unknown-committed"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-receiver-clone-unlisted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/clone-relative-paths",
+            "VELDO-0141 redaction/clone-without-git"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141e-config-catches-only-oserror",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 config/malformed",
+            "VELDO-0141 config/incomplete"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141e-config-read-after-spawn",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 config/malformed",
+            "VELDO-0141 config/incomplete",
+            "VELDO-0141 config/missing-file"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141d-clone-git-discovery-restored",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/clone-without-git"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141-concurrent-fills-interleave",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/registration-race"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-thinking-unassembled",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/thinking-and-unknown"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-unknown-delta-released",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/thinking-and-unknown"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-diff-prefix-unstripped",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/live-paths"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-path-snapshot-restored",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/live-paths",
+            "VELDO-0141 redaction/clone-leaf-candidates",
+            "VELDO-0141 redaction/clone-without-git"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-count-pages-restored",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/byte-pages"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-reader-locked-during-page",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 api/byte-pages",
+            "VELDO-0141 api/fast-catchup"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-runner-commitment-omitted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 route/runner-unknown"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-offset-base64-omitted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/offset-encodings"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-lower-hex-omitted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/offset-encodings",
+            "VELDO-0141 redaction/uppercase-hex"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141b-short-leaf-unscored",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/live-paths"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141c-leaf-candidates-unscored",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/clone-leaf-candidates"
+          ]
+        },
+        {
+          "finding": 141,
+          "mutation": "record141c-upper-hex-omitted",
+          "baseline": "green",
+          "assertions": 65,
+          "red_rows": [
+            "VELDO-0141 redaction/uppercase-hex"
+          ]
+        }
+      ]
+    },
+    "41": {
+      "command": "python3 scripts/check_teeth_mutations.py --finding 41 --jobs 2",
+      "exit_code": 0,
+      "summary": {
+        "mutations_rejected": 35,
+        "green_suites": {
+          "67_veldo_0041_heartbeat.py": 49
+        }
+      },
+      "results": [
+        {
+          "finding": 41,
+          "mutation": "heartbeat-after-model-return",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/blocked-call-liveness",
+            "VELDO-0041 heartbeat/missing-heartbeat-stop",
+            "VELDO-0041 heartbeat/channel-not-held",
+            "VELDO-0041 heartbeat/engine-group-signal",
+            "VELDO-0041 heartbeat/shipped-defaults",
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-renewal-skipped",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/blocked-call-liveness",
+            "VELDO-0041 heartbeat/missing-heartbeat-stop",
+            "VELDO-0041 heartbeat/channel-not-held"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-configured-interval-ignored",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/blocked-call-liveness",
+            "VELDO-0041 heartbeat/missing-heartbeat-stop",
+            "VELDO-0041 heartbeat/channel-not-held",
+            "VELDO-0041 heartbeat/engine-group-signal",
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-missing-not-stopped",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/missing-heartbeat-stop"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-window-from-first",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/blocked-call-liveness",
+            "VELDO-0041 heartbeat/missing-heartbeat-stop",
+            "VELDO-0041 heartbeat/channel-not-held",
+            "VELDO-0041 heartbeat/engine-group-signal",
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-default-interval",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/shipped-defaults"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-default-window",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/shipped-defaults"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "stop-default-grace",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/shipped-defaults"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "stop-terminate-only-parent",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 stop/bounded-group-exit"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "stop-configured-graces-ignored",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 stop/bounded-group-exit",
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "stop-kill-at-termination",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 stop/bounded-group-exit"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire41-config-oserror-unhandled",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/live-descendant",
+            "VELDO-0041 retirement/observations",
+            "VELDO-0041 ran/retirement/live-descendant"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-before-descendant-termination",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/live-descendant",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-on-first-observation",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/live-descendant",
+            "VELDO-0041 retirement/missing-accounting",
+            "VELDO-0041 retirement/clone-files",
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-without-accounting",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/missing-accounting",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-pending-call-settled",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/missing-accounting",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-drops-unknown-accounting",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/missing-accounting"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-leaves-clone-files",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/clone-files",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-clone-group-unrecorded",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/clone-files"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-trusts-teardown-answer",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/clone-files",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-unknown-outcome-conclusive",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-open-outcome-released",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-refusal-unclassified",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-pending-unlisted",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/live-descendant",
+            "VELDO-0041 retirement/missing-accounting",
+            "VELDO-0041 retirement/clone-files",
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-report-not-subscribed",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/missing-accounting"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-retry-releases-twice",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/live-descendant",
+            "VELDO-0041 retirement/missing-accounting",
+            "VELDO-0041 retirement/clone-files",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-clone-removal-not-retried",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/clone-files"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-pending-never-retried",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/live-descendant",
+            "VELDO-0041 retirement/missing-accounting",
+            "VELDO-0041 retirement/clone-files",
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-no-sweep-on-wait",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/live-descendant"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-no-sweep-on-prepare",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/unknown-outcome",
+            "VELDO-0041 retirement/observations"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retire-sweep-retries-unchanged",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/live-descendant",
+            "VELDO-0041 retirement/missing-accounting",
+            "VELDO-0041 retirement/clone-files",
+            "VELDO-0041 retirement/unknown-outcome"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-shares-engine-session",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/engine-group-signal"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-channel-left-to-engine",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 heartbeat/channel-not-held"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "heartbeat-not-installed",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/installed-assets"
+          ]
+        },
+        {
+          "finding": 41,
+          "mutation": "retirement-not-installed",
+          "baseline": "green",
+          "assertions": 49,
+          "red_rows": [
+            "VELDO-0041 retirement/installed-assets"
+          ]
+        }
+      ]
+    }
+  },
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "scripts/check_git_boundary.py"
+      ],
+      "exit_code": 0,
+      "output_sha256": "456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83",
+      "summary": "Git subprocess boundary: pass"
+    },
+    {
+      "command": [
+        "bash",
+        "scripts/check_template_sync.sh"
+      ],
+      "exit_code": 0,
+      "output_sha256": "12ad6964ff36c2be9de76e69ac8dc55b7324f0b8b1960c5e360a506896771564",
+      "summary": "template sync: pass (232 pair(s) compared, 6 declared per-repo, 131 engine-only)"
+    },
+    {
+      "command": [
+        "python3",
+        ".veldo/validate.py",
+        "all"
+      ],
+      "exit_code": 0,
+      "output_sha256": "a78f633a49e9ae14f79accb21c153c815946fc9864caae535bfa24c106e3d29b",
+      "summary": "Repository validation passed."
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": ""
+    }
+  ],
+  "engine_copy_sha256": {
+    "engine/.veldo/control_launch.py": "3acd9d5e9452251190c5d7f3e93309e1ff710e4a5fb10dd912e98d1d989001c6",
+    ".veldo/control_launch.py": "3acd9d5e9452251190c5d7f3e93309e1ff710e4a5fb10dd912e98d1d989001c6"
+  },
+  "full_selftest": {
+    "command": "python3 scripts/selftest.py",
+    "scope": "full",
+    "suites": 122,
+    "attempts": 1,
+    "exit_code": 0,
+    "summary": "selftest: 6899 passed, 0 failed",
+    "passed": 6899,
+    "failed": 0,
+    "failed_rows": [],
+    "log_sha256": "493274cb5b96a6038cfced467c48de22f108f6bb378fc4af0b79cf0feef4d045",
+    "worktree_unchanged_during_run": true
+  },
+  "gate_run": false,
+  "verification_stamp_claimed": false
+}

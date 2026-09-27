@@ -415,3 +415,13 @@ Finding 141 adds `record141e-config-catches-only-oserror` and
 `record141e-config-read-after-spawn`. Finding 41 adds `retire41-config-oserror-unhandled`,
 which removes OSError from the launch refusal handling and must fail the existing retirement row.
 [receiver-config-review.json](receiver-config-review.json) records the checks for this fix.
+
+The reviewed launch module at 7469b64a fails exactly the three new rows by assertion. Local main's
+launcher and real receiver settle the same malformed, incomplete and absent configurations as
+`receiver_unavailable`; that comparison uses an in-memory prepared-dispatch seam. The fixed suite
+passes all 39 rows. Finding 141 rejects all 49 mutants, and finding 41 rejects all 35, including
+`retirement/live-descendant`, `retirement/observations` and its completion assertion for the new
+OSError mutant. All 1,912 mutation names are unique across findings. The whole selftest passed on
+its first run with 6,899 assertions and zero failures across 122 suites; the worktree was not edited
+while it ran. Git boundary checking and repository validation pass, and template sync compares
+232 pairs successfully. The gate was not run and no verification stamp is claimed.
