@@ -1223,17 +1223,25 @@ err.close()
                   % [x.get('payload', '')[-160:] for x in edit_kept],
                   len(edit_printed) == 1 and len(edit_kept) == 1 and edit_kept[0].get('payload') == edit_printed[0]
                   and edit_kept[0].get('redacted') == [] and file_path.startswith(cwd) and whole_high(file_path))
+            def named(prefix, size):
+                """A named digest (a clone's directory, a pinned copy's digest) the scanner judging it whole replaces."""
+                while True:
+                    value = prefix + secrets.token_hex(size)
+                    if SS.shannon(value) >= SS.ENTROPY_THRESHOLD:
+                        return value
             typical = [cwd + '/src',
                        '/home/dmitry/projects/veldo-worktrees/build-veldo-0141/.veldo/control_launch.py',
                        '/var/lib/veldo/factory/engines/claude_code/2.1.281/%s/claude' % hashlib.sha256(
                            cwd.encode()).hexdigest(),
-                       STREAM['codex']['binary']]
+                       STREAM['codex']['binary'],
+                       '%s/state/clones/%s/work' % (runtime, named('clone-', 16)),
+                       '/var/lib/veldo/factory/engines/claude_code/2.1.281/%s/claude' % named('sha256-', 32)]
             lines_of = ['cd %s && python3 %s' % (typical[0], typical[1]),
                         json.dumps({'type': 'tool_use', 'input': {'command': 'ls ' + typical[2], 'cwd': typical[3]}})]
             kept_typical = [redacted(t) for t in typical + lines_of]
-            check('redaction/paths-kept', 'typical real paths (a clone path under the runtime directory, a worktree\'s '
-                  'control_launch.py, a pinned engine path with its version and a digest segment, Codex\'s vendor '
-                  'binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging '
+            check('redaction/paths-kept', 'typical real paths (a clone path under the runtime directory, its clone '
+                  'directory named by a digest, a worktree\'s control_launch.py, a pinned engine path with its version '
+                  'and a digest segment, bare and named, Codex\'s vendor binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging '
                   'it whole replaces [%s]' % [k[0][:90] for k, t in zip(kept_typical, typical + lines_of) if k[0] != t],
                   all(k == (t, []) for k, t in zip(kept_typical, typical + lines_of)) and all(whole_high(t) for t in typical))
 

@@ -7492,9 +7492,13 @@ def cases():
               "        found = None  # defect: a path or URL is one candidate, scored whole\n",
               ['redaction/paths-kept', 'redaction/path-segment', 'redaction/url-component'])
     record141('redaction-path-segment-unscored', 'control_execution_record.py',
-              "        pieces = [(gap, start)] + segments\n",
-              "        pieces = [(gap, start)]  # defect: a secret inside a path or URL is never judged\n",
+              "        for low, high in segments:\n",
+              "        for low, high in ():  # defect: a secret inside a path or URL is never judged\n",
               ['redaction/path-segment', 'redaction/url-component'])
+    record141('redaction-named-digest-scored', 'control_execution_record.py',
+              "    return _high(token) and not (named and SS._is_digest(named.group(1)))\n",
+              "    return _high(token)  # defect: a clone's directory, a named digest, is replaced as random\n",
+              ['redaction/paths-kept'])
     record141('redaction-url-query-whole', 'control_execution_record.py',
               "        elif url and part == 'query' and char == '=' and not keyed:\n",
               "        elif False:  # defect: a query key is judged with its value and replaced with it\n",

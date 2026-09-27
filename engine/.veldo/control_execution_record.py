@@ -205,7 +205,9 @@ def _account_spans(text):
 # escaped forms of both), and a URL (`scheme://`) component by component (its authority, each path
 # segment, and each key and each value of its query and fragment); each segment is judged by the
 # scanner's own rule, so only a segment that is itself high-entropy is replaced and the rest of the path
-# is kept as printed. A slash-joined token that does not start at such a root (the shape of a base64 key,
+# is kept as printed. A segment that is a hex digest named by a lowercase word (`clone-<32 hex>`, a clone's
+# directory; `sha256-<64 hex>`) is the scanner's digest shape with its name, and is kept as the digest
+# alone would be. A slash-joined token that does not start at such a root (the shape of a base64 key,
 # whose `/` falls mid-token) is scored whole, as is every other candidate. The gate's scan
 # (secret_scan.scan_text) is not this step and is unchanged.
 _ROOT = re.compile(r'(?<![A-Za-z0-9+/_\-.~])(?:(?P<url>[A-Za-z][A-Za-z0-9+.\-]*://)|~?/|\.\.?/)')
@@ -255,8 +257,17 @@ def _located(text, found):
     return at, segments
 
 
+_NAMED_DIGEST = re.compile(r'\A[a-z][a-z0-9]*(?:[-_][a-z][a-z0-9]*)*[-_]([0-9A-Fa-f]+)\Z')
+
+
 def _high(token):
     return not SS._is_digest(token) and SS.shannon(token) >= SS.ENTROPY_THRESHOLD
+
+
+def _high_segment(token):
+    """The scanner's rule on a path or URL segment's candidate, a named digest excepted like a digest."""
+    named = _NAMED_DIGEST.match(token)
+    return _high(token) and not (named and SS._is_digest(named.group(1)))
 
 
 def _entropy_spans(text):
@@ -272,9 +283,10 @@ def _entropy_spans(text):
         at = max(end, found.end())
     spans, gap = [], 0
     for start, end, segments in ranges + [(len(text), len(text), [])]:
-        pieces = [(gap, start)] + segments
-        for low, high in pieces:
-            spans += [(m.start(), m.end()) for m in SS._CANDIDATE.finditer(text, low, high) if _high(m.group())]
+        spans += [(m.start(), m.end()) for m in SS._CANDIDATE.finditer(text, gap, start) if _high(m.group())]
+        for low, high in segments:
+            spans += [(m.start(), m.end()) for m in SS._CANDIDATE.finditer(text, low, high)
+                      if _high_segment(m.group())]
         gap = end
     return spans
 
