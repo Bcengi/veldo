@@ -26,11 +26,14 @@ REDACTION, BEFORE A LINE IS KEPT (`redact`). First every value in the run's set 
 values (`Resolved`: what the receiver resolved for this run, each with its kind; control_launch.RESOLVERS
 add to it, the subscription token among them, and VELDO-0158 AC3 adds the keystore's) is replaced by the
 marker naming its kind, `[REDACTED:<kind>]`, in each form a line can carry it (as printed, and as a JSON
-string escapes it, ASCII-escaped or not), longest value first. Only then does the secret scanner
-(secret_scan's detectors, reused, never reimplemented) redact its known patterns (`pattern:<shape>`) and
-high-entropy spans (`entropy`, a hex digest's shape excepted). The order is the point: a value the
-scanner alone would miss (no known pattern, low entropy) is replaced whole even when it is joined to a
-span the scanner redacts only in part.
+string escapes it, ASCII-escaped or not), longest value first. Next, in the engine's handshake answer and
+its init line only, the account identifiers (email, organization, account and organization uuid) are
+replaced by field (`account:<field>`). Only then does the secret scanner (secret_scan's detectors,
+reused, never reimplemented) redact its known patterns (`pattern:<shape>`) and high-entropy spans
+(`entropy`, a hex digest's shape excepted), a rooted path or a URL scored by component so that only a
+segment which is itself high-entropy goes and the rest of the path is kept (the gate's own scan is not
+changed). The order is the point: a value the scanner alone would miss (no known pattern, low entropy) is
+replaced whole even when it is joined to a span the scanner redacts only in part.
 
 THE COMMITTED RECORD. `Recorder.close()` returns {lines, bytes, digest}: the count of record lines (the
 header excluded), the file's size and the SHA-256 of its bytes. The receiver commits them in the dispatch's
@@ -59,6 +62,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import socket
 import stat
 import struct
@@ -146,24 +150,156 @@ class Resolved:
         return sorted(found.items(), key=lambda item: (-len(item[0]), item[0]))
 
 
+# ACCOUNT IDENTIFIERS, BY FIELD. The engine's handshake answer (Claude Code's initialize control response,
+# whose `account` is its Kfe(): email, organization, subscriptionType, tokenSource, apiKeySource and
+# apiProvider) and its init line name the account the run is logged in as. In those two lines, and only
+# there, the value of every field below, at any depth, is replaced where the line carries it: a string's
+# content by the marker of `account:<field>`, any other value by that marker as a JSON string, so the line
+# stays JSON. The fields that say how the run is logged in (the backend, the token source, the
+# subscription label) are kept.
+ACCOUNT_FIELDS = ('email', 'organization', 'organizationUuid', 'organization_uuid', 'accountUuid', 'account_uuid')
+ACCOUNT_KIND = 'account:%s'
+_DECODER = json.JSONDecoder()
+
+
+def _account_line(event):
+    """Whether a parsed line is the handshake answer or the init line."""
+    return isinstance(event, dict) and (event.get('type') == 'control_response'
+                                        or (event.get('type') == 'system' and event.get('subtype') == 'init'))
+
+
+def _account_spans(text):
+    """(start, end, replacement, kind) of each account identifier a handshake or init line carries; none for
+    any other line. A field inside another's value is covered by the outer one."""
+    try:
+        event = json.loads(text)
+    except ValueError:
+        return []
+    if not _account_line(event):
+        return []
+    found = []
+    for field in ACCOUNT_FIELDS:
+        for key in re.finditer(r'"%s"\s*:\s*' % re.escape(field), text):
+            try:
+                value, end = _DECODER.raw_decode(text, key.end())
+            except ValueError:
+                continue
+            if value is None or value == '' or isinstance(value, bool):
+                continue
+            kind = ACCOUNT_KIND % field
+            if isinstance(value, str):
+                found.append((key.end() + 1, end - 1, marker(kind), kind))
+            else:
+                found.append((key.end(), end, json.dumps(marker(kind)), kind))
+    spans, reach = [], -1
+    for span in sorted(found, key=lambda item: (item[0], -item[1])):
+        if span[0] >= reach:
+            spans.append(span)
+            reach = span[1]
+    return spans
+
+
+# THE ENTROPY STEP, BY COMPONENT. The scanner's candidate class holds `/`, so a whole absolute path or URL
+# would be one candidate and score as random (4.1 to 4.4 bits per character over 32). A path rooted at a
+# boundary (`/`, `~/`, `./`, `../`) is scored segment by segment (separated by `/` or a backslash, and JSON's
+# escaped forms of both), and a URL (`scheme://`) component by component (its authority, each path
+# segment, and each key and each value of its query and fragment); each segment is judged by the
+# scanner's own rule, so only a segment that is itself high-entropy is replaced and the rest of the path
+# is kept as printed. A slash-joined token that does not start at such a root (the shape of a base64 key,
+# whose `/` falls mid-token) is scored whole, as is every other candidate. The gate's scan
+# (secret_scan.scan_text) is not this step and is unchanged.
+_ROOT = re.compile(r'(?<![A-Za-z0-9+/_\-.~])(?:(?P<url>[A-Za-z][A-Za-z0-9+.\-]*://)|~?/|\.\.?/)')
+_PATH_STOPS = frozenset('"\'`<>|;,:()[]{}*?$&')
+_URL_STOPS = frozenset('"\'`<>|()[]{}')
+_ESCAPED = 'nrtbfu"'
+
+
+def _located(text, found):
+    """(end, segments): walk the path or URL whose root `found` matched; each segment a (start, end)."""
+    url = found.group('url') is not None
+    stops = _URL_STOPS if url else _PATH_STOPS
+    segments = []
+    begin = found.start() if url else found.end()
+    if url:
+        segments.append((found.start(), found.end() - 3))
+        begin = found.end()
+    at, part, keyed = begin, 'path', False
+    while at < len(text):
+        char = text[at]
+        if char.isspace() or char in stops:
+            break
+        width = 0
+        if char == '\\':
+            follow = text[at + 1:at + 2]
+            if follow in ('\\', '/'):
+                width = 2
+            elif follow and follow in _ESCAPED:
+                break
+            else:
+                width = 1
+        elif char == '/' and part == 'path':
+            width = 1
+        elif url and char in '?#':
+            part, keyed, width = 'query', False, 1
+        elif url and part == 'query' and char in '&;':
+            keyed, width = False, 1
+        elif url and part == 'query' and char == '=' and not keyed:
+            keyed, width = True, 1
+        if width:
+            segments.append((begin, at))
+            at += width
+            begin = at
+        else:
+            at += 1
+    segments.append((begin, at))
+    return at, segments
+
+
+def _high(token):
+    return not SS._is_digest(token) and SS.shannon(token) >= SS.ENTROPY_THRESHOLD
+
+
+def _entropy_spans(text):
+    """The (start, end) of every span the entropy step replaces: candidates of each segment of a rooted path
+    or URL, and every other candidate whole."""
+    ranges, at = [], 0
+    while True:
+        found = _ROOT.search(text, at)
+        if found is None:
+            break
+        end, segments = _located(text, found)
+        ranges.append((found.start(), end, segments))
+        at = max(end, found.end())
+    spans, gap = [], 0
+    for start, end, segments in ranges + [(len(text), len(text), [])]:
+        pieces = [(gap, start)] + segments
+        for low, high in pieces:
+            spans += [(m.start(), m.end()) for m in SS._CANDIDATE.finditer(text, low, high) if _high(m.group())]
+        gap = end
+    return spans
+
+
 def redact(text, resolved):
-    """(text, kinds): `text` with every resolved value replaced by its kind's marker, THEN the scanner's
-    known patterns and high-entropy spans replaced; `kinds` the sorted kinds replaced."""
+    """(text, kinds): `text` with every resolved value replaced by its kind's marker, THEN a handshake or
+    init line's account identifiers by field, the scanner's known patterns and the high-entropy spans
+    (by component in a path or URL) replaced; `kinds` the sorted kinds replaced."""
     kinds = set()
     for form, kind in (resolved.forms() if resolved is not None else ()):
         if form in text:
             text = text.replace(form, marker(kind))
             kinds.add(kind)
+    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):
+        text = text[:start] + replacement + text[end:]
+        kinds.add(kind)
     for rx, kind in PATTERN_KINDS:
         text, count = rx.subn(marker(kind), text)
         if count:
             kinds.add(kind)
-    for token in sorted(set(SS._CANDIDATE.findall(text)), key=lambda t: (-len(t), t)):
-        if SS._is_digest(token) or SS.shannon(token) < SS.ENTROPY_THRESHOLD:
-            continue
-        if token in text:
-            text = text.replace(token, marker(ENTROPY_KIND))
-            kinds.add(ENTROPY_KIND)
+    spans = _entropy_spans(text)
+    for start, end in sorted(spans, reverse=True):
+        text = text[:start] + marker(ENTROPY_KIND) + text[end:]
+    if spans:
+        kinds.add(ENTROPY_KIND)
     return text, sorted(kinds)
 
 
