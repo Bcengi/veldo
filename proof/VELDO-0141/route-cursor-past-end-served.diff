@@ -1,0 +1,5 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -319 +319 @@
+-    if after > len(lines):
++    if False:  # defect: a cursor past the end is served as an empty record

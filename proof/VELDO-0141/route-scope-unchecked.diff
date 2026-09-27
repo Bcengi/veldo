@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_authority.py
++++ b/.veldo/control_api_authority.py
+@@ -252 +252 @@
+-            if not self.CM.scope_covers(member.get('scope'), reservation.get('project')):
++            if False:  # defect: any current member reads any run's record

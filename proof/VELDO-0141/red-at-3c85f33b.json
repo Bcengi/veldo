@@ -6,7 +6,7 @@
   "VELDO-0141 record/claude-complete detail: the record holds every tool call with its input (the command, the failing command, the edit, the subagent), each result with the command's output and its error stream, the failed command as an error, and the edit made in the clone [[], 0 results]",
   "VELDO-0141 record/codex-complete detail: every line the Codex worker printed on its output and its error stream was kept, in order, after the wrapper's identity line [['no record bound to the dispatch', 'engine: 0 kept of 10 printed', 'stderr: 0 kept of 1 printed', 'the wrapper identity line is not the first, naming the engine']]",
   "VELDO-0141 record/codex-complete detail: the record holds both commands with their output and error stream, the failed one's exit code, the file change, the error item, the error stream's own line [[], []]",
-  "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-npywxdol/state/factory/runs/db46bb5b17fe2856e3cb16579b3a7030/config/settings.json', '--mcp-config', '/run/user/1000/v141-npywxdol/state/factory/runs/db46bb5b17fe2856e3cb16579b3a7030/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
+  "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-vnrq7gb4/state/factory/runs/cca2a58ed2f2515917ffdcdfb432129c/config/settings.json', '--mcp-config', '/run/user/1000/v141-vnrq7gb4/state/factory/runs/cca2a58ed2f2515917ffdcdfb432129c/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
   "VELDO-0141 record/stream-options detail: the shipped 2.1.281 record qualifies the baseline with them",
   "VELDO-0141 record/stream-options detail: the subagent's forwarded text and the partial messages are in the record [0 subagent, 0 partial]",
   "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [0 frames, 0 before the exit, 0 hints]",
@@ -76,7 +76,7 @@
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "c3e8485375116e3d16b124dc67de05e176c8959b2596e5d8275d7b49a12fdf2a",
-   "now": "930ad4632833358a2864838ef84761ce17c06071f9881737d02ae4214fb7377e"
+   "now": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b"
   },
   ".veldo/control_execution_record.py": {
    "at_commit": null,
@@ -159,7 +159,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 11.508,
+ "seconds": 11.524,
  "spec_id": "VELDO-0141",
  "suite": "scripts/suites/82_veldo_0141_execution_record.py",
  "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"

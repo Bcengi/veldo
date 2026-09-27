@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -916 +916 @@
+-        if isinstance(hint, dict) and hint.get('schema') == RECORD_HINT_SCHEMA:
++        if False:  # defect: a record hint is judged as a journal hint and refused

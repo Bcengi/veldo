@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -418 +418 @@
+-        record['execution_record'] = params.get('execution_record')
++        record['execution_record'] = None  # defect: the dispatch keeps no commitment of its record

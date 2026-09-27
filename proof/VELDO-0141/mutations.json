@@ -1,0 +1,2170 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0141 record/claude-complete",
+    true
+   ],
+   [
+    "VELDO-0141 record/codex-complete",
+    true
+   ],
+   [
+    "VELDO-0141 record/stream-options",
+    true
+   ],
+   [
+    "VELDO-0141 api/live",
+    true
+   ],
+   [
+    "VELDO-0141 api/cursor",
+    true
+   ],
+   [
+    "VELDO-0141 api/refusals",
+    true
+   ],
+   [
+    "VELDO-0141 api/no-secret-served",
+    true
+   ],
+   [
+    "VELDO-0141 api/service-call",
+    true
+   ],
+   [
+    "VELDO-0141 route/served-lines",
+    true
+   ],
+   [
+    "VELDO-0141 route/committed",
+    true
+   ],
+   [
+    "VELDO-0141 redaction/planted-value",
+    true
+   ],
+   [
+    "VELDO-0141 redaction/known-pattern",
+    true
+   ],
+   [
+    "VELDO-0141 redaction/kinds-field",
+    true
+   ],
+   [
+    "VELDO-0141 redaction/exact-set",
+    true
+   ],
+   [
+    "VELDO-0141 fixture/planted-control",
+    true
+   ],
+   [
+    "VELDO-0141 format/fake-lines",
+    true
+   ]
+  ],
+  "seconds": 12.151
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 record/claude-complete detail: every line the Claude Code worker printed on its output and its error stream was kept, in order, after the wrapper's identity line, with gapless sequences and receive times [['stderr: 0 kept of 1 printed'], 17 lines, 17 printed]",
+    "VELDO-0141 record/claude-complete detail: the record holds every tool call with its input (the command, the failing command, the edit, the subagent), each result with the command's output and its error stream, the failed command as an error, and the edit made in the clone [['Bash', 'Edit', 'Task'], 4 results]",
+    "VELDO-0141 record/codex-complete detail: every line the Codex worker printed on its output and its error stream was kept, in order, after the wrapper's identity line [['stderr: 0 kept of 1 printed']]",
+    "VELDO-0141 record/codex-complete detail: the record holds both commands with their output and error stream, the failed one's exit code, the file change, the error item, the error stream's own line [['command_execution', 'command_execution', 'file_change', 'error', 'agent_message'], []]",
+    "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[['entropy', 'v141_planted']]]",
+    "VELDO-0141 redaction/known-pattern detail: the token of a known pattern is redacted by the scanner in the messages and the error stream, its kind named [[['pattern:github_token']]]",
+    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [[]]",
+    "VELDO-0141 redaction/exact-set detail: a low-entropy word no resolver named is kept as printed: the receiver replaces exactly the run's set [['e_creation_input_tokens\": 0, \"cache_read_input_tokens\": 0}}}']]",
+    "VELDO-0141 redaction/exact-set detail: and every other line is the printed one with only redacted spans replaced [['stderr: 0 kept of 6 printed']]"
+   ],
+   "diff": "proof/VELDO-0141/record-error-stream-discarded.diff",
+   "failed_rows": [
+    "VELDO-0141 record/claude-complete",
+    "VELDO-0141 record/codex-complete",
+    "VELDO-0141 redaction/planted-value",
+    "VELDO-0141 redaction/known-pattern",
+    "VELDO-0141 redaction/exact-set"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "1af0bf2ce65d4655087f17375b42c014160b4cf886947e399bbe14ac48c97297",
+   "name": "record-error-stream-discarded",
+   "named_row_red": true,
+   "named_rows": [
+    "record/claude-complete",
+    "record/codex-complete"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     false
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     false
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     false
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.175,
+   "source_sha256": "036a391a6a827c99d4f542eff220d265b710e561577fc943269d4e97989c478c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['ambermgf', 'harborzfc', 'lanternfbs', 'token', 'pattern', 'high'], 18 lines served]",
+    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['ambermgf', 'harborzfc', 'lanternfbs', 'token', 'pattern', 'high'], False]",
+    "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[[], []]]",
+    "VELDO-0141 redaction/known-pattern detail: the token of a known pattern is redacted by the scanner in the messages and the error stream, its kind named [[[], []]]",
+    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token v141-subscription-d203abfba23c9cb5']]",
+    "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[]]"
+   ],
+   "diff": "proof/VELDO-0141/record-served-unredacted.diff",
+   "failed_rows": [
+    "VELDO-0141 api/no-secret-served",
+    "VELDO-0141 redaction/planted-value",
+    "VELDO-0141 redaction/known-pattern",
+    "VELDO-0141 redaction/kinds-field"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "a8ef7b3b2cba982213e6186397c636be54bb56aa6e62f51daa79d960a088e703",
+   "name": "record-served-unredacted",
+   "named_row_red": true,
+   "named_rows": [
+    "api/no-secret-served"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     false
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.135,
+   "source_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [[], 18 lines served]",
+    "VELDO-0141 api/service-call detail: the record call over the service socket serves the owner the same lines the file holds, and refuses the outsider by name [None, unauthorized:out_of_scope]",
+    "VELDO-0141 route/served-lines detail: the route served every kept line of the run, as kept: count, order, sequence, receive time, stream, redaction marks and payload, nothing merged, dropped, reordered or replaced [18 served, 18 kept]",
+    "VELDO-0141 route/served-lines detail: and so did the live stream",
+    "VELDO-0141 route/served-lines detail: every engine event served is the one the engine printed: each tool call with its input and result, each command's output, the edit and the error [16 of 16]"
+   ],
+   "diff": "proof/VELDO-0141/route-summarized-steps.diff",
+   "failed_rows": [
+    "VELDO-0141 api/no-secret-served",
+    "VELDO-0141 api/service-call",
+    "VELDO-0141 route/served-lines"
+   ],
+   "module": ".veldo/control_api_authority.py",
+   "mutant_sha256": "5621b8a484aa0cd328d044d6d5e8fdc10979547704f9782a293b7622d501b573",
+   "name": "route-summarized-steps",
+   "named_row_red": true,
+   "named_rows": [
+    "route/served-lines"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     false
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     false
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     false
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.177,
+   "source_sha256": "9c5fc45e6003097fcbca8ad0094b245c2c2ed3eabf1f6ecad5e4daa4770ba057"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['harbortft', 'lanternfft'], 18 lines served]",
+    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['harbortft', 'lanternfft'], False]",
+    "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[['entropy'], ['entropy']]]",
+    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token [REDACTED:entropy]']]"
+   ],
+   "diff": "proof/VELDO-0141/redaction-scanner-first.diff",
+   "failed_rows": [
+    "VELDO-0141 api/no-secret-served",
+    "VELDO-0141 redaction/planted-value",
+    "VELDO-0141 redaction/known-pattern"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "d1633dec079f951a34afa10450cb35c5878d0f8a9ce7d6b46e2e147339271a9b",
+   "name": "redaction-scanner-first",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/planted-value"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     false
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.147,
+   "source_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-vggd0pb0/state/factory/runs/eba6c8e17bcb2ba86e8825399237d6da/config/settings.json', '--mcp-config', '/run/user/1000/v141-vggd0pb0/state/factory/runs/eba6c8e17bcb2ba86e8825399237d6da/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
+    "VELDO-0141 record/stream-options detail: the shipped 2.1.281 record qualifies the baseline with them",
+    "VELDO-0141 record/stream-options detail: the subagent's forwarded text and the partial messages are in the record [0 subagent, 0 partial]"
+   ],
+   "diff": "proof/VELDO-0141/record-stream-options-dropped.diff",
+   "failed_rows": [
+    "VELDO-0141 record/stream-options"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "ed9c02a984bdf8ee60fef4bad5addfc03d96b95161b2b7ee05823262fd2b149c",
+   "name": "record-stream-options-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "record/stream-options"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     false
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 11.795,
+   "source_sha256": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [3 frames, 1 before the exit, 1 hints]"
+   ],
+   "diff": "proof/VELDO-0141/record-hint-unsent.diff",
+   "failed_rows": [
+    "VELDO-0141 api/live"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "0e017527057771c67a81aca28dd545036e8a308a6a7d2b000f7d82df1853ea74",
+   "name": "record-hint-unsent",
+   "named_row_red": true,
+   "named_rows": [
+    "api/live"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     false
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.154,
+   "source_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 record/claude-complete detail: every line the Claude Code worker printed on its output and its error stream was kept, in order, after the wrapper's identity line, with gapless sequences and receive times [['the wrapper identity line is not the first, naming the engine'], 17 lines, 17 printed]",
+    "VELDO-0141 record/codex-complete detail: every line the Codex worker printed on its output and its error stream was kept, in order, after the wrapper's identity line [['the wrapper identity line is not the first, naming the engine']]",
+    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [[], True]",
+    "VELDO-0141 redaction/exact-set detail: and every other line is the printed one with only redacted spans replaced [['the wrapper identity line is not the first, naming the engine']]"
+   ],
+   "diff": "proof/VELDO-0141/record-wrapper-line-dropped.diff",
+   "failed_rows": [
+    "VELDO-0141 record/claude-complete",
+    "VELDO-0141 record/codex-complete",
+    "VELDO-0141 redaction/planted-value",
+    "VELDO-0141 redaction/exact-set"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "e5e64267bf59cf977592c9f6f02762c1086c837a390c376abdcae14e6cdaccc4",
+   "name": "record-wrapper-line-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "record/claude-complete",
+    "record/codex-complete"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     false
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     false
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     false
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.21,
+   "source_sha256": "036a391a6a827c99d4f542eff220d265b710e561577fc943269d4e97989c478c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 route/committed detail: after the run ended the route names it ended with the committed line count and digest, the exit record's, which the kept file matches [200, {}]",
+    "VELDO-0141 route/committed detail: a record whose file no longer matches the committed digest is refused by name [{'a line changed': (200, None), 'a line added': (200, None)}]"
+   ],
+   "diff": "proof/VELDO-0141/record-exit-uncommitted.diff",
+   "failed_rows": [
+    "VELDO-0141 route/committed"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "ef4071e636bd1c5f4d285dd5835291fd13f57c3de64188ed98a62ea7e5d86770",
+   "name": "record-exit-uncommitted",
+   "named_row_red": true,
+   "named_rows": [
+    "route/committed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.166,
+   "source_sha256": "036a391a6a827c99d4f542eff220d265b710e561577fc943269d4e97989c478c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 route/committed detail: after the run ended the route names it ended with the committed line count and digest, the exit record's, which the kept file matches [200, {}]",
+    "VELDO-0141 route/committed detail: a record whose file no longer matches the committed digest is refused by name [{'a line changed': (200, None), 'a line added': (200, None)}]"
+   ],
+   "diff": "proof/VELDO-0141/record-exit-unbound.diff",
+   "failed_rows": [
+    "VELDO-0141 route/committed"
+   ],
+   "module": ".veldo/control_dispatch.py",
+   "mutant_sha256": "fc31936bfd92e0750e11737ad61caddd1794221ca339a399b5fa468dc088261f",
+   "name": "record-exit-unbound",
+   "named_row_red": true,
+   "named_rows": [
+    "route/committed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.164,
+   "source_sha256": "6557e96b2e022b2524b0084aa9bf594a7b8e9703fd90e4dcc98ee1f065939b37"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 route/committed detail: a record whose file no longer matches the committed digest is refused by name [{'a line changed': (200, None), 'a line added': (500, 'unknown_outcome:record_digest')}]"
+   ],
+   "diff": "proof/VELDO-0141/route-digest-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0141 route/committed"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "624bc3b02b8fdb324ef4025ac0d1f4107a506ca1eeedeb4408cb69d88617019f",
+   "name": "route-digest-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "route/committed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.149,
+   "source_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/refusals detail: a member whose scope does not cover the run's project is refused by name, nothing served [200 None]",
+    "VELDO-0141 api/refusals detail: nor is a stream opened for a member outside the scope [200 None]",
+    "VELDO-0141 api/service-call detail: the record call over the service socket serves the owner the same lines the file holds, and refuses the outsider by name [None, None]"
+   ],
+   "diff": "proof/VELDO-0141/route-scope-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0141 api/refusals",
+    "VELDO-0141 api/service-call"
+   ],
+   "module": ".veldo/control_api_authority.py",
+   "mutant_sha256": "5bff23ef4a6443e8dc87067abe8f3cbdd1e716905eaf61014152de8f84696862",
+   "name": "route-scope-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "api/refusals",
+    "api/service-call"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     false
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     false
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.179,
+   "source_sha256": "9c5fc45e6003097fcbca8ad0094b245c2c2ed3eabf1f6ecad5e4daa4770ba057"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 route/committed detail: another run's record in this run's place is refused as bound to another run [500 unknown_outcome:record_digest]"
+   ],
+   "diff": "proof/VELDO-0141/route-binding-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0141 route/committed"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "276bb7ece8c395ca5588ca1c952946916ff0217d7b50ea8a7c3224fb3eb55b1e",
+   "name": "route-binding-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "route/committed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.136,
+   "source_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/refusals detail: an unknown run and a cursor past the end are refused by name, never an empty record [404 missing_evidence:unknown_run, 200 None]"
+   ],
+   "diff": "proof/VELDO-0141/route-cursor-past-end-served.diff",
+   "failed_rows": [
+    "VELDO-0141 api/refusals"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "871bf3ffef2c227dafbea641471e001d40a9338501338caaa0867255e5f05d52",
+   "name": "route-cursor-past-end-served",
+   "named_row_red": true,
+   "named_rows": [
+    "api/refusals"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     false
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.162,
+   "source_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [1 frames, 1 before the exit, 18 hints]",
+    "VELDO-0141 api/live detail: after the run ended the stream served the rest and closed as ended, having served every kept line once, in sequence [1 served, 18 kept, []]",
+    "VELDO-0141 api/live detail: each frame is a record frame whose id is its cursor, the last one the committed count",
+    "VELDO-0141 route/served-lines detail: and so did the live stream"
+   ],
+   "diff": "proof/VELDO-0141/route-record-hint-unrouted.diff",
+   "failed_rows": [
+    "VELDO-0141 api/live",
+    "VELDO-0141 route/served-lines"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "3ff84de25f7ece5efb0e0fd9ff13255c647a9bdbb6384dd1d0f3f3e272806135",
+   "name": "route-record-hint-unrouted",
+   "named_row_red": true,
+   "named_rows": [
+    "api/live"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     false
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     false
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 22.154,
+   "source_sha256": "d2c509e24862b6224bef807b525376ab5a9111200542503dbb11998647adf918"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/service-call detail: the record call over the service socket serves the owner the same lines the file holds, and refuses the outsider by name [None, invalid_input:api_call]"
+   ],
+   "diff": "proof/VELDO-0141/route-service-call-unlisted.diff",
+   "failed_rows": [
+    "VELDO-0141 api/service-call"
+   ],
+   "module": ".veldo/control_api_assertion.py",
+   "mutant_sha256": "ed3b62930ac9bbce34c2f84e9e6e89692c9424e9b7255dc9348f912da705d2ca",
+   "name": "route-service-call-unlisted",
+   "named_row_red": true,
+   "named_rows": [
+    "api/service-call"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     false
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.155,
+   "source_sha256": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/planted-value detail: the receiver named the planted kind and the subscription token among the run's resolved values and redactions, never a value [['v141_planted']]",
+    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token [REDACTED:entropy]']]"
+   ],
+   "diff": "proof/VELDO-0141/redaction-token-unresolved.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/planted-value",
+    "VELDO-0141 redaction/known-pattern"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "36d553ea8815e78be85a334542286e269bb7fae6d4cecb8fb18b65efda26745c",
+   "name": "redaction-token-unresolved",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/known-pattern"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.149,
+   "source_sha256": "036a391a6a827c99d4f542eff220d265b710e561577fc943269d4e97989c478c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[[], []]]",
+    "VELDO-0141 redaction/known-pattern detail: the token of a known pattern is redacted by the scanner in the messages and the error stream, its kind named [[[], []]]",
+    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token [REDACTED:subscription_token]']]",
+    "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[2, 3, 4, 6, 7]]"
+   ],
+   "diff": "proof/VELDO-0141/redaction-kinds-unnamed.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/planted-value",
+    "VELDO-0141 redaction/known-pattern",
+    "VELDO-0141 redaction/kinds-field"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "4e7ad36374e2c7eed40b2467cd144416d0f033b6d610848de0107723d4bdbe3f",
+   "name": "redaction-kinds-unnamed",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/kinds-field"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.158,
+   "source_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+  }
+ ],
+ "mutations_per_row": {
+  "api/live": [
+   "record-hint-unsent",
+   "route-record-hint-unrouted"
+  ],
+  "api/no-secret-served": [
+   "record-served-unredacted"
+  ],
+  "api/refusals": [
+   "route-scope-unchecked",
+   "route-cursor-past-end-served"
+  ],
+  "api/service-call": [
+   "route-scope-unchecked",
+   "route-service-call-unlisted"
+  ],
+  "record/claude-complete": [
+   "record-error-stream-discarded",
+   "record-wrapper-line-dropped"
+  ],
+  "record/codex-complete": [
+   "record-error-stream-discarded",
+   "record-wrapper-line-dropped"
+  ],
+  "record/stream-options": [
+   "record-stream-options-dropped"
+  ],
+  "redaction/kinds-field": [
+   "redaction-kinds-unnamed"
+  ],
+  "redaction/known-pattern": [
+   "redaction-token-unresolved"
+  ],
+  "redaction/planted-value": [
+   "redaction-scanner-first"
+  ],
+  "route/committed": [
+   "record-exit-uncommitted",
+   "record-exit-unbound",
+   "route-digest-unchecked",
+   "route-binding-unchecked"
+  ],
+  "route/served-lines": [
+   "route-summarized-steps"
+  ]
+ },
+ "noop": {
+  "control_api.py": {
+   "copy_sha256": "d2c509e24862b6224bef807b525376ab5a9111200542503dbb11998647adf918",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.17,
+   "source_sha256": "d2c509e24862b6224bef807b525376ab5a9111200542503dbb11998647adf918"
+  },
+  "control_api_assertion.py": {
+   "copy_sha256": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.16,
+   "source_sha256": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268"
+  },
+  "control_api_authority.py": {
+   "copy_sha256": "9c5fc45e6003097fcbca8ad0094b245c2c2ed3eabf1f6ecad5e4daa4770ba057",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.183,
+   "source_sha256": "9c5fc45e6003097fcbca8ad0094b245c2c2ed3eabf1f6ecad5e4daa4770ba057"
+  },
+  "control_dispatch.py": {
+   "copy_sha256": "6557e96b2e022b2524b0084aa9bf594a7b8e9703fd90e4dcc98ee1f065939b37",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.194,
+   "source_sha256": "6557e96b2e022b2524b0084aa9bf594a7b8e9703fd90e4dcc98ee1f065939b37"
+  },
+  "control_engine_claude.py": {
+   "copy_sha256": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.158,
+   "source_sha256": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b"
+  },
+  "control_execution_record.py": {
+   "copy_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.163,
+   "source_sha256": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+  },
+  "control_launch.py": {
+   "copy_sha256": "036a391a6a827c99d4f542eff220d265b710e561577fc943269d4e97989c478c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 12.148,
+   "source_sha256": "036a391a6a827c99d4f542eff220d265b710e561577fc943269d4e97989c478c"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 141",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 313.692,
+ "spec_id": "VELDO-0141",
+ "suite": "scripts/suites/82_veldo_0141_execution_record.py"
+}
