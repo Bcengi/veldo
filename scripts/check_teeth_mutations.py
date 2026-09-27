@@ -3544,7 +3544,7 @@ def cases():
           '                        if gate is not None else None)\n',
           '            accepted = None  # defect: the build is offered with its proof never accepted\n',
           'accepted-before-offer', module='executor.py',
-          also=[('            if gate is not None and not accepted:', '            if False and not accepted:')])
+          also=[('            if gate is not None and accepted is not NotImplemented and not accepted:', '            if False and not accepted:')])
     proof('proof-unstored-accepted',
           '        return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}\n',
           '        return {"ok": True, "problems": [], "bundle": None}  # defect: a proof nothing stored is accepted\n',
