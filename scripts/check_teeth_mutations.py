@@ -7423,9 +7423,9 @@ def cases():
               "        if form in text:\n"
               "            text = text.replace(form, marker(kind))\n"
               "            kinds.add(kind)\n"
-              "    for rx, kind in PATTERN_KINDS:\n",
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
               "    kinds = set()\n"
-              "    for rx, kind in PATTERN_KINDS:\n",
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
               ['redaction/planted-value'],
               also=[("    return text, sorted(kinds)\n",
                      "    for form, kind in (resolved.forms() if resolved is not None else ()):  # defect: after the scanner\n"
@@ -7485,6 +7485,24 @@ def cases():
               "'redacted': kinds, 'payload': text})",
               "'redacted': [], 'payload': text})  # defect: a line never names what was replaced",
               ['redaction/kinds-field'])
+    # The lead's path decision: a rooted path is scored by segment and a URL by component; the declared falsifier
+    # scores the whole path again. Then the segment rule itself, the query key and value, and the account fields.
+    record141('redaction-path-scored-whole', 'control_execution_record.py',
+              "        found = _ROOT.search(text, at)\n",
+              "        found = None  # defect: a path or URL is one candidate, scored whole\n",
+              ['redaction/paths-kept', 'redaction/path-segment', 'redaction/url-component'])
+    record141('redaction-path-segment-unscored', 'control_execution_record.py',
+              "        pieces = [(gap, start)] + segments\n",
+              "        pieces = [(gap, start)]  # defect: a secret inside a path or URL is never judged\n",
+              ['redaction/path-segment', 'redaction/url-component'])
+    record141('redaction-url-query-whole', 'control_execution_record.py',
+              "        elif url and part == 'query' and char == '=' and not keyed:\n",
+              "        elif False:  # defect: a query key is judged with its value and replaced with it\n",
+              ['redaction/url-component'])
+    record141('redaction-account-fields-kept', 'control_execution_record.py',
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
+              "    for start, end, replacement, kind in []:  # defect: the account identifiers are kept\n",
+              ['redaction/account-fields'])
     return result
 
 
