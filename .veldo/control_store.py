@@ -160,8 +160,8 @@ def _project_gate(conn):
     """The eligibility Gate over `conn`, for its project check alone, which reads the unit, its project
     record and the owner's membership on that connection and no domain or repository coordinate."""
     if not _ELIGIBILITY:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "control_eligibility.py")
-        spec = importlib.util.spec_from_file_location("store_control_eligibility", path)
+        spec = importlib.util.spec_from_file_location(
+            "store_control_eligibility", os.path.join(os.path.dirname(os.path.abspath(__file__)), "control_eligibility.py"))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         _ELIGIBILITY.append(module)
