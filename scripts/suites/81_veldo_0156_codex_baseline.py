@@ -89,6 +89,11 @@ def _v156_suite():
         spec.loader.exec_module(module)
         return module
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     base = Path(tempfile.mkdtemp(prefix='v156-', dir=runtime if os.path.isdir(runtime) else None))
@@ -307,7 +312,7 @@ if argv[:2] == ['login', 'status']:
     effective = merge(user_config(), overrides(argv[2:]))
     kind = login(effective)
     (markers / ('status-%d.json' % os.getpid())).write_text(json.dumps({'argv': sys.argv, 'home': str(home)}))
-    print(TABLE['status'].get(kind or 'none', TABLE['status']['none']))
+    print(TABLE['status'].get(kind or 'none', TABLE['status']['none']), file=sys.stderr)
     sys.exit(0 if kind else 1)
 ignore_user = '--ignore-user-config' in argv
 effective = merge({} if ignore_user else user_config(), overrides(argv))
@@ -371,13 +376,14 @@ emit({'type': 'turn.started'})
 # Here the real engine sends its first model request: marked, so a refusal before it is seen.
 (markers / ('%d.request' % os.getpid())).write_text(json.dumps(request))
 (markers / ('%d.turn' % os.getpid())).write_text('the first turn')
-emit({'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'agent_message'}})
-emit({'type': 'turn.completed', 'usage': {'input_tokens': 3, 'cached_input_tokens': 0, 'output_tokens': 2,
+emit({'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'agent_message', 'text': 'done'}})
+emit({'type': 'turn.completed', 'usage': {'input_tokens': 3, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0, 'output_tokens': 2,
                                           'reasoning_output_tokens': 0}})
 out.close()
 (markers / ('%d.done' % os.getpid())).write_text('done')
 '''.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
             '@@TABLE@@', repr(json.dumps(fake_table)))
+        fake = fake_formats.embed(fake)
         package = base / 'packages' / 'codex'
         CODEX_BIN = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         CODEX_BIN.parent.mkdir(parents=True)
@@ -810,6 +816,8 @@ out.close()
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        if globals().get('__engine_observer__'):
+            __engine_observer__(locals())
         with contextlib.suppress(Exception):
             subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,
                            stdin=subprocess.DEVNULL)

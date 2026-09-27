@@ -29,7 +29,7 @@ footprint:
   - "scripts/suites/*_veldo_0165_*.py"
   - "scripts/suites/75_veldo_0062_accounts.py"
   - "scripts/suites/78_veldo_0160_account_pool.py"
-  - "scripts/drive.py"
+  - "proof/VELDO-0165/drive.py"
   - "scripts/suites/78_veldo_0060_claude_adapter.py"
   - "scripts/suites/79_veldo_0061_codex_adapter.py"
   - "scripts/suites/80_veldo_0155_claude_baseline.py"
@@ -164,7 +164,7 @@ and the SDK naming expression from both pinned binaries, without executing eithe
 82_veldo_0165_launch_hygiene has eight behavior rows and two fixture controls; all eight behavior rows
 are red by assertion at 65125030, and all nine finding 165 mutations are rejected. The new suite and
 VELDO-0160's account pool suite pass normally and in the empty gate environment. The footprint adds
-scripts/drive.py for the requested red entry point, and the VELDO-0062 and VELDO-0160 suites for their
+proof/VELDO-0165/drive.py for the requested red entry point, and the VELDO-0062 and VELDO-0160 suites for their
 fake qualification writers. The whole selftest and contained-launch suites are pending because their
 real user service manager access conflicts with this task's safety restriction. No gate or real engine
 run was performed. Status unchanged; evidence and remaining checks are in proof/VELDO-0165/README.md.

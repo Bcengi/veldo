@@ -1,4 +1,469 @@
 {
+ "capture": {
+  "changes": [
+   {
+    "change": "known",
+    "field": "control_response.response.response.agents",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.agents[]",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.agents[].description",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.agents[].model",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "optional",
+    "field": "control_response.response.response.agents[].model",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.agents[].name",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.analytics_disabled",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.available_output_styles",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.available_output_styles[]",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.commands",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.current_permission_mode",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.fast_mode_disabled_reason",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.fast_mode_state",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.ide_rc_auto_enable_gate",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[]",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].description",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].displayName",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].resolvedModel",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].supportedEffortLevels",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].supportedEffortLevels[]",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "optional",
+    "field": "control_response.response.response.models[].supportedEffortLevels",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].supportsAdaptiveThinking",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "optional",
+    "field": "control_response.response.response.models[].supportsAdaptiveThinking",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].supportsAutoMode",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "optional",
+    "field": "control_response.response.response.models[].supportsAutoMode",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].supportsEffort",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "optional",
+    "field": "control_response.response.response.models[].supportsEffort",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].supportsFastMode",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "optional",
+    "field": "control_response.response.response.models[].supportsFastMode",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.models[].value",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.output_style",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.pid",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.remote_control_auto_connect_default",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.remote_control_auto_enable",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.remote_control_auto_on_by_default",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.remote_control_available",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.session_state",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "control_response.response.response.user_output_styles_dir",
+    "lines": [
+     1
+    ]
+   },
+   {
+    "change": "known",
+    "field": "system/init.messaging_socket_path",
+    "lines": [
+     2
+    ]
+   },
+   {
+    "change": "known",
+    "field": "assistant.message.content[]",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "assistant.message.content[].text",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "assistant.message.content[].type",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "assistant.message.diagnostics",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "assistant.message.input_transformations",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "optional",
+    "field": "assistant.message.usage.server_tool_use",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.completed.item",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.completed.item.id",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.completed.item.text",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.completed.item.type",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.id",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.text",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.type",
+    "lines": [
+     3
+    ]
+   }
+  ],
+  "metrics": {
+   "claude_code": {
+    "assistant": {
+     "from_capture": 4,
+     "known": 150,
+     "optional": 67
+    },
+    "control_response": {
+     "from_capture": 29,
+     "known": 43,
+     "optional": 14
+    },
+    "rate_limit_event": {
+     "from_capture": 0,
+     "known": 33,
+     "optional": 20
+    },
+    "result/error": {
+     "from_capture": 0,
+     "known": 79,
+     "optional": 23
+    },
+    "result/success": {
+     "from_capture": 0,
+     "known": 100,
+     "optional": 42
+    },
+    "system/init": {
+     "from_capture": 1,
+     "known": 56,
+     "optional": 26
+    }
+   },
+   "codex": {
+    "error": {
+     "from_capture": 0,
+     "known": 2,
+     "optional": 0
+    },
+    "item.completed": {
+     "from_capture": 3,
+     "known": 5,
+     "optional": 0
+    },
+    "item.started": {
+     "from_capture": 0,
+     "known": 2,
+     "optional": 0
+    },
+    "item.updated": {
+     "from_capture": 0,
+     "known": 2,
+     "optional": 0
+    },
+    "thread.started": {
+     "from_capture": 0,
+     "known": 2,
+     "optional": 0
+    },
+    "turn.completed": {
+     "from_capture": 0,
+     "known": 7,
+     "optional": 5
+    },
+    "turn.failed": {
+     "from_capture": 0,
+     "known": 3,
+     "optional": 0
+    },
+    "turn.started": {
+     "from_capture": 0,
+     "known": 1,
+     "optional": 0
+    }
+   }
+  },
+  "path": "proof/VELDO-0172/capture.json",
+  "recorded_run": "2026-09-26",
+  "sha256": "sha256:8f5b8eb50df11324ebdf50834e1018c0a2bbc93f653d81b5a69327e20808c8e3",
+  "versions": {
+   "claude_code": "2.1.281",
+   "codex": "0.154.0"
+  }
+ },
  "claude_code": {
   "binary": "/home/dmitry/.local/share/claude/versions/2.1.281",
   "credential_tables": [
@@ -1073,23 +1538,64 @@
      "message": {
       "fields": {
        "container": {
+        "nullable": true,
         "optional": true,
         "type": "any"
        },
        "content": {
         "items": {
+         "observed": {
+          "capture_lines": [
+           3
+          ],
+          "fields": {
+           "text": {
+            "capture_lines": [
+             3
+            ],
+            "source": "proof/VELDO-0172/capture.json:streams.claude",
+            "type": "string"
+           },
+           "type": {
+            "capture_lines": [
+             3
+            ],
+            "source": "proof/VELDO-0172/capture.json:streams.claude",
+            "type": "string"
+           }
+          },
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "object"
+         },
          "ref": "yq",
          "type": "any"
         },
         "type": "array"
        },
        "context_management": {
+        "nullable": true,
         "optional": true,
+        "type": "any"
+       },
+       "diagnostics": {
+        "capture_lines": [
+         3
+        ],
+        "nullable": true,
+        "source": "proof/VELDO-0172/capture.json:streams.claude",
         "type": "any"
        },
        "id": {
         "optional": true,
         "type": "string"
+       },
+       "input_transformations": {
+        "capture_lines": [
+         3
+        ],
+        "items": {},
+        "source": "proof/VELDO-0172/capture.json:streams.claude",
+        "type": "array"
        },
        "model": {
         "type": "string"
@@ -1099,6 +1605,7 @@
         "value": "assistant"
        },
        "stop_details": {
+        "nullable": true,
         "optional": true,
         "type": "any"
        },
@@ -1185,6 +1692,11 @@
            }
           },
           "nullable": true,
+          "omitted_lines": [
+           3
+          ],
+          "optional": true,
+          "optional_source": "proof/VELDO-0172/capture.json:streams.claude",
           "ref": "wq",
           "type": "object"
          },
@@ -1495,6 +2007,349 @@
       "values": {
        "type": "any"
       }
+     }
+    },
+    "type": "object"
+   },
+   "control_response": {
+    "fields": {
+     "response": {
+      "fields": {
+       "pending_permission_requests": {
+        "items": {
+         "ref": "$T",
+         "type": "any"
+        },
+        "optional": true,
+        "ref": "Ty",
+        "type": "array"
+       },
+       "pending_user_dialog_requests": {
+        "items": {
+         "ref": "$T",
+         "type": "any"
+        },
+        "optional": true,
+        "ref": "fy",
+        "type": "array"
+       },
+       "request_id": {
+        "type": "string"
+       },
+       "response": {
+        "anchor": "account:{email:ie?.email,organization:ie?.organization,subscriptionType:ie?.subscription,tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}",
+        "fields": {
+         "account": {
+          "fields": {
+           "apiKeySource": {
+            "optional": true,
+            "type": "string"
+           },
+           "apiProvider": {
+            "optional": false,
+            "type": "string"
+           },
+           "email": {
+            "optional": true,
+            "type": "string"
+           },
+           "organization": {
+            "optional": true,
+            "type": "string"
+           },
+           "subscriptionType": {
+            "optional": true,
+            "type": "string"
+           },
+           "tokenSource": {
+            "optional": true,
+            "type": "string"
+           }
+          },
+          "type": "object"
+         },
+         "agents": {
+          "capture_lines": [
+           1
+          ],
+          "items": {
+           "capture_lines": [
+            1
+           ],
+           "fields": {
+            "description": {
+             "capture_lines": [
+              1
+             ],
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "string"
+            },
+            "model": {
+             "capture_lines": [
+              1
+             ],
+             "omitted_lines": [
+              1
+             ],
+             "optional": true,
+             "optional_source": "proof/VELDO-0172/capture.json:streams.claude",
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "string"
+            },
+            "name": {
+             "capture_lines": [
+              1
+             ],
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "string"
+            }
+           },
+           "source": "proof/VELDO-0172/capture.json:streams.claude",
+           "type": "object"
+          },
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "array"
+         },
+         "analytics_disabled": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "boolean"
+         },
+         "available_output_styles": {
+          "capture_lines": [
+           1
+          ],
+          "items": {
+           "capture_lines": [
+            1
+           ],
+           "source": "proof/VELDO-0172/capture.json:streams.claude",
+           "type": "string"
+          },
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "array"
+         },
+         "commands": {
+          "capture_lines": [
+           1
+          ],
+          "items": {},
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "array"
+         },
+         "current_permission_mode": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "string"
+         },
+         "fast_mode_disabled_reason": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "string"
+         },
+         "fast_mode_state": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "string"
+         },
+         "ide_rc_auto_enable_gate": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "boolean"
+         },
+         "models": {
+          "capture_lines": [
+           1
+          ],
+          "items": {
+           "capture_lines": [
+            1
+           ],
+           "fields": {
+            "description": {
+             "capture_lines": [
+              1
+             ],
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "string"
+            },
+            "displayName": {
+             "capture_lines": [
+              1
+             ],
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "string"
+            },
+            "resolvedModel": {
+             "capture_lines": [
+              1
+             ],
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "string"
+            },
+            "supportedEffortLevels": {
+             "capture_lines": [
+              1
+             ],
+             "items": {
+              "capture_lines": [
+               1
+              ],
+              "source": "proof/VELDO-0172/capture.json:streams.claude",
+              "type": "string"
+             },
+             "omitted_lines": [
+              1
+             ],
+             "optional": true,
+             "optional_source": "proof/VELDO-0172/capture.json:streams.claude",
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "array"
+            },
+            "supportsAdaptiveThinking": {
+             "capture_lines": [
+              1
+             ],
+             "omitted_lines": [
+              1
+             ],
+             "optional": true,
+             "optional_source": "proof/VELDO-0172/capture.json:streams.claude",
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "boolean"
+            },
+            "supportsAutoMode": {
+             "capture_lines": [
+              1
+             ],
+             "omitted_lines": [
+              1
+             ],
+             "optional": true,
+             "optional_source": "proof/VELDO-0172/capture.json:streams.claude",
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "boolean"
+            },
+            "supportsEffort": {
+             "capture_lines": [
+              1
+             ],
+             "omitted_lines": [
+              1
+             ],
+             "optional": true,
+             "optional_source": "proof/VELDO-0172/capture.json:streams.claude",
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "boolean"
+            },
+            "supportsFastMode": {
+             "capture_lines": [
+              1
+             ],
+             "omitted_lines": [
+              1
+             ],
+             "optional": true,
+             "optional_source": "proof/VELDO-0172/capture.json:streams.claude",
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "boolean"
+            },
+            "value": {
+             "capture_lines": [
+              1
+             ],
+             "source": "proof/VELDO-0172/capture.json:streams.claude",
+             "type": "string"
+            }
+           },
+           "source": "proof/VELDO-0172/capture.json:streams.claude",
+           "type": "object"
+          },
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "array"
+         },
+         "output_style": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "string"
+         },
+         "pid": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "number"
+         },
+         "remote_control_auto_connect_default": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "boolean"
+         },
+         "remote_control_auto_enable": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "boolean"
+         },
+         "remote_control_auto_on_by_default": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "boolean"
+         },
+         "remote_control_available": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "boolean"
+         },
+         "session_state": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "string"
+         },
+         "user_output_styles_dir": {
+          "capture_lines": [
+           1
+          ],
+          "source": "proof/VELDO-0172/capture.json:streams.claude",
+          "type": "string"
+         }
+        },
+        "optional": true,
+        "source": "initialize success payload; account emitter in the binary",
+        "type": "object"
+       },
+       "subtype": {
+        "type": "literal",
+        "value": "success"
+       }
+      },
+      "ref": "_Y",
+      "type": "object"
+     },
+     "type": {
+      "type": "literal",
+      "value": "control_response"
      }
     },
     "type": "object"
@@ -2744,6 +3599,13 @@
       },
       "optional": true,
       "type": "object"
+     },
+     "messaging_socket_path": {
+      "capture_lines": [
+       2
+      ],
+      "source": "proof/VELDO-0172/capture.json:streams.claude",
+      "type": "string"
      },
      "model": {
       "type": "string"
@@ -4073,6 +4935,36 @@
    "item.completed": {
     "fields": {
      "item": {
+      "observed": {
+       "capture_lines": [
+        3
+       ],
+       "fields": {
+        "id": {
+         "capture_lines": [
+          3
+         ],
+         "source": "proof/VELDO-0172/capture.json:streams.codex",
+         "type": "string"
+        },
+        "text": {
+         "capture_lines": [
+          3
+         ],
+         "source": "proof/VELDO-0172/capture.json:streams.codex",
+         "type": "string"
+        },
+        "type": {
+         "capture_lines": [
+          3
+         ],
+         "source": "proof/VELDO-0172/capture.json:streams.codex",
+         "type": "string"
+        }
+       },
+       "source": "proof/VELDO-0172/capture.json:streams.codex",
+       "type": "object"
+      },
       "type": "any"
      },
      "type": {
@@ -4185,6 +5077,36 @@
    }
   },
   "items": {
+   "agent_message": {
+    "capture_lines": [
+     3
+    ],
+    "fields": {
+     "id": {
+      "capture_lines": [
+       3
+      ],
+      "source": "proof/VELDO-0172/capture.json:streams.codex",
+      "type": "string"
+     },
+     "text": {
+      "capture_lines": [
+       3
+      ],
+      "source": "proof/VELDO-0172/capture.json:streams.codex",
+      "type": "string"
+     },
+     "type": {
+      "capture_lines": [
+       3
+      ],
+      "source": "proof/VELDO-0172/capture.json:streams.codex",
+      "type": "string"
+     }
+    },
+    "source": "proof/VELDO-0172/capture.json:streams.codex",
+    "type": "object"
+   },
    "mcp_tool_call": {
     "fields": {
      "arguments": {
@@ -4322,7 +5244,7 @@
   },
   "version": "0.154.0"
  },
- "generated_by": "proof/VELDO-0062/extract_formats.py (reads the binaries' bytes only)",
+ "generated_by": "proof/VELDO-0062/extract_formats.py (reads binary schemas and the allowlist-scrubbed live capture)",
  "schema": "veldo.cli-formats/v1",
  "spec_id": "VELDO-0062"
 }

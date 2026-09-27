@@ -96,6 +96,11 @@ def _v160_suite():
         spec.loader.exec_module(module)
         return module
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='v160-', dir=fast))
@@ -253,9 +258,9 @@ def stream_input():
         message = json.loads(line)
         if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
             answer = {'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
-                      'response': {'account': {'subscriptionType': 'Claude Max', 'apiProvider': 'firstParty'},
+                      'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},
                                    'pid': os.getpid()}}}
-            sys.stdout.write(json.dumps(answer) + chr(10))
+            sys.stdout.write(json.dumps(complete_event(answer)) + chr(10))
             sys.stdout.flush()
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
@@ -275,6 +280,7 @@ for step in payload.get('script') or []:
 (markers / ('%%d.done' %% os.getpid())).write_text(json.dumps({'ended': time.time()}))
 sys.exit(payload.get('code', 0))
 ''' % (sys.executable,)
+        fake = fake_formats.embed(fake)
 
         def fake_engine(name):
             # The markers directory and the engine's name are written into the fake: a pinned engine's argv
@@ -426,13 +432,15 @@ sys.exit(payload.get('code', 0))
                     'cache_creation': {'ephemeral_5m_input_tokens': 0, 'ephemeral_1h_input_tokens': 0},
                     'server_tool_use': {'web_search_requests': 0, 'web_fetch_requests': 0}, 'service_tier': 'standard'}
 
+        @live_step
         def c_init():
             return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
                              'cwd': '/work', 'tools': ['Read', 'Bash'],
-                             'mcp_servers': [{'name': 'tracker', 'status': 'connected'}], 'model': 'configured-model',
+                             'mcp_servers': [], 'model': 'configured-model',
                              'permissionMode': 'default', 'slash_commands': [], 'output_style': 'default', 'skills': [],
                              'plugins': [], 'uuid': str(uuid.uuid4()), 'session_id': SESSION}}
 
+        @live_step
         def c_msg(mid, inp, out, content=None):
             return {'line': {'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()),
                              'session_id': SESSION,
@@ -440,6 +448,7 @@ sys.exit(payload.get('code', 0))
                                          'content': content or [], 'stop_reason': None, 'stop_sequence': None,
                                          'usage': c_usage(inp, out)}}}
 
+        @live_step
         def c_api_error(text):
             # The binary's API error message: an assistant message wrapping the error, `error` its kind.
             return {'line': {'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()),
@@ -454,6 +463,7 @@ sys.exit(payload.get('code', 0))
                                          'cacheCreationInputTokens': 0, 'webSearchRequests': 0, 'costUSD': 0,
                                          'contextWindow': 200000, 'maxOutputTokens': 32000}}
 
+        @live_step
         def c_result(inp, out, turns=1, text='done', error=False, status=None):
             line = {'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4, 'is_error': error,
                     'num_turns': turns, 'result': text, 'stop_reason': 'stop_sequence' if error else 'end_turn',
@@ -470,6 +480,7 @@ sys.exit(payload.get('code', 0))
                              'permission_denials': [], 'errors': list(errors), 'uuid': str(uuid.uuid4()),
                              'session_id': SESSION}}
 
+        @live_step
         def c_rate(status, reset, kind='five_hour', utilization=None):
             info = {'status': status, 'rateLimitType': kind}
             if reset is not None:
@@ -2320,6 +2331,8 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        if globals().get('__engine_observer__'):
+            __engine_observer__(locals())
         with contextlib.suppress(Exception):
             for name in ('ac1', 'moved', 'reset', 'observe', 'added', 'usage', 'order'):
                 if name not in released:

@@ -91,6 +91,11 @@ def _v62_suite():
         spec.loader.exec_module(module)
         return module
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='v62-', dir=fast))
@@ -294,7 +299,7 @@ import json, os, sqlite3, sys, time
 from pathlib import Path
 if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
-    print('Logged in using ChatGPT')
+    print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
 store, markers, domain = sys.argv[-3], Path(sys.argv[-2]), sys.argv[-1]
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
@@ -314,7 +319,7 @@ own = {'engine': Path(sys.argv[0]).name, 'pid': os.getpid(), 'dispatch': dispatc
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
 out = open(markers / ('%%d.out' %% os.getpid()), 'w')
 def say(event):
-    text = json.dumps(event)
+    text = json.dumps(complete_event(event))
     out.write(text + chr(10))
     out.flush()
     sys.stdout.write(text + chr(10))
@@ -334,7 +339,7 @@ def stream_input():
         message = json.loads(line)
         if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
             token = bool(os.environ.get('CLAUDE_CODE_OAUTH_TOKEN'))
-            account = dict({'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} if token else {'subscriptionType': 'Claude Max'},
+            account = dict({'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} if token else {'subscriptionType': 'Claude Team'},
                            apiProvider='firstParty')
             say({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
                                                           'response': {'account': account, 'pid': os.getpid()}}})
@@ -356,6 +361,7 @@ out.close()
 (markers / ('%%d.done' %% os.getpid())).write_text('done')
 sys.exit(payload.get('code', 0))
 ''' % (sys.executable,)
+        fake = fake_formats.embed(fake)
         for name in ('claude', 'codex'):
             (engines / name).write_text(fake)
             (engines / name).chmod(0o755)
@@ -653,13 +659,15 @@ sys.exit(payload.get('code', 0))
                     'cache_creation': {'ephemeral_5m_input_tokens': create, 'ephemeral_1h_input_tokens': 0},
                     'server_tool_use': {'web_search_requests': 0, 'web_fetch_requests': 0}, 'service_tier': 'standard'}
 
+        @live_step
         def c_init(session=None):
             return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
                              'cwd': '/work', 'tools': ['Read', 'Edit', 'Bash'],
-                             'mcp_servers': [{'name': 'tracker', 'status': 'connected'}], 'model': 'configured-model',
+                             'mcp_servers': [], 'model': 'configured-model',
                              'permissionMode': 'default', 'slash_commands': [], 'output_style': 'default', 'skills': [],
                              'plugins': [], 'uuid': str(uuid.uuid4()), 'session_id': session or SESSION}}
 
+        @live_step
         def c_msg(mid, inp, out, read=0, create=0, parent=None, session=None):
             return {'line': {'type': 'assistant', 'parent_tool_use_id': parent, 'uuid': str(uuid.uuid4()),
                              'session_id': session or SESSION,
@@ -667,6 +675,7 @@ sys.exit(payload.get('code', 0))
                                          'content': [], 'stop_reason': None, 'stop_sequence': None,
                                          'usage': c_usage(inp, out, read, create)}}}
 
+        @live_step
         def c_result(inp, out, turns, cache=0, models=None, main=None, session=None):
             # `usage` is the main loop's; `modelUsage` per model over every call, the total accounted.
             models = models or {'configured-model': (inp, out, cache, 0)}
@@ -680,6 +689,7 @@ sys.exit(payload.get('code', 0))
                                for name, (i, o, r, c) in models.items()},
                 'permission_denials': [], 'uuid': str(uuid.uuid4()), 'session_id': session or SESSION}}
 
+        @live_step
         def c_rate(status, reset, kind='five_hour', utilization=None):
             info = {'status': status, 'rateLimitType': kind}
             if reset is not None:
@@ -1591,6 +1601,8 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        if globals().get('__engine_observer__'):
+            __engine_observer__(locals())
         for conn in connections:
             with contextlib.suppress(Exception):
                 conn.close()

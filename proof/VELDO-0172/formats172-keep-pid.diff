@@ -1,0 +1,5 @@
+--- a/proof/VELDO-0172/scrub.py
++++ b/proof/VELDO-0172/scrub.py
+@@ -29 +29 @@
+-        return value if field in rules['token_counts'] else (0.0 if isinstance(value, float) else 0)
++        return value

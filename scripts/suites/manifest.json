@@ -1076,6 +1076,15 @@
    ],
    "regions": "Parent session environment removed at exec, baseline and own login restored, both engines refusing unqualified records, MCP SDK tools keeping their prefixes.",
    "requires_note": "Uses only shared ROOT and expect. Real Runner, receiver, signed store, accounts and wrapper; fake engines and a local stdio MCP server. No service manager or network."
+  },
+  {
+   "name": "82_veldo_0172_live_formats",
+   "file": "82_veldo_0172_live_formats.py",
+   "requires": [
+    "82_veldo_0172_live_formats"
+   ],
+   "regions": "Binary-schema and live-capture field reconciliation; census of every fake engine writer, actual stdout and stderr read-back; allowlist scrub, two selected tap answers, secret scan and planted host, pid and home values.",
+   "requires_note": "Uses only ROOT and expect. Runs discovered suites through their real production interfaces, observing their generated fake executable and line constructors before teardown. Scratch profiles only, no real engine or login. Four assertion rows, each reported once."
   }
  ]
 }

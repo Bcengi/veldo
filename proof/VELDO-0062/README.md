@@ -284,3 +284,17 @@ session the final report settles), 39 (30), 40 (22) and 41 (34). Main merged at 
 plain and under the stage environment, all green: `75_veldo_0062_accounts`, the VELDO-0036, 0039, 0040,
 0041, 0047 and 0050 suites (58, 62, 63, 67, 66, 64), `36_veldo_0023_journal`, `39_veldo_0026_revocation`,
 `40_veldo_0101_capsules`, `41_veldo_0103_assessor`, `47_veldo_0107_ipc` and `50_git_environment`.
+
+## VELDO-0172 live-format reconciliation
+
+The current extraction also reads `proof/VELDO-0172/capture.json`, the allowlist-scrubbed streams from
+the recorded 2026-09-26 run. The binary schema remains the base: capture fields extend its known set,
+and an omission in a captured event makes that field optional without removing any schema field.
+Each added field and relaxed requirement names its capture stream and line. The table records the
+capture digest, CLI versions, changes, and known, optional and capture-derived field counts per event.
+The initialize answer is now an event schema; Codex's captured agent-message item extends the item
+table. Regeneration and the existing check mode include this capture. No engine or login is executed.
+
+The fake defaults are a separate, frozen artifact in `proof/VELDO-0172/fake_templates.json`; regenerating
+the format table never rewrites them. Suite 82 discovers the fake writers in the suites, drives their
+real launch tests and generated executables, and compares their output against the capture and table.

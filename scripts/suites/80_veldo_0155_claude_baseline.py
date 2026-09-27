@@ -90,6 +90,11 @@ def _v155_suite():
     def file_sha(path):
         return 'sha256:' + hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     base = Path(tempfile.mkdtemp(prefix='v155-', dir=runtime if os.path.isdir(runtime) else None))
@@ -259,7 +264,7 @@ def _v155_suite():
         fake_table = {'bundled': list(TABLE['bundled_skills'][:2]), 'connectors': CONNECTORS, 'login': LOGIN,
                       'profile_types': list(TABLE['profile']['types']['values']), 'version': VERSION,
                       'subscription_provider': INPUT['providers']['subscription'],
-                      'subscription': INPUT['subscriptions']['values'][2]}
+                      'subscription': 'Claude Team'}
         fake = '''#!@@PYTHON@@ -B
 import json, os, sys, time, uuid
 from pathlib import Path
@@ -385,7 +390,7 @@ own = {'pid': os.getpid(), 'start': start(os.getpid()), 'dispatch': env.get('VEL
 (markers / ('%d.tmp' % os.getpid())).rename(markers / ('%d.json' % os.getpid()))
 out = open(markers / ('%d.out' % os.getpid()), 'w')
 def emit(event):
-    text = json.dumps(event)
+    text = json.dumps(complete_event(event))
     out.write(text + chr(10))
     out.flush()
     sys.stdout.write(text + chr(10))
@@ -420,7 +425,7 @@ else:
     packet = json.loads(raw) if raw.strip() else {}
 payload = packet.get('payload') or {}
 session = 'session-155-' + uuid.uuid4().hex[:8]
-usage = {'input_tokens': 3, 'output_tokens': 2, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0}
+usage = {'input_tokens': 3, 'output_tokens': 3, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0}
 # One init event per turn, each with the apiKeySource the packet scripts, else the one the login makes.
 turns = 0
 for scripted in payload.get('inits') or [api_key_source]:
@@ -441,6 +446,7 @@ for scripted in payload.get('inits') or [api_key_source]:
           'message': {'id': 'msg-' + uuid.uuid4().hex[:8], 'type': 'message', 'role': 'assistant',
                       'model': 'configured-model', 'content': [], 'stop_reason': None, 'stop_sequence': None,
                       'usage': usage}})
+usage['output_tokens'] = 4
 emit({'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4, 'is_error': False, 'num_turns': turns,
       'result': 'done', 'stop_reason': 'end_turn', 'total_cost_usd': 0, 'usage': usage,
       'modelUsage': {'configured-model': {'inputTokens': 3 * turns, 'outputTokens': 2 * turns, 'cacheReadInputTokens': 0,
@@ -451,6 +457,7 @@ out.close()
 (markers / ('%d.done' % os.getpid())).write_text('done')
 '''.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
             '@@TABLE@@', repr(json.dumps(fake_table)))
+        fake = fake_formats.embed(fake)
         versions = base / 'home' / '.local' / 'share' / 'claude' / 'versions'
         versions.mkdir(parents=True)
         (versions / VERSION).write_text(fake)
@@ -976,6 +983,8 @@ out.close()
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        if globals().get('__engine_observer__'):
+            __engine_observer__(locals())
         with contextlib.suppress(Exception):
             subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,
                            stdin=subprocess.DEVNULL)
