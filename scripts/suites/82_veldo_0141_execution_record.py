@@ -263,7 +263,7 @@ def _v141_suite():
         EDIT = {'path': 'NOTES.md', 'old': 'first draft of the notes', 'new': 'second draft of the notes'}
         src = base / 'source'
         GP.run(['git', 'init', '-q', str(src)], check=True, capture_output=True)
-        relative_file = 'worker_sources/components/traceback_execution_record_review.py'
+        relative_file = 'worker_sources/components/build_output/traceback_execution_record_review.py'
         (src / relative_file).parent.mkdir(parents=True)
         (src / relative_file).write_text('review file\n')
         (src / EDIT['path']).write_text('# notes\n' + EDIT['old'] + '\n')
@@ -1439,7 +1439,7 @@ err.close()
 
         with region('redaction/clone-relative-paths'):
             check('redaction/clone-relative-paths', 'receiver uses its bound clone, not its own working directory',
-                  any(relative_file in line['payload'] for line in main_lines)
+                  whole_high(relative_file) and any(relative_file in line['payload'] for line in main_lines)
                   and any(relative_file in line['payload'] for line in all_pages(main_launch.dispatch_id)[0]))
             if ER is None or not hasattr(ER, 'clone_paths'):
                 check('redaction/clone-relative-paths', 'clone path snapshot exists', False)
