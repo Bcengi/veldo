@@ -55,7 +55,7 @@ Suite: `scripts/suites/82_veldo_0144_mcp_catalog.py`. Each row reports once.
 
 - AC1, `catalog/ordinary-config-saves`: All 20 ordinary probe values, the worktree and Mac paths and a Confluence REST URL save with every field compared exactly in the API and store. The probe's environment helper used API_TOKEN; these ordinary values use CONFIG to obey the position rule. Named references and an ordinary generated literal also save exactly.
 - AC1, `catalog/credential-position-refused`: Generated hex values, including digest widths previously accepted, and short values refuse by name in environment entries, both stdio flag forms and HTTP queries. Userinfo and literal headers also refuse. No store command is called and no revision or journal entry is written.
-- AC1, `catalog/known-shape-refused`: Generated known shapes refuse in every string field, including names and references. All eight existing PATTERNS entries are exercised outside credential positions.
+- AC1, `catalog/known-shape-refused`: Generated known shapes refuse across string fields, including names and references. All eight existing PATTERNS entries are exercised outside credential positions.
 - AC1, `catalog/deleted-reference`: A tombstoned credential cannot satisfy either an environment or header reference. Both refuse by name without storage.
 - AC1, `catalog/credential-domain`: Another domain's reference and a non-Veldo name are refused without writes.
 - AC2, `credential/libsecret-protocol`: Piped lookup preserves a real trailing newline, attribute pairs and subset matching work, and store requires a label. Independent full-attribute lookup catches an adapter omitting the application attribute.
@@ -91,9 +91,15 @@ not a live desktop keyring or a deployed TLS terminator.
 
 `red-at-a4769f68.json` records the current suite against the unchanged production
 files extracted with git archive from
-`a4769f68b041d17414d14fecce29819cfdd66ede`. All 25 rows are red by assertion;
+`a4769f68b041d17414d14fecce29819cfdd66ede`, the merge base with main. All 25 rows are red by assertion;
 none relies on an exception. No other worktree or branch is created or modified.
 Reproduce with `python3 proof/VELDO-0144/drive.py red a4769f68`.
+The original `red-at-3c85f33b.json` is regenerated with the same current suite.
+`red-at-6e1c725f.json` records this review round's starting commit: ordinary
+configuration, credential positions, deleted references and known shapes are red
+by assertion, along with the dependent observability and domain rows. This
+separates the review regressions from the feature's original missing behavior.
+Reproduce with the same driver and positional arguments `red 6e1c725f`.
 
 Finding 144 registers 31 uniquely named mutations in
 `scripts/check_teeth_mutations.py`. `mutations.json` records the baseline, a

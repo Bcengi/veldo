@@ -1,99 +1,61 @@
 {
  "by_assertion": true,
- "commit": "3c85f33b2f51f505cfed69d03272f9c077436478",
+ "commit": "6e1c725f63d18cf78e9a9c974aa108800abd656d",
  "details": [
-  "VELDO-0144 detail: catalog/stdio: every field of revision 1 round trips through API and SQLite; every field of revision 2 round trips through API and SQLite",
-  "VELDO-0144 detail: catalog/http: every field of revision 1 round trips through API and SQLite; every field of revision 2 round trips through API and SQLite",
-  "VELDO-0144 detail: catalog/host-command: stdio host-signed authority command stores revision 1; stdio host-signed authority command stores revision 2; http host-signed authority command stores revision 1; http host-signed authority command stores revision 2",
-  "VELDO-0144 detail: catalog/immutable-history: both revisions of both transports survive byte for byte after the later save",
-  "VELDO-0144 detail: catalog/stale-unauthorized: stale, unauthorized and forged saves refuse by name and write nothing; a live passkey session whose owner role was removed cannot write",
-  "VELDO-0144 detail: catalog/invalid: invalid transports, fields and value/reference shapes store no definition",
-  "VELDO-0144 detail: catalog/atlassian: Atlassian is an ordinary http definition with its reference resolvable in the keystore",
-  "VELDO-0144 detail: credential/write: TLS passkey write stores only the five metadata fields and resolves through keychain; the opaque runtime handle prints only its reference",
-  "VELDO-0144 detail: credential/replace-delete: replacement keeps the reference and resolves only the new value; deletion clears the keystore item and runtime resolution refuses",
-  "VELDO-0144 detail: credential/read-back: written: read-back is refused by name; replaced: read-back is refused by name; deleted: read-back is refused by name",
-  "VELDO-0144 detail: credential/no-value-on-command-line: the fake reads the exact value from stdin and checks every live process argv",
-  "VELDO-0144 detail: credential/no-value-in-records: during and after writes no value appears in store, journal, feed, proof or logs [False, 200, True, True, True, True]",
-  "VELDO-0144 detail: credential/keystore-refusals: locked refuses by name, commits no record and has no fallback; unreachable refuses by name, commits no record and has no fallback; missing executable refuses without touching any real keystore",
-  "VELDO-0144 detail: credential/authority-binding: current role, base, passkey, forgery guard and signed value binding are enforced; a live passkey session whose owner role was removed cannot write",
   "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations",
-  "VELDO-0144 detail: install/assets: new runtime assets are installed, derive into the authority closure, and match engine copies",
   "VELDO-0144 detail: catalog/known-shape-refused: environment is refused before any write; arguments is refused before any write; url is refused before any write; id is refused before any write; label is refused before any write; command is refused before any write; hosts is refused before any write; read_only_tools is refused before any write; environment-name is refused before any write; header-name is refused before any write; reference is refused before any write; known shape 0 refuses by name without storage; known shape 1 refuses by name without storage; known shape 2 refuses by name without storage; known shape 3 refuses by name without storage; known shape 4 refuses by name without storage; known shape 5 refuses by name without storage; known shape 6 refuses by name without storage; known shape 7 refuses by name without storage",
-  "VELDO-0144 detail: catalog/ordinary-config-saves: uuid cloudId saves every field exactly; atlassian url saves every field exactly; long public api path saves every field exactly; filesystem server args saves every field exactly; allowed dirs flag saves every field exactly; google sheet id saves every field exactly; google drive folder id saves every field exactly; git sha repo pin saves every field exactly; github node id saves every field exactly; aws region/arn saves every field exactly; jira cloud id url saves every field exactly; confluence space path saves every field exactly; npm scoped package with version saves every field exactly; docker image digest saves every field exactly; SSH public key fingerprint saves every field exactly; public ed25519 key saves every field exactly; base64 json config saves every field exactly; webflow collection id saves every field exactly; long snake env value saves every field exactly; mixed case path segment saves every field exactly; worktree path saves every field exactly; mac application support saves every field exactly; confluence REST URL saves every field exactly; named references and an ordinary random literal save exactly",
+  "VELDO-0144 detail: catalog/ordinary-config-saves: long public api path saves every field exactly; allowed dirs flag saves every field exactly; google sheet id saves every field exactly; google drive folder id saves every field exactly; jira cloud id url saves every field exactly; confluence space path saves every field exactly; SSH public key fingerprint saves every field exactly; public ed25519 key saves every field exactly; base64 json config saves every field exactly; long snake env value saves every field exactly; mixed case path segment saves every field exactly; worktree path saves every field exactly; mac application support saves every field exactly; confluence REST URL saves every field exactly; named references and an ordinary random literal save exactly",
   "VELDO-0144 detail: catalog/credential-position-refused: environment case 0 refuses before the store; arguments case 1 refuses before the store; arguments case 2 refuses before the store; url case 3 refuses before the store; environment case 4 refuses before the store; arguments case 5 refuses before the store; arguments case 6 refuses before the store; url case 7 refuses before the store; environment case 8 refuses before the store; arguments case 9 refuses before the store; arguments case 10 refuses before the store; url case 11 refuses before the store; environment case 12 refuses before the store; arguments case 13 refuses before the store; arguments case 14 refuses before the store; url case 15 refuses before the store; environment case 16 refuses before the store; arguments case 17 refuses before the store; arguments case 18 refuses before the store; url case 19 refuses before the store; environment case 20 refuses before the store; arguments case 21 refuses before the store; arguments case 22 refuses before the store; url case 23 refuses before the store; environment case 24 refuses before the store; arguments case 25 refuses before the store; arguments case 26 refuses before the store; url case 27 refuses before the store; environment case 28 refuses before the store; arguments case 29 refuses before the store; arguments case 30 refuses before the store; url case 31 refuses before the store; environment case 32 refuses before the store; arguments case 33 refuses before the store; arguments case 34 refuses before the store; url case 35 refuses before the store; environment case 36 refuses before the store; arguments case 37 refuses before the store; arguments case 38 refuses before the store; url case 39 refuses before the store; environment case 40 refuses before the store; arguments case 41 refuses before the store; arguments case 42 refuses before the store; url case 43 refuses before the store; environment case 44 refuses before the store; arguments case 45 refuses before the store; arguments case 46 refuses before the store; url case 47 refuses before the store; url case 48 refuses before the store; url case 49 refuses before the store; url case 50 refuses before the store; url case 51 refuses before the store; url case 52 refuses before the store; url case 53 refuses before the store; url case 54 refuses before the store; url case 55 refuses before the store; arguments case 56 refuses before the store; headers case 57 refuses before the store",
   "VELDO-0144 detail: catalog/deleted-reference: environment cannot reference tombstoned metadata; headers cannot reference tombstoned metadata",
-  "VELDO-0144 detail: catalog/credential-domain: reference must belong to a credential recorded in this domain; reference must belong to a credential recorded in this domain",
-  "VELDO-0144 detail: credential/libsecret-protocol: lookup preserves a real newline, matches all attributes, and store requires label",
-  "VELDO-0144 detail: credential/replay-value: identical retry is idempotent; changed value refuses before touching keystore",
-  "VELDO-0144 detail: credential/encoding: invalid Unicode refuses by name, writes nothing and records an API observation",
-  "VELDO-0144 detail: credential/deleted-state: deleted record carries a tombstone; set after delete is a write and removes the tombstone; replaying a recreation preserves its written outcome"
+  "VELDO-0144 detail: catalog/credential-domain: reference must belong to a credential recorded in this domain; reference must belong to a credential recorded in this domain"
  ],
  "failed_rows": [
-  "VELDO-0144 catalog/stdio",
-  "VELDO-0144 catalog/http",
-  "VELDO-0144 catalog/host-command",
-  "VELDO-0144 catalog/immutable-history",
-  "VELDO-0144 catalog/stale-unauthorized",
-  "VELDO-0144 catalog/invalid",
-  "VELDO-0144 catalog/atlassian",
-  "VELDO-0144 credential/write",
-  "VELDO-0144 credential/replace-delete",
-  "VELDO-0144 credential/read-back",
-  "VELDO-0144 credential/no-value-on-command-line",
-  "VELDO-0144 credential/no-value-in-records",
-  "VELDO-0144 credential/keystore-refusals",
-  "VELDO-0144 credential/authority-binding",
   "VELDO-0144 catalog/observability",
-  "VELDO-0144 install/assets",
   "VELDO-0144 catalog/known-shape-refused",
   "VELDO-0144 catalog/ordinary-config-saves",
   "VELDO-0144 catalog/credential-position-refused",
   "VELDO-0144 catalog/deleted-reference",
-  "VELDO-0144 catalog/credential-domain",
-  "VELDO-0144 credential/libsecret-protocol",
-  "VELDO-0144 credential/replay-value",
-  "VELDO-0144 credential/encoding",
-  "VELDO-0144 credential/deleted-state"
+  "VELDO-0144 catalog/credential-domain"
  ],
  "modules": {
   ".veldo/control_api.py": {
-   "at_commit": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5",
+   "at_commit": "0fdb23cd8782c7d1a3d5ec562b9f8380145bccaedcea5c8b2a6136611dccafbd",
    "now": "0fdb23cd8782c7d1a3d5ec562b9f8380145bccaedcea5c8b2a6136611dccafbd"
   },
   ".veldo/control_api_assertion.py": {
-   "at_commit": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15",
+   "at_commit": "f77c7e890ebb5515ee2bedfac40ffd31366846205fde130746bef1a7a76ad17e",
    "now": "f77c7e890ebb5515ee2bedfac40ffd31366846205fde130746bef1a7a76ad17e"
   },
   ".veldo/control_api_authority.py": {
-   "at_commit": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c",
+   "at_commit": "a406b42d94dfe720674628f5c99652892fdb745f372a4cbc63e6c8fcbffb5261",
    "now": "a406b42d94dfe720674628f5c99652892fdb745f372a4cbc63e6c8fcbffb5261"
   },
   ".veldo/control_api_models.py": {
-   "at_commit": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c",
+   "at_commit": "5c69710145f6bf5da67c61ca6146f7f064ea578ebedea54fc8bb46594d122376",
    "now": "5c69710145f6bf5da67c61ca6146f7f064ea578ebedea54fc8bb46594d122376"
   },
   ".veldo/control_credential.py": {
-   "at_commit": null,
+   "at_commit": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95",
    "now": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95"
   },
   ".veldo/control_credential_keystore.py": {
-   "at_commit": null,
+   "at_commit": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294",
    "now": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294"
   },
   ".veldo/control_mcp_catalog.py": {
-   "at_commit": null,
+   "at_commit": "f4fceb854f80daa4798d9869cf98c73c63aa8603ab28bb02201fcbfacca28fa6",
    "now": "ea3c9918f17b9ada16d39e6e4537238dd1d2f37eab9234e8dae61489f3916cd2"
   },
   ".veldo/control_service.py": {
-   "at_commit": "f78c6381e0626316c36db8db01d44d58a1850b4967f4f52e2bac76ee8e69430e",
+   "at_commit": "8d30d3c68846e580eed5e5cc8dc2fd9f812257de1bf40d719442d25b3bc23f4f",
    "now": "8d30d3c68846e580eed5e5cc8dc2fd9f812257de1bf40d719442d25b3bc23f4f"
   },
   ".veldo/control_service_api.py": {
-   "at_commit": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941",
+   "at_commit": "5fb5a240461200b78e4eb62f9aad245985c6f628b92223424b6fdab2d5971f8d",
    "now": "5fb5a240461200b78e4eb62f9aad245985c6f628b92223424b6fdab2d5971f8d"
   },
   ".veldo/init_scaffold.py": {
-   "at_commit": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce",
+   "at_commit": "3a9374afb50947e14dbf0dc53c1da0f7f31c06e002634fc89478183be830f159",
    "now": "3a9374afb50947e14dbf0dc53c1da0f7f31c06e002634fc89478183be830f159"
   }
  },
@@ -101,59 +63,59 @@
  "rows": [
   [
    "VELDO-0144 catalog/stdio",
-   false
+   true
   ],
   [
    "VELDO-0144 catalog/http",
-   false
+   true
   ],
   [
    "VELDO-0144 catalog/host-command",
-   false
+   true
   ],
   [
    "VELDO-0144 catalog/immutable-history",
-   false
+   true
   ],
   [
    "VELDO-0144 catalog/stale-unauthorized",
-   false
+   true
   ],
   [
    "VELDO-0144 catalog/invalid",
-   false
+   true
   ],
   [
    "VELDO-0144 catalog/atlassian",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/write",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/replace-delete",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/read-back",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/no-value-on-command-line",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/no-value-in-records",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/keystore-refusals",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/authority-binding",
-   false
+   true
   ],
   [
    "VELDO-0144 catalog/observability",
@@ -161,7 +123,7 @@
   ],
   [
    "VELDO-0144 install/assets",
-   false
+   true
   ],
   [
    "VELDO-0144 catalog/known-shape-refused",
@@ -185,24 +147,24 @@
   ],
   [
    "VELDO-0144 credential/libsecret-protocol",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/replay-value",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/encoding",
-   false
+   true
   ],
   [
    "VELDO-0144 credential/deleted-state",
-   false
+   true
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 3.011,
+ "seconds": 23.624,
  "spec_id": "VELDO-0144",
  "suite": "scripts/suites/82_veldo_0144_mcp_catalog.py",
- "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"
+ "tree": "git archive 6e1c725f63d18cf78e9a9c974aa108800abd656d, unchanged; the current suite file run against it"
 }
