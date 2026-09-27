@@ -7510,7 +7510,7 @@ def cases():
         ['credential/no-value-in-records'], ())
     add(144, 'mcp144-stdout-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
         "                    self.keystore.set(ref.split(':', 1)[1], value)",
-        "                    __import__('os').write(1, value.encode())\n                    self.keystore.set(ref.split(':', 1)[1], value)",
+        "                    print(value)\n                    self.keystore.set(ref.split(':', 1)[1], value)",
         ['credential/no-value-in-records'], ())
     add(144, 'mcp144-catalog-literal-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
         '    if credential_literal(d):',

@@ -17,7 +17,13 @@
   "VELDO-0144 detail: credential/keystore-refusals: locked refuses by name, commits no record and has no fallback; unreachable refuses by name, commits no record and has no fallback; missing executable refuses without touching any real keystore",
   "VELDO-0144 detail: credential/authority-binding: current role, base, passkey, forgery guard and signed value binding are enforced; a live passkey session whose owner role was removed cannot write",
   "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations",
-  "VELDO-0144 detail: install/assets: new runtime assets are installed, derive into the authority closure, and match engine copies"
+  "VELDO-0144 detail: install/assets: new runtime assets are installed, derive into the authority closure, and match engine copies",
+  "VELDO-0144 detail: catalog/credential-literals: environment is refused before any write; arguments is refused before any write; url is refused before any write",
+  "VELDO-0144 detail: catalog/credential-domain: reference must belong to a credential recorded in this domain; reference must belong to a credential recorded in this domain",
+  "VELDO-0144 detail: credential/libsecret-protocol: lookup preserves a real newline, matches all attributes, and store requires label",
+  "VELDO-0144 detail: credential/replay-value: identical retry is idempotent; changed value refuses before touching keystore",
+  "VELDO-0144 detail: credential/encoding: invalid Unicode refuses by name, writes nothing and records an API observation",
+  "VELDO-0144 detail: credential/deleted-state: deleted record carries a tombstone; set after delete is a write and removes the tombstone; replaying a recreation preserves its written outcome"
  ],
  "failed_rows": [
   "VELDO-0144 catalog/stdio",
@@ -35,12 +41,18 @@
   "VELDO-0144 credential/keystore-refusals",
   "VELDO-0144 credential/authority-binding",
   "VELDO-0144 catalog/observability",
-  "VELDO-0144 install/assets"
+  "VELDO-0144 install/assets",
+  "VELDO-0144 catalog/credential-literals",
+  "VELDO-0144 catalog/credential-domain",
+  "VELDO-0144 credential/libsecret-protocol",
+  "VELDO-0144 credential/replay-value",
+  "VELDO-0144 credential/encoding",
+  "VELDO-0144 credential/deleted-state"
  ],
  "modules": {
   ".veldo/control_api.py": {
    "at_commit": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5",
-   "now": "f50fa0797dc0931b53a397949f4c96a41000335184b46dbe1c8ffc4e423cdb73"
+   "now": "0fdb23cd8782c7d1a3d5ec562b9f8380145bccaedcea5c8b2a6136611dccafbd"
   },
   ".veldo/control_api_assertion.py": {
    "at_commit": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15",
@@ -48,27 +60,27 @@
   },
   ".veldo/control_api_authority.py": {
    "at_commit": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c",
-   "now": "52ec766d842e8ceea426aa783c4d944b9fa9ec3696a8877c8d88b041ae737163"
+   "now": "a406b42d94dfe720674628f5c99652892fdb745f372a4cbc63e6c8fcbffb5261"
   },
   ".veldo/control_api_models.py": {
    "at_commit": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c",
-   "now": "3b9c3d767cd5dd4a3815fc3edac2b9dd7c9b30785f9fb5497d433b96cc38d93a"
+   "now": "5c69710145f6bf5da67c61ca6146f7f064ea578ebedea54fc8bb46594d122376"
   },
   ".veldo/control_credential.py": {
    "at_commit": null,
-   "now": "708d303732c824420938081a69dbf8118f89f27ff85778b6728a89c0d2aca321"
+   "now": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95"
   },
   ".veldo/control_credential_keystore.py": {
    "at_commit": null,
-   "now": "31adcc3f86fb45ce01b01fb12540e4f1023797e7d318e61d75a77bdc6b1d29d4"
+   "now": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294"
   },
   ".veldo/control_mcp_catalog.py": {
    "at_commit": null,
-   "now": "b68bd019bbbacbe62a5d66629a9c0eb0fe2cdddf8dcc73ee6b4eb77b7b99fb78"
+   "now": "f4fceb854f80daa4798d9869cf98c73c63aa8603ab28bb02201fcbfacca28fa6"
   },
   ".veldo/control_service.py": {
    "at_commit": "f78c6381e0626316c36db8db01d44d58a1850b4967f4f52e2bac76ee8e69430e",
-   "now": "d40c51c98aebb0d96d7b28bc6128ee8757409e0230e6b79dfc67893571d0288c"
+   "now": "8d30d3c68846e580eed5e5cc8dc2fd9f812257de1bf40d719442d25b3bc23f4f"
   },
   ".veldo/control_service_api.py": {
    "at_commit": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941",
@@ -144,10 +156,34 @@
   [
    "VELDO-0144 install/assets",
    false
+  ],
+  [
+   "VELDO-0144 catalog/credential-literals",
+   false
+  ],
+  [
+   "VELDO-0144 catalog/credential-domain",
+   false
+  ],
+  [
+   "VELDO-0144 credential/libsecret-protocol",
+   false
+  ],
+  [
+   "VELDO-0144 credential/replay-value",
+   false
+  ],
+  [
+   "VELDO-0144 credential/encoding",
+   false
+  ],
+  [
+   "VELDO-0144 credential/deleted-state",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 2.534,
+ "seconds": 2.748,
  "spec_id": "VELDO-0144",
  "suite": "scripts/suites/82_veldo_0144_mcp_catalog.py",
  "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"

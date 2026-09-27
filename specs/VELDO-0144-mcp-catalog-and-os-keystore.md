@@ -194,7 +194,8 @@ tombstone, while a subsequent SET stores the original five fields and counts as 
 write. The keystore adapter preserves trailing newlines on piped lookup output.
 
 The proof now captures authority and API file descriptors 1 and 2 and subprocess
-pipe outputs, including fake secret-tool diagnostics. Lookup stdout remains the
+pipe outputs, including fake secret-tool diagnostics and redirected Python stream
+buffers in the proof driver. Lookup stdout remains the
 intended runtime value channel. The fake requires a store label and matches
 attribute pairs, including subset lookups, like Secret Service. Added assertion
 rows cover all review decisions and mutations exercise diagnostic leaks, literal

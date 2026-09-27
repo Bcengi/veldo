@@ -356,7 +356,8 @@ for name in paths:
                 done = subprocess.run([sys.executable, '-c', scanner],
                                       input=json.dumps([[str(p) for p in paths], candidates]).encode(),
                                       capture_output=True, timeout=15)
-                outputs = [v.encode() if isinstance(v, str) else v for v in process_outputs if v]
+                buffered = [stream.getvalue() for stream in (sys.stdout, sys.stderr) if hasattr(stream, 'getvalue')]
+                outputs = [v.encode() if isinstance(v, str) else v for v in process_outputs + buffered if v]
                 return (done.returncode == 0 and all(v.encode() not in out for v in candidates for out in outputs)
                         and all(out in [b''] + [v.encode() for v in candidates] for out in lookup_outputs))
 
