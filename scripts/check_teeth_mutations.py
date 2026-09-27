@@ -5224,8 +5224,8 @@ def cases():
         ['actions/workflow-save'])
     api('action-contract-drops-worker-stop', MO130,
         "    Action('worker_stop', None, None, None, None, 'VELDO-0041'),\n", '', ['actions/contract'])
-    api('save-executes-another-command', AU130, "                'save_workflow': WF.SAVE}",
-        "                'save_workflow': AS.IN.RECORD}  # defect", ['actions/contract'])
+    api('save-executes-another-command', AU130, "'save_workflow': WF.SAVE, MC.SAVE",
+        "'save_workflow': AS.IN.RECORD, MC.SAVE", ['actions/contract'])
     # VELDO-0130 phase 3: the API through the installed authority service. The API runs a command in-process
     # again; the service accepts an API call whose request the api edge did not sign, or verifies it as any
     # member's; the signer signs a request that is not an API call; a commit at the host is never delivered.
@@ -8055,6 +8055,170 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    add(144, 'mcp144-overwrite-revision', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    rid = revision_id(domain, d['id'], revision)\n    if entity(conn, rid) is not None:\n        raise Refused('stale_version:immutable_mcp_server')",
+        "    rid = revision_id(domain, d['id'], max(1, revision - 1))",
+        ['catalog/immutable-history'], (("            rid = revision_id(self.domain, definition['id'], base + 1)\n            expected = {hid: base, rid: 0}", "            rid = revision_id(self.domain, definition['id'], max(1, base))\n            expected = {hid: base, rid: (entity(self.conn, rid) or {}).get('version', 0)}"),))
+    add(144, 'mcp144-value-on-argv', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        argv += ['application', 'veldo', 'credential', name]",
+        "        argv += ['application', 'veldo', 'credential', name]\n        if value is not None:\n            argv += [value]",
+        ['credential/no-value-on-command-line'], ())
+    add(144, 'mcp144-value-in-record', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal)",
+        "                    data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal, value=value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-owner-check-off', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    if (not AC.active_member(member, now)[0] or member.get('principal_type') != 'person'\n            or 'project_owner' not in (member.get('roles') or [])",
+        '    if (not AC.active_member(member, now)[0]',
+        ['catalog/stale-unauthorized', 'credential/authority-binding'], ())
+    add(144, 'mcp144-stdio-arguments-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "'data': dict(d, revision=revision)",
+        "'data': dict(d, revision=revision, arguments=[])",
+        ['catalog/stdio'], ())
+    add(144, 'mcp144-http-headers-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "'data': dict(d, revision=revision)",
+        "'data': dict(d, revision=revision, headers={})",
+        ['catalog/http', 'catalog/atlassian'], ())
+    add(144, 'mcp144-invalid-transport-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')",
+        "    if d['transport'] == 'connector':\n        return\n    valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')",
+        ['catalog/invalid'], ())
+    add(144, 'mcp144-delete-kept', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        self._run('clear', name)",
+        '        return None',
+        ['credential/replace-delete'], ())
+    add(144, 'mcp144-replace-kept', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        self._run('store', name, value)",
+        "        if self.get('keychain', name) is None:\n            self._run('store', name, value)",
+        ['credential/replace-delete'], ())
+    add(144, 'mcp144-locked-success', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        '        if done.returncode:\n',
+        "        if done.returncode and b'locked' not in done.stderr.lower():\n",
+        ['credential/keystore-refusals'], ())
+    add(144, 'mcp144-read-back-allowed', '82_veldo_0144_mcp_catalog.py', 'control_api.py',
+        "        raise Refused('unauthorized:credential_read_back', 'credentials are write-only')",
+        "        return 200, {'outcome': 'read_back_allowed'}",
+        ['credential/read-back'], ())
+    add(144, 'mcp144-value-binding-off', '82_veldo_0144_mcp_catalog.py', 'control_api_authority.py',
+        'or not hmac.compare_digest(hashlib.sha256(value.encode()).hexdigest(), bound)',
+        'or False',
+        ['credential/authority-binding'], ())
+    add(144, 'mcp144-host-command-unwired', '82_veldo_0144_mcp_catalog.py', 'control_service.py',
+        "            elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:",
+        "            elif command.get('operation') in SA.AUTH.CV.OPERATIONS:",
+        ['catalog/host-command'], ())
+    add(144, 'mcp144-credential-log-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "        self.record(dict(about, outcome=outcome, seq=saved['seq']))",
+        "        self.record(dict(about, outcome=outcome, seq=saved['seq'], value=value))",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stale-base-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "            rid = revision_id(self.domain, definition['id'], base + 1)",
+        "            base = (entity(self.conn, hid) or {}).get('version', 0)\n            rid = revision_id(self.domain, definition['id'], base + 1)",
+        ['catalog/stale-unauthorized'], ())
+    add(144, 'mcp144-value-in-command-digest', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "            stored = {k: v for k, v in params.items() if k != 'value'}",
+        '            stored = dict(params)',
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stderr-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    self.keystore.set(ref.split(':', 1)[1], value)",
+        "                    __import__('os').write(2, value.encode())\n                    self.keystore.set(ref.split(':', 1)[1], value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stdout-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    self.keystore.set(ref.split(':', 1)[1], value)",
+        "                    print(value)\n                    self.keystore.set(ref.split(':', 1)[1], value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-known-shape-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '    if credential_literal(d):',
+        '    if False:',
+        ['catalog/known-shape-refused'], ())
+    add(144, 'mcp144-entropy-restored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        'return isinstance(value, str) and any(rx.search(value) for rx, _ in SS.PATTERNS)',
+        'return isinstance(value, str) and bool(SS.scan_text(value))',
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-environment-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    if any('literal' in item and positioned(name, item['literal']) for name, item in d['environment'].items()):",
+        '    if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-argument-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "                if positioned(name, value):",
+        '                if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-query-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '            if any(positioned(name, value, query=True) for name, value in parse_qsl(url.query, keep_blank_values=True)):',
+        '            if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-name-substrings-restored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "return (any(part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',\n"
+        "                             'credential', 'credentials', 'auth', 'bearer', 'cookie',\n"
+        "                             'authorization', 'authtoken', 'accesstoken', 'passphrase', 'privatekey') for part in tokens)",
+        "return (any(part in name.lower() for part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',\n"
+        "                             'credential', 'credentials', 'auth', 'bearer', 'cookie'))",
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-last-token-exemption-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if not tokens or tokens[-1] in ('file', 'path', 'dir', 'name', 'port', 'url', 'host', 'id', 'callback'):",
+        'if not tokens:',
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-bare-flag-consumes-flag', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if value.startswith('-' * 2) or re.fullmatch(r'-[^-](?:=.*)?', value):",
+        "if False:",
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-query-extras-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "or (query and query_name in ('sig', 'signature', 'code'))",
+        'or False',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-authorization-value-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if isinstance(value, str) and re.fullmatch(r'(?:Bearer \\S{16,}|Basic [A-Za-z0-9+/=]{8,})', value, re.IGNORECASE):",
+        'if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-query-extras-token-match', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "or (query and query_name in ('sig', 'signature', 'code'))",
+        "or (query and any(part in ('sig', 'signature', 'code') for part in tokens))",
+        ['catalog/query-extra-name-saves'], ())
+    add(144, 'mcp144-loose-bearer-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if isinstance(value, str) and re.fullmatch(r'(?:Bearer \\S{16,}|Basic [A-Za-z0-9+/=]{8,})', value, re.IGNORECASE):",
+        "if isinstance(value, str) and value.lower().startswith(('bearer ', 'basic ')):",
+        ['catalog/authorization-prose-saves'], ())
+    add(144, 'mcp144-bare-flag-skips-leading-hyphen-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if value.startswith('-' * 2) or re.fullmatch(r'-[^-](?:=.*)?', value):",
+        "if value.startswith('-'):",
+        ['catalog/leading-hyphen-refused'], ())
+    add(144, 'mcp144-refusal-records-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "self.record(dict(about, server=None, field=getattr(error, 'field', None),",
+        "self.record(dict(about, field=getattr(error, 'field', None),",
+        ['catalog/refusal-no-value'], ())
+    add(144, 'mcp144-deleted-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if (not credential.get('deleted') and row[0] == 'credential:' + digest",
+        "if (row[0] == 'credential:' + digest",
+        ['catalog/deleted-reference'], ())
+    add(144, 'mcp144-foreign-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '            if not recorded:',
+        '            if False:',
+        ['catalog/credential-domain'], ())
+    add(144, 'mcp144-application-attribute-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        argv += ['application', 'veldo', 'credential', name]",
+        "        argv += ['credential', name]",
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-store-label-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "            argv += ['-' * 2 + 'label=Veldo credential']",
+        '            pass',
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-lookup-newline-stripped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "return done.stdout.decode('utf-8')",
+        "return done.stdout.removesuffix(b'\\n').decode('utf-8')",
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-replay-value-unbound', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                stored['value_digest'] = value_digest",
+        '                pass',
+        ['credential/replay-value'], ())
+    add(144, 'mcp144-delete-marker-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        'set_by=principal, deleted=True)',
+        'set_by=principal)',
+        ['credential/deleted-state'], ())
+    add(144, 'mcp144-recreated-counted-replacement', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "outcome = 'replaced' if old and not old['data'].get('deleted') else 'written'",
+        "outcome = 'replaced' if old else 'written'",
+        ['credential/deleted-state'], ())
+
     # VELDO-0141: every worker run's execution record, redacted before it is kept, served live by the API. Each
     # criterion's declared falsifier first, each on its named row of suite 82, then the seams they rest on.
     def record141(name, module, old, new, rows, also=()):

@@ -1,0 +1,172 @@
+{
+ "by_assertion": true,
+ "commit": "4baf622fcd08db269e5b1821b3913b5a4d44b120",
+ "details": [
+  "VELDO-0144 detail: catalog/observability: save and credential observations join actor, revision, session and command; metrics count operations",
+  "VELDO-0144 detail: catalog/known-shape-refused: environment is refused before any write; arguments is refused before any write; url is refused before any write; id is refused before any write; label is refused before any write; command is refused before any write; hosts is refused before any write; read_only_tools is refused before any write; environment-name is refused before any write; header-name is refused before any write; reference is refused before any write; known shape 0 refuses by name without storage; known shape 1 refuses by name without storage; known shape 2 refuses by name without storage; known shape 3 refuses by name without storage; known shape 4 refuses by name without storage; known shape 5 refuses by name without storage; known shape 6 refuses by name without storage; known shape 7 refuses by name without storage; environment path still refuses known shapes; arguments path still refuses known shapes",
+  "VELDO-0144 detail: catalog/credential-position-refused: environment case 76 refuses before the store; arguments case 77 refuses before the store; arguments case 78 refuses before the store; url case 79 refuses before the store; environment case 80 refuses before the store; arguments case 81 refuses before the store; arguments case 82 refuses before the store; url case 83 refuses before the store; environment case 84 refuses before the store; arguments case 85 refuses before the store; arguments case 86 refuses before the store; url case 87 refuses before the store; environment case 88 refuses before the store; arguments case 89 refuses before the store; arguments case 90 refuses before the store; url case 91 refuses before the store; environment case 92 refuses before the store; arguments case 93 refuses before the store; arguments case 94 refuses before the store; url case 95 refuses before the store; url case 96 refuses before the store; url case 97 refuses before the store; url case 98 refuses before the store; url case 99 refuses before the store; url case 100 refuses before the store; url case 101 refuses before the store; url case 102 refuses before the store; url case 103 refuses before the store; url case 104 refuses before the store; url case 105 refuses before the store; url case 106 refuses before the store; arguments case 107 refuses before the store; headers case 108 refuses before the store; headers case 109 refuses before the store; arguments case 110 refuses before the store; id case 111 refuses before the store; label case 112 refuses before the store; transport case 113 refuses before the store; command case 114 refuses before the store; url case 115 refuses before the store; arguments case 116 refuses before the store; hosts case 117 refuses before the store; read_only_tools case 118 refuses before the store; environment case 119 refuses before the store; headers case 120 refuses before the store; environment case 121 refuses before the store; headers case 122 refuses before the store; environment case 123 refuses before the store; environment case 124 refuses before the store; id case 125 refuses before the store; label case 126 refuses before the store; transport case 127 refuses before the store; command case 128 refuses before the store; url case 129 refuses before the store; arguments case 130 refuses before the store; hosts case 131 refuses before the store; read_only_tools case 132 refuses before the store; environment case 133 refuses before the store; headers case 134 refuses before the store; environment case 135 refuses before the store; headers case 136 refuses before the store; environment case 137 refuses before the store; environment case 138 refuses before the store; id case 139 refuses before the store; label case 140 refuses before the store; transport case 141 refuses before the store; command case 142 refuses before the store; url case 143 refuses before the store; arguments case 144 refuses before the store; hosts case 145 refuses before the store; read_only_tools case 146 refuses before the store; environment case 147 refuses before the store; headers case 148 refuses before the store; environment case 149 refuses before the store; headers case 150 refuses before the store; environment case 151 refuses before the store; environment case 152 refuses before the store; id case 153 refuses before the store; label case 154 refuses before the store; transport case 155 refuses before the store; command case 156 refuses before the store; url case 157 refuses before the store; arguments case 158 refuses before the store; hosts case 159 refuses before the store; read_only_tools case 160 refuses before the store; environment case 161 refuses before the store; headers case 162 refuses before the store; environment case 163 refuses before the store; headers case 164 refuses before the store; environment case 165 refuses before the store; environment case 166 refuses before the store",
+  "VELDO-0144 detail: catalog/credential-domain: reference must belong to a credential recorded in this domain; reference must belong to a credential recorded in this domain",
+  "VELDO-0144 detail: catalog/refusal-no-value: environment position refusal records field and reason; arguments position refusal records field and reason; arguments position refusal records field and reason; url position refusal records field and reason; environment position refusal records field and reason; arguments position refusal records field and reason; arguments position refusal records field and reason; url position refusal records field and reason; environment position refusal records field and reason; arguments position refusal records field and reason; arguments position refusal records field and reason; url position refusal records field and reason; environment position refusal records field and reason; arguments position refusal records field and reason; arguments position refusal records field and reason; url position refusal records field and reason; environment position refusal records field and reason; arguments position refusal records field and reason; arguments position refusal records field and reason; url position refusal records field and reason; url position refusal records field and reason; url position refusal records field and reason; url position refusal records field and reason; url position refusal records field and reason; url position refusal records field and reason; url position refusal records field and reason; arguments position refusal records field and reason; id position refusal records field and reason; label position refusal records field and reason; transport position refusal records field and reason; command position refusal records field and reason; url position refusal records field and reason; arguments position refusal records field and reason; hosts position refusal records field and reason; read_only_tools position refusal records field and reason; environment position refusal records field and reason; headers position refusal records field and reason; environment position refusal records field and reason; headers position refusal records field and reason; environment position refusal records field and reason; environment position refusal records field and reason; id position refusal records field and reason; label position refusal records field and reason; transport position refusal records field and reason; command position refusal records field and reason; url position refusal records field and reason; arguments position refusal records field and reason; hosts position refusal records field and reason; read_only_tools position refusal records field and reason; environment position refusal records field and reason; headers position refusal records field and reason; environment position refusal records field and reason; headers position refusal records field and reason; environment position refusal records field and reason; environment position refusal records field and reason; id position refusal records field and reason; label position refusal records field and reason; transport position refusal records field and reason; command position refusal records field and reason; url position refusal records field and reason; arguments position refusal records field and reason; hosts position refusal records field and reason; read_only_tools position refusal records field and reason; environment position refusal records field and reason; headers position refusal records field and reason; environment position refusal records field and reason; headers position refusal records field and reason; environment position refusal records field and reason; environment position refusal records field and reason; id position refusal records field and reason; label position refusal records field and reason; transport position refusal records field and reason; command position refusal records field and reason; url position refusal records field and reason; arguments position refusal records field and reason; hosts position refusal records field and reason; read_only_tools position refusal records field and reason; environment position refusal records field and reason; headers position refusal records field and reason; environment position refusal records field and reason; headers position refusal records field and reason; environment position refusal records field and reason; environment position refusal records field and reason; host id refusal records only field and reason"
+ ],
+ "failed_rows": [
+  "VELDO-0144 catalog/observability",
+  "VELDO-0144 catalog/known-shape-refused",
+  "VELDO-0144 catalog/credential-position-refused",
+  "VELDO-0144 catalog/credential-domain",
+  "VELDO-0144 catalog/refusal-no-value"
+ ],
+ "modules": {
+  ".veldo/control_api.py": {
+   "at_commit": "0fdb23cd8782c7d1a3d5ec562b9f8380145bccaedcea5c8b2a6136611dccafbd",
+   "now": "0fdb23cd8782c7d1a3d5ec562b9f8380145bccaedcea5c8b2a6136611dccafbd"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": "f77c7e890ebb5515ee2bedfac40ffd31366846205fde130746bef1a7a76ad17e",
+   "now": "f77c7e890ebb5515ee2bedfac40ffd31366846205fde130746bef1a7a76ad17e"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": "a406b42d94dfe720674628f5c99652892fdb745f372a4cbc63e6c8fcbffb5261",
+   "now": "a406b42d94dfe720674628f5c99652892fdb745f372a4cbc63e6c8fcbffb5261"
+  },
+  ".veldo/control_api_models.py": {
+   "at_commit": "5c69710145f6bf5da67c61ca6146f7f064ea578ebedea54fc8bb46594d122376",
+   "now": "5c69710145f6bf5da67c61ca6146f7f064ea578ebedea54fc8bb46594d122376"
+  },
+  ".veldo/control_credential.py": {
+   "at_commit": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95",
+   "now": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95"
+  },
+  ".veldo/control_credential_keystore.py": {
+   "at_commit": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294",
+   "now": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294"
+  },
+  ".veldo/control_mcp_catalog.py": {
+   "at_commit": "10bd39d6f9f7ccc22a0eca054f309ff146df16e59ca551b8ea558afc89fd65ce",
+   "now": "2387350334b89f73e5dc85a72d1937efb004e33551bd32c47eab60014ac91dbb"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "8d30d3c68846e580eed5e5cc8dc2fd9f812257de1bf40d719442d25b3bc23f4f",
+   "now": "8d30d3c68846e580eed5e5cc8dc2fd9f812257de1bf40d719442d25b3bc23f4f"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": "5fb5a240461200b78e4eb62f9aad245985c6f628b92223424b6fdab2d5971f8d",
+   "now": "5fb5a240461200b78e4eb62f9aad245985c6f628b92223424b6fdab2d5971f8d"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "8e28abbabcc5263c11b42296dda3d6e91be82bfd4f8d4f8b2928e2b07752f2fd",
+   "now": "8e28abbabcc5263c11b42296dda3d6e91be82bfd4f8d4f8b2928e2b07752f2fd"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0144 catalog/stdio",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/http",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/host-command",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/immutable-history",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/stale-unauthorized",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/invalid",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/atlassian",
+   true
+  ],
+  [
+   "VELDO-0144 credential/write",
+   true
+  ],
+  [
+   "VELDO-0144 credential/replace-delete",
+   true
+  ],
+  [
+   "VELDO-0144 credential/read-back",
+   true
+  ],
+  [
+   "VELDO-0144 credential/no-value-on-command-line",
+   true
+  ],
+  [
+   "VELDO-0144 credential/no-value-in-records",
+   true
+  ],
+  [
+   "VELDO-0144 credential/keystore-refusals",
+   true
+  ],
+  [
+   "VELDO-0144 credential/authority-binding",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/observability",
+   false
+  ],
+  [
+   "VELDO-0144 install/assets",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/known-shape-refused",
+   false
+  ],
+  [
+   "VELDO-0144 catalog/ordinary-config-saves",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/credential-position-refused",
+   false
+  ],
+  [
+   "VELDO-0144 catalog/deleted-reference",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/credential-domain",
+   false
+  ],
+  [
+   "VELDO-0144 credential/libsecret-protocol",
+   true
+  ],
+  [
+   "VELDO-0144 credential/replay-value",
+   true
+  ],
+  [
+   "VELDO-0144 credential/encoding",
+   true
+  ],
+  [
+   "VELDO-0144 credential/deleted-state",
+   true
+  ],
+  [
+   "VELDO-0144 catalog/refusal-no-value",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 46.072,
+ "spec_id": "VELDO-0144",
+ "suite": "scripts/suites/82_veldo_0144_mcp_catalog.py",
+ "tree": "git archive 4baf622fcd08db269e5b1821b3913b5a4d44b120, unchanged; the current suite file run against it"
+}

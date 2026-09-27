@@ -52,6 +52,9 @@ FIELDS = ('schema', 'domain') + IDS + ('channel', 'edge', 'edge_key_id', 'reques
                                        'issued_at', 'expires_at')
 # Every operation: its exact parameters and the authority boundary its member is judged at.
 OPERATIONS = {
+    'save_mcp_server': {'parameters': ('definition', 'base'), 'boundary': 'command_acceptance'},
+    'set_mcp_credential': {'parameters': ('id', 'label', 'base', 'value_digest'), 'boundary': 'command_acceptance'},
+    'delete_mcp_credential': {'parameters': ('id', 'base'), 'boundary': 'command_acceptance'},
     'send_message': {'parameters': ('text', 'project', 'clarifies'), 'boundary': 'proposal_commit'},
     'answer_decision': {'parameters': ('request_id', 'request_version', 'presentation_id', 'presentation_digest',
                                        'presentation_version', 'choice', 'rationale'),

@@ -1042,6 +1042,15 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake Codex vendor package qualified by control_engine_codex.qualification, loading only what the binary's own gates allow (proof/VELDO-0156/codex-baseline.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory."
   },
   {
+   "name": "82_veldo_0144_mcp_catalog",
+   "file": "82_veldo_0144_mcp_catalog.py",
+   "requires": [
+    "82_veldo_0144_mcp_catalog"
+   ],
+   "regions": "Versioned MCP catalog saves through the passkey API and host authority commands; exact immutable revisions, stale and unauthorized refusals; write-only Linux Secret Service credentials, replacement, deletion, runtime keychain resolution and no value in commands, store, journal, events, logs or proof",
+   "requires_note": "Only shared ROOT and expect. Real SQLite, OpenSSH signatures and protected signer, WebAuthn ceremonies, production API over loopback TLS with generated certificate, Service.apply and ServiceApi.call on the authority connection; a generated fake secret-tool and unreachable scratch D-Bus address ensure no real keyring is touched."
+  },
+  {
    "name": "82_veldo_0141_execution_record",
    "file": "82_veldo_0141_execution_record.py",
    "requires": [

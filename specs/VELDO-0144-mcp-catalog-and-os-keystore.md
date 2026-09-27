@@ -33,6 +33,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0144_*.py"
+  - "scripts/suites/71_veldo_0130_api.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -164,3 +165,90 @@ its AC1 and AC2 are the former AC3 and AC4 with their text and falsifiers unchan
 set criterion. The footprint drops `control_launch` and `control_engine`, which only delivery touches. AC2 sets the
 credential through the API's credential route, which is what it drives; no form is part of this
 specification.
+
+
+2026-09-27, implementation on build-veldo-0144: added the immutable mcp_server
+catalog and write-only credential commands on the passkey API and authority service.
+Linux Secret Service is reached only through secret-tool, with values on standard
+input and metadata alone passed to the store. The API assertion binds a separate
+value by digest; no value is passed to the assertion signer. The runtime adapter
+implements secretref's existing keychain store interface. The scaffold installs the
+new modules and secretref; engine copies match the repository copies.
+
+The footprint adds scripts/suites/71_veldo_0130_api.py because AC1 and AC2 extend
+its published route and action universe: its forgery and actor-field checks now
+exercise the new routes, and its authority fixture registers their real commands.
+No existing assertion is removed or narrowed. Suite 82_veldo_0144_mcp_catalog uses
+real passkey ceremonies, signed authority commands, SQLite and loopback TLS with
+a generated certificate, and a generated fake secret-tool isolated from the real
+keyring. Proof, the base-commit red record and finding 144 mutations are retained in
+proof/VELDO-0144. Specification status and approval requirements are unchanged.
+
+2026-09-27, review fixes on build-veldo-0144: merged main and repaired finding
+130's catalog-expanded command anchor. Catalog revision fields now reject the
+repository scanner's credential shapes by name before storage. Reference fields
+must resolve by metadata record to a credential in this domain. Values still use
+the credential route. Its replay identity includes the value digest; malformed
+Unicode receives a named refusal and an API observation. Deleted records carry a
+tombstone, while a subsequent SET stores the original five fields and counts as a
+write. The keystore adapter preserves trailing newlines on piped lookup output.
+
+The proof now captures authority and API file descriptors 1 and 2 and subprocess
+pipe outputs, including fake secret-tool diagnostics and redirected Python stream
+buffers in the proof driver. Lookup stdout remains the
+intended runtime value channel. The fake requires a store label and matches
+attribute pairs, including subset lookups, like Secret Service. Added assertion
+rows cover all review decisions and mutations exercise diagnostic leaks, literal
+and foreign-reference acceptance, CLI protocol drift, replay mismatch and deleted
+state. The signed assertion excludes the value; the request signer receives the
+request through pipes. This clarifies the earlier signer statement. The canonical
+gate is intentionally not run under the implementation request; scoped checks
+and proof remain observations for independent review, not a landing approval.
+
+
+2026-09-27, third review fix on build-veldo-0144: main was already merged.
+The catalog check now guards credential positions and known token shapes. One
+named-position function covers credential names in environment entries, both
+stdio flag forms, HTTP query parameters, URL userinfo and reference-only headers.
+Known shapes reuse the repository scanner's PATTERNS by import. The catalog no
+longer calls scan_text or uses entropy. The repository scanner is unchanged.
+A secret the owner types as an ordinary literal elsewhere is the owner's choice;
+the owner is trusted under the threat model. This check catches mistakes in
+credential positions and known shapes, without claiming to identify every secret.
+
+The ordinary-config-saves row preserves all 20 ordinary values from the reviewer's
+probe, plus the requested worktree and Mac paths and a Confluence REST URL. The
+probe's environment helper used API_TOKEN even for ordinary IDs and public keys;
+the row uses CONFIG for those values so that it obeys the named-position rule.
+Every saved field is compared exactly through both the API and store. Generated
+hex and short values exercise the credential-position-refused row, which also
+asserts that the store command was never called. Deleted credential metadata no
+longer satisfies a reference; catalog/deleted-reference proves the named refusal.
+
+The former catalog/credential-literals row and
+mcp144-catalog-literal-accepted mutation are replaced by
+catalog/known-shape-refused and mcp144-known-shape-accepted. They now test known
+shapes independently of credential positions, including every existing PATTERNS
+entry. The mcp144-entropy-restored mutation makes ordinary-config-saves fail.
+Three separate position mutations make credential-position-refused fail, and
+mcp144-deleted-reference-accepted makes deleted-reference fail. No row or mutation
+continues to require entropy refusal. Status and acceptance criteria are unchanged.
+
+
+2026-09-27, fourth review fix on build-veldo-0144: merged main. Credential names
+now use lower-case tokens split at underscores, hyphens, dots and camelCase
+boundaries, with the agreed final-token exemptions and absolute path allowance.
+A bare credential flag does not consume a following flag. Known scanner shapes
+still refuse anywhere, and headers remain reference-only. Refusal observations
+record the field name and reason with the server id absent, including when the
+refused value was the id. Extended ordinary and credential-position rows and a
+new refusal-value row carry generated values; four new mutations exercise the
+regressions. Filed, not fixed here: the repository secret_scan PATTERNS lacks
+github_pat_, sk-proj- and sk-ant- shapes, which require a separate scanner change;
+a token inside another argument such as docker -e NAME=value or --env NAME=value,
+single-dash flags, and SORT_KEY-style names ending in key being refused remain
+follow-up work. The repository scanner and acceptance criteria are unchanged.
+
+2026-09-27, fifth review follow-up on build-veldo-0144: merged main; restored sig, signature and code query tokens, added authorization, authtoken, accesstoken, passphrase and privatekey credential tokens, refused Bearer/Basic authorization values in every string field, and refined bare credential flags to consume leading-hyphen values except double-dash flags and single-dash -x or -x=VALUE flags. Extended generated refusal and ordinary-save assertions, including pagination and encoding queries, and added independent query-extra and authorization-value mutations. Acceptance criteria and status are unchanged.
+
+2026-09-27, sixth review follow-up on build-veldo-0144: merged main; refreshed and signed the authority-binding packet immediately before replay and asserted the binding refusal explicitly; narrowed query extras to whole case-insensitive names and Bearer/Basic values to complete credential shapes; added ordinary-name, prose and leading-hyphen assertion rows with three unique finding 144 mutations.
