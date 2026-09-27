@@ -54,7 +54,7 @@ acceptance_criteria:
       the first passkey through this screen, compare its fingerprint at the host, approve that one,
       sign in, reach the shell's navigation, the run screens and the decisions screen, and sign out.
       The lead runs the phone enrollment and sign-in leg over the tailnet once with the owner and
-      records it here.
+      records it here. Falsifier: Sign in before the host approves the registration; the enroll-then-sign-in row must fail.
       The screen uses VELDO-0171's same-origin content security policy with no inline script. Before
       sign-in only the enrollment and sign-in controls are available; before sign-in, after the session
       ends, and for a member whose scope does not cover a project, every factory data screen shows the
@@ -62,6 +62,7 @@ acceptance_criteria:
       a screen's factory data before the passkey session is established; the unauthenticated-access check must
       fail.
     falsified_by: >
+      Sign in before the host approves the registration; the enroll-then-sign-in row must fail.
       Serve a screen's factory data before the passkey session is established; the unauthenticated-access check
       must fail.
   - id: AC2
@@ -135,7 +136,8 @@ across all runs; offline use.
 - Threat model: data served before sign-in or after the session ends, or to a member outside the
   project's scope; a summary shown in place of the record, or lines lost or repeated on reconnect; an
   answer applied to a presentation other than the one shown, or twice; an action that bypasses the API;
-  a clipped or hidden action on a phone; a dependency outside the owner's stack or provenance rules.
+  a clipped or hidden action on a phone; a dependency outside the owner's stack or provenance rules;
+  a screen showing a fingerprint other than the pending registration's, or signing in before the host approves it.
   The owner's account, the API and the store are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); the screens
   VELDO-0131 owns; very large records before the first live runs measure their size; forged rows in our

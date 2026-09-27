@@ -111,17 +111,18 @@ acceptance_criteria:
       recorded proof step runs only read-only commands on the owner's host: `tailscale version`,
       `tailscale status --json` and `tailscale serve status --json`; their capture is scrubbed by a
       named field allowlist as in VELDO-0172 and committed at that path. The stand-in replays exactly
-      those captured outputs; no invented CLI output stands in for a refusal. The suite owns the
+      those captured outputs for the captured states. Each refusal state and the status after
+      `serve --bg` are field edits of the captured JSON, each edit listed in
+      proof/VELDO-0171/tailscale-capture.json. The suite owns the
       stand-in's invocation log outside setup's write access and checks it after setup exits on the
-      fresh-host row: no successful `serve --bg` invocation means no background persistence, even if setup reports success,
-      and any `funnel` invocation fails the row. The three refusal rows retain their captured source
+      fresh-host row: the row fails unless the log shows one successful `serve --bg` naming the API port,
+      even if setup reports success, and any `funnel` invocation fails the row. The three refusal rows retain their captured source
       evidence; the real Tailscale leg is run once by the lead with the owner and recorded, and fixtures
       never count as it. Falsifier: Have setup run
-      `tailscale funnel` in place of `tailscale serve`, and the tailnet-only row must fail on the Serve
-      status naming the internet.
+      `tailscale funnel` in place of `tailscale serve`, and the tailnet-only row must fail on the invocation log's `funnel` invocation.
     falsified_by: >
       Have setup run `tailscale funnel` in place of `tailscale serve`, and the tailnet-only row must fail
-      on the Serve status naming the internet.
+      on the invocation log's `funnel` invocation.
   - id: AC3
     text: >
       Claim: On a host setup has just laid down, the owner enrolls his first passkey and signs in with it,
@@ -137,8 +138,8 @@ acceptance_criteria:
       never every pending one, and sends it to the running service. Set up a fresh host, start the
       service, register two software ES256 authenticators through the API calls with the tailnet name
       as Host and Origin, sign one at the host by its fingerprint, sign in with it, and read the session:
-      it names the owner, and the other registration is still pending and cannot sign in. Read the API
-      response headers used to serve the UI: the policy is served. VELDO-0145 proves the phone screen
+      it names the owner, and the other registration is still pending and cannot sign in. Read the headers of
+      every API response, the ceremony routes among them: the policy is served. VELDO-0145 proves the phone screen
       over the tailnet after this API ceremony is built. Falsifier: Have setup write the API's origin
       as the loopback address in place of the tailnet name, and the first-enrollment row must fail on the registration's origin
       check.

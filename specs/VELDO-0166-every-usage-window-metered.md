@@ -111,8 +111,9 @@ diagnostics), filed separately.
 
 ## Notes
 
-The fixture's source is this real Claude Code 2.1.281 rate_limit_event line, verbatim; the fake's line
-must carry every field of it, including both windows and their fields:
+The fixture's source is this real Claude Code 2.1.281 rate_limit_event line, verbatim; the fake Claude
+Code engine in scripts/suites/78_veldo_0060_claude_adapter.py must print a line carrying every field
+of it, including both windows and their fields:
 
 ```json
 {"type": "rate_limit_event", "rate_limit_info": {"status": "allowed_warning", "resetsAt": 1790960400, "rateLimitType": "seven_day", "utilization": 0.7, "isUsingOverage": false, "unifiedWindows": {"five_hour": {"utilization": 0.3, "resetsAt": 1790487000}, "seven_day": {"utilization": 0.7, "resetsAt": 1790960400}}}, "uuid": "531e8e6b-8253-4b0a-92dc-255c5111efee", "session_id": "918dd621-97a8-44cf-ab38-4d3e1b9e588e"}

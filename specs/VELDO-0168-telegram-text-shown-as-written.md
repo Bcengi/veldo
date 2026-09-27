@@ -27,6 +27,7 @@ footprint:
   - "scripts/suites/*_veldo_0168_*.py"
   - "scripts/suites/60_veldo_0064_inbox.py"
   - "scripts/suites/62_veldo_0065_presentations.py"
+  - "scripts/suites/68_veldo_0126_intake.py"
   - "scripts/suites/72_veldo_0128_reports.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -55,7 +56,8 @@ acceptance_criteria:
       (control_channel_presentation.render), the inbox presentation (control_channel_projection.render),
       the reports (control_telegram_report), and the intake question prompt
       (control_intake.py, _ask's asker.send of question['prompt']); the suite holds that list and fails
-      on a send it does not name. In each, a brief, risk statement, report body or question prompt keeps its line breaks, with a carriage return
+      on a send it does not name. `request_doorbell.TelegramSink.send`, listed in
+      control_channel_activation.py, is outside this set. In each, a brief, risk statement, report body or question prompt keeps its line breaks, with a carriage return
       and line feed pair shown as one break, and nothing inside a line is collapsed: runs of spaces are
       kept as written, and a tab is shown escaped by AC2's rule, never collapsed or turned into a space.
       A three-line brief renders as three lines in each renderer, and a line holding two spaces and a tab

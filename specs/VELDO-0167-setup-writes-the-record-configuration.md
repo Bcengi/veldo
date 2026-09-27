@@ -73,19 +73,19 @@ acceptance_criteria:
       service fans it out to every API subscribed at that moment, with the per-subscriber numbering and
       instance VELDO-0130's hint already carries (control_service_api publish); the subscriber registry
       stays the service's private state and no receiver reads it. Setup writes, in place of a fixed
-      `record_hints` list, the receiver hint key naming the installed service's socket into every receiver
+      `record_hint_sockets` list, the `record_hint_service` key naming the installed service's socket into every receiver
       configuration. With a run in progress, subscribe a second API process: its next hint names that run.
-      Falsifier: Have setup write a fixed `record_hints` list of the subscribers known at setup, and the
+      Falsifier: Have setup write a fixed `record_hint_sockets` list of the subscribers known at setup, and the
       late-subscriber row must fail.
     falsified_by: >
-      Have setup write a fixed `record_hints` list of the subscribers known at setup, and the
+      Have setup write a fixed `record_hint_sockets` list of the subscribers known at setup, and the
       late-subscriber row must fail.
   - id: AC3
     text: >
       Claim: Running setup again (VELDO-0171's re-run) over a host laid down before this change adds only
       this step's keys, and a further re-run changes nothing. Set and completeness: Over a host VELDO-0171
       laid down without them, the re-run creates the records directory and adds the `records` key and the
-      receiver hint key to each receiver configuration and the `records` key to the API service
+      `record_hint_service` key to each receiver configuration and the `records` key to the API service
       configuration, each file otherwise byte for byte as it was, and refuses by name, overwriting nothing,
       a configuration that differs in anything else, as VELDO-0171 AC4 refuses. A second re-run leaves
       every file byte for byte the same. Falsifier: Treat an existing receiver configuration as already
@@ -95,7 +95,7 @@ acceptance_criteria:
       older-host row must fail on the missing `records` key.
 required_evidence: [unit, integration]
 rollback: >
-  Remove the records keys and the receiver hint key from the configurations setup wrote; runs keep their
+  Remove the records keys and the `record_hint_service` key from the configurations setup wrote; runs keep their
   records under the state root's default directory and the UI's live view stops updating. No automatic
   rollback is authorized.
 ---
@@ -107,10 +107,9 @@ configuration, and keeps working when the API process restarts or a second one s
 
 ## Context
 
-W127 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. VELDO-0141 added
-two configuration keys, the receivers' `record_hints` and the API service's `records`, and its build
-recorded that factory setup (VELDO-0139) writes neither. VELDO-0145's live terminal reads through them, so
-this lands before it. VELDO-0171 writes the API service configuration and enrolls the api edge, and this
+W127 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. VELDO-0141 defines
+the execution record and its API route; factory setup (VELDO-0139) does not wire their configuration.
+VELDO-0145's live terminal reads through them, so this lands before it. VELDO-0171 writes the API service configuration and enrolls the api edge, and this
 specification adds the execution record's keys to what it laid down, so it depends on VELDO-0171. A fixed
 hint list in each receiver configuration goes stale the first time an API process restarts on a new
 socket. The service already keeps the list of API processes that subscribed to it and already fans its own
@@ -142,8 +141,10 @@ follows; the record's content and redaction (VELDO-0141).
 
 ## Notes
 
-Filed, out of review scope: the receiver hint key remains unnamed because main has no
-receiver-to-service record hint configuration key to reuse.
+This specification defines both receiver hint keys: `record_hint_sockets` is a fixed list of API
+subscriber socket paths, and `record_hint_service` is the running authority service's socket path.
+The code at main has neither key to reuse; setup writes `record_hint_service`, and the fixed
+`record_hint_sockets` alternative is used only by AC2's falsifier.
 
 The hint wakes only: it names the dispatch and the last sequence, and the API reads the lines through
 the record route, so a lost, stale or forged hint changes nothing but the moment the view updates. The
@@ -158,7 +159,7 @@ a specification ready.
 
 2026-09-27: amended on the independent check of this batch and the lead's decisions. The order with
 VELDO-0171 is reversed: VELDO-0171 writes the API service configuration and enrolls the api edge, and
-this specification depends on it and adds `records` and the receiver hint key. AC2 now sends each record
+this specification depends on it and adds `records` and the `record_hint_service` key. AC2 now sends each record
 hint through the running service, which fans it out to its subscribers, in place of receivers reading the
 service's private api-subscribers.json, so no registry path is written. New AC3: the re-run adds only
 this step's keys to a host laid down before it and keeps VELDO-0171's changes-nothing behavior. The out of

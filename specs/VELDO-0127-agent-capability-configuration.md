@@ -98,8 +98,10 @@ acceptance_criteria:
       is kept in the execution record. Run one role with only `always` items and one that also lists
       a `when assigned` item, dispatched with nothing assigned. Launch a run bound to a revision that
       grants PushNotification: the init event lists it, and `disallowedTools` does not name it.
+      Falsifier: Pass the in-run list as `tools` whatever revision is bound; the PushNotification row must fail.
       Falsifier: Let the engine load a skill the role does not list; the launch-set comparison must fail.
     falsified_by: >
+      Pass the in-run list as `tools` whatever revision is bound; the PushNotification row must fail.
       Let the engine load a skill the role does not list; the launch-set comparison must fail.
 required_evidence: [unit, integration]
 rollback: >

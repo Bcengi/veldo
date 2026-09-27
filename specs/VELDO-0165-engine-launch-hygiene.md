@@ -71,12 +71,16 @@ acceptance_criteria:
       CLAUDE_CODE_ENTRYPOINT, CLAUDE_CODE_EXECPATH, CLAUDE_CODE_MESSAGING_SOCKET,
       CLAUDE_CODE_MESSAGING_TOKEN, CLAUDE_PID, CLAUDE_EFFORT and AI_AGENT), a CODEX_ name, and one name
       per prefix that no extracted list holds, launch a Claude Code run and a Codex run, and read back each
-      engine's environment: no planted name is present, and the baseline's own variables are. Falsifier:
+      engine's environment: no planted name is present, and the baseline's own variables are.
+      Launch each engine under a record lacking the strip prefixes: each refuses missing_evidence:engine_baseline:<version>, nothing spawned.
+      Falsifiers:
       Strip only the extracted names in place of every name matching a prefix, and the row planting a
       CLAUDE_CODE_ name no extracted list holds must fail.
+      Drop the Codex strip evidence check; the Codex refusal row must fail.
     falsified_by: >
       Strip only the extracted names in place of every name matching a prefix, and the row planting a
       CLAUDE_CODE_ name no extracted list holds must fail.
+      Drop the Codex strip evidence check; the Codex refusal row must fail.
   - id: AC2
     text: >
       Claim: An inherited CLAUDE_AGENT_SDK_MCP_NO_PREFIX never renames a run's MCP tools. Set and

@@ -37,14 +37,14 @@ observability:
     Record each launch's tool options and registry classification, as names only, bound to the
     qualification record and role revision; never a credential.
   metrics: >
-    Count launches and launches refused for a missing registry, classification or baseline strip.
+    Count launches and launches refused for a missing registry or classification.
   traces: >
     Join each launch to its dispatch, the pinned executable digest and the qualification record version
-    whose strip and tool list it applied.
+    whose tool list it applied.
   error_taxonomy: >
-    Distinguish a version whose qualified baseline lacks the session strip or the tool list
-    (missing_evidence:engine_baseline) from a stripped variable found in the engine environment and a
-    tool outside the list found in the init event; none lets the run take a first turn.
+    Distinguish a version whose qualified baseline lacks the tool registry or its classification
+    (missing_evidence:engine_baseline) from a tool outside the list found in the init event; neither
+    lets the run take a first turn.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -55,15 +55,15 @@ acceptance_criteria:
       list); until then it is the in-run list of the pinned version. The launch passes the `tools` option
       naming exactly the launch tool set, and the `disallowedTools` option naming every tool in the
       binary's full tool registry that falls outside it; the registry is every tool the binary registers,
-      read from its bytes by the committed extractor, not the 22-name BUILTIN_TOOL_NAMES table of
-      proof/VELDO-0062/cli-formats.json. Before anything is switched off, a classification step records in
-      proof/VELDO-0173 every tool of the pinned 2.1.281 registry as in-run or outward, each with the reason
-      read from its definition, using the tool_forms table of proof/VELDO-0062/cli-formats.json
-      as extended by VELDO-0160 (a VELDO-0160 output) for the in-run and outward classification
-      (the live init of 2026-09-26 offered 25, among them CronList, CronDelete,
-      EnterWorktree, ExitWorktree, ListAgents, ScheduleWakeup and ReportFindings), and the in-run list is
-      the classification's in-run tools, which the suite requires to equal VELDO-0160's
-      claude_code.tool_forms.in_run list.
+      read from its bytes by an extractor this specification commits in proof/VELDO-0173, not the
+      22-name `claude_code.tool_forms.builtin_tools` table of proof/VELDO-0062/cli-formats.json.
+      Before anything is switched off, a classification step records in proof/VELDO-0173 every tool of
+      the pinned 2.1.281 registry as in-run or outward, each with the reason read from its definition.
+      The in-run list is `claude_code.tool_forms.in_run.tools` in proof/VELDO-0062/cli-formats.json
+      from the VELDO-0160 build at 14ce04f8, with 18 names; outward means a registry tool not on that
+      list. The suite requires the classification's in-run tools to equal that list. The live init of
+      2026-09-26 offered 25 tools, among them CronList, CronDelete, EnterWorktree, ExitWorktree,
+      ListAgents, ScheduleWakeup and ReportFindings.
       Launch a run with no revision bound and read the init event's tool list: it equals the in-run list,
       and RemoteTrigger, SendMessage, PushNotification, the Artifact and other claude.ai-writing tools and
       self_hosted_runner are absent. The registry row compares the actual disallowedTools option with
@@ -78,15 +78,14 @@ acceptance_criteria:
       full registry; the registry row must fail on ReportFindings.
   - id: AC2
     text: >
-      Claim: The session strip, the tool registry and its classification are part of the qualified
-      baseline, so a version without them launches nothing. Set and completeness: The Claude Code
-      qualification record's baseline for a version carries the strip prefixes and the names extracted
-      (VELDO-0165 AC1 and AC2), the tool registry and the classification of every registry tool (AC1),
-      all read from that version's bytes; the receiver derives the `tools` and `disallowedTools` options from the record
+      Claim: The tool registry and its classification are part of the qualified baseline, so a version
+      without them launches nothing. Set and completeness: The Claude Code qualification record's
+      baseline for a version carries the tool registry and the classification of every registry tool
+      (AC1), all read from that version's bytes; the receiver derives the `tools` and `disallowedTools` options from the record
       and the bound revision, never from a list in the code. A record whose baseline lacks any of them, or
       whose classification leaves a registry tool unclassified, refuses every launch of that version by
-      name before anything is spawned (missing_evidence:engine_baseline:<version>); VELDO-0165 owns
-      the equivalent Codex strip record. Falsifier: Accept a record whose classification leaves one
+      name before anything is spawned (missing_evidence:engine_baseline:<version>).
+      Falsifier: Accept a record whose classification leaves one
       registry tool unclassified, and the baseline-required row must fail.
     falsified_by: >
       Accept a record whose classification leaves one registry tool unclassified, and the
@@ -125,16 +124,16 @@ of an in-run tool (remote Agent isolation, durable CronCreate); a Bash tool star
 - Normal use: the Runner launches Claude Code on Linux with the bound role's native tools, or the
   pinned version's in-run list when no role revision is bound.
 - Threat model: a registered tool outside the launch set offered to the run; a tool the owner granted
-  switched off; a registry tool left unclassified; a version launched without its qualified registry,
-  classification or VELDO-0165 strip. The owner's account and the installed binary are trusted.
+  switched off; a registry tool left unclassified; a version launched without its qualified registry
+  or classification. The owner's account and the installed binary are trusted.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); other versions
   and host kinds (Release 4).
 
 ## Notes
 
-The committed extractor records every registered tool with its byte offset so a reviewer can check
-it against the pinned binary. The classification is data in proof/VELDO-0173, one row per registry tool
-with its reason, read against VELDO-0160's tool_forms output; the lead reviews it before switch-off is
+An extractor this specification commits in proof/VELDO-0173 records every registered tool with its
+byte offset so a reviewer can check it against the pinned binary. The classification is data in
+proof/VELDO-0173, one row per registry tool with its reason, read against VELDO-0160's tool_forms output; the lead reviews it before switch-off is
 built. The launch list is a default, never a ceiling: only the owner widens a role's tools through
 VELDO-0127, and the launch then passes that revision's native tools in place of the in-run list.
 
