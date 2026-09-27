@@ -1,0 +1,4 @@
+--- a/.veldo/control_api_models.py
++++ b/.veldo/control_api_models.py
+@@ -76 +75,0 @@
+-        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077'),

@@ -69,17 +69,18 @@ _V130_ROWS = ('install/assets', 'webauthn/stand-in-browser', 'webauthn/independe
               'actions/workflow-save', 'actions/unauthorized-write', 'events/reconcile-past-page',
               'events/resume-last-event-id', 'events/expiry-named', 'events/published-watermark',
               'events/reconcile-deferred', 'enrollment/possession-race', 'webauthn/openssl-fixed-path',
-              'events/revoked-either-path', 'events/fill-window-revocation', 'events/retry-after-failure')
+              'events/revoked-either-path', 'events/fill-window-revocation', 'events/retry-after-failure',
+              'reads/implemented-writers')
 # The kinds each read model serves, as this suite expects them from the owning modules (compared with the
 # published registry, never derived from it).
 _V130_EXPECTED_KINDS = {
-    'objectives': ['intake_proposal', 'intake_question'],
-    'work': ['accepted_document', 'document_version', 'accepted_revision', 'execution_unit'],
+    'objectives': ['project', 'objective', 'intake_proposal', 'intake_question'],
+    'work': ['backlog_item', 'accepted_document', 'document_version', 'accepted_revision', 'execution_unit'],
     'workers': ['dispatch', 'dispatch_active'], 'runs': ['workflow_cycle'],
     'decisions': ['assignment', 'settlement_terms', 'request_settlement', 'decision_settlement', 'decision',
                   'channel_presentation'],
     'proof': ['proof_bundle', 'gate_observation', 'completion_receipt'], 'spend': ['subscription_reservation'],
-    'configuration': ['workflow_head', 'workflow_revision', 'role_configuration', 'tool_configuration']}
+    'configuration': ['workflow_head', 'workflow_revision', 'team', 'role_configuration', 'tool_configuration']}
 # The criteria's own phrases (parsed from the specification) and the published action or read model each is.
 _V130_AC4_ACTIONS = {'owner admission': 'owner_admission', 'owner priority': 'owner_priority',
                      'project pause': 'project_pause', 'project cancel': 'project_cancel', 'worker stop': 'worker_stop',
@@ -340,7 +341,7 @@ def _v130_checks(base):
             return True
 
     (IA, WB, WV, EP, ES, SC, SF, SR, RF, RB, EG, EA, MS, DE, DO, TL, RM, RA, RR, EL, AK, AW, AU,
-     ER, EI, EX, EW, RD, PR, WO, RV, FW, RT) = _V130_ROWS
+     ER, EI, EX, EW, RD, PR, WO, RV, FW, RT, RW) = _V130_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_api.py': ROOT / ".veldo" / "control_api.py",
@@ -1646,11 +1647,8 @@ def _v130_checks(base):
                       route is not None and route.method == 'GET' and route.family == 'reads'
                       and route.path.endswith('/' + model.name) and route.name in getattr(api[0], 'handlers', {}))
             ac2_gaps = [g for g in getattr(MO, 'GAPS', ()) if g.criterion == 'AC2']
-            check(RM, 'the AC2 gaps are named: projects, accepted objectives, backlog items, the machine registry, tool '
-                      'calls and team configuration [observed %s]' % [g.subject for g in ac2_gaps],
-                  sorted(g.subject for g in ac2_gaps) == sorted(['projects', 'accepted objectives',
-                                                                 'backlog items and their nesting', 'machine registry',
-                                                                 'tool calls', 'team configuration']))
+            check(RM, 'the AC2 gaps are exactly the ones with no writer: the machine registry and tool calls [observed %s]'
+                  % [g.subject for g in ac2_gaps], sorted(g.subject for g in ac2_gaps) == ['machine registry', 'tool calls'])
             for gap in ac2_gaps:
                 owned = gap.spec is None or bool(list((ROOT / 'specs').glob(gap.spec + '-*.md')))
                 check(RM, 'gap %s names its owning specification %s, which exists' % (gap.subject, gap.spec),
@@ -1658,6 +1656,108 @@ def _v130_checks(base):
             contract_read = call('GET', read_path('contract'), cookie=owner_cookie)
             check(RM, 'the contract route serves the read models, actions and gaps as published' + seen(contract_read),
                   contract_read[0] == 200 and MO is not None and contract_read[2] == _v130_json.loads(_v130_json.dumps(MO.contract())))
+
+        # reads/implemented-writers: the project, objective, backlog item and team records, each written by its
+        # own service through a real signed command, read back through their published read models.
+        with section(RW):
+            PJ = _v130_load('v130_project', organs / 'control_project.py')
+            OB = _v130_load('v130_objective', organs / 'control_objective.py')
+            CB = _v130_load('v130_backlog', organs / 'control_backlog.py')
+            CT = _v130_load('v130_team', organs / 'control_team.py')
+            workers = ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2')
+            for who in workers:
+                keyfile[who] = keys / who
+                _v130_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v130-' + who, '-f', str(keyfile[who])],
+                             check=True, capture_output=True, timeout=10)
+                public[who] = ' '.join(keyfile[who].with_name(who + '.pub').read_text().split()[:2])
+                enroll_member(who, 'agent_run', [], ['project-a'])
+
+            def command(who, **fields):
+                return signed_command(who, dict(ids, principal=who, command_id=next_id('rw'), nonce=next_id('rw-n'),
+                                                **fields))
+
+            projects = PJ.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda dispatch, reason: False)
+            activated = projects.apply(command(
+                'owner', operation='activate', project='project-a', owner='owner',
+                charter={'purpose': 'Sell passes to travelers.'}, execution_repository=ids['repository_uuid'],
+                authority_policy={'objective_acceptance': ['project_owner'], 'team_amendment': ['project_owner'],
+                                  'admission': ['admission_authority']},
+                coordination_budget={'capacity': 5, 'invocations': 5, 'wall_seconds': 500}))
+            # The owner's message through the edge into the common intake of this store's own domain (the
+            # API's routes here serve an intake domain of their own, which no objective is proposed from).
+            own_intake = IN.Intake(S, CM, AC, acquirer, conn, domain=ids['domain_uuid'], projects=PROJECTS,
+                                   api_edge='api-edge', journal_signer='authority', sign=journal_sign)
+            message = {'schema': IN.API_SCHEMA, 'domain': ids['domain_uuid'], 'request_id': next_id('rw-request'),
+                       'edge': 'api-edge', 'principal': 'owner', 'text': 'For project-a: travelers buy a pass in two taps.',
+                       'project': None, 'clarifies': None}
+            sent_rw = own_intake.receive('api_request', {'request': message,
+                                                         'signature': sign_as('api-edge', S.canonical_bytes(message))})
+            objectives = OB.Objectives(S, CM, conn, ids, 'authority', journal_sign)
+            proposed = objectives.apply(command(
+                'owner', operation='propose', proposal=sent_rw.get('proposal_id'),
+                outcome='A traveler buys a pass in two taps.', scope=['checkout', 'payments'],
+                authority={'acceptor': 'owner', 'assessor': 'owner2'},
+                evidence_requirements=[{'id': 'outcome', 'kind': 'gate_observation'}]))
+            oid = proposed.get('objective_id')
+            source_key = IN.source_key('api_request', message['request_id'])
+            intake_command = next((c for c, text in conn.execute('SELECT command_id, transition FROM journal ORDER BY seq')
+                                   if source_key in _v130_json.loads(text)), None)
+            record = OB.read(conn, oid) or {}
+            accepted = objectives.apply(command(
+                'owner', operation='accept_message', objective=oid, objective_version=record.get('version'),
+                revision=record.get('revision'), bound_digest=record.get('bound_digest'), intake_command=intake_command))
+            feature = objectives.apply(command(
+                'owner', operation='propose_feature', objective=oid,
+                objective_version=(OB.read(conn, oid) or {}).get('version'), feature='f-api', title='Two-tap checkout',
+                scope=['checkout']))
+            backlog = CB.Backlog(S, CM, conn, ids, 'authority', journal_sign)
+            taken = backlog.apply(command('owner', operation='take', feature=feature.get('feature_id'),
+                                          work_class='PRODUCT_CHANGE'))
+
+            def role(members, duty, perms=('feature',), engines=('claude_code',), distinct=()):
+                return dict(workers=list(members), responsibilities=[duty, 'report'], expertise=['python'],
+                            proposal_permissions=list(perms), engines=list(engines),
+                            budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 100},
+                            independence={'distinct_from': list(distinct)})
+            teams = CT.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I, requester='pm',
+                             request_sign=lambda m: sign_as('pm', m))
+            staffed = teams.apply(command('pm', operation='propose', project='project-a', team_version=0, team={'roles': {
+                'project_manager': role(['pm'], 'coordinate', ('objective', 'feature', 'team_amendment')),
+                'elaboration': role(['w-elab'], 'elaborate'),
+                'implementation': role(['w-build', 'w-build2'], 'implement', ('finding',)),
+                'independent_review': role(['w-rev1', 'w-rev2'], 'review', ('finding',), ('claude_code', 'codex'),
+                                           distinct=('implementation',))}}))
+            written = {'project': ('objectives', 'project:project-a', activated),
+                       'objective': ('objectives', oid, accepted),
+                       'backlog_item': ('work', taken.get('item_id'), taken),
+                       'team': ('configuration', 'team:project-a', staffed)}
+            for kind, (model, eid, result) in written.items():
+                stored = conn.execute('SELECT kind, version, digest, data FROM entities WHERE id=?', (eid,)).fetchone()
+                got = call('GET', read_path(model), cookie=owner_cookie)
+                served = [i for i in ((got[2] or {}).get('items') or {}).get(kind, []) if i.get('id') == eid]
+                check(RW, '%s: its own service wrote %s through a real signed command [observed %s]'
+                      % (kind, eid, {k: result.get(k) for k in ('ok', 'reason')}),
+                      result.get('ok') is True and stored is not None and stored[0] == kind)
+                check(RW, '%s: the %s read model serves it exactly as stored, labeled live%s' % (kind, model, seen(got)),
+                      got[0] == 200 and stored is not None and len(served) == 1
+                      and (served[0].get('version'), served[0].get('digest')) == (stored[1], stored[2])
+                      and same_but_redacted(_v130_json.loads(stored[3]), served[0].get('data'))
+                      and got[2].get('freshness') == 'live' and got[2].get('problems') == [])
+            item = next((i for i in (((call('GET', read_path('work'), cookie=owner_cookie)[2] or {}).get('items') or {})
+                                     .get('backlog_item') or []) if i.get('id') == taken.get('item_id')), {})
+            check(RW, 'the backlog item is served with its nesting: its objective, its feature and its project',
+                  (item.get('data') or {}).get('objective_uuid') == oid
+                  and (item.get('data') or {}).get('feature_uuid') == feature.get('feature_id')
+                  and (item.get('data') or {}).get('project_uuid') == 'project:project-a')
+            served_objective = next((i for i in (((call('GET', read_path('objectives'), cookie=owner_cookie)[2] or {})
+                                                   .get('items') or {}).get('objective') or []) if i.get('id') == oid), {})
+            check(RW, 'the objective served is the one the owner\'s own message accepted, active under its feature',
+                  (served_objective.get('data') or {}).get('state') == 'ACTIVE'
+                  and ((served_objective.get('data') or {}).get('acceptance') or {}).get('path') == 'own_message'
+                  and (served_objective.get('data') or {}).get('project_uuid') == 'project:project-a')
+            named = {g['subject'] for name in ('objectives', 'work', 'configuration')
+                     for g in (call('GET', read_path(name), cookie=owner_cookie)[2] or {}).get('gaps') or []}
+            check(RW, 'no answer names these records as not implemented [observed %s]' % sorted(named), not named)
 
         # reads/authoritative: every read model's answer against the store itself, with credentials redacted.
         with section(RA):
@@ -1725,7 +1825,7 @@ def _v130_checks(base):
             gaps = {g['subject'] for name in _V130_EXPECTED_KINDS for g in (answers[name].get('gaps') or [])}
             check(RA, 'each answer names the gaps of its model [observed %s]' % sorted(gaps),
                   'machine registry' in {g['subject'] for g in answers['workers'].get('gaps') or []}
-                  and 'tool calls' in {g['subject'] for g in answers['runs'].get('gaps') or []} and len(gaps) == 6)
+                  and 'tool calls' in {g['subject'] for g in answers['runs'].get('gaps') or []} and len(gaps) == 2)
             unknown = call('GET', read_path('workflow') + '?workflow=no-such-flow', cookie=owner_cookie)
             check(RA, 'a workflow with no revision is missing evidence, never an empty document' + seen(unknown),
                   unknown[0] == 404 and 'missing' in str(refusal(unknown)))

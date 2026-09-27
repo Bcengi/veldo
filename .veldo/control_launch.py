@@ -621,8 +621,10 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
 
 class Receiver:
     """The trusted launch receiver over the installed configuration: {store, journal_key, principal,
-    domain, repository, authority_generation, workspace, profile, adapters: {name: {argv, environment?,
-    identity?}}}. `profile` is this host's worker profile (control_containment); `control` is the
+    domain, repository, authority_generation, workspace, host_trust, profile, adapters: {name: {argv,
+    environment?, identity?}}}. `host_trust` is this host's installed trust file, whose settlement
+    signers the recheck's Gate verifies governing decisions with (VELDO-0069), exactly as the front
+    door's Gate does. `profile` is this host's worker profile (control_containment); `control` is the
     runner's channel after its request line (fd, what was already read of it), where it asks for a stop."""
 
     def __init__(self, config, emit, control=None):
@@ -657,16 +659,34 @@ class Receiver:
         if run is not None and (self.supervision or {}).get('empty') is not False:
             shutil.rmtree(run, ignore_errors=True)
 
+    def _settlement_trust(self, EL):
+        """VELDO-0069: the decision settlement signers this receiver's Gate verifies with, derived as the
+        production construction of the front door's Gate derives them (control_eligibility.enrolled_gate):
+        this host's installed trust, named by the configuration's `host_trust`, read for the configured
+        workspace. A configuration naming no host trust trusts no settlement, so every governing decision
+        blocks; a named trust that is absent or unreadable is a named stop (control_eligibility.Stopped)."""
+        path = self.config.get('host_trust')
+        if path is None:
+            return None
+        trust = EL.load_host_trust(path)
+        if trust is None:
+            raise EL.Stopped('host_trust_required')
+        return trust.settlement_trust(self.config.get('workspace'))
+
     def _recheck(self, contract):
         """The preparation's station decision, rechecked at this accepting boundary as its ticket."""
         EL = _organ('control_eligibility')
+        try:
+            settlements = self._settlement_trust(EL)
+        except EL.Stopped as error:
+            return error.reason
         reader = S.open_store(self.config['store'], mode='r')
         try:
             # The workspace whose architecture the decision judges (VELDO-0053) is the receiver's configured
             # repository checkout; without one the Gate is store-only and refuses.
             gate = EL.Gate(S, reader, domain_uuid=self.config['domain'], repository_uuid=self.config['repository'],
                            authority_generation=self.config.get('authority_generation', 1),
-                           workspace=self.config.get('workspace'))
+                           workspace=self.config.get('workspace'), settlement_trust=settlements)
             context = dict(contract['input']['context'])
             if contract['claim']:
                 context['generation'] = contract['claim']['generation']

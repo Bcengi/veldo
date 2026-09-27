@@ -29,6 +29,9 @@ footprint:
   - "engine/.veldo/control_project*.py"
   - ".veldo/control_project*.py"
   - "packs/*/.veldo/control_project*.py"
+  - "engine/.veldo/control_claim.py"
+  - ".veldo/control_claim.py"
+  - "packs/*/.veldo/control_claim.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -166,3 +169,23 @@ handover left to Release 3. Rows `project/foreign-kind`, `project/owner-demoted`
 `project/owner-revoked`, red at 93a56d6 by assertion; five finding 76 mutations. Status unchanged.
 
 2026-09-25, review 2 (filed item fixed): the scope and person parts of the owner-currency rule were never driven (a mutant dropping either survived). The owner-demoted row now drives both; mutations owner-scope-unchecked and owner-person-unchecked red it (finding 76: 23).
+
+2026-09-26, Codex review of main 3c85f33b (ask-20260926-215030, finding P2): the claim receiver
+(`control_claim.Receiver`, VELDO-0031) checked membership and unit and backlog admission but never the
+project, so a signed claim took a unit to CLAIMED after its project was PAUSED, and after it was CANCELED.
+The footprint gains `control_claim.py` (engine, installed and pack copies). The Gate's project check is now
+one method, `Gate._project_problems`, called by every station and by a new `Gate.project_problems(unit)`
+that also returns the versions it read; the receiver calls it for a `claim` of a unit that names a
+project, refuses by the Gate's own name (`project_not_active:<state>` and the rest) and pins the project
+and owner records in the claim's transaction. A unit naming no project keeps VELDO-0031's behavior, and
+renew, release and use are not new assignments. The inbox's `resume` of parked work (VELDO-0064) takes
+the claim through the transition, not this receiver, and does not ask the project either; it is not
+changed here. Rows `project/paused-claim` and `project/canceled-claim` (signed claims through the real
+receiver; red at 3c85f33b by assertion); mutations `claim-ignores-project` and
+`claim-project-check-empty` in finding 76. Status unchanged.
+
+2026-09-27, review of ba4eb66e: the receiver's pin of the project and owner records into the claim's
+transaction was never driven (a mutant dropping it survived). Row `project/paused-mid-claim` commits the
+owner's real pause at the receiver's own write, after its checks, and requires the claim refused by name
+with nothing written and the unit READY with no claim; red at 3c85f33b by assertion. Mutation
+`claim-pins-dropped` in finding 76 reds it (finding 76: 26). Status unchanged.

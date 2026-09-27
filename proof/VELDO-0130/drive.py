@@ -61,7 +61,7 @@ MODULES = ('control_api.py', 'control_api_assertion.py', 'control_api_authority.
            'control_api_models.py', 'control_api_signer.py', 'control_api_webauthn.py', 'authority_contract.py',
            'control_channel_enrollment.py', 'control_signer_answers.py', 'init_scaffold.py', 'control_service.py',
            'control_service_api.py', 'control_client_api.py', 'events.py', 'control_event_projection.py')
-JOBS = 4
+JOBS = 2
 
 
 def _load(name, path):

@@ -20,6 +20,13 @@ claim stays released with no holder and loses `parked_on`, so the unit is claima
 ordinary `claim` with its own eligibility, capability and activation checks. Like `park` and
 `resume`, it is not an IPC operation of the Receiver.
 
+Project lifecycle (VELDO-0076). A claim of a unit that names a project is refused by name when the
+shared eligibility Gate's own project check refuses it (project_not_active:PAUSED, :CANCELED,
+:COMPLETED, :owner_not_current, :not_a_project, or missing_authority:project): a stopped project
+takes no new assignment. The project and owner records that check read are pinned in the claim's
+transaction. Renew, release and use of an existing claim are not new assignments; running work
+follows the host stop policy.
+
 Receiver.apply plugs into control_client.Authority. Its inner command signature
 identifies an active stored member independently of the transport credential.
 Protected use records acceptance at this receiver; it is not a landing permit and
@@ -154,6 +161,7 @@ class Receiver:
         self.authority_generation = authority_generation
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
+        self.gate = None
         S.COMMAND_REGISTRY['claim_operation'] = {
             'transition': transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -181,6 +189,16 @@ class Receiver:
         self.counts[observation['outcome']] += 1
         self.observations.append(observation)
         return result
+
+    def _project_problems(self, unit):
+        """VELDO-0076: the shared Gate's own project check of `unit` over this receiver's connection, and
+        the versions it was decided from (control_eligibility.Gate.project_problems)."""
+        if self.gate is None:
+            EL = organ('control_eligibility')
+            self.gate = EL.Gate(S, self.conn, domain_uuid=self.ids['domain_uuid'],
+                                repository_uuid=self.ids['repository_uuid'],
+                                authority_generation=self.authority_generation)
+        return self.gate.project_problems(unit)
 
     def _pins_moved(self, pinned):
         entities = S.materialized_state(self.conn)['entities']
@@ -229,6 +247,14 @@ class Receiver:
         # Bind every authorization and activation input to the store transaction.
         touched = {unit, backlog, cid, principal, key['key_id'], CM.VERSIONS_ENTITY}
         versions = {eid: entities.get(eid, {}).get('version', 0) for eid in touched}
+        if command['operation'] == 'claim' and u['data'].get('project') is not None:
+            # VELDO-0076: a paused, canceled or completed project takes no new assignment. The check is the
+            # one every station makes; the project and owner records it read are pinned with the rest, so
+            # a pause committed before this claim refuses it by name, never after it.
+            refusals, read = self._project_problems(unit)
+            if refusals:
+                raise S.StoreRefused(refusals[0], 'the unit\'s project takes no new assignment')
+            versions.update(read)
         observation['accepted_versions'] = versions
         params = dict(action=command['operation'], unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
                       holder=principal, generation=command['generation'], capabilities=command['capabilities'],

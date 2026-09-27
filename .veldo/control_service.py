@@ -20,7 +20,9 @@ entry point uses) and then lays down, under <install root>/<service id>:
   config/  the PROTECTED CONFIGURATION (0700): service.json (0600), a copy of the enrollment signers
            this host trusted at installation (0600), and one launch receiver configuration per
            repository (receiver-<repository>.json, 0600) naming this host's QUALIFIED linux-systemd
-           worker profile (slice, lock and caps), without which the receiver launches nothing.
+           worker profile (slice, lock and caps), without which the receiver launches nothing, and
+           this host's trust file, whose settlement signers the receiver's recheck verifies governing
+           decisions with, as every enrolled entry point's Gate does (VELDO-0069).
   state/   the service's observation log (0700).
 
 and the unit, rendered from services/veldo-authority.service, in the owner's systemd user unit
@@ -777,7 +779,8 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             _write(path, _json({'store': first['store_path'], 'journal_key': journal, 'principal': receiver_principal,
                                 'domain': first['domain_uuid'], 'repository': repository,
                                 'authority_generation': first['authority_generation'], 'workspace': members[0],
-                                'profile': profile, 'adapters': adapters}), 0o600)
+                                'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,
+                                'adapters': adapters}), 0o600)
             receivers[repository] = path
         config = {'schema': SCHEMA, 'service': service, 'unit': unit, 'domain_uuid': first['domain_uuid'],
                   'store_uuid': first['store_uuid'], 'store_path': first['store_path'],

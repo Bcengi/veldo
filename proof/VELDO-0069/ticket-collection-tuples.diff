@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -1036 +1036 @@
+-            members = [[m['id'], m['version'], m['digest']] for m in value]
++            members = [(m['id'], m['version'], m['digest']) for m in value]  # defect: tuples never equal JSON

@@ -1,0 +1,5 @@
+--- a/.veldo/control_claim.py
++++ b/.veldo/control_claim.py
+@@ -250 +250 @@
+-        if command['operation'] == 'claim' and u['data'].get('project') is not None:
++        if False:  # defect: a claim never asks the unit's project

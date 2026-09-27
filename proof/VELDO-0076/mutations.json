@@ -91,6 +91,18 @@
     true
    ],
    [
+    "VELDO-0076 project/paused-claim",
+    true
+   ],
+   [
+    "VELDO-0076 project/canceled-claim",
+    true
+   ],
+   [
+    "VELDO-0076 project/paused-mid-claim",
+    true
+   ],
+   [
     "VELDO-0076 ran/install/assets",
     true
    ],
@@ -113,9 +125,17 @@
    [
     "VELDO-0076 ran/project/foreign-kind",
     true
+   ],
+   [
+    "VELDO-0076 ran/project/paused-claim",
+    true
+   ],
+   [
+    "VELDO-0076 ran/project/paused-mid-claim",
+    true
    ]
   ],
-  "seconds": 3.374
+  "seconds": 3.803
  },
  "controls_green": true,
  "mutants": [
@@ -129,7 +149,7 @@
     "VELDO-0076 install/assets"
    ],
    "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "d060adc8eb4ffe2a3646db0e0be3933d866321055b4369b9c5448b689db6ab11",
+   "mutant_sha256": "e7fbf045943d8cd26a9f5de712f40c497c547c0d060a6db6b9a547d312595fd6",
    "name": "project-not-scaffolded",
    "named_row_red": true,
    "named_rows": [
@@ -222,6 +242,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -244,10 +276,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.382,
-   "source_sha256": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd"
+   "seconds": 3.805,
+   "source_sha256": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
   },
   {
    "by_assertion": true,
@@ -263,7 +303,7 @@
     "VELDO-0076 project/foreign-kind"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "14ce0fb424586b4285c1deb381803c7b0cc7b98cffb578b8ede447152747dfd4",
+   "mutant_sha256": "88f5d8de3fd9e709f178bd2d89555682dee0c4b28532b9c2f408a2c689ec47dc",
    "name": "budget-predicate-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -356,6 +396,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -378,10 +430,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.635,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 4.098,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -401,7 +461,7 @@
     "VELDO-0076 project/foreign-kind"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "14cec4e194f1b98a9f14d4290be1cc5288ccfb00966d399320c016c7c2bfa2fb",
+   "mutant_sha256": "339fcc56660b0c67346dfd68db446ef87be233eab2bf1fa0f34b9901b50e0fb4",
    "name": "omitted-policy-activates",
    "named_row_red": true,
    "named_rows": [
@@ -494,6 +554,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -516,10 +588,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.617,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 4.075,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -530,7 +610,8 @@
     "VELDO-0076 detail: project/observability: the metrics count the projects by state",
     "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project; control: its unit is then admitted",
     "VELDO-0076 detail: project/owner-demoted: an owner whose scope no longer covers the project halts it by name; an owner who is no longer a person halts it by name; the demoted owner can no longer stop it; restoring the role resumes it",
-    "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name; and no dispatch of it starts; restoring the membership resumes it; and its work dispatches and ends"
+    "VELDO-0076 detail: project/owner-revoked: the Gate halts a revoked owner's project by name; and no dispatch of it starts; restoring the membership resumes it; and its work dispatches and ends",
+    "VELDO-0076 detail: project/paused-mid-claim: the owner's pause commits after the receiver's checks and before the claim's write; the claim is refused by name; nothing is written after the pause and the unit stays READY with no claim"
    ],
    "diff": "proof/VELDO-0076/non-owner-activates.diff",
    "failed_rows": [
@@ -540,10 +621,11 @@
     "VELDO-0076 project/observability",
     "VELDO-0076 project/foreign-kind",
     "VELDO-0076 project/owner-demoted",
-    "VELDO-0076 project/owner-revoked"
+    "VELDO-0076 project/owner-revoked",
+    "VELDO-0076 project/paused-mid-claim"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "9adaf7c1a48e30c487d04612bb126f2aac1f56a140e2ecb440a0fa3d18f4a674",
+   "mutant_sha256": "28dddf64edd8890a020126681ff0a9107435d9d27599ec20789a6ff3b3d1a499",
    "name": "non-owner-activates",
    "named_row_red": true,
    "named_rows": [
@@ -636,6 +718,18 @@
      false
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     false
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -658,10 +752,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.125,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.473,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -679,7 +781,7 @@
     "VELDO-0076 project/foreign-kind"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "27774da38b44ba96caa3a4e76ef702b1a40ce54a92d5f4be324892e9017359ed",
+   "mutant_sha256": "51e76357087409563ee5759dcc46ebf177deaa112dcd18b70412b7fa1d917825",
    "name": "signature-unverified",
    "named_row_red": true,
    "named_rows": [
@@ -772,6 +874,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -794,10 +908,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.625,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 4.071,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -809,7 +931,7 @@
     "VELDO-0076 project/one-active"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "2fb960dbcea83edce95c4e9988bb95efbd75e32e4b4c3d67fac457e659a1fe57",
+   "mutant_sha256": "2e434c80f05a7db93d007cea7ec22ca13f27532d409960a326f9f892957f2dd0",
    "name": "second-activation-replaces",
    "named_row_red": true,
    "named_rows": [
@@ -902,6 +1024,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -924,10 +1058,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.39,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.839,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -947,7 +1089,7 @@
     "VELDO-0076 project/owner-revoked"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "4b06e33e5414e12ffdcbfbed639df25492d392d4675cbd17e65413671bab2dcd",
+   "mutant_sha256": "9e5f5783dbaa6d311238c814da6361982f213e335c2140aa65e3897a44898277",
    "name": "frontier-offers-paused-project",
    "named_row_red": true,
    "named_rows": [
@@ -1040,6 +1182,18 @@
      false
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -1062,24 +1216,38 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.371,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 3.842,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0076 detail: project/paused-frontier: the frontier offers nothing from the paused project; it names why; control: the other project's unit is still offered",
-    "VELDO-0076 detail: project/paused-dispatch: a new dispatch of the paused project is refused by name; no dispatch record exists for it"
+    "VELDO-0076 detail: project/paused-dispatch: a new dispatch of the paused project is refused by name; no dispatch record exists for it",
+    "VELDO-0076 detail: project/paused-claim: a signed claim of its unit is refused by name; nothing is written and the unit stays READY",
+    "VELDO-0076 detail: project/canceled-claim: the receiver observes the refusals by name",
+    "VELDO-0076 detail: project/paused-mid-claim: the claim is refused by name; nothing is written after the pause and the unit stays READY with no claim"
    ],
    "diff": "proof/VELDO-0076/paused-project-dispatches.diff",
    "failed_rows": [
     "VELDO-0076 project/paused-frontier",
-    "VELDO-0076 project/paused-dispatch"
+    "VELDO-0076 project/paused-dispatch",
+    "VELDO-0076 project/paused-claim",
+    "VELDO-0076 project/canceled-claim",
+    "VELDO-0076 project/paused-mid-claim"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "c8c5a7899873ffcaa664c093a33e98be248558e39de2adbc3324dd61553b087f",
+   "mutant_sha256": "c217167abc1a35cd426471d193436d0fff464b7d8a2060b6a88fc627fe558110",
    "name": "paused-project-dispatches",
    "named_row_red": true,
    "named_rows": [
@@ -1172,6 +1340,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     false
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     false
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     false
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -1194,10 +1374,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.633,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 4.147,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
   },
   {
    "by_assertion": true,
@@ -1211,7 +1399,7 @@
     "VELDO-0076 project/cancel"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "be9f0a7f48ec7c4a76186e211510d50198aafad2582db631561ece9e8cc61305",
+   "mutant_sha256": "15fe68f0dde95fc03d75c547012111807617de175696f3d605af928670877a62",
    "name": "pause-stops-nothing",
    "named_row_red": true,
    "named_rows": [
@@ -1304,6 +1492,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -1326,10 +1526,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 43.386,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 43.852,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -1345,7 +1553,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "96c5d207b1baaec15a3a7c663ac23802e1f784c8b8b0fb091e256fcbd1138e72",
+   "mutant_sha256": "a4ef3206449af23ea353b669fc8a6f9b5995a112652849200f0d0f38dd0f04bb",
    "name": "pause-rewrites-history",
    "named_row_red": true,
    "named_rows": [
@@ -1438,6 +1646,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -1460,10 +1680,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.393,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.755,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -1477,7 +1705,7 @@
     "VELDO-0076 project/observability"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "f36c33988f45dad5542045a27b677450a03df3bc9686261ba6b5d2cec63c6bc1",
+   "mutant_sha256": "a8f56962a4562a77a6b14be312393c157164f5d414af204fd710ab745aee46fd",
    "name": "canceled-project-resumes",
    "named_row_red": true,
    "named_rows": [
@@ -1570,6 +1798,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -1592,10 +1832,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.402,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.828,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -1613,7 +1861,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "353de8e8dbc7d12d9f0126d2ad91c66459d33954138c7adf2ca37f95ef3b2c47",
+   "mutant_sha256": "26e0b414bfb829c9751c313db43266b0bf1040593edf28b22cf9c521ce6e873d",
    "name": "objective-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -1706,6 +1954,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -1728,10 +1988,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.117,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.528,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -1749,7 +2017,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "d0a7767ccd4d6f9e4d66b8b6f54883ae0e3f402982e7f2d0903ac46050c19769",
+   "mutant_sha256": "407fee31914a2e0dac43bc8d82496593201f0b9218b12de54c32a45557502c24",
    "name": "assignment-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -1842,6 +2110,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -1864,10 +2144,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.114,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.48,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -1885,7 +2173,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "871731c7b3b281e66aae7b4bf9dacdaca0f86bfdb7aa8cb3819d3eb59c287dd2",
+   "mutant_sha256": "08c212c1896d1e31c571b645570f8f721d4f35ce7474463dddbefa70a6d5aaee",
    "name": "decision-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -1978,6 +2266,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -2000,10 +2300,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.127,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.496,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -2015,7 +2323,7 @@
     "VELDO-0076 project/open-dispatch"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "1f68fc6f12b5e1bbef9b37ce29574d442569337f1da07e31761b8aa54fd7d453",
+   "mutant_sha256": "e1241c4b7daff4c15a07a5758218e019cce44b934836d7fae8391c57c41ccc0b",
    "name": "dispatch-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -2108,6 +2416,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -2130,10 +2450,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.379,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.806,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -2149,7 +2477,7 @@
     "VELDO-0076 project/complete-resolved"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "f92de593261818b3589f107f8930ea150ea9b730e70ec2ae86f1dc1386205106",
+   "mutant_sha256": "e85f91f0b4bf843d4ea797e7c2007dfb95d0e3d6d8f2b7faec359ed77f63d2cd",
    "name": "reservation-ignored-at-completion",
    "named_row_red": true,
    "named_rows": [
@@ -2242,6 +2570,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -2264,10 +2604,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.374,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.822,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -2279,7 +2627,7 @@
     "VELDO-0076 project/foreign-kind"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "a47098c4501e7a835ce2d17070bbd8db9d11b52a118ab7b63e3bec0fe4e54230",
+   "mutant_sha256": "d296b58b46a829fffc987030172bd2c84ee7b278dd821ba57b43eba5dda4ae2a",
    "name": "project-kind-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2372,6 +2720,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -2394,22 +2754,32 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.384,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 3.806,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project; control: its unit is then admitted"
+    "VELDO-0076 detail: project/foreign-kind: a generic upsert of another kind at a project's id refuses entity_owned; the Gate does not admit the project's unit; and no dispatch of it starts; the owner still activates the project; control: its unit is then admitted",
+    "VELDO-0076 detail: project/paused-mid-claim: control: the project is ACTIVE and its unit READY with no claim; the owner's pause commits after the receiver's checks and before the claim's write; the claim is refused by name; nothing is written after the pause and the unit stays READY with no claim"
    ],
    "diff": "proof/VELDO-0076/project-prefix-unowned.diff",
    "failed_rows": [
-    "VELDO-0076 project/foreign-kind"
+    "VELDO-0076 project/foreign-kind",
+    "VELDO-0076 project/paused-mid-claim"
    ],
    "module": ".veldo/control_project.py",
-   "mutant_sha256": "32e02134f5ff45fb12f1169528a32f6a3f423f27732781bc0bd9be0f7581d739",
+   "mutant_sha256": "d3b16e019a7434ef2ac679fc65d4732800bf438615b712e09626950f881735bb",
    "name": "project-prefix-unowned",
    "named_row_red": true,
    "named_rows": [
@@ -2502,6 +2872,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     false
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -2524,10 +2906,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.386,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.822,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   {
    "by_assertion": true,
@@ -2541,7 +2931,7 @@
     "VELDO-0076 project/owner-revoked"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "0a530f9543082af44b749bb0e755f4f4e07ade8dd8adc1051a7e5dc9408dcab2",
+   "mutant_sha256": "91cf940a73bda1e891a1be9b1ddef9ee1f0decff0631acb9a16829b77c827bcd",
    "name": "owner-currency-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2635,6 +3025,18 @@
      false
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -2657,10 +3059,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.868,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 4.389,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
   },
   {
    "by_assertion": true,
@@ -2672,7 +3082,7 @@
     "VELDO-0076 project/owner-demoted"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "61674554bc6c14512d522b5ce9369648b8b00a275194f066d645b97fba92fc67",
+   "mutant_sha256": "fbd6d1849305e219048138adc038bc2773f7c7c1afae09a45993a1add36b3dcb",
    "name": "owner-scope-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2765,6 +3175,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -2787,10 +3209,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.382,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 3.807,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
   },
   {
    "by_assertion": true,
@@ -2802,7 +3232,7 @@
     "VELDO-0076 project/owner-demoted"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "13a87c1de7e9055cd62933be88afa82ea04555c26b919c795a13e8750dbaa0dd",
+   "mutant_sha256": "fb7d2c3032ccb84887a8e2f31c3619ac6674de030d879f0992552817fa1b00fe",
    "name": "owner-person-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2895,6 +3325,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -2917,10 +3359,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.394,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 3.83,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
   },
   {
    "by_assertion": true,
@@ -2932,7 +3382,7 @@
     "VELDO-0076 project/owner-demoted"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "f9f18823fe04d129929ed7eb0d3f42e79260291073a27087d5ad86c6c8c0c1f6",
+   "mutant_sha256": "e7491de19315850062a949e314f1760ee2d822bad3f1e22c581bc733b99f52f6",
    "name": "demoted-owner-current",
    "named_row_red": true,
    "named_rows": [
@@ -3025,6 +3475,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -3047,10 +3509,18 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.655,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 4.109,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
   },
   {
    "by_assertion": true,
@@ -3062,7 +3532,7 @@
     "VELDO-0076 project/owner-revoked"
    ],
    "module": ".veldo/control_eligibility.py",
-   "mutant_sha256": "052aa14935d0e15a06138cdc63648cd0022220b7803ded96e887bb55af9368fd",
+   "mutant_sha256": "10a1127b89aff5268c92a8cc52f9099f2ddd33801d133e5dfec5d61d4ed66efc",
    "name": "revoked-owner-current",
    "named_row_red": true,
    "named_rows": [
@@ -3155,6 +3625,18 @@
      false
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -3177,15 +3659,483 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.626,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 4.147,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/paused-claim: a signed claim of its unit is refused by name; nothing is written and the unit stays READY",
+    "VELDO-0076 detail: project/canceled-claim: its unit is still READY (the cancel records a disposition, it moves no unit); a signed claim of it is refused by name; nothing is written and no claim exists; the receiver observes the refusals by name",
+    "VELDO-0076 detail: project/paused-mid-claim: the claim is refused by name; nothing is written after the pause and the unit stays READY with no claim"
+   ],
+   "diff": "proof/VELDO-0076/claim-ignores-project.diff",
+   "failed_rows": [
+    "VELDO-0076 project/paused-claim",
+    "VELDO-0076 project/canceled-claim",
+    "VELDO-0076 project/paused-mid-claim"
+   ],
+   "module": ".veldo/control_claim.py",
+   "mutant_sha256": "de1809c8e9e06733fc446dc08d6aec4279c5031920733469f468543db272241b",
+   "name": "claim-ignores-project",
+   "named_row_red": true,
+   "named_rows": [
+    "project/paused-claim",
+    "project/canceled-claim"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-claim",
+     false
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     false
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     false
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
+    ]
+   ],
+   "seconds": 3.793,
+   "source_sha256": "b07cb7652f4e83354aa4a14378328c25a8fcc2670667a810ab35949838dc3c2a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/paused-claim: a signed claim of its unit is refused by name; nothing is written and the unit stays READY",
+    "VELDO-0076 detail: project/canceled-claim: its unit is still READY (the cancel records a disposition, it moves no unit); a signed claim of it is refused by name; nothing is written and no claim exists; the receiver observes the refusals by name",
+    "VELDO-0076 detail: project/paused-mid-claim: the claim is refused by name; nothing is written after the pause and the unit stays READY with no claim"
+   ],
+   "diff": "proof/VELDO-0076/claim-project-check-empty.diff",
+   "failed_rows": [
+    "VELDO-0076 project/paused-claim",
+    "VELDO-0076 project/canceled-claim",
+    "VELDO-0076 project/paused-mid-claim"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "b20c03060a77a7aaded0142106b2f26bdfb8e431dea05fd9eef7fd10bd3423a2",
+   "name": "claim-project-check-empty",
+   "named_row_red": true,
+   "named_rows": [
+    "project/paused-claim",
+    "project/canceled-claim"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-claim",
+     false
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     false
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     false
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
+    ]
+   ],
+   "seconds": 3.832,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0076 detail: project/paused-mid-claim: the claim is refused by name; nothing is written after the pause and the unit stays READY with no claim"
+   ],
+   "diff": "proof/VELDO-0076/claim-pins-dropped.diff",
+   "failed_rows": [
+    "VELDO-0076 project/paused-mid-claim"
+   ],
+   "module": ".veldo/control_claim.py",
+   "mutant_sha256": "c2a18bbae3e2e57a8ef42dc2067b298603f9190b988a8327dfb0256413d6095f",
+   "name": "claim-pins-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "project/paused-mid-claim"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     false
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
+    ]
+   ],
+   "seconds": 3.803,
+   "source_sha256": "b07cb7652f4e83354aa4a14378328c25a8fcc2670667a810ab35949838dc3c2a"
   }
  ],
  "noop": {
-  "control_eligibility.py": {
-   "copy_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868",
+  "control_claim.py": {
+   "copy_sha256": "b07cb7652f4e83354aa4a14378328c25a8fcc2670667a810ab35949838dc3c2a",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -3275,6 +4225,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -3297,13 +4259,159 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.389,
-   "source_sha256": "8040a0f17dc47a792988d6487ac1f1cac7e889e4ad067eec461203cd37de7868"
+   "seconds": 3.795,
+   "source_sha256": "b07cb7652f4e83354aa4a14378328c25a8fcc2670667a810ab35949838dc3c2a"
+  },
+  "control_eligibility.py": {
+   "copy_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0076 install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 project/activation-authority",
+     true
+    ],
+    [
+     "VELDO-0076 project/unbounded-budget",
+     true
+    ],
+    [
+     "VELDO-0076 project/one-active",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/stop-policy",
+     true
+    ],
+    [
+     "VELDO-0076 project/history-preserved",
+     true
+    ],
+    [
+     "VELDO-0076 project/resume",
+     true
+    ],
+    [
+     "VELDO-0076 project/cancel",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-assignment",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-decision",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-dispatch",
+     true
+    ],
+    [
+     "VELDO-0076 project/open-reservation",
+     true
+    ],
+    [
+     "VELDO-0076 project/complete-resolved",
+     true
+    ],
+    [
+     "VELDO-0076 project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-demoted",
+     true
+    ],
+    [
+     "VELDO-0076 project/owner-revoked",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/install/assets",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/activation-fields",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-frontier",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/open-objective",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/observability",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/foreign-kind",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
+    ]
+   ],
+   "seconds": 3.796,
+   "source_sha256": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
   },
   "control_project.py": {
-   "copy_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f",
+   "copy_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -3393,6 +4501,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -3415,13 +4535,21 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.368,
-   "source_sha256": "5e5cadbe5f9e7b84651b1561b818a6904b4c812aafcb6ac3c9e40e983b00ee6f"
+   "seconds": 3.812,
+   "source_sha256": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
   },
   "init_scaffold.py": {
-   "copy_sha256": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd",
+   "copy_sha256": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -3511,6 +4639,18 @@
      true
     ],
     [
+     "VELDO-0076 project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/canceled-claim",
+     true
+    ],
+    [
+     "VELDO-0076 project/paused-mid-claim",
+     true
+    ],
+    [
      "VELDO-0076 ran/install/assets",
      true
     ],
@@ -3533,15 +4673,23 @@
     [
      "VELDO-0076 ran/project/foreign-kind",
      true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-claim",
+     true
+    ],
+    [
+     "VELDO-0076 ran/project/paused-mid-claim",
+     true
     ]
    ],
-   "seconds": 3.369,
-   "source_sha256": "0fe5be13f745dfb6c9dfc9c38342ba41ee09d7ef4285d1e1473ee6a4bfb66bfd"
+   "seconds": 3.792,
+   "source_sha256": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 76",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 132.265,
+ "serial_seconds": 159.253,
  "spec_id": "VELDO-0076",
  "suite": "scripts/suites/71_veldo_0076_projects.py"
 }

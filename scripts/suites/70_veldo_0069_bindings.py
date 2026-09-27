@@ -39,13 +39,15 @@ def _v69_suite():
 
     ROWS = ('binding/one-transaction', 'eligibility/resolved-request', 'refusal/wrong-framing',
             'refusal/wrong-subject', 'refusal/wrong-version', 'refusal/unsupported-subject-stops',
-            'consumers/inline-bypass', 'refusal/future-revision', 'binding/owner-ruling')
-    OT, ER, WF, WS, WV, UK, IB, FV, RU = ROWS
+            'consumers/inline-bypass', 'refusal/future-revision', 'binding/owner-ruling', 'launch/receiver-recheck')
+    OT, ER, WF, WS, WV, UK, IB, FV, RU, LR = ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_request_settlement.py': ROOT / ".veldo" / "control_request_settlement.py",
         'control_decision_dependency.py': ROOT / ".veldo" / "control_decision_dependency.py",
         'plan.py': ROOT / ".veldo" / "plan.py",
+        'control_launch.py': ROOT / ".veldo" / "control_launch.py",
+        'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
     }
     CHOICES = {'accept': 'approve', 'return_for_elaboration': 'return_for_elaboration', 'reject': 'reject'}
     NAMESPACE = 'veldo-decision-settlement'
@@ -866,6 +868,102 @@ def _v69_suite():
                 for sid, got in sorted(results3.items()):
                     check(IB, '%s clears at every consumer only once its accepted binding exists' % sid + seen(got)
                           + show(cleared[sid]), got.get('outcome') == 'settled' and verdict(cleared[sid], []))
+            # The launch boundary: work the front door cleared on the owner's signed settlement is launched
+            # by the real receiver process (control_launch.py <config>, handed the contract the real runner
+            # prepared), whose recheck verifies the same settlement under the host trust its configuration
+            # names, as the front door's Gate does. A receiver configured with no host trust, or with one
+            # that is absent, refuses the same work by name and spawns nothing: nothing defaults to trust.
+            with section(LR):
+                L = load('v69_launch', organs / 'control_launch.py')
+                D = L.D
+                RES = D.RES
+                sid, rid = 'VELDO-9601', 'decision:D-9601'
+                for principal in ('runner', 'launch-receiver'):
+                    put(principal, 'membership', dict(principal_type='service', roles=[], scope=[ids['repository_uuid']],
+                                                      revoked_at=None, expires_at=None))
+
+                def slot_authority(connection, command):
+                    row_ = connection.execute('SELECT data FROM entities WHERE id=?', (command['principal'],)).fetchone()
+                    return bool(row_) and json.loads(row_[0]).get('revoked_at') is None
+
+                reservations = RES.Reservations(S, conn, domain=ids['domain_uuid'], repository=ids['repository_uuid'],
+                                                principal='runner', authorize=slot_authority, signer='runner',
+                                                sign=journal_sign)
+                for scope_, subject_ in (('account', 'acct-69'), ('project', 'p1'), ('unit', sid)):
+                    reservations.configure(next_id('policy'), scope_, subject_,
+                                           dict(capacity=5, invocations=5, wall_seconds=500), now=time.time())
+                source = base / 'source'
+                GP.run(['git', 'init', '-q', str(source)], check=True, capture_output=True)
+                (source / 'README').write_text('launch source\n')
+                GP.run(['git', '-C', str(source), 'add', 'README'], check=True, capture_output=True)
+                GP.run(['git', '-C', str(source), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'],
+                       check=True, capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+                markers = base / 'markers'
+                markers.mkdir()
+                worker = base / 'worker.py'
+                worker.write_text('import json, os, sys\nfrom pathlib import Path\nsys.stdin.buffer.read()\n'
+                                  '(Path(sys.argv[1]) / (os.environ.get("VELDO_DISPATCH_ID", "none").replace("/", "_")'
+                                  ' + ".ran")).write_text("ran")\nsys.stdout.write(json.dumps({"status": "done"}))\n')
+                # This host's trust, outside the workspace, spelled here: its settlement signers are the file
+                # the front door's Gate reads.
+                (host / 'enrollment_signers').write_text('')
+                host_trust = host / 'host_trust.json'
+                host_trust.write_text(json.dumps({'schema': 'veldo.host_trust/v1', 'host_identity': 'host-69',
+                                                  'enrollment_signers': str(host / 'enrollment_signers'),
+                                                  'settlement_signers': str(signers)}))
+
+                def receiver_config(name, **extra):
+                    path = base / ('receiver-%s.json' % name)
+                    path.write_text(json.dumps(dict({
+                        'store': str(db), 'journal_key': str(keyfile['authority']), 'principal': 'launch-receiver',
+                        'domain': ids['domain_uuid'], 'repository': ids['repository_uuid'], 'authority_generation': 1,
+                        'workspace': str(repo), 'adapters': {'fixture-engine': {'identity': 'reported', 'argv': [
+                            sys.executable, '-B', str(organs / 'control_launch.py'), 'exec', sys.executable, '-B',
+                            str(worker), str(markers)]}}}, **extra)))
+                    return path
+
+                dispatches = D.Dispatches(S, conn, domain=ids['domain_uuid'], repository=ids['repository_uuid'],
+                                          principal='runner', signer='runner', sign=journal_sign)
+
+                def launch_with(config):
+                    # The unit's claim is held live by its holder, as a building worker's is.
+                    put(CLM.claim_id(ids['repository_uuid'], sid), 'claim',
+                        dict(unit_id=sid, holder='worker-a', generation=1, state='owned', heartbeat_at=CLM.CL._now()))
+                    runner = L.Runner(gate, reservations, dispatches,
+                                      lambda c: L.invoke(config, c, dispatches, accept_seconds=30), account='acct-69')
+                    try:
+                        launch = runner.submit(sid, 'build', holder='worker-a', source=str(source),
+                                               revision='HEAD', payload={'task': 'proceed as settled'},
+                                               adapter='fixture-engine', configuration={'tools': ['Read']},
+                                               deadline=time.time() + 120)
+                    except (D.Refused, EL.Refused, S.StoreRefused, RES.Refused) as error:
+                        return {'raised': getattr(error, 'code', str(error))}
+                    ended = runner.wait(launch, timeout=60) or {}
+                    record = dispatches.record(launch.dispatch_id) or {}
+                    ran = (markers / (launch.dispatch_id.replace('/', '_') + '.ran')).exists()
+                    return {'result': launch.result, 'state': ended.get('state') or record.get('state'),
+                            'refusal': record.get('refusal'), 'ran': ran,
+                            'states': [h.get('state') for h in record.get('history', [])]}
+
+                front = gate.decide('build', sid, context={'holder': 'worker-a'})
+                untrusted = launch_with(receiver_config('untrusted'))
+                missing_trust = launch_with(receiver_config('absent-trust', host_trust=str(host / 'no-such-trust.json')))
+                trusted = launch_with(receiver_config('trusted', host_trust=str(host_trust)))
+                check(LR, 'the front door clears %s on its bound settlement' % sid + ' [observed %s]' % front.get('refusals'),
+                      front.get('eligible') is True and bindings(rid))
+                check(LR, 'a receiver configured with no host trust refuses it by name (unsigned_decision) and spawns '
+                          'nothing [observed %s]' % json.dumps(untrusted),
+                      untrusted.get('result') == 'refused' and untrusted.get('refusal') == 'unsigned_decision:' + rid
+                      and untrusted.get('states') == ['prepared', 'refused'] and untrusted.get('ran') is False)
+                check(LR, 'a receiver naming a host trust that is absent refuses by name (host_trust_required) and spawns '
+                          'nothing [observed %s]' % json.dumps(missing_trust),
+                      missing_trust.get('result') == 'refused' and missing_trust.get('refusal') == 'host_trust_required'
+                      and missing_trust.get('ran') is False)
+                check(LR, 'the receiver naming this host\'s trust accepts, launches and reaps it: its recheck verified the '
+                          'same signed settlement [observed %s]' % json.dumps(trusted),
+                      trusted.get('result') == 'accepted' and trusted.get('state') == 'exited'
+                      and trusted.get('refusal') is None and trusted.get('ran') is True
+                      and trusted.get('states', [])[:3] == ['prepared', 'accepted', 'running'])
         finally:
             server.shutdown()
             server.server_close()

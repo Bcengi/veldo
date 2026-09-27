@@ -36,7 +36,8 @@ HERE = Path(__file__).resolve().parent
 SUITE = '70_veldo_0069_bindings.py'
 PREFIX = 'VELDO-0069 '
 FINDING = 69
-MODULES = ('control_request_settlement.py', 'control_decision_dependency.py', 'plan.py')
+MODULES = ('control_request_settlement.py', 'control_decision_dependency.py', 'plan.py', 'control_launch.py',
+           'control_eligibility.py')
 
 
 def _load(name, path):
@@ -128,7 +129,8 @@ def main():
         print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))
         return
     ctm = _driver()
-    cases = [c for c in ctm.cases() if c['finding'] == FINDING]
+    # This suite's cases; a finding-69 case registered on another suite is driven by the registry only.
+    cases = [c for c in ctm.cases() if c['finding'] == FINDING and c['suite'] == SUITE]
     report = {'schema': 'veldo.proof-mutations/v1', 'spec_id': 'VELDO-0069', 'suite': 'scripts/suites/' + SUITE,
               'registry': 'scripts/check_teeth_mutations.py --finding %d' % FINDING, 'baseline': run(), 'noop': None,
               'mutants': []}
