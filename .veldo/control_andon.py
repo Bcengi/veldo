@@ -392,31 +392,24 @@ class Andon:
             ok, why = self.contract.transition(LIFECYCLE, STOPPED, RESUMED, params['evidence'])
             if not ok:
                 raise refused('transition_refused', why)
-            receipt = self._project_receipt(unit)
             data = dict(u['data'], state=RESUMED, interruption=None, station_contract=cid)
             return dict({sid: {'kind': STOP_KIND, 'data': dict(s['data'], state='resumed', resumption=params['permission'])},
                          unit: {'kind': UNIT_KIND, 'data': data}},
-                        **self.issue_station_contract(params['contract'], receipt, before))
+                        **self.issue_station_contract(params['contract'], before))
         raise refused('invalid_input', 'unknown andon action')
 
-    def _project_receipt(self, unit):
-        """VELDO-0169: inside the store transaction that resumes `unit`, the Gate's project check read
-        again on that transaction's connection; its receipt is what a station contract requires."""
-        if not self.conn.in_transaction:
-            raise self.S.StoreRefused('wrong_connection', 'a handout is checked inside its store transaction')
-        refusals, _read, receipt = self.project_gate.project_problems(unit)
+    def issue_station_contract(self, contract, before):
+        """VELDO-0169: the one writer of a station contract. Inside the command transaction that writes
+        it, on this andon's connection while that transaction holds the write lock, it asks the Gate's
+        project check of the contract's unit itself and refuses by the Gate's own name, with nothing
+        written, when the check finds any problem; outside a command transaction it refuses
+        outside_transaction. The contract is the entity it returns, which the store writes only for this
+        service's command (control_store.declare_owners)."""
+        if not self.conn.in_transaction or not getattr(self.conn, 'command_transaction', False):
+            raise self.S.StoreRefused('outside_transaction', 'a station contract is issued inside the command transaction that writes it')
+        refusals, _read = self.project_gate.project_problems(contract['unit'])
         if refusals:
             raise self.S.StoreRefused(refusals[0], 'the project takes no new work')
-        return receipt
-
-    def issue_station_contract(self, contract, receipt, before):
-        """VELDO-0169: the one writer of a station contract. The entity is written only with the receipt
-        of the Gate's project check of the contract's unit that this transaction pinned and read
-        (control_claim.project_check_problem); otherwise it is refused by that name and nothing is
-        written."""
-        problem = self.inbox.claims.project_check_problem(receipt, contract['unit'], before)
-        if problem is not None:
-            raise self.S.StoreRefused(problem, 'a station contract carries the Gate\'s project check of its unit')
         return {contract['contract_id']: {'kind': CONTRACT_KIND, 'data': contract}}
 
     # -- raising a stop -------------------------------------------------------------------------
@@ -794,7 +787,7 @@ class Andon:
             state = self.CM.authority_state(self.S, self.conn)
             permission = self._permission(stop, item, state, now)
             project = u['data'].get('project')
-            refusals, expected, _receipt = self.project_gate.project_problems(unit)
+            refusals, expected = self.project_gate.project_problems(unit)
             read = dict(expected)
             if refusals:
                 raise Refused(refusals[0], 'the project takes no new work')
@@ -832,13 +825,14 @@ class Andon:
         """The name a store refusal of a resume is reported by. A pinned version that moved is a
         stale_version when it is one the project check read (a pause, cancel or owner change committed
         after the check), and stale_subject when anything else about the stop moved; the Gate's own
-        project refusals and the station contract's receipt refusals keep their names."""
+        project refusals, made again by the station contract writer inside the transaction, keep their
+        names."""
         if code == 'stale_version':
             moved = any((self._entity(eid) or {}).get('version', 0) != version for eid, version in read.items())
             return 'stale_version' if moved else 'stale_subject'
         if code == 'transition_refused':
             return 'stale_subject'
-        if code.startswith(('project_not_active:', 'missing_authority:project')) or code.endswith(':project_check'):
+        if code.startswith(('project_not_active:', 'missing_authority:project')):
             return code
         return 'unknown_outcome'
 

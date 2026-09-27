@@ -171,9 +171,8 @@ def _v76_suite():
                                             revoked_at=1 if who == 'rex' else None, expires_at=None))
                 if who in public:
                     put('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
-            writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+            writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                           'writes': ('entities', 'journal', 'commands', 'nonces')}
-            V169 = load('v0076_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
 
             def reservation_authority(conn, command):
                 row = conn.execute('SELECT data FROM entities WHERE id=?', (command['principal'],)).fetchone()
@@ -198,13 +197,13 @@ def _v76_suite():
                                        now=time.time())
                 if claimed:
                     cid = CLM.claim_id(REPO, sid)
-                    S.execute(writer, V169.receipted(CLM, S, writer, DOMAIN, dict(command_id=next_id('claim'), principal=HOLDER, operation='claim_operation',
+                    S.execute(writer, dict(command_id=next_id('claim'), principal=HOLDER, operation='claim_operation',
                                            nonce=next_id('claim-n'), artifact_digests=[],
                                            expected_versions={sid: entity(sid)['version'],
                                                               'backlog:' + sid: entity('backlog:' + sid)['version'], cid: 0},
                                            parameters=dict(action='claim', unit_id=sid, backlog_item_uuid='backlog:' + sid,
                                                            claim_id=cid, holder=HOLDER, generation=0, capabilities=[],
-                                                           repository_uuid=REPO))), HOLDER, journal_sign, 1)
+                                                           repository_uuid=REPO)), HOLDER, journal_sign, 1)
                 return sid
 
             # A real Git source repository the contracts resolve their source from.

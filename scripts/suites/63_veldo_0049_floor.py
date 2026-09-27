@@ -170,9 +170,8 @@ def _v49_suite():
         put('project:p1', 'project', dict(name='floor'))
         policy_record = DSP.review_policy_record(work / '.veldo' / 'policy.yaml')
         put(DSP.review_policy_id(REPOSITORY), 'review_policy', policy_record)
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
-        V169 = load('v0049_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
 
         def authorize(conn, command):
             row = conn.execute('SELECT data FROM entities WHERE id=?', (command['principal'],)).fetchone()
@@ -196,12 +195,12 @@ def _v49_suite():
             cid = CLM.claim_id(REPOSITORY, sid)
             serial[0] += 1
             ids = [sid, 'backlog:' + sid, cid]
-            S.execute(writer, V169.receipted(CLM, S, writer, DOMAIN, dict(command_id='claim-%d' % serial[0], principal=holder, operation='claim_operation',
+            S.execute(writer, dict(command_id='claim-%d' % serial[0], principal=holder, operation='claim_operation',
                                    nonce='claim-%d' % serial[0], artifact_digests=[],
                                    expected_versions={i: (entity(i) or {}).get('version', 0) for i in ids},
                                    parameters=dict(action=action, unit_id=sid, backlog_item_uuid='backlog:' + sid,
                                                    claim_id=cid, holder=holder, generation=generation, capabilities=[],
-                                                   repository_uuid=REPOSITORY))), holder, sign, 1)
+                                                   repository_uuid=REPOSITORY)), holder, sign, 1)
             return (entity(cid) or {}).get('data', {}).get('generation')
 
         def claim(sid, holder):

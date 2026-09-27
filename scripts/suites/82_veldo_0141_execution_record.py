@@ -221,9 +221,8 @@ def _v141_suite():
         for who in ('runner', 'launch-receiver'):
             put(who, 'membership', dict(principal_type='service', roles=['reservation_service'], scope=[REPOSITORY],
                                         revoked_at=None, expires_at=None))
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
-        V169 = load('v0141_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
 
         # The owner's accounts: Claude Code plain, Claude Code with a subscription token, and Codex.
         accounts = ACC.Accounts(S, writer, principal='owner', signer='owner', sign=sign)
@@ -256,13 +255,13 @@ def _v141_suite():
                                    now=time.time())
             cid = CLM.claim_id(REPOSITORY, unit)
             number = next_id('claim')
-            S.execute(writer, V169.receipted(CLM, S, writer, DOMAIN, dict(command_id=number, principal=HOLDER, operation='claim_operation', nonce=number,
+            S.execute(writer, dict(command_id=number, principal=HOLDER, operation='claim_operation', nonce=number,
                                    artifact_digests=[],
                                    expected_versions={unit: entity(unit)['version'],
                                                       'backlog:' + unit: entity('backlog:' + unit)['version'], cid: 0},
                                    parameters=dict(action='claim', unit_id=unit, backlog_item_uuid='backlog:' + unit,
                                                    claim_id=cid, holder=HOLDER, generation=0, capabilities=[],
-                                                   repository_uuid=REPOSITORY))), HOLDER, sign, 1)
+                                                   repository_uuid=REPOSITORY)), HOLDER, sign, 1)
             return unit
 
         # The source: a file the unit edits.

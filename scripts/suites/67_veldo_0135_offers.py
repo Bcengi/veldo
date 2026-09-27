@@ -173,9 +173,8 @@ def _v135_suite():
         put('authority:' + DOMAIN, 'authority', dict(state='active', generation=1))
         put('project:p1', 'project', dict(name='floor'))
         put(DSP.review_policy_id(REPOSITORY), 'review_policy', DSP.review_policy_record(work / '.veldo' / 'policy.yaml'))
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
-        V169 = load('v0135_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
 
         def authorize(conn, command):
             row = conn.execute('SELECT data FROM entities WHERE id=?', (command['principal'],)).fetchone()
@@ -224,12 +223,12 @@ def _v135_suite():
                 serial[0] += 1
                 ids = [unit, backlog, cid]
                 try:
-                    S.execute(writer, V169.receipted(CLM, S, writer, DOMAIN, dict(command_id='claim-%d' % serial[0], principal=self.principal,
+                    S.execute(writer, dict(command_id='claim-%d' % serial[0], principal=self.principal,
                                            operation='claim_operation', nonce='claim-%d' % serial[0], artifact_digests=[],
                                            expected_versions={i: (entity(i) or {}).get('version', 0) for i in ids},
                                            parameters=dict(action=operation, unit_id=unit, backlog_item_uuid=backlog,
                                                            claim_id=cid, holder=self.principal, generation=generation,
-                                                           capabilities=list(capabilities), repository_uuid=REPOSITORY))),
+                                                           capabilities=list(capabilities), repository_uuid=REPOSITORY)),
                               self.principal, sign, 1)
                 except S.StoreRefused as error:
                     return {'ok': False, 'reason': error.code, 'claim': (entity(cid) or {}).get('data') or {}}

@@ -346,6 +346,8 @@ class Inbox:
         self.states = states
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
+        # VELDO-0169: the claim organ decides every claim record this inbox's transactions write.
+        claims.declare(conn)
         conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction,
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -574,21 +576,11 @@ class Inbox:
 
     def _check_project(self, unit, entities, observation):
         """Use the Gate's one rule and keep its exact read versions for the commit and refusal."""
-        refusals, read, _receipt = self._project_gate().project_problems(unit)
+        refusals, read = self._project_gate().project_problems(unit)
         observation.update(unit_id=unit, project=entities[unit]['data'].get('project'),
                            project_versions=read, accepted_versions=dict(read))
         if refusals:
             raise Refused(refusals[0], 'the project takes no new work')
-
-    def _project_receipt(self, unit):
-        """VELDO-0169: inside the store transaction that hands `unit` out, the Gate's project check read
-        again on that transaction's connection; its receipt is what the claim organ requires."""
-        if not self.conn.in_transaction:
-            raise self.store.StoreRefused('wrong_connection', 'a handout is checked inside its store transaction')
-        refusals, _read, receipt = self._project_gate().project_problems(unit)
-        if refusals:
-            raise self.store.StoreRefused(refusals[0], 'the project takes no new work')
-        return receipt
 
     def _resume(self, state, entities, current, principal, now, command, params, observation):
         """The inputs a resume binds: the claim principal's eligibility, every input admission
@@ -896,14 +888,13 @@ class Inbox:
                         domain_uuid=self.ids['domain_uuid'], repository_uuid=self.ids['repository_uuid'])
             changes = {aid: {'kind': ENTITY_KIND, 'data': data}}
             if 'release' in params:
-                changes.update(self.claims.transition(params['release'], before))
+                changes.update(self.claims.transition(self.conn, params['release'], before))
             return changes
         data = dict(before[aid]['data'])
         if op == 'resume':
             if data['request_version'] != params['request_version'] or data['state'] != 'SUBMITTED':
                 raise refused('stale_subject', 'the assignment no longer admits at this request version')
-            receipt = self._project_receipt(params['resume']['unit_id'])
-            return self.claims.transition(dict(params['resume'], project_check=receipt), before)
+            return self.claims.transition(self.conn, params['resume'], before)
         if op == 'ask':
             if data['request_version'] != params['request_version']:
                 raise refused('stale_subject', 'the assignment changed while the question was opened')
@@ -994,8 +985,7 @@ class Inbox:
                     raise refused('transition_refused', why)
                 changes[eid] = {'kind': kind, 'data': dict(current, state='CANCELED', disposition=mark)}
         if 'unpark' in plan:
-            receipt = self._project_receipt(plan['unpark']['unit_id'])
-            changes.update(self.claims.transition(dict(plan['unpark'], project_check=receipt), before))
+            changes.update(self.claims.transition(self.conn, plan['unpark'], before))
         return changes
 
     # -- readers ---------------------------------------------------------------------------

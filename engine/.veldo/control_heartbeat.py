@@ -219,6 +219,8 @@ class Renewals:
     def __init__(self, dispatches, dispatch):
         self.dispatches, self.D = dispatches, dispatch
         self.observations, self.counts = [], {'accepted': 0, 'refused': 0}
+        # VELDO-0169: the claim organ decides every claim record, the renewals this one commits too.
+        dispatch.CLM.declare(dispatches.conn)
         dispatches.conn.command_registry[OPERATION] = {'transaction_transition': self._transition,
                                                        'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -244,10 +246,10 @@ class Renewals:
         backlog = ((before.get(contract['unit']) or {}).get('data') or {}).get('backlog_item_uuid')
         if contract['unit'] not in before or backlog not in before:
             raise D.Refused('missing_authority:claim', binding['entity'])
-        return D.CLM.transition(dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog,
-                                     claim_id=binding['entity'], holder=binding['holder'],
-                                     generation=binding['generation'], capabilities=[],
-                                     repository_uuid=contract['repository']), before)
+        return D.CLM.transition(conn, dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog,
+                                           claim_id=binding['entity'], holder=binding['holder'],
+                                           generation=binding['generation'], capabilities=[],
+                                           repository_uuid=contract['repository']), before)
 
     def renew(self, contract, contract_digest, process, seq, now):
         """Renew the claim `contract` binds for heartbeat `seq`: (True, None), (False, refusal), or

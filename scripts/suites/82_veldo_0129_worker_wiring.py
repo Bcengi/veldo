@@ -184,9 +184,8 @@ def _v129_suite():
             accounts.register('register/' + account, fields['account'], fields['provider'], fields['label'],
                               fields['profiles'], now=time.time())
             res.configure('policy/' + account, 'account', account, ceiling, now=time.time())
-        writer.command_registry['claim_operation'] = {'transition': L.D.CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': L.D.CLM.transition,
                                                        'writes': ('entities', 'journal', 'commands', 'nonces')}
-        V169 = load('v0129_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
         def admit(unit, risk='standard'):
             put(unit, 'execution_unit', dict(state='READY', repository_uuid=repository, backlog_item_uuid='backlog:' + unit,
                                              requirements=[], eligible_holders=['builder'], project='p129',
@@ -195,12 +194,12 @@ def _v129_suite():
             put('admission:' + unit, 'admission', dict(unit=unit, state='accepted', scope_digest='scope-' + unit))
             res.configure('policy/' + unit, 'unit', unit, ceiling, now=time.time())
             cid = L.D.CLM.claim_id(repository, unit)
-            S.execute(writer, V169.receipted(L.D.CLM, S, writer, domain, dict(command_id='claim/' + unit, nonce='claim/' + unit, principal='builder',
+            S.execute(writer, dict(command_id='claim/' + unit, nonce='claim/' + unit, principal='builder',
                                    operation='claim_operation', artifact_digests=[],
                                    expected_versions={unit: entity(unit)['version'], 'backlog:' + unit: 1, cid: 0},
                                    parameters=dict(action='claim', unit_id=unit, backlog_item_uuid='backlog:' + unit,
                                                    claim_id=cid, holder='builder', generation=0, capabilities=[],
-                                                   repository_uuid=repository))), 'builder', sign, 1)
+                                                   repository_uuid=repository)), 'builder', sign, 1)
             return entity(cid)['data']['generation']
         markers = base / 'markers'
         markers.mkdir()

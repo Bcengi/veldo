@@ -155,9 +155,8 @@ def _v160_suite():
         member('runner', 'service', ['reservation_service'])
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
-        V169 = load('v0160_v169_claims', ROOT / 'scripts' / 'suites' / 'support' / 'v169_claims.py')
 
         events = []
         reservations = RES.Reservations(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
@@ -201,13 +200,13 @@ def _v160_suite():
                                    now=time.time())
             cid = CLM.claim_id(REPOSITORY, unit)
             serial[0] += 1
-            S.execute(writer, V169.receipted(CLM, S, writer, DOMAIN, dict(command_id='claim-%d' % serial[0], principal=HOLDER, operation='claim_operation',
+            S.execute(writer, dict(command_id='claim-%d' % serial[0], principal=HOLDER, operation='claim_operation',
                                    nonce='claim-%d' % serial[0], artifact_digests=[],
                                    expected_versions={unit: entity(unit)['version'],
                                                       'backlog:' + unit: entity('backlog:' + unit)['version'], cid: 0},
                                    parameters=dict(action='claim', unit_id=unit, backlog_item_uuid='backlog:' + unit,
                                                    claim_id=cid, holder=HOLDER, generation=0, capabilities=[],
-                                                   repository_uuid=REPOSITORY))), HOLDER, sign, 1)
+                                                   repository_uuid=REPOSITORY)), HOLDER, sign, 1)
             return unit
 
         src = base / 'source'

@@ -1014,14 +1014,10 @@ class Gate:
         return []
 
     def project_problems(self, unit):
-        """VELDO-0076, for a boundary that hands out `unit` without deciding a whole station (the claim
-        receiver, control_claim; the assignment resume and disposition, control_assignment; the andon
-        resume, control_andon): (the project refusals every station makes for it, {entity id: version}
-        of the records they were decided from, the receipt), read in one read transaction, so the caller
-        binds those versions to the transaction that writes. The receipt (VELDO-0169) exists only when
-        nothing is refused: control_claim.project_check_receipt of this unit, its project and those
-        versions, the evidence the claim organ and the station contract writer require of a handout;
-        otherwise None."""
+        """VELDO-0076, for a boundary that takes ownership of `unit` without deciding a whole station (the
+        claim receiver, control_claim): (the project refusals every station makes for it, {entity id:
+        version} of the records they were decided from), read in one read transaction, so the caller
+        binds those versions to the transaction that writes."""
         with self._reading():
             data = self._data(self._entity(unit)) or {}
             record = self._entity('project:' + str(data.get('project')))
@@ -1030,9 +1026,7 @@ class Gate:
         read = {'project:' + str(data.get('project')): (record or {}).get('version', 0)}
         if owner is not None:
             read[owner] = (member or {}).get('version', 0)
-        refusals = self._project_problems(data.get('project'), record, member)
-        receipt = None if refusals else self.claims.project_check_receipt(unit, data.get('project'), read)
-        return refusals, read, receipt
+        return self._project_problems(data.get('project'), record, member), read
 
     def _project_owner(self, record):
         value = (record or {}).get('value') or {}

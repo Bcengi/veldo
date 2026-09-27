@@ -54,6 +54,25 @@ A declaration is immutable: the same declaration again is a no-op, a different o
 kind or prefix refuses ownership_conflict, and so does a first declaration for a kind or prefix
 that entities already occupy, because they were written while nobody owned them.
 
+ORGAN-OWNED KINDS (VELDO-0169). Some records are written by several services' commands, each in
+its own transaction with records of its own, but their content is decided by one module: a claim
+is taken by the claim receiver, resumed or unparked by the assignment inbox and renewed by the
+heartbeat, and every one of those writes is the claim organ's (control_claim) decision. Binding
+the kind to commands cannot say that, since a command is bound to its own service's file. So an
+organ DECLARES the kind with declare_organ: the kind, and the one function (its qualified name and
+module file, with the file's sha256) that decides every entity of that kind. It is persisted beside
+the declarations (the entity_organs table, created by the first organ declaration) and binds every
+connection the same way. A transition that writes such an entity asks for it through organ_write,
+inside the command's own transaction: the store checks the function is the declared one (the same
+origin check as an owned command's), runs it on the transaction's connection with the command's
+own `before`, and records what it returned for this transaction only. Execute then refuses
+entity_owned for any entity of an organ-owned kind (after the write or before it) that is not
+exactly what the organ returned in this same transaction: a record built by hand, one the organ
+returned in an earlier transaction, or the organ's answer edited on the way out. organ_write
+outside a command transaction is refused outside_transaction, so no organ decision is made before
+the write lock is held. The same stated limits as ENTITY OWNERSHIP apply, and a kind is owned by
+declare_owners or by an organ, never both (ownership_conflict).
+
 THE ARCHITECTURE RECORD HAS ONE WRITER (VELDO-0134, R50). An entity whose id begins with
 ARCHITECTURE_PREFIX, or whose kind (before or after the write) is ARCHITECTURE_KIND, is written by
 the operation named ARCHITECTURE_OPERATION and by nothing else: execute refuses entity_owned for any
@@ -106,7 +125,7 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
             "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
-            "ownership_conflict", "repository_binding_conflict", "foreign_transition")
+            "ownership_conflict", "repository_binding_conflict", "foreign_transition", "outside_transaction")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
 # VELDO-0134: the architecture record and the one operation that writes it (see the module docstring).
@@ -145,6 +164,12 @@ OWNERS_TABLE = "entity_owners"
 _OWNERS_DDL = ("CREATE TABLE IF NOT EXISTS entity_owners (selector TEXT NOT NULL CHECK (selector IN ('kind', 'prefix')), "
                "value TEXT NOT NULL, owner TEXT NOT NULL, commands TEXT NOT NULL, module TEXT NOT NULL, "
                "module_digest TEXT NOT NULL, PRIMARY KEY (selector, value))")
+
+
+# Organ-owned kinds (see the module docstring), created by the first organ declaration like entity_owners.
+ORGANS_TABLE = "entity_organs"
+_ORGANS_DDL = ("CREATE TABLE IF NOT EXISTS entity_organs (kind TEXT PRIMARY KEY, owner TEXT NOT NULL, function TEXT NOT NULL, "
+               "module TEXT NOT NULL, module_digest TEXT NOT NULL)")
 
 
 # Accepted repositories (see the module docstring), created by the first binding like entity_owners.
@@ -263,6 +288,9 @@ class StoreConnection(sqlite3.Connection):
         super().__init__(*args, **kwargs)
         self.command_registry = {}
         self.command_transaction = False
+        # What each organ returned in the command transaction now open, {entity id: digest}; None
+        # outside one (VELDO-0169, organ_write).
+        self.organ_writes = None
 
     def close(self):
         self.command_registry.clear()
@@ -461,6 +489,7 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
     except sqlite3.OperationalError as e:
         raise StoreRefused("read_only_handle", "this handle cannot write (%s): open the store with mode='rw' at a qualified location" % e)
     conn.command_transaction = True
+    conn.organ_writes = {}
     try:
         prior = conn.execute("SELECT command_digest, result FROM commands WHERE command_id=?", (command["command_id"],)).fetchone()
         if prior:
@@ -493,6 +522,7 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         for eid in changes:
             if eid not in command["expected_versions"]:
                 raise StoreRefused("stale_version", "entity %s is written without an expected version: a command declares every version it depends on" % eid)
+        organs = entity_organs(conn)
         for eid, new in changes.items():
             kinds = {new["kind"], before.get(eid, {}).get("kind")}
             if architecture_entity(eid, kinds) and not architecture_writer(command["operation"]):
@@ -503,6 +533,10 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
                 if hit and command["operation"] not in commands:
                     raise StoreRefused("entity_owned", "%s may not write %s: %s %r belongs to %s, written only by %s"
                                        % (command["operation"], eid, selector, value, owner, ", ".join(commands)))
+            for kind in sorted(k for k in kinds if k in organs):
+                if conn.organ_writes.get(eid) != digest_of({"kind": new["kind"], "data": new["data"]}):
+                    raise StoreRefused("entity_owned", "%s may not write %s: kind %r is decided by %s in %s, and this is not what it "
+                                       "returned in this transaction" % (command["operation"], eid, kind, organs[kind][2], organs[kind][3]))
         before_versions = {eid: before.get(eid, {}).get("version", 0) for eid in sorted(set(before) | set(changes))}
         after_versions = dict(before_versions)
         transition = {}
@@ -574,6 +608,7 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
 
     finally:
         conn.command_transaction = False
+        conn.organ_writes = None
 
 
 # ---------------------------------------------------------------------------------------------
@@ -698,6 +733,8 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
                 if bound.get(command, row[4:]) != row[4:]:
                     raise StoreRefused("ownership_conflict", "%s is bound to the code in %s (%s); %s declares %s (%s)"
                                        % (command, bound[command][0], bound[command][1], owner, row[4], row[5]))
+            if row[0] == "kind" and row[1] in entity_organs(conn):
+                raise StoreRefused("ownership_conflict", "kind %r is decided by the organ %s" % (row[1], entity_organs(conn)[row[1]][2]))
             prior = declared.get(row[:2])
             if prior is not None:
                 if prior != row:
@@ -715,6 +752,87 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
             conn.execute("ROLLBACK")
         raise
     return rows
+
+
+def entity_organs(conn):
+    """{kind: (kind, owner, function, module, module_digest)} for every persisted organ declaration, or
+    {} when none exists (VELDO-0169)."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (ORGANS_TABLE,)).fetchone():
+        return {}
+    return {r[0]: tuple(r) for r in conn.execute(
+        "SELECT kind, owner, function, module, module_digest FROM entity_organs ORDER BY kind")}
+
+
+def _organ_row(owner, kind, function):
+    if not _is_str(owner) or not _is_str(kind):
+        raise StoreRefused("malformed_command", "an organ declaration names its owner and the kind it decides")
+    code = getattr(function, "__code__", None)
+    name = getattr(function, "__qualname__", None)
+    if code is None or not _is_str(name) or hasattr(function, "__self__"):
+        raise StoreRefused("malformed_command", "an organ is a plain function of its module")
+    module = os.path.realpath(code.co_filename)
+    digest = module_digest(module)
+    if digest is None:
+        raise StoreRefused("malformed_command", "the organ's module %s cannot be read" % module)
+    return (kind, owner, name, module, digest)
+
+
+def declare_organ(conn, owner, kind, function):
+    """Persist that every entity of `kind` is decided by `function` (a plain function of its module,
+    named by its qualified name and module file, whose bytes the store digests now), VELDO-0169.
+    Idempotent for the same declaration; ownership_conflict for another, for a kind declare_owners
+    owns, and for a first declaration of a kind entities already occupy. Its own transaction, like
+    declare_owners."""
+    row = _organ_row(owner, kind, function)
+    if entity_organs(conn).get(kind) == row:
+        return row
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot declare an organ (%s)" % e)
+    try:
+        conn.execute(_ORGANS_DDL)
+        prior = entity_organs(conn).get(kind)
+        if prior is not None:
+            if prior != row:
+                raise StoreRefused("ownership_conflict", "kind %r is decided by %s in %s (%s); %s declares %s in %s (%s)"
+                                   % (kind, prior[2], prior[3], prior[4], owner, row[2], row[3], row[4]))
+        else:
+            owned = [r for r in entity_owners(conn) if r[0] == "kind" and r[1] == kind]
+            if owned:
+                raise StoreRefused("ownership_conflict", "kind %r is owned by %s, written only by %s"
+                                   % (kind, owned[0][2], ", ".join(owned[0][3])))
+            if _occupied(conn, "kind", kind):
+                raise StoreRefused("ownership_conflict", "entities of kind %r exist already, written while no organ decided them" % kind)
+            conn.execute("INSERT INTO entity_organs (kind, owner, function, module, module_digest) VALUES (?,?,?,?,?)", row)
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return row
+
+
+def organ_write(conn, kind, function, params, before):
+    """VELDO-0169: the changes `function`, the organ of `kind`, decides for `params` over `before`, inside
+    the command transaction open on `conn`, recorded so that execute writes exactly them. Refused
+    outside_transaction outside a command transaction, and foreign_transition when `kind` has a
+    declared organ and `function` is not it (another function, another file, or the file's bytes
+    changed). A kind no organ was declared for is unowned: the function runs and nothing binds it."""
+    if not getattr(conn, "command_transaction", False) or not conn.in_transaction or getattr(conn, "organ_writes", None) is None:
+        raise StoreRefused("outside_transaction", "an organ decides %s only inside the command transaction that writes it" % kind)
+    declared = entity_organs(conn).get(kind)
+    if declared is not None:
+        problem = transition_origin_problem(function, declared[3], declared[4])
+        if problem is None and getattr(function, "__qualname__", None) != declared[2]:
+            problem = "the organ is %s, not %s" % (declared[2], getattr(function, "__qualname__", None))
+        if problem is not None:
+            raise StoreRefused("foreign_transition", "kind %r is decided by %s in %s: %s" % (kind, declared[2], declared[3], problem))
+    changes = function(conn, params, before)
+    for eid, new in changes.items():
+        if new.get("kind") == kind or (before.get(eid) or {}).get("kind") == kind:
+            conn.organ_writes[eid] = digest_of({"kind": new["kind"], "data": new["data"]})
+    return changes
 
 
 def bound_repository(conn, domain_uuid, repository_uuid):

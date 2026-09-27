@@ -27,13 +27,19 @@ takes no new assignment. The project and owner records that check read are pinne
 transaction. Renew, release and use of an existing claim are not new assignments; running work
 follows the host stop policy.
 
-Project-check receipts (VELDO-0169). Every transition that hands work out (HANDOUTS: a claim, a
-resume, and the unpark of a disposition's backlog outcome) is refused by name unless its parameters
-carry the receipt control_eligibility.Gate.project_problems produces when it finds no problem
-(project_check_receipt): missing_evidence:project_check without one, stale_subject:project_check with
-one for another unit or project, or naming a version this transaction did not pin and read. The
-check is here, at the one writer of a claim, so a path that forgets the Gate's check writes
-nothing. Park, release, renew and use hand nothing out and need no receipt.
+The claim organ (VELDO-0169). Every claim record is decided by one function of this module,
+`_decide`, declared to the store as the organ of the claim kind (declare, control_store's
+declare_organ): the store writes an entity of kind claim only when it is exactly what `_decide`
+returned inside the same command transaction, so a record any other code builds is refused
+entity_owned. Every service reaches it through `transition(conn, params, before)` inside its own
+store transaction, which is itself a store transaction transition. For every transition that hands
+work out (HANDOUTS: a claim, a resume, and the unpark of a disposition's backlog outcome) the organ
+asks the shared eligibility Gate's project check (control_eligibility.Gate.project_problems) for the
+unit, on the transaction's own connection while that transaction holds the write lock, and refuses
+by the Gate's own name with nothing written when it finds any problem. The callers ask the same
+check before they build the command, to name a refusal early and to pin the records it read; the
+organ trusts none of that and passes nothing through. Park, release, renew and use hand nothing
+out and are not checked.
 
 Receiver.apply plugs into control_client.Authority. Its inner command signature
 identifies an active stored member independently of the transport credential.
@@ -57,9 +63,11 @@ CM = organ('control_membership')
 AC = CM.AC
 CL = organ('claim')
 OPERATIONS = ('claim', 'renew', 'release', 'use', 'inspect')
-# The transitions that hand work out (VELDO-0169): each requires a project-check receipt.
+# The claim kind and its organ's owner name in the store (VELDO-0169, control_store.declare_organ).
+KIND = 'claim'
+OWNER = 'claim'
+# The transitions that hand work out (VELDO-0169): the organ asks the Gate's project check for each.
 HANDOUTS = ('claim', 'resume', 'unpark')
-PROJECT_CHECK_SCHEMA = 'veldo.project_check/v1'
 # Rereads of one command whose pinned versions kept moving; past this the conflict is the answer.
 ATTEMPTS = 16
 
@@ -102,37 +110,48 @@ def ownership(data, unit, backlog, action='inspect'):
     return 'owned' if live == 'live' else 'ownership_uncertain'
 
 
-def project_check_receipt(unit, project, read):
-    """VELDO-0169: the evidence that the Gate's project check found no problem for `unit` of `project`,
-    bound to the {entity id: version} it was decided from. Only control_eligibility.Gate.project_problems
-    makes one, and only when it refuses nothing."""
-    return {'schema': PROJECT_CHECK_SCHEMA, 'unit': unit, 'project': project, 'read': dict(read)}
+_ELIGIBILITY = []
 
 
-def project_check_problem(receipt, unit, before):
-    """VELDO-0169: None when `receipt` is the Gate's project check of `unit` and names exactly the
-    versions this store transaction pinned and read in `before`, else the refusal: a handout without a
-    receipt is missing_evidence:project_check; one for another unit or project, or for a version this
-    transaction does not hold, is stale_subject:project_check."""
-    if (not isinstance(receipt, dict) or receipt.get('schema') != PROJECT_CHECK_SCHEMA
-            or not isinstance(receipt.get('read'), dict)):
-        return 'missing_evidence:project_check'
-    project = ((before.get(unit) or {}).get('data') or {}).get('project')
-    read = receipt['read']
-    if (receipt.get('unit') != unit or unit not in before or receipt.get('project') != project
-            or 'project:' + str(project) not in read
-            or any(eid not in before or before[eid].get('version') != version for eid, version in read.items())):
-        return 'stale_subject:project_check'
-    return None
+def declare(conn):
+    """VELDO-0169: declare in the store on `conn` that `_decide` decides every entity of kind claim
+    (control_store.declare_organ; idempotent, persisted for every connection to that store). Every
+    service that writes a claim declares it when it attaches."""
+    return S.declare_organ(conn, OWNER, KIND, _decide)
 
 
-def transition(params, before):
-    unit, backlog, cid = params['unit_id'], params['backlog_item_uuid'], params['claim_id']
+def transition(conn, params, before):
+    """The claim organ, as a store transaction transition: the changes `_decide` makes for `params`
+    over the command's `before`, inside the command transaction open on `conn` and recorded by the
+    store as the organ's, so they are the only claim records that transaction may write."""
+    return S.organ_write(conn, KIND, _decide, params, before)
+
+
+def _project_gate(conn):
+    """The shared eligibility Gate over `conn`, for its project check alone, which reads the unit, its
+    project record and the owner's membership and no domain or repository coordinate. Kept on the
+    connection it reads, so it lives exactly as long as that handle."""
+    gate = getattr(conn, 'claim_project_gate', None)
+    if gate is None or gate.conn is not conn:
+        if not _ELIGIBILITY:
+            _ELIGIBILITY.append(organ('control_eligibility'))
+        gate = conn.claim_project_gate = _ELIGIBILITY[0].Gate(S, conn, domain_uuid=None, repository_uuid=None)
+    return gate
+
+
+def _decide(conn, params, before):
+    """Every claim record's one decision. A handout first asks the Gate's project check of its unit on
+    the transaction's connection, inside the transaction that writes it, and is refused by the Gate's
+    own name when the check finds a problem."""
     if params['action'] in HANDOUTS:
-        # VELDO-0169: nothing hands work out without the Gate's project check, read in this transaction.
-        problem = project_check_problem(params.get('project_check'), unit, before)
-        if problem is not None:
-            raise S.StoreRefused(problem, 'a handout carries the Gate\'s project check of this unit, read in this transaction')
+        refusals, _read = _project_gate(conn).project_problems(params['unit_id'])
+        if refusals:
+            raise S.StoreRefused(refusals[0], 'the unit\'s project takes no new assignment')
+    return _changes(params, before)
+
+
+def _changes(params, before):
+    unit, backlog, cid = params['unit_id'], params['backlog_item_uuid'], params['claim_id']
     u, b = before[unit]['data'], before[backlog]['data']
     current = before.get(cid, {}).get('data', {})
     status = ownership(current, u, b, params['action'])
@@ -202,9 +221,8 @@ class Receiver:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self.gate = None
-        # On this receiver's own connection: the claim transitions run inside the store transaction with
-        # the Gate over that same connection, so a handout's project check is read in the transaction
-        # that writes it (VELDO-0169).
+        # VELDO-0169: the claim organ decides every claim record, on this receiver's own connection.
+        declare(conn)
         conn.command_registry['claim_operation'] = {
             'transaction_transition': self._in_transaction, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 
@@ -247,17 +265,11 @@ class Receiver:
         return self.gate.project_problems(unit)
 
     def _in_transaction(self, conn, params, before):
-        """claim_operation inside its store transaction. A handout asks the Gate's project check again
-        on the transaction's own connection and hands the claim organ that receipt; renew, release and
-        use hand nothing out and go to the organ as they are."""
+        """claim_operation inside its store transaction, on this receiver's connection: the claim organ
+        decides it there (and asks the Gate's project check of a claim itself)."""
         if conn is not self.conn or not conn.in_transaction:
             raise S.StoreRefused('wrong_connection', 'the claim is written in this receiver\'s store transaction')
-        if params['action'] in HANDOUTS:
-            refusals, _read, receipt = self._project_problems(params['unit_id'])
-            if refusals:
-                raise S.StoreRefused(refusals[0], 'the unit\'s project takes no new assignment')
-            return transition(dict(params, project_check=receipt), before)
-        return transition(params, before)
+        return transition(conn, params, before)
 
     def _pins_moved(self, pinned):
         entities = S.materialized_state(self.conn)['entities']
@@ -310,7 +322,7 @@ class Receiver:
             # VELDO-0076: a paused, canceled or completed project takes no new assignment. The check is the
             # one every station makes; the project and owner records it read are pinned with the rest, so
             # a pause committed before this claim refuses it by name, never after it.
-            refusals, read, _receipt = self._project_problems(unit)
+            refusals, read = self._project_problems(unit)
             versions.update(read)
             observation.update(project=u['data'].get('project'), accepted_versions=dict(versions))
             if refusals:
