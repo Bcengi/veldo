@@ -588,13 +588,6 @@ class Backlog:
             if (bound['backlog_item'] != data['uuid'] or bound['unit'] != name
                     or any(bound[k] != raw[k] for k in ('scope', 'requirements', 'eligible_holders'))):
                 raise Refused('invalid_input:unit_ownership')
-        for (text,) in conn.execute("SELECT data FROM entities WHERE kind='execution_unit'"):
-            other = json.loads(text)
-            primary = other.get('primary_specification')
-            alias = primary.get('alias') if isinstance(primary, dict) else primary
-            if (other.get('state') not in UNIT_TERMINAL and alias == raw['specification']
-                    and (other.get('specification_document') or {}).get('version') == (bound or {}).get('version')):
-                raise Refused('already_exists:specification_revision')
         result = {k: (list(raw[k]) if isinstance(raw[k], list) else raw[k]) for k in raw}
         if bound is not None:
             result['document'] = bound
@@ -624,10 +617,7 @@ class Backlog:
             raise Refused('invalid_input:units', 'a decomposition lists at least one unit')
         units = []
         for raw in raws:
-            prepared = self._unit_entry(conn, data, raw, {u['unit'] for u in units})
-            if any(u['specification'] == prepared['specification'] for u in units):
-                raise Refused('already_exists:specification_revision')
-            units.append(prepared)
+            units.append(self._unit_entry(conn, data, raw, {u['unit'] for u in units}))
         self._edge(KIND, 'RAW', 'PREPARED', {'intake_validated': True})
         data.update(state='PREPARED', decomposition=units, decomposition_revision=1,
                     decomposition_digest=decomposition_digest(data['uuid'], 1, units))

@@ -29,6 +29,7 @@ def _organ(name):
 
 CB = _organ('control_backlog')
 B = _organ('control_decomposition_binding')
+Y = _organ('yamlish')
 UNIT_FIELDS = ('unit', 'scope', 'requirements', 'eligible_holders')
 FIELDS = UNIT_FIELDS + ('source', 'role', 'front', 'body', 'dependencies')
 
@@ -46,13 +47,15 @@ class Decomposition:
 
     def publish(self, packet):
         command = packet.get('command', {}) if isinstance(packet, dict) else {}
+        raw = command.get('unit')
         event = dict(self.backlog.ids, operation='publish_decomposition', item=command.get('item'),
-                     unit=(command.get('unit') or {}).get('unit'), command_id=command.get('command_id'))
+                     unit=raw.get('unit') if isinstance(raw, dict) else None, command_id=command.get('command_id'))
         try:
             result = self._publish(packet, command, event)
         except (CB.Refused, self.allocations.store.StoreRefused) as error:
             result = {'ok': False, 'reason': error.code}
-        event.update(outcome='accepted' if result['ok'] else 'refused', refusal=result.get('reason'))
+        event.update(outcome='accepted' if result['ok'] else 'refused', refusal=result.get('reason'),
+                     taxonomy=None if result['ok'] else CB.taxonomy(result.get('reason')))
         self.counts[event['outcome']] += 1
         self.observations.append(event)
         return result
@@ -71,9 +74,12 @@ class Decomposition:
                                            bl.AC.allowed_signers_line(principal, key['public_key']), principal)
         if not verified:
             raise CB.Refused('not_authorized')
-        item = CB.read(bl.conn, command.get('item'))
+        if not CB._is_str(command.get('item')):
+            raise CB.Refused('invalid_input:backlog_item')
+        item = CB.read(bl.conn, command['item'])
         if item is None or item.get('version') != command.get('item_version'):
             raise CB.Refused('stale_subject:item')
+        event['accepted_versions'] = {'item': item['version']}
         errors = bl._member_problems(state, principal, item['project'], bl.clock())
         project = CB._row(bl.conn, 'project:' + item['project'])
         if errors or project['data']['state'] != 'ACTIVE':
@@ -119,9 +125,7 @@ class Decomposition:
         def content(alias):
             front = dict(raw['front'], schema='veldo.spec/v1', id=alias, depends_on=spec_dependencies,
                          decomposition=meta)
-            separator = '-' * 3
-            return (separator + '\n' + ''.join(k + ': ' + json.dumps(v, ensure_ascii=True) + '\n'
-                                               for k, v in front.items()) + separator + '\n' + raw['body']).encode('utf-8')
+            return Y.render_document(front, raw['body']).encode('utf-8')
 
         signing = dict(signer=bl.journal_signer, sign=bl.sign, authority_generation=bl.authority_generation)
         result = al.allocate(dict(request_id=command['command_id'], principal=principal,

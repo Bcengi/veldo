@@ -1,12 +1,21 @@
 """VELDO-0085 publication binding, shared by backlog and eligibility.
 
-Only the decomposition writer emits the JSON-valued front matter below. Reading that
-format needs no engine parser outside the Gate's validator snapshot. Historical specs
-without an authority document retain their existing admission path.
+Accepted specification bytes are read with the repository's one document parser.
+Historical specs without an authority document retain their existing admission path.
 """
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
+
+
+def _front_matter(content):
+    # Loading Gate must not execute a workspace parser. Only a bound accepted
+    # document needs this reader; architecture keeps its own validator snapshot.
+    spec = importlib.util.spec_from_file_location('decomposition_yamlish', Path(__file__).with_name('yamlish.py'))
+    reader = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(reader)
+    return reader.front_matter(content)
 
 
 def row(conn, identity):
@@ -42,16 +51,10 @@ def binding(conn, repository, alias, workspace):
     if (visible != body or 'sha256:' + hashlib.sha256(body).hexdigest() != digest
             or obligation.get('observed_digest') != digest):
         return None, ['stale_subject:specification_bytes']
-    fields = {}
-    for line in document['content'].splitlines()[1:]:
-        if line == '-' * 3:
-            break
-        key, sep, value = line.partition(': ')
-        if sep and key in ('id', 'decomposition', 'depends_on'):
-            try:
-                fields[key] = json.loads(value)
-            except ValueError:
-                return None, ['invalid_input:specification_binding']
+    try:
+        fields = _front_matter(document['content']) or {}
+    except ValueError:
+        return None, ['invalid_input:specification_binding']
     meta = fields.get('decomposition')
     if fields.get('id') != alias or not isinstance(meta, dict):
         return None, ['invalid_input:specification_binding']

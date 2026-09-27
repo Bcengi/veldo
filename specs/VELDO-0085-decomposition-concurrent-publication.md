@@ -140,3 +140,22 @@ specification status or historical proof was changed.
 2026-09-25, PLAN-0019 revision 4 review: the Notes no longer name VELDO-0092 as a consumer of the
 published decomposition's dependencies, since revision 4 moved it to Release 2; the PM's proposals take
 effect one owning command at a time (VELDO-0088). Notes only: criteria and status are unchanged.
+
+2026-09-27, build: publish a signed decomposition proposal through
+`control_decomposition.py`, using VELDO-0037's authority counter, source tuple and exact
+materializer. Its alias renderer binds the document's ID to the authority allocation,
+including on retry and reuse. The required unit fields are unit, scope, requirements,
+eligible holders, source, role, front matter, body and dependencies. Published entries
+carry their alias, revision, digest, source, role, path, unit and owning backlog item.
+The backlog binds these accepted revisions when preparing or appending units, checks
+them again at admission and prioritization, and passes their dependencies to eligibility.
+The shared eligibility service refuses stale or unpublished specification input. Existing
+file-only specifications keep their prior admission path and historical identities.
+
+The footprint gains `control_backlog.py` and `control_eligibility.py` with their copies:
+AC1 needs the real unit writer's ownership binding and AC3 needs the real consumer's
+publication and dependency checks. It also gains the mutation registry and
+`scripts/drive.py` for the required falsifiers and assertion red record. Both new
+modules are scaffolded; every changed engine module has an identical installed copy.
+Suite `82_veldo_0085_decomposition` and proof in `proof/VELDO-0085/` cover the three
+criteria. Status stays ready; no independent approval, merge or full gate is claimed.

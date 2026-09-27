@@ -8037,6 +8037,52 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    # VELDO-0085: each retained criterion's falsifier and publication bindings.
+    def decomposition(name, module, old, new, rows, also=()):
+        add(85, 'decomposition-' + name, '82_veldo_0085_decomposition.py', module, old, new, rows, also)
+
+    decomposition('artifact-before-unit-validation', 'control_decomposition.py',
+        "        problem = CB.CL.unit_id_problem(raw['unit'])",
+        "        al.allocate(dict(request_id=command['command_id'], principal=principal,\n"
+        "                         repository_uuid=bl.ids['repository_uuid'], workspace=str(bl.workspace),\n"
+        "                         source=raw['source'], role=raw['role'], slug='early', content=b'early artifact'),\n"
+        "                    signer=bl.journal_signer, sign=bl.sign, authority_generation=bl.authority_generation)\n"
+        "        problem = CB.CL.unit_id_problem(raw['unit'])",
+        ['fields/invalid-id-no-artifact'])
+    decomposition('checkout-maximum', 'control_alias.py',
+        "        number = kind['next']",
+        "        number = accepted_maximum(self.paths[repository], _git_process.check_output("
+        "['git', '-C', self.paths[repository], 'rev-parse', 'HEAD']).decode().strip(), kind) + 1",
+        ['aliases/authority-counter'])
+    decomposition('omit-generated-dependency', 'control_decomposition.py',
+        "            spec_dependencies.append(bound['alias'])", "            pass",
+        ['dependencies/eligibility'])
+    decomposition('cross-item-authority', 'control_backlog.py',
+        "bound['backlog_item'] != data['uuid'] or bound['unit'] != name",
+        "bound['unit'] != name", ['binding/one-owner'])
+    decomposition('primary-revision-shared', 'control_backlog.py',
+        "bound['backlog_item'] != data['uuid'] or bound['unit'] != name",
+        "bound['backlog_item'] != data['uuid']", ['binding/one-owner'])
+    decomposition('appended-unit-ready', 'control_backlog.py',
+        "u['unit']: {'kind': UNIT_KIND, 'data': self._new_unit(data, u, revision, entry)}}",
+        "u['unit']: {'kind': UNIT_KIND, 'data': dict(self._new_unit(data, u, revision, entry), state='READY')}}",
+        ['priority/fresh-growth'])
+    decomposition('unit-dependency-lost', 'control_backlog.py',
+        "depends_on=list((u.get('document') or {}).get('dependencies', [])), admitted_revision=None,",
+        "depends_on=[], admitted_revision=None,", ['dependencies/eligibility'])
+    decomposition('stale-bytes-accepted', 'control_decomposition_binding.py',
+        "    if (visible != body or 'sha256:'", "    if (False or 'sha256:'", ['publication/stale-input'])
+    decomposition('unpublished-input', 'control_decomposition_binding.py',
+        "or obligation.get('state') != 'published':", "or False:", ['publication/stale-input'])
+    decomposition('eligibility-unbound', 'control_eligibility.py',
+        "        problems += DP.problems(self.conn, self.repository_uuid, data, self.workspace)",
+        "        problems += []", ['publication/stale-input'])
+    decomposition('admission-unbound', 'control_backlog.py',
+        "            problems += DP.problems(conn, self.ids['repository_uuid'], unit(conn, entry['unit']) or {}, self.workspace)",
+        "            problems += []", ['publication/stale-input'])
+    decomposition('service-not-installed', 'init_scaffold.py',
+        '    ".veldo/control_decomposition.py",\n', '', ['install/assets'])
+
     return result
 
 

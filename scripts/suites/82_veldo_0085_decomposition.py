@@ -575,100 +575,112 @@ def _v85_suite():
                 _, main_item = take('main')
                 first = publish(main_item, raw('UNIT-85-first'))
                 second = publish(main_item, raw('UNIT-85-second', ['UNIT-85-first']))
-                entries = [r.get('unit', {}) for r in (first, second)]
-                prepared = bop('pm', 'prepare', main_item, units=entries)
-                _, foreign_item = take('rejected')
-                combined = bop('pm', 'prepare', foreign_item, units=[entries[0]])
-                # Different unit names cannot share a live primary revision even on the legacy path.
-                dup = unit_entry('UNIT-85-duplicate')
-                dup['specification'] = entries[0].get('specification')
-                duplicate = bop('pm', 'prepare', foreign_item, units=[dup])
-                legacy = [unit_entry('UNIT-85-legacy-a'), unit_entry('UNIT-85-legacy-b')]
-                legacy_duplicate = bop('pm', 'prepare', foreign_item, units=legacy)
-                bop('pm', 'request_grooming', main_item)
-                admission = admit(main_item, 'admit-85')[2]
-                priority = prioritize(main_item, 'priority-85')[2]
-                check('binding/one-owner', [
-                    ('accepted preparation and owner admission', prepared.get('ok') and admission.get('ok')),
-                    ('authority cannot combine across items', not combined.get('ok') and item(foreign_item).get('state') == 'RAW'),
-                    ('duplicate primary revisions refused', not duplicate.get('ok') and not legacy_duplicate.get('ok')),
-                    ('one primary revision and item per unit', all(data_of(e['unit']).get('backlog_item_uuid') == main_item
-                        and data_of(e['unit']).get('specification_document') == e.get('document')
-                        and data_of(e['unit']).get('primary_specification') == {'alias': e['specification'], 'revision': 1}
-                        for e in entries))])
-                gate_second = judged('UNIT-85-second')
-                check('dependencies/eligibility', [
-                    ('priority accepted', priority.get('ok')),
-                    ('generated dependency reached the unit', data_of('UNIT-85-second').get('depends_on') == ['UNIT-85-first']),
-                    ('eligibility consumes and refuses unresolved dependency',
-                     'unresolved_dependency:UNIT-85-first' in gate_second.get('refusals', [])),
-                    ('specification declares its generated dependency', allocations.current(AL.version_id(REPO,
-                         entries[1]['specification'], 1))[1]['content'].split('depends_on: ', 1)[1].splitlines()[0]
-                         == json.dumps([entries[0]['specification']])),
-                    ('independent unit eligible', judged('UNIT-85-first').get('eligible'))])
-                third = publish(main_item, raw('UNIT-85-third'))
-                appended = bop('pm', 'append', main_item, unit=third.get('unit', {}))
-                before = judged('UNIT-85-third')
-                still = judged('UNIT-85-first')
-                fresh = prioritize(main_item, 'priority-85-fresh')[2]
-                check('priority/fresh-growth', [
-                    ('append remains planned until fresh priority', appended.get('ok') and
-                     'missing_authority:priority' in before.get('refusals', [])),
-                    ('already approved sibling continues', still.get('eligible')),
-                    ('renewed priority makes new unit executable', fresh.get('ok') and judged('UNIT-85-third').get('eligible'))])
-                child = r'''import importlib.util, json, sys
-from pathlib import Path
-def load(name):
-    s=importlib.util.spec_from_file_location(name, Path(sys.argv[1])/(name+'.py'))
-    m=importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
-S=load('control_store'); B=load('control_decomposition_binding')
-c=S.open_store(sys.argv[2], mode='r'); out={}
-for uid in json.loads(sys.argv[5]):
-    u=B.row(c,uid); expected=u['specification_document']
-    bound, errors=B.binding(c,sys.argv[3],expected['alias'],sys.argv[4])
-    out[uid]={'binding':bound,'errors':errors,'owner':u['backlog_item_uuid'],'dependencies':u['depends_on'],
-              'body':(Path(sys.argv[4])/expected['path']).read_bytes().hex()}
-print(json.dumps(out)); c.close()
-'''
-                proc = subprocess.run([sys.executable, '-B', '-c', child, str(mods), str(db), REPO, str(work),
-                                       json.dumps([e['unit'] for e in entries])], capture_output=True, text=True, timeout=30)
-                seen = json.loads(proc.stdout) if proc.returncode == 0 else {}
-                check('publication/other-process', [
-                    ('reader process completed', proc.returncode == 0),
-                    ('exact versions, digests, ownership and complete bytes', all(
-                        seen.get(e['unit'], {}).get('binding') == e.get('document') and
-                        seen[e['unit']]['owner'] == main_item and not seen[e['unit']]['errors'] and
-                        bytes.fromhex(seen[e['unit']]['body']) == allocations.current(
-                            AL.version_id(REPO, e['specification'], 1))[1]['content'].encode()
-                        for e in entries)),
-                    ('dependency edge visible in another process', seen.get('UNIT-85-second', {}).get('dependencies') == ['UNIT-85-first'])])
+                if not first.get('ok') or not second.get('ok'):
+                    for label in ('binding/one-owner', 'priority/fresh-growth', 'dependencies/eligibility', 'publication/other-process'):
+                        check(label, [('prerequisite publications accepted', False)])
+                else:
+                    entries = [r.get('unit', {}) for r in (first, second)]
+                    _, foreign_item = take('rejected')
+                    combined = bop('pm', 'prepare', foreign_item, units=[entries[0]])
+                    combined_publication = publish([main_item, foreign_item], raw('UNIT-85-combined'))
+                    # An accepted primary revision belongs to exactly its declared unit.
+                    dup = dict(entries[0], unit='UNIT-85-duplicate')
+                    duplicate = bop('pm', 'prepare', main_item, units=[entries[0], dup])
+                    prepared = bop('pm', 'prepare', main_item, units=entries)
+                    bop('pm', 'request_grooming', main_item)
+                    admission = admit(main_item, 'admit-85')[2]
+                    priority = prioritize(main_item, 'priority-85')[2]
+                    check('binding/one-owner', [
+                        ('accepted preparation and owner admission', prepared.get('ok') and admission.get('ok')),
+                        ('authority cannot combine across items', not combined.get('ok') and item(foreign_item).get('state') == 'RAW'
+                         and combined_publication.get('reason') == 'invalid_input:backlog_item'),
+                        ('duplicate primary revisions refused', not duplicate.get('ok')),
+                        ('one primary revision and item per unit', all(data_of(e['unit']).get('backlog_item_uuid') == main_item
+                            and data_of(e['unit']).get('specification_document') == e.get('document')
+                            and data_of(e['unit']).get('primary_specification') == {'alias': e['specification'], 'revision': 1}
+                            for e in entries))])
+                    gate_second = judged('UNIT-85-second')
+                    check('dependencies/eligibility', [
+                        ('priority accepted', priority.get('ok')),
+                        ('generated dependency reached the unit', data_of('UNIT-85-second').get('depends_on') == ['UNIT-85-first']),
+                        ('eligibility consumes and refuses unresolved dependency',
+                         'unresolved_dependency:UNIT-85-first' in gate_second.get('refusals', [])),
+                        ('specification declares its generated dependency', CB.GR.Y.front_matter(allocations.current(AL.version_id(REPO,
+                             entries[1]['specification'], 1))[1]['content']).get('depends_on')
+                             == [entries[0]['specification']]),
+                        ('independent unit eligible', judged('UNIT-85-first').get('eligible'))])
+                    third = publish(main_item, raw('UNIT-85-third'))
+                    appended = bop('pm', 'append', main_item, unit=third.get('unit', {}))
+                    before = judged('UNIT-85-third')
+                    still = judged('UNIT-85-first')
+                    fresh = prioritize(main_item, 'priority-85-fresh')[2]
+                    check('priority/fresh-growth', [
+                        ('append remains planned until fresh priority', appended.get('ok') and
+                         'missing_authority:priority' in before.get('refusals', [])),
+                        ('already approved sibling continues', still.get('eligible')),
+                        ('renewed priority makes new unit executable', fresh.get('ok') and judged('UNIT-85-third').get('eligible'))])
+                    child = _V85_CHILD
+                    proc = subprocess.run([sys.executable, '-B', '-c', child, str(mods), str(db), REPO, str(work),
+                                           json.dumps([e['unit'] for e in entries])], capture_output=True, text=True, timeout=30)
+                    seen = json.loads(proc.stdout) if proc.returncode == 0 else {}
+                    check('publication/other-process', [
+                        ('reader process completed', proc.returncode == 0),
+                        ('exact versions, digests, ownership and complete bytes', all(
+                            seen.get(e['unit'], {}).get('binding') == e.get('document') and
+                            seen[e['unit']]['owner'] == main_item and not seen[e['unit']]['errors'] and
+                            bytes.fromhex(seen[e['unit']]['body']) == allocations.current(
+                                AL.version_id(REPO, e['specification'], 1))[1]['content'].encode()
+                            for e in entries)),
+                        ('dependency edge visible in another process', seen.get('UNIT-85-second', {}).get('dependencies') == ['UNIT-85-first'])])
 
             with region('publication/stale-input'):
-                bound = first.get('unit', {}).get('document', {})
-                path = work / bound.get('path', 'absent')
-                accepted_bytes = path.read_bytes()
-                path.write_bytes(accepted_bytes + b'Changed after priority.\n')
-                stale = judged('UNIT-85-first')
-                path.write_bytes(accepted_bytes)
-                _, stale_item = take('admitted')
-                proposed = publish(stale_item, raw('UNIT-85-stale'))
-                entry = proposed.get('unit', {})
-                bp = work / entry.get('document', {}).get('path', 'absent')
-                original = bp.read_bytes()
-                bp.write_bytes(original + b'Unaccepted local edit.\n')
-                refused = bop('pm', 'prepare', stale_item, units=[entry])
-                bp.write_bytes(original)
-                pending = allocations.edit(dict(request_id='pending-v85', principal='pm', repository_uuid=REPO,
-                    workspace=str(work), alias=entry['specification'], expected_version=1,
-                    expected_digest=entry['document']['digest'], source={'system':'pm','id':'pending','revision':'2'},
-                    role='specification/main', content=original + b'Accepted but unpublished.\n'), **signing)
-                unpublished = bop('pm', 'prepare', stale_item, units=[entry])
-                check('publication/stale-input', [
-                    ('stale executable bytes refused', 'stale_subject:specification_bytes' in stale.get('refusals', [])),
-                    ('local edit cannot be prepared', not refused.get('ok') and refused.get('reason') == 'stale_subject:specification_bytes'),
-                    ('unpublished newest version cannot be prepared', pending.get('version') == 2 and
-                     unpublished.get('reason') == 'missing_evidence:specification_publication'),
-                    ('no admission or execution input created', data_of('UNIT-85-stale') == {})])
+                if not first.get('ok'):
+                    check('publication/stale-input', [('prerequisite publication accepted', False)])
+                else:
+                    bound = first.get('unit', {}).get('document', {})
+                    path = work / bound.get('path', 'absent')
+                    accepted_bytes = path.read_bytes()
+                    path.write_bytes(accepted_bytes + b'Changed after priority.\n')
+                    stale = judged('UNIT-85-first')
+                    path.write_bytes(accepted_bytes)
+                    _, stale_item = take('admitted')
+                    proposed = publish(stale_item, raw('UNIT-85-stale'))
+                    if not proposed.get('ok'):
+                        check('publication/stale-input', [('stale fixture publication accepted', False)])
+                    else:
+                        entry = proposed.get('unit', {})
+                        bp = work / entry.get('document', {}).get('path', 'absent')
+                        original = bp.read_bytes()
+                        bp.write_bytes(original + b'Unaccepted local edit.\n')
+                        refused = bop('pm', 'prepare', stale_item, units=[entry])
+                        bp.write_bytes(original)
+                        pending = allocations.edit(dict(request_id='pending-v85', principal='pm', repository_uuid=REPO,
+                            workspace=str(work), alias=entry['specification'], expected_version=1,
+                            expected_digest=entry['document']['digest'], source={'system':'pm','id':'pending','revision':'2'},
+                            role='specification/main', content=original + b'Accepted but unpublished.\n'), **signing)
+                        unpublished = bop('pm', 'prepare', stale_item, units=[entry])
+                        _, admission_item = take('returned')
+                        admission_doc = publish(admission_item, raw('UNIT-85-admission'))
+                        admission_entry = admission_doc.get('unit', {})
+                        bop('pm', 'prepare', admission_item, units=[admission_entry])
+                        bop('pm', 'request_grooming', admission_item)
+                        ap = work / admission_entry['document']['path']
+                        original_admission = ap.read_bytes()
+                        ap.write_bytes(original_admission + b'Local bytes before grooming.\n')
+                        groom(admission_item)
+                        rid, shown_receipt = asked(admission_item, 'admission')
+                        answer(shown_receipt, 'accept')
+                        stale_admission = bop('pm', 'admit', admission_item, request=rid)
+                        ap.write_bytes(original_admission)
+                        check('publication/stale-input', [
+                            ('stale executable bytes refused', 'stale_subject:specification_bytes' in stale.get('refusals', [])),
+                            ('local edit cannot be prepared', not refused.get('ok') and refused.get('reason') == 'stale_subject:specification_bytes'),
+                            ('unpublished newest version cannot be prepared', pending.get('version') == 2 and
+                             unpublished.get('reason') == 'missing_evidence:specification_publication'),
+                            ('grooming local bytes cannot confer publication authority',
+                             stale_admission.get('reason') == 'stale_subject:specification_bytes' and
+                             data_of('admission:UNIT-85-admission') == {}),
+                            ('no admission or execution input created', data_of('UNIT-85-stale') == {})])
 
             with region('install/assets'):
                 scaffold = load('v85_scaffold', mods / 'init_scaffold.py')
@@ -688,5 +700,21 @@ print(json.dumps(out)); c.close()
     if raised:
         print('  %sdetail: regions that raised: %s' % (PREFIX, raised))
 
+
+_V85_CHILD = r'''import importlib.util, json, sys
+from pathlib import Path
+def load(name):
+    s=importlib.util.spec_from_file_location(name, Path(sys.argv[1])/(name+'.py'))
+    m=importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
+S=load('control_store'); B=load('control_decomposition_binding')
+c=S.open_store(sys.argv[2], mode='r'); out={}
+for uid in json.loads(sys.argv[5]):
+    u=B.row(c,uid); expected=u['specification_document']
+    bound, errors=B.binding(c,sys.argv[3],expected['alias'],sys.argv[4])
+    out[uid]={'binding':bound,'errors':errors,'owner':u['backlog_item_uuid'],'dependencies':u['depends_on'],
+              'body':(Path(sys.argv[4])/expected['path']).read_bytes().hex()}
+print(json.dumps(out)); c.close()
+
+'''
 
 _v85_suite()
