@@ -1,0 +1,5 @@
+--- a/scripts/suites/79_veldo_0061_codex_adapter.py
++++ b/scripts/suites/79_veldo_0061_codex_adapter.py
+@@ -254 +254 @@
+-    print('Logged in using ChatGPT', file=sys.stderr)
++    print('Logged in using ChatGPT')

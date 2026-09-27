@@ -135,10 +135,12 @@ def main():
             mutants = {case['name']: pool.submit(run, {case['module']: str(prepared[case['name']]['mutant'])})
                        for case in cases}
             report['baseline'] = baseline.result()
+            print(json.dumps({'control': 'baseline', 'failed_rows': report['baseline']['failed_rows']}), flush=True)
             for module, future in noops.items():
                 entry = prepared['noop-' + module]
                 report['noop'][module] = dict(future.result(), source_sha256=entry['old_digest'],
                                              copy_sha256=entry['new_digest'])
+                print(json.dumps({'control': 'noop/' + module, 'failed_rows': report['noop'][module]['failed_rows']}), flush=True)
             for case in cases:
                 entry = prepared[case['name']]
                 observed = mutants[case['name']].result()
@@ -147,6 +149,7 @@ def main():
                     source_sha256=entry['old_digest'], mutant_sha256=entry['new_digest'],
                     named_row_red=all(PREFIX + r in observed['failed_rows'] for r in case['rows']),
                     by_assertion=not _raised(observed), **observed))
+                print(json.dumps({'mutation': case['name'], 'failed_rows': observed['failed_rows']}), flush=True)
     report['all_named_rows_red'] = all(m['named_row_red'] for m in report['mutants'])
     report['all_by_assertion'] = all(m['by_assertion'] for m in report['mutants'])
     report['controls_green'] = not report['baseline']['failed_rows'] and all(

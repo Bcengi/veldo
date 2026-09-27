@@ -44,8 +44,15 @@ exist. It uses the existing mutation registry and Git process boundary, archives
 for the red replay, and runs mutation and no-op copies with at most two jobs. Finding 0172 has a scoped
 300-second worker timeout because each trial drives the six discovered launch suites.
 
-## Verification in progress
+## Verification
 
-All six changed suites have passed individually. The red replay at `65125030` records all four behavior
-rows failing by assertion, without observer errors. The registered mutations, clean-environment runs
-and final whole selftest are still being completed.
+`verification.json` records nine normal selectors and the same nine selectors in the specified clean
+environment: the six modified fake suites, the new comparison suite, the mutation registry suite and
+the scope suite. All passed. The comparison observes six suites and 41 emitted fake lines. Fresh binary
+extraction matches the table; validation, Git boundary, footprint and anchor checks pass. The secret
+inventory has zero outstanding findings, and the captured content has zero scanner findings.
+
+The red replay at `65125030` records all four behavior rows failing by assertion, without observer
+errors. Finding 0172 rejects all five registered mutations. Fresh baseline and no-op controls and the
+full mutation report are being recorded. The final whole selftest remains pending. The canonical gate
+was not run, as instructed.
