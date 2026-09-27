@@ -60,11 +60,23 @@ VELDO-0073. The bot token is supplied by the caller's custody and never logged o
 Standard library only.
 """
 import hashlib
+import importlib.util
+from pathlib import Path
 import http.client
 import json
 import time
 import urllib.error
 import urllib.request
+
+
+def _renderer_module(name):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+TEXT = _renderer_module('control_channel_presentation_text')
 
 SCHEMA = 'veldo.channel_projection/v1'
 ENTITY_KIND = 'channel_projection'
@@ -78,7 +90,7 @@ ANOMALIES = ('presentation_mismatch', 'chat_mismatch')
 RETRYABLE = ('refused',)
 INTENT_FIELDS = ('schema', 'channel', 'assignment_id', 'assignment_version', 'request_version',
                  'presentation_digest', 'presentation', 'owner', 'enrollment_id', 'enrollment_version',
-                 'enrolled_chat')
+                 'enrolled_chat', 'renderer_version', 'render_stats')
 ENROLLMENT_KIND = 'channel_enrollment'
 # The enrollment field that turns presentations on for an owner's chat, and VELDO-0065's receipt kind
 # (control_channel_presentation.RECEIPT_KIND; the VELDO-0065 suite binds the two).
@@ -210,7 +222,7 @@ def enrollment_problems(kind, data, principal):
     return problems
 
 
-def render(brief):
+def render(brief, stats=None):
     """The exact presentation text for one valid brief: plain text, no markup, no trailing space.
     Owner, scope, deadline and budget are shown as the inbox holds them."""
     c = brief['content']
@@ -226,9 +238,9 @@ def render(brief):
         'Subject: %s %s %s' % (c['subject']['kind'], c['subject']['ref'], c['subject']['digest']),
         'Choices: %s' % ' | '.join(c['choices']),
         '',
-        ' '.join(c['brief'].split()),
+        c['brief'],
     ]
-    return '\n'.join(line.rstrip() for line in lines)
+    return TEXT.visible('\n'.join(lines), stats)
 
 
 class TelegramEdge:
@@ -368,6 +380,10 @@ class Projection:
     def _result(self, assignment, versions, outcome, reason, **extra):
         accepted = outcome in ('sent', 'already_projected', 'presented')
         self.counts['accepted' if accepted else 'refused'] += 1
+        record = self.record(extra['projection_id']) if extra.get('projection_id') else None
+        if record is not None:
+            extra.update(renderer_version=record.get('renderer_version', 1),
+                         render_stats=record.get('render_stats', TEXT.counters()), parts=[1])
         self.observations.append(dict(self.inbox.ids, operation='project', channel=CHANNEL,
                                       assignment_id=assignment, accepted_versions=versions,
                                       outcome=outcome, reason=reason, **extra))
@@ -439,10 +455,11 @@ class Projection:
             return self._result(aid, versions, 'refused', refusal)
         versions[enrollment['id']] = enrollment['version']
         versions[framing_entity_id(aid)] = 0  # decided with the request not framed: pinned as absent
-        text = render(brief)
+        stats = TEXT.counters()
+        text = render(brief, stats)
         record = dict(schema=SCHEMA, channel=CHANNEL, assignment_id=aid, assignment_version=entry['version'],
                       request_version=entry['request_version'], presentation_digest=presentation_digest(text.encode('utf-8')),
-                      presentation=text, owner=brief['content']['owner'], enrollment_id=enrollment['id'],
+                      presentation=text, renderer_version=TEXT.VERSION, render_stats=stats, owner=brief['content']['owner'], enrollment_id=enrollment['id'],
                       enrollment_version=enrollment['version'], enrolled_chat=enrollment['chat'])
         expected = dict(versions, **{pid: existing['entity_version'] if existing else 0})
         try:
@@ -506,7 +523,8 @@ class Projection:
                         unpresented_by_reason=m['unpresented_by_reason'])
         records = {e['id']: self.record(projection_id(e['id'], e['request_version']))
                    for e in self.inbox.index()['entries'] if e['category'] == 'pending'}
-        return dict(self.counts,
+        return dict(self.counts, rendering=TEXT.totals([json.loads(r[0]) for r in self.conn.execute(
+                        'SELECT data FROM entities WHERE kind=?', (ENTITY_KIND,))], 'sent'),
                     pending=sum(1 for r in records.values() if r is None or r['outcome'] in RETRYABLE),
                     unknown=sum(1 for r in records.values() if r is not None and r['outcome'] in ('pending', 'unknown_outcome')),
                     anomalies=sum(1 for r in records.values() if r is not None and r['outcome'] == 'anomaly'))

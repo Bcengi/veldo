@@ -210,6 +210,8 @@ _FILES = [
     ".veldo/control_channel_projection.py",
     # VELDO-0065: versioned presentation receipts and presentation-bound answers; no validator loads it.
     ".veldo/control_channel_presentation.py",
+    ".veldo/control_channel_presentation_text.py",
+    ".veldo/control_channel_presentation_v1.py",
     # VELDO-0066: canonical Telegram acquisition and sender attribution; no validator loads it.
     ".veldo/control_channel_attribution.py",
     # VELDO-0126: the one Telegram and API message intake for proposed work; no validator loads it.

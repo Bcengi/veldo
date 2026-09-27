@@ -94,6 +94,16 @@ import json
 from pathlib import Path
 import time
 
+
+def _renderer_module(name):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+TEXT = _renderer_module('control_channel_presentation_text')
+
 SCHEMA = 'veldo.telegram_report/v1'
 CURSOR_SCHEMA = 'veldo.telegram_report_cursor/v1'
 KIND = 'telegram_report'
@@ -405,7 +415,7 @@ class Reporter:
                 'headline': 'Decision waiting: %s' % _shown(terms.get('touchpoint')).replace('_', ' '),
                 'fact': 'request %s version %s offered to %s by %s: %s'
                         % (eid, _shown(data.get('request_version')), _shown(data.get('owner')),
-                           _shown(data.get('requested_by')), ' '.join(str(data.get('brief') or UNAVAILABLE).split())),
+                           _shown(data.get('requested_by')), str(data.get('brief') or UNAVAILABLE)),
                 'next': None, 'evidence': None}
 
     @staticmethod
@@ -573,7 +583,7 @@ class Reporter:
                               % (current.get('presentation_id') or current.get('id'), messages[-1],
                                  _shown(current.get('request_version')), _shown(now)))
 
-    def render(self, source):
+    def render(self, source, stats=None):
         """(text, reply_to): plain text, no markup; the committed fact, its next action or evidence, and
         its source identity."""
         reply_to, nxt = None, source.get('next')
@@ -591,7 +601,7 @@ class Reporter:
             lines.append('Evidence: %s' % source['evidence'])
         lines.append('Source: journal %s, command %s, record %s, entity %s %s'
                      % (s['journal_seq'], s['command_id'], s['record_digest'], s['entity_id'], _shown(s['entity_digest'])))
-        return '\n'.join(line.rstrip() for line in lines), reply_to
+        return TEXT.visible('\n'.join(lines), stats), reply_to
 
     # Writing.
 
@@ -627,7 +637,9 @@ class Reporter:
     def _observe(self, source, rid, outcome, reason, versions=None):
         accepted = outcome in ('sent', 'already_reported')
         self.counts['accepted' if accepted else 'refused'] += 1
-        self.observations.append(dict(self.ids, operation='report', project=source.get('project'), event=source['event'],
+        record = self.record(rid) or {}
+        self.observations.append(dict(self.ids, renderer_version=record.get('renderer_version', 1),
+                                      render_stats=record.get('render_stats', TEXT.counters()), parts=[1], operation='report', project=source.get('project'), event=source['event'],
                                       report_id=rid, unit=source.get('unit'), run=source.get('run'),
                                       journal_seq=source['source']['journal_seq'],
                                       accepted_versions=dict(versions or {}), outcome=outcome, reason=reason,
@@ -646,7 +658,8 @@ class Reporter:
             outcome = 'already_reported' if existing['outcome'] == 'sent' else existing['outcome']
             return self._observe(source, rid, outcome, existing.get('refusal') if outcome == 'refused' else None)
         refusal, enrollment = self._enrollment()
-        text, reply_to = self.render(source)
+        stats = TEXT.counters()
+        text, reply_to = self.render(source, stats)
         record = dict(schema=SCHEMA, report_id=rid, channel=CHANNEL, event=source['event'],
                       project=source.get('project'), domain_uuid=self.ids['domain_uuid'],
                       repository_uuid=self.ids['repository_uuid'], unit=source.get('unit'), run=source.get('run'),
@@ -654,7 +667,8 @@ class Reporter:
                       enrollment_version=(enrollment or {}).get('version'),
                       enrolled_chat=(enrollment or {}).get('chat'), reply_to=reply_to,
                       revision=source.get('revision'), proof=source.get('proof'), text=text,
-                      text_digest=text_digest(text), reported_at=self.clock())
+                      text_digest=text_digest(text), reported_at=self.clock(),
+                      renderer_version=TEXT.VERSION, render_stats=stats)
         versions = {rid: 0}
         if enrollment is not None:
             versions[enrollment['id']] = enrollment['version']
@@ -719,7 +733,7 @@ class Reporter:
                             s['journal_seq'], s['entity_id'])
             if rid not in mine:
                 pending.append(rid)
-        return dict(self.counts, pending=pending, sent=sum(1 for r in mine.values() if r['outcome'] == 'sent'),
+        return dict(self.counts, rendering=TEXT.totals(mine.values(), 'sent'), pending=pending, sent=sum(1 for r in mine.values() if r['outcome'] == 'sent'),
                     unsent=sorted(r['report_id'] for r in mine.values() if r['outcome'] in UNSENT),
                     anomalies=sum(1 for r in mine.values() if r['outcome'] == 'anomaly'),
                     since=self.stored_since())

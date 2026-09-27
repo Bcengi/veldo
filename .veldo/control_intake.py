@@ -72,9 +72,21 @@ Observations carry identities, versions and outcomes, never the token or key mat
 library only.
 """
 import hashlib
+import importlib.util
+from pathlib import Path
 import json
 import sqlite3
 import time
+
+
+def _renderer_module(name):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+TEXT = _renderer_module('control_channel_presentation_text')
 
 COMMAND_SCHEMA = 'veldo.intake_command/v1'
 API_SCHEMA = 'veldo.intake_api_request/v1'
@@ -646,14 +658,15 @@ class Intake:
         if self.asker is None:
             self._hint(where.get('evidence_id'), 'proposed')
             return self._event('ask', 'refused', 'unavailable_service', question_id=qid)
-        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])
+        prompt = TEXT.visible(question['prompt'])
+        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)
         if hinted.get('attempted'):
             sent = hinted.get('delivery')
             if not isinstance(sent, dict):
                 return self._event('ask', 'refused', hinted.get('reason') or 'unknown_outcome', question_id=qid)
         else:
             try:
-                sent = self.asker.send(where['chat_id'], question['prompt'], reply_to=where['message_id'])
+                sent = self.asker.send(where['chat_id'], prompt, reply_to=where['message_id'])
             except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past the intake
                 return self._event('ask', 'refused', getattr(error, 'code', 'unknown_outcome'), question_id=qid)
         delivery = {'channel': 'telegram_chat', 'bot_id': where['bot_id'], 'chat_id': sent['chat_id'],
