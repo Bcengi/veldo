@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -237 +237 @@
+@@ -244 +244 @@
 -                  if selected[name] is None or selected[name] - read_only.get(revision, set()))
 +                  if selected[name] and selected[name] - read_only.get(revision, set()))  # defect: all tools read as none

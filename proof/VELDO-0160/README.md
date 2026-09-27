@@ -426,7 +426,7 @@ qualified vendor package (VELDO-0060, VELDO-0061), as suite 75 does.
 ## Red record
 
 `red-at-52f817d5.json`: the current suite over `git archive 52f817d5` (main before this work),
-unchanged, regenerated after rule A. All 31 behavior rows fail by their own
+unchanged, regenerated after rule A's tally. All 31 behavior rows fail by their own
 assertion: there is no account pool (the Runner given
 a pool refuses `invalid_input` and nothing is dispatched), the same login registers twice under two
 names and a second record of an id is refused unnamed, no run is classified `account_limit` (each limited
@@ -437,7 +437,7 @@ they check the suite's own fixtures against the extracted table, not production.
 ## Mutations (finding 160)
 
 Registered in `scripts/check_teeth_mutations.py`, each criterion's declared falsifier first;
-`drive.py` records `mutations.json` and one applied diff per mutant. All 127 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 3453 s, after rule A).
+`drive.py` records `mutations.json` and one applied diff per mutant. All 132 turn their named rows red by assertion; the baseline and the no-op copy of every module are green (serial 3646 s, after rule A's tally; 127 in 3453 s after rule A).
 
 | Mutant | Module | Named rows |
 |---|---|---|
@@ -575,9 +575,11 @@ Registered in `scripts/check_teeth_mutations.py`, each criterion's declared fals
 | outward-codex-wait-agent-allowed | control_engine_codex.py | `decision/outward-tool-asks` |
 
 Finding 36's `reservation-report-before-enforcement` now copies the guard's report call with its
-`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 127 rejected after rule A (113 after the remote-agent rule, 103 after the unconfigured-call rule, 101 after the structural rule, 86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
+`limit` argument. `check_teeth_mutations.py --finding 160 --jobs 2`: 132 rejected after rule A's tally and exec's wait (127 after rule A, 113 after the remote-agent rule, 103 after the unconfigured-call rule, 101 after the structural rule, 86 before it, 78 before the nested-agent fix, 65 before the second check's round). After the second check's round: 36 (20), 60 (35), 61 (30) and 62 (50) reject, and every mutation of every registry applies exactly once. Before the merge 39 (30), 40 (22) and 41 (34) also rejected; they were not re-run after it.
 
-Suites run after rule A, plain and under the stage
+Suites run after rule A's tally, plain and under the stage environment, all green: `78_veldo_0160_account_pool`
+(33 rows) and `79_veldo_0061_codex_adapter` (20); plain, `81_veldo_0156_codex_baseline` (21) and
+`75_veldo_0062_accounts` (22); `extract_formats.py --check` matches. Suites run after rule A, plain and under the stage
 environment, all green: `78_veldo_0160_account_pool` (33 rows), `78_veldo_0060_claude_adapter` (34),
 `79_veldo_0061_codex_adapter` (20), `80_veldo_0155_claude_baseline` (17), `81_veldo_0156_codex_baseline` (21) and
 `75_veldo_0062_accounts` (22); `extract_formats.py --check` matches the installed binaries. After the unconfigured-call

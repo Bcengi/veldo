@@ -1,5 +1,5 @@
 --- a/.veldo/control_account_limit.py
 +++ b/.veldo/control_account_limit.py
-@@ -301 +301 @@
+@@ -327 +327 @@
 -        elif call.get('tool') in read_only.get(revision, set()):
 +        elif call.get('tool') in read_only.get(revision, set()) or not read_only.get(revision):  # defect: a revision that marks nothing marks everything
