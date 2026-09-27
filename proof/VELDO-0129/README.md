@@ -22,16 +22,14 @@ not a new qualification of vendor binaries or model quality.
 
 ## Criteria and rows
 
-| Criterion | Rows | Observation |
-| :--- | :--- | :--- |
-| AC1 | build/claude, build/codex | Default builds launch real contained processes in accepted clones, deny key access, return dispatch-bound commits and proof, and record groups before engine work. |
-| AC1 | build/configuration, installation/assets | Missing configuration refuses; the scaffolder installs the runtime and its existing floor dependencies; engine copies match; fixture output follows the recorded formats. |
-| AC2 | review/loop-claude, review/loop-codex, review/reviewer-claude, review/reviewer-codex | Both entry points and both engines receive exactly the assignment, committed spec, source diff and accepted proof. The process and reviewer identity differ from the builder. Signed verdicts answer that subject. |
-| AC2 | review/independence-policy | Self review refuses and the accepted critical policy requires two distinct reviewers. |
-| AC3 | outcome/nonzero, outcome/missing-build, outcome/missing-review, outcome/malformed-review | Failed exits, absent result artifacts and wrong review subjects refuse. A zero exit cannot manufacture a verdict. Both engines are exercised. |
-| AC3 | outcome/missing-usage, outcome/reservation | Build and review retain unknown token exposure and their invocation charge. Exhausted allowances prevent process invocation. |
-| AC3 | proof/authority, proof/empty-acceptance | Stored contextual proof is required by the floor. A committed manifest alone and a hook returning no acceptance cannot offer built work. |
-| AC3 | source/no-completion | Build and review leave the source ref unchanged and create no completion receipt. |
+- AC1: build/claude, build/codex. Default builds launch real contained processes in accepted clones, deny key access, return dispatch-bound commits and proof, and record groups before engine work.
+- AC1: build/configuration, installation/assets. Missing configuration refuses; the scaffolder installs the runtime and its existing floor dependencies; engine copies match; fixture output follows the recorded formats.
+- AC2: review/loop-claude, review/loop-codex, review/reviewer-claude, review/reviewer-codex. Both entry points and both engines receive exactly the assignment, committed spec, source diff and accepted proof. The process and reviewer identity differ from the builder. Signed verdicts answer that subject.
+- AC2: review/independence-policy. Self review refuses and the accepted critical policy requires two distinct reviewers.
+- AC3: outcome/nonzero, outcome/missing-build, outcome/missing-review, outcome/malformed-review. Failed exits, absent result artifacts and wrong review subjects refuse. A zero exit cannot manufacture a verdict. Both engines are exercised.
+- AC3: outcome/missing-usage, outcome/reservation. Build and review retain unknown token exposure and their invocation charge. Exhausted allowances prevent process invocation.
+- AC3: proof/authority, proof/empty-acceptance. Stored contextual proof is required by the floor. A committed manifest alone and a hook returning no acceptance cannot offer built work.
+- AC3: source/no-completion. Build and review leave the source ref unchanged and create no completion receipt.
 
 Gate observations in this suite are explicit fixtures at the proof service boundary. Gate
 execution and isolation remain covered by VELDO-0058 and its regression suite. The test does

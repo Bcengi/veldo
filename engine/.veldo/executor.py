@@ -317,8 +317,17 @@ class LiveLoop(LoopSteps):
         self.proofs = self.runtime.proofs
         return self.runtime
 
+    def _worker_call(self, operation, *args):
+        try:
+            return getattr(self.worker(), operation)(*args)
+        except Exception as error:
+            code = getattr(error, "code", None)
+            if not isinstance(code, str):
+                raise
+            raise _eligibility_organ().Refused(code, decision=getattr(error, "decision", None)) from error
+
     def build(self, spec, calls=None):
-        result = self.worker().build(spec, calls)
+        result = self._worker_call("build", spec, calls)
         self.built = result
         self.work_root = Path(result["workspace"])
         return result
@@ -411,8 +420,10 @@ class LiveLoop(LoopSteps):
             try:
                 accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),
                                               manifest=proof, observation=observation, builder=builder)
-            except CP.Refused as error:
-                return {"ok": False, "problems": list(error.codes), "bundle": None}
+            except Exception as error:
+                if not isinstance(getattr(error, "code", None), str):
+                    raise
+                return {"ok": False, "problems": list(getattr(error, "codes", [error.code])), "bundle": None}
             if self.runtime is not None:
                 try:
                     self.runtime.accept_build(spec, build)
@@ -425,7 +436,7 @@ class LiveLoop(LoopSteps):
         return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}
 
     def review(self, spec, proof, calls=None):
-        return self.worker().review(spec, calls)
+        return self._worker_call("review", spec, calls)
 
     def merge_ready(self, spec, proof, verdict):
         """Ready unless the change touches a human lane or protected paths that

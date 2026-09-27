@@ -447,6 +447,9 @@ sys.exit(7 if mode == 'nonzero' else 0)
         second, error = attempt(lambda: loop.build(spec))
         check('outcome/reservation', 'exhausted allowance causes zero engine launches: ' + str(error),
               result and second is None and len(list(markers.glob('*.json'))) == before)
+        halted, error = attempt(lambda: EX.Executor(loop).run(unit, stop_after='proof'))
+        check('outcome/reservation', 'default executor turns the named adapter refusal into a halt: ' + str(error),
+              halted and halted.get('state') == 'halted' and halted.get('halted_at') == 'eligibility')
         built = build('claude')
         accepted, error = accept(built)
         unit, generation, loop, run, path, spec, result, error = built
@@ -455,6 +458,12 @@ sys.exit(7 if mode == 'nonzero' else 0)
         denied, error = attempt(lambda: loop.review(spec, result['proof'] if result else {}))
         check('outcome/reservation', 'review allowance is reserved before process invocation: ' + str(error),
               result and denied is None and len(list(markers.glob('*.json'))) == before)
+        dispatcher = DSP.Dispatcher(repo_root=src, configuration=path)
+        sessions.append(dispatcher._runtime)
+        halted, error = attempt(lambda: dispatcher.dispatch({'spec': unit, 'kind': 'review', 'holder': 'builder',
+                                                              'generation': generation}))
+        check('outcome/reservation', 'default dispatcher returns the named review refusal: ' + str(error),
+              halted and halted.get('ok') is False and halted.get('halted_at') == 'eligibility')
         built = build('claude')
         accepted, error = accept(built, store_proof=False)
         check('proof/authority', 'committed manifest alone is refused: ' + str(error),

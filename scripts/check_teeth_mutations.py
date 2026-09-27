@@ -3510,7 +3510,7 @@ def cases():
     def proof(name, old, new, row, also=(), module='control_proof.py'):
         add(50, name, '64_veldo_0050_proof.py', module, old, new, ['proof/' + row], also)
 
-    accept_block = '        if self.proofs is not None:\n            try:\n                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n                                              manifest=proof, observation=observation, builder=builder)\n            except CP.Refused as error:\n                return {"ok": False, "problems": list(error.codes), "bundle": None}\n            if self.runtime is not None:\n                try:\n                    self.runtime.accept_build(spec, build)\n                except Exception as error:\n                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],\n                            "bundle": accepted["bundle"]}\n            return dict(accepted, ok=True, problems=[])\n'
+    accept_block = '        if self.proofs is not None:\n            try:\n                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n                                              manifest=proof, observation=observation, builder=builder)\n            except Exception as error:\n                if not isinstance(getattr(error, "code", None), str):\n                    raise\n                return {"ok": False, "problems": list(getattr(error, "codes", [error.code])), "bundle": None}\n            if self.runtime is not None:\n                try:\n                    self.runtime.accept_build(spec, build)\n                except Exception as error:\n                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],\n                            "bundle": accepted["bundle"]}\n            return dict(accepted, ok=True, problems=[])\n'
     # AC1, declared: the manifest is kept only in temporary validation storage, so no fresh reviewer resolves it.
     proof('proof-kept-in-temporary-storage', accept_block,
           '        if self.proofs is not None:\n'
@@ -7435,7 +7435,7 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
     add(129, 'worker129-build-unwired', '82_veldo_0129_worker_wiring.py', 'executor.py',
-        '        result = self.worker().build(spec, calls)',
+        '        result = self._worker_call("build", spec, calls)',
         '        raise ExecutorError("build requires an injected callable")',
         ['build/claude', 'build/codex'])
     add(129, 'worker129-builder-context-reused', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',

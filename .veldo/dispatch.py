@@ -174,7 +174,7 @@ class LiveReviewer(Reviewer):
         self.identity = None
 
     def review(self, spec, unit, calls=None):
-        return self.loop.worker().review(spec, calls)
+        return self.loop.review(spec, {}, calls)
 
 
 class Dispatcher(WK.Dispatcher):
@@ -184,9 +184,9 @@ class Dispatcher(WK.Dispatcher):
     reference so a misconfigured dispatcher refuses rather than fabricates:
 
       hooks    the executor LoopSteps seam for the build path (a fake in tests;
-               the executor's LiveLoop, whose agent build fails loud, otherwise).
+               the executor's LiveLoop over installed worker configuration otherwise).
       reviewer the fresh-context Reviewer seam (a fake in tests; LiveReviewer,
-               which fails loud, otherwise).
+               over installed worker configuration otherwise).
       lander   the serialized lander for the review path (a fake in tests; a
                real LD.Lander over GitLandOps for the built ref, injected by the
                caller, otherwise). None means no land is wired: the dispatcher
@@ -270,7 +270,7 @@ class Dispatcher(WK.Dispatcher):
 
     def _build_hooks(self):
         """The executor build seam: an injected fake in tests, the executor's
-        LiveLoop (its agent build fails loud without an agent) as the reference."""
+        LiveLoop over the installed worker configuration as the reference."""
         return self._hooks if self._hooks is not None else EX.LiveLoop(root=self.repo_root, runtime=self._runtime,
                                                                                    proofs=self._runtime.proofs if self._runtime else None)
 
@@ -448,7 +448,7 @@ class Dispatcher(WK.Dispatcher):
             try:
                 with self._launch("review", unit, context, decision) as handle:
                     rv = self._reviewer.review(spec, unit, calls=handle) or {}
-            except EL.Refused as error:
+            except (EL.Refused, EX._eligibility_organ().Refused) as error:
                 codes = (error.decision or {}).get("refusals") or [error.code]
                 return self._refused("review", sid, {"refusals": list(codes)}, verdict=None, shipped=False,
                                      landed=False)
@@ -487,7 +487,7 @@ class Dispatcher(WK.Dispatcher):
         try:
             with self._launch("review", unit, context, decision) as handle:
                 rv = self._reviewer.review(spec, unit, calls=handle) or {}
-        except EL.Refused as error:
+        except (EL.Refused, EX._eligibility_organ().Refused) as error:
             codes = (error.decision or {}).get("refusals") or [error.code]
             return self._refused("review", sid, {"refusals": list(codes)}, **refused)
         try:

@@ -224,3 +224,8 @@ stored-proof floor. All rows are red by assertion against a4769f68. Finding 129 
 mutations, including each declared falsifier, with exact edits and named assertion failures.
 Selected regression suites and the validator are recorded in the proof directory. No real
 model call, remote host, repository gate, independent approval or landing is claimed.
+
+2026-09-27, final integration: normalize named adapter refusals at the executor and reviewer
+entry seams, so the default Executor halts and Dispatcher returns a named refusal when a
+reservation denies work. The reservation row drives those default callers as well as direct
+build and review. The full repository gate remains intentionally unrun.
