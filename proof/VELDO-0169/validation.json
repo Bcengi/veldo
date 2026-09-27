@@ -1,0 +1,104 @@
+{
+  "spec_id": "VELDO-0169",
+  "full_run_tree": "bac2a962",
+  "suite_count": 122,
+  "selected_suites": [
+    "58_veldo_0031_claims",
+    "59_veldo_0031_review",
+    "60_veldo_0064_inbox",
+    "66_veldo_0047_authority",
+    "69_veldo_0133_dispositions",
+    "71_veldo_0076_projects",
+    "72_veldo_0075_andon",
+    "73_veldo_0078_backlog",
+    "82_veldo_0169_project_handouts"
+  ],
+  "selected_normal": {
+    "affected_suites_passed": 181,
+    "new_suite_with_preamble_passed": 44,
+    "failed": 0,
+    "partial_exit_code": 2
+  },
+  "selected_stripped_environment": {
+    "passed": 199,
+    "failed": 0,
+    "partial_exit_code": 2,
+    "environment": {
+      "PATH": "/usr/bin:/usr/bin:/bin",
+      "HOME": "/dev/shm/veldo-0169-home",
+      "TMPDIR": "/dev/shm",
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "TZ": "UTC",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTHONNOUSERSITE": "1",
+      "PYTHONHASHSEED": "0",
+      "GIT_CONFIG_NOSYSTEM": "1",
+      "GIT_CONFIG_GLOBAL": "/dev/null",
+      "GIT_TERMINAL_PROMPT": "0"
+    }
+  },
+  "full_runs": [
+    {
+      "command": "python3 scripts/selftest.py",
+      "passed": 6877,
+      "failed": 1,
+      "exit_code": 1,
+      "failed_rows": [
+        "VELDO-0040 containment/exit-notified"
+      ]
+    },
+    {
+      "command": "python3 scripts/selftest.py",
+      "environment": "same stripped environment as selected suites",
+      "exit_code": 1,
+      "completed": false,
+      "error": "FileNotFoundError in 12_warp_1210_hardening_four._m10_r12_fifo_at: bytecode cache parent absent with PYTHONDONTWRITEBYTECODE=1"
+    },
+    {
+      "command": "python3 scripts/selftest.py",
+      "environment_overrides": {
+        "TMPDIR": "/dev/shm",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "passed": 6878,
+      "failed": 0,
+      "exit_code": 0,
+      "failed_rows": []
+    }
+  ],
+  "containment_recheck": {
+    "suite": "63_veldo_0040_containment",
+    "passed": 46,
+    "failed": 0,
+    "partial_exit_code": 2
+  },
+  "checks": {
+    "git_boundary": "pass, no findings",
+    "footprint": "nothing outside",
+    "mutation_anchors": "0 bad anchors",
+    "validate_all": "pass",
+    "mutation_finding": 169,
+    "mutations_rejected": 10
+  },
+  "engine_copies": {
+    "control_claim.py": {
+      "sha256": "c779130a8c27a2cec4ed5ffb97fe559dc8cc8541f88a4ef8386ec5231d9a6dfc",
+      "engine_identical": true
+    },
+    "control_assignment.py": {
+      "sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea",
+      "engine_identical": true
+    },
+    "control_andon.py": {
+      "sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5",
+      "engine_identical": true
+    }
+  },
+  "red": {
+    "commit": "6512503076f231b94485421f91dc663ee0a36649",
+    "rows_red": 18,
+    "by_assertion": true
+  },
+  "gate_run": false
+}

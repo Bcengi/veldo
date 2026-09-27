@@ -37,17 +37,20 @@ copy per changed production module. Each mutant has its exact diff beside the re
 fails its named row by assertion. Names are prefixed handout and unique across the registry:
 unlisted resume, unchecked resume, unchecked backlog disposition, unchecked andon resume,
 null-project claim bypass, project and owner pins dropped independently from assignment and
-andon transactions, and renamed andon stale_version. The first four behavior defects include
-every criterion's declared falsifier.
+andon transactions, and renamed andon stale_version. The unlisted writer, unchecked resume and andon, and null-claim bypass cover every
+criterion's declared falsifier.
 
-Validation recorded so far:
+Validation:
 
 - New suite: 18 passed; shared preamble: 26 passed.
 - Eight affected suites: 181 passed including the preamble, zero failures.
 - Those eight plus the new suite under the requested stripped environment: 199 passed,
   zero failures. HOME and TMPDIR are temporary paths in /dev/shm.
-- Full selftest and final boundary, footprint, anchor and validator results are recorded below
-  after their runs. Partial suite runs are regression observations, not a gate stamp.
+- Full selftest: all 122 suites, 6878 passed, zero failures. The successful full run used
+  TMPDIR=/dev/shm and unbuffered output, with ordinary bytecode behavior.
+- Git boundary: pass, no findings. Footprint: nothing outside. Mutation anchors: zero bad
+  anchors. Validator all: pass. Engine copies: byte-identical.
+- Partial suite runs are regression observations, not a gate stamp.
 
 The canonical gate is not run, as instructed. No verification stamp is claimed. Independent
 review, approval and landing remain the reviewer's work; the specification stays ready.
@@ -64,3 +67,7 @@ the cache directory that its FIFO fixture assumes a warming subprocess creates. 
 FileNotFoundError, not a VELDO-0169 assertion failure. The required nine selected suites passed
 under that environment. The full rerun keeps ordinary bytecode behavior and uses /dev/shm for
 temporary files. No legacy fixture is modified.
+
+The final whole-suite rerun passed: 6878 passed, zero failed. No containment or legacy
+fixture code was changed. `validation.json` retains the successful results and the earlier
+failed and interrupted attempts. The two-job finding-169 checker rejects all ten mutants.
