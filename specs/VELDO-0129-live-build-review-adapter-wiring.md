@@ -37,6 +37,9 @@ footprint:
   - "scripts/suites/60_veldo_0052_eligibility.py"
   - "scripts/suites/60_veldo_0053_architecture.py"
   - "scripts/suites/63_veldo_0049_floor.py"
+  - "scripts/suites/67_veldo_0056_candidates.py"
+  - "scripts/suites/67_veldo_0135_offers.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0129-live-build-review-adapter-wiring.md"
@@ -249,4 +252,4 @@ seventeen runtime-dependent journeys are explicitly unavailable on that base, re
 the earlier blanket red claim. The current suite has 27 rows and finding 129 has fourteen
 mutations, including a nested-context falsifier. No repository gate or model call is claimed.
 
-2026-09-27, architecture review fix: distinguish the base LoopSteps proof-service omission from an implemented hook returning no acceptance, preserving the architecture review decision and the installed proof refusal; register Runtime._run for both agent callers, extend the existing entry drivers without changing assertions, and add finding 129's unique runtime architecture bypass mutation. The footprint includes the shared registration and architecture driver; full selftest and findings 129 and 53 results are recorded in proof/VELDO-0129/architecture-review.md.
+2026-09-27, architecture review fix: distinguish the base LoopSteps proof-service omission from an implemented hook returning no acceptance, preserving the architecture review decision and the installed proof refusal; register Runtime._run for both agent callers, extend the architecture entry drivers without changing assertions, and add finding 129's unique runtime architecture bypass mutation. The full run exposed older candidate, offers and reports drivers that did not provide stored contextual proof; these now exercise the required proof service and the earlier invalid-proof refusal. The footprint includes those drivers and the shared registration; full selftest and findings 129 and 53 results are recorded in proof/VELDO-0129/architecture-review.md.

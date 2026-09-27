@@ -5,7 +5,7 @@ build-veldo-0129 before reproduction. The architecture suite reproduced two fail
 VELDO-0053 architecture/entries-blocked and
 VELDO-0053 architecture/forbidden-review-launch.
 
-The branch's new empty-acceptance check in Executor.run treated the inherited
+Commit 4ffbfbe05762f2e6c3e0d3caa3c490fef7ff2ef6 added an empty-acceptance check in Executor.run that treated the inherited
 LoopSteps.accept_proof omission as a failed implemented acceptance. Its valid build
 therefore stopped at missing_authority:proof_acceptance before reaching review.
 When architecture changed during that build, the same early stop concealed the
@@ -27,6 +27,27 @@ The driver requires the two callers to agree and retains their individual outcom
 worker129-runtime-architecture-bypassed removes that runtime predicate boundary on
 a temporary production copy. Its target is suite 53's architecture/entries-blocked
 row. Mutation names were checked for uniqueness across every finding.
+
+The first full selftest then exposed nine rows in older drivers that had not been
+updated for VELDO-0129's required stored contextual proof:
+
+- VELDO-0056 candidate/rejection-leaves-trunk
+- VELDO-0056 candidate/named-policy-refusals
+- VELDO-0056 candidate/observations
+- VELDO-0056 ran/candidate/rejection-leaves-trunk
+- VELDO-0135 offers/no-reclaim
+- VELDO-0135 offers/floor-station
+- VELDO-0135 offers/finding-path
+- VELDO-0135 offers/end-to-end
+- VELDO-0135 offers/observations
+
+That run subsequently aborted in VELDO-0128's setup with missing_evidence:proof_bundle.
+The offers and reports drivers now store proof through the real ProofService, with
+specification revisions, evidence digests and bound gate observations. Their assertions
+are unchanged. The candidate driver requires its invalid-proof build to refuse before
+review, then still drives the lander's refusal and unchanged-trunk checks. Its exact
+expected refusal list now also requires missing_authority:floor_record, because no
+floor record is created for the refused build. No production proof check is relaxed.
 
 Validation results are recorded after the final checks. The repository gate is not
 run and no gate stamp, independent review, push or landing is claimed.
