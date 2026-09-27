@@ -108,6 +108,59 @@
   "validate_all": "pass",
   "writer_boundary": "pass"
  },
+ "review_fix_2": {
+  "control_eligibility.py": "identical to main",
+  "drive_mutations": {
+   "all_by_assertion": true,
+   "all_named_rows_red": true,
+   "controls_green": true,
+   "mutants": 21
+  },
+  "engine_copies_identical": [
+   "control_andon.py",
+   "control_assignment.py",
+   "control_claim.py",
+   "control_heartbeat.py",
+   "control_store.py"
+  ],
+  "from": "6d2f40a7",
+  "full_selftest": {
+   "command": "python3 scripts/selftest.py",
+   "exit_code": 0,
+   "failed": 0,
+   "passed": 6967,
+   "seconds": 1007
+  },
+  "gate_run": false,
+  "git_boundary": "pass",
+  "merged_main": "already up to date (main 39bccb05)",
+  "mutation_anchors": "0 bad anchors",
+  "red": {
+   "0a2ba0f9": 9,
+   "65125030": 25,
+   "6d2f40a7": 8,
+   "by_assertion": true
+  },
+  "review": "rv169b",
+  "rows": 26,
+  "suite": "84_veldo_0169_project_handouts",
+  "teeth": {
+   "133": 21,
+   "134": 36,
+   "169": 21,
+   "31": 19,
+   "35": 12,
+   "37": 61,
+   "41": 35,
+   "53": 52,
+   "64": 36,
+   "68": 19,
+   "75": 30,
+   "76": 26
+  },
+  "tree": "8f922a18",
+  "validate_all": "pass"
+ },
  "selected_normal": {
   "affected_suites_passed": 181,
   "failed": 0,
