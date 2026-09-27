@@ -100,3 +100,11 @@ exactly the three new rows fail, all by assertion. `mutations.json` and the appl
 diffs record the current nineteen mutations, their controls and named assertion
 failures. Earlier validation records above remain historical; this fix's checks
 are recorded in `blocking-review-checks.json`.
+
+This fix's single whole-selftest run finished with **6873 passed, 2 failed**:
+`VELDO-0149 answer/activates` and `VELDO-0149 answer/observed`. All fifteen
+decomposition rows passed. The failing activation suite then passed alone and
+immediately after the grooming suite. The cause remains unresolved; these partial
+runs do not replace a passing whole selftest. `blocking-whole-selftest.log` retains
+the failure, and `blocking-review-checks.json` marks full verification blocked.
+The checkout was unchanged throughout the whole run.

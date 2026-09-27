@@ -37,6 +37,39 @@
       "exit_code": 0,
       "log": "blocking-validate.log",
       "passed": true
+    },
+    {
+      "command": "python3 scripts/check_git_boundary.py",
+      "exit_code": 0,
+      "passed": true,
+      "log": "blocking-boundary.log"
+    },
+    {
+      "command": "bash scripts/check_template_sync.sh",
+      "exit_code": 0,
+      "passed": true,
+      "log": "blocking-sync.log",
+      "pairs": 233
+    },
+    {
+      "command": "python3 scripts/selftest.py",
+      "exit_code": 1,
+      "passed": false,
+      "log": "blocking-whole-selftest.log"
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 77_veldo_0149_adopted_activation",
+      "exit_code": 2,
+      "passed": true,
+      "log": "blocking-0149.log",
+      "note": "Diagnostic partial run only."
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 76_veldo_0079_grooming --suite 77_veldo_0149_adopted_activation",
+      "exit_code": 2,
+      "passed": true,
+      "log": "blocking-0149-order.log",
+      "note": "Diagnostic partial run only."
     }
   ],
   "rows": 15,
@@ -48,7 +81,25 @@
     "supersession/main-role"
   ],
   "concurrency": "two processes with independent SQLite connections",
-  "whole_selftest": null,
+  "whole_selftest": "selftest: 6873 passed, 2 failed",
   "gate_invoked": false,
-  "pushed": false
+  "pushed": false,
+  "schema": "veldo.review-fix-proof/v1",
+  "spec_id": "VELDO-0085",
+  "implementation_commit": "3b2057e8",
+  "whole_selftest_runs": 1,
+  "whole_selftest_failures": [
+    "SELFTEST FAIL: VELDO-0149 answer/activates",
+    "SELFTEST FAIL: VELDO-0149 answer/observed"
+  ],
+  "whole_selftest_worktree_unchanged": true,
+  "verification_status": "blocked_on_whole_selftest",
+  "limitation": "The two VELDO-0149 failures did not reproduce in isolation or immediately after the grooming suite. Cause unresolved; no full-run pass claimed.",
+  "activation_diagnostics": {
+    "repetitions": 10,
+    "all_passed": true,
+    "log": "blocking-0149-repeat.log",
+    "method": "Unchanged VELDO-0149 suite executed in fresh processes with an in-memory print of only presentation, answer and activation outcome fields.",
+    "note": "Diagnostic partial runs, not a full-run pass."
+  }
 }
