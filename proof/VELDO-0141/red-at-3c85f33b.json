@@ -6,7 +6,7 @@
   "VELDO-0141 record/claude-complete detail: the record holds every tool call with its input (the command, the failing command, the edit, the subagent), each result with the command's output and its error stream, the failed command as an error, and the edit made in the clone [[], 0 results]",
   "VELDO-0141 record/codex-complete detail: every line the Codex worker printed on its output and its error stream was kept, in order, after the wrapper's identity line [['no record bound to the dispatch', 'engine: 0 kept of 10 printed', 'stderr: 0 kept of 1 printed', 'the wrapper identity line is not the first, naming the engine']]",
   "VELDO-0141 record/codex-complete detail: the record holds both commands with their output and error stream, the failed one's exit code, the file change, the error item, the error stream's own line [[], []]",
-  "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-vnrq7gb4/state/factory/runs/cca2a58ed2f2515917ffdcdfb432129c/config/settings.json', '--mcp-config', '/run/user/1000/v141-vnrq7gb4/state/factory/runs/cca2a58ed2f2515917ffdcdfb432129c/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
+  "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-0nu2pb3a/state/factory/runs/80e26373d5eb5c2694c291cba958c71c/config/settings.json', '--mcp-config', '/run/user/1000/v141-0nu2pb3a/state/factory/runs/80e26373d5eb5c2694c291cba958c71c/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
   "VELDO-0141 record/stream-options detail: the shipped 2.1.281 record qualifies the baseline with them",
   "VELDO-0141 record/stream-options detail: the subagent's forwarded text and the partial messages are in the record [0 subagent, 0 partial]",
   "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [0 frames, 0 before the exit, 0 hints]",
@@ -35,7 +35,20 @@
   "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [[]]",
   "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[]]",
   "VELDO-0141 redaction/exact-set detail: a low-entropy word no resolver named is kept as printed: the receiver replaces exactly the run's set [[]]",
-  "VELDO-0141 redaction/exact-set detail: and every other line is the printed one with only redacted spans replaced [['no record bound to the dispatch', 'engine: 0 kept of 10 printed', 'stderr: 0 kept of 6 printed', 'the wrapper identity line is not the first, naming the engine']]"
+  "VELDO-0141 redaction/exact-set detail: and every other line is the printed one with only redacted spans replaced [['no record bound to the dispatch', 'engine: 0 kept of 10 printed', 'stderr: 0 kept of 6 printed', 'the wrapper identity line is not the first, naming the engine']]",
+  "VELDO-0141 redaction/paths-kept detail: the live run's init line is kept as printed, its working directory (the clone under the runtime directory, which the scanner judging it whole would replace) whole [[]]",
+  "VELDO-0141 redaction/paths-kept detail: the Edit tool call's input is kept as printed, its absolute file path whole [[]]",
+  "VELDO-0141 redaction/paths-kept detail: typical real paths (a clone path under the runtime directory, its clone directory named by a digest, a worktree's control_launch.py, a pinned engine path with its version and a digest segment, bare and named, Codex's vendor binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging it whole replaces [['', '', '', '', '', '', '', '']]",
+  "VELDO-0141 redaction/path-segment detail: a path with an embedded 40-character random segment keeps the rest and replaces that segment []",
+  "VELDO-0141 redaction/path-segment detail: likewise inside a tool input []",
+  "VELDO-0141 redaction/path-segment detail: and in a backslash-separated path, as JSON carries it []",
+  "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes []",
+  "VELDO-0141 redaction/url-component detail: a URL with a token query value keeps its host, path and key and replaces only the value []",
+  "VELDO-0141 redaction/url-component detail: and a high-entropy path segment of a URL goes, the rest kept []",
+  "VELDO-0141 redaction/url-component detail: an ordinary URL the scanner judging it whole replaces is kept whole",
+  "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{} []]",
+  "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{} []]",
+  "VELDO-0141 redaction/account-fields detail: an init line's account and organization uuid and email are replaced by field, its working directory kept []"
  ],
  "failed_rows": [
   "VELDO-0141 record/claude-complete",
@@ -51,7 +64,11 @@
   "VELDO-0141 redaction/planted-value",
   "VELDO-0141 redaction/known-pattern",
   "VELDO-0141 redaction/kinds-field",
-  "VELDO-0141 redaction/exact-set"
+  "VELDO-0141 redaction/exact-set",
+  "VELDO-0141 redaction/paths-kept",
+  "VELDO-0141 redaction/path-segment",
+  "VELDO-0141 redaction/url-component",
+  "VELDO-0141 redaction/account-fields"
  ],
  "modules": {
   ".veldo/control_api.py": {
@@ -80,7 +97,7 @@
   },
   ".veldo/control_execution_record.py": {
    "at_commit": null,
-   "now": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
+   "now": "2ddb686054b62623f331455b972b00ac44c43ba9c390d4ed6cdc0efa73c940bd"
   },
   ".veldo/control_launch.py": {
    "at_commit": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20",
@@ -150,6 +167,22 @@
    false
   ],
   [
+   "VELDO-0141 redaction/paths-kept",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/path-segment",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/url-component",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/account-fields",
+   false
+  ],
+  [
    "VELDO-0141 fixture/planted-control",
    true
   ],
@@ -159,7 +192,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 11.524,
+ "seconds": 11.513,
  "spec_id": "VELDO-0141",
  "suite": "scripts/suites/82_veldo_0141_execution_record.py",
  "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"

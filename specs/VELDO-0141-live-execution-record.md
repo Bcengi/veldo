@@ -239,3 +239,15 @@ call's added keyword. Measured, for the owner: secret_scan's entropy rule redact
 characters or more (4.1 to 4.4 bits per character, `/` in its candidate class), so the terminal view shows
 `[REDACTED:entropy]` for many file paths; the scanner is unchanged. The factory setup does not yet write the new
 `record_hints` and `records` keys. Proof: suite 82, `proof/VELDO-0141/`. Status unchanged.
+
+2026-09-26, fix on the lead's decision (the owner needs full terminal-level detail in the live view): the record's
+entropy step (control_execution_record, its own loop over secret_scan's detectors; the gate's scan is unchanged)
+scores a path rooted at a boundary (`/`, `~/`, `./`, `../`) segment by segment, split at `/` or a backslash, and a
+URL by component (authority, path segments, each query key and value), so only a segment that is itself
+high-entropy is replaced and the rest of the path is kept; a segment that is a hex digest named by a lowercase word
+(a clone's `clone-<32 hex>` directory, `sha256-<64 hex>`) is kept as the bare digest is. A slash-joined token with no
+root (a base64 key's shape) is still scored whole. Exact-value replacement stays first and unchanged. In the
+engine's handshake answer and init line the account identifiers (email, organization, account and organization
+uuid) are replaced by field (`account:<field>`), since Claude Code's answer carries the account's email and
+organization. Suite 82 gains `redaction/paths-kept`, `redaction/path-segment`, `redaction/url-component` and
+`redaction/account-fields`, finding 141 five mutants (the whole path scored again among them). Status unchanged.

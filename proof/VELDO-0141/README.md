@@ -24,7 +24,17 @@ resolved credential values (`Resolved`), longest first, in each form a line carr
 string escapes it, ASCII-escaped or not), by `[REDACTED:<kind>]`; only then does secret_scan (its own
 `PATTERNS`, `_CANDIDATE`, `_is_digest` and `shannon`, reused) replace its known patterns
 (`[REDACTED:pattern:<shape>]`, the pattern's own description as a name, `pattern:github_token` for "a GitHub
-token") and its high-entropy spans (`[REDACTED:entropy]`, a hex digest's shape excepted). The set is filled once
+token") and its high-entropy spans (`[REDACTED:entropy]`, a hex digest's shape excepted). Between the two, in the
+engine's handshake answer and its init line only, the account identifiers are replaced by field
+(`[REDACTED:account:<field>]` for `email`, `organization`, `accountUuid`, `organizationUuid` and their snake-case
+forms, at any depth; a string's content, so the line stays JSON). The entropy step scores a path rooted at a
+boundary (`/`, `~/`, `./`, `../`) segment by segment (split at `/`, a backslash and JSON's escaped forms of both)
+and a URL (`scheme://`) by component (authority, each path segment, each query and fragment key and value), each
+segment judged by the scanner's own rule, so only a segment that is itself high-entropy goes; a segment that is a
+hex digest of a digest width named by a lowercase word (`clone-<32 hex>`, `sha256-<64 hex>`) is kept as the bare
+digest is. A slash-joined token that does not start at such a root (a base64 key's shape, `/` mid-token) and every
+other candidate are scored whole, as before. The gate's own scan (`secret_scan.scan_text`) is untouched: this is
+the record's own entropy loop. The set is filled once
 per run, as the worker is spawned, by `control_launch.RESOLVERS`: each `resolver(receiver, contract, adapter,
 environment)` returns `[(kind, value)]` and may deliver its value into the engine's environment. The built-in one
 is the account's subscription token (`subscription_token`, VELDO-0155 AC2's file); VELDO-0158 AC3 adds the
@@ -69,12 +79,17 @@ qualification check; suite 80 now expects the two options after the others.
 
 ## What the code does that a reader should know
 
-- **The scanner redacts most long absolute paths.** secret_scan's candidate class includes `/`, so an absolute
-  path of 32 characters or more is one candidate token, and measured paths score 4.1 to 4.4 bits per character
-  (`/home/dmitry/projects/veldo-worktrees/build-veldo-0141/src/main` 4.38), over the 4.0 threshold. So the record
-  shows `[REDACTED:entropy]` for many file paths in tool inputs and results, the init event's working directory
-  among them. The criteria say the scanner redacts high-entropy spans and this build does not change the
-  scanner; it is the owner's call whether the terminal view should keep paths.
+- **Paths are scored by segment.** secret_scan's candidate class includes `/`, so judged whole an absolute path of
+  32 characters or more scored 4.1 to 4.4 bits per character (`/home/dmitry/projects/veldo-worktrees/build-veldo-0141/src/main`
+  4.38) and showed as `[REDACTED:entropy]`, the init event's working directory and tool inputs among them. On the
+  lead's decision the record scores a rooted path by segment and a URL by component (above). What stays whole:
+  a relative path with no root (`scripts/suites/x.py`), because a rootless slash-joined token is the shape of a
+  base64 key such as a cloud secret key; and the scanner's gate scan. The initialize request id the receiver
+  writes (`veldo-initialize-<16 hex>`, not a digest width) still scores high about three times in four and is
+  replaced in the handshake answer.
+- **Account identifiers.** Claude Code's handshake answer carries the account's email and organization (its
+  Kfe(): `email:ie?.email,organization:ie?.organization`, proof/VELDO-0155's `input_protocol.account`); the record
+  replaces them by field, and keeps the fields that say how the run logged in.
 - **The planted resolver.** No resolver of a real credential exists in stage 1 besides the subscription token.
   The suite's planted resolver is a function a small driver adds to `RESOLVERS` in the receiver process before
   calling the installed `control_launch.main`, delivering its value as `V141_PLANTED`.
@@ -113,6 +128,7 @@ only with `--forward-subagent-text`, as the binary does.
 | AC2 | `api/live`, `api/cursor`, `api/refusals`, `api/no-secret-served` (declared falsifier), `api/service-call` |
 | AC3 | `route/served-lines` (declared falsifier), `route/committed` |
 | AC4 | `redaction/planted-value` (declared falsifier), `redaction/known-pattern`, `redaction/kinds-field`, `redaction/exact-set` |
+| AC4, redaction by component and field | `redaction/paths-kept`, `redaction/path-segment`, `redaction/url-component`, `redaction/account-fields` |
 | Fixtures | `fixture/planted-control`, `format/fake-lines` |
 
 `record/*-complete`: the kept record against the engine's own copy, stream by stream: every output and
@@ -150,16 +166,28 @@ stream; the account's subscription token replaced as `subscription_token`. `reda
 is kept; every other line is the printed one with only redacted spans replaced. `fixture/planted-control`: the
 planted value is one the scanner alone misses, and the scanner run first on the joined line takes the value's
 first word with the span and leaves the rest, so the order decides the result; the token is one the scanner's
-GitHub pattern finds. `format/fake-lines`: every event line the fakes printed has the binary's own fields and
+GitHub pattern finds. `redaction/paths-kept`: the live run's init line and Edit tool call are kept as printed,
+the working directory (the clone under the runtime directory) and the absolute file path whole, each one the
+scanner judging it whole replaces; typical real paths (the clone path, a clone directory named by a digest, a
+worktree's `.veldo/control_launch.py`, a pinned engine path with its version and a bare and a named digest
+segment, Codex's vendor binary path), alone, in a command and in a tool input, kept whole through the production
+`redact`. `redaction/path-segment`: a path with an embedded 40-character random segment keeps the rest and
+replaces that segment, alone, in a tool input and in a backslash path as JSON carries it; a resolved value inside
+a path is replaced first, whole, and a high-entropy segment joined to it still goes. `redaction/url-component`:
+a URL with a token query value keeps host, path and key and replaces only the value; a high-entropy URL path
+segment goes; an ordinary URL is kept. `redaction/account-fields`: in both Claude runs (plain login and token
+login) the handshake answer's email and organization are replaced by field and appear nowhere in the record, the
+rest of `account` kept; an init line's account and organization uuid and email are replaced by field, its working
+directory kept. `format/fake-lines`: every event line the fakes printed has the binary's own fields and
 required fields, Codex's items their table's fields, and the error-stream warning is the binary's text.
 
-Plain run: 42 passed (26 preamble, 16 rows) in about 12 seconds; under the gate's environment the same. Every
-suite that loads a module this change touched (47, from `01_warp_0101_reviewer_notes` to this one) passes, plainly
+Plain run: 46 passed (26 preamble, 20 rows) in about 12 seconds; under the gate's environment the same. Every
+suite that loads a module this change touched (48, from `01_warp_0101_reviewer_notes` to this one) passes, plainly
 and under the gate's environment.
 
 ## Red record
 
-`red-at-3c85f33b.json`: the current suite over `git archive 3c85f33b`, unchanged. All 14 behavior rows fail by
+`red-at-3c85f33b.json`: the current suite over `git archive 3c85f33b`, unchanged. All 18 behavior rows fail by
 their own assertions (none raised): that tree's receiver discards the error stream and keeps nothing of a run,
 its API has no record route and no record call, its dispatch commits no record and its Claude Code baseline has
 no stream options. The two fixture rows are green there, as they must be.
@@ -167,7 +195,7 @@ no stream options. The two fixture rows are green there, as they must be.
 ## Mutations (finding 141)
 
 Registered in `scripts/check_teeth_mutations.py`, each declared falsifier first; `drive.py` records
-`mutations.json` and one applied diff per mutant. `check_teeth_mutations.py --finding 141 --jobs 2`: all 17
+`mutations.json` and one applied diff per mutant. `check_teeth_mutations.py --finding 141 --jobs 2`: all 22
 rejected, each on its named rows.
 
 | Mutant | Module | Named rows |
@@ -189,6 +217,11 @@ rejected, each on its named rows.
 | route-service-call-unlisted | control_api_assertion.py | api/service-call |
 | redaction-token-unresolved | control_launch.py | redaction/known-pattern |
 | redaction-kinds-unnamed | control_execution_record.py | redaction/kinds-field |
+| redaction-path-scored-whole (the lead's falsifier: score the whole path again) | control_execution_record.py | redaction/paths-kept, redaction/path-segment, redaction/url-component |
+| redaction-path-segment-unscored | control_execution_record.py | redaction/path-segment, redaction/url-component |
+| redaction-named-digest-scored | control_execution_record.py | redaction/paths-kept |
+| redaction-url-query-whole | control_execution_record.py | redaction/url-component |
+| redaction-account-fields-kept | control_execution_record.py | redaction/account-fields |
 
 ## Not built (outside the criteria)
 
