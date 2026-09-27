@@ -26,12 +26,16 @@ footprint:
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
+  - "engine/.veldo/control_eligibility.py"
+  - ".veldo/control_eligibility.py"
+  - "packs/*/.veldo/control_eligibility.py"
   - "scripts/suites/*_veldo_0129_*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/60_veldo_0052_eligibility.py"
+  - "scripts/suites/60_veldo_0053_architecture.py"
   - "scripts/suites/63_veldo_0049_floor.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -244,3 +248,5 @@ to each available interface, including empty proof acceptance. Ten rows fail by 
 seventeen runtime-dependent journeys are explicitly unavailable on that base, replacing
 the earlier blanket red claim. The current suite has 27 rows and finding 129 has fourteen
 mutations, including a nested-context falsifier. No repository gate or model call is claimed.
+
+2026-09-27, architecture review fix: distinguish the base LoopSteps proof-service omission from an implemented hook returning no acceptance, preserving the architecture review decision and the installed proof refusal; register Runtime._run for both agent callers, extend the existing entry drivers without changing assertions, and add finding 129's unique runtime architecture bypass mutation. The footprint includes the shared registration and architecture driver; full selftest and findings 129 and 53 results are recorded in proof/VELDO-0129/architecture-review.md.

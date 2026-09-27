@@ -8048,6 +8048,10 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    add(129, 'worker129-runtime-architecture-bypassed', '60_veldo_0053_architecture.py', 'control_launch_work.py',
+        "        self.gate.require('provider_request', unit, context=context)",
+        "        pass  # defect: launch without the provider architecture decision",
+        ['architecture/entries-blocked'])
     add(129, 'worker129-build-unwired', '82_veldo_0129_worker_wiring.py', 'executor.py',
         '        result = self._worker_call("build", spec, calls)',
         '        raise ExecutorError("build requires an injected callable")',
@@ -8066,7 +8070,7 @@ def cases():
         "                return dict(body, verdict='pass')",
         ['outcome/malformed-review'])
     add(129, 'worker129-empty-proof-accepted', '82_veldo_0129_worker_wiring.py', 'executor.py',
-        '            if gate is not None and not accepted:', '            if False and not accepted:',
+        '            if gate is not None and accepted is not NotImplemented and not accepted:', '            if False and not accepted:',
         ['proof/empty-acceptance'])
     add(129, 'worker129-clone-group-unrecorded', '82_veldo_0129_worker_wiring.py', 'control_launch.py',
         '                            provisioner.record_group(dispatch_id, group.report())',

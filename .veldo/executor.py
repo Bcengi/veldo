@@ -200,8 +200,10 @@ class LoopSteps:
         spec, the installed catalog, Git and the gate's observation, and its storage as accepted
         immutable evidence, before the unit is offered as built or for review. Return {ok, problems,
         bundle}: ok False halts the run at proof with the named problems. A control-logic seam that
-        keeps no proof service returns None, which refuses an enrolled run."""
-        return None
+        keeps no proof service returns NotImplemented and records no bundle. An implemented
+        acceptance hook must return a result; None refuses an enrolled run. LiveLoop always
+        implements this boundary through its proof service."""
+        return NotImplemented
 
     # VELDO-0052: who reviews. The review station decides reviewer independence over this identity
     # before any reviewer is launched; None is refused (reviewer_not_independent), never presumed.
@@ -786,8 +788,12 @@ class Executor:
             # names every problem. The pre-factory loop (no Gate) keeps its structural check alone.
             accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)
                         if gate is not None else None)
-            if gate is not None and not accepted:
+            if gate is not None and accepted is not NotImplemented and not accepted:
                 accepted = {"ok": False, "problems": ["missing_authority:proof_acceptance"]}
+            # The base control-logic seam has no acceptance service. Keep that distinct from
+            # an implemented service returning no result, which must refuse above.
+            if accepted is NotImplemented:
+                accepted = None
             if accepted is not None and not accepted.get("ok"):
                 problems = list(accepted.get("problems") or ["unknown_outcome:proof"])
                 record("proof", False, cycle=cycle, errors=p_err, refusals=problems)

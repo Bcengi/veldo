@@ -40,7 +40,7 @@ def _v52_suite():
     # The front door the production-entry row runs as a real process in the enrolled fixture.
     FRONT_DOOR = ROOT / "bin" / "veldo"
     FLOOR = ('frontier.py', 'work.py', 'plan.py', 'executor.py', 'dispatch.py', 'work_state.py',
-             'control_eligibility.py')
+             'control_eligibility.py', 'control_launch_work.py')
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
