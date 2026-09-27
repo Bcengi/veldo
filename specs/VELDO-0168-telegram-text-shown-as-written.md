@@ -18,6 +18,8 @@ footprint:
   - ".veldo/control_channel_presentation*.py"
   - "engine/.veldo/control_channel_projection*.py"
   - ".veldo/control_channel_projection*.py"
+  - "engine/.veldo/control_intake.py"
+  - ".veldo/control_intake.py"
   - "engine/.veldo/control_telegram_report*.py"
   - ".veldo/control_telegram_report*.py"
   - "engine/.veldo/init_scaffold.py"
@@ -50,9 +52,10 @@ acceptance_criteria:
       Claim: Text the owner reads on Telegram keeps the line breaks it was written with. Set and
       completeness: The set is every renderer whose text is sent to Telegram, found by listing every call
       of the Bot API send in the engine and tracing its text back: the decision presentation
-      (control_channel_presentation.render), the inbox presentation (control_channel_projection.render)
-      and the reports (control_telegram_report); the suite holds that list and fails on a send it does not
-      name. In each, a brief, risk statement or report body keeps its line breaks, with a carriage return
+      (control_channel_presentation.render), the inbox presentation (control_channel_projection.render),
+      the reports (control_telegram_report), and the intake question prompt
+      (control_intake.py, _ask's asker.send of question['prompt']); the suite holds that list and fails
+      on a send it does not name. In each, a brief, risk statement, report body or question prompt keeps its line breaks, with a carriage return
       and line feed pair shown as one break, and nothing inside a line is collapsed: runs of spaces are
       kept as written, and a tab is shown escaped by AC2's rule, never collapsed or turned into a space.
       A three-line brief renders as three lines in each renderer, and a line holding two spaces and a tab

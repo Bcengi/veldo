@@ -26,8 +26,6 @@ footprint:
   - ".veldo/control_api.py"
   - "engine/.veldo/control_api_credentials.py"
   - ".veldo/control_api_credentials.py"
-  - "engine/.veldo/control_api_pages/*"
-  - ".veldo/control_api_pages/*"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "bin/veldo"
@@ -109,8 +107,16 @@ acceptance_criteria:
       and its installation already named the API configuration; when this run added it, setup restarts
       nothing and names the one restart command. Read back the unit, the configurations, the listening
       sockets (none beyond loopback) and the Serve status. The suite drives a stand-in CLI that prints the
-      real CLI's recorded output, the three refusals among it; the real Tailscale leg is run once by the
-      lead with the owner and recorded, and fixtures never count as it. Falsifier: Have setup run
+      outputs from proof/VELDO-0171/tailscale-capture.json exactly. Before building the stand-in, a
+      recorded proof step runs only read-only commands on the owner's host: `tailscale version`,
+      `tailscale status --json` and `tailscale serve status --json`; their capture is scrubbed by a
+      named field allowlist as in VELDO-0172 and committed at that path. The stand-in replays exactly
+      those captured outputs; no invented CLI output stands in for a refusal. The suite owns the
+      stand-in's invocation log outside setup's write access and checks it after setup exits on the
+      fresh-host row: no successful `serve --bg` invocation means no background persistence, even if setup reports success,
+      and any `funnel` invocation fails the row. The three refusal rows retain their captured source
+      evidence; the real Tailscale leg is run once by the lead with the owner and recorded, and fixtures
+      never count as it. Falsifier: Have setup run
       `tailscale funnel` in place of `tailscale serve`, and the tailnet-only row must fail on the Serve
       status naming the internet.
     falsified_by: >
@@ -120,20 +126,21 @@ acceptance_criteria:
     text: >
       Claim: On a host setup has just laid down, the owner enrolls his first passkey and signs in with it,
       with no other preparation, and the host command signs only the registration he picked. Set and
-      completeness: The API serves one static enrollment and sign-in page (standard library, no
-      framework, no inline script) with a same-origin content security policy (default-src, script-src,
-      connect-src and form-action 'self', frame-ancestors and base-uri 'none'); it runs VELDO-0130's
-      registration and possession ceremonies and shows the key's fingerprint. At the host, `veldo factory
-      passkey` lists the pending registrations with each one's label, fingerprint and principal
+      completeness: The API exposes VELDO-0130's registration and possession ceremonies and the key's
+      fingerprint, and serves a same-origin content security policy (default-src, script-src,
+      connect-src and form-action 'self', frame-ancestors and base-uri 'none', no inline script).
+      The enrollment and sign-in screen is built in VELDO-0145's React shell under PLAN-0019 C16;
+      this criterion proves the API ceremony and host command without depending on that screen.
+      At the host, `veldo factory passkey` lists the pending registrations with each one's label, fingerprint and principal
       (control_api_credentials.describe), and signs enroll_api_credential with the owner's key for the ONE
       registration the owner names by its fingerprint after comparing it with the one his phone shows,
       never every pending one, and sends it to the running service. Set up a fresh host, start the
-      service, register two software ES256 authenticators through the page's calls with the tailnet name
+      service, register two software ES256 authenticators through the API calls with the tailnet name
       as Host and Origin, sign one at the host by its fingerprint, sign in with it, and read the session:
-      it names the owner, and the other registration is still pending and cannot sign in. Read the page's
-      response headers: the policy is served. The phone leg over the tailnet is run once by the lead with
-      the owner and recorded. Falsifier: Have setup write the API's origin as the loopback address in
-      place of the tailnet name, and the first-enrollment row must fail on the registration's origin
+      it names the owner, and the other registration is still pending and cannot sign in. Read the API
+      response headers used to serve the UI: the policy is served. VELDO-0145 proves the phone screen
+      over the tailnet after this API ceremony is built. Falsifier: Have setup write the API's origin
+      as the loopback address in place of the tailnet name, and the first-enrollment row must fail on the registration's origin
       check.
     falsified_by: >
       Have setup write the API's origin as the loopback address in place of the tailnet name, and the
@@ -187,8 +194,9 @@ the API service configuration, with its rp_id and origin read from Tailscale, an
 execution record's keys to it, so VELDO-0167 depends on this one. Without it, VELDO-0145's UI cannot run
 on a host built by setup, so VELDO-0145 depends on this. The re-run is the one upgrade path for a host
 laid down earlier: VELDO-0167 and VELDO-0170 add their steps to it and have no command of their own. No
-specification owns the page the first passkey is enrolled from, since VELDO-0145's shell needs a signed-in
-session to show anything; this one serves the minimal page for it. The re-run of AC4 narrows VELDO-0139
+page is built here: VELDO-0145 owns the enrollment and sign-in screen in its React shell under
+PLAN-0019 C16, including the unauthenticated enrollment state, and consumes this API ceremony, host
+command and content security policy. The re-run of AC4 narrows VELDO-0139
 AC1's refusal of a state root that holds a store to a store laid down for other arguments, and VELDO-0139
 AC1 now says so; nothing is ever overwritten. VELDO-0139 is a standalone built item, so its edge is kept
 here and not in the plan graph. This new specification is draft; authoring it supplies neither
@@ -224,6 +232,8 @@ re-run; replacing the installed engine files after an update (Release 2, VELDO-0
 
 ## Notes
 
+Filed, out of review scope: republishing the key projection while the service runs remains a follow-up.
+
 Each API step checks what is there before it writes: a key already in the key directory and enrolled is
 kept, a configuration equal to the one it would write is left alone, a Serve mapping that already names
 the API's port is kept, and one that names anything else is refused by name. The tailnet name is read
@@ -250,3 +260,8 @@ covers every argument, refuses rather than overwrites any file that would differ
 update changes. The risk is raised to critical, VELDO-0139 AC1 is amended to match, and VELDO-0139 is in
 the footprint. The re-run is the one upgrade path (VELDO-0170 and VELDO-0167 add steps to it). Still a
 draft.
+
+2026-09-27: lead follow-up: AC3 keeps the API ceremony, host command and content security policy;
+VELDO-0145 AC1 owns the enrollment screen in the React shell under C16. AC2 requires a recorded
+read-only Tailscale capture before the stand-in, allowlist scrubbing and exact replay, and checks
+background persistence against the suite-owned invocation log after setup exits. Still a draft.

@@ -45,7 +45,7 @@ observability:
     run, the installation and the host trust file it read.
   error_taxonomy: >
     Distinguish a configuration that names no host trust (host_trust_required:receiver_configuration)
-    from a named trust that is absent or unreadable (host_trust_unreadable) and from an unsigned
+    from a named trust that is absent or unreadable (host_trust_required, unchanged) and from an unsigned
     decision; a re-run whose host trust step finds no installed trust is refused by name with nothing
     written.
 acceptance_criteria:
@@ -125,6 +125,8 @@ the store.
   planted in the installed directory; hosts with several installations.
 
 ## Notes
+
+Filed, out of review scope: a host installed without factory setup has no repair path.
 
 The host trust step reads the trust path from the installation, never from a flag, and checks its host
 identity against the installed service's, so it cannot point a receiver at another host's trust. It needs no

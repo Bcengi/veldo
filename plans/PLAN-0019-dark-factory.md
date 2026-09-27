@@ -930,7 +930,7 @@ work:
     spec: VELDO-0127
     title: Versioned per-role MCP server and tool configuration
     feature_refs: [F7]
-    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0165]
+    depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0173]
     order: 15127
     release: 1
     stage: 5
@@ -1203,13 +1203,13 @@ work:
     spec: VELDO-0164
     title: The API's read models, workflow read and event feed serve a member only the projects her scope covers
     feature_refs: [F9]
-    depends_on: [VELDO-0076, VELDO-0130]
+    depends_on: [VELDO-0076, VELDO-0130, VELDO-0162]
     order: 15164
     release: 1
     stage: 5
   - item: W125
     spec: VELDO-0165
-    title: A worker engine inherits nothing from a parent Claude Code or Codex session, and a Claude Code run is offered its launch tool set with every other registered tool switched off
+    title: A worker engine inherits nothing from a parent Claude Code or Codex session
     feature_refs: [F4]
     depends_on: [VELDO-0155, VELDO-0156, VELDO-0160]
     order: 11165
@@ -1269,6 +1269,14 @@ work:
     feature_refs: [F4]
     depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0155, VELDO-0156, VELDO-0160]
     order: 11172
+    release: 1
+    stage: 1
+  - item: W133
+    spec: VELDO-0173
+    title: A Claude Code run is offered its launch tool set with every other registered tool switched off
+    feature_refs: [F4]
+    depends_on: [VELDO-0165, VELDO-0160]
+    order: 11173
     release: 1
     stage: 1
 
@@ -1628,6 +1636,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W130 | VELDO-0170 | 1 | 5; follow-up of the Codex-review fixes, a step of VELDO-0171's re-run |
 | W131 | VELDO-0171 | 1 | 5; built before VELDO-0145 |
 | W132 | VELDO-0172 | 1 | 1; follow-up of the live engine runs |
+| W133 | VELDO-0173 | 1 | 1; full tool registry, after VELDO-0165 and VELDO-0160 |
 
 ## Related baseline and follow-up disposition
 
@@ -1811,9 +1820,9 @@ VELDO-0154 (the loop that starts its cycle), W91's VELDO-0128 (the progress repo
 2026-09-26 and 2026-09-27, each one concern, adding function and cutting none. W124's VELDO-0164 scopes the
 API's read models, workflow read and event feed to the reader's projects (the Codex whole-project review
 found a member scoped to one project could read every project); stage 5. W125's VELDO-0165 strips the
-variables a parent Claude Code session passes its children and passes VELDO-0160's in-run tool list to
-the engine at launch, both in the qualified baseline; stage 1. W126's VELDO-0166 meters every window a
-rate-limit event reports and stops account registration changing an existing profile directory's mode;
+variables a parent Claude Code or Codex session passes its children; stage 1. The launch tool registry
+and its classification are now W133's VELDO-0173, also stage 1 after W125 and W120. W126's VELDO-0166
+meters every window a rate-limit event reports and stops account registration changing an existing profile directory's mode;
 stage 1. W127's VELDO-0167 has factory setup write VELDO-0141's record configuration, with receivers
 hinting the API processes the service's subscriber registry lists; stage 5, and W105 (VELDO-0145) depends
 on it, since the live terminal reads through it. W128's VELDO-0168 keeps line breaks in Telegram
@@ -1821,16 +1830,16 @@ presentations and shows invisible and direction characters escaped; stage 3. W12
 Gate's project check to the assignment and andon resumes and to a claim on a unit with no project; stage
 4. W130's VELDO-0170 gives a receiver configuration without host trust a named stop and an upgrade
 through factory setup; stage 3. VELDO-0167 and VELDO-0170 also build on the standalone VELDO-0139, an edge
-kept in the specifications. W44 (VELDO-0059) depends on all seven. In section 12's order, VELDO-0165 and
-VELDO-0166 are built with the account pool in the first stage, VELDO-0167 before VELDO-0145, and
-VELDO-0168 before the owner's first use of the factory, as the review that filed it asked.
+kept in the specifications. W44 (VELDO-0059) depends on all seven. In section 12's order, VELDO-0165,
+VELDO-0166 and VELDO-0173 are built with the account pool in the first stage, VELDO-0167 before
+VELDO-0145, and VELDO-0168 before the owner's first use of the factory, as the review that filed it asked.
 
 2026-09-27: within revision 4, two more follow-up drafts, each one concern, adding function and cutting
 none. W131's VELDO-0171 has factory setup enroll the api edge by the owner's signed command, install the
 API process as a service that starts with the authority service, listening on loopback behind Tailscale
-Serve on the host's tailnet name (the owner's choice, Telegram 29094), serve the page the owner enrolls his
-first passkey from, and change nothing when run again; stage 5. VELDO-0139's setup never enrolled the api
-edge or installed the API, so VELDO-0145's UI could not run on a host setup built; W105 (VELDO-0145) now
+Serve on the host's tailnet name (the owner's choice, Telegram 29094), provide the API ceremony and host
+command for the first passkey, and change nothing when run again; stage 5. VELDO-0139's setup never
+enrolled the api edge or installed the API, so VELDO-0145's UI could not run on a host setup built; W105 (VELDO-0145) now
 depends on it, and VELDO-0171 also builds on the standalone VELDO-0139, an edge kept in the
 specifications. W132's VELDO-0172 corrects the stream-format tables and the fake engines to the real Claude
 Code and Codex output of the live runs of 2026-09-26, recorded as a committed capture the rows compare
@@ -1841,8 +1850,17 @@ the lead's decisions, each still one concern and a draft. W131's VELDO-0171 now 
 configuration and enrolls the api edge and no longer depends on W127; W127's VELDO-0167 depends on W131
 and adds the record keys, with record hints sent through the running service. VELDO-0171's re-run is the
 one upgrade path: W130's VELDO-0170 drops its own upgrade command, adds its repair as a step of that
-re-run, depends on W131 and moves from stage 3 to stage 5. W125's VELDO-0165 passes the bound role
-revision's native tools at launch, the in-run list being only the default, and W90 (VELDO-0127) depends
-on it. W129's VELDO-0169 adds a census of every claim and station contract writer and W96's disposition
+re-run, depends on W131 and moves from stage 3 to stage 5. W133's VELDO-0173 (split from W125's
+VELDO-0165) passes the bound role revision's native tools at launch, the in-run list being only the
+default, and W90 (VELDO-0127) depends on W133; W125 keeps the environment strip. W129's VELDO-0169 adds
+a census of every claim and station contract writer and W96's disposition
 (VELDO-0133), on which it now depends. W132's VELDO-0172 depends on W120 (VELDO-0160). No function is
 cut, and the graph stays acyclic and stage-ordered.
+
+2026-09-27: lead follow-ups: W124 (VELDO-0164) adds W122 (VELDO-0162) for the default team its
+read-scope criterion seeds. W125 (VELDO-0165) keeps only the environment strip; W133 (VELDO-0173)
+takes the full registry and qualification criteria at stage 1 after W125 and W120 (VELDO-0160).
+W90 (VELDO-0127) depends on W133 and its AC4 proves the bound PushNotification grant. W105
+(VELDO-0145) owns the enrollment and sign-in screen in its React shell under C16, consuming W131's
+API ceremony, host command and content security policy through its existing dependency on W131
+(VELDO-0171); W131 has no dependency on W105. All amended specifications remain draft.

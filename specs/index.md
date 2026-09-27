@@ -86,7 +86,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0124 | Simple macOS worker lifecycle profile | ready | high | dmitry | required | VELDO-0124-macos-worker-profile.md |
 | VELDO-0125 | Mac worker dispatch through the relay with host-capability routing | ready | high | dmitry | required | VELDO-0125-mac-relay-capability-routing.md |
 | VELDO-0126 | One Telegram and API message intake for proposed work | ready | high | dmitry | required | VELDO-0126-message-objective-intake.md |
-| VELDO-0127 | Versioned per-role MCP server and tool configuration | ready | high | dmitry | required | VELDO-0127-agent-capability-configuration.md |
 | VELDO-0128 | Telegram progress and completion from journal events | ready | high | dmitry | required | VELDO-0128-telegram-journal-reporting.md |
 | VELDO-0129 | Real worker adapter wiring for LiveLoop and LiveReviewer | ready | high | dmitry | required | VELDO-0129-live-build-review-adapter-wiring.md |
 | VELDO-0130 | Authenticated factory state, message and decision API | ready | high | dmitry | required | VELDO-0130-authenticated-factory-api.md |
@@ -104,7 +103,6 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0142 | Every repository is bound to exactly one Git identity, configured at setup, and every commit the factory makes for it is authored as that identity | ready | critical | dmitry | required | VELDO-0142-git-identities-and-identity-profile.md |
 | VELDO-0143 | A repository the owner asks for in chat is created or adopted and bound to a new project on his one answer | ready | critical | dmitry | required | VELDO-0143-repository-from-chat.md |
 | VELDO-0144 | MCP servers defined once as versioned catalog records, with credentials only in the host OS keystore | ready | critical | dmitry | required | VELDO-0144-mcp-catalog-and-os-keystore.md |
-| VELDO-0145 | The UI shell, the live run terminal and the decisions screen on phone and desktop | ready | high | dmitry | required | VELDO-0145-ui-shell-run-terminal-decisions.md |
 | VELDO-0146 | Work of several units gets a separate elaboration run and a second PM cycle that stages the units against the published requirements | ready | critical | dmitry | required | VELDO-0146-several-unit-work-and-the-second-pm-cycle.md |
 | VELDO-0147 | The Mac legs of the engine, account, capability, execution record and credential qualifications built on Linux first | ready | critical | dmitry | required | VELDO-0147-mac-legs-of-the-linux-first-qualifications.md |
 | VELDO-0148 | A land refused because another factory moved main is re-landed on the new tip, re-merged and re-gated, and nothing ever forces | ready | critical | dmitry | required | VELDO-0148-re-land-when-the-trunk-moved.md |
@@ -172,8 +170,10 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0097 | Operational recovery under scope change, revocation, and lost effect acknowledgement | draft | critical | dmitry | required | VELDO-0097-operational-recovery-scope-revocation-lost-ack.md |
 | VELDO-0098 | Rollback compatibility and coordinated release qualification | draft | critical | dmitry | required | VELDO-0098-rollback-coordinated-release-qualification.md |
 | VELDO-0100 | Kernel-enforced write confinement for the install-and-run observation | draft | high | dmitry | required | VELDO-0100-landlock-write-confinement.md |
+| VELDO-0127 | Versioned per-role MCP server and tool configuration | draft | high | dmitry | required | VELDO-0127-agent-capability-configuration.md |
+| VELDO-0145 | The UI shell, the live run terminal and the decisions screen on phone and desktop | draft | high | dmitry | required | VELDO-0145-ui-shell-run-terminal-decisions.md |
 | VELDO-0164 | The API's read models, workflow read and event feed serve a member only the projects her scope covers | draft | critical | dmitry | required | VELDO-0164-api-reads-scoped-to-the-readers-projects.md |
-| VELDO-0165 | A worker engine inherits nothing from a parent Claude Code or Codex session, and a Claude Code run is offered its launch tool set with every other registered tool switched off | draft | critical | dmitry | required | VELDO-0165-engine-launch-hygiene.md |
+| VELDO-0165 | A worker engine inherits nothing from a parent Claude Code or Codex session | draft | critical | dmitry | required | VELDO-0165-engine-launch-hygiene.md |
 | VELDO-0166 | The Claude Code meter records every usage window a run reports, and adding an account leaves an existing profile directory as it is | draft | high | dmitry | required | VELDO-0166-every-usage-window-metered.md |
 | VELDO-0167 | Factory setup writes the execution record's configuration, and a launch receiver's record hints reach every API subscribed to the running service through that service | draft | high | dmitry | required | VELDO-0167-setup-writes-the-record-configuration.md |
 | VELDO-0168 | Telegram presentations keep their line breaks, show invisible and direction characters escaped, and mark a cut inside a long token | draft | high | dmitry | required | VELDO-0168-telegram-text-shown-as-written.md |
@@ -181,6 +181,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0170 | A launch receiver configuration that names no host trust stops by name, and factory setup's re-run adds the host trust | draft | high | dmitry | required | VELDO-0170-receiver-configuration-without-host-trust.md |
 | VELDO-0171 | Factory setup writes the API configuration, enrolls the API edge and installs the API behind Tailscale Serve, so the owner enrolls his first passkey on a fresh host, and a second run changes nothing | draft | critical | dmitry | required | VELDO-0171-setup-lays-down-the-api.md |
 | VELDO-0172 | The engine stream-format tables and every fake engine match the real Claude Code and Codex output recorded in the live runs of 2026-09-26 | draft | high | dmitry | required | VELDO-0172-engine-formats-match-the-live-clis.md |
+| VELDO-0173 | A Claude Code run is offered its launch tool set with every other registered tool switched off | draft | critical | dmitry | required | VELDO-0173-full-tool-registry-at-launch.md |
 | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a protected path, make the tracker group a reconciliation check that fails loudly on divergence, and refuse rather than degrade when the declaration cannot be read | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
 | WARP-0726 | A ready spec the placement gate refuses is offered by nothing and reported by nothing - withheld() is dependency-only, so the frontier's diagnostic half must cover EVERY reason claimable() drops a unit | draft | high | dmitry | required | WARP-0726-withheld-reports-every-refusal.md |
 | WARP-0728 | The verdict projection keys the INDEX blob while the validator reads the WORKING TREE and nothing compares them, so a forged body committed under valid unstaged bytes is appended as a PASS at exit 0 - the keyed bytes and the validated bytes must be the same bytes | draft | critical | dmitry | required | WARP-0728-keyed-bytes-are-the-validated-bytes.md |
@@ -762,7 +763,7 @@ Open decision D4 blocks: VELDO-0007.
 
 ### PLAN-0019 - Dark Factory project coordination inside Veldo
 
-Status ready, revision 4, owner dmitry. 11/132 work items shipped.
+Status ready, revision 4, owner dmitry. 11/133 work items shipped.
 Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036 (W21).
 
 | Item | Spec | Title | Depends on | State |
@@ -809,9 +810,10 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W115 | VELDO-0155 | Every Claude Code run starts on the everything-off baseline, behind the paid-API guard and the environment strip | VELDO-0039, VELDO-0060 | waiting: VELDO-0039, VELDO-0060 |
 | W116 | VELDO-0156 | Every Codex run starts on the everything-off baseline, behind the paid-API guard and the environment strip | VELDO-0039, VELDO-0061 | waiting: VELDO-0039, VELDO-0061 |
 | W120 | VELDO-0160 | Work runs on every registered subscription account at once, moves off an account at its limit, and a limited run is classified and decided re-run or ask | VELDO-0036, VELDO-0062 | waiting: VELDO-0036, VELDO-0062 |
-| W125 | VELDO-0165 | A worker engine inherits nothing from a parent Claude Code or Codex session, and a Claude Code run is offered its launch tool set with every other registered tool switched off | VELDO-0155, VELDO-0156, VELDO-0160 | waiting: VELDO-0155, VELDO-0156, VELDO-0160 |
+| W125 | VELDO-0165 | A worker engine inherits nothing from a parent Claude Code or Codex session | VELDO-0155, VELDO-0156, VELDO-0160 | waiting: VELDO-0155, VELDO-0156, VELDO-0160 |
 | W126 | VELDO-0166 | The Claude Code meter records every usage window a run reports, and adding an account leaves an existing profile directory as it is | VELDO-0060, VELDO-0062, VELDO-0160 | waiting: VELDO-0060, VELDO-0062, VELDO-0160 |
 | W132 | VELDO-0172 | The engine stream-format tables and every fake engine match the real Claude Code and Codex output recorded in the live runs of 2026-09-26 | VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0155, VELDO-0156, VELDO-0160 | waiting: VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0155, VELDO-0156, VELDO-0160 |
+| W133 | VELDO-0173 | A Claude Code run is offered its launch tool set with every other registered tool switched off | VELDO-0165, VELDO-0160 | waiting: VELDO-0165, VELDO-0160 |
 | W85 | VELDO-0108 | Remote clients reach the same endpoint through an authenticated SSH command relay, not a second server | VELDO-0107 | waiting: VELDO-0107 |
 | W87 | VELDO-0124 | Simple macOS worker lifecycle profile | VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0062 | waiting: VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0062 |
 | W88 | VELDO-0125 | Mac worker dispatch through the relay with host-capability routing | VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124 | waiting: VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124 |
@@ -845,7 +847,7 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W73 | VELDO-0088 | Project-manager execution graphs | VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0089, VELDO-0132, VELDO-0151, VELDO-0154 | waiting: VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0076, VELDO-0078, VELDO-0079, VELDO-0089, VELDO-0132, VELDO-0151, VELDO-0154 |
 | W75 | VELDO-0090 | Capability-bound specialist selection | VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108, VELDO-0125, VELDO-0127, VELDO-0147, VELDO-0151 | waiting: VELDO-0036, VELDO-0060, VELDO-0061, VELDO-0089, VELDO-0108, VELDO-0125, VELDO-0127, VELDO-0147, VELDO-0151 |
 | W76 | VELDO-0091 | Budgeted requirements elaboration | VELDO-0037, VELDO-0062, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0090 | waiting: VELDO-0037, VELDO-0062, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0090 |
-| W90 | VELDO-0127 | Versioned per-role MCP server and tool configuration | VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0165 | waiting: VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0165 |
+| W90 | VELDO-0127 | Versioned per-role MCP server and tool configuration | VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0173 | waiting: VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0173 |
 | W93 | VELDO-0130 | Authenticated factory state, message and decision API | VELDO-0025, VELDO-0035, VELDO-0047, VELDO-0064, VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0126 | waiting: VELDO-0035, VELDO-0047, VELDO-0064, VELDO-0065, VELDO-0068, VELDO-0069, VELDO-0126 |
 | W94 | VELDO-0131 | Veldo factory UI on phone and desktop | VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0159, VELDO-0160, VELDO-0162, VELDO-0163 | waiting: VELDO-0051, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0089, VELDO-0127, VELDO-0128, VELDO-0130, VELDO-0132, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0159, VELDO-0160, VELDO-0162, VELDO-0163 |
 | W101 | VELDO-0141 | Every worker run's full live execution record, served for the UI's live terminal view | VELDO-0039, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0130 | waiting: VELDO-0039, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0130 |
@@ -866,7 +868,7 @@ Ready frontier: VELDO-0027 (W12), VELDO-0029 (W14), VELDO-0035 (W20), VELDO-0036
 | W121 | VELDO-0161 | A repository the owner names is adopted under one identity on his settled answer and taken on by the running factory without a restart | VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0142, VELDO-0153 | waiting: VELDO-0028, VELDO-0029, VELDO-0047, VELDO-0068, VELDO-0142, VELDO-0153 |
 | W122 | VELDO-0162 | The owner saves capability configuration revisions, team revisions and the default team through typed API routes the authority executes, and a team revision becomes current on his own authenticated save or on his settled answer to another member's proposal | VELDO-0064, VELDO-0068, VELDO-0089, VELDO-0127, VELDO-0130, VELDO-0151, VELDO-0152 | waiting: VELDO-0064, VELDO-0068, VELDO-0089, VELDO-0127, VELDO-0130, VELDO-0151, VELDO-0152 |
 | W123 | VELDO-0163 | The owner writes a role's capability configuration and a project's team roles in a minimal UI form | VELDO-0144, VELDO-0145, VELDO-0162 | waiting: VELDO-0144, VELDO-0145, VELDO-0162 |
-| W124 | VELDO-0164 | The API's read models, workflow read and event feed serve a member only the projects her scope covers | VELDO-0076, VELDO-0130 | waiting: VELDO-0076, VELDO-0130 |
+| W124 | VELDO-0164 | The API's read models, workflow read and event feed serve a member only the projects her scope covers | VELDO-0076, VELDO-0130, VELDO-0162 | waiting: VELDO-0076, VELDO-0130, VELDO-0162 |
 | W127 | VELDO-0167 | Factory setup writes the execution record's configuration, and a launch receiver's record hints reach every API subscribed to the running service through that service | VELDO-0130, VELDO-0141, VELDO-0171 | waiting: VELDO-0130, VELDO-0141, VELDO-0171 |
 | W130 | VELDO-0170 | A launch receiver configuration that names no host trust stops by name, and factory setup's re-run adds the host trust | VELDO-0039, VELDO-0047, VELDO-0069, VELDO-0171 | waiting: VELDO-0039, VELDO-0047, VELDO-0069, VELDO-0171 |
 | W131 | VELDO-0171 | Factory setup writes the API configuration, enrolls the API edge and installs the API behind Tailscale Serve, so the owner enrolls his first passkey on a fresh host, and a second run changes nothing | VELDO-0130 | waiting: VELDO-0130 |

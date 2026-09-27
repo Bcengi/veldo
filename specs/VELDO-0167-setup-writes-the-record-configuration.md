@@ -142,6 +142,9 @@ follows; the record's content and redaction (VELDO-0141).
 
 ## Notes
 
+Filed, out of review scope: the receiver hint key remains unnamed because main has no
+receiver-to-service record hint configuration key to reuse.
+
 The hint wakes only: it names the dispatch and the last sequence, and the API reads the lines through
 the record route, so a lost, stale or forged hint changes nothing but the moment the view updates. The
 service is the one fan-out point for every hint it sends, its own and the receivers', which keeps one

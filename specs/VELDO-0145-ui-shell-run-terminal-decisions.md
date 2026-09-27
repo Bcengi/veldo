@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0145
 title: The UI shell, the live run terminal and the decisions screen on phone and desktop
-status: ready
+status: draft
 risk: high
 owner: dmitry
 human_approval: required
@@ -45,16 +45,24 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: The owner opens the factory UI on his phone and desktop in a passkey session, and every
-      screen reads and acts only through the authenticated API. Set and completeness: Build the UI with
-      the owner's stack (React, TypeScript, Vite, shadcn/ui, Monaco) and serve it from the API on
-      loopback behind Tailscale Serve; sign in with an enrolled passkey (VELDO-0130), reach the shell's
-      navigation, the run screens and the decisions screen, and sign out. Before sign-in, after the
-      session ends, and for a member whose scope does not cover a project, every screen shows the
+      screen reads and acts only through the API, with factory data requiring an authenticated session.
+      Set and completeness: Build the UI with the owner's stack (React, TypeScript, Vite, shadcn/ui, Monaco) and serve it from the API on
+      loopback behind Tailscale Serve. The enrollment and sign-in screen belongs in this React shell
+      under PLAN-0019 C16: before sign-in it runs VELDO-0171's API registration and possession ceremonies,
+      shows the pending key's label and fingerprint for comparison with `veldo factory passkey`, and
+      signs in only after the owner approves that registration at the host. On a fresh setup, enroll
+      the first passkey through this screen, compare its fingerprint at the host, approve that one,
+      sign in, reach the shell's navigation, the run screens and the decisions screen, and sign out.
+      The lead runs the phone enrollment and sign-in leg over the tailnet once with the owner and
+      records it here.
+      The screen uses VELDO-0171's same-origin content security policy with no inline script. Before
+      sign-in only the enrollment and sign-in controls are available; before sign-in, after the session
+      ends, and for a member whose scope does not cover a project, every factory data screen shows the
       named refusal and no data. Trace every request each screen makes to an API route. Falsifier: Serve
-      a screen's data before the passkey session is established; the unauthenticated-access check must
+      a screen's factory data before the passkey session is established; the unauthenticated-access check must
       fail.
     falsified_by: >
-      Serve a screen's data before the passkey session is established; the unauthenticated-access check
+      Serve a screen's factory data before the passkey session is established; the unauthenticated-access check
       must fail.
   - id: AC2
     text: >
@@ -83,8 +91,8 @@ acceptance_criteria:
       fail.
   - id: AC4
     text: >
-      Claim: The shell and its two screens meet VELDO-0131's phone, desktop, accessibility and
-      dependency rules. Set and completeness: Render each at 360px and 390px phone widths and 1280px and
+      Claim: The shell, enrollment and sign-in screen, run screen and decisions screen meet
+      VELDO-0131's phone, desktop, accessibility and dependency rules. Set and completeness: Render each at 360px and 390px phone widths and 1280px and
       1440px desktop widths in loading, empty, live, stopped or error and populated states, with no
       clipped primary action, overlapping controls or page-wide horizontal overflow; run keyboard-only
       desktop and touch phone tasks with 44px primary touch targets, labeled controls, sufficient
@@ -152,5 +160,7 @@ execution record's configuration the live terminal reads through, so the screen 
 factory setup laid down. Criteria and status unchanged.
 
 2026-09-27, within PLAN-0019 revision 4: depends_on adds VELDO-0171, which has factory setup enroll the api
-edge and install the API behind Tailscale Serve with the page the owner enrolls his first passkey from, so
-the UI runs on a host that factory setup laid down. Criteria and status unchanged.
+edge and install the API behind Tailscale Serve, so the UI runs on a host that factory setup laid down.
+On the lead's follow-up decision, AC1 owns the enrollment and sign-in screen in this React shell under
+PLAN-0019 C16, consuming VELDO-0171's API ceremony, host command and content security policy; AC4
+applies the screen rules to it too. Status is draft; only the owner marks it ready.

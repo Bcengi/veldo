@@ -55,7 +55,8 @@ acceptance_criteria:
       its reported utilization and reset; the event's `status` applies only to the window `rateLimitType`
       names, and every other window is recorded as reported with no status invented. Feed the Meter the
       event the live run of 2026-09-26 emitted (seven_day named, five_hour at 0.3 and seven_day at 0.7 in
-      unifiedWindows), verbatim: the account's record then holds both windows with their resets.
+      unifiedWindows), verbatim from the Claude Code 2.1.281 source line in Notes: the account's record
+      then holds both windows with their resets.
       Falsifier: Record only the window `rateLimitType` names, and the five-hour row must fail.
     falsified_by: >
       Record only the window `rateLimitType` names, and the five-hour row must fail.
@@ -109,6 +110,13 @@ diagnostics), filed separately.
   later version adds (a requalification lists them); a profile directory that is a link.
 
 ## Notes
+
+The fixture's source is this real Claude Code 2.1.281 rate_limit_event line, verbatim; the fake's line
+must carry every field of it, including both windows and their fields:
+
+```json
+{"type": "rate_limit_event", "rate_limit_info": {"status": "allowed_warning", "resetsAt": 1790960400, "rateLimitType": "seven_day", "utilization": 0.7, "isUsingOverage": false, "unifiedWindows": {"five_hour": {"utilization": 0.3, "resetsAt": 1790487000}, "seven_day": {"utilization": 0.7, "resetsAt": 1790960400}}}, "uuid": "531e8e6b-8253-4b0a-92dc-255c5111efee", "session_id": "918dd621-97a8-44cf-ab38-4d3e1b9e588e"}
+```
 
 Keep the event's raw line as each observation's receipt, as the Meter does today, so every window can be
 traced back to the line it came from.

@@ -19,6 +19,7 @@ footprint:
   - "proof/VELDO-0062/README.md"
   - "scripts/suites/75_veldo_0062_accounts.py"
   - "scripts/suites/78_veldo_0060_claude_adapter.py"
+  - "scripts/suites/78_veldo_0160_account_pool.py"
   - "scripts/suites/79_veldo_0061_codex_adapter.py"
   - "scripts/suites/80_veldo_0155_claude_baseline.py"
   - "scripts/suites/81_veldo_0156_codex_baseline.py"
@@ -130,7 +131,8 @@ draft; authoring it supplies neither implementation proof nor operational activa
 
 ## Out of scope
 
-How the adapters read these fields (metering every window is VELDO-0166, the launch hygiene VELDO-0165);
+How the adapters read these fields (metering every window is VELDO-0166, the environment strip VELDO-0165
+and launch tool registry VELDO-0173);
 later CLI versions (a requalification re-records a capture); events the live runs did not print, which
 the fakes still check against the table alone.
 
@@ -149,8 +151,12 @@ the fakes still check against the table alone.
 
 ## Notes
 
-The captures are the ones the lead's live-run driver recorded (real-claude and real-codex, each a stream
-and a tap file), and compare.json is the comparison that found these differences.
+The source capture lives at /home/dmitry/projects/veldo-live-captures/2026-09-27/, outside any
+repository: real-claude/, real-codex/, compare.json and the tap scripts; it is never committed.
+Only the allowlist-scrubbed capture of AC3 is committed. The lead's live-run driver recorded the
+streams and tap files, and compare.json is the comparison that found these differences.
+Suite scripts/suites/78_veldo_0160_account_pool.py is in the footprint because its fake prints
+rate_limit_event lines.
 They keep the shapes, not the values: a placeholder keeps a key's type, so the comparison reads the same
 paths the real lines had. The scrub is an allowlist because a denylist keeps whatever nobody thought to
 name, and the source held values of kinds no list named in advance. The source capture stays on the host

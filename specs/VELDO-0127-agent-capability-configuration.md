@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0127
 title: Versioned per-role MCP server and tool configuration
-status: ready
+status: draft
 risk: high
 owner: dmitry
 human_approval: required
@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W90
 plan_revision: 4
-depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0165]
+depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0155, VELDO-0156, VELDO-0158, VELDO-0173]
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
@@ -96,8 +96,9 @@ acceptance_criteria:
       CLAUDE.md in the clone and in the account profile with discovery turned off, and compare the
       debug log and the first turn's context size with and without it; the first turn's context size
       is kept in the execution record. Run one role with only `always` items and one that also lists
-      a `when assigned` item, dispatched with nothing assigned. Falsifier: Let the engine load a skill
-      the role does not list; the launch-set comparison must fail.
+      a `when assigned` item, dispatched with nothing assigned. Launch a run bound to a revision that
+      grants PushNotification: the init event lists it, and `disallowedTools` does not name it.
+      Falsifier: Let the engine load a skill the role does not list; the launch-set comparison must fail.
     falsified_by: >
       Let the engine load a skill the role does not list; the launch-set comparison must fail.
 required_evidence: [unit, integration]
@@ -213,10 +214,12 @@ falsifier is unchanged. Status unchanged.
 server authenticates with exactly its configured credential delivery, which VELDO-0158 now owns after
 its split from VELDO-0144. Criteria and status unchanged.
 
-2026-09-27, PLAN-0019 revision 4, follow-up drafts: depends_on adds VELDO-0165, which passes a Claude Code
+2026-09-27, PLAN-0019 revision 4, follow-up drafts: depends_on adds VELDO-0173, which passes a Claude Code
 run its launch tool set at launch (the `tools` option) and switches off every other tool the binary
 registers (`disallowedTools`). For AC2 and AC4, that launch tool set is the bound role revision's native
-tools, the owner's grant, which may go beyond VELDO-0165's in-run list; the in-run list is only the default
+tools, the owner's grant, which may go beyond VELDO-0173's in-run list; the in-run list is only the default
 before a revision is bound, never a ceiling on this configuration. So AC2's exact handoff and AC4's
 launch-set comparison read the init event against the revision's tools, and a tool the revision grants is
-never switched off by the launch. Criteria and status unchanged.
+never switched off by the launch. AC4 adds the row that launches a revision granting PushNotification
+and checks its presence in init and absence from disallowedTools, moved from VELDO-0165 when the
+registry concern became VELDO-0173. Status is draft; only the owner marks it ready.
