@@ -147,6 +147,11 @@ def _hex(*parts):
     return hashlib.sha256(canonical(list(parts))).hexdigest()[:32]
 
 
+def render_prompt(prompt):
+    """The plain text renderer for a question, applied only at the send boundary."""
+    return TEXT.visible(prompt)
+
+
 def source_key(kind, source_id):
     return 'intake_source:' + _hex(kind, source_id)
 
@@ -658,7 +663,7 @@ class Intake:
         if self.asker is None:
             self._hint(where.get('evidence_id'), 'proposed')
             return self._event('ask', 'refused', 'unavailable_service', question_id=qid)
-        prompt = TEXT.visible(question['prompt'])
+        prompt = render_prompt(question['prompt'])
         hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)
         if hinted.get('attempted'):
             sent = hinted.get('delivery')

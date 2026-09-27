@@ -146,7 +146,7 @@ PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text', 'reply_to_message_id
 ATTRIBUTION_FIELDS = ('platform_message_id', 'sender_id', 'platform_timestamp', 'chat_id', 'reply_to_message_id')
 REFERENCE_FIELDS = ('presentation_id', 'presentation_digest', 'presentation_version')
 # Every named refusal and the error class it belongs to; unknown is never labeled success.
-REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_input',
+REFUSALS = {'unknown_renderer_version': 'missing_evidence', 'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_input',
             'not_authorized': 'missing_authority', 'not_owner': 'missing_authority',
             'owner_not_current': 'missing_authority',
             'missing_authority': 'missing_authority',
@@ -1047,6 +1047,10 @@ class Presenter:
         versions[hid] = head['entity_version'] if head else 0
         prior = self.receipt(head['current']) if head else None
         if prior is not None and not binding_mismatches(prior, b):
+            problems = receipt_problems(prior, retrieved=False)
+            if problems:
+                reason = 'unknown_renderer_version' if 'unknown_renderer_version' in problems else 'presentation_mismatch'
+                return reason, None, versions
             return None, None, versions
         record = dict(b, schema=SCHEMA, channel=CHANNEL, presentation_version=(head or {}).get('presentation_version', 0) + 1,
                       supersedes=None, reply_to=None)
