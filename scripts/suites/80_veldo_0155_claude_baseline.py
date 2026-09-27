@@ -732,7 +732,9 @@ out.close()
             check('baseline/qualified', 'the shipped 2.1.281 record qualifies the version with the module\'s baseline, '
                   'every switch in it one the binary\'s own table reads [%s]' % sorted(named),
                   entry.get('baseline') == getattr(E, 'BASELINE', None) and entry.get('baseline') is not None
-                  and named - {''} <= {s['name'] for s in switches.values()}
+                  # VELDO-0165: LANG and TERM are the configured locale and terminal, set after the wrapper's strip,
+                  # not switches of the binary's table.
+                  and named - {'', 'LANG', 'TERM'} <= {s['name'] for s in switches.values()}
                   and (entry.get('baseline') or {}).get('settings') == {'disableAllHooks': True})
             check('baseline/qualified', 'a version whose record does not list the baseline is refused by name before '
                   'acceptance, nothing spawned [%s]' % unqualified_record.get('refusal'),

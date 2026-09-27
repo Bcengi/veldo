@@ -11,7 +11,15 @@ Both engine baselines qualify the four prefixes and explicitly name CLAUDE_AGENT
 A qualification missing that baseline or its extracted session names refuses with
 missing_evidence:engine_baseline:<version> before acceptance and spawn. Existing fake Claude
 qualification writers now extract their own fixture's names too; Codex's production qualification
-writer records the names directly. An empty list is present evidence; a missing key or null refuses.
+writer records the names directly. An empty list is present evidence; a missing key, null, false or
+an empty string refuses, because the names must be a list. An adapter whose configured environment
+names CLAUDE_AGENT_SDK_MCP_NO_PREFIX is refused by name when the receiver loads it, before acceptance.
+
+The worker's environment is configured, never ambient. The wrapper list also removes what Codex
+0.154.0 sets on every command it runs (NO_COLOR, TERM, LANG, LC_CTYPE, LC_ALL, COLORTERM, PAGER,
+GIT_PAGER and GH_PAGER; CODEX_CI goes by prefix) and the OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+default Claude Code writes into its own environment when unset. Each engine's baseline then sets
+LANG=C.UTF-8 and TERM=dumb itself, so a run is the same from a terminal, a Codex session or systemd.
 
 ## Byte evidence
 
@@ -20,9 +28,22 @@ committed inventories record the pinned digest, uppercase identifier candidates 
 including ELF string slices for Rust literals that abut without delimiters. This is a conservative
 candidate inventory, not a claim that every uppercase identifier is an environment read. The session
 family extraction is also recorded separately and compared exactly with each shipped qualification.
-The extractor locates Claude Code's child-environment array and unconditional startup assignments by
-content, and decodes Codex's six-entry child-key array from consecutive length-bound stack string
-slices. Every extracted child name must match the prefixes or AC4's names. The suite reruns the
+The extractor locates Claude Code's child-environment array, unconditional startup assignments and
+its one default-when-unset assignment by content. For Codex it decodes the six-entry child-key array
+from consecutive length-bound stack string slices, and the unified exec (name, value) array in the
+writable data, found through the slice of its CODEX_CI entry and walked whole. Every extracted child
+name must match the prefixes or AC4's names.
+
+Session names are read as an outside scan reads them: printable runs of six or more bytes outside
+the ELF executable sections, each uppercase word cut where a prefix follows anything but an
+underscore, and pieces ending in an underscore (template stems) dropped. Machine code immediates such
+as CODEX_HOH are therefore gone, and names that repeat a prefix, such as CLAUDE_CODE_DISABLE_CLAUDE_MDS,
+or abut other literals, such as CODEX_THREAD_ID, are kept. Rust literals that abut an uppercase
+literal, or 16-byte comparison chunks, stay as the bytes hold them; they are prefixed, so the strip
+covers them, and the list is evidence only. The row evidence/outside-scan runs GNU strings, grep and
+readelf over the same binaries, independently of the extractor, and requires equal non-empty sets
+holding CLAUDE_CODE_DISABLE_CLAUDE_MDS, CODEX_THREAD_ID, CODEX_SANDBOX and CODEX_SESSION_ID
+(829 Claude Code names, 85 Codex names). The suite reruns the
 extractor and compares the whole inventory; substituting the old prefixed hand list fails completeness.
 The Claude record also pins the SDK naming switch, its skipPrefix field, the conditional tool name
 and the MCP prefix text in the binary.
@@ -47,6 +68,9 @@ local, so these rows do not access the user service manager. No model or real lo
 | AC1 | strip/configured, strip/unprefixed | Configured subagent model and CA certificate replace parent values; Git parameters, trace context and Corepack settings are absent. |
 | AC1 | evidence/empty, evidence/completeness, evidence/prefixes | Empty evidence launches, missing and null evidence refuse; extracted child structures are covered; wrapper prefixes equal both baselines. |
 | AC1 | report/removed, report/refused | Restored names are not reported removed; each refused baseline emits one engine_baseline_refused metric increment. |
+| AC1 | strip/child-environment | Codex's exec settings and Claude Code's metrics default, planted with parent values, are absent from both engines except LANG and TERM, which carry the baseline's C.UTF-8 and dumb. |
+| AC1 | evidence/not-a-list, evidence/outside-scan | False or empty-string session names refuse before spawn; extracted session names equal the independent strings scan. |
+| AC2 | mcp/configured-refused | An adapter configuring the MCP naming switch is refused by name, nothing spawned. |
 | Controls | fixture/extraction, fixture/mcp-control | Inventory offsets are present; the same fake without the wrapper loses the prefix when the override is inherited. |
 
 ## Red record and mutations

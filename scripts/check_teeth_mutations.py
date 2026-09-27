@@ -7840,16 +7840,16 @@ def cases():
                 "    'options': ['--setting-sources', '', '--strict-mcp-config'],  # defect: every skill loads\n",
                 'baseline/planted-skill')
     baseline155('claude-baseline-claude-mds-unset', 'control_engine_claude.py',
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},\n",
-                "    'environment': {'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},  # defect: instruction files stay on\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',  # defect: instruction files stay on\n",
                 'baseline/qualified')
     baseline155('claude-baseline-hooks-kept', 'control_engine_claude.py',
                 "    'settings': {'disableAllHooks': True},\n",
                 "    'settings': {},  # defect: hooks stay on\n",
                 'baseline/qualified')
     baseline155('claude-baseline-auto-memory-kept', 'control_engine_claude.py',
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},\n",
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1'},  # defect: auto memory stays on\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1',  # defect: auto memory stays on\n",
                 'baseline/planted-memory')
     baseline155('claude-paid-api-key-left', 'control_launch.py',
                 "            environment['VELDO_ACCOUNT'] = self.login['account']\n        else:\n",
