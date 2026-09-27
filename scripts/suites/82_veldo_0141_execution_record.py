@@ -22,7 +22,9 @@ engine's error-stream line and Codex's login status line), really runs its unit'
 clone, and keeps its own copy of every line it printed on each stream, which the record is compared with. The Claude
 Code fake prints partial messages only with --include-partial-messages and a subagent's text only with
 --forward-subagent-text, as the binary does. The planted resolver of AC4 is a function the receiver process adds to
-control_launch.RESOLVERS before it runs (a driver that loads the installed module and calls its main). No real engine
+control_launch.RESOLVERS before it runs (a driver that loads the installed module and calls its main). The fake's
+handshake answer names an email and an organization as the binary's does; the path and URL rows judge the live
+run's own init and tool lines and typical real paths through the production redact. No real engine
 runs, nothing logs in and no credential exists (every value is assembled at run time). Each row is reported once.
 """
 
@@ -72,6 +74,7 @@ def _v141_suite():
             'api/live', 'api/cursor', 'api/refusals', 'api/no-secret-served', 'api/service-call',
             'route/served-lines', 'route/committed',
             'redaction/planted-value', 'redaction/known-pattern', 'redaction/kinds-field', 'redaction/exact-set',
+            'redaction/paths-kept', 'redaction/path-segment', 'redaction/url-component', 'redaction/account-fields',
             'fixture/planted-control', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
@@ -311,7 +314,8 @@ if option('--input-format') == 'stream-json':
             break
         message = json.loads(line)
         if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
-            account = {'apiProvider': 'firstParty'}
+            account = {'apiProvider': 'firstParty', 'email': 'owner.%s@example.invalid' % uuid.uuid4().hex[:8],
+                       'organization': str(uuid.uuid4())}
             if env.get('CLAUDE_CODE_OAUTH_TOKEN'):
                 account['tokenSource'] = 'CLAUDE_CODE_OAUTH_TOKEN'
             else:
@@ -788,6 +792,8 @@ err.close()
                     shape += '(' + '|'.join(_pattern(rx) for rx, _ in SS.PATTERNS) + ')'
                 elif part == 'entropy':
                     shape += '(' + SS._CANDIDATE.pattern + ')'
+                elif part.startswith('account:'):
+                    shape += r'((?:[^"\\]|\\.)*)'
                 else:
                     return False
             found = re.match(shape + '$', emitted, re.DOTALL)
@@ -1178,6 +1184,132 @@ err.close()
                            resolved={PLANTED_KIND: planted, 'subscription_token': token_value})
             check('redaction/exact-set', 'and every other line is the printed one with only redacted spans replaced [%s]'
                   % judged, not judged)
+
+
+        # THE PATH AND URL RULE: the record's entropy step scores a rooted path by segment and a URL by component,
+        # through the production redact and in the live run's own lines.
+        def redacted(text, resolved=None):
+            got, error = attempt(lambda: ER.redact(text, resolved if resolved is not None else ER.Resolved()))
+            return tuple(got) if isinstance(got, tuple) else ('', ['raised:%s' % error])
+
+        def whole_high(text):
+            """Whether the scanner's rule, judging each candidate of `text` whole, would replace one."""
+            return any(not SS._is_digest(t) and SS.shannon(t) >= SS.ENTROPY_THRESHOLD for t in SS._CANDIDATE.findall(text))
+
+        def fresh():
+            while True:
+                value = ''.join(pick.choice(string.ascii_letters + string.digits) for _ in range(40))
+                if not any(rx.search(value) for rx, _ in SS.PATTERNS) and SS.shannon(value) >= SS.ENTROPY_THRESHOLD:
+                    return value
+        ENTROPY = '[REDACTED:entropy]'
+
+        def printed_of(own, kind):
+            return [x for x in (own.get('lines') or {}).get('engine') or [] if '"type": "%s"' % kind in x]
+
+        with region('redaction/paths-kept'):
+            init_printed = [x for x in printed_of(main_own, 'system') if '"subtype": "init"' in x]
+            init_kept = [x for x in main_lines if x.get('stream') == 'engine' and '"subtype": "init"' in x.get('payload', '')]
+            cwd = json.loads(init_printed[0]).get('cwd', '') if init_printed else ''
+            check('redaction/paths-kept', 'the live run\'s init line is kept as printed, its working directory (the clone '
+                  'under the runtime directory, which the scanner judging it whole would replace) whole [%s]'
+                  % [x.get('payload', '')[:120] for x in init_kept],
+                  len(init_printed) == 1 and len(init_kept) == 1 and init_kept[0].get('payload') == init_printed[0]
+                  and init_kept[0].get('redacted') == [] and cwd.startswith(runtime) and whole_high(cwd))
+            edit_printed = [x for x in printed_of(main_own, 'assistant') if '"name": "Edit"' in x]
+            edit_kept = [x for x in main_lines if x.get('stream') == 'engine' and '"name": "Edit"' in x.get('payload', '')]
+            file_path = (((json.loads(edit_printed[0]).get('message') or {}).get('content') or [{}])[0].get('input')
+                         or {}).get('file_path', '') if edit_printed else ''
+            check('redaction/paths-kept', 'the Edit tool call\'s input is kept as printed, its absolute file path whole [%s]'
+                  % [x.get('payload', '')[-160:] for x in edit_kept],
+                  len(edit_printed) == 1 and len(edit_kept) == 1 and edit_kept[0].get('payload') == edit_printed[0]
+                  and edit_kept[0].get('redacted') == [] and file_path.startswith(cwd) and whole_high(file_path))
+            typical = [cwd + '/src',
+                       '/home/dmitry/projects/veldo-worktrees/build-veldo-0141/.veldo/control_launch.py',
+                       '/var/lib/veldo/factory/engines/claude_code/2.1.281/%s/claude' % hashlib.sha256(
+                           cwd.encode()).hexdigest(),
+                       STREAM['codex']['binary']]
+            lines_of = ['cd %s && python3 %s' % (typical[0], typical[1]),
+                        json.dumps({'type': 'tool_use', 'input': {'command': 'ls ' + typical[2], 'cwd': typical[3]}})]
+            kept_typical = [redacted(t) for t in typical + lines_of]
+            check('redaction/paths-kept', 'typical real paths (a clone path under the runtime directory, a worktree\'s '
+                  'control_launch.py, a pinned engine path with its version and a digest segment, Codex\'s vendor '
+                  'binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging '
+                  'it whole replaces [%s]' % [k[0][:90] for k, t in zip(kept_typical, typical + lines_of) if k[0] != t],
+                  all(k == (t, []) for k, t in zip(kept_typical, typical + lines_of)) and all(whole_high(t) for t in typical))
+
+        with region('redaction/path-segment'):
+            secret = fresh()
+            prefix, suffix = '/home/dmitry/projects/veldo-worktrees/build-veldo-0141/', '/notes.txt'
+            embedded = prefix + secret + suffix
+            got = redacted(embedded)
+            check('redaction/path-segment', 'a path with an embedded 40-character random segment keeps the rest and '
+                  'replaces that segment [%s]' % got[0], got == (prefix + ENTROPY + suffix, ['entropy']))
+            as_input = json.dumps({'type': 'tool_use', 'input': {'file_path': embedded}})
+            got = redacted(as_input)
+            check('redaction/path-segment', 'likewise inside a tool input [%s]' % got[0][-90:],
+                  got == (as_input.replace(secret, ENTROPY), ['entropy']) and secret not in got[0])
+            second = fresh()
+            windows = 'C:\\Users\\dmitry\\%s\\file.txt' % second
+            got = redacted(json.dumps({'path': windows}))
+            check('redaction/path-segment', 'and in a backslash-separated path, as JSON carries it [%s]' % got[0],
+                  got == (json.dumps({'path': windows}).replace(second, ENTROPY), ['entropy']))
+            resolved = ER.Resolved() if ER is not None else None
+            if resolved is not None:
+                resolved.add(PLANTED_KIND, planted)
+            inside = '/home/dmitry/work/%s/%s%s/notes' % (planted, high, planted)
+            got = redacted(inside, resolved)
+            check('redaction/path-segment', 'a resolved value inside a path is replaced first, whole, and a high-entropy '
+                  'segment joined to it still goes [%s]' % got[0],
+                  got == ('/home/dmitry/work/[REDACTED:%s]/%s[REDACTED:%s]/notes' % (PLANTED_KIND, ENTROPY, PLANTED_KIND),
+                          sorted(['entropy', PLANTED_KIND]))
+                  and not any(w in got[0] for w in words))
+
+        with region('redaction/url-component'):
+            value = fresh()
+            url = 'https://api.example.com/v1/repos/owner/name?access_token=%s&page=2' % value
+            got = redacted(url)
+            check('redaction/url-component', 'a URL with a token query value keeps its host, path and key and replaces '
+                  'only the value [%s]' % got[0], got == (url.replace(value, ENTROPY), ['entropy']))
+            segment = fresh()
+            url = 'https://api.example.com/v1/%s/items?page=2' % segment
+            got = redacted(json.dumps({'url': url}))
+            check('redaction/url-component', 'and a high-entropy path segment of a URL goes, the rest kept [%s]' % got[0],
+                  got == (json.dumps({'url': url}).replace(segment, ENTROPY), ['entropy']))
+            plain = 'https://api.example.com/v1/repos/veldo-worktrees/build-veldo-0141/pulls?state=open&per_page=100'
+            check('redaction/url-component', 'an ordinary URL the scanner judging it whole replaces is kept whole',
+                  redacted(plain) == (plain, []) and whole_high(plain))
+
+        with region('redaction/account-fields'):
+            for label, own, lines_ in (('the plain login', main_own, main_lines), ('the token login', planted_own,
+                                                                                    planted_lines)):
+                answer = printed_of(own, 'control_response')
+                account = ((json.loads(answer[0]).get('response') or {}).get('response') or {}).get('account') or {} \
+                    if len(answer) == 1 else {}
+                kept_answer = [x for x in lines_ if x.get('stream') == 'engine'
+                               and '"type": "control_response"' in x.get('payload', '')]
+                shown = json.loads(kept_answer[0]['payload']) if len(kept_answer) == 1 else {}
+                shown_account = ((shown.get('response') or {}).get('response') or {}).get('account') or {}
+                everything = '\n'.join(x.get('payload', '') for x in lines_)
+                check('redaction/account-fields', '%s: the handshake answer\'s email and organization are replaced by '
+                      'field and appear nowhere in the record; how the run logged in is kept [%s %s]'
+                      % (label, shown_account, [x.get('redacted') for x in kept_answer]),
+                      account.get('email') and account.get('organization')
+                      and shown_account.get('email') == '[REDACTED:account:email]'
+                      and shown_account.get('organization') == '[REDACTED:account:organization]'
+                      and {'account:email', 'account:organization'} <= set(kept_answer[0].get('redacted') or [])
+                      and account['email'] not in everything and account['organization'] not in everything
+                      and {k: v for k, v in shown_account.items() if k not in ('email', 'organization')}
+                      == {k: v for k, v in account.items() if k not in ('email', 'organization')})
+            ids = {'accountUuid': str(uuid.uuid4()), 'organizationUuid': str(uuid.uuid4()),
+                   'email': 'owner.%s@example.invalid' % uuid.uuid4().hex[:8]}
+            init = json.dumps(dict({'type': 'system', 'subtype': 'init', 'cwd': cwd, 'apiKeySource': 'none'}, **ids))
+            got = redacted(init)
+            wanted = init
+            for field, value_ in ids.items():
+                wanted = wanted.replace(value_, '[REDACTED:account:%s]' % field)
+            check('redaction/account-fields', 'an init line\'s account and organization uuid and email are replaced by '
+                  'field, its working directory kept [%s]' % got[0],
+                  got == (wanted, sorted('account:' + f for f in ids)) and cwd in got[0])
 
         with region('fixture/planted-control'):
             check('fixture/planted-control', 'the planted value has no known pattern and low entropy: the scanner alone '
