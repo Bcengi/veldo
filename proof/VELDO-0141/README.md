@@ -361,3 +361,39 @@ uppercase form. Both new mutation names are unique across all findings.
 exactly these two rows fail, both by assertion. The refreshed [mutations.json](mutations.json) records
 all finding-141 mutations and their controls. [checks.json](checks.json) records this review fix's
 validation. The partial suite result carries its required exit code 2 and does not claim a gate run.
+
+
+## Git boundary review fix
+
+The recorder builds path membership from the receiver's known clone work root and the run's cwd.
+The clone entrance supplies the dispatch record's work directory; direct launches may name a
+containing `clone_root` in trusted receiver configuration. Without a supplied root, membership
+uses cwd. It never starts Git or reads Git configuration to discover a root.
+
+The new `redaction/clone-without-git` row covers a gitfile redirected outside the clone and a
+planted fsmonitor command. It writes and reads execution records with generated high entropy file
+names relative to both root and cwd, exercises the configured receiver root and cwd fallback,
+spies on subprocess calls, and requires the marker to remain absent. The globally unique
+`record141d-clone-git-discovery-restored` mutation restores the removed rev-parse call and must
+fail this row. All existing clone_paths callers and mutation anchors use the new interface.
+
+[git-boundary-review.json](git-boundary-review.json) records the full selftest, all finding-141
+mutations, the Git boundary checker, validation, and engine copy comparisons for this fix.
+The canonical gate was not run, and no verification stamp is claimed.
+
+
+The first complete selftest found three VELDO-0041 failures: `retirement/live-descendant`,
+`retirement/observations`, and `ran/retirement/live-descendant`. The first row deliberately invokes
+an absent receiver configuration. Execution-record directory lookup raised FileNotFoundError before
+normal launch settlement, which also prevented the dependent observation checks. The launcher now
+lets an unavailable configuration follow the existing receiver failure path, retaining cleanup
+obligations. The unchanged heartbeat suite then passed all 23 rows alongside all 36 record rows.
+The validation record retains the initial failing result and the full rerun after this fix.
+
+
+A second complete run passed those retirement rows but reported one intermittent failure in
+VELDO-0068 `terminal/materialized-settlement`: acquisition returned no result for a late reply.
+That unchanged row passed in the first full run and in an isolated rerun. Its cause was not
+established. The validation record retains that failed run and the isolated result as well.
+
+The final complete run passed all 6,896 assertions across 122 suites with zero failures. All 47 finding-141 mutations were rejected on the final implementation; the Git boundary checker and validator passed, and both changed engine copies matched byte for byte.
