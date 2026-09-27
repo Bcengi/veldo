@@ -3048,7 +3048,19 @@
       "Write"
      ]
     },
-    "source": "the built-in tools whose effects stay inside the run's clone and host session (each name's binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the notebook edit, the session checklist, the deferred-tool loader, Bash and its background companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs (Agent, Skill, REPL, Workflow, CronCreate); the Agent tool is remote when its input's isolation is remote or, with none given, when the agent definition its subagent_type names says so (no built-in definition sets isolation; builtin_types), and a remote agent is a task of type remote_agent; the file tools and Bash take a _host naming another machine, routed there only when the remote-tools gate is on, which this build compiles off (routed false); the task types of the allowlisted tools, from the binary's task table. The binary has no LS tool.",
+    "skill": {
+     "context_source": "skill definition: getContext(args, toolUseContext) or context",
+     "field": "context",
+     "inline": "inline",
+     "input_fields": [
+      "args",
+      "skill"
+     ],
+     "input_fork_field": null,
+     "parent": "parent_tool_use_id",
+     "tool": "Skill"
+    },
+    "source": "the built-in tools whose effects stay inside the run's clone and host session (each name's binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the notebook edit, the session checklist, the deferred-tool loader, Bash and its background companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs (Agent, Skill, REPL, Workflow, CronCreate); the Agent tool is remote when its input's isolation is remote or, with none given, when the agent definition its subagent_type names says so (no built-in definition sets isolation; builtin_types), and a remote agent is a task of type remote_agent; the file tools and Bash take a _host naming another machine, routed there only when the remote-tools gate is on, which this build compiles off (routed false); the task types of the allowlisted tools, from the binary's task table. Skill's input schema is only skill and optional args, with no fork field; its definition supplies context (getContext or context, default inline). A sub-agent's Skill therefore asks regardless of input; an explicit context in the recorded input must exclude a fork. The binary has no LS tool.",
     "task_types": {
      "field": "task_type",
      "in_run": [

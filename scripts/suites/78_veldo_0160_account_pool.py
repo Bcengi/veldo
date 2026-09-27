@@ -1415,22 +1415,14 @@ sys.exit(payload.get('code', 0))
             judged('a heartbeat of a shown built-in call (negative control)', 'decision/frame-tool-names',
                    [c_progress('toolu_repl', 'REPL', heartbeat=True)], 'rerun', [], 0, repl_head)
 
-        # THE STRUCTURAL RULES (the lead's decision): the stream cannot be made to show every nested call, so the
-        # configuration decides first. The checker's reproduction: a sub-agent runs a skill that forks (context: fork);
-        # the fork's messages (skill_progress) are dropped at depth 2 and its end notification carries no count, so the
-        # record shows no call and no shortfall.
-        forked = [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), c_child('t1', [tool_use('s1', 'Skill')]),
-                  t_progress('t1', 'Skill', 1), dict(t_started('s1', 2), description='/deploy', skip_transcript=True),
+        # A sub-agent's forked Skill drops its messages and reports no tally (probe11 b6). Rule A must ask
+        # from the Skill call itself, even when the fork's task frames are absent.
+        forked = [c_blocks([dict(tool_use('t1', 'Agent'), input={'prompt': 'p', 'subagent_type': 'general-purpose'})]),
+                  t_started('t1', 1), c_child('t1', [dict(tool_use('s1', 'Skill'), input={'skill': 'triage'})]),
+                  t_progress('t1', 'Skill', 1), dict(t_started('s1', 2), description='/triage', skip_transcript=True),
                   dict(t_done('s1', None), skip_transcript=True, ambient=True), t_result('s1', 't1'),
                   t_done('t1', {'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}), t_result('t1')]
-        at = len(c_head) + 1
-        FORKED_NESTED = [(at, 'agent', 'tool:Agent'), (at + 1, 'task_frames', 'system/task_started'),
-                         (at + 2, 'nested_progress', 'parent_tool_use_id'), (at + 2, 'skill', 'tool:Skill'),
-                         (at + 3, 'skill', 'tool:Skill'), (at + 3, 'task_frames', 'system/task_progress'),
-                         (at + 4, 'task_frames', 'system/task_started'),
-                         (at + 5, 'task_frames', 'system/task_notification'),
-                         (at + 6, 'nested_progress', 'parent_tool_use_id'),
-                         (at + 7, 'task_frames', 'system/task_notification')]
+        inline_skill = [c_blocks([dict(tool_use('s1', 'Skill'), input={'skill': 'triage'})]), t_result('s1')]
         READ_ONLY = [{'name': 'tracker', 'catalog_id': 'mcp_server:tracker', 'revision': 3, 'tools': ['get_issue', 'search']},
                      {'name': 'wiki', 'catalog_id': 'mcp_server:wiki', 'revision': 1, 'tools': []}]
 
@@ -1448,10 +1440,10 @@ sys.exit(payload.get('code', 0))
         with region('decision/no-write-server-reruns'):
             # 1. No MCP server with a tool not marked read-only: the run could not have written through MCP.
             for what, record, provider, servers in (
-                    ('the checker\'s forked skill, only read-only tools configured', c_rec(forked), 'claude_code',
-                     READ_ONLY),
-                    ('the checker\'s forked skill as JSON text, only read-only tools configured', c_rec(forked, True),
+                    ('a top-level Skill with no fork, no MCP server configured', c_rec(inline_skill), 'claude_code', []),
+                    ('a top-level Skill with no fork, only read-only tools configured', c_rec(inline_skill),
                      'claude_code', READ_ONLY),
+                    ('a top-level Skill with no fork as JSON text', c_rec(inline_skill, True), 'claude_code', READ_ONLY),
                     ('a depth-1 agent whose calls are all shown and allowlisted, no MCP server configured',
                      c_rec([c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), c_child('t1', [tool_use('c1', 'Read')]),
                             t_progress('t1', 'Read', 1), t_done('t1', {'total_tokens': 1, 'tool_uses': 1, 'duration_ms': 1}),
@@ -1477,8 +1469,8 @@ sys.exit(payload.get('code', 0))
                                   ('all its tools', [dict(READ_ONLY[0], tools='all')]),
                                   ('its tools unlisted (all of them)', [{k: v for k, v in READ_ONLY[0].items() if k != 'tools'}]),
                                   ('a revision that marks nothing', [dict(READ_ONLY[1], tools=['read_page'])])):
-                found, error = decide(c_rec(forked), 'claude_code', servers)
-                check('decision/no-write-server-reruns', 'the forked skill with a server giving %s: write-capable, '
+                found, error = decide(c_rec(inline_skill), 'claude_code', servers)
+                check('decision/no-write-server-reruns', 'the top-level Skill with a server giving %s: write-capable, '
                       'decided ask [%s, %s, %s]' % (what, (found or {}).get('decision'), (found or {}).get('basis'), error),
                       (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
                       and LIMIT is not None and LIMIT.write_capable(servers, MARKS) == [servers[0]['name']])
@@ -1486,14 +1478,12 @@ sys.exit(payload.get('code', 0))
         with region('decision/nested-work-asks'):
             # 2. A write-capable server and any construct that can run hidden nested work: ask, naming each line.
             for as_text in (False, True):
-                found, error = decide(c_rec(forked, as_text), 'claude_code')
-                check('decision/nested-work-asks', 'the checker\'s forked skill%s, a write-capable server configured: '
-                      'decided ask, naming each construct line [%s, %s, %s]'
-                      % (' (as JSON text)' if as_text else '', (found or {}).get('decision'), (found or {}).get('basis'),
-                         hidden(found) or error),
+                found, error = decide(c_rec(inline_skill, as_text), 'claude_code')
+                check('decision/nested-work-asks', 'a top-level Skill with no fork and a write-capable server: '
+                      'decided ask by rule 2 [%s, %s]' % ((found or {}).get('basis'), hidden(found) or error),
                       (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'nested_work'
-                      and hidden(found) == FORKED_NESTED and named(found) == sorted(
-                          (n, None, None, None, None, 'nested_work') for n, _, _ in FORKED_NESTED))
+                      and hidden(found) == [(len(c_head) + 1, 'skill', 'tool:Skill')]
+                      and named(found) == [(len(c_head) + 1, None, None, None, None, 'nested_work')])
             found, error = by_calls(c_rec(forked), 'claude_code')
             check('decision/nested-work-asks', 'the call-by-call rules alone see no call in it [%s, %s]'
                   % ((found or {}).get('decision'), named(found) or error),
@@ -1812,6 +1802,54 @@ sys.exit(payload.get('code', 0))
                                             leaving(found) or error),
                           (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'outward_tool'
                           and leaving(found) == expected)
+            # Both probe11 b6 records, with and without fork task frames, and the original forked fixture.
+            # The enclosing agent's count is fully accounted for; the hidden fork reports no count at all.
+            for what, lines in (('sub-agent Skill fork, fork calls hidden (probe11 b6)', forked),
+                                ('same, fork task frames absent (probe11 b6)', forked[:4] + forked[6:])):
+                for as_text in (False, True):
+                    for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY),
+                                           ('a write-capable server', WRITE_CAPABLE)):
+                        found, error = decide(c_rec(lines, as_text), 'claude_code', servers)
+                        check('decision/outward-tool-asks', '%s, %s, JSON text %s: ask for the Skill parent [%s, %s]'
+                              % (what, label, as_text, (found or {}).get('basis'), forms(found) or error),
+                              (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'outward_tool'
+                              and forms(found) == [(at + 2, 'outward_tool', 'tool:Skill:parent_tool_use_id')])
+            # Context is a skill-definition field, absent from this binary's Skill input schema. If a record does
+            # carry it, only an explicit inline context excludes a fork; unreadable input also asks.
+            for value in ({'skill': 'triage', 'context': 'fork'}, {'skill': 'triage', 'context': None},
+                          {'skill': 'triage', 'context': '[redacted]'}, {'skill': 'triage', 'context': {}}, None):
+                lines = [c_blocks([dict(tool_use('s1', 'Skill'), input=value)]), t_result('s1')]
+                for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY),
+                                       ('a write-capable server', WRITE_CAPABLE)):
+                    found, error = decide(c_rec(lines), 'claude_code', servers)
+                    check('decision/outward-tool-asks', 'Skill input %s, %s: ask for possible fork [%s, %s]'
+                          % (value, label, (found or {}).get('basis'), forms(found) or error),
+                          (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'outward_tool'
+                          and forms(found) == [(at, 'outward_tool', 'tool:Skill:context')])
+            # Probe12's normal run: concurrent general-purpose and Explore agents, every call shown and counted.
+            gp = [c_blocks([dict(tool_use('a1', 'Agent'), input={'prompt': 'p', 'subagent_type': 'general-purpose',
+                                                               'description': 'd'}),
+                            dict(tool_use('a3', 'Agent'), input={'prompt': 'x', 'subagent_type': 'Explore',
+                                                               'description': 'd'})]),
+                  t_started('a1', 1), t_started('a3', 1)]
+            for task, calls in (('a1', [('Read', {'file_path': '/w/a'}), ('Grep', {'pattern': 'x'}),
+                                      ('Bash', {'command': 'pytest'}),
+                                      ('Edit', {'file_path': '/w/a', 'old_string': 'a', 'new_string': 'b'})]),
+                                ('a3', [('Glob', {'pattern': '*'}), ('Read', {'file_path': '/w/b'})])):
+                for i, (name, value) in enumerate(calls, 1):
+                    ident = '%s-%d' % (task, i)
+                    gp += [c_child(task, [dict(tool_use(ident, name), input=value)]), t_progress(task, name, i),
+                           t_result(ident, task)]
+            gp += [t_done('a1', {'total_tokens': 1, 'tool_uses': 4, 'duration_ms': 1}),
+                   t_done('a3', {'total_tokens': 1, 'tool_uses': 2, 'duration_ms': 1}), t_result('a1'), t_result('a3')]
+            for what, lines in (('normal general-purpose and Explore run (probe12)', gp),
+                                ('top-level Skill explicitly inline', called('Skill', 's1', skill='triage', context='inline'))):
+                for servers in ([], READ_ONLY):
+                    found, error = decide(c_rec(lines), 'claude_code', servers)
+                    check('decision/outward-tool-asks', '%s: rerun with no write-capable server [%s, %s]'
+                          % (what, (found or {}).get('basis'), forms(found) or error),
+                          (found or {}).get('decision') == 'rerun' and (found or {}).get('basis') == 'no_write_capable_server'
+                          and (found or {}).get('calls') == [])
             X_OUTWARD = [
                 ('an item type exec\'s tables do not list (a future item)',
                  [x_any('image_generation', 'item_g', status='in_progress')], [(len(x_head) + 1, 'item:image_generation')]),
@@ -2071,10 +2109,13 @@ sys.exit(payload.get('code', 0))
             module_in = {'tools': sorted(getattr(CE, 'IN_RUN_TOOLS', ())),
                          'aliases': {k: sorted(v) for k, v in (getattr(CE, 'IN_RUN_ALIASES', None) or {}).items()},
                          'agent': json.loads(json.dumps(getattr(CE, 'IN_RUN_AGENT', None) or {})),
+                         'skill': json.loads(json.dumps(getattr(CE, 'IN_RUN_SKILL', None) or {})),
                          'host': json.loads(json.dumps(getattr(CE, 'IN_RUN_HOST', None) or {})),
                          'task_types': json.loads(json.dumps(getattr(CE, 'IN_RUN_TASKS', None) or {}))}
             binary_in = {'tools': c_in.get('tools'), 'aliases': c_in.get('aliases'),
                          'agent': {k: v for k, v in (c_in.get('agent') or {}).items()},
+                         'skill': {k: v for k, v in (c_in.get('skill') or {}).items()
+                                   if k in ('tool', 'field', 'inline', 'parent')},
                          'host': {k: v for k, v in (c_in.get('host') or {}).items() if k != 'routed'},
                          'task_types': {k: v for k, v in (c_in.get('task_types') or {}).items() if k != 'table'}}
             check('format/tool-forms', 'claude_code: the allowlist, the Agent tool\'s remote isolation, the _host field '
@@ -2082,6 +2123,9 @@ sys.exit(payload.get('code', 0))
                   % [k for k in binary_in if binary_in[k] != module_in[k]],
                   binary_in == module_in and (c_in.get('host') or {}).get('routed') is False
                   and c_in.get('workflow_last_tool') == 'label'
+                  and (c_in.get('skill') or {}).get('input_fields') == ['args', 'skill']
+                  and 'input_fork_field' in (c_in.get('skill') or {})
+                  and c_in['skill']['input_fork_field'] is None
                   and 'remote_agent' in (c_in.get('task_types') or {}).get('table', ())
                   and 'remote_agent' not in module_in['task_types'].get('in_run', ())
                   and not {'SendMessage', 'RemoteTrigger', 'LS'} & set(module_in['tools']))

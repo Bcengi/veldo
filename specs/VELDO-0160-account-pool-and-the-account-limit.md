@@ -231,7 +231,13 @@ of exec's CollabTool enum (spawn_agent, send_input, wait and close_agent, read f
 form and the Agent tool with isolation remote are not on it. The calls a depth-2 agent or a workflow agent makes are
 never shown, so rule A also reads each task's tally: a task that counts more calls than the record shows under it, or
 a count that cannot be read or goes down, asks the same way (reason and basis `outward_tool`), whatever the
-configuration.
+configuration. A Skill call inside a sub-agent (its message carries `parent_tool_use_id`) also asks by rule A,
+regardless of its input: the fork runs outside the task-progress loop, its end notification has no usage, and its
+messages can be dropped. An input carrying `context` that is not explicitly `inline`, or an input that cannot be
+read, also asks as a possible fork. The 2.1.281 binary's actual Skill input schema contains only `skill` and optional
+`args`, no fork field; the skill definition supplies `context` or `getContext(args, toolUseContext)`, defaulting to
+`inline`. The extractor pins both the schema and that resolution. A top-level Skill with ordinary input and no fork
+indication remains eligible to re-run under no write-capable server, as the lead directs.
 
 Use canonical engine assets and synchronize installed copies. Inventory every asset the selected
 journey installs. Compare executable registrations to each criterion's declared universe, observe the
@@ -423,3 +429,12 @@ a collab_tool_call naming wait_agent asks. `decision/no-write-server-reruns`, `d
 `decision/remote-agent-asks` expect rule A to name the tally where their fixtures count unshown calls. 5 more finding
 160 mutations (the shortfall not consulted in rule A, an unreadable count trusted, the shortfalls dropped, wait not
 listed, wait_agent listed). Status unchanged.
+
+2026-09-27, the lead's Skill fork review fix (probe11 b6 and probe12): rule A now asks, reason and basis
+`outward_tool`, for every Skill call carrying a sub-agent parent and for a Skill input whose explicit context may
+fork or cannot be read. The binary's Skill input has no fork field; the extractor pins its `skill` and `args`
+schema and the definition's context resolver. The forked record moves from `decision/no-write-server-reruns` to
+`decision/outward-tool-asks`, with and without the fork's task frames, as objects and JSON text, under no server,
+read-only servers and write-capable servers. Top-level Skill with no fork still re-runs without a write-capable
+server and asks by rule 2 with one; probe12's normal general-purpose and Explore run still re-runs. Two mutations
+skip the parent and fork checks independently. Status unchanged.

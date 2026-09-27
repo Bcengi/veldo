@@ -7382,6 +7382,14 @@ def cases():
     # Rule A reads each task's tally (the checker's probe8 and probe10): declared, the shortfall not consulted in rule A;
     # and the unreadable or decreasing count dropped, the tally's shortfalls dropped, exec's wait not allowlisted, the
     # core's wait_agent allowlisted.
+    pool('outward-skill-parent-skipped', 'control_engine_claude.py',
+         "        if name == IN_RUN_SKILL['tool'] and event.get(IN_RUN_SKILL['parent']) is not None:\n",
+         "        if False:  # defect: a sub-agent's Skill may fork unseen but its parent is ignored\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-skill-fork-skipped', 'control_engine_claude.py',
+         "    if name == IN_RUN_SKILL['tool'] and (not isinstance(value, dict)\n",
+         "    if False and (not isinstance(value, dict)\n",
+         ['decision/outward-tool-asks'])
     pool('outward-tally-unconsulted', 'control_account_limit.py',
          "    unshown = untallied(record, provider)\n",
          "    unshown = []  # defect: a task's shortfall is not consulted in rule A\n",

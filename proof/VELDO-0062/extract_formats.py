@@ -612,6 +612,12 @@ CLAUDE_IN_RUN = (
 # (`host_route`), and this build's gate is off (`host_gate`, `host_gate_value`). A workflow task's progress gives its
 # current agent's label as its last tool (`workflow_label`), not a tool: its agents' own last tools are named beside it.
 CLAUDE_IN_RUN_CONDITIONS = {
+    'skill_input': ('var Ee=f(()=>d({skill:o().describe("The name of a skill from the available-skills list. '
+                   'Do not guess names."),args:o().optional().describe("Optional arguments for the skill")})),', 1),
+    'skill_schema': ('name:go,searchHint:"invoke a slash-command skill",isEnabled(){return H7t()},'
+                    'backgrounding:"never",maxResultSizeChars:1e5,get inputSchema(){return Ee()}', 1),
+    'skill_context': ('function P9t(e,n,r){return e.getContext?.(n,r)??e.context??"inline"}', 1),
+    'skill_fork': ('if(u?.type==="prompt"&&P9t(u,s||"",n)==="fork"&&!S)try{return await Me(u,p,s,n,r,g,l,a)}', 1),
     'agent_input': ('isolation:z(["worktree","remote"]).optional().describe(\'Isolation mode. "worktree" creates a '
                     'temporary git worktree so the agent works on an isolated copy of the repo. "remote" launches the '
                     'agent in a remote cloud environment', 1),
@@ -683,6 +689,9 @@ def _in_run(text, renamed):
     if not {'general-purpose', 'Explore', 'Plan'} <= set(builtin):
         raise Moved('claude built-in agents moved')
     return {'tools': sorted(tools), 'aliases': aliases,
+            'skill': {'tool': 'Skill', 'field': 'context', 'inline': 'inline', 'parent': 'parent_tool_use_id',
+                      'input_fields': ['args', 'skill'], 'input_fork_field': None,
+                      'context_source': 'skill definition: getContext(args, toolUseContext) or context'},
             'agent': {'tools': sorted([renamed[0]['name']] + list(renamed[0]['aliases'])), 'field': 'isolation',
                       'values': json.loads(CLAUDE_IN_RUN_CONDITIONS['agent_input'][0][len('isolation:z('):].split(')')[0]),
                       'outside': 'remote', 'type_field': 'subagent_type', 'builtin_types': sorted(set(builtin))},
@@ -700,7 +709,10 @@ def _in_run(text, renamed):
                       "built-in definition sets isolation; builtin_types), and a remote agent is a task of type "
                       "remote_agent; the file tools and Bash take a _host naming another machine, routed there only "
                       "when the remote-tools gate is on, which this build compiles off (routed false); the task types "
-                      "of the allowlisted tools, from the binary's task table. The binary has no LS tool."}
+                      "of the allowlisted tools, from the binary's task table. Skill's input schema is only skill "
+                      "and optional args, with no fork field; its definition supplies context (getContext or context, "
+                      "default inline). A sub-agent's Skill therefore asks regardless of input; an explicit context "
+                      "in the recorded input must exclude a fork. The binary has no LS tool."}
 
 
 def _tags(schema):

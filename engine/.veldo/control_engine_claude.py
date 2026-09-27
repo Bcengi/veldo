@@ -378,6 +378,7 @@ IN_RUN_AGENT = {'tools': ('Agent', 'Task'), 'field': 'isolation', 'values': ('wo
                 'type_field': 'subagent_type',
                 'builtin_types': ('Explore', 'Plan', 'claude', 'claude-code-guide', 'comment-thread-analyst', 'fork',
                                   'general-purpose', 'statusline-setup', 'web-fetch', 'worker', 'workflow-subagent')}
+IN_RUN_SKILL = {'tool': 'Skill', 'field': 'context', 'inline': 'inline', 'parent': 'parent_tool_use_id'}
 IN_RUN_HOST = {'field': '_host', 'local': ('', 'container', 'this-machine'),
                'tools': ('Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write')}
 IN_RUN_TASKS = {'field': 'task_type',
@@ -805,6 +806,11 @@ def _named_calls(event, tag):
 def _outside_input(name, value):
     """The forms through which an allowlisted call's own input acts outside the run: the Agent tool remote or naming
     an agent definition that is not built in, a file tool or Bash naming another machine."""
+    # Skill's schema has only skill and args. A definition can supply context independently, so the parent check
+    # below is unconditional. An explicit context in a record must exclude a fork; unreadable input cannot do so.
+    if name == IN_RUN_SKILL['tool'] and (not isinstance(value, dict)
+                                       or value.get(IN_RUN_SKILL['field'], IN_RUN_SKILL['inline']) != IN_RUN_SKILL['inline']):
+        return ['tool:Skill:context']
     if not isinstance(value, dict):
         return ['tool:%s:input' % name] if name in IN_RUN_AGENT['tools'] else []
     found = []
@@ -848,9 +854,15 @@ def outward_tools(event, inputs):
         if name not in IN_RUN:
             found.append('tool:' + name)
             continue
+        # A skill definition can fork without saying so in its call. In a sub-agent the fork's messages are
+        # dropped and its end has no tally, so the parent alone is enough to ask under rule A.
+        if name == IN_RUN_SKILL['tool'] and event.get(IN_RUN_SKILL['parent']) is not None:
+            found.append('tool:Skill:parent_tool_use_id')
         values = [value] if given else list(inputs.get(ident, ())) if isinstance(ident, (str, tuple)) else []
         if not values and name in IN_RUN_AGENT['tools']:
             found.append('tool:%s:input_not_given' % name)
+        if not values and name == IN_RUN_SKILL['tool']:
+            values = [None]
         for each in values:
             found += _outside_input(name, each)
     if tag in NESTED['task_frames'] and IN_RUN_TASKS['field'] in event:
