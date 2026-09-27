@@ -24,7 +24,8 @@ HERE.mkdir(exist_ok=True)
 SUITE = '84_veldo_0169_project_handouts.py'
 PREFIX = 'VELDO-0169 '
 FINDING = 169
-MODULES = ('control_assignment.py', 'control_claim.py', 'control_andon.py', 'control_eligibility.py')
+MODULES = ('control_assignment.py', 'control_claim.py', 'control_andon.py', 'control_eligibility.py', 'control_store.py',
+           'control_heartbeat.py')
 # The suite's own apparatus, which a red run brings to the archived tree with the suite itself.
 APPARATUS = ('scripts/suites/support/v169_census.py',)
 

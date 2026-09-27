@@ -170,6 +170,8 @@ def _v49_suite():
         put('project:p1', 'project', dict(name='floor'))
         policy_record = DSP.review_policy_record(work / '.veldo' / 'policy.yaml')
         put(DSP.review_policy_id(REPOSITORY), 'review_policy', policy_record)
+        # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
+        CLM.declare(writer)
         writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 

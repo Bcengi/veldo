@@ -1802,7 +1802,7 @@ def cases():
         add(64, name, '60_veldo_0064_inbox.py', module, old, new, [row])
 
     inbox('inbox-retain-claim-while-waiting', 'control_assignment.py',
-          "            if 'release' in params:\n                changes.update(self.claims.transition(params['release'], before))\n",
+          "            if 'release' in params:\n                changes.update(self.claims.transition(self.conn, params['release'], before))\n",
           "            if 'release' in params:\n                pass  # defective: the claim stays owned while the person is asked\n",
           'inbox/waiting-resources')
     inbox('inbox-requester-keeps-waiting', 'control_assignment.py',
@@ -5433,17 +5433,16 @@ def cases():
             "        if command['operation'] == 'claim':\n",
             "        if False:  # defect: a claim never asks the unit's project\n", ['paused-claim', 'canceled-claim'])
     project('claim-project-check-empty', 'control_eligibility.py',
-            "        refusals = self._project_problems(data.get('project'), record, member)\n",
-            "        refusals = []  # defect: the boundary's project check refuses nothing\n",
+            "        return self._project_problems(data.get('project'), record, member), read\n",
+            "        return [], read  # defect: the boundary's project check refuses nothing\n",
             ['paused-claim', 'canceled-claim'])
     # Review of ba4eb66e: the project and owner records the claim receiver's project check read are pinned
-    # in the claim's transaction, and no row drove the pin. Since VELDO-0169 the claim organ takes only a
-    # receipt whose reads its transaction pinned, and the check is read again inside that transaction, so a
-    # pause committed mid-claim is refused by name either way; dropped, the pin refuses every claim instead
-    # (stale_subject:project_check), and the active controls of the claim rows go red.
+    # in the claim's transaction, and no row drove the pin. Dropped, a pause committed mid-claim is missed by
+    # the pin (since VELDO-0169 the claim organ's own check inside the write refuses it, so the row reads the
+    # store's answer to the write: stale_version only while the pin holds).
     project('claim-pins-dropped', 'control_claim.py',
             "            versions.update(read)\n",
-            "            pass  # defect: the records the project check read are not pinned\n", ['paused-claim', 'canceled-claim'])
+            "            pass  # defect: the records the project check read are not pinned\n", ['paused-mid-claim'])
     # VELDO-0138: each criterion's declared falsifier first, then the threat model's other shapes.
     def service_channel(name, module, old, new, row, also=()):
         add(138, name, '71_veldo_0138_channel_service.py', module, old, new, [row], also)
@@ -8403,9 +8402,10 @@ def cases():
     add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
         "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
         "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
-    # VELDO-0169: every path that hands out work asks the Gate's one project check, and the claim organ and
-    # the station contract writer refuse a handout without its receipt. Each criterion's declared falsifier
-    # first (AC1 to AC4), then the lead's receipt decisions, then the seams they rest on.
+    # VELDO-0169: every path that hands out work asks the Gate's one project check; the claim organ and the
+    # station contract writer ask it themselves inside the write transaction, and the store writes a claim
+    # only as the claim organ returned it there. Each criterion's declared falsifier first (AC1 to AC4),
+    # then the lead's decisions of the second review-fix round, then the seams they rest on.
     def handout(name, module, old, new, rows, also=()):
         add(169, 'handout-' + name, '84_veldo_0169_project_handouts.py', module, old, new, rows, also)
 
@@ -8433,9 +8433,11 @@ def cases():
             "                          permission=permission, evidence=evidence), expected, self.journal_signer, command_id, command_id)\n\n"
             '    def run(self):\n', ['census/writers'])
     handout('constructor-bypassed', 'control_andon.py',
-            "                        **self.issue_station_contract(params['contract'], receipt, before))\n",
+            "                        **self.issue_station_contract(params['contract'], before))\n",
             "                        **{cid: {'kind': CONTRACT_KIND, 'data': params['contract']}})\n", ['census/writers'])
-    # AC2 and AC3: the resume, the backlog disposition and the andon resume without the check.
+    # AC2 and AC3: the resume, the backlog disposition and the andon resume without the caller's check (the
+    # claim organ and the station contract writer still refuse inside the write, so the rows read what only
+    # the caller's check gives: the refusal naming the project and the versions it read, and the census).
     handout('resume-unchecked', 'control_assignment.py',
             "        self._check_project(unit, entities, observation)\n        params['resume']",
             "        params['resume']", ['resume/PAUSED', 'census/writers'])
@@ -8443,48 +8445,48 @@ def cases():
             "            self._check_project(unit, entities, observation)\n            plan['unpark']",
             "            plan['unpark']", ['dispose/PAUSED', 'census/writers'])
     handout('andon-unchecked', 'control_andon.py',
-            '            refusals, expected, _receipt = self.project_gate.project_problems(unit)',
-            '            refusals, expected, _receipt = [], {}, None', ['andon/PAUSED', 'census/writers'])
-    # AC4: the null-project claim skipped, as before the fix.
+            '            refusals, expected = self.project_gate.project_problems(unit)',
+            '            refusals, expected = [], {}', ['andon/PAUSED', 'census/writers'])
+    # AC4: the null-project claim skipped at the receiver, as before the fix.
     handout('null-claim-unchecked', 'control_claim.py',
             "        if command['operation'] == 'claim':",
             "        if command['operation'] == 'claim' and u['data'].get('project') is not None:",
             ['claim/absent', 'claim/null'])
-    # Lead decision 1: the organ skips the receipt, the receipt ignores the project version, and the other
-    # bindings of a receipt (its unit, the transaction's pins) and of the station contract writer.
-    handout('organ-receipt-skipped', 'control_claim.py',
-            "        problem = project_check_problem(params.get('project_check'), unit, before)\n        if problem is not None:",
-            "        problem = project_check_problem(params.get('project_check'), unit, before)\n        if False:",
-            ['guard/receipt', 'guard/resume-again'])
-    handout('receipt-version-ignored', 'control_claim.py',
-            "            or any(eid not in before or before[eid].get('version') != version for eid, version in read.items())):",
-            "            or any(eid not in before for eid in read)):", ['guard/receipt'])
-    handout('receipt-unit-ignored', 'control_claim.py',
-            "    if (receipt.get('unit') != unit or unit not in before",
-            "    if (unit not in before", ['guard/receipt'])
-    handout('receipt-unpinned-accepted', 'control_claim.py',
-            "            or any(eid not in before or before[eid].get('version') != version for eid, version in read.items())):",
-            "            or any(eid in before and before[eid].get('version') != version for eid, version in read.items())):",
-            ['guard/receipt'])
-    handout('contract-receipt-skipped', 'control_andon.py',
-            "        if problem is not None:\n            raise self.S.StoreRefused(problem, 'a station contract",
-            "        if False:\n            raise self.S.StoreRefused(problem, 'a station contract", ['guard/receipt'])
-    handout('gate-receipt-despite-refusal', 'control_eligibility.py',
-            "        receipt = None if refusals else self.claims.project_check_receipt(unit, data.get('project'), read)\n",
-            "        receipt = self.claims.project_check_receipt(unit, data.get('project'), read)\n", ['guard/receipt'])
-    # The check read again inside each handout's own store transaction.
-    handout('resume-in-transaction-unchecked', 'control_assignment.py',
-            "            receipt = self._project_receipt(params['resume']['unit_id'])\n",
-            "            receipt = None\n", ['resume/PAUSED', 'census/writers'])
-    handout('unpark-in-transaction-unchecked', 'control_assignment.py',
-            "            receipt = self._project_receipt(plan['unpark']['unit_id'])\n",
-            "            receipt = None\n", ['dispose/PAUSED', 'census/writers'])
-    handout('andon-in-transaction-unchecked', 'control_andon.py',
-            "            receipt = self._project_receipt(unit)\n",
-            "            receipt = None\n", ['andon/PAUSED', 'census/writers'])
-    handout('receiver-in-transaction-unchecked', 'control_claim.py',
-            "            refusals, _read, receipt = self._project_problems(params['unit_id'])\n",
-            "            refusals, _read, receipt = [], {}, None\n", ['claim/absent', 'census/writers'])
+    # Lead decision 1: the claim organ asks the check itself, inside the write transaction. It skips it; it
+    # reuses a check made in an earlier transaction (a check outside this write's transaction); and the
+    # store lets an organ decide outside any command transaction.
+    handout('organ-check-skipped', 'control_claim.py',
+            "        if refusals:\n            raise S.StoreRefused(refusals[0], 'the unit\\'s project takes no new assignment')\n    return _changes(",
+            "        if False:\n            raise S.StoreRefused(refusals[0], 'the unit\\'s project takes no new assignment')\n    return _changes(",
+            ['organ/stopped', 'guard/forge', 'guard/resume-again'])
+    handout('organ-check-outside-transaction', 'control_claim.py',
+            "        refusals, _read = _project_gate(conn).project_problems(params['unit_id'])\n",
+            "        refusals, _read = _decide.__dict__.setdefault(params['unit_id'], _project_gate(conn).project_problems(params['unit_id']))"
+            "  # defect: a check made in an earlier transaction decides this one\n",
+            ['organ/race'])
+    handout('organ-write-outside-transaction', 'control_store.py',
+            '    if not getattr(conn, "command_transaction", False) or not conn.in_transaction or getattr(conn, "organ_writes", None) is None:\n'
+            '        raise StoreRefused("outside_transaction"',
+            '    if False:\n        raise StoreRefused("outside_transaction"', ['organ/outside'])
+    # The station contract writer, the same: it skips its check, and it issues outside a command transaction.
+    handout('contract-check-skipped', 'control_andon.py',
+            "        refusals, _read = self.project_gate.project_problems(contract['unit'])\n        if refusals:",
+            "        refusals, _read = self.project_gate.project_problems(contract['unit'])\n        if False:",
+            ['organ/stopped'])
+    handout('contract-outside-transaction', 'control_andon.py',
+            "        if not self.conn.in_transaction or not getattr(self.conn, 'command_transaction', False):\n",
+            "        if False:\n", ['organ/outside'])
+    # Lead decision 2: the store's ownership of the claim kind. It drops it; it keeps only the presence of an
+    # organ decision, not its content; and it takes another function as the organ.
+    handout('store-claim-ownership-dropped', 'control_store.py',
+            "            for kind in sorted(k for k in kinds if k in organs):\n",
+            "            for kind in ():  # defect: no kind is decided by its organ\n", ['organ/ownership', 'guard/forge'])
+    handout('store-organ-content-ignored', 'control_store.py',
+            '                if conn.organ_writes.get(eid) != digest_of({"kind": new["kind"], "data": new["data"]}):\n',
+            '                if eid not in conn.organ_writes:\n', ['organ/ownership'])
+    handout('store-organ-origin-unchecked', 'control_store.py',
+            '    if problem is not None:\n        raise StoreRefused("foreign_transition", "kind %r is decided by',
+            '    if False:\n        raise StoreRefused("foreign_transition", "kind %r is decided by', ['organ/ownership'])
     # The project and owner records the check read, pinned through the commit.
     handout('assignment-project-unpinned', 'control_assignment.py',
             "        versions.update(observation.get('project_versions', {}))",

@@ -180,6 +180,8 @@ def _v50_suite():
         upsert('authority:' + DOMAIN, 'authority', dict(state='active', generation=1))
         upsert('project:p1', 'project', dict(name='proof'))
         upsert(DSP.review_policy_id(REPOSITORY), 'review_policy', DSP.review_policy_record(work / '.veldo' / 'policy.yaml'))
+        # VELDO-0169: the claim organ decides every claim; its owner declares it before any is written.
+        CLM.declare(writer)
         writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 

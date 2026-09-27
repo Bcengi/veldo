@@ -3,32 +3,35 @@
 What it finds, in every module it is given (the engine's .veldo sources):
 
 - every reference to a callable named `transition`: an attribute of that name on any receiver
-  expression, getattr(obj, 'transition'), a name bound to one of those, and in control_claim the
-  claim organ's own function. A reference that is called with arguments that can bind the organ's
-  signature (read from control_claim's own tree) is a claim writer; one that cannot bind it (the
-  entity contract's four-argument transition, a transaction transition's three) is not the organ;
-  one that escapes (stored, passed, returned or registered bare) is refused, since what calls it is
-  not visible here.
+  expression, getattr(obj, 'transition'), a name bound to one of those, a name imported under it,
+  and in control_claim the claim organ's own function (a module's own function of that name is that
+  module's, recorded as not the organ). A reference that is called with arguments that can bind the
+  organ's signature (read from control_claim's own tree: transition(conn, params, before)) is a
+  claim writer; one that cannot bind it (the entity contract's four-argument transition) is not the
+  organ; one that escapes (stored, passed, returned or registered bare as a transition) is refused,
+  since what calls it is not visible here.
+- every entity mapping written with the claim kind (control_claim.KIND) outside control_claim:
+  every claim goes through the organ, so a claim built anywhere else is refused.
 - every reference to the station contract's one writer, `issue_station_contract`, and every entity
   mapping written with the kind that writer writes, which is refused outside it.
 - every getattr, attrgetter or methodcaller whose attribute name is not resolved to a set of
   constants: it could name either, so it is refused.
-- every receipt made outside the Gate's project check (control_claim.project_check_receipt called
-  anywhere but control_eligibility's Gate.project_problems, or its schema used elsewhere).
 
 How it classifies a writer: by the function that encloses it and by the claim action it can carry.
 The action is followed to where the parameters are built: a literal at the call; the assignment of
 the same key (params['resume'] = dict(action='resume', ...)); or, for a registered transition, the
 commit of its operation and the parameters that commit carries. The action set is narrowed by the
 guards on the path (`if params['action'] in HANDOUTS`, an early return, a refusal of every
-operation outside a constant). A writer whose action is not resolved hands out work. A writer that
-hands out work (an action in control_claim.HANDOUTS, or any station contract) must obtain the
-receipt before the write on every path through its function: a call of the Gate's project_problems,
-directly or through a helper of the same class or module that makes it unconditionally, in a
-statement that precedes the write in its block or an enclosing one (not inside a branch beside it).
-Every place that builds the parameters of such a writer must do the same, so the project and owner
-versions the check read are the ones the transaction pins. Nothing is classified from a list of
-writers or of receiver names.
+operation outside a constant). A writer whose action is not resolved hands out work. The claim organ
+and the station contract writer ask the Gate's project check themselves inside the write
+transaction (VELDO-0169); what the census requires of a writer that hands out work (an action in
+control_claim.HANDOUTS, or any station contract) is that the path which builds its parameters asks
+the same check first, so the project and owner versions the check read are the ones the command
+pins: every place that builds them must call the Gate's project_problems, directly or through a
+helper of the same class or module that makes it unconditionally, in a statement that precedes the
+build in its block or an enclosing one (not inside a branch beside it) on every path through its
+function. Where the parameters are built at the write itself, or are not resolved, the write's own
+function must. Nothing is classified from a list of writers or of receiver names.
 """
 import ast
 
@@ -36,9 +39,6 @@ ORGAN_MODULE = 'control_claim'
 ORGAN = 'transition'
 CONSTRUCTOR = 'issue_station_contract'
 CHECK = 'project_problems'
-RECEIPT = 'project_check_receipt'
-RECEIPT_SCHEMA = 'PROJECT_CHECK_SCHEMA'
-RECEIPT_MAKER = ('control_eligibility', 'Gate.project_problems')
 DYNAMIC = ('getattr', 'attrgetter', 'methodcaller')
 NOVALUE = object()
 DEPTH = 6
@@ -201,16 +201,20 @@ class Census:
         self.failures, self.records = [], []
         organ = self.modules.get(ORGAN_MODULE)
         fn = next((n for n in (organ.tree.body if organ else ()) if isinstance(n, ast.FunctionDef) and n.name == ORGAN), None)
-        if fn is None or fn.args.vararg or fn.args.kwarg or fn.args.defaults or fn.args.kwonlyargs:
-            self.fail(ORGAN_MODULE, None, 0, 'the claim organ %s(params, before) is not found as a plain function' % ORGAN)
-            self.signature, self.handouts = ('params', 'before'), ()
+        if (fn is None or fn.args.vararg or fn.args.kwarg or fn.args.defaults or fn.args.kwonlyargs
+                or 'params' not in params_of(fn)):
+            self.fail(ORGAN_MODULE, None, 0, 'the claim organ %s(conn, params, before) is not found as a plain function' % ORGAN)
+            self.signature, self.handouts = ('conn', 'params', 'before'), ()
         else:
             self.signature = tuple(params_of(fn))
             self.handouts = organ.constants.get('HANDOUTS', NOVALUE)
             if not isinstance(self.handouts, tuple) or not self.handouts:
                 self.fail(ORGAN_MODULE, None, 0, 'control_claim.HANDOUTS does not name the transitions that hand out work')
                 self.handouts = ()
-        self.schema = organ.constants.get(RECEIPT_SCHEMA, NOVALUE) if organ else NOVALUE
+        self.kind = organ.constants.get('KIND', NOVALUE) if organ else NOVALUE
+        if not isinstance(self.kind, str):
+            self.fail(ORGAN_MODULE, None, 0, 'control_claim.KIND does not name the claim kind')
+            self.kind = NOVALUE
 
     # Reporting.
 
@@ -226,7 +230,7 @@ class Census:
         for module in self.modules.values():
             # What a module contributes depends only on its own source and on what the organ and the
             # station contract writer declare, so an unchanged module is not read twice.
-            key = (module.stem, module.source, self.signature, self.handouts, self.schema, frozenset(kinds))
+            key = (module.stem, module.source, self.signature, self.handouts, self.kind, frozenset(kinds))
             if key not in _SCANNED:
                 records, failures = self.records, self.failures
                 self.records, self.failures = [], []
@@ -241,7 +245,12 @@ class Census:
 
     def scan(self, module, kinds):
         self.dynamic(module)
-        self.receipts(module)
+        self.claim_bypass(module)
+        if module.stem != ORGAN_MODULE and ORGAN in module.defined:
+            fn = next(n for n in module.tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == ORGAN)
+            self.records.append(dict(module=module.stem, function=ORGAN, line=fn.lineno, writer='defined',
+                                     classification='not the claim organ',
+                                     reason='the module\'s own function %s, which its own name refers to' % ORGAN))
         for name, kind in ((ORGAN, 'claim'), (CONSTRUCTOR, 'station')):
             for ref in self.references(module, name):
                 for site in self.calls(module, ref, name):
@@ -264,7 +273,10 @@ class Census:
                   and len(node.args) >= 2 and isinstance(node.args[1], ast.Constant) and node.args[1].value == name):
                 yield node
             elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load) and (
-                    node.id in imported or (node.id == name and name in module.defined and self.unshadowed(module, node))):
+                    node.id in imported or (node.id == name and name in module.defined and self.unshadowed(module, node)
+                                            and (name != ORGAN or module.stem == ORGAN_MODULE))):
+                # Outside control_claim a module's own function named transition is that module's: its
+                # name resolves to its own definition, never to the organ (an import is counted above).
                 yield node
 
     def unshadowed(self, module, node):
@@ -285,18 +297,18 @@ class Census:
         if isinstance(ref, ast.Attribute) and not isinstance(ref.ctx, ast.Load):
             self.fail(module.stem, where, ref.lineno, 'rebinds an attribute named %s' % name)
             return []
+        own = self.own_method(module, fn, ref, name)
+        if own is not None:
+            self.records.append(dict(module=module.stem, function=where, line=ref.lineno, writer=name,
+                                     classification='not the claim organ',
+                                     reason='%s.%s, a method of this module\'s own class' % (own, name)))
+            return []
         if isinstance(parent, ast.Call) and parent.func is ref:
             return [parent]
         if isinstance(parent, ast.Dict) and ref in parent.values:
-            key = parent.keys[parent.values.index(ref)]
-            if isinstance(key, ast.Constant) and key.value == 'transaction_transition' and len(self.signature) != 3:
-                # The store calls a transaction transition with (conn, parameters, before): the organ
-                # cannot bind three arguments, so this is some other registered transition.
-                self.records.append(dict(module=module.stem, function=where, line=ref.lineno, writer='registered',
-                                         classification='not the claim organ',
-                                         reason='a transaction transition is called with three arguments'))
-                return []
-            self.fail(module.stem, where, ref.lineno, 'registers %s bare: the store calls it with no receipt read in the transaction' % name)
+            # Registered as a store transition (or stored under any key): the store, or whatever reads
+            # the mapping, calls it with parameters nobody here built, so its action is not visible.
+            self.fail(module.stem, where, ref.lineno, 'registers %s bare: what it is called with is not visible here' % name)
             return []
         if isinstance(parent, ast.Assign) and parent.value is ref and len(parent.targets) == 1 \
                 and isinstance(parent.targets[0], ast.Name):
@@ -313,6 +325,31 @@ class Census:
             return found
         self.fail(module.stem, where, ref.lineno, 'a reference to %s escapes: what calls it is not visible' % name)
         return []
+
+    def own_method(self, module, fn, ref, name):
+        """Outside control_claim, the name of this module's own class whose method `ref` is, when that is
+        certain: `self.transition` inside a class that defines it, or `<local>.transition` where the
+        local is not a parameter and every binding of it in the function is a construction of such a
+        class. None otherwise (the reference is then followed as the organ's)."""
+        if (name != ORGAN or module.stem == ORGAN_MODULE or not isinstance(ref, ast.Attribute)
+                or not isinstance(ref.value, ast.Name) or fn is None or isinstance(fn, ast.Lambda)):
+            return None
+        classes = {n.name: n for n in module.tree.body if isinstance(n, ast.ClassDef)
+                   and any(isinstance(s, (ast.FunctionDef, ast.AsyncFunctionDef)) and s.name == name for s in n.body)}
+        receiver, names, cls = ref.value.id, params_of(fn), module.cls_of(fn)
+        if names and receiver == names[0] == 'self' and cls is not None and cls.name in classes:
+            return cls.name
+        if receiver in names + [a.arg for a in fn.args.kwonlyargs]:
+            return None
+        owners = set()
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Name) and node.id == receiver and not isinstance(node.ctx, ast.Load):
+                parent = module.parents.get(node)
+                if not (isinstance(parent, ast.Assign) and parent.targets == [node] and isinstance(parent.value, ast.Call)
+                        and isinstance(parent.value.func, ast.Name) and parent.value.func.id in classes):
+                    return None
+                owners.add(parent.value.func.id)
+        return owners.pop() if len(owners) == 1 else None
 
     # The claim organ.
 
@@ -348,7 +385,8 @@ class Census:
                                      reason='%d arguments cannot bind %s(%s)' % (len(call.args) + len(call.keywords),
                                                                                   ORGAN, ', '.join(self.signature))))
             return
-        params = self.argument(call, 0, self.signature[0])
+        position = self.signature.index('params') if 'params' in self.signature else 0
+        params = self.argument(call, position, self.signature[position])
         constructions, unresolved = self.constructions(module, fn, params, 0)
         values = All() if unresolved else frozenset()
         for c in constructions:
@@ -366,12 +404,24 @@ class Census:
                               'it can only ' + (', '.join(sorted(values)) if not isinstance(values, All) else
                                                 'carry an action outside the handouts, ' + repr(values))
                               + ' a claim already held or parked'))
-        self.records.append(record)
-        if handout:
-            self.require(module, fn, call, 'the claim write')
+        if not unresolved and len(constructions) > 1 and isinstance(values, frozenset):
+            # One record per place the parameters are built, each classified by the actions it can carry.
             for c in constructions:
-                if c['node'] is not call and not self.within(module, c['node'], call) and hands_out(c['actions'], self.handouts):
-                    self.require(c['module'], c['function'], c['node'], 'the handout parameters it writes')
+                acts = values & c['actions'] if isinstance(c['actions'], frozenset) else restrict(c['actions'], allowed=values)
+                gives = hands_out(acts, self.handouts) if self.handouts else True
+                self.records.append(dict(record, actions=shown(acts), classification='handout' if gives else 'nothing',
+                                         built_at=['%s.%s:%s' % (c['module'].stem, c['module'].name_of(c['function']), c['node'].lineno)],
+                                         reason=('its action can be ' + ', '.join(sorted(set(self.handouts) & set(acts)))) if gives
+                                         else 'it can only ' + ', '.join(sorted(acts)) + ' a claim already held or parked'))
+        else:
+            self.records.append(record)
+        if handout:
+            builders = [c for c in constructions if c['node'] is not call and not self.within(module, c['node'], call)
+                        and hands_out(c['actions'], self.handouts)]
+            for c in builders:
+                self.require(c['module'], c['function'], c['node'], 'the handout parameters it writes')
+            if unresolved or not builders:
+                self.require(module, fn, call, 'the claim write')
 
     def within(self, module, node, call):
         while node in module.parents:
@@ -560,7 +610,7 @@ class Census:
                 return restrict(values, allowed=right) if positive else restrict(values, excluded=right)
         return values
 
-    # The receipt.
+    # The check.
 
     def obtains(self, module, fn, depth=0, seen=()):
         """Whether calling `fn` makes the Gate's project check unconditionally before it returns."""
@@ -608,7 +658,7 @@ class Census:
         """Refuse unless the Gate's project check is made before `node` on every path through `fn`."""
         if not self.dominated(module, fn, node):
             self.fail(module.stem, module.name_of(fn), node.lineno,
-                      '%s hands out work without obtaining the Gate\'s project-check receipt before it' % what)
+                      '%s hands out work without asking the Gate\'s project check before it' % what)
 
     def dominated(self, module, fn, node):
         if fn is None or isinstance(fn, ast.Lambda):
@@ -636,20 +686,16 @@ class Census:
             current = parent
         return False
 
-    def receipts(self, module):
-        """A receipt is made only by the Gate's check; its schema is written only by the claim organ."""
-        for ref in self.references(module, RECEIPT):
-            fn = module.enclosing(ref)
-            parent = module.parents.get(ref)
-            if not (isinstance(parent, ast.Call) and parent.func is ref) or (module.stem, module.name_of(fn)) != RECEIPT_MAKER:
-                self.fail(module.stem, module.name_of(fn), ref.lineno, 'makes a project-check receipt outside the Gate\'s check')
+    def claim_bypass(self, module):
+        """Every claim goes through the organ: an entity of the claim kind built outside control_claim is
+        refused (the store refuses it at run time too, control_store.declare_organ)."""
+        if module.stem == ORGAN_MODULE or self.kind is NOVALUE:
+            return
         for node in module.nodes:
-            if ((isinstance(node, ast.Name) and node.id == RECEIPT_SCHEMA or isinstance(node, ast.Attribute) and node.attr == RECEIPT_SCHEMA)
-                  and module.stem != ORGAN_MODULE):
-                self.fail(module.stem, module.name_of(module.enclosing(node)), node.lineno, 'uses the receipt schema outside the claim organ')
-            elif (isinstance(node, ast.Constant) and self.schema is not NOVALUE and node.value == self.schema
-                  and not (module.stem == ORGAN_MODULE and isinstance(module.parents.get(node), ast.Assign))):
-                self.fail(module.stem, module.name_of(module.enclosing(node)), node.lineno, 'writes the receipt schema by hand')
+            if self.kind_of(module, node) == self.kind:
+                fn = module.enclosing(node)
+                self.fail(module.stem, module.name_of(fn), node.lineno,
+                          'builds an entity of kind %s outside the claim organ' % self.kind)
 
     # Station contracts.
 
@@ -694,15 +740,16 @@ class Census:
                                  classification='handout', reason='a fresh station contract',
                                  built_at=['%s.%s:%s' % (module.stem, module.name_of(c['function']), c['node'].lineno)
                                            for c in constructions]))
-        self.require(module, fn, call, 'the station contract write')
-        for c in constructions:
-            if not self.within(module, c['node'], call):
-                self.require(c['module'], c['function'], c['node'], 'the station contract it commits')
+        builders = [c for c in constructions if not self.within(module, c['node'], call)]
+        for c in builders:
+            self.require(c['module'], c['function'], c['node'], 'the station contract it commits')
+        if unresolved or not builders:
+            self.require(module, fn, call, 'the station contract write')
 
     # Dynamic attribute access.
 
     def dynamic(self, module):
-        tracked = (ORGAN, CONSTRUCTOR, RECEIPT)
+        tracked = (ORGAN, CONSTRUCTOR)
         for node in module.nodes:
             if not isinstance(node, ast.Call) or callee(node) not in DYNAMIC:
                 continue

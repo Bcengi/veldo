@@ -1,9 +1,56 @@
-"""VELDO-0169: census and signed handouts over the Gate's project check.
+"""VELDO-0169: census and signed handouts over the Gate's project check, and the claim organ's ownership.
 
 Only ROOT and expect come from shared. Projects, memberships, claims, parks, answers,
 stops, settlements and contracts use their production writers. Admitted units and backlog
-items are the claim organ's accepted-admission fixture seam. No model or external host.
+items are the claim organ's accepted-admission fixture seam. The paths that forget the caller's
+check are the claim organ registered bare on the suite's connection and the station contract writer
+called from a probe command, as a new engine path would reach them. A second process (the owner's
+project commands, written below as _V169_FLIPPER) pauses and resumes a project while claims run. No model
+or external host.
 """
+
+_V169_FLIPPER = r'''"""VELDO-0169 suite 84: the owner pauses and resumes one project, from a second process."""
+import importlib.util, json, subprocess, sys, time
+from pathlib import Path
+mods, db, ids, owner_key, journal_key, project, flips, out = (sys.argv[1], sys.argv[2], json.loads(sys.argv[3]),
+                                                           sys.argv[4], sys.argv[5], sys.argv[6], int(sys.argv[7]), sys.argv[8])
+
+
+def load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+claims = load('flip_claims', Path(mods) / 'control_claim.py')
+S, CM = claims.S, claims.CM
+CM.attach(S)
+load('flip_keys', Path(mods) / 'control_keys.py').attach(S)
+PJ = load('flip_projects', Path(mods) / 'control_project.py')
+
+
+def sign(key, message, namespace):
+    return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', key, '-n', namespace], input=message,
+                          capture_output=True, check=True, timeout=10).stdout.decode()
+
+
+conn = S.open_store(db)
+projects = PJ.Projects(S, CM, conn, ids, 'authority', lambda m: sign(journal_key, m, 'veldo-journal'),
+                       stop=lambda dispatch, reason: dict(outcome='stopped'))
+log = []
+for i in range(flips):
+    record = S.materialized_state(conn)['entities'].get('project:' + project)
+    action = 'pause' if record['data'].get('state') == 'ACTIVE' else 'resume'
+    body = dict(ids, operation=action, principal='project-owner', command_id='flip-%d-%f' % (i, time.time()),
+                nonce='flip-n-%d-%f' % (i, time.time()), project=project, project_version=record['version'],
+                reason='Owner stops new work', disposition='Retain accepted history')
+    result = projects.apply({'command': body, 'signature': sign(owner_key, S.canonical_bytes(body), 'veldo-command')})
+    log.append((action, bool(result.get('ok'))))
+    time.sleep(0.01)
+conn.close()
+Path(out).write_text(json.dumps(log))
+'''
 
 
 def _v169_suite():
@@ -16,13 +63,16 @@ def _v169_suite():
     import shutil
     import socket
     import subprocess
+    import sys
     import tempfile
+    import time
 
     production = {
         'control_assignment.py': ROOT / ".veldo" / "control_assignment.py",
         'control_claim.py': ROOT / ".veldo" / "control_claim.py",
         'control_andon.py': ROOT / ".veldo" / "control_andon.py",
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
+        'control_store.py': ROOT / ".veldo" / "control_store.py",
     }
     rows = {}
 
@@ -41,7 +91,8 @@ def _v169_suite():
     DECLARED = (['census/writers', 'census/planted']
                 + [p + '/' + s for p in ('resume', 'dispose', 'andon')
                    for s in ('PAUSED', 'CANCELED', 'COMPLETED', 'owner_not_current', 'race')]
-                + ['claim/absent', 'claim/null', 'guard/receipt', 'guard/resume-again', 'andon/subject-race'])
+                + ['claim/absent', 'claim/null', 'organ/stopped', 'organ/outside', 'organ/ownership', 'guard/forge',
+                   'organ/race', 'guard/resume-again', 'andon/subject-race'])
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, path)
@@ -81,7 +132,7 @@ def _v169_suite():
                           "            elif op == 'resume':\n"), original, original + again)
         if writer == 'own':
             return edit(wired, "        if op == 'resume':\n", "        if op == 'resume_again':\n"
-                        "            return self.claims.transition(params['resume'], before)\n        if op == 'resume':\n")
+                        "            return self.claims.transition(self.conn, params['resume'], before)\n        if op == 'resume':\n")
         if writer == 'shared':
             return edit(wired, "        if op == 'resume':\n", "        if op in ('resume', 'resume_again'):\n")
         return wired
@@ -95,25 +146,28 @@ def _v169_suite():
                 raise LookupError(old[:60])
             return text.replace(old, new)
         yield 'resume-again-dispatch-only', 'Inbox._resume_again', lambda: {'control_assignment': resume_again(a, 'none')}
-        yield 'resume-again-own-writer', 'Inbox._transition', lambda: {'control_assignment': resume_again(a, 'own')}
+        yield 'resume-again-own-writer', 'Inbox._resume_again', lambda: {'control_assignment': resume_again(a, 'own')}
         yield 'resume-again-shared-writer', 'Inbox._resume_again', lambda: {'control_assignment': resume_again(a, 'shared')}
         fast = lambda body: {'control_fastlane': 'class Fast:\n    def __init__(self, inbox):\n        self.inbox = inbox\n' + body}
         yield 'module-local-alias', 'Fast.take', lambda: fast(
-            '    def take(self, params, before):\n        organ = self.inbox.claims\n        return organ.transition(params, before)\n')
+            '    def take(self, conn, params, before):\n        organ = self.inbox.claims\n        return organ.transition(conn, params, before)\n')
         yield 'renamed-attribute', 'Fast.take', lambda: fast(
-            '    def take(self, params, before):\n        return self.inbox.claim_organ.transition(params, before)\n')
+            '    def take(self, conn, params, before):\n        return self.inbox.claim_organ.transition(conn, params, before)\n')
         yield 'getattr-call', 'Fast.take', lambda: fast(
-            "    def take(self, params, before):\n        return getattr(self.inbox.claims, 'transition')(params, before)\n")
+            "    def take(self, conn, params, before):\n        return getattr(self.inbox.claims, 'transition')(conn, params, before)\n")
         yield 'plain-attribute', 'Fast.take', lambda: fast(
-            '    def take(self, params, before):\n        return self.inbox.claims.transition(params, before)\n')
+            '    def take(self, conn, params, before):\n        return self.inbox.claims.transition(conn, params, before)\n')
         yield 'bound-method-alias', 'Fast.take', lambda: fast(
-            '    def take(self, params, before):\n        write = self.inbox.claims.transition\n        return write(params, before)\n')
+            '    def take(self, conn, params, before):\n        write = self.inbox.claims.transition\n        return write(conn, params, before)\n')
         yield 'dynamic-getattr', 'Fast.take', lambda: fast(
-            '    def take(self, name, params, before):\n        return getattr(self.inbox.claims, name)(params, before)\n')
+            '    def take(self, name, conn, params, before):\n        return getattr(self.inbox.claims, name)(conn, params, before)\n')
         yield 'bare-registration', 'Fast.attach', lambda: fast(
-            "    def attach(self, conn):\n        conn.command_registry['fast'] = {'transition': self.inbox.claims.transition}\n")
-        yield 'minted-receipt', 'Fast.take', lambda: fast(
-            "    def take(self, unit):\n        return self.inbox.claims.project_check_receipt(unit, 'p', {})\n")
+            "    def attach(self, conn):\n        conn.command_registry['fast'] = {'transaction_transition': self.inbox.claims.transition}\n")
+        yield 'hand-built-claim', 'Fast.take', lambda: fast(
+            "    def take(self, cid, data):\n        return {cid: {'kind': 'claim', 'data': data}}\n")
+        yield 'hand-built-claim-registered', 'Fast.attach.<lambda>', lambda: fast(
+            "    def attach(self, conn, cid):\n        conn.command_registry['fast'] = {'transition': lambda params, before: {cid: dict(\n"
+            "            kind='claim', data=dict(state='owned', holder='worker'))}}\n")
         yield 'andon-second-resume', 'Andon.resume_quick', lambda: {'control_andon': edit(
             n, '    def run(self):\n',
             "    def resume_quick(self, sid, contract, permission, evidence, expected, command_id):\n"
@@ -125,10 +179,9 @@ def _v169_suite():
             "    def quick_contract(self, contract):\n"
             "        return {contract['contract_id']: {'kind': CONTRACT_KIND, 'data': contract}}\n\n"
             '    def run(self):\n')}
-        yield 'check-in-a-branch', 'Inbox._transition', lambda: {'control_assignment': edit(
-            a, "            receipt = self._project_receipt(params['resume']['unit_id'])\n",
-            "            receipt = None\n            if data.get('urgent'):\n"
-            "                receipt = self._project_receipt(params['resume']['unit_id'])\n")}
+        yield 'check-in-a-branch', 'Inbox._resume', lambda: {'control_assignment': edit(
+            a, "        self._check_project(unit, entities, observation)\n        params['resume']",
+            "        if params.get('urgent'):\n            self._check_project(unit, entities, observation)\n        params['resume']")}
 
     def census():
         sources = engine_sources()
@@ -384,105 +437,301 @@ def _v169_suite():
                     change(name, 'pause')
                     check(row, ruling + ' remains available', prepared and action().get('ok'))
 
-            with region('guard/receipt'):
-                # VELDO-0169 lead decision 1: the claim organ and the station contract writer refuse a handout
-                # without the Gate's receipt for this unit, its project and the versions this transaction pins.
-                repository = A.ids['repository_uuid']
-                PROBE = 'v169_receipt_probe'
-                ing.conn.command_registry[PROBE] = {'transition': lambda params, before: claims.transition(params, before),
-                                                    'writes': ('entities', 'journal', 'commands', 'nonces')}
-                guard = 'p-guard'
-                check('guard/receipt', 'project activated by its owner', activate(guard).get('ok'))
+            # VELDO-0169 lead decisions: the claim organ and the station contract writer ask the Gate's project
+            # check themselves inside the write transaction, callers pass nothing, and the store writes a claim
+            # only as the organ returned it in that same transaction.
+            repository = A.ids['repository_uuid']
+            DIRECT = 'v169_direct_handout'
+            # A path that forgot the caller's check: the organ registered bare, pinning only the claim's own
+            # records, never the project's.
+            ing.conn.command_registry[DIRECT] = {'transaction_transition': claims.transition,
+                                                 'writes': ('entities', 'journal', 'commands', 'nonces')}
+
+            def pins(uid):
+                cid = claims.claim_id(repository, uid)
+                return {eid: (entity(eid) or {}).get('version', 0) for eid in (uid, 'backlog:' + uid, cid)}
+
+            def run(operation, params, versions):
+                """(outcome, nothing written): a store command, accepted or refused by name."""
+                before = S.materialized_state(ing.conn)
+                try:
+                    S.execute(ing.conn, dict(command_id=A.next_id('direct'), principal='worker', operation=operation,
+                                             parameters=params, expected_versions=versions, artifact_digests=[],
+                                             nonce=A.next_id('direct-n')), 'authority', A.journal_sign, 1)
+                    outcome = 'accepted'
+                except S.StoreRefused as exc:
+                    outcome = exc.code
+                except Exception as exc:  # noqa: BLE001 - a raise is an outcome the row names, never a pass
+                    outcome = 'raised %s' % type(exc).__name__
+                return outcome, before == S.materialized_state(ing.conn)
+
+            def direct(uid, action, parked_on=None, **extra):
+                params = dict(action=action, unit_id=uid, backlog_item_uuid='backlog:' + uid,
+                              claim_id=claims.claim_id(repository, uid), holder='worker', generation=0,
+                              capabilities=[], repository_uuid=repository, **extra)
+                if parked_on is not None:
+                    params['parked_on'] = parked_on
+                return run(DIRECT, params, pins(uid))
+
+            def parks(uids, name, stop=None):
+                """Units of project `name`, each claimed, parked on an assignment and answered in turn (an opener
+                holds one claim), and the assignment each waits on; `stop` runs after the last claim and before
+                its assignment opens (a completed project takes no new claim, but its parked work is answered)."""
                 release_held()
-                for uid in ('u-guard-a', 'u-guard-b'):
-                    unit(uid, guard)
+                steps = []
+                for uid in uids:
+                    unit(uid, name)
+                    granted = claim(uid)
+                    steps.append(granted.get('ok'))
+                    if stop is not None and uid == uids[-1]:
+                        steps.append(stop().get('ok'))
+                    steps.append(command('worker', 'open', uid, claim_generation=granted.get('claim', {}).get('generation'),
+                        assignment=dict(kind='decision', owner='owner', scope=['project-a'], deadline='2027-01-01T00:00:00Z',
+                                        budget={'owner_minutes': 10}, brief='Decide the unit', choices=['accept'],
+                                        subject=dict(kind='specification', ref='fixture-spec', digest=S.digest_of(uid)))).get('ok'))
+                    steps.append(command('owner', 'answer', uid, request_version=1, ruling='accept').get('ok'))
+                return all(steps), {uid: A.assignment_id(uid) for uid in uids}
 
-                def checked(uid):
-                    """(refusals, read, receipt) of the Gate's project check; no receipt from a Gate that makes none."""
-                    answer = list(gate.project_problems(uid))
-                    return (answer + [None])[:3]
+            ISSUE = 'v169_station_probe'
+            issued = []
 
-                def claim_pins(uid):
-                    cid = claims.claim_id(repository, uid)
-                    return {eid: (entity(eid) or {}).get('version', 0) for eid in (uid, 'backlog:' + uid, cid)}
+            def station_probe(params, before):
+                # The station contract writer inside a command transaction, reached without Andon.resume's
+                # check; what it returns is recorded, and nothing is written (the kind is the andon's own).
+                issued.append(andon.issue_station_contract(params['contract'], before))
+                return {}
+            ing.conn.command_registry[ISSUE] = {'transition': station_probe, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 
-                def probe(uid, receipt, action='claim', project_pinned=True):
-                    params = dict(action=action, unit_id=uid, backlog_item_uuid='backlog:' + uid,
-                                  claim_id=claims.claim_id(repository, uid), holder='worker', generation=0,
-                                  capabilities=[], repository_uuid=repository, parked_on='none')
-                    if receipt is not None:
-                        params['project_check'] = receipt
-                    versions = claim_pins(uid)
-                    if project_pinned:
-                        versions.update(checked(uid)[1])
-                    before = S.materialized_state(ing.conn)
+            def station(uid):
+                contract = dict(contract_id='andon-station-contract:v169-probe:' + uid, unit=uid)
+                del issued[:]
+                outcome, unchanged = run(ISSUE, dict(contract=contract), {uid: (entity(uid) or {}).get('version', 0)})
+                return outcome, unchanged and not (outcome != 'accepted' and issued)
+
+            with region('organ/stopped'):
+                # Each handout path with no caller check and nothing passed: the organ's claim, resume and unpark,
+                # and the station contract writer, over a paused, canceled, completed and owner-not-current project.
+                row = 'organ/stopped'
+                for state in ('PAUSED', 'CANCELED', 'COMPLETED', 'owner_not_current'):
+                    name = 'p-organ-' + state.lower()
+                    check(row, state + ': project activated by its owner', activate(name).get('ok'))
+                    # One parked unit takes both the resume and the unpark, each refused with nothing written (a
+                    # project completes only with no open assignment, so it has one parked unit at most).
+                    parked_u, fresh = ('u-organ-%s-%s' % (state.lower(), k) for k in ('parked', 'fresh'))
+                    lifecycle = lambda: change(name, dict(PAUSED='pause', CANCELED='cancel', COMPLETED='complete')[state])
+                    ready, source = parks([parked_u], name, stop=lifecycle if state == 'COMPLETED' else None)
+                    check(row, state + ': real parks on answered assignments', ready)
+                    if state == 'owner_not_current':
+                        A.admin('steward', 'change_roles', dict(principal='project-owner', roles=[]))
+                    elif state != 'COMPLETED':
+                        check(row, state + ': owner committed lifecycle command', lifecycle().get('ok'))
+                    unit(fresh, name)
+                    expected = 'project_not_active:' + state
+                    for label, (outcome, unchanged) in (
+                            ('claim', direct(fresh, 'claim')),
+                            ('resume', direct(parked_u, 'resume', parked_on=source[parked_u])),
+                            ('unpark', direct(parked_u, 'unpark', parked_on=source[parked_u])),
+                            ('station contract', station(fresh))):
+                        check(row, '%s: %s refused as %s, nothing written' % (state, label, outcome),
+                              outcome == expected and unchanged)
+                    if state == 'owner_not_current':
+                        A.admin('steward', 'change_roles', dict(principal='project-owner', roles=['project_owner']))
+                live = 'p-organ-active'
+                check(row, 'control: project activated by its owner', activate(live).get('ok'))
+                ready, source = parks(['u-organ-active-resume', 'u-organ-active-unpark'], live)
+                unit('u-organ-active', live)
+                for label, outcome in (('claim', direct('u-organ-active', 'claim')[0]),
+                                       ('resume', direct('u-organ-active-resume', 'resume', parked_on=source['u-organ-active-resume'])[0]),
+                                       ('unpark', direct('u-organ-active-unpark', 'unpark', parked_on=source['u-organ-active-unpark'])[0])):
+                    check(row, 'control: the same %s of an active project is taken (%s)' % (label, outcome),
+                          ready and outcome == 'accepted')
+                outcome, _ = station('u-organ-active')
+                check(row, 'control: the station contract writer issues it for an active project (%s)' % outcome,
+                      outcome == 'accepted' and issued and list(issued[-1]) == ['andon-station-contract:v169-probe:u-organ-active'])
+                release_held()
+
+            with region('organ/outside'):
+                # No organ decision and no station contract is made before the write transaction holds its lock.
+                row = 'organ/outside'
+                release_held()
+                name, uid = 'p-organ-outside', 'u-organ-outside'
+                check(row, 'project activated by its owner', activate(name).get('ok'))
+                unit(uid, name)
+                params = dict(action='claim', unit_id=uid, backlog_item_uuid='backlog:' + uid,
+                              claim_id=claims.claim_id(repository, uid), holder='worker', generation=0,
+                              capabilities=[], repository_uuid=repository)
+                snapshot = {eid: dict(record) for eid, record in S.materialized_state(ing.conn)['entities'].items()}
+                for label, attempt in (('the claim organ', lambda: claims.transition(ing.conn, params, snapshot)),
+                                       ('the station contract writer', lambda: andon.issue_station_contract(
+                                           dict(contract_id='andon-station-contract:v169-outside', unit=uid), snapshot))):
                     try:
-                        S.execute(ing.conn, dict(command_id=A.next_id('probe'), principal='worker', operation=PROBE,
-                                                 parameters=params, expected_versions=versions, artifact_digests=[],
-                                                 nonce=A.next_id('probe-n')), 'authority', A.journal_sign, 1)
-                        outcome = 'accepted'
+                        attempt()
+                        outcome = 'decided outside a transaction'
                     except S.StoreRefused as exc:
                         outcome = exc.code
-                    return outcome, before == S.materialized_state(ing.conn)
-
-                first_a, receipt_b = checked('u-guard-a')[2], checked('u-guard-b')[2]
-                check('guard/receipt', 'the Gate makes a receipt of the unit, its project and the versions it read',
-                      isinstance(first_a, dict) and first_a.get('unit') == 'u-guard-a' and first_a.get('project') == guard
-                      and first_a.get('read') == checked('u-guard-a')[1])
-                check('guard/receipt', 'the Gate makes no receipt for a stopped project',
-                      checked('u-resume-paused')[0] == ['project_not_active:PAUSED'] and checked('u-resume-paused')[2] is None)
-                for label, action, receipt, pinned, expected in (
-                        ('a claim without a receipt', 'claim', None, True, 'missing_evidence:project_check'),
-                        ('a resume without a receipt', 'resume', None, True, 'missing_evidence:project_check'),
-                        ('an unpark without a receipt', 'unpark', None, True, 'missing_evidence:project_check'),
-                        ('a receipt of another unit', 'claim', receipt_b, True, 'stale_subject:project_check'),
-                        ('a receipt whose reads this transaction did not pin', 'claim', first_a, False,
-                         'stale_subject:project_check')):
-                    outcome, unchanged = probe('u-guard-a', receipt, action, pinned)
-                    check('guard/receipt', '%s refused by name (%s), nothing written' % (label, outcome),
-                          outcome == expected and unchanged)
-                moved = [change(guard, 'pause'), change(guard, 'resume')]
-                later = checked('u-guard-a')
-                check('guard/receipt', 'the project is active again at a later version',
-                      all(m.get('ok') for m in moved) and later[0] == []
-                      and later[1]['project:' + guard] > ((first_a or {}).get('read') or {}).get('project:' + guard, later[1]['project:' + guard]))
-                outcome, unchanged = probe('u-guard-a', first_a)
-                check('guard/receipt', 'a receipt of an older project version refused by name (%s), nothing written' % outcome,
-                      outcome == 'stale_subject:project_check' and unchanged)
-                contract = dict(contract_id='andon-station-contract:v169-guard', unit='u-guard-a')
-                snapshot = {eid: record for eid, record in S.materialized_state(ing.conn)['entities'].items()
-                            if eid in ('u-guard-a', *later[1])}
-
-                def issue(receipt):
-                    writer = getattr(andon, 'issue_station_contract', None)
-                    if writer is None:
-                        return 'no station contract writer'
-                    try:
-                        return writer(contract, receipt, snapshot)
-                    except S.StoreRefused as exc:
-                        return exc.code
-                for label, receipt, expected in (
-                        ('no receipt', None, 'missing_evidence:project_check'),
-                        ('a receipt of another unit', checked('u-guard-b')[2], 'stale_subject:project_check'),
-                        ('a receipt of an older project version', first_a, 'stale_subject:project_check')):
-                    outcome = issue(receipt)
-                    check('guard/receipt', 'the station contract writer refuses %s (%s)' % (label, outcome), outcome == expected)
-                check('guard/receipt', 'control: the station contract writer writes it with a current receipt',
-                      issue(later[2]) == {contract['contract_id']: {'kind': AND.CONTRACT_KIND, 'data': contract}})
-                outcome, _ = probe('u-guard-a', later[2])
-                held = (entity(claims.claim_id(repository, 'u-guard-a')) or {}).get('data') or {}
-                check('guard/receipt', 'control: a current receipt takes the claim (%s)' % outcome,
-                      outcome == 'accepted' and held.get('state') == 'owned' and held.get('holder') == 'worker')
+                    except Exception as exc:  # noqa: BLE001 - a raise is an outcome the row names
+                        outcome = 'raised %s' % type(exc).__name__
+                    check(row, '%s refuses to decide outside a command transaction (%s)' % (label, outcome),
+                          outcome == 'outside_transaction')
+                outcome, _ = direct(uid, 'claim')
+                check(row, 'control: the same claim inside its transaction is taken (%s)' % outcome, outcome == 'accepted')
                 release_held()
 
+            with region('organ/ownership', 'guard/forge'):
+                # Only the claim organ decides a claim: the store refuses any other writer of kind claim by name.
+                row = 'organ/ownership'
+                release_held()
+                organs = S.entity_organs(ing.conn)
+                check(row, 'the store holds the claim organ\'s declaration', (organs.get('claim') or ())[1:4] == (
+                    'claim', '_decide', str((mods / 'control_claim.py').resolve())))
+                name, uid, cid = 'p-organ-owned', 'u-organ-owned', claims.claim_id(repository, 'u-organ-owned')
+                check(row, 'project activated by its owner', activate(name).get('ok'))
+                unit(uid, name)
+                built = dict(state='owned', holder='worker', unit_id=uid, backlog_item_uuid='backlog:' + uid,
+                             repository_uuid=repository, generation=1, heartbeat_at='2026-09-27T00:00:00Z')
+                ing.conn.command_registry['v169_hand_claim'] = {
+                    'transition': lambda params, before: {params['claim']: {'kind': 'claim', 'data': params['data']}},
+                    'writes': ('entities', 'journal', 'commands', 'nonces')}
+
+                def edited(conn, params, before):
+                    changes = claims.transition(conn, params, before)
+                    return dict(changes, **{params['claim_id']: {'kind': 'claim', 'data': dict(
+                        changes[params['claim_id']]['data'], holder='someone-else')}})
+                ing.conn.command_registry['v169_edited_claim'] = {'transaction_transition': edited,
+                                                                  'writes': ('entities', 'journal', 'commands', 'nonces')}
+
+                def foreign(conn, params, before):
+                    return claims.S.organ_write(conn, 'claim', lambda c, p, b: {p['claim_id']: {'kind': 'claim', 'data': {}}},
+                                                params, before)
+                ing.conn.command_registry['v169_foreign_organ'] = {'transaction_transition': foreign,
+                                                                   'writes': ('entities', 'journal', 'commands', 'nonces')}
+                claim_params = dict(action='claim', unit_id=uid, backlog_item_uuid='backlog:' + uid, claim_id=cid,
+                                    holder='worker', generation=0, capabilities=[], repository_uuid=repository)
+                for label, operation, params, expected in (
+                        ('a claim entity built by hand', 'v169_hand_claim', dict(claim=cid, data=built), 'entity_owned'),
+                        ('a claim written by the generic upsert', 'upsert_entity', dict(entity_id=cid, kind='claim', data=built),
+                         'entity_owned'),
+                        ('the organ\'s claim edited on the way out', 'v169_edited_claim', claim_params, 'entity_owned'),
+                        ('another function offered as the organ', 'v169_foreign_organ', claim_params, 'foreign_transition')):
+                    outcome, unchanged = run(operation, params, pins(uid))
+                    check(row, '%s refused as %s, nothing written' % (label, outcome), outcome == expected and unchanged)
+                outcome, _ = run(DIRECT, claim_params, pins(uid))
+                check(row, 'control: the organ\'s own claim of the same unit is written (%s)' % outcome, outcome == 'accepted'
+                      and (entity(cid) or {}).get('data', {}).get('holder') == 'worker')
+                release_held()
+
+                # The forge probe (rv169b) on a paused project, with no receipt anywhere to forge: a claim carrying a
+                # literal project check, one carrying another unit's rewritten check, and a claim entity built by hand.
+                row = 'guard/forge'
+                forged, other = 'p-forge', 'p-forge-other'
+                check(row, 'projects activated by their owner', activate(forged).get('ok') and activate(other).get('ok'))
+                unit('u-forge', forged)
+                unit('u-forge-other', other)
+                read = dict(gate.project_problems('u-forge')[1])
+                check(row, 'the paused project is refused by the Gate', change(forged, 'pause').get('ok')
+                      and gate.project_problems('u-forge')[0] == ['project_not_active:PAUSED'])
+                literal = {'schema': 'veldo.project_check/v1', 'unit': 'u-forge', 'project': forged, 'read': read}
+                rewritten = dict(unit='u-forge-other', project=other, read=dict(gate.project_problems('u-forge-other')[1]))
+                rewritten.update(unit='u-forge', project=forged, read=read)
+                fcid = claims.claim_id(repository, 'u-forge')
+                for label, (outcome, unchanged), expected in (
+                        ('a literal project check', direct('u-forge', 'claim', project_check=literal), 'project_not_active:PAUSED'),
+                        ('another unit\'s check, rewritten', direct('u-forge', 'claim', project_check=rewritten),
+                         'project_not_active:PAUSED'),
+                        ('a claim entity built by hand', run('v169_hand_claim', dict(claim=fcid, data=dict(
+                            built, unit_id='u-forge', backlog_item_uuid='backlog:u-forge')), pins('u-forge')), 'entity_owned')):
+                    check(row, '%s on the paused project refused as %s, nothing written' % (label, outcome),
+                          outcome == expected and unchanged)
+                check(row, 'no claim of the paused project\'s unit exists', entity(fcid) is None
+                      and (entity('project:' + forged) or {}).get('data', {}).get('state') == 'PAUSED')
+                check(row, 'control: the project resumed, the same claim is taken',
+                      change(forged, 'resume').get('ok') and direct('u-forge', 'claim')[0] == 'accepted')
+                release_held()
+
+            with region('organ/race'):
+                # The owner pauses and resumes the project from a second process while claims run, several rounds,
+                # with a delay between the receiver's check and its write, and through the organ bare (no caller
+                # check, nothing pinned): no claim is ever written while the project is not ACTIVE.
+                row = 'organ/race'
+                release_held()
+                name = 'p-organ-race'
+                check(row, 'project activated by its owner', activate(name).get('ok'))
+                unit('u-race-seq', name)
+                # A check reused from an earlier transaction is a check outside this one.
+                first = direct('u-race-seq', 'claim')[0]
+                release_held()
+                paused = change(name, 'pause').get('ok')
+                second = direct('u-race-seq', 'claim')[0]
+                check(row, 'a claim taken, released, the project paused: the next claim is refused (%s, %s)' % (first, second),
+                      first == 'accepted' and paused and second == 'project_not_active:PAUSED')
+                check(row, 'the project is resumed', change(name, 'resume').get('ok'))
+                flipper = base / 'v169_flipper.py'
+                flipper.write_text(_V169_FLIPPER)
+                db = [r[2] for r in ing.conn.execute('PRAGMA database_list').fetchall() if r[1] == 'main'][0]
+                original = S.execute
+
+                def slow(conn, command, *args, **kwargs):
+                    if command.get('operation') in ('claim_operation', DIRECT):
+                        time.sleep(0.02)
+                    return original(conn, command, *args, **kwargs)
+                taken, refused_while, flips = 0, collections.Counter(), collections.Counter()
+                units = []
+                for round_ in range(3):
+                    batch = ['u-race-%d-%d' % (round_, i) for i in range(4)]
+                    for uid in batch:
+                        unit(uid, name)
+                    units += batch
+                    log = base / ('v169_flips_%d.json' % round_)
+                    process = subprocess.Popen([sys.executable, str(flipper), str(mods), db, json.dumps(A.ids),
+                                                str(A.keyfile['project-owner']), str(A.keyfile['authority']), name, '24', str(log)])
+                    S.execute = slow
+                    try:
+                        while process.poll() is None:
+                            for i, uid in enumerate(batch):
+                                if i % 2:
+                                    outcome = direct(uid, 'claim')[0]
+                                else:
+                                    result = claim(uid)
+                                    outcome = 'accepted' if result.get('ok') else result.get('reason')
+                                refused_while[outcome] += 1
+                                if outcome == 'accepted':
+                                    release_held()
+                    finally:
+                        S.execute = original
+                    process.wait(timeout=60)
+                    flips.update(tuple(x) for x in json.loads(log.read_text()))
+                    if (entity('project:' + name) or {}).get('data', {}).get('state') != 'ACTIVE':
+                        change(name, 'resume')
+                state, bad = None, []
+                for seq, transition in ing.conn.execute('SELECT seq, transition FROM journal ORDER BY seq'):
+                    records = json.loads(transition)
+                    if 'project:' + name in records:
+                        state = records['project:' + name]['data'].get('state')
+                    for eid, record in records.items():
+                        if record['kind'] == 'claim' and record['data'].get('unit_id') in units + ['u-race-seq'] \
+                                and record['data'].get('state') == 'owned':
+                            taken += 1
+                            if state != 'ACTIVE':
+                                bad.append((seq, eid, state))
+                check(row, 'the second process paused and resumed the project (%s)' % dict(flips),
+                      flips.get(('pause', True), 0) >= 6 and flips.get(('resume', True), 0) >= 6)
+                check(row, 'claims were taken and refused while it did (%s)' % dict(refused_while),
+                      refused_while.get('accepted', 0) > 0 and sum(v for k, v in refused_while.items() if k != 'accepted') > 0)
+                check(row, 'no claim written while the project was not ACTIVE (%d taken, %s)' % (taken, bad[:3]),
+                      taken > 0 and not bad)
+                print('  VELDO-0169 race: ' + json.dumps(dict(flips={'%s %s' % k: v for k, v in flips.items()},
+                                                              outcomes=dict(refused_while), taken=taken, bad=bad[:3]), sort_keys=True))
+
             # The reviewer's falsifier at run time: a copy of the resume without the project check, wired into
-            # the inbox, is refused by the claim organ with a write of its own or through the resume's write.
-            for writer, expected in (('own', 'missing_evidence:project_check'), ('shared', 'stale_subject:project_check')):
+            # the inbox with a write of its own or through the resume's write, over a paused project: the claim
+            # organ refuses it by the Gate's name and writes nothing.
+            for writer in ('own', 'shared'):
                 with region('guard/resume-again'):
                     row = 'guard/resume-again'
                     name, uid = 'p-again-' + writer, 'u-again-' + writer
                     check(row, 'project activated by its owner', activate(name).get('ok'))
                     _, watched, _, ready = prepare('resume', uid, name)
+                    check(row, writer + ' writer: the project paused', change(name, 'pause').get('ok'))
                     path = base / ('control_assignment_again_' + writer + '.py')
                     try:
                         path.write_text(resume_again((mods / 'control_assignment.py').read_text(), writer))
@@ -501,10 +750,11 @@ def _v169_suite():
                         ing.conn.command_registry[AG.OPERATION] = saved
                     check(row, writer + ' writer: parked work and answered assignment', ready)
                     check(row, writer + ' writer: refused by the claim organ as ' + str(result.get('reason')),
-                          result.get('reason') == expected)
+                          result.get('reason') == 'project_not_active:PAUSED')
                     check(row, writer + ' writer: claim, park and unit unchanged', before == {eid: entity(eid) for eid in watched})
-                    resumed = command('worker', 'resume', uid, request_version=1, capabilities=[])
-                    check(row, writer + ' writer: control: the real resume takes the same work', resumed.get('ok'))
+                    resumed = change(name, 'resume').get('ok') and command('worker', 'resume', uid, request_version=1, capabilities=[])
+                    check(row, writer + ' writer: control: the project resumed, the real resume takes the same work',
+                          bool(resumed) and resumed.get('ok'))
                     release_held()
 
             with region('andon/subject-race'):

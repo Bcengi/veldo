@@ -70,7 +70,8 @@ entity_owned for any entity of an organ-owned kind (after the write or before it
 exactly what the organ returned in this same transaction: a record built by hand, one the organ
 returned in an earlier transaction, or the organ's answer edited on the way out. organ_write
 outside a command transaction is refused outside_transaction, so no organ decision is made before
-the write lock is held. The same stated limits as ENTITY OWNERSHIP apply, and a kind is owned by
+the write lock is held, and in a store where no organ of the kind is declared it is refused
+undeclared_organ. The same stated limits as ENTITY OWNERSHIP apply, and a kind is owned by
 declare_owners or by an organ, never both (ownership_conflict).
 
 THE ARCHITECTURE RECORD HAS ONE WRITER (VELDO-0134, R50). An entity whose id begins with
@@ -125,7 +126,8 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
             "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
-            "ownership_conflict", "repository_binding_conflict", "foreign_transition", "outside_transaction")
+            "ownership_conflict", "repository_binding_conflict", "foreign_transition", "outside_transaction",
+            "undeclared_organ")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
 # VELDO-0134: the architecture record and the one operation that writes it (see the module docstring).
@@ -816,18 +818,20 @@ def declare_organ(conn, owner, kind, function):
 def organ_write(conn, kind, function, params, before):
     """VELDO-0169: the changes `function`, the organ of `kind`, decides for `params` over `before`, inside
     the command transaction open on `conn`, recorded so that execute writes exactly them. Refused
-    outside_transaction outside a command transaction, and foreign_transition when `kind` has a
-    declared organ and `function` is not it (another function, another file, or the file's bytes
-    changed). A kind no organ was declared for is unowned: the function runs and nothing binds it."""
+    outside_transaction outside a command transaction; undeclared_organ in a store where no organ of
+    `kind` is declared, since there nothing would keep another writer out and a later declaration
+    would find the kind occupied; and foreign_transition when `function` is not the declared organ
+    (another function, another file, or the file's bytes changed)."""
     if not getattr(conn, "command_transaction", False) or not conn.in_transaction or getattr(conn, "organ_writes", None) is None:
         raise StoreRefused("outside_transaction", "an organ decides %s only inside the command transaction that writes it" % kind)
     declared = entity_organs(conn).get(kind)
-    if declared is not None:
-        problem = transition_origin_problem(function, declared[3], declared[4])
-        if problem is None and getattr(function, "__qualname__", None) != declared[2]:
-            problem = "the organ is %s, not %s" % (declared[2], getattr(function, "__qualname__", None))
-        if problem is not None:
-            raise StoreRefused("foreign_transition", "kind %r is decided by %s in %s: %s" % (kind, declared[2], declared[3], problem))
+    if declared is None:
+        raise StoreRefused("undeclared_organ", "no organ of kind %r is declared in this store: its owner declares it when it attaches" % kind)
+    problem = transition_origin_problem(function, declared[3], declared[4])
+    if problem is None and getattr(function, "__qualname__", None) != declared[2]:
+        problem = "the organ is %s, not %s" % (declared[2], getattr(function, "__qualname__", None))
+    if problem is not None:
+        raise StoreRefused("foreign_transition", "kind %r is decided by %s in %s: %s" % (kind, declared[2], declared[3], problem))
     changes = function(conn, params, before)
     for eid, new in changes.items():
         if new.get("kind") == kind or (before.get(eid) or {}).get("kind") == kind:
