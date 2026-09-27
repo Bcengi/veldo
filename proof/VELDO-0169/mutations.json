@@ -1,0 +1,1400 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "census": [
+   "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+  ],
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0169 census/writers",
+    true
+   ],
+   [
+    "VELDO-0169 resume/PAUSED",
+    true
+   ],
+   [
+    "VELDO-0169 resume/CANCELED",
+    true
+   ],
+   [
+    "VELDO-0169 resume/COMPLETED",
+    true
+   ],
+   [
+    "VELDO-0169 resume/owner_not_current",
+    true
+   ],
+   [
+    "VELDO-0169 resume/race",
+    true
+   ],
+   [
+    "VELDO-0169 dispose/PAUSED",
+    true
+   ],
+   [
+    "VELDO-0169 dispose/CANCELED",
+    true
+   ],
+   [
+    "VELDO-0169 dispose/COMPLETED",
+    true
+   ],
+   [
+    "VELDO-0169 dispose/owner_not_current",
+    true
+   ],
+   [
+    "VELDO-0169 dispose/race",
+    true
+   ],
+   [
+    "VELDO-0169 andon/PAUSED",
+    true
+   ],
+   [
+    "VELDO-0169 andon/CANCELED",
+    true
+   ],
+   [
+    "VELDO-0169 andon/COMPLETED",
+    true
+   ],
+   [
+    "VELDO-0169 andon/owner_not_current",
+    true
+   ],
+   [
+    "VELDO-0169 andon/race",
+    true
+   ],
+   [
+    "VELDO-0169 claim/absent",
+    true
+   ],
+   [
+    "VELDO-0169 claim/null",
+    true
+   ]
+  ],
+  "seconds": 8.886
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [\"unclassified writer ('control_assignment', 'Inbox.second_resume', \\\"claim:params['resume']\\\")\"], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 895, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 986, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 889, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: census/writers: unclassified writer ('control_assignment', 'Inbox.second_resume', \"claim:params['resume']\")"
+   ],
+   "diff": "proof/VELDO-0169/handout-unlisted-resume.diff",
+   "failed_rows": [
+    "VELDO-0169 census/writers"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "34302cd2e6a4e76f896f1b9eed8a08eb3d418a04e18ba5038278d550074c6be5",
+   "name": "handout-unlisted-resume",
+   "named_row_red": true,
+   "named_rows": [
+    "census/writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     false
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.815,
+   "source_sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [\"unchecked writer control_assignment.Inbox._resume\"], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 891, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 982, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 885, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: census/writers: unchecked writer control_assignment.Inbox._resume",
+    "VELDO-0169 detail: resume/PAUSED: Gate refusal resume; claim, park, stop and unit unchanged; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: resume/CANCELED: Gate refusal resume; claim, park, stop and unit unchanged; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: resume/COMPLETED: Gate refusal resume; claim, park, stop and unit unchanged; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: resume/owner_not_current: Gate refusal resume; claim, park, stop and unit unchanged; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: resume/race: Gate refusal resume; claim, park, stop and unit unchanged; refusal names project and read versions; refusal counted by reason"
+   ],
+   "diff": "proof/VELDO-0169/handout-resume-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0169 census/writers",
+    "VELDO-0169 resume/PAUSED",
+    "VELDO-0169 resume/CANCELED",
+    "VELDO-0169 resume/COMPLETED",
+    "VELDO-0169 resume/owner_not_current",
+    "VELDO-0169 resume/race"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "134b369bf1ce6a112c44f7439af00d1a300c380651d4e35b1b7044d52ac8a463",
+   "name": "handout-resume-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "resume/PAUSED",
+    "census/writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     false
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     false
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     false
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     false
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     false
+    ],
+    [
+     "VELDO-0169 resume/race",
+     false
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.534,
+   "source_sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [\"unchecked writer control_assignment.Inbox._dispose\"], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 891, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 982, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 885, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: census/writers: unchecked writer control_assignment.Inbox._dispose",
+    "VELDO-0169 detail: dispose/PAUSED: Gate refusal dispose; claim, park, stop and unit unchanged; refusal names project and read versions",
+    "VELDO-0169 detail: dispose/CANCELED: Gate refusal dispose; claim, park, stop and unit unchanged; refusal names project and read versions",
+    "VELDO-0169 detail: dispose/COMPLETED: Gate refusal dispose; claim, park, stop and unit unchanged; refusal names project and read versions",
+    "VELDO-0169 detail: dispose/owner_not_current: Gate refusal dispose; claim, park, stop and unit unchanged; refusal names project and read versions",
+    "VELDO-0169 detail: dispose/race: Gate refusal dispose; claim, park, stop and unit unchanged; refusal names project and read versions"
+   ],
+   "diff": "proof/VELDO-0169/handout-backlog-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0169 census/writers",
+    "VELDO-0169 dispose/PAUSED",
+    "VELDO-0169 dispose/CANCELED",
+    "VELDO-0169 dispose/COMPLETED",
+    "VELDO-0169 dispose/owner_not_current",
+    "VELDO-0169 dispose/race"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "14aa3af57511af340d5ddd542d93f646f074eb619e4c2193b79fbe814e4e5ba2",
+   "name": "handout-backlog-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "dispose/PAUSED",
+    "census/writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     false
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     false
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     false
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     false
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     false
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     false
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.212,
+   "source_sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [\"unchecked writer control_andon.Andon.resume\"], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: census/writers: unchecked writer control_andon.Andon.resume",
+    "VELDO-0169 detail: andon/PAUSED: Gate refusal None; claim, park, stop and unit unchanged; no station contract issued; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: andon/CANCELED: Gate refusal None; claim, park, stop and unit unchanged; no station contract issued; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: andon/COMPLETED: Gate refusal None; claim, park, stop and unit unchanged; no station contract issued; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: andon/owner_not_current: Gate refusal None; claim, park, stop and unit unchanged; no station contract issued; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: andon/race: Gate refusal None; claim, park, stop and unit unchanged; no station contract issued; refusal names project and read versions; refusal counted by reason"
+   ],
+   "diff": "proof/VELDO-0169/handout-andon-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0169 census/writers",
+    "VELDO-0169 andon/PAUSED",
+    "VELDO-0169 andon/CANCELED",
+    "VELDO-0169 andon/COMPLETED",
+    "VELDO-0169 andon/owner_not_current",
+    "VELDO-0169 andon/race"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "417ebd2909e64b6a234a415a141a48b64ca61bc13cda51fa48d01dd1e65ff28c",
+   "name": "handout-andon-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "andon/PAUSED",
+    "census/writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     false
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     false
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     false
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     false
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     false
+    ],
+    [
+     "VELDO-0169 andon/race",
+     false
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.43,
+   "source_sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: claim/absent: missing project refused; nothing written; missing project refusal observed and counted",
+    "VELDO-0169 detail: claim/null: missing project refused; nothing written; missing project refusal observed and counted"
+   ],
+   "diff": "proof/VELDO-0169/handout-null-claim-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0169 claim/absent",
+    "VELDO-0169 claim/null"
+   ],
+   "module": ".veldo/control_claim.py",
+   "mutant_sha256": "32efbe007d3c2f5d85156d7153e3e0d66ec79d7a0967dcbce4898461b1f291cd",
+   "name": "handout-null-claim-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "claim/absent",
+    "claim/null"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     false
+    ],
+    [
+     "VELDO-0169 claim/null",
+     false
+    ]
+   ],
+   "seconds": 9.082,
+   "source_sha256": "c779130a8c27a2cec4ed5ffb97fe559dc8cc8541f88a4ef8386ec5231d9a6dfc"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: resume/race: Gate refusal resume; claim, park, stop and unit unchanged; refusal names project and read versions; refusal counted by reason",
+    "VELDO-0169 detail: dispose/race: Gate refusal dispose; claim, park, stop and unit unchanged; refusal names project and read versions"
+   ],
+   "diff": "proof/VELDO-0169/handout-assignment-project-unpinned.diff",
+   "failed_rows": [
+    "VELDO-0169 resume/race",
+    "VELDO-0169 dispose/race"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "d8df5df4547006a549d01bc69707ba13b41c48d88092a5da05ed95eaceda18b1",
+   "name": "handout-assignment-project-unpinned",
+   "named_row_red": true,
+   "named_rows": [
+    "resume/race",
+    "dispose/race"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     false
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     false
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.547,
+   "source_sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: resume/race: refusal names project and read versions",
+    "VELDO-0169 detail: dispose/race: refusal names project and read versions"
+   ],
+   "diff": "proof/VELDO-0169/handout-assignment-owner-unpinned.diff",
+   "failed_rows": [
+    "VELDO-0169 resume/race",
+    "VELDO-0169 dispose/race"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "194b64a27bad6b83d8f70174c4170b495d26303f9b1c8870d56ed3a3dc4d87cb",
+   "name": "handout-assignment-owner-unpinned",
+   "named_row_red": true,
+   "named_rows": [
+    "resume/race",
+    "dispose/race"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     false
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     false
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.788,
+   "source_sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: andon/race: Gate refusal None; claim, park, stop and unit unchanged; no station contract issued; refusal names project and read versions; refusal counted by reason"
+   ],
+   "diff": "proof/VELDO-0169/handout-andon-project-unpinned.diff",
+   "failed_rows": [
+    "VELDO-0169 andon/race"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "893b930f2868aaf530528cbf7ac6764901e28a1f3308e9fc1760c80492cbe84f",
+   "name": "handout-andon-project-unpinned",
+   "named_row_red": true,
+   "named_rows": [
+    "andon/race"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     false
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.242,
+   "source_sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: andon/race: refusal names project and read versions"
+   ],
+   "diff": "proof/VELDO-0169/handout-andon-owner-unpinned.diff",
+   "failed_rows": [
+    "VELDO-0169 andon/race"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "fc4d289d737c7fb557c1c39ed24a76a92f0ac3433bdf55e2de007b15d6607971",
+   "name": "handout-andon-owner-unpinned",
+   "named_row_red": true,
+   "named_rows": [
+    "andon/race"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     false
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 7.398,
+   "source_sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5"
+  },
+  {
+   "by_assertion": true,
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "details": [
+    "VELDO-0169 detail: andon/race: Gate refusal stale_subject; refusal names project and read versions; refusal counted by reason; owner read pinned through commit"
+   ],
+   "diff": "proof/VELDO-0169/handout-andon-stale-renamed.diff",
+   "failed_rows": [
+    "VELDO-0169 andon/race"
+   ],
+   "module": ".veldo/control_andon.py",
+   "mutant_sha256": "f70ddbef4d9914d61baf350f190a75cf771af9702f166e8ca78f7a08f358ce06",
+   "name": "handout-andon-stale-renamed",
+   "named_row_red": true,
+   "named_rows": [
+    "andon/race"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     false
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.035,
+   "source_sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5"
+  }
+ ],
+ "mutations_per_row": {
+  "andon/PAUSED": [
+   "handout-andon-unchecked"
+  ],
+  "andon/race": [
+   "handout-andon-project-unpinned",
+   "handout-andon-owner-unpinned",
+   "handout-andon-stale-renamed"
+  ],
+  "census/writers": [
+   "handout-unlisted-resume",
+   "handout-resume-unchecked",
+   "handout-backlog-unchecked",
+   "handout-andon-unchecked"
+  ],
+  "claim/absent": [
+   "handout-null-claim-unchecked"
+  ],
+  "claim/null": [
+   "handout-null-claim-unchecked"
+  ],
+  "dispose/PAUSED": [
+   "handout-backlog-unchecked"
+  ],
+  "dispose/race": [
+   "handout-assignment-project-unpinned",
+   "handout-assignment-owner-unpinned"
+  ],
+  "resume/PAUSED": [
+   "handout-resume-unchecked"
+  ],
+  "resume/race": [
+   "handout-assignment-project-unpinned",
+   "handout-assignment-owner-unpinned"
+  ]
+ },
+ "noop": {
+  "control_andon.py": {
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "copy_sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.03,
+   "source_sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5"
+  },
+  "control_assignment.py": {
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "copy_sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.32,
+   "source_sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea"
+  },
+  "control_claim.py": {
+   "census": [
+    "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"nothing\": 2}, \"failures\": [], \"writers\": [{\"classification\": \"handout\", \"entry\": \"Andon.resume\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"fresh station contract\", \"site\": \"station:issued\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._resume\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"fresh claim on parked work\", \"site\": \"claim:params['resume']\"}, {\"classification\": \"handout\", \"entry\": \"Inbox._dispose\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"backlog outcome clears the park\", \"site\": \"claim:plan['unpark']\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"release of a held claim to park it\", \"site\": \"claim:params['release']\"}, {\"classification\": \"handout\", \"entry\": \"Receiver._apply\", \"function\": \"Receiver.__init__\", \"line\": 165, \"module\": \"control_claim\", \"reason\": \"claim; renew, release and use hand out nothing\", \"site\": \"claim:registered\"}, {\"classification\": \"nothing\", \"entry\": null, \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"renewal of the claim already held\", \"site\": \"claim:dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog, claim_id=binding['entity'], holder=binding['holder'], generation=binding['generation'], capabilities=[], repository_uuid=contract['repository'])\"}]}"
+   ],
+   "copy_sha256": "c779130a8c27a2cec4ed5ffb97fe559dc8cc8541f88a4ef8386ec5231d9a6dfc",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0169 census/writers",
+     true
+    ],
+    [
+     "VELDO-0169 resume/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 resume/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 resume/race",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 dispose/race",
+     true
+    ],
+    [
+     "VELDO-0169 andon/PAUSED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/CANCELED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/COMPLETED",
+     true
+    ],
+    [
+     "VELDO-0169 andon/owner_not_current",
+     true
+    ],
+    [
+     "VELDO-0169 andon/race",
+     true
+    ],
+    [
+     "VELDO-0169 claim/absent",
+     true
+    ],
+    [
+     "VELDO-0169 claim/null",
+     true
+    ]
+   ],
+   "seconds": 8.75,
+   "source_sha256": "c779130a8c27a2cec4ed5ffb97fe559dc8cc8541f88a4ef8386ec5231d9a6dfc"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 169",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 118.069,
+ "spec_id": "VELDO-0169",
+ "suite": "scripts/suites/82_veldo_0169_project_handouts.py"
+}

@@ -43,7 +43,9 @@ def _v169_suite():
         found, functions, failures = {}, {}, []
         for path in sorted((ROOT / 'engine' / '.veldo').glob('*.py')):
             # Engine is the census source; a mutation replaces its corresponding installed asset.
-            source = production.get(path.name, path).read_text()
+            replacement = production.get(path.name)
+            source = (replacement if replacement is not None and replacement != ROOT / '.veldo' / path.name
+                      else path).read_text()
             tree = ast.parse(source)
             parents = {child: node for node in ast.walk(tree) for child in ast.iter_child_nodes(node)}
             def context(node):
@@ -55,6 +57,8 @@ def _v169_suite():
                 return '.'.join(reversed(names))
             aliases = {'claims', 'CLM', 'control_claim'}
             for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    aliases.update(a.asname or a.name for a in node.names if a.name == 'control_claim')
                 if isinstance(node, ast.ImportFrom) and node.module == 'control_claim':
                     aliases.update(a.asname or a.name for a in node.names if a.name == 'transition')
                 if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
@@ -328,6 +332,11 @@ def _v169_suite():
                 result = claim(uid)
                 check(row, 'missing project refused', result.get('reason') == 'missing_authority:project')
                 check(row, 'nothing written', before == S.materialized_state(ing.conn))
+                obs = receiver.observations[-1]
+                check(row, 'missing project refusal observed and counted', obs.get('unit_id') == uid
+                      and obs.get('reason') == 'missing_authority:project'
+                      and obs.get('accepted_versions', {}).get('project:None') == 0
+                      and receiver.counts.get('refused_by_reason', {}).get('missing_authority:project', 0) > 0)
                 check(row, 'same Gate refusal', gate.project_problems(uid)[0] == ['missing_authority:project'])
                 live = uid + '-active'
                 activate(live)

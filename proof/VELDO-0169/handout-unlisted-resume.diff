@@ -1,0 +1,6 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -512,0 +513,3 @@
++    def second_resume(self, params, before):
++        return self.claims.transition(params['resume'], before)
++

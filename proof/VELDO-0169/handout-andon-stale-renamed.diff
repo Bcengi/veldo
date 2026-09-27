@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -802 +802 @@
+-            return self._observe('resume', 'refused', exc.code if exc.code == 'stale_version' else
++            return self._observe('resume', 'refused', 'stale_subject' if exc.code == 'stale_version' else
