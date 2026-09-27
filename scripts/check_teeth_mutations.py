@@ -7342,8 +7342,8 @@ def cases():
          "    unshown = []  # defect: a task's shortfall is not consulted in rule A\n",
          ['decision/outward-tool-asks'])
     pool('outward-tally-unreadable-dropped', 'control_account_limit.py',
-         "                      for call in tasks.line(event, at)]\n",
-         "                      for call in tasks.line(event, at) if False]  # defect: a count that cannot be read is trusted\n",
+         "                      for call in tasks.line(counted, at)]\n",
+         "                      for call in tasks.line(counted, at) if False]  # defect: a count that cannot be read is trusted\n",
          ['decision/outward-tool-asks'])
     pool('outward-tally-shortfall-dropped', 'control_account_limit.py',
          "                     'unshown': call['unshown']} for call in tasks.close()]\n",

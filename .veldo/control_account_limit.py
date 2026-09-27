@@ -297,10 +297,10 @@ def untallied(record, provider):
         return []
     tasks, found = engine.Tasks(), []
     for at, line in enumerate(_checked(record), 1):
-        event = _event(line['payload']) if line['stream'] == 'engine' else None
-        if event is not None:
+        counted = _event(line['payload']) if line['stream'] == 'engine' else None
+        if counted is not None:
             found += [{'sequence': at, 'form': 'task_tool_uses:unreadable', 'task': call.get('id'), 'unshown': None}
-                      for call in tasks.line(event, at)]
+                      for call in tasks.line(counted, at)]
     return found + [{'sequence': call['sequence'], 'form': call['unknown'], 'task': call['task'],
                      'unshown': call['unshown']} for call in tasks.close()]
 
