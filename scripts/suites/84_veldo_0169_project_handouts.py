@@ -581,7 +581,7 @@ def _v169_suite():
                 # Only the claim organ decides a claim: the store refuses any other writer of kind claim by name.
                 row = 'organ/ownership'
                 release_held()
-                organs = S.entity_organs(ing.conn)
+                organs = getattr(S, 'entity_organs', lambda conn: {})(ing.conn)
                 check(row, 'the store holds the claim organ\'s declaration', (organs.get('claim') or ())[1:4] == (
                     'claim', '_decide', str((mods / 'control_claim.py').resolve())))
                 name, uid, cid = 'p-organ-owned', 'u-organ-owned', claims.claim_id(repository, 'u-organ-owned')
@@ -745,7 +745,10 @@ def _v169_suite():
                                          inbox.journal_signer, inbox.sign, authority_generation=inbox.authority_generation,
                                          clock=inbox.clock, intake=inbox.intake)
                         before = {eid: entity(eid) for eid in watched}
-                        result = again.apply(packet('worker', 'resume_again', alias=uid, request_version=1, capabilities=[]))
+                        try:
+                            result = again.apply(packet('worker', 'resume_again', alias=uid, request_version=1, capabilities=[]))
+                        except Exception as error:  # noqa: BLE001 - a raise is an outcome the row names
+                            result = {'ok': False, 'reason': 'raised %s' % type(error).__name__}
                     finally:
                         ing.conn.command_registry[AG.OPERATION] = saved
                     check(row, writer + ' writer: parked work and answered assignment', ready)
