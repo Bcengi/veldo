@@ -33,3 +33,25 @@ additional daemon query or state-changing Tailscale command was attempted.
 AC1 through AC4 remain unimplemented and unproven. There is no behavior suite,
 red record or mutation record for an implementation that does not exist. The
 live Serve activation leg remains pending with the lead and owner.
+
+Validation on this branch:
+
+- Git subprocess boundary: pass, no findings.
+- Footprint: four changed files, nothing outside VELDO-0171.
+- Anchor check: zero bad anchors.
+- Repository validator, all: exit zero.
+- Literal fixed-string grep of the capture against all 97 nonconstant raw strings:
+  zero matches. A planted host name, home path, numeric identifier and dynamic map
+  key also all disappear through the scrubber.
+- Ordinary whole selftest: exit zero, 6860 passed, zero failed. HOME was an isolated
+  scratch directory. No worktree edits were made while the test ran.
+- Whole selftest under the requested isolated gate environment: exit one before
+  completion, with no assertion failure printed. The existing
+  `12_warp_1210_hardening_four.py` suite raises FileNotFoundError at line 5946 in
+  `_m10_r12_fifo_at`: bytecode suppression prevents its warmup from creating the
+  cache directory where it then tries to create a FIFO. The ordinary full run
+  subsequently passed this test. The suite was not modified.
+
+The gate was not run. No service manager or state-changing Tailscale command was
+invoked. No acceptance row, red record or mutation rejection is claimed for
+VELDO-0171.
