@@ -220,6 +220,15 @@ call-by-call rules above decide, unchanged: a visible call to a tool not marked 
 that cannot be read asks, a form the decision does not recognize asks. The authoritative evidence later is a
 factory-side log of the MCP calls themselves, which no engine stream can hide (filed for VELDO-0158).
 
+**The allowlist for built-in tools (the lead's decision, rule A).** Checked first, alongside the rule for an agent
+started outside the run and before every rule above: any call of a built-in tool that the allowlist does not show
+staying inside the run's clone and host session decides ask, naming the line (reason and basis `outward_tool`), whatever
+the configuration; an MCP tool is judged by the configuration rules. The allowlist is read from the binaries' bytes
+into `cli-formats.json` (`tool_forms` `in_run`): for Claude Code the file tools, Glob and Grep, the notebook edit,
+TodoWrite, ToolSearch, Bash with its background companions, the read-only web fetch and search, and rule 2's constructs
+(Agent unless remote, Skill, REPL, Workflow, CronCreate unless durable); for Codex exec's own items and the collab tools
+of exec's CollabTool enum. SendMessage in any form and the Agent tool with isolation remote are not on it.
+
 Use canonical engine assets and synchronize installed copies. Inventory every asset the selected
 journey installs. Compare executable registrations to each criterion's declared universe, observe the
 real named interfaces, and retain the driven negative-control diff and named failed row. Fixtures
@@ -365,3 +374,30 @@ tools, RemoteTrigger's actions and CronCreate's `durable` field with its default
 cron ask under no server, only read-only tools and a write-capable server; a non-durable cron and the checker's
 normal runs keep their decisions); `decision/nested-constructs` and `format/tool-forms` cover the two
 constructs; 10 more finding 160 mutations. Status unchanged.
+
+2026-09-27, the lead's allowlist (rule A, fail closed): each check round found another Claude Code built-in tool that
+acts outside the run (SendMessage to another session, which the binary treats as read-only for plain text; the Agent
+tool with isolation remote; the claude.ai-writing tools Artifact, ArtifactData, ArtifactComments, Projects, ClaudeDesign,
+DesignSync, ShareOnboardingGuide, the memory-store save and SendFile; self_hosted_runner_spawn_local; PushNotification),
+and none was caught with no write-capable MCP server configured. A list of outward tools is never complete, so the
+decision now asks first, alongside the remote_agent rule and before every other rule, for any call of a built-in tool
+the allowlist does not show staying inside the run's clone and host session, naming the line (reason and basis
+`outward_tool`), whatever the configuration; an MCP tool is judged by the configuration rules as before. The allowlist,
+read from the 2.1.281 and 0.154.0 bytes into `cli-formats.json` (`tool_forms` `in_run`), is the file tools Read, Write,
+Edit and NotebookEdit, Glob and Grep, TodoWrite, ToolSearch, Bash with its background companions TaskStop (KillShell,
+KillBash) and Monitor, the read-only WebFetch and WebSearch, and rule 2's constructs Agent (Task), Skill, REPL, Workflow
+(RunWorkflow) and CronCreate; the binary has no LS tool. An allowlisted Agent call still asks when its input's isolation
+is remote, when it names an agent definition that is not built in (the binary takes the definition's isolation when
+the input gives none, and an agent file may set remote) and when its input is shown nowhere (an agent a sub-agent's
+own sub-agent starts); a file tool or Bash naming another machine in `_host` asks (the binary routes it only when its
+remote-tools gate is on, and this build compiles the gate off); a task whose type is not an allowlisted tool's (a
+remote agent is task type `remote_agent`), a workflow agent reported remote, any tool-call block other than `tool_use`
+and a tool name that cannot be read ask. For Codex, an item type exec's own items do not list, or a sub-agent call whose
+collab tool exec's CollabTool enum does not list, asks. New row `decision/outward-tool-asks` (the checker's probe7, each
+outward tool under no server, only read-only servers and a write-capable server, every allowlisted tool and alias
+re-running with no write-capable server, an unknown future tool, and the normal runs keeping their decisions);
+`format/tool-forms` compares the allowlist; `decision/unreadable-asks` and `decision/nested-constructs` expect rule A
+to decide first where it now does; 14 more finding 160 mutations (rule A skipped, SendMessage allowlisted, an unknown
+tool allowed, Agent's remote isolation unchecked, and each other condition dropped). Follow-up for the lead
+(VELDO-0155): the baseline should pass the same allowlist to the engine, so these tools are off for the run, nested
+agents included, and not only caught afterwards; rule A sees only what the stream shows. Status unchanged.
