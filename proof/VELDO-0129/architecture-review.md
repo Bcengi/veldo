@@ -49,5 +49,21 @@ review, then still drives the lander's refusal and unchanged-trunk checks. Its e
 expected refusal list now also requires missing_authority:floor_record, because no
 floor record is created for the refused build. No production proof check is relaxed.
 
-Validation results are recorded after the final checks. The repository gate is not
-run and no gate stamp, independent review, push or landing is claimed.
+The complete rerun at c82c9de86f239cba454a337f24f890b76dbc6996 finished with
+6887 passed, 0 failed across all 122 suites, exit 0. Finding 129 rejected all 15
+mutations and finding 53 rejected all 52, each with a green baseline, using two jobs.
+The new runtime bypass specifically made VELDO-0053 architecture/entries-blocked red.
+The Git subprocess boundary reported pass with no findings. Template sync compared
+232 byte-identical pairs. The all validator exited 0. Selected architecture, eligibility,
+candidate, offers and reports suites also completed with zero failing rows; their
+partial-run exit code is 2 by design.
+
+[Validation](architecture-validation.json) records commands, output digests and the
+complete-run summary. [Mutations](architecture-mutations.json) records every rejected
+case and its failing rows. [Original regression](architecture-regression.json) records
+every original architecture entry outcome; [first full run](architecture-first-full-run.json)
+records all nine failures and the setup abort. The new bypass's exact edit is in
+[its mutation diff](worker129-runtime-architecture-bypassed.diff).
+
+The repository gate was not run and no gate stamp, independent review, push or landing
+is claimed. Gate byproducts are restored before the final evidence commit.

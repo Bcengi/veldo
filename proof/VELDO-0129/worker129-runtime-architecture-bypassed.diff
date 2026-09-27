@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch_work.py
++++ b/.veldo/control_launch_work.py
+@@ -144 +144 @@
+-        self.gate.require('provider_request', unit, context=context)
++        pass  # defect: launch without the provider architecture decision

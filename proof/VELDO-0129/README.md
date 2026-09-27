@@ -53,7 +53,7 @@ missing configuration, default proof authority, empty proof acceptance and insta
 The remaining seventeen journeys need the absent runtime and are explicitly unavailable,
 not counted as red. Each available row calls its own base interface. No production file in the extracted tree is edited.
 
-Finding 129 registers fourteen mutations with names unique across all findings. `mutations.json` retains the exact old and
+The initial finding 129 proof records fourteen mutations with names unique across all findings. `mutations.json` retains the exact old and
 new snippets, source and mutant digests, all row observations and each named rejection.
 The declared falsifiers are worker129-build-unwired, worker129-builder-context-reused and
 worker129-exit-manufactures-review. Additional mutations remove subject validation, the
@@ -62,6 +62,11 @@ proof. Six review controls follow a symlinked git directory, skip all gitdir che
 builder_conversation inside assignment context, remove runtime artifact binding, remove
 floor artifact binding and run Git with the worker configuration. The driver uses temporary copies and checks that failures are assertions rather
 than fixture setup errors.
+
+The [architecture review fix](architecture-review.md) adds the fifteenth mutation,
+worker129-runtime-architecture-bypassed, and records the whole-selftest regression work.
+Its separate evidence retains the original architecture failures, all finding 129 and 53
+mutation rejections, and the full-run results. Suite 53's assertions remain unchanged.
 
 ## Installed configuration
 
