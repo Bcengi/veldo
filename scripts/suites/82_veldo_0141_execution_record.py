@@ -1105,6 +1105,17 @@ err.close()
                   '[%s]' % {n: (s[0], refusal(s)) for n, s in seen.items()},
                   copied.count(b'v141 done') == 1 and all(s[0] == 500 and refusal(s) == 'unknown_outcome:record_digest'
                                                           for s in seen.values()))
+            # A record shown for another run: the Codex run's file in this run's place is refused by name.
+            other = Path(ER.path(str(records_dir), codex_launch.dispatch_id)) if ER is not None else Path('/nonexistent')
+            if path.is_file() and other.is_file():
+                path.write_bytes(other.read_bytes())
+            swapped = page(main_launch.dispatch_id, 0)
+            if path.is_file():
+                path.write_bytes(copied)
+            check('route/committed', 'another run\'s record in this run\'s place is refused as bound to another run '
+                  '[%s %s]' % (swapped[0], refusal(swapped)),
+                  other.is_file() and swapped[0] == 500 and refusal(swapped) == 'unknown_outcome:record_binding'
+                  and page(main_launch.dispatch_id, 0)[0] == 200)
             check('route/committed', 'the record file is the receiver\'s alone: 0600 in a 0700 directory',
                   path.is_file() and path.stat().st_mode & 0o777 == 0o600 and records_dir.stat().st_mode & 0o777 == 0o700)
 

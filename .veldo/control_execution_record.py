@@ -198,12 +198,12 @@ class Recorder:
         self.hasher.update(data)
         self.size += len(data)
 
-    def _keep(self, stream, raw):
+    def _keep(self, stream, raw, newline=True):
         text, kinds = redact(raw.decode('utf-8', 'surrogateescape'), self.resolved)
         self.sequence += 1
         self._write({'seq': self.sequence, 'at': self.clock(), 'stream': stream, 'redacted': kinds, 'payload': text})
         self.counts[stream]['lines'] += 1
-        self.counts[stream]['bytes'] += len(raw) + 1
+        self.counts[stream]['bytes'] += len(raw) + (1 if newline else 0)
         for kind in kinds:
             self.redactions[kind] = self.redactions.get(kind, 0) + 1
 
@@ -233,7 +233,7 @@ class Recorder:
             for stream in STREAMS:
                 if self.pending[stream]:
                     rest, self.pending[stream] = self.pending[stream], b''
-                    self._keep(stream, rest)
+                    self._keep(stream, rest, newline=False)
             os.close(self.fd)
             self.closed = {'lines': self.sequence, 'bytes': self.size, 'digest': 'sha256:' + self.hasher.hexdigest()}
         return dict(self.closed)
@@ -299,18 +299,21 @@ def read(records, dispatch_id, after, limit, committed=None):
             data = handle.read()
     except OSError:
         raise Refused('missing_evidence:unknown_run', 'no execution record of this run') from None
+    complete = data[:data.rfind(b'\n') + 1].split(b'\n')[:-1]
+    try:
+        header = json.loads(complete[0]) if complete else None
+    except ValueError:
+        header = None
+    if not isinstance(header, dict) or header.get('schema') != SCHEMA or header.get('dispatch_id') != dispatch_id:
+        raise Refused('unknown_outcome:record_binding', 'the record is bound to another dispatch')
     if committed is not None:
         if ('sha256:' + hashlib.sha256(data).hexdigest() != committed.get('digest')
                 or len(data) != committed.get('bytes')):
             raise Refused('unknown_outcome:record_digest', 'the record is not the one its exit committed')
-    complete = data[:data.rfind(b'\n') + 1].split(b'\n')[:-1]
     try:
-        header = json.loads(complete[0]) if complete else None
         lines = [json.loads(raw) for raw in complete[1:]]
     except ValueError:
         raise Refused('unknown_outcome:record_binding', 'the record is not an execution record') from None
-    if not isinstance(header, dict) or header.get('schema') != SCHEMA or header.get('dispatch_id') != dispatch_id:
-        raise Refused('unknown_outcome:record_binding', 'the record is bound to another dispatch')
     if committed is not None and len(lines) != committed.get('lines'):
         raise Refused('unknown_outcome:record_digest', 'the record is not the one its exit committed')
     if after > len(lines):

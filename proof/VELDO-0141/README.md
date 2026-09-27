@@ -138,7 +138,8 @@ printed. `api/service-call`: over the service call the owner gets the file's lin
 refusal. `route/served-lines`: the pages and the live stream serve exactly the kept lines, field for field; every
 engine event served is the one printed. `route/committed`: after the run the route names it ended with the exit
 record's committed count and digest, which the file matches; a line changed in place, or one line more, is
-refused `unknown_outcome:record_digest`; the file is 0600 in a 0700 directory. `redaction/planted-value`: the
+refused `unknown_outcome:record_digest`; the Codex run's file put in its place is refused as bound to another run
+(`unknown_outcome:record_binding`), which is judged before the digest; the file is 0600 in a 0700 directory. `redaction/planted-value`: the
 planted value (three low-entropy words, no pattern), printed alone in the command's output, inside it, on the
 command's and the engine's error stream and joined to a high-entropy span, is replaced by
 `[REDACTED:v141_planted]` exactly as often as it was printed on each line, no word of it survives, the joined
@@ -176,6 +177,7 @@ rejected.
 | record-exit-uncommitted | control_launch.py | route/committed |
 | record-exit-unbound | control_dispatch.py | route/committed |
 | route-digest-unchecked | control_execution_record.py | route/committed |
+| route-binding-unchecked | control_execution_record.py | route/committed |
 | route-scope-unchecked | control_api_authority.py | api/refusals, api/service-call |
 | route-cursor-past-end-served | control_execution_record.py | api/refusals |
 | route-record-hint-unrouted | control_api.py | api/live |
