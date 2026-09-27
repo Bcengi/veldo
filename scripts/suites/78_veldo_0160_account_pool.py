@@ -226,14 +226,40 @@ def _v160_suite():
         fake = '''#!%s -B
 import json, os, sys, time
 from pathlib import Path
+if sys.argv[1:3] == ['login', 'status']:
+    # VELDO-0156: the receiver's check before acceptance, on a ChatGPT login; the 0.154.0 binary prints its
+    # login status on stderr.
+    sys.stderr.write('Logged in using ChatGPT' + chr(10))
+    sys.exit(0)
 markers = Path(MARKERS)
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 own = {'engine': ENGINE, 'pid': os.getpid(), 'dispatch': dispatch, 'started': time.time(),
        'env': {k: os.environ.get(k) for k in ('CLAUDE_CONFIG_DIR', 'CODEX_HOME', 'VELDO_ACCOUNT')}}
 (markers / ('%%d.tmp' %% os.getpid())).write_text(json.dumps(own))
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
-raw = sys.stdin.buffer.read()
-packet = json.loads(raw) if raw.strip() else {}
+def stream_input():
+    # VELDO-0155: stream JSON input (--input-format stream-json) as the 2.1.281 binary reads it: the initialize
+    # control request is answered with the login (the binary's Kfe(), a claude.ai subscription here), the user
+    # message's content is the prompt; without it the whole input is the prompt.
+    at = sys.argv.index('--input-format') if '--input-format' in sys.argv else -1
+    if at < 0 or sys.argv[at + 1:at + 2] != ['stream-json']:
+        raw = sys.stdin.buffer.read()
+        return json.loads(raw) if raw.strip() else {}
+    while True:
+        line = sys.stdin.buffer.readline()
+        if not line:
+            return {}
+        message = json.loads(line)
+        if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
+            answer = {'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
+                      'response': {'account': {'subscriptionType': 'Claude Max', 'apiProvider': 'firstParty'},
+                                   'pid': os.getpid()}}}
+            sys.stdout.write(json.dumps(answer) + chr(10))
+            sys.stdout.flush()
+        elif message.get('type') == 'user':
+            content = (message.get('message') or {}).get('content')
+            return json.loads(content) if isinstance(content, str) and content.strip() else {}
+packet = stream_input()
 payload = packet.get('payload') or {}
 for step in payload.get('script') or []:
     if 'line' in step:
@@ -261,12 +287,17 @@ sys.exit(payload.get('code', 0))
         versions.mkdir()
         (versions / '2.1.281').write_text(fake_engine('claude'))
         (versions / '2.1.281').chmod(0o755)
+        # VELDO-0155: the version is qualified with stream JSON input (the fake answers the initialize handshake
+        # with a subscription login) and, where the engine module has one, the everything-off baseline.
+        claude_record = {'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {'2.1.281': {
+            'sha256': 'sha256:' + hashlib.sha256((versions / '2.1.281').read_bytes()).hexdigest(),
+            'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
+            'environment': {'DISABLE_AUTOUPDATER': '1'}}}}
+        CLAUDE_ENGINE = getattr(L, 'ENGINES', {}).get('claude_code')
+        if getattr(CLAUDE_ENGINE, 'BASELINE', None) is not None:
+            claude_record['versions']['2.1.281']['baseline'] = CLAUDE_ENGINE.BASELINE
         (mods / 'runtime').mkdir()
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps({
-            'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {'2.1.281': {
-                'sha256': 'sha256:' + hashlib.sha256((versions / '2.1.281').read_bytes()).hexdigest(),
-                'flags': ['--print', '--output-format', 'stream-json', '--verbose'],
-                'environment': {'DISABLE_AUTOUPDATER': '1'}}}}))
+        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
