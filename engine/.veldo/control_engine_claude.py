@@ -744,6 +744,12 @@ def tool_inputs(event):
     repl = event.get('repl_call') if kind == 'tool_progress' else None
     if isinstance(repl, dict) and isinstance(repl.get('inner_tool_use_id'), str) and 'inner_tool_input' in repl:
         found.append((repl['inner_tool_use_id'], repl['inner_tool_input']))
+    # A workflow's task (its start names the workflow, NESTED['workflow']): its progress's last tool is the label of
+    # its current agent, not a tool, keyed ('workflow', the id of the call that started it).
+    workflow = NESTED['workflow']
+    if kind == 'system' and event.get('subtype') == 'task_started' and isinstance(event.get(TASK_COUNTS['task']), str) \
+            and (event.get(workflow['system/task_started']) is not None or event.get('task_type') == workflow['task_type']):
+        found.append((('workflow', event[TASK_COUNTS['task']]), True))
     return found
 
 
@@ -826,7 +832,11 @@ def outward_tools(event, inputs):
     kind = event.get('type')
     tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
     found = []
+    workflow = tag == 'system/task_progress' and (event.get(NESTED['workflow'][tag]) is not None
+                                                  or ('workflow', event.get(TASK_COUNTS['task'])) in inputs)
     for name, ident, value, given in _named_calls(event, tag):
+        if workflow and isinstance(ident, tuple) and ident[0] == 'task':
+            continue  # a workflow task's last tool is its current agent's label; its agents' tools are named beside it
         if not isinstance(name, str):
             found.append('tool:unreadable')
             continue

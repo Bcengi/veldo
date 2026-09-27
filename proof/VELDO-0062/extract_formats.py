@@ -609,7 +609,8 @@ CLAUDE_IN_RUN = (
 # (`remote_task`), and every task but an observer agent is reported by a task_started naming its type
 # (`task_started`, `task_type`, `observer`). The file tools and Bash take a `_host` naming another machine
 # (`host_field`, `host_request`, `host_local`, `host_local_test`), routed there only when the remote-tools gate is on
-# (`host_route`), and this build's gate is off (`host_gate`, `host_gate_value`).
+# (`host_route`), and this build's gate is off (`host_gate`, `host_gate_value`). A workflow task's progress gives its
+# current agent's label as its last tool (`workflow_label`), not a tool: its agents' own last tools are named beside it.
 CLAUDE_IN_RUN_CONDITIONS = {
     'agent_input': ('isolation:z(["worktree","remote"]).optional().describe(\'Isolation mode. "worktree" creates a '
                     'temporary git worktree so the agent works on an isolated copy of the repo. "remote" launches the '
@@ -628,6 +629,7 @@ CLAUDE_IN_RUN_CONDITIONS = {
     'host_route': ('if(!$j(e).supported||!Ih())return{kind:"local",input:n};', 1),
     'host_gate': ('async function eY(){return Ih()&&await Nd()}function SG(){return Ih()&&_s()}function Ih(){return cNn()}', 1),
     'host_gate_value': ('function cNn(){return!1}', 1),
+    'workflow_label': ('toolUses:xe.totalToolCalls,lastToolName:bt?.label,summary:h,workflowProgress:', 1),
 }
 # The task types of the allowlisted tools, from the binary's task table (`name:"...Task",type:"..."`): an agent, a
 # teammate an agent starts, a background shell or command, a workflow, a Monitor's WebSocket.
@@ -686,6 +688,7 @@ def _in_run(text, renamed):
                       'outside': 'remote', 'type_field': 'subagent_type', 'builtin_types': sorted(set(builtin))},
             'host': {'field': '_host', 'local': ['', 'container', 'this-machine'], 'tools': sorted(remote),
                      'routed': False},
+            'workflow_last_tool': 'label',
             'task_types': {'field': 'task_type', 'in_run': sorted(CLAUDE_IN_RUN_TASKS),
                            'table': sorted(table)},
             'source': "the built-in tools whose effects stay inside the run's clone and host session (each name's "

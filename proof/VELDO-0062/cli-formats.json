@@ -3088,7 +3088,8 @@
      "WebSearch",
      "Workflow",
      "Write"
-    ]
+    ],
+    "workflow_last_tool": "label"
    },
    "messages": [
     [

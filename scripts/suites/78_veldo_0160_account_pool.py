@@ -61,6 +61,7 @@ def _v160_suite():
             'decision/repl-inner-call', 'decision/task-progress-tool', 'decision/frame-tool-names',
             'decision/subagent-calls', 'decision/no-write-server-reruns', 'decision/nested-work-asks',
             'decision/nested-constructs', 'decision/unconfigured-call-asks', 'decision/remote-agent-asks',
+            'decision/outward-tool-asks',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -1739,6 +1740,179 @@ sys.exit(payload.get('code', 0))
                       (found or {}).get('decision') == decision and (found or {}).get('basis') == basis
                       and outside(found) == [])
 
+        # The lead's allowlist (rule A, fail closed): a call of a built-in tool the allowlist does not show staying inside
+        # the run's clone and host session asks first, whatever the configuration, naming the line (reason and basis
+        # outward_tool). Listing the outward tools can never be complete; the allowlist (cli-formats.json tool_forms
+        # in_run, read from the binaries) is.
+        with region('decision/outward-tool-asks'):
+            C_IN_RUN, X_IN_RUN = CFORMS.get('in_run') or {}, XFORMS.get('in_run') or {}
+
+            def leaving(found):
+                return sorted((c['sequence'], c.get('form')) for c in (found or {}).get('calls') or []
+                              if c.get('reason') == 'outward_tool')
+
+            def called(name, ident, **given):
+                return [r_use(ident, name, **given), r_done(ident)]
+            WRITE_CAPABLE = None  # decide's default: SERVERS, whose tools are not all marked read-only
+            at = len(c_head) + 1
+            # The checker's probe7: SendMessage to a Remote Control session, to a cloud session by name and to a local
+            # peer session, and the Agent tool with isolation remote (a cloud agent); RemoteTrigger stays remote_agent's.
+            OUTWARD = [
+                ('SendMessage to a Remote Control session (probe7)',
+                 called('SendMessage', 'toolu_s', to='bridge:session_01abc', message='comment on CEO-1 in Jira'),
+                 [(at, 'tool:SendMessage')]),
+                ('SendMessage to a cloud session by name (probe7)',
+                 called('SendMessage', 'toolu_s', to='nightly-triage', message='comment on CEO-1 in Jira'),
+                 [(at, 'tool:SendMessage')]),
+                ('SendMessage to a local peer session (probe7)',
+                 called('SendMessage', 'toolu_s', to='uds:/tmp/cc-peer.sock', message='comment on CEO-1 in Jira'),
+                 [(at, 'tool:SendMessage')]),
+                ('SendMessage to a teammate', called('SendMessage', 'toolu_s', to='researcher', message='x'),
+                 [(at, 'tool:SendMessage')]),
+                ('the Agent tool with isolation remote (probe7)',
+                 called('Agent', 'toolu_g', description='d', prompt='comment on CEO-1 in Jira', isolation='remote'),
+                 [(at, 'tool:Agent:isolation:remote')]),
+                ('the Task tool (its old name) with isolation remote',
+                 called('Task', 'toolu_g', description='d', prompt='p', isolation='remote'),
+                 [(at, 'tool:Task:isolation:remote')]),
+                ('the Agent tool naming an agent definition that is not built in (it may set isolation remote)',
+                 called('Agent', 'toolu_g', description='d', prompt='p', subagent_type='cloud-reviewer'),
+                 [(at, 'tool:Agent:subagent_type')]),
+                ('an agent a sub-agent started, its input not shown (a depth-2 agent)',
+                 [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), t_progress('t1', 'Agent', 1)],
+                 [(at + 2, 'tool:Agent:input_not_given')]),
+                ('a remote agent\'s task started (its launch, from any tool)',
+                 [dict(t_started('t9', 1), task_type='remote_agent')], [(at, 'task_type:remote_agent')]),
+                ('a workflow agent launched remote',
+                 [c_task(last_tool_name='review', workflow_progress=[{'type': 'workflow_agent', 'index': 0,
+                                                                     'isolation': 'remote'}])],
+                 [(at, 'workflow_progress:isolation:remote')]),
+                ('a Bash call naming another machine (_host)', called('Bash', 'toolu_b', command='ls', _host='mac-mini'),
+                 [(at, 'tool:Bash:_host')]),
+                ('an API server tool block', [c_blocks([{'type': 'server_tool_use', 'id': 'srvtoolu_1', 'name': 'advisor',
+                                                          'input': {}}])], [(at, 'block:server_tool_use')]),
+                ('a tool name that cannot be read', [c_blocks([dict(tool_use('toolu_x', 'x'), name=None)])],
+                 [(at, 'tool:unreadable')]),
+                ('an unknown future tool', called('FutureTool', 'toolu_f', anything='x'), [(at, 'tool:FutureTool')]),
+            ] + [('the claude.ai-writing and other outward tool %s' % name, called(name, 'toolu_o', x='y'),
+                  [(at, 'tool:' + name)])
+                 for name in ('Artifact', 'ArtifactData', 'ArtifactComments', 'Projects', 'ClaudeDesign', 'DesignSync',
+                              'ShareOnboardingGuide', 'memory_write', 'SendFile', 'self_hosted_runner_spawn_local',
+                              'PushNotification')]
+            for what, lines, expected in OUTWARD:
+                for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY),
+                                       ('a write-capable server', WRITE_CAPABLE)):
+                    found, error = decide(c_rec(lines), 'claude_code', servers)
+                    check('decision/outward-tool-asks', 'claude_code, %s, %s configured: decided ask, naming that line '
+                          '[%s, %s, %s]' % (what, label, (found or {}).get('decision'), (found or {}).get('basis'),
+                                            leaving(found) or error),
+                          (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'outward_tool'
+                          and leaving(found) == expected)
+            X_OUTWARD = [
+                ('an item type exec\'s tables do not list (a future item)',
+                 [x_any('image_generation', 'item_g', status='in_progress')], [(len(x_head) + 1, 'item:image_generation')]),
+                ('the core\'s collab agent call, which exec does not print',
+                 [x_any('collab_agent_tool_call', 'item_c', tool='spawn_agent', status='in_progress')],
+                 [(len(x_head) + 1, 'item:collab_agent_tool_call')]),
+                ('a sub-agent call whose collab tool exec\'s enum does not list',
+                 [x_any('collab_tool_call', 'item_m', tool='send_message', status='in_progress')],
+                 [(len(x_head) + 1, 'item:collab_tool_call:send_message')])]
+            for what, lines, expected in X_OUTWARD:
+                for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY),
+                                       ('a write-capable server', WRITE_CAPABLE)):
+                    found, error = decide(x_rec(lines), 'codex', servers)
+                    check('decision/outward-tool-asks', 'codex, %s, %s configured: decided ask, naming that line '
+                          '[%s, %s, %s]' % (what, label, (found or {}).get('decision'), (found or {}).get('basis'),
+                                            leaving(found) or error),
+                          (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'outward_tool'
+                          and leaving(found) == expected)
+            # RemoteTrigger is named once, by the remote_agent rule (decision/remote-agent-asks), not twice.
+            found, error = decide(c_rec(called('RemoteTrigger', 'toolu_t', action='run', trigger_id='t')), 'claude_code', [])
+            check('decision/outward-tool-asks', 'claude_code, a RemoteTrigger run (probe7), no MCP server: decided ask by '
+                  'the remote_agent rule, its line named once [%s, %s]' % ((found or {}).get('basis'), forms(found) or error),
+                  (found or {}).get('basis') == 'remote_agent' and forms(found) == [(at, 'remote_agent', 'tool:RemoteTrigger')])
+            # Every allowlisted tool, and each of its aliases, in a run with no write-capable server still re-runs.
+            GIVEN = {'Agent': {'description': 'd', 'prompt': 'p'}, 'Task': {'description': 'd', 'prompt': 'p'},
+                     'CronCreate': {'cron': '*/5 * * * *', 'prompt': 'p'}, 'Bash': {'command': 'ls'},
+                     'Read': {'file_path': '/work/README', '_host': 'this-machine'}}
+            listed = sorted(set(C_IN_RUN.get('tools') or ()) | {a for names in (C_IN_RUN.get('aliases') or {}).values()
+                                                               for a in names})
+            engine = (getattr(LIMIT, 'ENGINES', None) or {}).get('claude_code') if LIMIT is not None else None
+            check('decision/outward-tool-asks', 'claude_code: the allowlist the reader holds is the binary\'s own, the '
+                  'lead\'s tools and their aliases, with no LS tool in this build [%s]' % listed,
+                  listed == ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'KillBash', 'KillShell', 'Monitor',
+                             'NotebookEdit', 'REPL', 'Read', 'RunWorkflow', 'Skill', 'Task', 'TaskStop', 'TodoWrite',
+                             'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']
+                  and engine is not None and sorted(getattr(engine, 'IN_RUN', ())) == listed)
+            for name in listed:
+                lines = called(name, 'toolu_a', **GIVEN.get(name, {'x': 'y'}))
+                for label, servers in (('no MCP server', []), ('only read-only tools', READ_ONLY)):
+                    found, error = decide(c_rec(lines), 'claude_code', servers)
+                    check('decision/outward-tool-asks', 'claude_code, the allowlisted %s, %s configured: re-run [%s, %s]'
+                          % (name, label, (found or {}).get('basis'), leaving(found) or error),
+                          (found or {}).get('decision') == 'rerun' and (found or {}).get('basis') == 'no_write_capable_server')
+            # An Agent call named elsewhere is judged by the input its id, or its task's shown call, gives.
+            for what, lines in (
+                    ('an Agent call\'s heartbeat, judged by its id\'s input',
+                     called('Agent', 'toolu_g', description='d', prompt='p') + [c_progress('toolu_g', 'Agent')]),
+                    ('an Agent call streamed before its message, judged by its id\'s input',
+                     [c_stream({'type': 'content_block_start', 'index': 0,
+                                'content_block': {'type': 'tool_use', 'id': 'toolu_g', 'name': 'Agent', 'input': {}}})]
+                     + called('Agent', 'toolu_g', description='d', prompt='p')),
+                    ('a sub-agent\'s last tool Agent, judged by the call the sub-agent\'s message shows',
+                     [c_blocks([tool_use('t1', 'Agent')]), t_started('t1', 1), c_child('t1', [tool_use('t2', 'Agent')]),
+                      t_progress('t1', 'Agent', 1), t_result('t1')]),
+                    ('a workflow\'s task whose progress gives its current agent\'s label as its last tool',
+                     called('Workflow', 'toolu_w', script='x') + [
+                         c_line('system', subtype='task_started', task_id='w1', tool_use_id='toolu_w', description='spec',
+                                task_type='local_workflow', workflow_name='spec'),
+                         c_line('system', subtype='task_progress', task_id='w1', tool_use_id='toolu_w',
+                                description='spec: review', usage={'total_tokens': 1, 'tool_uses': 0, 'duration_ms': 1},
+                                last_tool_name='review')]),
+                    ('an Agent with isolation worktree and a built-in agent',
+                     called('Agent', 'toolu_g', description='d', prompt='p', isolation='worktree', subagent_type='Explore'))):
+                found, error = decide(c_rec(lines), 'claude_code', [])
+                check('decision/outward-tool-asks', 'claude_code, %s, no MCP server: re-run [%s, %s]'
+                      % (what, (found or {}).get('basis'), leaving(found) or error),
+                      (found or {}).get('decision') == 'rerun' and (found or {}).get('basis') == 'no_write_capable_server')
+            # Codex: every item exec lists and each collab tool its enum lists, with no MCP server, re-runs.
+            x_items = sorted(X_IN_RUN.get('items') or ())
+            x_tools = list((X_IN_RUN.get('collab') or {}).get('tools') or ())
+            x_engine = (getattr(LIMIT, 'ENGINES', None) or {}).get('codex') if LIMIT is not None else None
+            check('decision/outward-tool-asks', 'codex: the known in-run kinds the reader holds are exec\'s own items and '
+                  'collab tools [%s, %s]' % (x_items, x_tools),
+                  x_items == sorted(XFORMS.get('exec_items') or ()) and x_tools == ['spawn_agent', 'send_input', 'close_agent']
+                  and x_engine is not None and sorted(getattr(x_engine, 'IN_RUN_ITEMS', ())) == x_items
+                  and list((getattr(x_engine, 'IN_RUN_COLLAB', None) or {}).get('tools') or ()) == x_tools)
+            for kind in x_items:
+                for tool in (x_tools if kind == 'collab_tool_call' else [None]):
+                    fields = {'tool': tool} if tool else {'server': 'tracker', 'tool': 'get_issue'} \
+                        if kind == 'mcp_tool_call' else {}
+                    found, error = decide(x_rec([x_any(kind, 'item_k', status='completed', **fields)]), 'codex', READ_ONLY)
+                    check('decision/outward-tool-asks', 'codex, exec\'s %s%s, only read-only tools configured: re-run '
+                          '[%s, %s]' % (kind, ' ' + tool if tool else '', (found or {}).get('basis'), leaving(found) or error),
+                          (found or {}).get('decision') == 'rerun' and (found or {}).get('basis') == 'no_write_capable_server')
+            # Normal runs keep their decisions: reads re-run by the calls with a write-capable server, an MCP write asks
+            # by the calls, an Agent asks as nested work, and a typical Codex run re-runs.
+            for what, record, provider, servers, decision, basis in (
+                    ('claude_code reads, a write-capable server', c_rec(reads), 'claude_code', WRITE_CAPABLE, 'rerun',
+                     'calls'),
+                    ('claude_code, an MCP write', claude_record(['mcp__tracker__add_comment']), 'claude_code',
+                     WRITE_CAPABLE, 'ask', 'calls'),
+                    ('claude_code, an Agent, a write-capable server', c_rec(with_agent), 'claude_code', WRITE_CAPABLE,
+                     'ask', 'nested_work'),
+                    ('claude_code, an Agent, only read-only tools', c_rec(with_agent), 'claude_code', READ_ONLY, 'rerun',
+                     'no_write_capable_server'),
+                    ('codex, a read-only MCP call', codex_record([('tracker', 'get_issue')]), 'codex', WRITE_CAPABLE,
+                     'rerun', 'calls'),
+                    ('codex, exec\'s own sub-agent call, no MCP server', x_rec(x_collab), 'codex', [], 'rerun',
+                     'no_write_capable_server')):
+                found, error = decide(record, provider, servers)
+                check('decision/outward-tool-asks', 'a normal run, %s: decided %s by %s [%s, %s]'
+                      % (what, decision, basis, (found or {}).get('decision'), (found or {}).get('basis') or error),
+                      (found or {}).get('decision') == decision and (found or {}).get('basis') == basis
+                      and leaving(found) == [])
+
         # The readers' tables are the binaries' own; each listed fixture form is one they list, each unlisted one not.
         with region('format/tool-forms'):
             CE, XE = getattr(L, 'ENGINES', {}).get('claude_code'), getattr(L, 'ENGINES', {}).get('codex')
@@ -1817,6 +1991,25 @@ sys.exit(payload.get('code', 0))
                       'tool': 'CronCreate', 'field': 'durable', 'off': [False, 'false']}}
                   and c_nested.get('tools', {}).get('agent', [])[:1] == ['Agent']
                   and 'system/task_started' in (c_nested.get('task_frames') or ()))
+            # The allowlist (rule A) and the conditions under which an allowlisted call still acts outside the run.
+            c_in = CFORMS.get('in_run') or {}
+            module_in = {'tools': sorted(getattr(CE, 'IN_RUN_TOOLS', ())),
+                         'aliases': {k: sorted(v) for k, v in (getattr(CE, 'IN_RUN_ALIASES', None) or {}).items()},
+                         'agent': json.loads(json.dumps(getattr(CE, 'IN_RUN_AGENT', None) or {})),
+                         'host': json.loads(json.dumps(getattr(CE, 'IN_RUN_HOST', None) or {})),
+                         'task_types': json.loads(json.dumps(getattr(CE, 'IN_RUN_TASKS', None) or {}))}
+            binary_in = {'tools': c_in.get('tools'), 'aliases': c_in.get('aliases'),
+                         'agent': {k: v for k, v in (c_in.get('agent') or {}).items()},
+                         'host': {k: v for k, v in (c_in.get('host') or {}).items() if k != 'routed'},
+                         'task_types': {k: v for k, v in (c_in.get('task_types') or {}).items() if k != 'table'}}
+            check('format/tool-forms', 'claude_code: the allowlist, the Agent tool\'s remote isolation, the _host field '
+                  'and the in-run task types are the binary\'s own, its remote-tools gate off [%s]'
+                  % [k for k in binary_in if binary_in[k] != module_in[k]],
+                  binary_in == module_in and (c_in.get('host') or {}).get('routed') is False
+                  and c_in.get('workflow_last_tool') == 'label'
+                  and 'remote_agent' in (c_in.get('task_types') or {}).get('table', ())
+                  and 'remote_agent' not in module_in['task_types'].get('in_run', ())
+                  and not {'SendMessage', 'RemoteTrigger', 'LS'} & set(module_in['tools']))
             exec_items = set(XFORMS.get('exec_items') or ())
             known = (set(getattr(XE, 'TOOL_FREE_ITEMS', ())) | set(getattr(XE, 'BUILTIN_ITEMS', ()))
                      | set(getattr(XE, 'SUBAGENT_ITEMS', ())) | {str(getattr(XE, 'MCP_ITEM', ''))})
