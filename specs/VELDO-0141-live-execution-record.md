@@ -222,7 +222,8 @@ the worker is spawned; the account's subscription token is the one built in, VEL
 keystore's), then secret_scan's patterns and high-entropy spans, each replaced by a marker naming its kind and the
 line's `redacted` field naming the kinds. After each batch the receiver hints the API's hint socket (the
 receiver's `record_hints`); the exit record commits the record's line count, byte count and digest
-(`control_dispatch.exit`, `execution_record`); a last hint marks the end. The API gains `runs.record` (a page from
+(`control_dispatch.exit`, `execution_record`); a last hint marks the end, and the receiver's end event carries the
+record's account (counts, redactions by kind, resolved kinds; never a value). The API gains `runs.record` (a page from
 a cursor) and `runs.record_stream` (live, `event: record`, Last-Event-ID resume), both in the events family,
 through the authority's new `record` read (member's scope must cover the run's project; unknown run, cursor past
 the end, a record bound to another run and one not matching its commitment refused by name), carried over the
@@ -233,4 +234,8 @@ only with print mode and stream JSON output) and requalified in both qualificati
 proof/VELDO-0155's table, whose suite now expects them. The footprint gains the files these needed:
 control_dispatch.py (the exit's commitment), control_service_api.py and control_client_api.py (the record call),
 control_engine_claude.py and the Claude qualification records (the stream options), proof/VELDO-0155's extractor
-and table and suite 80 (its baseline check). Proof: suite 82, `proof/VELDO-0141/`. Status unchanged.
+and table and suite 80 (its baseline check). Finding 60's `claude-exit-artifact-unbound` anchor follows the exit
+call's added keyword. Measured, for the owner: secret_scan's entropy rule redacts most absolute paths of 32
+characters or more (4.1 to 4.4 bits per character, `/` in its candidate class), so the terminal view shows
+`[REDACTED:entropy]` for many file paths; the scanner is unchanged. The factory setup does not yet write the new
+`record_hints` and `records` keys. Proof: suite 82, `proof/VELDO-0141/`. Status unchanged.
