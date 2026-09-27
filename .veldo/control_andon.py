@@ -240,6 +240,10 @@ class Andon:
             raise Refused('invalid_input', 'the andon names the scope its requests are opened in')
         self.ingress, self.inbox, self.presenter, self.settlement = ingress, inbox, presenter, settlement
         self.gate = gate
+        eligibility = inbox.claims.organ('control_eligibility')
+        self.project_gate = eligibility.Gate(inbox.store, ingress.conn, domain_uuid=inbox.ids['domain_uuid'],
+                                             repository_uuid=inbox.ids['repository_uuid'],
+                                             authority_generation=inbox.authority_generation)
         self.conn = ingress.conn
         self.S, self.CM, self.AC, self.contract = inbox.store, inbox.membership, inbox.AC, inbox.contract
         self.I = settlement.I
@@ -769,7 +773,7 @@ class Andon:
             state = self.CM.authority_state(self.S, self.conn)
             permission = self._permission(stop, item, state, now)
             project = u['data'].get('project')
-            refusals, expected = self.gate.project_problems(unit)
+            refusals, expected = self.project_gate.project_problems(unit)
             if refusals:
                 raise Refused(refusals[0], 'the project takes no new work')
             attempt = 1 + sum(1 for _i, _v, d in self._of_kind(CONTRACT_KIND) if d.get('unit') == unit)

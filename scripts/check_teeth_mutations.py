@@ -5415,7 +5415,7 @@ def cases():
     # Codex review of 3c85f33b (P2): a signed claim through the claim receiver took a paused or canceled
     # project's unit. The receiver skips the project check; the shared check it calls reads nothing.
     project('claim-ignores-project', 'control_claim.py',
-            "        if command['operation'] == 'claim' and u['data'].get('project') is not None:\n",
+            "        if command['operation'] == 'claim':\n",
             "        if False:  # defect: a claim never asks the unit's project\n", ['paused-claim', 'canceled-claim'])
     project('claim-project-check-empty', 'control_eligibility.py',
             "        return self._project_problems(data.get('project'), record, member), read\n",
@@ -5974,8 +5974,8 @@ def cases():
           'resume/unknown-effect-stays-stopped')
     andon('andon-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_andon.py",\n', '', 'install/assets')
     andon('refusal-unclassed', 'control_andon.py',
-          "                                      error_class=None if accepted else taxonomy(reason)))\n",
-          "                                      error_class=None))  # defect: refusals carry no error class\n",
+          "                                      error_class=None if accepted else taxonomy(reason),\n",
+          "                                      error_class=None,  # defect: refusals carry no error class\n",
           'observability/named-refusals')
     andon('reason-text-observed', 'control_andon.py',
           "                               versions=expected, effect=effect, station=c['station'])\n",
@@ -8037,6 +8037,47 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    # VELDO-0169: every new handout asks the Gate's project check.
+    def handout(name, module, old, new, rows, also=()):
+        add(169, 'handout-' + name, '82_veldo_0169_project_handouts.py', module, old, new, rows, also)
+
+    handout('unlisted-resume', 'control_assignment.py',
+            '    def _held_claims(self, entities, principal):',
+            "    def second_resume(self, params, before):\n"
+            "        return self.claims.transition(params['resume'], before)\n\n"
+            '    def _held_claims(self, entities, principal):', ['census/writers'])
+    handout('resume-unchecked', 'control_assignment.py',
+            "        self._check_project(unit, entities, observation)\n        params['resume']",
+            "        params['resume']", ['resume/PAUSED', 'census/writers'])
+    handout('backlog-unchecked', 'control_assignment.py',
+            "            self._check_project(unit, entities, observation)\n            plan['unpark']",
+            "            plan['unpark']", ['dispose/PAUSED', 'census/writers'])
+    handout('andon-unchecked', 'control_andon.py',
+            '            refusals, expected = self.project_gate.project_problems(unit)',
+            '            refusals, expected = [], {}', ['andon/PAUSED', 'census/writers'])
+    handout('null-claim-unchecked', 'control_claim.py',
+            "        if command['operation'] == 'claim':",
+            "        if command['operation'] == 'claim' and u['data'].get('project') is not None:",
+            ['claim/absent', 'claim/null'])
+    handout('assignment-project-unpinned', 'control_assignment.py',
+            "        versions.update(observation.get('project_versions', {}))",
+            "        versions.update({k: v for k, v in observation.get('project_versions', {}).items() if not k.startswith('project:')})",
+            ['resume/race', 'dispose/race'])
+    handout('assignment-owner-unpinned', 'control_assignment.py',
+            "        versions.update(observation.get('project_versions', {}))",
+            "        versions.update({k: v for k, v in observation.get('project_versions', {}).items() if k.startswith('project:')})",
+            ['resume/race', 'dispose/race'])
+    handout('andon-project-unpinned', 'control_andon.py',
+            "            expected = dict(self._pinned(state, permission['principal']), **expected,",
+            "            expected = dict(self._pinned(state, permission['principal']), **{k: v for k, v in expected.items() if not k.startswith('project:')},",
+            ['andon/race'])
+    handout('andon-owner-unpinned', 'control_andon.py',
+            "            expected = dict(self._pinned(state, permission['principal']), **expected,",
+            "            expected = dict(self._pinned(state, permission['principal']), **{k: v for k, v in expected.items() if k.startswith('project:')},",
+            ['andon/race'])
+    handout('andon-stale-renamed', 'control_andon.py',
+            "exc.code if exc.code == 'stale_version' else",
+            "'stale_subject' if exc.code == 'stale_version' else", ['andon/race'])
     return result
 
 

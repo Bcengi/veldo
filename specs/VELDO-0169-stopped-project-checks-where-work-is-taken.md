@@ -36,6 +36,7 @@ footprint:
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/drive.py"
   - "specs/VELDO-0169-stopped-project-checks-where-work-is-taken.md"
   - "specs/index.md"
   - "proof/VELDO-0169/*"
@@ -179,3 +180,13 @@ unit through control_claim.Receiver (58, 59, 60, 66, 69, 71 and 73, by grep), wh
 an active project. The title names the census. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27: implemented on build-veldo-0169. Assignment resume, backlog disposition and andon
+resume use the shared eligibility Gate's project check and pin its project and owner reads;
+every claim asks it, including an absent or null project. Suite 82_veldo_0169_project_handouts
+scans engine syntax for claim transitions and station contract writers, and drives the three
+handout paths over stopped projects and intervening project and owner writes. Its 18 rows are
+red by assertion at 65125030. Finding 169 registers the declared falsifiers and read-pin
+mutations. The footprint gains scripts/drive.py because the requested proof command did not
+exist; it records this suite's red and mutation evidence using the recent proof driver pattern.
+Existing claim and andon fixtures now name active projects. Status and approval remain unchanged.

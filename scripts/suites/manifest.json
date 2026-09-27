@@ -1040,6 +1040,15 @@
    ],
    "regions": "Every Codex run on the everything-off baseline, behind the paid-API guard and the environment strip, driven through the VELDO-0039 Runner and receiver on the local Linux contained launch: the pinned vendor binary started with its qualified flags and then exactly the baseline (--ignore-user-config, --ignore-rules, and the generated configuration as -c overrides: project_doc_max_bytes 0, forced_login_method chatgpt, the file credentials store, no hook), a binary whose record does not list the baseline refused before acceptance, and one row per planted item of the profile and the clone (the user configuration, rules, the project document, a hook) read from the engine's effective configuration and what it loaded; OPENAI_API_KEY and CODEX_API_KEY planted in the caller's environment absent from the engine's; runs on no login and on an API-key login refused by name before acceptance through the binary's own login status, the ChatGPT profile's run taking its first turn on the login read from its file, and with the adapter's stop off the engine itself refusing the API-key login because the ChatGPT method is forced; the SSH agent, session bus and Git tokens stripped by the wrapper, the engine's own empty runtime directory, and the receiver's systemd tools still reaching the user manager",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake Codex vendor package qualified by control_engine_codex.qualification, loading only what the binary's own gates allow (proof/VELDO-0156/codex-baseline.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory."
+  },
+  {
+   "name": "82_veldo_0169_project_handouts",
+   "file": "82_veldo_0169_project_handouts.py",
+   "requires": [
+    "82_veldo_0169_project_handouts"
+   ],
+   "regions": "AST census and stopped project handout boundaries",
+   "requires_note": "Uses shared ROOT and expect only. Production project, membership, claim, inbox, andon and settlement writers with generated keys and a loopback Bot API."
   }
  ]
 }
