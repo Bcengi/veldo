@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1241 +1241 @@
+-                    'LANG': 'C.UTF-8', 'TERM': 'dumb'},
++                    },

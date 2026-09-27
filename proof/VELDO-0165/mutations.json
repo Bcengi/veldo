@@ -1,0 +1,3101 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0165 strip/claude",
+    true
+   ],
+   [
+    "VELDO-0165 strip/codex",
+    true
+   ],
+   [
+    "VELDO-0165 strip/future-names",
+    true
+   ],
+   [
+    "VELDO-0165 strip/own-values",
+    true
+   ],
+   [
+    "VELDO-0165 refuse/claude",
+    true
+   ],
+   [
+    "VELDO-0165 refuse/codex",
+    true
+   ],
+   [
+    "VELDO-0165 mcp/prefixed-tools",
+    true
+   ],
+   [
+    "VELDO-0165 evidence/qualified",
+    true
+   ],
+   [
+    "VELDO-0165 fixture/extraction",
+    true
+   ],
+   [
+    "VELDO-0165 fixture/mcp-control",
+    true
+   ],
+   [
+    "VELDO-0165 strip/configured",
+    true
+   ],
+   [
+    "VELDO-0165 strip/unprefixed",
+    true
+   ],
+   [
+    "VELDO-0165 evidence/empty",
+    true
+   ],
+   [
+    "VELDO-0165 evidence/completeness",
+    true
+   ],
+   [
+    "VELDO-0165 evidence/prefixes",
+    true
+   ],
+   [
+    "VELDO-0165 report/removed",
+    true
+   ],
+   [
+    "VELDO-0165 report/refused",
+    true
+   ],
+   [
+    "VELDO-0165 strip/child-environment",
+    true
+   ],
+   [
+    "VELDO-0165 mcp/configured-refused",
+    true
+   ],
+   [
+    "VELDO-0165 evidence/not-a-list",
+    true
+   ],
+   [
+    "VELDO-0165 evidence/outside-scan",
+    true
+   ]
+  ],
+  "seconds": 13.686
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 strip/claude detail: real wrapper spawned one engine and removed every planted name",
+    "VELDO-0165 strip/codex detail: real wrapper spawned one engine and removed every planted name",
+    "VELDO-0165 strip/future-names detail: claude: unlisted future names removed by all four prefixes",
+    "VELDO-0165 strip/future-names detail: codex: unlisted future names removed by all four prefixes",
+    "VELDO-0165 strip/own-values detail: claude: account profile and baseline restored after strip",
+    "VELDO-0165 strip/own-values detail: codex: account profile and baseline restored after strip",
+    "VELDO-0165 report/removed detail: claude: restored names are not reported removed",
+    "VELDO-0165 report/removed detail: codex: restored names are not reported removed"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-listed-names-only.diff",
+   "failed_rows": [
+    "VELDO-0165 strip/claude",
+    "VELDO-0165 strip/codex",
+    "VELDO-0165 strip/future-names",
+    "VELDO-0165 strip/own-values",
+    "VELDO-0165 report/removed"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "78148a5897d48977766714007d19dd0b52c0d3fee7519272c3865874f6bd81bc",
+   "name": "hygiene-listed-names-only",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/future-names"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     false
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     false
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     false
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     false
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     false
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.644,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 refuse/codex detail: strip_prefixes: refused by name before spawn",
+    "VELDO-0165 report/refused detail: codex: missing strip evidence counted once"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-codex-strip-unqualified.diff",
+   "failed_rows": [
+    "VELDO-0165 refuse/codex",
+    "VELDO-0165 report/refused"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "5f5006299f3e45527d15f1673a3b098acd6342228c65fb232a65611edca70b28",
+   "name": "hygiene-codex-strip-unqualified",
+   "named_row_red": true,
+   "named_rows": [
+    "refuse/codex"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     false
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     false
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.734,
+   "source_sha256": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 strip/claude detail: real wrapper spawned one engine and removed every planted name",
+    "VELDO-0165 strip/codex detail: real wrapper spawned one engine and removed every planted name",
+    "VELDO-0165 strip/own-values detail: claude: account profile and baseline restored after strip",
+    "VELDO-0165 strip/own-values detail: codex: account profile and baseline restored after strip",
+    "VELDO-0165 mcp/prefixed-tools detail: configured SDK server tools retain their names in the init event",
+    "VELDO-0165 report/removed detail: claude: restored names are not reported removed",
+    "VELDO-0165 report/removed detail: codex: restored names are not reported removed"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-mcp-override-kept.diff",
+   "failed_rows": [
+    "VELDO-0165 strip/claude",
+    "VELDO-0165 strip/codex",
+    "VELDO-0165 strip/own-values",
+    "VELDO-0165 mcp/prefixed-tools",
+    "VELDO-0165 report/removed"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "7c191fddb26f01acad25fb03595214567e693d5f8f77ab0996c134f866269f63",
+   "name": "hygiene-mcp-override-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "mcp/prefixed-tools"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     false
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     false
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     false
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     false
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.782,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 refuse/claude detail: strip_prefixes: refused by name before spawn",
+    "VELDO-0165 report/refused detail: claude: missing strip evidence counted once"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-claude-strip-unqualified.diff",
+   "failed_rows": [
+    "VELDO-0165 refuse/claude",
+    "VELDO-0165 report/refused"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "12c573c6d22c146b307aeb30501865dbd26bf2d02997533b08aabd3352aaf011",
+   "name": "hygiene-claude-strip-unqualified",
+   "named_row_red": true,
+   "named_rows": [
+    "refuse/claude"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     false
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     false
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.815,
+   "source_sha256": "b280eca4903231634e87780984902a0eeca10f99abbe7fbfd9273d4afdbc871d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 refuse/claude detail: session_environment: refused by name before spawn",
+    "VELDO-0165 refuse/claude detail: null_session_environment: refused by name before spawn",
+    "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
+    "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
+    "VELDO-0165 evidence/not-a-list detail: claude: session names False refuse as missing evidence",
+    "VELDO-0165 evidence/not-a-list detail: claude: session names '' refuse as missing evidence"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-claude-names-unqualified.diff",
+   "failed_rows": [
+    "VELDO-0165 refuse/claude",
+    "VELDO-0165 report/refused",
+    "VELDO-0165 evidence/not-a-list"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "3ad602d1f76352b55906601897cb282e0c68fbd32b6f85c05c32ac774d235f17",
+   "name": "hygiene-claude-names-unqualified",
+   "named_row_red": true,
+   "named_rows": [
+    "refuse/claude"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     false
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     false
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 14.261,
+   "source_sha256": "b280eca4903231634e87780984902a0eeca10f99abbe7fbfd9273d4afdbc871d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 refuse/codex detail: session_environment: refused by name before spawn",
+    "VELDO-0165 refuse/codex detail: null_session_environment: refused by name before spawn",
+    "VELDO-0165 report/refused detail: codex: missing strip evidence counted once",
+    "VELDO-0165 report/refused detail: codex: missing strip evidence counted once",
+    "VELDO-0165 evidence/not-a-list detail: codex: session names False refuse as missing evidence",
+    "VELDO-0165 evidence/not-a-list detail: codex: session names '' refuse as missing evidence"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-codex-names-unqualified.diff",
+   "failed_rows": [
+    "VELDO-0165 refuse/codex",
+    "VELDO-0165 report/refused",
+    "VELDO-0165 evidence/not-a-list"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "6cc5fdff16785b0229ef43ed8c4bfc8d3bb0df98f3b6a6a6697f92f8a92efd52",
+   "name": "hygiene-codex-names-unqualified",
+   "named_row_red": true,
+   "named_rows": [
+    "refuse/codex"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     false
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     false
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 14.209,
+   "source_sha256": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 strip/own-values detail: claude: account profile and baseline restored after strip",
+    "VELDO-0165 strip/own-values detail: baseline and own subscription token replace inherited values",
+    "VELDO-0165 strip/own-values detail: codex: account profile and baseline restored after strip",
+    "VELDO-0165 strip/configured detail: claude: configured values replace inherited values exactly",
+    "VELDO-0165 strip/configured detail: codex: configured values replace inherited values exactly",
+    "VELDO-0165 report/removed detail: claude: restored names are not reported removed",
+    "VELDO-0165 report/removed detail: codex: restored names are not reported removed",
+    "VELDO-0165 strip/child-environment detail: claude: parent child settings absent; LANG and TERM are the baseline's",
+    "VELDO-0165 strip/child-environment detail: codex: parent child settings absent; LANG and TERM are the baseline's"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-own-values-lost.diff",
+   "failed_rows": [
+    "VELDO-0165 strip/own-values",
+    "VELDO-0165 strip/configured",
+    "VELDO-0165 report/removed",
+    "VELDO-0165 strip/child-environment"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "5dee24244e7dda821b53d985d8686fde537f61ad89843da9f4309038c5251eac",
+   "name": "hygiene-own-values-lost",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/own-values"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     false
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     false
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     false
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     false
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.682,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 strip/claude detail: real wrapper spawned one engine and removed every planted name",
+    "VELDO-0165 strip/codex detail: real wrapper spawned one engine and removed every planted name",
+    "VELDO-0165 strip/future-names detail: claude: unlisted future names removed by all four prefixes",
+    "VELDO-0165 strip/future-names detail: codex: unlisted future names removed by all four prefixes",
+    "VELDO-0165 strip/own-values detail: claude: account profile and baseline restored after strip",
+    "VELDO-0165 strip/own-values detail: codex: account profile and baseline restored after strip",
+    "VELDO-0165 mcp/prefixed-tools detail: configured SDK server tools retain their names in the init event",
+    "VELDO-0165 strip/configured detail: codex: configured values replace inherited values exactly",
+    "VELDO-0165 strip/unprefixed detail: claude: parent child settings outside prefixes removed",
+    "VELDO-0165 strip/unprefixed detail: codex: parent child settings outside prefixes removed",
+    "VELDO-0165 report/removed detail: claude: restored names are not reported removed",
+    "VELDO-0165 report/removed detail: codex: restored names are not reported removed",
+    "VELDO-0165 strip/child-environment detail: claude: parent child settings absent; LANG and TERM are the baseline's",
+    "VELDO-0165 strip/child-environment detail: codex: parent child settings absent; LANG and TERM are the baseline's"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-strip-not-applied.diff",
+   "failed_rows": [
+    "VELDO-0165 strip/claude",
+    "VELDO-0165 strip/codex",
+    "VELDO-0165 strip/future-names",
+    "VELDO-0165 strip/own-values",
+    "VELDO-0165 mcp/prefixed-tools",
+    "VELDO-0165 strip/configured",
+    "VELDO-0165 strip/unprefixed",
+    "VELDO-0165 report/removed",
+    "VELDO-0165 strip/child-environment"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "faaed86bf134c0a32c7c3d54d405b21a985bb06eaae2b6a580c46fbf976f2b08",
+   "name": "hygiene-strip-not-applied",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/claude",
+    "strip/codex"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     false
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     false
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     false
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     false
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     false
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     false
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     false
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.743,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 strip/claude detail: removed names and executable identity reported without values",
+    "VELDO-0165 strip/codex detail: removed names and executable identity reported without values"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-removed-names-unreported.diff",
+   "failed_rows": [
+    "VELDO-0165 strip/claude",
+    "VELDO-0165 strip/codex"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "116dea5142af1e32883888f73774e9bfff9e74d24aa265fa999494bc2a9e4742",
+   "name": "hygiene-removed-names-unreported",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/claude",
+    "strip/codex"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     false
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     false
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.718,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 evidence/empty detail: claude: empty extracted list is present evidence and launches"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-claude-empty-is-missing.diff",
+   "failed_rows": [
+    "VELDO-0165 evidence/empty"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "a327d45c7560388f34dceda1d9f049d8635e24bb9eb2bf33237051580fe3e06f",
+   "name": "hygiene-claude-empty-is-missing",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/empty"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.604,
+   "source_sha256": "b280eca4903231634e87780984902a0eeca10f99abbe7fbfd9273d4afdbc871d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 evidence/not-a-list detail: claude: session names False refuse as missing evidence",
+    "VELDO-0165 evidence/not-a-list detail: claude: session names '' refuse as missing evidence"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-claude-evidence-any-type.diff",
+   "failed_rows": [
+    "VELDO-0165 evidence/not-a-list"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "cc9e8b69dfbe76017b502535fca4dba231ffefc3105a83d0d75ed26089c92d46",
+   "name": "hygiene-claude-evidence-any-type",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/not-a-list"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 14.075,
+   "source_sha256": "b280eca4903231634e87780984902a0eeca10f99abbe7fbfd9273d4afdbc871d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 evidence/empty detail: codex: empty extracted list is present evidence and launches"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-codex-empty-is-missing.diff",
+   "failed_rows": [
+    "VELDO-0165 evidence/empty"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "d50fce6b1b65a7a25b0c17fe845d93ec2168a59e221de34be4c35b006239046f",
+   "name": "hygiene-codex-empty-is-missing",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/empty"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.598,
+   "source_sha256": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 evidence/not-a-list detail: codex: session names False refuse as missing evidence",
+    "VELDO-0165 evidence/not-a-list detail: codex: session names '' refuse as missing evidence"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-codex-evidence-any-type.diff",
+   "failed_rows": [
+    "VELDO-0165 evidence/not-a-list"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "7e1e5b8db8fd68ec8275743c67a289b096a627e64473a298251d936c5c8862bc",
+   "name": "hygiene-codex-evidence-any-type",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/not-a-list"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 14.062,
+   "source_sha256": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 strip/configured detail: claude: configured values replace inherited values exactly",
+    "VELDO-0165 strip/configured detail: codex: configured values replace inherited values exactly"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-configured-not-restored.diff",
+   "failed_rows": [
+    "VELDO-0165 strip/configured"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "d02e4cbae32bd02cff0a265de5cfd3073491c0407b579427c445f9f079dcccff",
+   "name": "hygiene-configured-not-restored",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/configured"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     false
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.694,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 strip/claude detail: real wrapper spawned one engine and removed every planted name",
+    "VELDO-0165 strip/claude detail: removed names and executable identity reported without values",
+    "VELDO-0165 strip/codex detail: real wrapper spawned one engine and removed every planted name",
+    "VELDO-0165 strip/codex detail: removed names and executable identity reported without values",
+    "VELDO-0165 strip/own-values detail: claude: account profile and baseline restored after strip",
+    "VELDO-0165 strip/own-values detail: codex: account profile and baseline restored after strip",
+    "VELDO-0165 evidence/qualified detail: claude: qualification carries prefixes, names and pinned digest",
+    "VELDO-0165 strip/unprefixed detail: claude: parent child settings outside prefixes removed",
+    "VELDO-0165 strip/unprefixed detail: codex: parent child settings outside prefixes removed",
+    "VELDO-0165 evidence/completeness detail: claude: rerun byte extraction equals inventory and covers child structures"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-unprefixed-parent-kept.diff",
+   "failed_rows": [
+    "VELDO-0165 strip/claude",
+    "VELDO-0165 strip/codex",
+    "VELDO-0165 strip/own-values",
+    "VELDO-0165 evidence/qualified",
+    "VELDO-0165 strip/unprefixed",
+    "VELDO-0165 evidence/completeness"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "0c0d31e48fdad46adf52092f1cf081b861b26ce5bb6bbeacbc0f3cbc028b2a73",
+   "name": "hygiene-unprefixed-parent-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/unprefixed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     false
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     false
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     false
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     false
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.622,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 evidence/completeness detail: claude: rerun byte extraction equals inventory and covers child structures",
+    "VELDO-0165 evidence/completeness detail: child array, startup and default assignments are extracted",
+    "VELDO-0165 evidence/completeness detail: codex: rerun byte extraction equals inventory and covers child structures",
+    "VELDO-0165 evidence/completeness detail: the unified exec pairs are extracted whole"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-parent-hand-list.diff",
+   "failed_rows": [
+    "VELDO-0165 evidence/completeness"
+   ],
+   "module": "proof/VELDO-0165/extract_environment.py",
+   "mutant_sha256": "d31c41d6b9dfdce679d4c611e3129974b0a4796f777e31d0369c101d29a5ec00",
+   "name": "hygiene-parent-hand-list",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/completeness"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.279,
+   "source_sha256": "8921896ae61d236ffbb41c62823437763d4da105c7dfe0a0362e8fc6af9a7d26"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 evidence/completeness detail: claude: rerun byte extraction equals inventory and covers child structures",
+    "VELDO-0165 evidence/completeness detail: codex: rerun byte extraction equals inventory and covers child structures",
+    "VELDO-0165 evidence/outside-scan detail: claude: extracted session names equal an independent strings scan",
+    "VELDO-0165 evidence/outside-scan detail: codex: extracted session names equal an independent strings scan"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-extractor-drops-suffix.diff",
+   "failed_rows": [
+    "VELDO-0165 evidence/completeness",
+    "VELDO-0165 evidence/outside-scan"
+   ],
+   "module": "proof/VELDO-0165/extract_environment.py",
+   "mutant_sha256": "15c514c9fba019aab14bdaa19c0ced34850e54633589741fb058410b9dac6920",
+   "name": "hygiene-extractor-drops-suffix",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/outside-scan"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     false
+    ]
+   ],
+   "seconds": 13.593,
+   "source_sha256": "8921896ae61d236ffbb41c62823437763d4da105c7dfe0a0362e8fc6af9a7d26"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 evidence/qualified detail: codex: qualification carries prefixes, names and pinned digest",
+    "VELDO-0165 evidence/completeness detail: codex: rerun byte extraction equals inventory and covers child structures",
+    "VELDO-0165 strip/child-environment detail: claude: parent child settings absent; LANG and TERM are the baseline's",
+    "VELDO-0165 strip/child-environment detail: codex: parent child settings absent; LANG and TERM are the baseline's"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-codex-child-settings-kept.diff",
+   "failed_rows": [
+    "VELDO-0165 evidence/qualified",
+    "VELDO-0165 evidence/completeness",
+    "VELDO-0165 strip/child-environment"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "b84416b4b2e6a9a3e9a16f53affd1795017f7002497ca54124aadadb5d0bb8d6",
+   "name": "hygiene-codex-child-settings-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/child-environment",
+    "evidence/completeness"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     false
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     false
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.672,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 evidence/qualified detail: claude: qualification carries prefixes, names and pinned digest",
+    "VELDO-0165 evidence/completeness detail: claude: rerun byte extraction equals inventory and covers child structures",
+    "VELDO-0165 strip/child-environment detail: claude: parent child settings absent; LANG and TERM are the baseline's",
+    "VELDO-0165 strip/child-environment detail: codex: parent child settings absent; LANG and TERM are the baseline's"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-metrics-default-kept.diff",
+   "failed_rows": [
+    "VELDO-0165 evidence/qualified",
+    "VELDO-0165 evidence/completeness",
+    "VELDO-0165 strip/child-environment"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "75aca81f287b92cc5ea7f6438dcecce3ebd2b84ec4a735a26d333ec0d43d5e15",
+   "name": "hygiene-metrics-default-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/child-environment",
+    "evidence/completeness"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     false
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     false
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.774,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 report/removed detail: claude: restored names are not reported removed",
+    "VELDO-0165 strip/child-environment detail: claude: parent child settings absent; LANG and TERM are the baseline's"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-claude-locale-unconfigured.diff",
+   "failed_rows": [
+    "VELDO-0165 report/removed",
+    "VELDO-0165 strip/child-environment"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "2f80c6459a338b0a301c0ff80b654cd9d5f15175bbfcbf72d0747323c4bd6562",
+   "name": "hygiene-claude-locale-unconfigured",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/child-environment"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     false
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     false
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.646,
+   "source_sha256": "b280eca4903231634e87780984902a0eeca10f99abbe7fbfd9273d4afdbc871d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 report/removed detail: codex: restored names are not reported removed",
+    "VELDO-0165 strip/child-environment detail: codex: parent child settings absent; LANG and TERM are the baseline's"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-codex-locale-unconfigured.diff",
+   "failed_rows": [
+    "VELDO-0165 report/removed",
+    "VELDO-0165 strip/child-environment"
+   ],
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "f4d34f4b0dd3e38bb27c5b9e44c92d5fe71e035ffab9fd611a352a6ab3bd705a",
+   "name": "hygiene-codex-locale-unconfigured",
+   "named_row_red": true,
+   "named_rows": [
+    "strip/child-environment"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     false
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     false
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.792,
+   "source_sha256": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 mcp/configured-refused detail: an adapter configuring the MCP naming switch is refused by name before spawn"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-mcp-configured-accepted.diff",
+   "failed_rows": [
+    "VELDO-0165 mcp/configured-refused"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "72cc39e566a18123a835ab3e272db35631a7f4adf63de202953ee08cb770bdc8",
+   "name": "hygiene-mcp-configured-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "mcp/configured-refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     false
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.76,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
+    "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
+    "VELDO-0165 report/refused detail: claude: missing strip evidence counted once",
+    "VELDO-0165 report/refused detail: codex: missing strip evidence counted once",
+    "VELDO-0165 report/refused detail: codex: missing strip evidence counted once",
+    "VELDO-0165 report/refused detail: codex: missing strip evidence counted once"
+   ],
+   "diff": "proof/VELDO-0165/hygiene-refused-not-counted.diff",
+   "failed_rows": [
+    "VELDO-0165 report/refused"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "c953d378f4a81c2b914dc2e1d1aa3befb3c5cb52e38802f0dc89526bfaff7d1f",
+   "name": "hygiene-refused-not-counted",
+   "named_row_red": true,
+   "named_rows": [
+    "report/refused"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     false
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.636,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  }
+ ],
+ "mutations_per_row": {
+  "evidence/completeness": [
+   "hygiene-parent-hand-list",
+   "hygiene-codex-child-settings-kept",
+   "hygiene-metrics-default-kept"
+  ],
+  "evidence/empty": [
+   "hygiene-claude-empty-is-missing",
+   "hygiene-codex-empty-is-missing"
+  ],
+  "evidence/not-a-list": [
+   "hygiene-claude-evidence-any-type",
+   "hygiene-codex-evidence-any-type"
+  ],
+  "evidence/outside-scan": [
+   "hygiene-extractor-drops-suffix"
+  ],
+  "mcp/configured-refused": [
+   "hygiene-mcp-configured-accepted"
+  ],
+  "mcp/prefixed-tools": [
+   "hygiene-mcp-override-kept"
+  ],
+  "refuse/claude": [
+   "hygiene-claude-strip-unqualified",
+   "hygiene-claude-names-unqualified"
+  ],
+  "refuse/codex": [
+   "hygiene-codex-strip-unqualified",
+   "hygiene-codex-names-unqualified"
+  ],
+  "report/refused": [
+   "hygiene-refused-not-counted"
+  ],
+  "strip/child-environment": [
+   "hygiene-codex-child-settings-kept",
+   "hygiene-metrics-default-kept",
+   "hygiene-claude-locale-unconfigured",
+   "hygiene-codex-locale-unconfigured"
+  ],
+  "strip/claude": [
+   "hygiene-strip-not-applied",
+   "hygiene-removed-names-unreported"
+  ],
+  "strip/codex": [
+   "hygiene-strip-not-applied",
+   "hygiene-removed-names-unreported"
+  ],
+  "strip/configured": [
+   "hygiene-configured-not-restored"
+  ],
+  "strip/future-names": [
+   "hygiene-listed-names-only"
+  ],
+  "strip/own-values": [
+   "hygiene-own-values-lost"
+  ],
+  "strip/unprefixed": [
+   "hygiene-unprefixed-parent-kept"
+  ]
+ },
+ "noop": {
+  "control_engine_claude.py": {
+   "copy_sha256": "b280eca4903231634e87780984902a0eeca10f99abbe7fbfd9273d4afdbc871d",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.685,
+   "source_sha256": "b280eca4903231634e87780984902a0eeca10f99abbe7fbfd9273d4afdbc871d"
+  },
+  "control_engine_codex.py": {
+   "copy_sha256": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.759,
+   "source_sha256": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742"
+  },
+  "control_launch.py": {
+   "copy_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.706,
+   "source_sha256": "cb3e84c2de8148391c32f74c0aadbe75a2283930fb6066194a5079a29a0fe593"
+  },
+  "extract_environment.py": {
+   "copy_sha256": "8921896ae61d236ffbb41c62823437763d4da105c7dfe0a0362e8fc6af9a7d26",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0165 strip/claude",
+     true
+    ],
+    [
+     "VELDO-0165 strip/codex",
+     true
+    ],
+    [
+     "VELDO-0165 strip/future-names",
+     true
+    ],
+    [
+     "VELDO-0165 strip/own-values",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/claude",
+     true
+    ],
+    [
+     "VELDO-0165 refuse/codex",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/prefixed-tools",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/qualified",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0165 fixture/mcp-control",
+     true
+    ],
+    [
+     "VELDO-0165 strip/configured",
+     true
+    ],
+    [
+     "VELDO-0165 strip/unprefixed",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/empty",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/completeness",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/prefixes",
+     true
+    ],
+    [
+     "VELDO-0165 report/removed",
+     true
+    ],
+    [
+     "VELDO-0165 report/refused",
+     true
+    ],
+    [
+     "VELDO-0165 strip/child-environment",
+     true
+    ],
+    [
+     "VELDO-0165 mcp/configured-refused",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/not-a-list",
+     true
+    ],
+    [
+     "VELDO-0165 evidence/outside-scan",
+     true
+    ]
+   ],
+   "seconds": 13.746,
+   "source_sha256": "8921896ae61d236ffbb41c62823437763d4da105c7dfe0a0362e8fc6af9a7d26"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 165",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 384.977,
+ "spec_id": "VELDO-0165",
+ "suite": "scripts/suites/82_veldo_0165_launch_hygiene.py"
+}

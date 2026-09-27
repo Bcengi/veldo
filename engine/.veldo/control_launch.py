@@ -205,6 +205,8 @@ ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('cont
 # the inherited environment loses and an adapter may configure.
 CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.values()))
 STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
+NEVER_CONFIGURED = frozenset().union(*(getattr(engine, 'BASELINE', {}).get('strip_names', ())
+                                       for engine in ENGINES.values()))
 # What every engine module implements, with the same signatures (THE ENGINE PROTOCOL above).
 ENGINE_PROTOCOL = ('PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind', 'command',
                    'environment', 'Terminal', 'baseline', 'profile_problem', 'login_problem', 'Guard')
@@ -260,21 +262,34 @@ WRAPPER_REFUSED = 70
 # with (the SSH agent, the session bus, the Git tokens), and the variable naming the engine's own runtime
 # directory, which the wrapper makes the engine's XDG_RUNTIME_DIR. The receiver keeps all of them, so its
 # own systemd-run and systemctl still reach the user manager.
-EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')
+EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',
+                 'SHELL', 'GIT_EDITOR', 'TRACEPARENT', 'TRACESTATE', 'TMUX', 'TMPDIR', 'TMPPREFIX', 'BUN_OPTIONS',
+                 'TEMP', 'TMP', 'GIT_CONFIG_PARAMETERS', 'COREPACK_ENABLE_AUTO_PIN',
+                 'NoDefaultCurrentDirectoryInExePath',
+                 # VELDO-0165: what Claude Code writes into its own environment when unset, for every child.
+                 'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE',
+                 # VELDO-0165: what Codex 0.154.0 sets on every command it runs (its unified exec pairs,
+                 # proof/VELDO-0165/codex-environment.json); each engine's baseline sets LANG and TERM itself.
+                 'NO_COLOR', 'TERM', 'LANG', 'LC_CTYPE', 'LC_ALL', 'COLORTERM', 'PAGER', 'GIT_PAGER', 'GH_PAGER')
 ENGINE_RUNTIME = 'VELDO_ENGINE_RUNTIME_DIR'
 RUN_CONFIG, RUN_RUNTIME = 'config', 'runtime'
 TOKEN_VARIABLE = 'CLAUDE_CODE_OAUTH_TOKEN'
+SESSION_PREFIXES = ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')
+ENGINE_OVERRIDES = 'VELDO_ENGINE_ENVIRONMENT'
 
 
 def engine_environment(environment):
     """THE ENVIRONMENT STRIP: an engine launch's environment (one naming ENGINE_RUNTIME) without the SSH agent,
     the session bus and the Git tokens, and with XDG_RUNTIME_DIR the run's own empty runtime directory, never
-    the receiver's; any other environment unchanged. The trusted wrapper applies it to what it execs."""
+    the receiver's. VELDO-0165 also removes every session-prefixed name, then installs only the qualified
+    adapter, baseline and account values the receiver carried in ENGINE_OVERRIDES. Other launches are unchanged."""
     runtime = environment.pop(ENGINE_RUNTIME, None)
     if runtime is None:
         return environment
-    for name in EXEC_STRIPPED:
-        environment.pop(name, None)
+    for name in list(environment):
+        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
+            environment.pop(name, None)
+    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))
     environment['XDG_RUNTIME_DIR'] = runtime
     return environment
 
@@ -832,7 +847,8 @@ class Receiver:
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
-            self.emit({'event': 'refused', 'refusal': refusal})
+            self.emit({'event': 'refused', 'refusal': refusal,
+                       'metrics': {'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
             return
         me = dict(process_identity(os.getpid()), principal=self.config['principal'])
         try:
@@ -960,6 +976,10 @@ class Receiver:
         configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)
         if configured:
             return 'invalid_input:adapter_environment:' + configured[0]
+        # VELDO-0165 AC2: a name the baseline strips by name (the MCP tool naming switch) is never configured.
+        renaming = sorted(set(adapter.get('environment') or {}) & NEVER_CONFIGURED)
+        if renaming:
+            return 'invalid_input:adapter_environment:' + renaming[0]
         account = contract['reservation']['account']
         record = ACC.read(self.conn, account)
         if record is not None and record.get('provider') != module.PROVIDER:
@@ -995,7 +1015,7 @@ class Receiver:
         for name in sorted(settings):
             if name in configured and configured[name] != settings[name]:
                 return 'invalid_input:adapter_environment:' + name
-        self.binding = dict(bound, argv=argv, environment=settings)
+        self.binding = dict(bound, argv=argv, environment=settings, configured_environment=dict(configured))
         # VELDO-0155, VELDO-0156: the subscription token an account is configured with, the account profile
         # and the login the engine would take in its environment, checked before acceptance: a profile item
         # the baseline cannot keep out, or a login that is not a subscription, is refused by name and no
@@ -1103,12 +1123,25 @@ class Receiver:
         token = self.token
         if token is not None:
             environment[TOKEN_VARIABLE] = token
+        # Apply the checked adapter configuration after stripping inherited session values.
+        own = {n: environment[n] for n in self.binding['configured_environment'] if n in environment}
+        own.update(self.binding['environment'])
+        own.update(extra['environment'])
+        profile_name, profile_directory = ACC.profile(self.login['record'], self.host)
+        own[profile_name] = profile_directory
+        if token is not None:
+            own[TOKEN_VARIABLE] = token
+        environment[ENGINE_OVERRIDES] = json.dumps(own, sort_keys=True)
         environment[ENGINE_RUNTIME] = run['runtime']
         self.emit({'event': 'baseline', 'baseline': {
+            'dispatch_id': dispatch_id,
+            'executable': {k: self.binding[k] for k in ('engine', 'version', 'sha256')},
+            'strip_prefixes': list(SESSION_PREFIXES),
             'options': list(extra['argv']), 'environment': sorted(extra['environment']),
             'files': sorted(extra['files']), 'run': run, 'token': token is not None,
-            'removed': sorted(set(n for n in os.environ if n not in environment)
-                              | set(n for n in EXEC_STRIPPED if n in environment))}})
+            'removed': sorted((set(n for n in os.environ if n not in environment)
+                              | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
+                              - set(own))}})
         return argv, environment
 
     def _invoke(self, contract, acceptance, adapter):

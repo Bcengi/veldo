@@ -1,0 +1,7 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -243,2 +243,2 @@
+-                 'SHELL', 'GIT_EDITOR', 'TRACEPARENT', 'TRACESTATE', 'TMUX', 'TMPDIR', 'TMPPREFIX', 'BUN_OPTIONS',
+-                 'TEMP', 'TMP', 'GIT_CONFIG_PARAMETERS', 'COREPACK_ENABLE_AUTO_PIN',
++                 'SHELL', 'GIT_EDITOR', 'TRACESTATE', 'TMUX', 'TMPDIR', 'TMPPREFIX', 'BUN_OPTIONS',
++                 'TEMP', 'TMP', 

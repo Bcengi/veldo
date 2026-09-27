@@ -334,6 +334,9 @@ sys.exit(7 if mode == 'nonzero' else 0)
         record = {'schema': E.QUALIFICATION_SCHEMA, 'engine': 'claude_code', 'versions': {version: {
             'sha256': P.digest((versions / version).read_bytes()), 'flags': flags, 'baseline': E.BASELINE,
             'environment': {'DISABLE_AUTOUPDATER': '1'}}}}
+        if hasattr(E, 'session_environment'):
+            # VELDO-0165: the version's extracted session names, read from the fake's own bytes.
+            record['versions'][version]['session_environment'] = E.session_environment(versions / version)
         (mods / 'runtime').mkdir(exist_ok=True)
         (mods / 'runtime/claude-qualification.json').write_text(json.dumps(record))
         E.pin(version, versions=str(versions), state_root=str(factory))

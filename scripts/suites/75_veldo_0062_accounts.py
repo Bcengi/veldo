@@ -276,18 +276,18 @@ def _v62_suite():
         FAMILIES = ['ANTHROPIC_V62_' + probe, 'OPENAI_V62_' + probe, 'CODEX_V62_' + probe, 'CLAUDE_CODE_USE_V62_' + probe]
 
         def inherited_outcome(name):
-            if name in PROFILE_VARS or name.startswith(FAMILY) or DECIDED.get(name) in ('strip', 'setting'):
+            if name in PROFILE_VARS or name.startswith(FAMILY + ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')) or DECIDED.get(name) in ('strip', 'setting'):
                 return 'strip'
             return 'keep'
         STRIPPED = sorted({n for n in LISTED if inherited_outcome(n) == 'strip'} | set(NINE) | set(REDIRECTS)
-                          | set(FAMILIES))
+                          | set(FAMILIES) | {'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
         # Kept, planted: every kept listed name but the home names (the receiver's own tools need the real
         # ones; they are checked to arrive unchanged), a neutral name, count and threshold settings.
         KEPT = sorted({n for n in LISTED if inherited_outcome(n) == 'keep' and n not in HOME_NAMES}
-                      | {'V62_NEUTRAL_' + probe, 'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
+                      | {'V62_NEUTRAL_' + probe})
         # What the Claude adapter configures: the model table, the settings and a threshold setting, each of
         # which must reach the engine with its configured value; the Codex adapter a setting of its family.
-        CONFIGURED_CLAUDE = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | {'CLAUDE_CODE_IDLE_TOKEN_THRESHOLD'})
+        CONFIGURED_CLAUDE = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | {'CLAUDE_CODE_IDLE_TOKEN_THRESHOLD', 'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
         CONFIGURED_CODEX = ['CODEX_CA_CERTIFICATE', 'RUST_LOG']
         fake = '''#!%s -B
 import json, os, sqlite3, sys, time
@@ -376,7 +376,9 @@ sys.exit(payload.get('code', 0))
                 'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
                 'environment': {'DISABLE_AUTOUPDATER': '1'},
                 # VELDO-0155: the version is qualified with the everything-off baseline.
-                **({'baseline': L.ENGINES['claude_code'].BASELINE}
+                **({'baseline': L.ENGINES['claude_code'].BASELINE,
+                    'session_environment': (L.ENGINES['claude_code'].session_environment(versions / '2.1.281')
+                                            if hasattr(L.ENGINES['claude_code'], 'session_environment') else [])}
                    if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'BASELINE') else {})}}}))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
@@ -768,6 +770,23 @@ sys.exit(payload.get('code', 0))
                 values = own.get('values') or {}
                 adapter = 'codex' if account.startswith('acct-x') else 'claude'
                 wanted = CONFIGURED[adapter]['environment']
+                # The account boundary also serves login checks before the exec wrapper.
+                # Keep its credential classification independently proven from binary tables;
+                # the wrapper's broader session strip must not conceal a broken login boundary.
+                login_env, login_error = attempt(lambda: ACC.login_environment(
+                    caller, account_record(account), HOST, L.STRIPPED, wanted, L.CREDENTIALS))
+                login_env = login_env or {}
+                check('login/recorded-account-profile', account + ': account boundary selects the registered profile',
+                      login_error is None and login_env.get(variable) == profiles[account])
+                login_strip = {n for n in caller if n in PROFILE_VARS or n.startswith(FAMILY)
+                               or DECIDED.get(n) in ('strip', 'setting') or n in NINE + REDIRECTS + FAMILIES}
+                check('login/no-paid-api', account + ': account boundary strips logins and settings before wrapper',
+                      login_error is None and all(n not in login_env for n in login_strip - set(wanted) - {variable}))
+                login_keep = {n for n in LISTED if n not in login_strip} | {'CLAUDE_CODE_MAX_OUTPUT_TOKENS'}
+                check('login/no-paid-api', account + ': account boundary distinguishes non-login counts and thresholds',
+                      all(login_env.get(n) == caller[n] for n in login_keep - set(wanted) if n in caller))
+                check('login/configured-environment', account + ': account boundary applies checked configuration',
+                      login_error is None and all(login_env.get(n) == v for n, v in wanted.items()))
                 # A name the adapter configures arrives with the configured value, and the account's own profile
                 # variable with its profile (the rows above), never with the caller's.
                 leaked = sorted(n for n in set(STRIPPED) & names
@@ -778,7 +797,7 @@ sys.exit(payload.get('code', 0))
                       bool(names) and not leaked)
                 missing = sorted(n for n in KEPT if n not in wanted and values.get(n) != caller[n])
                 homes = sorted(n for n in HOME_NAMES if n in os.environ and values.get(n) != os.environ[n])
-                check('login/no-paid-api', '%s: what is not a login still reached it unchanged: the %d kept names of '
+                check('login/no-paid-api', '%s: names outside the session prefixes still reached it unchanged: the %d kept names of '
                       'the lists (general proxy, CA, runtime, cloud, tool credentials, the not-secret thresholds and '
                       'usage settings), a neutral name, a count setting and the home names [%s, %s]'
                       % (account, len(KEPT), missing[:8], homes), bool(names) and not missing and not homes)

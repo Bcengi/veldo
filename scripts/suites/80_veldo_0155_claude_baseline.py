@@ -460,6 +460,8 @@ out.close()
             VERSION: {'sha256': FAKE_SHA, 'flags': list(FLAGS), 'environment': {'DISABLE_AUTOUPDATER': '1'}}}}
         if getattr(E, 'BASELINE', None) is not None:
             test_record['versions'][VERSION]['baseline'] = E.BASELINE
+            if hasattr(E, 'session_environment'):
+                test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
         (mods / 'runtime').mkdir()
         record_path = mods / 'runtime' / 'claude-qualification.json'
         record_path.write_text(json.dumps(test_record, indent=1))
@@ -735,7 +737,9 @@ out.close()
             check('baseline/qualified', 'the shipped 2.1.281 record qualifies the version with the module\'s baseline, '
                   'every switch in it one the binary\'s own table reads [%s]' % sorted(named),
                   entry.get('baseline') == getattr(E, 'BASELINE', None) and entry.get('baseline') is not None
-                  and named - {''} <= {s['name'] for s in switches.values()}
+                  # VELDO-0165: LANG and TERM are the configured locale and terminal, set after the wrapper's strip,
+                  # not switches of the binary's table.
+                  and named - {'', 'LANG', 'TERM'} <= {s['name'] for s in switches.values()}
                   and (entry.get('baseline') or {}).get('settings') == {'disableAllHooks': True})
             check('baseline/qualified', 'a version whose record does not list the baseline is refused by name before '
                   'acceptance, nothing spawned [%s]' % unqualified_record.get('refusal'),

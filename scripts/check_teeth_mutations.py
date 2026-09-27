@@ -7712,7 +7712,8 @@ def cases():
     adapter('adapter-engine-environment-ignored', 'control_launch.py',
             "            environment.update(self.binding['environment'])\n",
             "            pass  # defect: the engine's pinned settings never reach it\n",
-            'lifecycle/normal-run')
+            'lifecycle/normal-run',
+            also=(("        own.update(self.binding['environment'])\n", ""),))
     adapter('adapter-stop-unregistered', 'control_engine_codex.py',
             "        'stop': 'control_launch.Launch.stop: the cooperative stop and its bounded escalation over the containment group',\n",
             "",
@@ -7844,16 +7845,16 @@ def cases():
                 "    'options': ['--setting-sources', '', '--strict-mcp-config'],  # defect: every skill loads\n",
                 'baseline/planted-skill')
     baseline155('claude-baseline-claude-mds-unset', 'control_engine_claude.py',
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},\n",
-                "    'environment': {'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},  # defect: instruction files stay on\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',  # defect: instruction files stay on\n",
                 'baseline/qualified')
     baseline155('claude-baseline-hooks-kept', 'control_engine_claude.py',
                 "    'settings': {'disableAllHooks': True},\n",
                 "    'settings': {},  # defect: hooks stay on\n",
                 'baseline/qualified')
     baseline155('claude-baseline-auto-memory-kept', 'control_engine_claude.py',
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},\n",
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1'},  # defect: auto memory stays on\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1',  # defect: auto memory stays on\n",
                 'baseline/planted-memory')
     baseline155('claude-paid-api-key-left', 'control_launch.py',
                 "            environment['VELDO_ACCOUNT'] = self.login['account']\n        else:\n",
@@ -7866,8 +7867,8 @@ def cases():
                 "        if False:  # defect: a run on an API key takes its first turn\n",
                 'paid-api/stop')
     baseline155('claude-strip-agent-left', 'control_launch.py',
-                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')\n",
-                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')  # defect: the agent stays\n",
+                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',\n",
+                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',  # defect: the agent stays\n",
                 'strip/read-back')
     baseline155('claude-runtime-receivers', 'control_launch.py',
                 "    environment['XDG_RUNTIME_DIR'] = runtime\n",
@@ -7891,7 +7892,7 @@ def cases():
                 "            if (not stat_regular(info) or info.st_uid != os.geteuid()  # defect: any mode\n",
                 'paid-api/token-file')
     baseline155('claude-token-not-delivered', 'control_launch.py',
-                "            environment[TOKEN_VARIABLE] = token\n",
+                "            own[TOKEN_VARIABLE] = token\n",
                 "            pass  # defect: the account's token never reaches the engine\n",
                 'paid-api/read-back')
     baseline155('claude-baseline-unqualified-accepted', 'control_engine_claude.py',
@@ -7983,8 +7984,8 @@ def cases():
                 "                      'cli_auth_credentials_store': 'keyring',  # defect: the login from the keyring\n",
                 'paid-api/file-login')
     baseline156('codex-strip-agent-left', 'control_launch.py',
-                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')\n",
-                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')  # defect: the agent stays\n",
+                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',\n",
+                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',  # defect: the agent stays\n",
                 'strip/read-back')
     baseline156('codex-runtime-receivers', 'control_launch.py',
                 "    environment['XDG_RUNTIME_DIR'] = runtime\n",
@@ -8350,6 +8351,80 @@ def cases():
     decomposition('service-not-installed', 'init_scaffold.py',
         '    ".veldo/control_decomposition.py",\n', '', ['install/assets'])
 
+    # VELDO-0165: the prefix strip is an exec boundary, and both qualifiers require it.
+    def hygiene165(name, module, old, new, rows, also=()):
+        add(165, 'hygiene-' + name, '82_veldo_0165_launch_hygiene.py', module, old, new, rows, also)
+
+    extracted165 = set()
+    for engine165 in ('claude', 'codex'):
+        record165 = json.loads((ROOT / '.veldo' / 'runtime' / (engine165 + '-qualification.json')).read_text())
+        entry165 = record165['versions']['2.1.281'] if engine165 == 'claude' else record165
+        extracted165.update(entry165.get('session_environment') or [])
+    hygiene165('listed-names-only', 'control_launch.py',
+               'name.startswith(SESSION_PREFIXES)',
+               'name in ' + repr(tuple(sorted(extracted165))), ['strip/future-names'])
+    hygiene165('codex-strip-unqualified', 'control_engine_codex.py',
+               "    if record.get('baseline') != BASELINE:",
+               "    if False:", ['refuse/codex'])
+    hygiene165('mcp-override-kept', 'control_launch.py',
+               '        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):',
+               "        if name != 'CLAUDE_AGENT_SDK_MCP_NO_PREFIX' and (name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES)):",
+               ['mcp/prefixed-tools'])
+    hygiene165('claude-strip-unqualified', 'control_engine_claude.py',
+               "    if entry.get('baseline') != BASELINE:",
+               "    if False:", ['refuse/claude'])
+    for engine, source in [('claude', 'entry'), ('codex', 'record')]:
+        hygiene165(engine + '-names-unqualified', 'control_engine_' + engine + '.py',
+                   "    if not isinstance(" + source + ".get('session_environment'), list):", "    if False:",
+                   ['refuse/' + engine])
+    hygiene165('own-values-lost', 'control_launch.py',
+               "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))",
+               "    environment.pop(ENGINE_OVERRIDES, None)", ['strip/own-values'])
+    hygiene165('strip-not-applied', 'control_launch.py',
+               '    environment = engine_environment(environment)',
+               '    environment = environment', ['strip/claude', 'strip/codex'])
+    hygiene165('removed-names-unreported', 'control_launch.py',
+               'n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)',
+               'n in EXEC_STRIPPED', ['strip/claude', 'strip/codex'])
+    for engine, source in [('claude', 'entry'), ('codex', 'record')]:
+        hygiene165(engine + '-empty-is-missing', 'control_engine_' + engine + '.py',
+                   "    if not isinstance(" + source + ".get('session_environment'), list):",
+                   "    if not " + source + ".get('session_environment'):", ['evidence/empty'])
+        hygiene165(engine + '-evidence-any-type', 'control_engine_' + engine + '.py',
+                   "    if not isinstance(" + source + ".get('session_environment'), list):",
+                   "    if " + source + ".get('session_environment') is None:", ['evidence/not-a-list'])
+    hygiene165('configured-not-restored', 'control_launch.py',
+               "        own = {n: environment[n] for n in self.binding['configured_environment'] if n in environment}",
+               "        own = {}", ['strip/configured'])
+    hygiene165('unprefixed-parent-kept', 'control_launch.py',
+               "'GIT_CONFIG_PARAMETERS', 'COREPACK_ENABLE_AUTO_PIN',",
+               "", ['strip/unprefixed'], also=(("'TRACEPARENT', ", ""),))
+    hygiene165('parent-hand-list', 'extract_environment.py',
+               "    parents, structures = parent_environment(engine, data, names)",
+               "    parents, structures = [n for n in ('CLAUDECODE', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_SESSION_ATTENDED', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_PID', 'CLAUDE_EFFORT', 'AI_AGENT', 'CODEX_THREAD_ID', 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED') if n in names], []",
+               ['evidence/completeness'])
+    result[-1]['dir'] = 'proof/VELDO-0165'
+    hygiene165('extractor-drops-suffix', 'extract_environment.py',
+               '            if SHAPE.fullmatch(piece):',
+               "            if SHAPE.fullmatch(piece) and not piece.endswith(b'_ID'):", ['evidence/outside-scan'])
+    result[-1]['dir'] = 'proof/VELDO-0165'
+    hygiene165('codex-child-settings-kept', 'control_launch.py',
+               "                 'NO_COLOR', 'TERM', 'LANG', 'LC_CTYPE', 'LC_ALL', 'COLORTERM', 'PAGER', 'GIT_PAGER', 'GH_PAGER')",
+               "                 )", ['strip/child-environment', 'evidence/completeness'])
+    hygiene165('metrics-default-kept', 'control_launch.py',
+               "                 'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE',\n", "",
+               ['strip/child-environment', 'evidence/completeness'])
+    hygiene165('claude-locale-unconfigured', 'control_engine_claude.py',
+               "                    'LANG': 'C.UTF-8', 'TERM': 'dumb'},\n", "                    },\n",
+               ['strip/child-environment'])
+    hygiene165('codex-locale-unconfigured', 'control_engine_codex.py',
+               "    'environment': {'LANG': 'C.UTF-8', 'TERM': 'dumb'},\n", "    'environment': {},\n",
+               ['strip/child-environment'])
+    hygiene165('mcp-configured-accepted', 'control_launch.py',
+               '        if renaming:', '        if False:', ['mcp/configured-refused'])
+    hygiene165('refused-not-counted', 'control_launch.py',
+               "int(refusal.startswith('missing_evidence:engine_baseline:'))",
+               "0", ['report/refused'])
     add(129, 'worker129-runtime-architecture-bypassed', '60_veldo_0053_architecture.py', 'control_launch_work.py',
         "        self.gate.require('provider_request', unit, context=context)",
         "        pass  # defect: launch without the provider architecture decision",

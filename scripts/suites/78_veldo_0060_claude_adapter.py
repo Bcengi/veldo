@@ -363,6 +363,8 @@ sys.exit(payload.get('code', 0))
         if getattr(E, 'BASELINE', None) is not None:
             # VELDO-0155: the version is qualified with the everything-off baseline.
             test_record['versions'][VERSION]['baseline'] = E.BASELINE
+            if hasattr(E, 'session_environment'):
+                test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
         QUALIFIED = test_record['versions'][VERSION]
