@@ -394,6 +394,9 @@
  },
  "codex": {
   "binary": "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+  "login_status": {
+   "chatgpt": "Logged in using ChatGPT"
+  },
   "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
   "stderr": {
    "prompt_from_stdin": {

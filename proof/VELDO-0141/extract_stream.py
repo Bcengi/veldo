@@ -6,8 +6,8 @@ Claude Code 2.1.281: the schema of the `user` message (a tool's result, with par
 VELDO-0062's own reader of the zod objects the binary embeds (proof/VELDO-0062/extract_formats.py), and the
 text of the warning the binary writes to its error stream when NODE_EXTRA_CA_CERTS names a file it cannot
 load. Codex 0.154.0: the line `codex exec` writes to its error stream when it reads its prompt from standard
-input. Nothing is executed, no model runs, nothing logs in and no profile, credential or configuration file
-is opened.
+input, and the line its `login status` prints for a ChatGPT login. Nothing is executed, no model runs,
+nothing logs in and no profile, credential or configuration file is opened.
 
     python3 -B proof/VELDO-0141/extract_stream.py [--claude PATH] [--codex PATH]            # write
     python3 -B proof/VELDO-0141/extract_stream.py --check [--claude PATH] [--codex PATH]    # compare
@@ -33,6 +33,7 @@ CERTS = ('process.stderr.write(`Warning: Ignoring extra certs from \\`${extraPat
          '${err?.code === "ENOENT" ? "No such file or directory" : err?.message}\n`);')
 CERTS_TEXT = 'Warning: Ignoring extra certs from `{path}`, load failed: No such file or directory'
 PROMPT = 'Reading prompt from stdin...'
+LOGGED_IN = 'Logged in using ChatGPT'
 
 
 class Moved(Exception):
@@ -73,8 +74,10 @@ def codex(path):
     raw = Path(path).read_bytes()
     if raw.count(PROMPT.encode()) != 1:
         raise Moved('the prompt-from-stdin line moved')
+    if raw.count(LOGGED_IN.encode()) != 1:
+        raise Moved('the login status line moved')
     return {'binary': str(path), 'version': '0.154.0', 'sha256': _digest(path),
-            'stderr': {'prompt_from_stdin': {'text': PROMPT}}}
+            'stderr': {'prompt_from_stdin': {'text': PROMPT}}, 'login_status': {'chatgpt': LOGGED_IN}}
 
 
 def main(argv=None):
