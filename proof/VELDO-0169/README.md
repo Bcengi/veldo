@@ -46,7 +46,7 @@ its units name.
 assertion; andon/subject-race is green there, since the original behavior is what it restores.
 `red-at-0a2ba0f9.json`: against the reviewed commit, census/writers, census/planted, guard/receipt,
 guard/resume-again and andon/subject-race red by assertion. Reproduce with
-`python3 proof/VELDO-0169/drive.py --red <commit>`.
+proof/VELDO-0169/drive.py with its red option naming the commit.
 
 `mutations.json`: 23 finding-169 mutants with their diffs, a green baseline and a green no-op per
 changed module; every named row red by assertion. `validation.json` holds the checks. The canonical
