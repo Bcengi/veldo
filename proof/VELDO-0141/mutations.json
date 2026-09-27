@@ -113,9 +113,33 @@
    [
     "VELDO-0141 route/unknown-committed",
     true
+   ],
+   [
+    "VELDO-0141 redaction/thinking-and-unknown",
+    true
+   ],
+   [
+    "VELDO-0141 redaction/live-paths",
+    true
+   ],
+   [
+    "VELDO-0141 redaction/offset-encodings",
+    true
+   ],
+   [
+    "VELDO-0141 api/byte-pages",
+    true
+   ],
+   [
+    "VELDO-0141 api/fast-catchup",
+    true
+   ],
+   [
+    "VELDO-0141 route/runner-unknown",
+    true
    ]
   ],
-  "seconds": 17.443
+  "seconds": 18.615
  },
  "controls_green": true,
  "mutants": [
@@ -141,7 +165,7 @@
     "VELDO-0141 redaction/exact-set"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "167817adaa3f1bd8d75f143208bb737289d88239d8597ce9269066acb29c38ba",
+   "mutant_sha256": "97fd499e52b6a5bff35ca7e53713f2f99900c3c8ad6112e9f17f010154c942ed",
    "name": "record-error-stream-discarded",
    "named_row_red": true,
    "named_rows": [
@@ -257,22 +281,46 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.471,
-   "source_sha256": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17"
+   "seconds": 18.595,
+   "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['amberrbx', 'harborfkb', 'lanternbvp', 'token', 'pattern', 'high'], 18 lines served]",
-    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['amberrbx', 'harborfkb', 'lanternbvp', 'token', 'pattern', 'high'], False]",
+    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['ambervgm', 'harborpmt', 'lanternskk', 'token', 'pattern', 'high'], 18 lines served]",
+    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['ambervgm', 'harborpmt', 'lanternskk', 'token', 'pattern', 'high'], False]",
     "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[[], []]]",
     "VELDO-0141 redaction/known-pattern detail: the token of a known pattern is redacted by the scanner in the messages and the error stream, its kind named [[[], []]]",
-    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token v141-subscription-8c8d3595586cdb9e']]",
+    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token v141-subscription-c0b7a408abc35b60']]",
     "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[]]",
-    "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.5257d001@example.invalid', 'organization': 'a9368f08-7126-4c5c-bf2e-b7f959c4fcdf', 'subscriptionType': 'Claude Max'} [[]]]",
-    "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.4f722413@example.invalid', 'organization': 'f3279c12-56e3-4bce-a09a-86a1f864740d', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]"
+    "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.95dcb838@example.invalid', 'organization': '14ae43e9-e04c-4b63-80cb-74ca10c49a95', 'subscriptionType': 'Claude Max'} [[]]]",
+    "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.2d682429@example.invalid', 'organization': '0d4dc1aa-6cd7-438a-90ba-abadc255de63', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]"
    ],
    "diff": "proof/VELDO-0141/record-served-unredacted.diff",
    "failed_rows": [
@@ -283,7 +331,7 @@
     "VELDO-0141 redaction/account-fields"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "982e486208c6ae56135babb03cae6c72376e5e21106625ffd5cd5e40fb281a92",
+   "mutant_sha256": "c3c70c215acb1d1f63a5c31406dbd00cde4eacfca86c7866ad3fa08742d02f25",
    "name": "record-served-unredacted",
    "named_row_red": true,
    "named_rows": [
@@ -398,10 +446,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.449,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.304,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -411,14 +483,16 @@
     "VELDO-0141 route/served-lines detail: the route served every kept line of the run, as kept: count, order, sequence, receive time, stream, redaction marks and payload, nothing merged, dropped, reordered or replaced [19 served, 19 kept]",
     "VELDO-0141 route/served-lines detail: and so did the live stream",
     "VELDO-0141 route/served-lines detail: every engine event served is the one the engine printed: each tool call with its input and result, each command's output, the edit and the error [17 of 17]",
-    "VELDO-0141 redaction/clone-relative-paths detail: receiver uses its bound clone, not its own working directory"
+    "VELDO-0141 redaction/clone-relative-paths detail: receiver uses its bound clone, not its own working directory",
+    "VELDO-0141 api/byte-pages detail: 512 by 9 KB is split into byte bounded pages without closure"
    ],
    "diff": "proof/VELDO-0141/route-summarized-steps.diff",
    "failed_rows": [
     "VELDO-0141 api/no-secret-served",
     "VELDO-0141 api/service-call",
     "VELDO-0141 route/served-lines",
-    "VELDO-0141 redaction/clone-relative-paths"
+    "VELDO-0141 redaction/clone-relative-paths",
+    "VELDO-0141 api/byte-pages"
    ],
    "module": ".veldo/control_api_authority.py",
    "mutant_sha256": "9dd983002808aac63c7d439fb46be46b59536e0a76e2be1dec5a988dc2b6facf",
@@ -536,20 +610,50 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     false
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.47,
+   "seconds": 18.635,
    "source_sha256": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['harbormct', 'lanterngtb'], 18 lines served]",
-    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['harbormct', 'lanterngtb'], False]",
+    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['harbormjm', 'lanternwkf'], 18 lines served]",
+    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['harbormjm', 'lanternwkf'], False]",
     "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[['entropy'], ['entropy']]]",
     "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token [REDACTED:entropy]']]",
-    "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted]/[REDACTED:entropy].harbormct.lanterngtb/notes]",
-    "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement"
+    "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted]/[REDACTED:entropy].harbormjm.lanternwkf/notes]",
+    "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker"
    ],
    "diff": "proof/VELDO-0141/redaction-scanner-first.diff",
    "failed_rows": [
@@ -557,10 +661,11 @@
     "VELDO-0141 redaction/planted-value",
     "VELDO-0141 redaction/known-pattern",
     "VELDO-0141 redaction/path-segment",
-    "VELDO-0141 redaction/encoded-values"
+    "VELDO-0141 redaction/encoded-values",
+    "VELDO-0141 redaction/offset-encodings"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "ca5e424bebb0a619a8b78969a4c6eb26510072e909f244ce51a5516da0533298",
+   "mutant_sha256": "3ee87c05e32c7a187612e7247ff4ce164dc2980efcdd5285171e7a6c7acd2ecc",
    "name": "redaction-scanner-first",
    "named_row_red": true,
    "named_rows": [
@@ -675,15 +780,39 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     false
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.435,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.655,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-ci_dh_6s/state/factory/runs/98e91b7f74fcda309592468ae6695822/config/settings.json', '--mcp-config', '/run/user/1000/v141-ci_dh_6s/state/factory/runs/98e91b7f74fcda309592468ae6695822/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
+    "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-r5vtstqb/state/factory/runs/931699dc59d5c4a734d918e16fc2a250/config/settings.json', '--mcp-config', '/run/user/1000/v141-r5vtstqb/state/factory/runs/931699dc59d5c4a734d918e16fc2a250/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
     "VELDO-0141 record/stream-options detail: the shipped 2.1.281 record qualifies the baseline with them",
     "VELDO-0141 record/stream-options detail: the subagent's forwarded text and the partial messages are in the record [0 subagent, 0 partial]"
    ],
@@ -807,9 +936,33 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.041,
+   "seconds": 18.273,
    "source_sha256": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b"
   },
   {
@@ -822,7 +975,7 @@
     "VELDO-0141 api/live"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "0d0bb61b729a24923a965d30748d9a37aa1e6ef213ef833599728607a82a812b",
+   "mutant_sha256": "f658163c7d7ddfb471fb4552ecae31cecd87ef03aaf5e5cd253347776d3863ca",
    "name": "record-hint-unsent",
    "named_row_red": true,
    "named_rows": [
@@ -937,10 +1090,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.434,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.682,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -958,7 +1135,7 @@
     "VELDO-0141 redaction/exact-set"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "ae06d955d2301aeeeabdb2c7191df041ece0d6ee8fb42eb4b049efd2bfcfa163",
+   "mutant_sha256": "4aa3564154f792786b4c4602ee2bcac159db30bef6931091c8bac84618ebd8e9",
    "name": "record-wrapper-line-dropped",
    "named_row_red": true,
    "named_rows": [
@@ -1074,10 +1251,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.454,
-   "source_sha256": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17"
+   "seconds": 18.642,
+   "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
    "by_assertion": true,
@@ -1090,7 +1291,7 @@
     "VELDO-0141 route/committed"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "324361fb532e98536510766a52e3d0656fb05f0120084eee07fdc085062711fd",
+   "mutant_sha256": "4b768273b126b8d57e363fd28da58d9329e5896ec8e658c749fe3ef63edaad5b",
    "name": "record-exit-uncommitted",
    "named_row_red": true,
    "named_rows": [
@@ -1205,10 +1406,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.4,
-   "source_sha256": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17"
+   "seconds": 18.825,
+   "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
    "by_assertion": true,
@@ -1336,24 +1561,51 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.417,
+   "seconds": 18.776,
    "source_sha256": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0141 route/committed detail: a record whose file no longer matches the committed digest is refused by name [{'a line changed': (200, None), 'a line added': (500, 'unknown_outcome:record_digest')}]",
-    "VELDO-0141 route/unknown-committed detail: tampering with unknown record is refused"
+    "VELDO-0141 route/unknown-committed detail: tampering with unknown record is refused",
+    "VELDO-0141 route/runner-unknown detail: launch_evidence_missing refuses a changed byte",
+    "VELDO-0141 route/runner-unknown detail: outcome_unknown refuses a changed byte"
    ],
    "diff": "proof/VELDO-0141/route-digest-unchecked.diff",
    "failed_rows": [
     "VELDO-0141 route/committed",
-    "VELDO-0141 route/unknown-committed"
+    "VELDO-0141 route/unknown-committed",
+    "VELDO-0141 route/runner-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "5038f11142ba91529f74d4089d86044656427b14660f6b727d9f60fb9bb0281f",
+   "mutant_sha256": "59b3cf2eb27242eac18c908639af2c11b5d657bf26d0cf46cf3f6f3a8f7ad9cb",
    "name": "route-digest-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1468,10 +1720,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      false
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     false
     ]
    ],
-   "seconds": 17.429,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.805,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -1604,9 +1880,33 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.434,
+   "seconds": 18.853,
    "source_sha256": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
   },
   {
@@ -1619,7 +1919,7 @@
     "VELDO-0141 route/committed"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "34af790252fd29cf744aea7bd6c7c5e50b48995b3329d6edb023227f7115efe8",
+   "mutant_sha256": "665857add198584c25c270e63a728c213a92a95adff6ac9678451e45dc4765eb",
    "name": "route-binding-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1734,10 +2034,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.42,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.74,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -1749,7 +2073,7 @@
     "VELDO-0141 api/refusals"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "d1bf5af54ee4267caf5a7b98a0c4a699a4d5615035386ca1977d07b3a002b0e0",
+   "mutant_sha256": "556a9ab3c8a435404c9be1923659eccce4aa95954fcec762f0ebb4e83588c631",
    "name": "route-cursor-past-end-served",
    "named_row_red": true,
    "named_rows": [
@@ -1864,15 +2188,39 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.434,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.721,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [1 frames, 1 before the exit, 17 hints]",
+    "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [1 frames, 1 before the exit, 18 hints]",
     "VELDO-0141 api/live detail: after the run ended the stream served the rest and closed as ended, having served every kept line once, in sequence [1 served, 19 kept, []]",
     "VELDO-0141 api/live detail: each frame is a record frame whose id is its cursor, the last one the committed count",
     "VELDO-0141 route/served-lines detail: and so did the live stream"
@@ -1883,7 +2231,7 @@
     "VELDO-0141 route/served-lines"
    ],
    "module": ".veldo/control_api.py",
-   "mutant_sha256": "0f019a552358920fc551f4a100aff7b3101d904678d5b042935ea9e31756a3a9",
+   "mutant_sha256": "211c5fdf72460cbbec67faaab818914e0effcdd5fce34a4be48b62e19089ad64",
    "name": "route-record-hint-unrouted",
    "named_row_red": true,
    "named_rows": [
@@ -1998,10 +2346,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 27.417,
-   "source_sha256": "6198790c94ad555f2f75d2ad151062f55e58ebc272ddca70ad789fac4dc4f53c"
+   "seconds": 28.748,
+   "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   {
    "by_assertion": true,
@@ -2128,9 +2500,33 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.429,
+   "seconds": 18.726,
    "source_sha256": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268"
   },
   {
@@ -2145,7 +2541,7 @@
     "VELDO-0141 redaction/known-pattern"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "9ce91b1e6183bf42d539ab8d5bbe369d8df7319023951b0345331a9095739902",
+   "mutant_sha256": "5ff8136205e539e80d7ac87bb8b1c8aa9d95a3627246457c93d30089ebdb9ed5",
    "name": "redaction-token-unresolved",
    "named_row_red": true,
    "named_rows": [
@@ -2260,10 +2656,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.45,
-   "source_sha256": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17"
+   "seconds": 18.668,
+   "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
    "by_assertion": true,
@@ -2271,13 +2691,16 @@
     "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[[], []]]",
     "VELDO-0141 redaction/known-pattern detail: the token of a known pattern is redacted by the scanner in the messages and the error stream, its kind named [[[], []]]",
     "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token [REDACTED:subscription_token]']]",
-    "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[2, 6, 7, 8, 9]]",
+    "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[2, 5, 6, 7, 8]]",
     "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': '[REDACTED:account:email]', 'organization': '[REDACTED:account:organization]', 'subscriptionType': 'Claude Max'} [[]]]",
     "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': '[REDACTED:account:email]', 'organization': '[REDACTED:account:organization]', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]",
     "VELDO-0141 redaction/partial-blocks detail: every fragment of each value has a named replacement",
     "VELDO-0141 redaction/partial-blocks detail: initial block text participates in delta redaction",
     "VELDO-0141 redaction/partial-blocks detail: unbounded pattern and entropy spans never release an affected fragment",
-    "VELDO-0141 redaction/partial-blocks detail: message end flushes isolated blocks with all fragments marked"
+    "VELDO-0141 redaction/partial-blocks detail: message end flushes isolated blocks with all fragments marked",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end"
    ],
    "diff": "proof/VELDO-0141/redaction-kinds-unnamed.diff",
    "failed_rows": [
@@ -2285,10 +2708,11 @@
     "VELDO-0141 redaction/known-pattern",
     "VELDO-0141 redaction/kinds-field",
     "VELDO-0141 redaction/account-fields",
-    "VELDO-0141 redaction/partial-blocks"
+    "VELDO-0141 redaction/partial-blocks",
+    "VELDO-0141 redaction/thinking-and-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "d1977fc9fde3de710818092ceb6682e440a8bf19b68c9b9e88155e4f6393a0cb",
+   "mutant_sha256": "19aefbcc1aa7046f9960baf21752c97628d6fc226210308c2eeae2d3995d18a1",
    "name": "redaction-kinds-unnamed",
    "named_row_red": true,
    "named_rows": [
@@ -2403,34 +2827,60 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.447,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.643,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/paths-kept detail: the live run's init line is kept as printed, its working directory (the clone under the runtime directory, which the scanner judging it whole would replace) whole [['{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"[REDACTED:entropy]\", \"session_id\": \"f37e5852-fe35-4ed8-a7c5-0b438ea41734\",']]",
+    "VELDO-0141 redaction/paths-kept detail: the live run's init line is kept as printed, its working directory (the clone under the runtime directory, which the scanner judging it whole would replace) whole [['{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"[REDACTED:entropy]\", \"session_id\": \"73d8af10-5001-4333-94c9-2b4eec1396b7\",']]",
     "VELDO-0141 redaction/paths-kept detail: the Edit tool call's input is kept as printed, its absolute file path whole [[', \"stop_reason\": null, \"stop_sequence\": null, \"usage\": {\"input_tokens\": 3, \"output_tokens\": 2, \"cache_creation_input_tokens\": 0, \"cache_read_input_tokens\": 0}}}']]",
-    "VELDO-0141 redaction/paths-kept detail: typical real paths (a clone path under the runtime directory, its clone directory named by a digest, a worktree's control_launch.py, a pinned engine path with its version and a digest segment, bare and named, Codex's vendor binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging it whole replaces [['[REDACTED:entropy]', '[REDACTED:entropy].veldo/control_launch.py', '[REDACTED:entropy].1.[REDACTED:entropy]', '/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@[RED', '[REDACTED:entropy]', '[REDACTED:entropy].1.[REDACTED:entropy]', 'cd [REDACTED:entropy] && python3 [REDACTED:entropy].veldo/control_launch.py', '{\"type\": \"tool_use\", \"input\": {\"command\": \"ls [REDACTED:entropy].1.[REDACTED:entropy]\", \"c']]",
+    "VELDO-0141 redaction/paths-kept detail: typical real paths (a clone path under the runtime directory, its clone directory named by a digest, a worktree's control_launch.py, a pinned engine path with its version and a digest segment, bare and named, Codex's vendor binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging it whole replaces [['[REDACTED:entropy]', '[REDACTED:entropy].veldo/control_launch.py', '[REDACTED:entropy].1.281/a185cde1dbadb1168915e6b61de77822fa62c1acc365056044f1130f0dcacccb/', '/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@[RED', '[REDACTED:entropy]', '[REDACTED:entropy].1.[REDACTED:entropy]', 'cd [REDACTED:entropy] && python3 [REDACTED:entropy].veldo/control_launch.py', '{\"type\": \"tool_use\", \"input\": {\"command\": \"ls [REDACTED:entropy].1.281/a185cde1dbadb116891']]",
     "VELDO-0141 redaction/path-segment detail: a path with an embedded 40-character random segment keeps the rest and replaces that segment [[REDACTED:entropy].txt]",
     "VELDO-0141 redaction/path-segment detail: likewise inside a tool input [{\"type\": \"tool_use\", \"input\": {\"file_path\": \"[REDACTED:entropy].txt\"}}]",
     "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted][REDACTED:entropy][REDACTED:v141_planted]/notes]",
     "VELDO-0141 redaction/url-component detail: a URL with a token query value keeps its host, path and key and replaces only the value [https://api.example.com/v1/repos/owner/name?[REDACTED:entropy]&page=2]",
     "VELDO-0141 redaction/url-component detail: and a high-entropy path segment of a URL goes, the rest kept [{\"url\": \"https://api.example.[REDACTED:entropy]?page=2\"}]",
     "VELDO-0141 redaction/url-component detail: an ordinary URL the scanner judging it whole replaces is kept whole",
-    "VELDO-0141 redaction/account-fields detail: an init line's account and organization uuid and email are replaced by field, its working directory kept [{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"[REDACTED:entropy]\", \"apiKeySource\": \"none\", \"accountUuid\": \"[REDACTED:account:accountUuid]\", \"organizationUuid\": \"[REDACTED:account:organizationUuid]\", \"email\": \"[REDACTED:account:email]\"}]"
+    "VELDO-0141 redaction/account-fields detail: an init line's account and organization uuid and email are replaced by field, its working directory kept [{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"[REDACTED:entropy]\", \"apiKeySource\": \"none\", \"accountUuid\": \"[REDACTED:account:accountUuid]\", \"organizationUuid\": \"[REDACTED:account:organizationUuid]\", \"email\": \"[REDACTED:account:email]\"}]",
+    "VELDO-0141 redaction/live-paths detail: diff prefixes, new files, truncations and safe new leaves survive"
    ],
    "diff": "proof/VELDO-0141/redaction-path-scored-whole.diff",
    "failed_rows": [
     "VELDO-0141 redaction/paths-kept",
     "VELDO-0141 redaction/path-segment",
     "VELDO-0141 redaction/url-component",
-    "VELDO-0141 redaction/account-fields"
+    "VELDO-0141 redaction/account-fields",
+    "VELDO-0141 redaction/live-paths"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "da1c898b5e4d62d679a07838e177414403d39b9263c9e34341a5bdd97d8f5a9a",
+   "mutant_sha256": "92ce209cefb068e8d305a2c4af642ec39a134aa7f3ad484d8c0fbb77909b3419",
    "name": "redaction-path-scored-whole",
    "named_row_red": true,
    "named_rows": [
@@ -2547,19 +2997,43 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.369,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.642,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/path-segment detail: a path with an embedded 40-character random segment keeps the rest and replaces that segment [/home/dmitry/projects/veldo-worktrees/build-veldo-0141/vZwYrtD7ly0Wj4dqSKE9nd499mvaUMne9SqhxNkH/notes.txt]",
-    "VELDO-0141 redaction/path-segment detail: likewise inside a tool input [cts/veldo-worktrees/build-veldo-0141/vZwYrtD7ly0Wj4dqSKE9nd499mvaUMne9SqhxNkH/notes.txt\"}}]",
-    "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted]/aouYIRCVhypqxvGKLFP7rW1nq6lyqij8MoBikxKz[REDACTED:v141_planted]/notes]",
-    "VELDO-0141 redaction/url-component detail: a URL with a token query value keeps its host, path and key and replaces only the value [https://api.example.com/v1/repos/owner/name?access_token=IxpsAYrec9FDOPT1PB0dKqBGkgBKZfCAdlZ855DI&page=2]",
-    "VELDO-0141 redaction/url-component detail: and a high-entropy path segment of a URL goes, the rest kept [{\"url\": \"https://api.example.com/v1/QfZT1R9XpATDlsqVXd8LG9Nt2A8MMbFh7nWLvLSl/items?page=2\"}]"
+    "VELDO-0141 redaction/path-segment detail: a path with an embedded 40-character random segment keeps the rest and replaces that segment [/home/dmitry/projects/veldo-worktrees/build-veldo-0141/ynHXo6soIPaOS9cOlDaGZgyLZ1OeQALpMCKR1EcF/notes.txt]",
+    "VELDO-0141 redaction/path-segment detail: likewise inside a tool input [cts/veldo-worktrees/build-veldo-0141/ynHXo6soIPaOS9cOlDaGZgyLZ1OeQALpMCKR1EcF/notes.txt\"}}]",
+    "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted]/OgVBdU851DzCRbYQu1R2wqlLyXOhLAvRtcBcxUX5[REDACTED:v141_planted]/notes]",
+    "VELDO-0141 redaction/url-component detail: a URL with a token query value keeps its host, path and key and replaces only the value [https://api.example.com/v1/repos/owner/name?access_token=kTtvb0yOpXeXxoBHZ3axKAeGcIlgsDKNMfwASkiX&page=2]",
+    "VELDO-0141 redaction/url-component detail: and a high-entropy path segment of a URL goes, the rest kept [{\"url\": \"https://api.example.com/v1/OH43TQDpUbHs2xS1zZ63qUlb7O7FrLWT7WgWxSbg/items?page=2\"}]"
    ],
    "diff": "proof/VELDO-0141/redaction-path-segment-unscored.diff",
    "failed_rows": [
@@ -2567,7 +3041,7 @@
     "VELDO-0141 redaction/url-component"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "412f0cb4746ffde6b35ed31d5ca726fd381b1e76e3abfd8954e088e9d1ea50b2",
+   "mutant_sha256": "cc744e9fba16f7c84edb5df97195f1357bb336a82f16f09a77ad638c4c9ac4aa",
    "name": "redaction-path-segment-unscored",
    "named_row_red": true,
    "named_rows": [
@@ -2683,10 +3157,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.356,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.762,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -2698,7 +3196,7 @@
     "VELDO-0141 redaction/paths-kept"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "1a1c471e7a26228f094deaa1dacd1ea25d91d655a12f60c047991b63997d0604",
+   "mutant_sha256": "1dcdf72f77537588b1c22a1d7c53ff7dd03e7da7789293d9c96e533589c8c305",
    "name": "redaction-named-digest-scored",
    "named_row_red": true,
    "named_rows": [
@@ -2813,10 +3311,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.395,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.816,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -2828,7 +3350,7 @@
     "VELDO-0141 redaction/url-component"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "c61893965c48d00e1b95cc4993671256a0ec4a7b8f018bcc7b127899a5e403cd",
+   "mutant_sha256": "7df04eb47b67aa55f7c97fe01d1b6dcd36e5f4b038ce883c7380e97efcce7073",
    "name": "redaction-url-query-whole",
    "named_row_red": true,
    "named_rows": [
@@ -2943,24 +3465,48 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.414,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.681,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.521a1207@example.invalid', 'organization': '73afada5-b77c-4c5a-8903-5d2301402e65', 'subscriptionType': 'Claude Max'} [[]]]",
-    "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.d8843977@example.invalid', 'organization': '56412321-0eb5-4715-97fd-71f3422e5b7a', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]",
-    "VELDO-0141 redaction/account-fields detail: an init line's account and organization uuid and email are replaced by field, its working directory kept [{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"/run/user/1000/v141-_64qev0k/state/clones/clone-b2fe9f267b5e491d81d72d377181f55f/work\", \"apiKeySource\": \"none\", \"accountUuid\": \"9d01ebff-3ef5-4d01-8ab5-24b023a4fd89\", \"organizationUuid\": \"1daa7923-0621-4bf3-b3ef-f1bf87deea7d\", \"email\": \"owner.6f1a1f7f@example.invalid\"}]"
+    "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.5eddcd26@example.invalid', 'organization': 'c9b0f071-3855-400b-981c-7f9821c35263', 'subscriptionType': 'Claude Max'} [[]]]",
+    "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.1ce4b881@example.invalid', 'organization': '4e2b5fd6-8f58-4260-b939-858456017b65', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]",
+    "VELDO-0141 redaction/account-fields detail: an init line's account and organization uuid and email are replaced by field, its working directory kept [{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"/run/user/1000/v141-khceg96t/state/clones/clone-339d9aebd538479b8af447e297876736/work\", \"apiKeySource\": \"none\", \"accountUuid\": \"86054120-2b99-4b83-ba9e-08f97a996958\", \"organizationUuid\": \"e7d80b68-8d01-415f-ab7f-86deb514f321\", \"email\": \"owner.67dd2d56@example.invalid\"}]"
    ],
    "diff": "proof/VELDO-0141/redaction-account-fields-kept.diff",
    "failed_rows": [
     "VELDO-0141 redaction/account-fields"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "77212beb33ebdf0b09db398258d9497ab75019c0a8147a3ba3c9a8b057c71584",
+   "mutant_sha256": "4be4aac6bc538dab0e0865e09dfcf583ed8f27884596726e98cfdba4361f859c",
    "name": "redaction-account-fields-kept",
    "named_row_red": true,
    "named_rows": [
@@ -3075,10 +3621,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.474,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.656,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -3088,14 +3658,20 @@
     "VELDO-0141 redaction/partial-blocks detail: every fragment of each value has a named replacement",
     "VELDO-0141 redaction/partial-blocks detail: initial block text participates in delta redaction",
     "VELDO-0141 redaction/partial-blocks detail: unbounded pattern and entropy spans never release an affected fragment",
-    "VELDO-0141 redaction/partial-blocks detail: message end flushes isolated blocks with all fragments marked"
+    "VELDO-0141 redaction/partial-blocks detail: message end flushes isolated blocks with all fragments marked",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end",
+    "VELDO-0141 redaction/thinking-and-unknown detail: unknown deltas wait for block stop",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end"
    ],
    "diff": "proof/VELDO-0141/record141-partials-line-by-line.diff",
    "failed_rows": [
-    "VELDO-0141 redaction/partial-blocks"
+    "VELDO-0141 redaction/partial-blocks",
+    "VELDO-0141 redaction/thinking-and-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "8bd66ae821eeefecd816077882289eff0046a37b9233f529ce47aaa5ddaf739d",
+   "mutant_sha256": "9ae1a61b174e20935e60c0f2513f8d69f7b9cbe7d727530b29c9f30828798908",
    "name": "record141-partials-line-by-line",
    "named_row_red": true,
    "named_rows": [
@@ -3210,10 +3786,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.372,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.566,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -3223,14 +3823,17 @@
     "VELDO-0141 redaction/partial-blocks detail: every fragment of each value has a named replacement",
     "VELDO-0141 redaction/partial-blocks detail: initial block text participates in delta redaction",
     "VELDO-0141 redaction/partial-blocks detail: unbounded pattern and entropy spans never release an affected fragment",
-    "VELDO-0141 redaction/partial-blocks detail: message end flushes isolated blocks with all fragments marked"
+    "VELDO-0141 redaction/partial-blocks detail: message end flushes isolated blocks with all fragments marked",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end"
    ],
    "diff": "proof/VELDO-0141/record141-partials-tail-too-short.diff",
    "failed_rows": [
-    "VELDO-0141 redaction/partial-blocks"
+    "VELDO-0141 redaction/partial-blocks",
+    "VELDO-0141 redaction/thinking-and-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "5e6cc1673650b1f86954eeac7eccb36f133f8c52dbce88e39b5a3c21a6b86afc",
+   "mutant_sha256": "7ce3e7982ce0c21556eb6b0c91e49fe22d42596517282ccd9ae5988176ff198a",
    "name": "record141-partials-tail-too-short",
    "named_row_red": true,
    "named_rows": [
@@ -3345,23 +3948,49 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.412,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.646,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0141 redaction/clone-relative-paths detail: receiver uses its bound clone, not its own working directory",
-    "VELDO-0141 redaction/clone-relative-paths detail: git stat, status and every traceback keep clone file names"
+    "VELDO-0141 redaction/clone-relative-paths detail: git stat, status and every traceback keep clone file names",
+    "VELDO-0141 redaction/live-paths detail: diff prefixes, new files, truncations and safe new leaves survive"
    ],
    "diff": "proof/VELDO-0141/record141-clone-path-check-skipped.diff",
    "failed_rows": [
-    "VELDO-0141 redaction/clone-relative-paths"
+    "VELDO-0141 redaction/clone-relative-paths",
+    "VELDO-0141 redaction/live-paths"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "40de69d996f950deba46c00a3be41e2cdb751c9687da4bebf37c9dab5668da0b",
+   "mutant_sha256": "47653f66c706aeb0e555fc00eadd7740f35654d02914e407228d7381c446a50d",
    "name": "record141-clone-path-check-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -3476,10 +4105,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 16.912,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.125,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -3491,7 +4144,7 @@
     "VELDO-0141 redaction/clone-relative-paths"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "16d055568d6111512cb29192926e2747e6b4fef41f805bbff41aac50654f700e",
+   "mutant_sha256": "d3dc2518dadbbf847518fc39c63c500b8269084332b597d5199b14baa05778f0",
    "name": "record141-handshake-id-scored",
    "named_row_red": true,
    "named_rows": [
@@ -3606,10 +4259,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.381,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.652,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
@@ -3622,7 +4299,7 @@
     "VELDO-0141 api/registration-race"
    ],
    "module": ".veldo/control_api.py",
-   "mutant_sha256": "47cf64822c49e31096801e9961f56baaeda609f64eb1e390eba1efca30c2da50",
+   "mutant_sha256": "1e433b0ace16c76db3055fa5dfb88e296f3c565ed06e1d92e130e0a6d069e619",
    "name": "record141-stream-registers-after-fill",
    "named_row_red": true,
    "named_rows": [
@@ -3737,10 +4414,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.408,
-   "source_sha256": "6198790c94ad555f2f75d2ad151062f55e58ebc272ddca70ad789fac4dc4f53c"
+   "seconds": 18.804,
+   "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   {
    "by_assertion": true,
@@ -3867,23 +4568,46 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.422,
+   "seconds": 18.598,
    "source_sha256": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 api/slow-reader detail: overflow ends by name after a bounded contiguous prefix",
-    "VELDO-0141 api/slow-reader detail: one oversized frame is refused before queueing"
+    "VELDO-0141 api/slow-reader detail: overflow ends by name after a bounded contiguous prefix"
    ],
    "diff": "proof/VELDO-0141/record141-reader-queue-unbounded.diff",
    "failed_rows": [
     "VELDO-0141 api/slow-reader"
    ],
    "module": ".veldo/control_api.py",
-   "mutant_sha256": "1aad8e03b020b42645120cd83bac51e442d7f37b6441248fc03777f64afcea0b",
+   "mutant_sha256": "2fb88f083c38edb1438410953e655be3d57a4f29115a1730d67cb0fd94912fbe",
    "name": "record141-reader-queue-unbounded",
    "named_row_red": true,
    "named_rows": [
@@ -3998,10 +4722,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.469,
-   "source_sha256": "6198790c94ad555f2f75d2ad151062f55e58ebc272ddca70ad789fac4dc4f53c"
+   "seconds": 18.622,
+   "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   {
    "by_assertion": true,
@@ -4018,14 +4766,22 @@
     "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
     "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
     "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
-    "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement"
+    "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker"
    ],
    "diff": "proof/VELDO-0141/record141-encoded-forms-skipped.diff",
    "failed_rows": [
-    "VELDO-0141 redaction/encoded-values"
+    "VELDO-0141 redaction/encoded-values",
+    "VELDO-0141 redaction/offset-encodings"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "2c44fc66d8bf15e95c8008eb91f9790cf0f361304881d7c2a9241fb2c57dcc56",
+   "mutant_sha256": "fbe48ed5a0f5ea3c01dd5f08d5a9e11951d84164ddd9a75d96f6ea0b1ab60cdb",
    "name": "record141-encoded-forms-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -4140,19 +4896,48 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     false
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.427,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.586,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 route/unknown-committed detail: unknown end commits the received record"
+    "VELDO-0141 route/unknown-committed detail: unknown end commits the received record",
+    "VELDO-0141 route/runner-unknown detail: launch_evidence_missing commits the final bytes",
+    "VELDO-0141 route/runner-unknown detail: launch_evidence_missing refuses a changed byte",
+    "VELDO-0141 route/runner-unknown detail: outcome_unknown commits the final bytes",
+    "VELDO-0141 route/runner-unknown detail: outcome_unknown refuses a changed byte"
    ],
    "diff": "proof/VELDO-0141/record141-unknown-record-unbound.diff",
    "failed_rows": [
-    "VELDO-0141 route/unknown-committed"
+    "VELDO-0141 route/unknown-committed",
+    "VELDO-0141 route/runner-unknown"
    ],
    "module": ".veldo/control_dispatch.py",
    "mutant_sha256": "ecdc6881e82db90fd21874f22c3d466fdbc7032b105f9b61ca832931687c5947",
@@ -4270,9 +5055,33 @@
     [
      "VELDO-0141 route/unknown-committed",
      false
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     false
     ]
    ],
-   "seconds": 17.424,
+   "seconds": 18.614,
    "source_sha256": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de"
   },
   {
@@ -4285,7 +5094,7 @@
     "VELDO-0141 route/unknown-committed"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "486b149a79f9d6241d2c054a391f1e98b1c75ca9e54e538be78c96fdd0bd4605",
+   "mutant_sha256": "8fceb747c604b417ccc33e161b2a74d428992f4564c2605f567cc505cf318b7a",
    "name": "record141-unknown-record-uncommitted",
    "named_row_red": true,
    "named_rows": [
@@ -4400,10 +5209,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      false
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.379,
-   "source_sha256": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17"
+   "seconds": 18.615,
+   "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
    "by_assertion": true,
@@ -4415,7 +5248,7 @@
     "VELDO-0141 redaction/clone-relative-paths"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "9984405584bc9931e047c9cb6b828fa0dbd44b9a8a95908fff247cb6fc0077a1",
+   "mutant_sha256": "eb3082183bf08f27cf86eafff5c1b6b7c122ffbe75f9ae5026d658aca76116ae",
    "name": "record141-receiver-clone-unlisted",
    "named_row_red": true,
    "named_rows": [
@@ -4530,10 +5363,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.393,
-   "source_sha256": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17"
+   "seconds": 18.555,
+   "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
    "by_assertion": true,
@@ -4545,7 +5402,7 @@
     "VELDO-0141 api/registration-race"
    ],
    "module": ".veldo/control_api.py",
-   "mutant_sha256": "7414b442c6cdda34f54a78abf01dc79a1e2db75d32559fac4c3517072c0de937",
+   "mutant_sha256": "7f6e6289ecaf6e2d50ef08a5bd77e7a92f08499a8d1d0a5947393583d45b51ce",
    "name": "record141-concurrent-fills-interleave",
    "named_row_red": true,
    "named_rows": [
@@ -4660,13 +5517,1592 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 16.39,
-   "source_sha256": "6198790c94ad555f2f75d2ad151062f55e58ebc272ddca70ad789fac4dc4f53c"
+   "seconds": 17.638,
+   "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end",
+    "VELDO-0141 redaction/thinking-and-unknown detail: every affected fragment is redacted live and at end"
+   ],
+   "diff": "proof/VELDO-0141/record141b-thinking-unassembled.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/thinking-and-unknown"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "33b8524835abb3e26f40c7e791c146412dfe31bfc00000f9bd823a76b615215e",
+   "name": "record141b-thinking-unassembled",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/thinking-and-unknown"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.63,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/thinking-and-unknown detail: unknown deltas wait for block stop"
+   ],
+   "diff": "proof/VELDO-0141/record141b-unknown-delta-released.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/thinking-and-unknown"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "0e5fee8ea4070c0a2edd49fc75339908043ff86ea5e35acb0928dea38aac1949",
+   "name": "record141b-unknown-delta-released",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/thinking-and-unknown"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.968,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/live-paths detail: diff prefixes, new files, truncations and safe new leaves survive"
+   ],
+   "diff": "proof/VELDO-0141/record141b-diff-prefix-unstripped.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/live-paths"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "e29122dc5dc700baa5475d3028223b002477a83d3ba3255b93c6c59da54b029e",
+   "name": "record141b-diff-prefix-unstripped",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/live-paths"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.626,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/live-paths detail: diff prefixes, new files, truncations and safe new leaves survive"
+   ],
+   "diff": "proof/VELDO-0141/record141b-path-snapshot-restored.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/live-paths"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "4bd2ae9dda7fc657af02f11575c05283a5c4e3e9c2792531de94e819264589eb",
+   "name": "record141b-path-snapshot-restored",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/live-paths"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.05,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/byte-pages detail: 512 by 9 KB is split into byte bounded pages without closure"
+   ],
+   "diff": "proof/VELDO-0141/record141b-count-pages-restored.diff",
+   "failed_rows": [
+    "VELDO-0141 api/byte-pages"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "31bc3c76ba5296106a556345206e5fb251373328bde35e43edde1f7b75ff844b",
+   "name": "record141b-count-pages-restored",
+   "named_row_red": true,
+   "named_rows": [
+    "api/byte-pages"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     false
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.606,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 api/byte-pages detail: 512 by 9 KB is split into byte bounded pages without closure",
+    "VELDO-0141 api/fast-catchup detail: reader drains while pages are read and catches up 100k lines"
+   ],
+   "diff": "proof/VELDO-0141/record141b-reader-locked-during-page.diff",
+   "failed_rows": [
+    "VELDO-0141 api/byte-pages",
+    "VELDO-0141 api/fast-catchup"
+   ],
+   "module": ".veldo/control_api.py",
+   "mutant_sha256": "010ce1348e455295f751878cc67af85050c148baa898c31664e3b850a44d00b6",
+   "name": "record141b-reader-locked-during-page",
+   "named_row_red": true,
+   "named_rows": [
+    "api/fast-catchup"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     false
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     false
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.848,
+   "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 route/runner-unknown detail: launch_evidence_missing commits the final bytes",
+    "VELDO-0141 route/runner-unknown detail: launch_evidence_missing refuses a changed byte",
+    "VELDO-0141 route/runner-unknown detail: outcome_unknown commits the final bytes",
+    "VELDO-0141 route/runner-unknown detail: outcome_unknown refuses a changed byte"
+   ],
+   "diff": "proof/VELDO-0141/record141b-runner-commitment-omitted.diff",
+   "failed_rows": [
+    "VELDO-0141 route/runner-unknown"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "590cae9394e5477467ffea4c05ffd469944a764d09b860285f7a5d2631c7accc",
+   "name": "record141b-runner-commitment-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "route/runner-unknown"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     false
+    ]
+   ],
+   "seconds": 18.61,
+   "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker"
+   ],
+   "diff": "proof/VELDO-0141/record141b-offset-base64-omitted.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/offset-encodings"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "2d67b04460cd29afb528c1f6b63d760c42a6b6906271767f7db7f1a3ab6ab77d",
+   "name": "record141b-offset-base64-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/offset-encodings"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     false
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.661,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker"
+   ],
+   "diff": "proof/VELDO-0141/record141b-lower-hex-omitted.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/offset-encodings"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "8806ea02aca99b89aea362f94ad529bde6d96252e6abd99f079546014b6c8c74",
+   "name": "record141b-lower-hex-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/offset-encodings"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     false
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.676,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/live-paths detail: nonexistent opaque keys and symlink escapes remain redacted"
+   ],
+   "diff": "proof/VELDO-0141/record141b-short-leaf-unscored.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/live-paths"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "8e0d51ab3cbb323a5ea0b6e945180f52059da6f396ed9cc4820e17ea7761ce60",
+   "name": "record141b-short-leaf-unscored",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/live-paths"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.645,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   }
  ],
  "mutations_per_row": {
+  "api/byte-pages": [
+   "record141b-count-pages-restored"
+  ],
+  "api/fast-catchup": [
+   "record141b-reader-locked-during-page"
+  ],
   "api/live": [
    "record-hint-unsent",
    "route-record-hint-unrouted"
@@ -4720,6 +7156,15 @@
   "redaction/known-pattern": [
    "redaction-token-unresolved"
   ],
+  "redaction/live-paths": [
+   "record141b-diff-prefix-unstripped",
+   "record141b-path-snapshot-restored",
+   "record141b-short-leaf-unscored"
+  ],
+  "redaction/offset-encodings": [
+   "record141b-offset-base64-omitted",
+   "record141b-lower-hex-omitted"
+  ],
   "redaction/partial-blocks": [
    "record141-partials-line-by-line",
    "record141-partials-tail-too-short"
@@ -4735,6 +7180,10 @@
   "redaction/planted-value": [
    "redaction-scanner-first"
   ],
+  "redaction/thinking-and-unknown": [
+   "record141b-thinking-unassembled",
+   "record141b-unknown-delta-released"
+  ],
   "redaction/url-component": [
    "redaction-path-scored-whole",
    "redaction-path-segment-unscored",
@@ -4746,6 +7195,9 @@
    "route-digest-unchecked",
    "route-binding-unchecked"
   ],
+  "route/runner-unknown": [
+   "record141b-runner-commitment-omitted"
+  ],
   "route/served-lines": [
    "route-summarized-steps"
   ],
@@ -4756,7 +7208,7 @@
  },
  "noop": {
   "control_api.py": {
-   "copy_sha256": "6198790c94ad555f2f75d2ad151062f55e58ebc272ddca70ad789fac4dc4f53c",
+   "copy_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -4868,10 +7320,34 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 18.207,
-   "source_sha256": "6198790c94ad555f2f75d2ad151062f55e58ebc272ddca70ad789fac4dc4f53c"
+   "seconds": 18.628,
+   "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   "control_api_assertion.py": {
    "copy_sha256": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268",
@@ -4986,9 +7462,33 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 18.23,
+   "seconds": 18.589,
    "source_sha256": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268"
   },
   "control_api_authority.py": {
@@ -5104,9 +7604,33 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.506,
+   "seconds": 18.666,
    "source_sha256": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
   },
   "control_dispatch.py": {
@@ -5222,9 +7746,33 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.496,
+   "seconds": 18.631,
    "source_sha256": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de"
   },
   "control_engine_claude.py": {
@@ -5340,13 +7888,37 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.497,
+   "seconds": 18.604,
    "source_sha256": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b"
   },
   "control_execution_record.py": {
-   "copy_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71",
+   "copy_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -5458,13 +8030,37 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.496,
-   "source_sha256": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+   "seconds": 18.608,
+   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
   },
   "control_launch.py": {
-   "copy_sha256": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17",
+   "copy_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -5576,15 +8172,39 @@
     [
      "VELDO-0141 route/unknown-committed",
      true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
     ]
    ],
-   "seconds": 17.515,
-   "source_sha256": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17"
+   "seconds": 18.634,
+   "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 141",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 741.818,
+ "serial_seconds": 978.164,
  "spec_id": "VELDO-0141",
  "suite": "scripts/suites/82_veldo_0141_execution_record.py"
 }

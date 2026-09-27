@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1374 +1374 @@
+@@ -1392 +1392 @@
 -                recorder.line('wrapper', worker.identity_line)
 +                pass  # defect: the wrapper's identity line is not kept

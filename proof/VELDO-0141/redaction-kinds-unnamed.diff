@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -426 +426 @@
+@@ -467 +467 @@
 -        self._write({'seq': self.sequence, 'at': self.clock() if at is None else at, 'stream': stream, 'redacted': kinds, 'payload': text})
 +        self._write({'seq': self.sequence, 'at': self.clock() if at is None else at, 'stream': stream, 'redacted': [], 'payload': text})  # defect: a line never names what was replaced

@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -529 +529 @@
+@@ -575 +575 @@
 -            self.hint(False)
 +            pass  # defect: the API is told nothing until the run has ended

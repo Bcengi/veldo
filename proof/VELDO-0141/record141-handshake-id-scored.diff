@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -324 +324 @@
+@@ -365 +365 @@
 -    kept += [(m.start(), m.end()) for m in _INITIALIZE.finditer(text)]
 +    pass  # defect: the known handshake request id is scored

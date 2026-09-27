@@ -323,3 +323,23 @@ page reads never hold the condition used by the reader to drain frames. The ordi
 The runner reads the record only after stopping and reaping the receiver, then commits its byte count,
 complete line count and SHA-256 for launch_evidence_missing and outcome_unknown. If the receiver died
 before opening the record, the runner creates and commits an empty record bound to the dispatch.
+
+The new finding-141 mutations are:
+
+| Mutation | Row |
+| --- | --- |
+| record141b-thinking-unassembled | redaction/thinking-and-unknown |
+| record141b-unknown-delta-released | redaction/thinking-and-unknown |
+| record141b-diff-prefix-unstripped | redaction/live-paths |
+| record141b-path-snapshot-restored | redaction/live-paths |
+| record141b-short-leaf-unscored | redaction/live-paths |
+| record141b-count-pages-restored | api/byte-pages |
+| record141b-reader-locked-during-page | api/fast-catchup |
+| record141b-runner-commitment-omitted | route/runner-unknown |
+| record141b-offset-base64-omitted | redaction/offset-encodings |
+| record141b-lower-hex-omitted | redaction/offset-encodings |
+
+The current results are in [checks.json](checks.json), the mutation observations in
+[mutations.json](mutations.json), and the reviewed tree's failing assertions in
+[red-at-9dbda25f.json](red-at-9dbda25f.json). The required partial selftests are recorded as partial runs,
+with their intentional exit code 2; no gate or verification stamp is claimed for this checkout.

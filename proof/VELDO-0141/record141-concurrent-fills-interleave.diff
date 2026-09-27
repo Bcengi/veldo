@@ -1,6 +1,6 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -840,2 +840 @@
--        with stream._condition:
+@@ -841,2 +841 @@
+-        with stream._fill_lock:
 -            self._fill_record_locked(stream, answer, always)
 +        self._fill_record_locked(stream, answer, always)  # defect: overlapping fills interleave frames

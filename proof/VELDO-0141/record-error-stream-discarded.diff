@@ -1,6 +1,6 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1177 +1177,2 @@
+@@ -1195 +1195,2 @@
 -                                              stderr=subprocess.PIPE, env=group.environment, start_new_session=True,
 +                                              stderr=subprocess.DEVNULL,  # defect: the error stream is discarded
 +                                              env=group.environment, start_new_session=True,

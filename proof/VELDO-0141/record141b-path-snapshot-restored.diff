@@ -1,0 +1,9 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -345 +345,5 @@
+-    return ClonePaths(root, Path(cwd).absolute())
++    names = set()
++    for directory_, dirs, files in os.walk(root):
++        names.update(os.path.relpath(os.path.join(directory_, n), root) for n in dirs + files)
++    names |= {os.path.relpath(root / n, cwd) for n in list(names)}
++    return names

@@ -1,5 +1,5 @@
 --- a/.veldo/control_api.py
 +++ b/.veldo/control_api.py
-@@ -263 +263 @@
--            if len(self._frames) >= self.max_frames or self._queued_bytes + size > self.max_bytes:
+@@ -264 +264 @@
+-            if len(self._frames) >= self.max_frames or (self._frames and self._queued_bytes + size > self.max_bytes):
 +            if False:  # defect: a slow reader retains every frame
