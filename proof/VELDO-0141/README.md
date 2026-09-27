@@ -17,7 +17,7 @@ printed, in the order the receiver read it: `seq` (gapless from 1), `at` (the re
 of the engine's standard output, its stream JSON or exec JSON event; `stderr` for each raw line of the error
 stream), `redacted` (the kinds replaced, sorted) and `payload` (the line as printed, without its newline, except
 for redacted spans; bytes that are not UTF-8 kept as surrogate escapes). A last line with no newline is kept when
-the stream ends. Nothing is parsed, merged, summarized or dropped.
+the stream ends. Partial content blocks are parsed to redact spans crossing deltas; no line is merged, summarized or dropped.
 
 **Redaction, before a line is kept.** `redact(text, resolved)` first replaces every value in the run's set of
 resolved credential values (`Resolved`), longest first, in each form a line carries it (as printed, and as a JSON
@@ -225,6 +225,30 @@ rejected, each on its named rows.
 
 ## Not built (outside the criteria)
 
-Retention, archival, replay and editing of a record, and the Mac leg (VELDO-0147 AC3). A record of a run whose
-end is unknown carries no commitment (its dispatch has no exit record), so it is served with its state and
-without a digest. A credential value containing a newline is replaced line by line only in its JSON-escaped form.
+Retention, archival, replay and editing of a record, and the Mac leg (VELDO-0147 AC3).
+
+
+## Review fixes, 2026-09-27
+
+Local main at a4769f68 was merged before these fixes. Seven new rows join the original twenty.
+
+| Row | What it proves |
+|---|---|
+| redaction/partial-blocks | Resolved and GitHub-shaped values split into 7-character text and 9-character tool-input deltas never survive in joined output; every affected line names its kind. Safe prefixes arrive before block stop; interleaved messages flush independently at message end. |
+| redaction/clone-relative-paths | The tracked repository path corpus, git stat, git status, tracebacks and an untracked file survive whole. Root and cwd names both resolve; slash-bearing opaque values still redact; the initialize id survives. |
+| redaction/encoded-values | Base64, URL percent encoding, URL plus encoding, uppercase and nested JSON strings receive the resolved kind. |
+| api/scope-before-existence | Outsiders receive the same scoped refusal for present and absent dispatches, on page and stream routes. |
+| api/registration-race | An end hint during the first page read or first fill still closes the subscription. |
+| api/slow-reader | Frame and byte bounds close with `slow_reader`; queued frames remain a contiguous prefix and the last received cursor resumes without a gap. |
+| route/unknown-committed | A real receiver with an uncertain containment observation commits its record; the authority rejects truncation, append and changed bytes. |
+
+The recorder holds accumulated block text by session, parent message, message id, block index and delta
+kind. It withholds at least the longest resolved form and the bounded scanner width. Since some scanner
+patterns have no finite maximum, it also retains any open lexical candidate and incomplete pattern start.
+A replacement intersecting several delta lines places the kind marker on every affected line. Original
+receive times, order and byte counts survive buffering. The stream queue holds at most 32 frames and
+4 MiB of serialized frame data. On overflow the client drains that prefix, receives `slow_reader`, and
+reconnects with its last received cursor.
+
+The receiver snapshots git's tracked files and the working tree once, relative to both repository root
+and engine cwd. Membership exempts only the entropy step: exact values and known patterns still redact.

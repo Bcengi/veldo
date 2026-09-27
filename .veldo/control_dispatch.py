@@ -423,6 +423,9 @@ def transition(conn, params, before):
     elif action == 'unknown':
         if not _text(params.get('reason')):
             raise Refused('invalid_input', 'an unknown outcome names why')
+        if _execution_record_problems(params.get('execution_record')):
+            raise Refused('invalid_input', 'an execution record binding carries its line count, byte count and digest only')
+        record.update(execution_record=params.get('execution_record'))
         record['stop'], record['reason'] = STOP, params['reason']
     record['state'] = target
     record['history'].append(dict(history, state=target))
@@ -564,9 +567,11 @@ class Dispatches:
             fields['expected_state'] = expected_state
         return self._run('refuse', dispatch_id, fields, now)
 
-    def unknown(self, dispatch_id, contract_digest, reason, *, now, expected_state=None):
+    def unknown(self, dispatch_id, contract_digest, reason, *, now, expected_state=None, execution_record=None):
         """A launch or outcome that cannot be established: the dispatch stops with a stop owed."""
         fields = {'contract_digest': contract_digest, 'reason': reason}
+        if execution_record is not None:
+            fields['execution_record'] = execution_record
         if expected_state is not None:
             fields['expected_state'] = expected_state
         return self._run('unknown', dispatch_id, fields, now)

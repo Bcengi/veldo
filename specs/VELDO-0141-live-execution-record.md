@@ -251,3 +251,14 @@ engine's handshake answer and init line the account identifiers (email, organiza
 uuid) are replaced by field (`account:<field>`), since Claude Code's answer carries the account's email and
 organization. Suite 82 gains `redaction/paths-kept`, `redaction/path-segment`, `redaction/url-component` and
 `redaction/account-fields`, finding 141 five mutants (the whole path scored again among them). Status unchanged.
+
+2026-09-27, review fixes: content blocks retain text and tool-input fragments by message and block index.
+The receiver releases only a safe prefix, withholding the longest resolved form and incomplete scanner
+matches, then flushes at block or message end. Every line intersecting a replaced span names its kind.
+The receiver snapshots tracked and working tree paths once per run; existing relative paths and the
+initialize request id survive entropy scanning, while unknown slash-bearing values are still scored.
+Resolved values include base64, URL encoding, uppercase and nested JSON escapes. Record subscriptions
+register before filling and recheck after registration; slow readers close as `slow_reader` at the frame
+or byte bound and resume from their last received cursor. Scope precedes unknown-run disclosure.
+Unknown outcomes commit the received record's count, size and digest, just as exited runs do.
+Suite 82 adds an assertion row for each finding, with finding-141 mutations for each regression.

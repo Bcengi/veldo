@@ -703,6 +703,8 @@ class Receiver:
                   'unit': contract['unit'], 'station': contract['station'],
                   'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
                   'host': self.host}
+        self.resolved.paths = ER.clone_paths(self._engine_cwd(adapter['argv'], contract['dispatch_id'],
+                                                               adapter.get('identity') == 'reported'))
         self.recorder = ER.Recorder(ER.directory(self.config), header, self.resolved,
                                     hints=self.config.get('record_hints') or ())
 
@@ -838,7 +840,8 @@ class Receiver:
         except (OSError, ValueError, IndexError, subprocess.SubprocessError):
             self._stop(worker)
             self.dispatches.unknown(dispatch_id, contract_digest, 'process_identity_unreadable', now=time.time(),
-                                    expected_state='accepted')
+                                    expected_state='accepted',
+                                    execution_record=self.recorder.close() if self.recorder else None)
             self.emit({'event': 'unknown'})
             return
         try:
@@ -867,26 +870,26 @@ class Receiver:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
             # outcome is unknown, and the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
-                                    expected_state='running')
+                                    expected_state='running', execution_record=self.committed)
             self.emit({'event': 'unknown', 'record': self._ended()})
             return
         supervision = self.supervision
         if remote and supervision['cause'] == 'paid_api':
             # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
-                                    expected_state='running')
+                                    expected_state='running', execution_record=self.committed)
             self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if remote and supervision['cause'] in ('requested', 'usage_cap'):
             # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
-                                    expected_state='running')
+                                    expected_state='running', execution_record=self.committed)
             self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if supervision['empty'] is False:
             # Something of the worker's group is still running: never recorded as ended.
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
-                                    expected_state='running')
+                                    expected_state='running', execution_record=self.committed)
             self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         report = self.metering.report if self.metering is not None else None
@@ -1111,7 +1114,8 @@ class Receiver:
             self.emit({'event': 'refused', 'refusal': error.code, 'group': error.group})
         else:
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
-                                    expected_state='accepted')
+                                    expected_state='accepted',
+                                    execution_record=self.recorder.close() if self.recorder else None)
             self.emit({'event': 'unknown', 'group': error.group})
 
     def _spawn(self, dispatch_id, acceptance, adapter):

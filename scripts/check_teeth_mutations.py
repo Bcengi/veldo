@@ -7503,7 +7503,7 @@ def cases():
               "    if False:  # defect: a record that no longer matches its commitment is served\n        if (",
               ['route/committed'])
     record141('route-scope-unchecked', 'control_api_authority.py',
-              "            if not self.CM.scope_covers(member.get('scope'), reservation.get('project')):\n",
+              "            if not self.CM.scope_covers(member.get('scope'), reservation.get('project', '*')):\n",
               "            if False:  # defect: any current member reads any run's record\n",
               ['api/refusals', 'api/service-call'])
     record141('route-binding-unchecked', 'control_execution_record.py',
@@ -7552,6 +7552,46 @@ def cases():
               "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
               "    for start, end, replacement, kind in []:  # defect: the account identifiers are kept\n",
               ['redaction/account-fields'])
+    record141('record141-partials-line-by-line', 'control_execution_record.py',
+              "        if kind == 'content_block_delta' and field and isinstance(delta.get(field), str):\n",
+              '        if False:  # defect: redact partial messages one line at a time\n',
+              ['redaction/partial-blocks'])
+    record141('record141-partials-tail-too-short', 'control_execution_record.py',
+              '    safe = max(0, len(text) - tail)\n',
+              '    safe = len(text)  # defect: no withheld suffix\n',
+              ['redaction/partial-blocks'])
+    record141('record141-clone-path-check-skipped', 'control_execution_record.py',
+              '    kept = [(m.start(), m.end()) for m in _RELATIVE.finditer(text) if m.group() in paths]\n',
+              '    kept = []  # defect: relative clone paths are scored as opaque values\n',
+              ['redaction/clone-relative-paths'])
+    record141('record141-handshake-id-scored', 'control_execution_record.py',
+              '    kept += [(m.start(), m.end()) for m in _INITIALIZE.finditer(text)]\n',
+              '    pass  # defect: the known handshake request id is scored\n',
+              ['redaction/clone-relative-paths'])
+    record141('record141-stream-registers-after-fill', 'control_api.py',
+              '        with self._lock:\n            self._streams.append(stream)\n        self._fill_record(stream, answer, always=True)\n        # Catch an end hint delivered after the first page read, before registration.\n        if stream.closed is None:\n            self._fill_record(stream, self._record_page(stream.principal, stream.dispatch_id, stream.cursor))\n',
+              '        self._fill_record(stream, answer, always=True)\n        with self._lock:\n            self._streams.append(stream)\n',
+              ['api/registration-race'])
+    record141('record141-existence-before-scope', 'control_api_authority.py',
+              "            contract = (dispatch or {}).get('contract') or {}\n",
+              "            if dispatch is None:\n                raise ER.Refused('missing_evidence:unknown_run', 'no such run')\n            contract = (dispatch or {}).get('contract') or {}\n",
+              ['api/scope-before-existence'])
+    record141('record141-reader-queue-unbounded', 'control_api.py',
+              '            if len(self._frames) >= self.max_frames or self._queued_bytes + size > self.max_bytes:\n',
+              '            if False:  # defect: a slow reader retains every frame\n',
+              ['api/slow-reader'])
+    record141('record141-encoded-forms-skipped', 'control_execution_record.py',
+              '            for form in forms:\n',
+              '            for form in (value,):  # defect: only the unencoded value\n',
+              ['redaction/encoded-values'])
+    record141('record141-unknown-record-unbound', 'control_dispatch.py',
+              "        record.update(execution_record=params.get('execution_record'))\n",
+              '        record.update(execution_record=None)  # defect: unknown ends carry no commitment\n',
+              ['route/unknown-committed'])
+    record141('record141-unknown-record-uncommitted', 'control_launch.py',
+              "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=self.committed)\n",
+              "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=None)\n",
+              ['route/unknown-committed'])
     return result
 
 

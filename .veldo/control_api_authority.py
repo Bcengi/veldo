@@ -244,13 +244,13 @@ class ApiAuthority:
                 raise ER.Refused('invalid_input:record', 'a dispatch and a cursor')
             row = self.conn.execute('SELECT kind, data FROM entities WHERE id=?', ('dispatch:' + dispatch_id,)).fetchone()
             dispatch = json.loads(row[1]) if row and row[0] == 'dispatch' else None
-            if dispatch is None:
-                raise ER.Refused('missing_evidence:unknown_run', 'no such run')
-            contract = dispatch.get('contract') or {}
+            contract = (dispatch or {}).get('contract') or {}
             reservation = contract.get('reservation') or {}
             member = AC.membership_entry(self.CM.authority_state(self.S, self.conn)['membership'], principal)
-            if not self.CM.scope_covers(member.get('scope'), reservation.get('project')):
+            if not self.CM.scope_covers(member.get('scope'), reservation.get('project', '*')):
                 raise ER.Refused('unauthorized:out_of_scope', 'the run\'s project is outside the member\'s scope')
+            if dispatch is None:
+                raise ER.Refused('missing_evidence:unknown_run', 'no such run')
             if self.records is None:
                 raise ER.Refused('unavailable_service:records', 'no records directory on this authority')
             ended = dispatch.get('state') in ENDED

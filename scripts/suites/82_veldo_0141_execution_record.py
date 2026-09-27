@@ -75,7 +75,9 @@ def _v141_suite():
             'route/served-lines', 'route/committed',
             'redaction/planted-value', 'redaction/known-pattern', 'redaction/kinds-field', 'redaction/exact-set',
             'redaction/paths-kept', 'redaction/path-segment', 'redaction/url-component', 'redaction/account-fields',
-            'fixture/planted-control', 'format/fake-lines')
+            'fixture/planted-control', 'format/fake-lines',
+            'redaction/partial-blocks', 'redaction/clone-relative-paths', 'redaction/encoded-values',
+            'api/scope-before-existence', 'api/registration-race', 'api/slow-reader', 'route/unknown-committed')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -1331,6 +1333,217 @@ err.close()
                   and words[1] in rest and words[2] in rest)
             check('fixture/planted-control', 'the known-pattern token is one the scanner\'s patterns find',
                   any(rx.search(pattern_token) for rx, why in SS.PATTERNS if 'GitHub' in why))
+
+        # Review regressions exercise the same recorder, authority and stream used above.
+        with region('redaction/partial-blocks'):
+            if ER is None:
+                check('redaction/partial-blocks', 'the recorder exists', False)
+            else:
+                resolved = ER.Resolved()
+                resolved.add(PLANTED_KIND, planted)
+                directory_ = base / 'partial-records'
+                recorder = ER.Recorder(directory_, dict(header, dispatch_id='partial-review'), resolved)
+                printed, affected = [], {}
+                def partial(event, parent=None):
+                    envelope = {'type': 'stream_event', 'event': event, 'session_id': 'review',
+                                'parent_tool_use_id': parent}
+                    printed.append(envelope)
+                    recorder.feed('engine', (json.dumps(envelope) + '\n').encode())
+                for index, field, width in ((0, 'text', 7), (1, 'partial_json', 9)):
+                    content = ('ordinary output ' * 30 + planted + ' and ' + pattern_token + ' done ' * 60)
+                    if field == 'partial_json':
+                        content = json.dumps({'file_path': '/w/output', 'content': content})
+                    partial({'type': 'content_block_start', 'index': index, 'content_block': {}})
+                    for offset in range(0, len(content), width):
+                        part = content[offset:offset + width]
+                        partial({'type': 'content_block_delta', 'index': index,
+                                 'delta': {'type': 'text_delta' if field == 'text' else 'input_json_delta', field: part}})
+                        wanted = set()
+                        for value, kind in ((planted, PLANTED_KIND), (pattern_token, 'pattern:github_token')):
+                            start = content.index(value)
+                            if offset < start + len(value) and offset + len(part) > start:
+                                wanted.add(kind)
+                        if wanted:
+                            affected[len(printed)] = wanted
+                    live = ER.read(directory_, 'partial-review', 0, 10000)['lines']
+                    check('redaction/partial-blocks', 'safe output is live before block stop',
+                          len(live) > index * 20 + 10 and len(live) < len(printed))
+                    partial({'type': 'content_block_stop', 'index': index})
+                committed = recorder.close()
+                served = ER.read(directory_, 'partial-review', 0, 10000, committed=committed)['lines']
+                joined = {0: '', 1: ''}
+                clean = len(served) == len(printed)
+                for line in served:
+                    item = json.loads(line['payload'])['event']
+                    delta = item.get('delta') or {}
+                    if delta:
+                        joined[item['index']] += delta.get('text', delta.get('partial_json', ''))
+                    if line['seq'] in affected:
+                        clean &= affected[line['seq']] <= set(line['redacted'])
+                check('redaction/partial-blocks', 'every fragment of each value has a named replacement',
+                      clean and all(planted not in value and pattern_token not in value for value in joined.values())
+                      and all(not any(word in value for word in planted.split('.')) for value in joined.values()))
+                # Interleaved message identities and message-end flushing without a block stop.
+                recorder = ER.Recorder(directory_, {'dispatch_id': 'interleaved-review'}, resolved)
+                for parent in ('first', 'second'):
+                    recorder.feed('engine', (json.dumps({'type': 'stream_event', 'parent_tool_use_id': parent,
+                        'event': {'type': 'message_start', 'message': {'id': parent}}}) + '\n').encode())
+                for offset in range(0, len(planted), 3):
+                    for parent in ('first', 'second'):
+                        recorder.feed('engine', (json.dumps({'type': 'stream_event', 'parent_tool_use_id': parent,
+                            'event': {'type': 'content_block_delta', 'index': 0,
+                                      'delta': {'type': 'text_delta', 'text': planted[offset:offset + 3]}}}) + '\n').encode())
+                for parent in ('first', 'second'):
+                    recorder.feed('engine', (json.dumps({'type': 'stream_event', 'parent_tool_use_id': parent,
+                        'event': {'type': 'message_stop'}}) + '\n').encode())
+                live = ER.read(directory_, 'interleaved-review', 0, 10000)['lines']
+                recorder.close()
+                check('redaction/partial-blocks', 'message end flushes isolated blocks with all fragments marked',
+                      len(live) > 10 and all(PLANTED_KIND in line['redacted'] for line in live
+                                            if 'text_delta' in line['payload']))
+
+        with region('redaction/clone-relative-paths'):
+            if ER is None or not hasattr(ER, 'clone_paths'):
+                check('redaction/clone-relative-paths', 'clone path snapshot exists', False)
+            else:
+                clone = base / 'path-clone'
+                clone.mkdir()
+                GP.run(['git', 'init', '-q', str(clone)], check=True)
+                names = GP.run(['git', '-C', str(TREE), 'ls-files', '-z'], capture_output=True).stdout.decode().split('\0')
+                names = [n for n in names if n and not n.startswith('.git')]
+                for name in names:
+                    target = clone / name
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_text('first\n')
+                GP.run(['git', '-C', str(clone), 'add', '.'], check=True)
+                for name in names:
+                    (clone / name).write_text('second\n')
+                extra_path = 'untracked/review_execution_record_output_file.py'
+                (clone / extra_path).parent.mkdir()
+                (clone / extra_path).touch()
+                paths = ER.Resolved()
+                paths.paths = ER.clone_paths(clone)
+                outputs = [GP.run(['git', '-C', str(clone), *args], capture_output=True, text=True).stdout
+                           for args in (['diff', '--stat', '--stat-width=240'], ['status', '--short'])]
+                outputs += ['  File "%s", line 1024, in receive\n' % name for name in names]
+                outputs += ['\n'.join(names), extra_path]
+                check('redaction/clone-relative-paths', 'git stat, status and every traceback keep clone file names',
+                      len(names) > 1000 and all(ER.redact(out, paths)[0] == out for out in outputs))
+                paths.paths = ER.clone_paths(clone / 'scripts')
+                check('redaction/clone-relative-paths', 'cwd and root relative names both resolve',
+                      'suites/82_veldo_0141_execution_record.py' in paths.paths
+                      and 'scripts/suites/82_veldo_0141_execution_record.py' in paths.paths)
+                opaque = fresh()[:20] + '/' + fresh()
+                request_id = 'veldo-initialize-' + os.urandom(8).hex()
+                check('redaction/clone-relative-paths', 'slash-bearing opaque value goes and handshake id stays',
+                      ER.redact(opaque, paths)[0] == ENTROPY and ER.redact(request_id, paths)[0] == request_id)
+
+        with region('redaction/encoded-values'):
+            import base64
+            import urllib.parse
+            resolved = ER.Resolved() if ER else None
+            value = ' '.join(planted.split('.')) + '"\\' + planted
+            if resolved is not None:
+                resolved.add(PLANTED_KIND, value)
+            variants = [base64.b64encode(value.encode()).decode(), urllib.parse.quote(value, safe=''),
+                        urllib.parse.quote_plus(value), value.upper(), json.dumps(json.dumps({'value': value}))]
+            for variant in variants:
+                kept_, kinds = redacted(variant, resolved)
+                check('redaction/encoded-values', 'encoded resolved value has an exact named replacement',
+                      PLANTED_KIND in kinds and variant != kept_ and planted.split('.')[0] not in kept_)
+
+        with region('api/scope-before-existence'):
+            existing = page(main_launch.dispatch_id, 0, cookie=outsider_cookie)
+            absent = page('review-absent', 0, cookie=outsider_cookie)
+            absent_stream = call('GET', STREAM_PATH + '?dispatch=review-absent', cookie=outsider_cookie)
+            check('api/scope-before-existence', 'outsider receives the same refusal for present and absent dispatches',
+                  existing[0] == absent[0] == absent_stream[0] == 403
+                  and refusal(existing) == refusal(absent) == refusal(absent_stream) == 'unauthorized:out_of_scope')
+
+        with region('api/registration-race'):
+            if not hasattr(api, '_record_page'):
+                check('api/registration-race', 'record route exists', False)
+            else:
+                original_page, original_fill = api._record_page, api._fill_record
+                for window in ('page', 'fill'):
+                    once = []
+                    def race_page(principal, dispatch_id, after):
+                        answer = original_page(principal, dispatch_id, after)
+                        if not once:
+                            once.append(True)
+                            if window == 'page':
+                                api.deliver_record({'dispatch_id': dispatch_id, 'seq': answer['total']})
+                            return dict(answer, ended=False)
+                        return answer
+                    def race_fill(stream, answer, always=False):
+                        original_fill(stream, answer, always)
+                        if window == 'fill' and always:
+                            api.deliver_record({'dispatch_id': stream.dispatch_id, 'seq': answer['total']})
+                    api._record_page, api._fill_record = race_page, race_fill
+                    try:
+                        response = call('GET', STREAM_PATH + '?dispatch=' + main_launch.dispatch_id, cookie=owner_cookie)
+                        check('api/registration-race', 'end in the first %s window closes the stream' % window,
+                              response[0] == 200 and getattr(response[2], 'closed', None) == 'ended')
+                    finally:
+                        api._record_page, api._fill_record = original_page, original_fill
+
+        with region('api/slow-reader'):
+            if not hasattr(API, 'RecordStream'):
+                check('api/slow-reader', 'record stream exists', False)
+            else:
+                stream = API.RecordStream('h', 'owner', 'c', 0, 'review')
+                for cursor in range(1, 101):
+                    stream.put({'cursor': cursor, 'lines': [{'payload': 'output'}]})
+                received = []
+                for _ in range(102):
+                    kind, frame = stream.next(0)
+                    if kind != 'frame':
+                        break
+                    received.append(frame['cursor'])
+                check('api/slow-reader', 'overflow ends by name after a bounded contiguous prefix',
+                      stream.closed == 'slow_reader' and kind == 'closed' and frame == 'slow_reader'
+                      and 0 < len(received) <= 32 and received == list(range(1, len(received) + 1)))
+                # Resume the actual ended run at the last delivered sequence.
+                resume = page(main_launch.dispatch_id, min(len(received), len(main_lines)))
+                check('api/slow-reader', 'cursor resumes without skipping a line', resume[0] == 200
+                      and resume[2]['lines'] == main_lines[min(len(received), len(main_lines)):])
+                large = API.RecordStream('h', 'owner', 'c', 0, 'review')
+                large.put({'cursor': 1, 'lines': [{'payload': 'x' * (5 * 1024 * 1024)}]})
+                check('api/slow-reader', 'one oversized frame is refused before queueing',
+                      large.closed == 'slow_reader' and not large._frames)
+
+        with region('route/unknown-committed'):
+            # Force the containment observation after a real worker finishes. The unknown transition, journal,
+            # record commitment and authority reads are production paths.
+            original_driver = driver.read_text()
+            inject = ('original_reap = L.Receiver._reap\n'
+                      'def uncertain(self, *args, **kwargs):\n'
+                      '    result = original_reap(self, *args, **kwargs)\n'
+                      '    self.supervision["empty"] = False\n'
+                      '    return result\n'
+                      'L.Receiver._reap = uncertain\n')
+            driver.write_text(original_driver.replace('L.main()\n', inject + 'L.main()\n'))
+            try:
+                unknown_launch, unknown_record, _, _ = live_run('acct-141a', 'claude',
+                    {'task': 'unknown review', 'pace': 0.01}, planted_run=True)
+            finally:
+                driver.write_text(original_driver)
+            commitment = unknown_record.get('execution_record')
+            check('route/unknown-committed', 'unknown end commits the received record',
+                  unknown_record.get('state') == 'unknown' and isinstance(commitment, dict))
+            if ER and commitment:
+                response = page(unknown_launch.dispatch_id, 0)
+                check('route/unknown-committed', 'authority serves the committed unknown end',
+                      response[0] == 200 and response[2]['ended'] and response[2]['committed'] == commitment)
+                location = Path(ER.path(records_dir, unknown_launch.dispatch_id))
+                original = location.read_bytes()
+                try:
+                    for changed in (original[:-1], original + b'{}\n', original.replace(b'engine', b'Engine', 1)):
+                        location.write_bytes(changed)
+                        check('route/unknown-committed', 'tampering with unknown record is refused',
+                              refusal(page(unknown_launch.dispatch_id, 0)) == 'unknown_outcome:record_digest')
+                finally:
+                    location.write_bytes(original)
 
         with region('format/fake-lines'):
             events = FORMATS['claude_code']['events']

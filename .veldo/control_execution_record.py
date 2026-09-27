@@ -57,6 +57,8 @@ redactions by kind, never a value or an unredacted line.
 WHAT IT IS NOT. No retention, archival, replay or editing of a record (Release 2), and no record of a run
 outside the factory. Standard library only.
 """
+import base64
+import collections
 import hashlib
 import importlib.util
 import json
@@ -67,6 +69,7 @@ import socket
 import stat
 import struct
 import time
+import urllib.parse
 
 SCHEMA = 'veldo.execution_record/v1'
 HINT_SCHEMA = 'veldo.execution_record_hint/v1'
@@ -129,10 +132,13 @@ class Resolved:
 
     def __init__(self):
         self._values = {}
+        self.paths = frozenset()
+        self._forms = None
 
     def add(self, kind, value):
         if isinstance(value, str) and value and isinstance(kind, str) and kind:
             self._values.setdefault(value, kind)
+            self._forms = None
 
     def kinds(self):
         return sorted(set(self._values.values()))
@@ -142,12 +148,21 @@ class Resolved:
 
     def forms(self):
         """(form, kind), longest first: each value as printed and as a JSON string carries it."""
+        if self._forms is not None:
+            return self._forms
         found = {}
         for value, kind in self._values.items():
-            for form in (value, json.dumps(value)[1:-1], json.dumps(value, ensure_ascii=False)[1:-1]):
+            forms = {value, value.upper(), base64.b64encode(value.encode()).decode(),
+                     base64.urlsafe_b64encode(value.encode()).decode(),
+                     urllib.parse.quote(value, safe=''), urllib.parse.quote_plus(value, safe='')}
+            # Nested JSON carries another escaped string inside each enclosing string.
+            for _ in range(4):
+                forms |= {json.dumps(v, ensure_ascii=ascii_)[1:-1] for v in forms for ascii_ in (True, False)}
+            for form in forms:
                 if form:
                     found.setdefault(form, kind)
-        return sorted(found.items(), key=lambda item: (-len(item[0]), item[0]))
+        self._forms = sorted(found.items(), key=lambda item: (-len(item[0]), item[0]))
+        return self._forms
 
 
 # ACCOUNT IDENTIFIERS, BY FIELD. The engine's handshake answer (Claude Code's initialize control response,
@@ -270,7 +285,29 @@ def _high_segment(token):
     return _high(token) and not (named and SS._is_digest(named.group(1)))
 
 
-def _entropy_spans(text):
+def clone_paths(cwd):
+    """Snapshot tracked and working tree paths once, relative to the run's cwd and repository root."""
+    if not cwd:
+        return frozenset()
+    spec = importlib.util.spec_from_file_location('record_git', Path(__file__).with_name('git_process.py'))
+    gp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gp)
+    root = gp.run(['git', '-C', str(cwd), 'rev-parse', '--show-toplevel'], capture_output=True, text=True)
+    root = Path(root.stdout.strip()) if root.returncode == 0 else Path(cwd)
+    tracked = gp.run(['git', '-C', str(root), 'ls-files', '-z'], capture_output=True)
+    names = set(os.fsdecode(n) for n in tracked.stdout.split(b'\0') if n) if tracked.returncode == 0 else set()
+    for directory_, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d != '.git']
+        names.update(os.path.relpath(os.path.join(directory_, n), root) for n in dirs + files)
+    names |= {os.path.relpath(root / n, cwd) for n in list(names)}
+    return frozenset(names)
+
+
+_RELATIVE = re.compile(r"[A-Za-z0-9_+./=\-]+")
+_INITIALIZE = re.compile(r"\bveldo-initialize-[0-9a-fA-F]+\b")
+
+
+def _entropy_spans(text, paths=()):
     """The (start, end) of every span the entropy step replaces: candidates of each segment of a rooted path
     or URL, and every other candidate whole."""
     ranges, at = [], 0
@@ -281,6 +318,9 @@ def _entropy_spans(text):
         end, segments = _located(text, found)
         ranges.append((found.start(), end, segments))
         at = max(end, found.end())
+    # Exempt complete known paths, never arbitrary slash-bearing candidates.
+    kept = [(m.start(), m.end()) for m in _RELATIVE.finditer(text) if m.group() in paths]
+    kept += [(m.start(), m.end()) for m in _INITIALIZE.finditer(text)]
     spans, gap = [], 0
     for start, end, segments in ranges + [(len(text), len(text), [])]:
         spans += [(m.start(), m.end()) for m in SS._CANDIDATE.finditer(text, gap, start) if _high(m.group())]
@@ -288,7 +328,7 @@ def _entropy_spans(text):
             spans += [(m.start(), m.end()) for m in SS._CANDIDATE.finditer(text, low, high)
                       if _high_segment(m.group())]
         gap = end
-    return spans
+    return [(a, b) for a, b in spans if not any(c <= a and b <= d for c, d in kept)]
 
 
 def redact(text, resolved):
@@ -307,12 +347,43 @@ def redact(text, resolved):
         text, count = rx.subn(marker(kind), text)
         if count:
             kinds.add(kind)
-    spans = _entropy_spans(text)
+    spans = _entropy_spans(text, getattr(resolved, 'paths', ()))
     for start, end in sorted(spans, reverse=True):
         text = text[:start] + marker(ENTROPY_KIND) + text[end:]
     if spans:
         kinds.add(ENTROPY_KIND)
     return text, sorted(kinds)
+
+
+def _block_spans(text, resolved):
+    """Original offsets, with the same precedence as redact. Mask replaced spans before the next pass."""
+    spans = []
+    def take(matches, kind):
+        nonlocal text
+        for start, end in reversed(matches):
+            spans.append((start, end, kind))
+            text = text[:start] + ' ' * (end - start) + text[end:]
+    for form, kind in resolved.forms() if resolved is not None else ():
+        take([(m.start(), m.end()) for m in re.finditer(re.escape(form), text)], kind)
+    for rx, kind in PATTERN_KINDS:
+        take([(m.start(), m.end()) for m in rx.finditer(text)], kind)
+    take(_entropy_spans(text, getattr(resolved, 'paths', ())), ENTROPY_KIND)
+    return sorted(spans)
+
+
+def _safe_prefix(text, resolved):
+    """Keep the longest exact form and fixed pattern width. Unbounded patterns retain their open start,
+    and entropy retains the entire last lexical candidate, however long it grows."""
+    tail = max([256] + [len(form) for form, _ in resolved.forms()] if resolved is not None else [256])
+    safe = max(0, len(text) - tail)
+    # All scanner patterns start inside this alphabet, except private-key headers and quoted assignments.
+    for match in re.finditer(r'[A-Za-z0-9+/=_\-.]+', text):
+        if match.start() < safe < match.end():
+            safe = match.start()
+    # These two patterns may contain arbitrarily much whitespace; retain their incomplete starts.
+    for match in re.finditer(r'(?i)(?:-{5}BEGIN [A-Z ]*|\b(?:password|passwd|secret|api[_-]?key|token)\s*[:=]\s*[\'"][^\"\'\s]*)$', text):
+        safe = min(safe, match.start())
+    return safe
 
 
 def encode(entry):
@@ -332,6 +403,7 @@ class Recorder:
         self.path = path(records, self.dispatch_id)
         self.fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_APPEND | os.O_CLOEXEC, 0o600)
         self.hasher, self.size, self.sequence, self.hinted = hashlib.sha256(), 0, 0, 0
+        self.blocks, self.messages, self.waiting = {}, {}, collections.deque()
         self.pending = {name: b'' for name in STREAMS}
         self.counts = {name: {'lines': 0, 'bytes': 0} for name in STREAMS}
         self.redactions = {}
@@ -346,14 +418,91 @@ class Recorder:
         self.hasher.update(data)
         self.size += len(data)
 
-    def _keep(self, stream, raw, newline=True):
+    def _persist(self, stream, raw, newline=True, extra=(), at=None, received_bytes=None):
         text, kinds = redact(raw.decode('utf-8', 'surrogateescape'), self.resolved)
+        kinds = sorted(set(kinds) | set(extra))
         self.sequence += 1
-        self._write({'seq': self.sequence, 'at': self.clock(), 'stream': stream, 'redacted': kinds, 'payload': text})
+        self._write({'seq': self.sequence, 'at': self.clock() if at is None else at, 'stream': stream, 'redacted': kinds, 'payload': text})
         self.counts[stream]['lines'] += 1
-        self.counts[stream]['bytes'] += len(raw) + (1 if newline else 0)
+        self.counts[stream]['bytes'] += received_bytes if received_bytes is not None else len(raw) + (1 if newline else 0)
         for kind in kinds:
             self.redactions[kind] = self.redactions.get(kind, 0) + 1
+
+    def _keep(self, stream, raw, newline=True):
+        entry = [stream, raw, newline, (), self.clock(), None, len(raw) + (1 if newline else 0)]
+        try:
+            event = json.loads(raw) if stream == 'engine' else {}
+        except ValueError:
+            event = {}
+        if not isinstance(event, dict):
+            event = {}
+        scope = (event.get('session_id'), event.get('parent_tool_use_id'))
+        inner = event.get('event') or {}
+        if not isinstance(inner, dict):
+            inner = {}
+        kind = inner.get('type')
+        if kind == 'message_start':
+            self._flush_blocks(scope)
+            self.messages[scope] = (inner.get('message') or {}).get('id')
+        message = event.get('message_id') or self.messages.get(scope)
+        delta = inner.get('delta') or {}
+        field = {'text_delta': 'text', 'input_json_delta': 'partial_json'}.get(delta.get('type'))
+        if kind == 'content_block_delta' and field and isinstance(delta.get(field), str):
+            ident = (scope, message, inner.get('index', 0), field)
+            block = self.blocks.setdefault(ident, {'text': '', 'entries': [], 'done': False})
+            start = len(block['text'])
+            block['text'] += delta[field]
+            entry[5] = (block, start, len(block['text']), field)
+            block['entries'].append(entry)
+            self._release_block(block)
+        elif kind == 'content_block_stop':
+            self._flush_blocks(scope, inner.get('index', 0))
+        elif kind == 'message_stop' or event.get('type') in ('assistant', 'result'):
+            self._flush_blocks(scope)
+        self.waiting.append(entry)
+        self._drain()
+
+    def _flush_blocks(self, scope=None, index=None):
+        for ident, block in list(self.blocks.items()):
+            if (scope is None or ident[0] == scope) and (index is None or ident[2] == index):
+                block['done'] = True
+                self._release_block(block)
+                del self.blocks[ident]
+
+    def _release_block(self, block):
+        text = block['text']
+        spans = _block_spans(text, self.resolved)
+        safe = len(text) if block['done'] else _safe_prefix(text, self.resolved)
+        for start, end, _kind in spans:
+            if start < safe < end:
+                safe = start
+        pending = []
+        for entry in block['entries']:
+            _, low, high, field = entry[5]
+            if high > safe:
+                pending.append(entry)
+                continue
+            value, at, kinds = '', low, set()
+            for start, end, kind in spans:
+                if end <= low or start >= high:
+                    continue
+                value += text[at:max(at, start)] + marker(kind)
+                at = min(high, end)
+                kinds.add(kind)
+            value += text[at:high]
+            if kinds:
+                raw = entry[1].decode('utf-8', 'surrogateescape')
+                found = re.search(r'"' + field + r'"\s*:\s*', raw)
+                _, end = _DECODER.raw_decode(raw, found.end())
+                raw = raw[:found.end()] + json.dumps(value, ensure_ascii=True) + raw[end:]
+                entry[1], entry[3] = raw.encode('utf-8', 'surrogateescape'), kinds
+            entry[5] = None
+        block['entries'] = pending
+
+    def _drain(self):
+        while self.waiting and self.waiting[0][5] is None:
+            stream, raw, newline, kinds, at, _, received_bytes = self.waiting.popleft()
+            self._persist(stream, raw, newline, kinds, at, received_bytes)
 
     def feed(self, stream, chunk):
         """Keep every complete line of `chunk` (what the receiver just read from `stream`), in order."""
@@ -382,6 +531,8 @@ class Recorder:
                 if self.pending[stream]:
                     rest, self.pending[stream] = self.pending[stream], b''
                     self._keep(stream, rest, newline=False)
+            self._flush_blocks()
+            self._drain()
             os.close(self.fd)
             self.closed = {'lines': self.sequence, 'bytes': self.size, 'digest': 'sha256:' + self.hasher.hexdigest()}
         return dict(self.closed)

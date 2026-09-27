@@ -249,10 +249,30 @@ class RecordStream(Stream):
     cursor, `event: record`."""
 
     event = 'record'
+    max_frames = 32
+    max_bytes = 4 * 1024 * 1024
 
     def __init__(self, handle, principal, credential_id, cursor, dispatch_id):
         super().__init__(handle, principal, credential_id, cursor)
         self.dispatch_id = dispatch_id
+        self._queued_bytes = 0
+
+    def put(self, frame):
+        with self._condition:
+            size = len(json.dumps(frame, ensure_ascii=True).encode())
+            if len(self._frames) >= self.max_frames or self._queued_bytes + size > self.max_bytes:
+                self.close('slow_reader')
+                return
+            if self.closed is None:
+                self._queued_bytes += size
+                super().put(frame)
+
+    def next(self, timeout=None):
+        with self._condition:
+            kind, frame = super().next(timeout)
+            if kind == 'frame':
+                self._queued_bytes -= len(json.dumps(frame, ensure_ascii=True).encode())
+            return kind, frame
 
 
 def serve_stream(stream, write, idle=STREAM_IDLE_SECONDS):
@@ -785,9 +805,12 @@ class ControlApi:
                        'after' if cursor is None else 'last_event_id', minimum=0)
         answer = self._record_page(session['principal'], body['dispatch'], after)
         stream = RecordStream(session['handle'], session['principal'], session['credential_id'], after, body['dispatch'])
-        self._fill_record(stream, answer, always=True)
         with self._lock:
             self._streams.append(stream)
+        self._fill_record(stream, answer, always=True)
+        # Catch an end hint delivered after the first page read, before registration.
+        if stream.closed is None:
+            self._fill_record(stream, self._record_page(stream.principal, stream.dispatch_id, stream.cursor))
         # A session ended while the stream was filling, before it was registered: closed as a delivery closes it.
         problem = self._stream_problem(stream, credential=False)
         if problem is not None:
@@ -817,7 +840,7 @@ class ControlApi:
         reading the next page through `record` until the cursor reaches the lines the record held when read
         (so past any hinted sequence), or a page brings nothing new; once the run has ended and every line
         is out, the stream closes as ended."""
-        while True:
+        while stream.closed is None:
             lines = [line for line in answer['lines'] if line['seq'] > stream.cursor]
             if lines:
                 stream.cursor = lines[-1]['seq']
