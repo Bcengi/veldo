@@ -41,9 +41,13 @@
    [
     "VELDO-0069 binding/owner-ruling",
     true
+   ],
+   [
+    "VELDO-0069 launch/receiver-recheck",
+    true
    ]
   ],
-  "seconds": 5.522
+  "seconds": 6.439
  },
  "controls_green": true,
  "mutants": [
@@ -94,7 +98,11 @@
     "VELDO-0069 binding/owner-ruling detail: VELDO-9616: blocked (unresolved) before, and blocked by decision_ruling:decision:D-9616/reject at every consumer after [observed: {\"blocks\": [\"unresolved_decision:decision:D-9616\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9616\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9616\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9616\"], \"direct_execution\": [\"unresolved_decision:decision:D-9616\"], \"publication\": [\"unresolved_decision:decision:D-9616\"], \"review\": [\"unresolved_decision:decision:D-9616\"], \"selection\": [\"unresolved_decision:decision:D-9616\"]}}]",
     "VELDO-0069 binding/owner-ruling detail: VELDO-9617: the owner's return_for_elaboration settles with one binding [observed: settled, None]",
     "VELDO-0069 binding/owner-ruling detail: VELDO-9617: the signed body carries the ruling return_for_elaboration, the binding the chosen option return_for_elaboration, and the signature verifies",
-    "VELDO-0069 binding/owner-ruling detail: VELDO-9617: blocked (unresolved) before, and blocked by decision_ruling:decision:D-9617/return_for_elaboration at every consumer after [observed: {\"blocks\": [\"unresolved_decision:decision:D-9617\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9617\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9617\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9617\"], \"direct_execution\": [\"unresolved_decision:decision:D-9617\"], \"publication\": [\"unresolved_decision:decision:D-9617\"], \"review\": [\"unresolved_decision:decision:D-9617\"], \"selection\": [\"unresolved_decision:decision:D-9617\"]}}]"
+    "VELDO-0069 binding/owner-ruling detail: VELDO-9617: blocked (unresolved) before, and blocked by decision_ruling:decision:D-9617/return_for_elaboration at every consumer after [observed: {\"blocks\": [\"unresolved_decision:decision:D-9617\"], \"item_state\": \"blocked: decision unresolved_decision:decision:D-9617\", \"offered\": false, \"run_codes\": [\"unresolved_decision:decision:D-9617\"], \"stations\": {\"build\": [\"unresolved_decision:decision:D-9617\"], \"direct_execution\": [\"unresolved_decision:decision:D-9617\"], \"publication\": [\"unresolved_decision:decision:D-9617\"], \"review\": [\"unresolved_decision:decision:D-9617\"], \"selection\": [\"unresolved_decision:decision:D-9617\"]}}]",
+    "VELDO-0069 launch/receiver-recheck detail: the front door clears VELDO-9601 on its bound settlement [observed ['unresolved_decision:decision:D-9601']]",
+    "VELDO-0069 launch/receiver-recheck detail: a receiver configured with no host trust refuses it by name (unsigned_decision) and spawns nothing [observed {\"raised\": \"unresolved_decision:decision:D-9601\"}]",
+    "VELDO-0069 launch/receiver-recheck detail: a receiver naming a host trust that is absent refuses by name (host_trust_required) and spawns nothing [observed {\"raised\": \"unresolved_decision:decision:D-9601\"}]",
+    "VELDO-0069 launch/receiver-recheck detail: the receiver naming this host's trust accepts, launches and reaps it: its recheck verified the same signed settlement [observed {\"raised\": \"unresolved_decision:decision:D-9601\"}]"
    ],
    "diff": "proof/VELDO-0069/receipt-without-binding.diff",
    "failed_rows": [
@@ -105,10 +113,11 @@
     "VELDO-0069 refusal/wrong-version",
     "VELDO-0069 consumers/inline-bypass",
     "VELDO-0069 refusal/future-revision",
-    "VELDO-0069 binding/owner-ruling"
+    "VELDO-0069 binding/owner-ruling",
+    "VELDO-0069 launch/receiver-recheck"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "cd9a7a9b52dde4ecf101aa46d14e4a7c96e441f43c261c98206e7137545a7443",
+   "mutant_sha256": "fcb5266353cd4d5af494378fdfe11bf0eea20dc740b0d5f51c6086b9dcd9d602",
    "name": "receipt-without-binding",
    "named_row_red": true,
    "named_rows": [
@@ -151,10 +160,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      false
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     false
     ]
    ],
-   "seconds": 5.369,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 5.839,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -168,7 +181,7 @@
     "VELDO-0069 binding/one-transaction"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "6d2a2866143fa05fbf01b8eb3a6bac3fcca192a90dd4af3ac2584ff4184e536d",
+   "mutant_sha256": "7eb2b780be506a2aca38ed54d6b97da063fabea516ae73fe59bcdcf00dc20296",
    "name": "binding-skipped-without-signer",
    "named_row_red": true,
    "named_rows": [
@@ -211,10 +224,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.479,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.574,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -231,7 +248,7 @@
     "VELDO-0069 binding/owner-ruling"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "75c860e646c958dee4ab0eacc6f2c884c78d0890477e837669d7e62dbf152a22",
+   "mutant_sha256": "c00f5e7217ad070670351c40c4acf3f036fe0bb9b3a22eddf2d9b178a4315b32",
    "name": "ruling-forced-approve",
    "named_row_red": true,
    "named_rows": [
@@ -274,10 +291,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      false
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.595,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.507,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -290,7 +311,7 @@
     "VELDO-0069 binding/owner-ruling"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "4842dee9894df8fefb854af55ceef1161e27613104a8ca78de14ba1a1d1ea59b",
+   "mutant_sha256": "0b3f31663da991ac8c3d4f73275800103aa64c2a7a0353cf20823a1b8a20da69",
    "name": "binding-choice-forced-accept",
    "named_row_red": true,
    "named_rows": [
@@ -333,10 +354,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      false
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.591,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.55,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -351,7 +376,7 @@
     "VELDO-0069 refusal/wrong-subject"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "1bacebfd37829297567719b7db916fb54a8dc9b229c1e88861536d197d2a9022",
+   "mutant_sha256": "c25f600ef733e8dc3b122dcaeba7fb045c489cc979e4c3a465c7bea9a4ae658b",
    "name": "binding-ignores-subject-digest",
    "named_row_red": true,
    "named_rows": [
@@ -394,10 +419,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.587,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.51,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -411,7 +440,7 @@
     "VELDO-0069 refusal/wrong-framing"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "cfb579f36084a3287ae647ed25cc35705f9a4423782be9639c4ba3ee1c831675",
+   "mutant_sha256": "4456362f66f7713db9a368f4fd1d3224b8abbe1b797c4f053cdf170450e4b643",
    "name": "binding-framing-from-record",
    "named_row_red": true,
    "named_rows": [
@@ -454,10 +483,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.643,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.524,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -471,7 +504,7 @@
     "VELDO-0069 refusal/wrong-version"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "aab25c91b14aac65e4f993e64f28fe9a3eafd4393ef5d9e7e4ac5ac0681045e8",
+   "mutant_sha256": "7b72879c27e119ad823dc3436558306da8ad8dcae5b1db3f974cd26c4c3fde74",
    "name": "binding-revision-from-record",
    "named_row_red": true,
    "named_rows": [
@@ -514,10 +547,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.511,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.433,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -530,7 +567,7 @@
     "VELDO-0069 refusal/unsupported-subject-stops"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "a7699a3f58ef05979895b5d01d1659458e27129f090dd6bba79dd5c6a6f77a8d",
+   "mutant_sha256": "972e700c62e562e1611cf6091d50e32fc0cc805da5a6a099bae6d1dd7bb50b7f",
    "name": "unsupported-subject-bound",
    "named_row_red": true,
    "named_rows": [
@@ -573,10 +610,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.563,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.559,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -588,7 +629,7 @@
     "VELDO-0069 refusal/unsupported-subject-stops"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "7181bddee515438e3c37cfba8141db6bff79b201d8fb47134b2b79893dfa8b00",
+   "mutant_sha256": "be421efa2c6c98cceb6314dfb943dd85545a6ada6761c03c438cfbb6a22205af",
    "name": "unsupported-subject-terms-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -631,10 +672,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.543,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.568,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -650,7 +695,7 @@
     "VELDO-0069 refusal/future-revision"
    ],
    "module": ".veldo/control_request_settlement.py",
-   "mutant_sha256": "9a0d6cac0a70c5348684f0b7583240e03c5187ff3f86f343e3b03bc70b71310d",
+   "mutant_sha256": "7d4c3c6d2d6d239be2437e40ca22616076170e243a56f550703db0f07003981e",
    "name": "future-revision-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -693,10 +738,14 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.675,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.486,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
@@ -751,9 +800,13 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.549,
+   "seconds": 6.5,
    "source_sha256": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea"
   },
   {
@@ -809,9 +862,13 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.522,
+   "seconds": 6.59,
    "source_sha256": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382"
   },
   {
@@ -867,10 +924,201 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.573,
+   "seconds": 6.549,
    "source_sha256": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0069 launch/receiver-recheck detail: the receiver naming this host's trust accepts, launches and reaps it: its recheck verified the same signed settlement [observed {\"result\": \"refused\", \"state\": \"refused\", \"refusal\": \"unsigned_decision:decision:D-9601\", \"ran\": false, \"states\": [\"prepared\", \"refused\"]}]"
+   ],
+   "diff": "proof/VELDO-0069/receiver-gate-untrusted.diff",
+   "failed_rows": [
+    "VELDO-0069 launch/receiver-recheck"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "2d54a8ec6a50a109cecb5f534425d8c8dca0ab3724a3987147a1bddc3445d1fe",
+   "name": "receiver-gate-untrusted",
+   "named_row_red": true,
+   "named_rows": [
+    "launch/receiver-recheck"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0069 binding/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0069 eligibility/resolved-request",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-framing",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-subject",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-version",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/unsupported-subject-stops",
+     true
+    ],
+    [
+     "VELDO-0069 consumers/inline-bypass",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/future-revision",
+     true
+    ],
+    [
+     "VELDO-0069 binding/owner-ruling",
+     true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     false
+    ]
+   ],
+   "seconds": 6.433,
+   "source_sha256": "caf8970a1a145a2b003d88a02acf9ab2944c13a80c526e782aa0cbd381bfd4d3"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0069 launch/receiver-recheck detail: a receiver naming a host trust that is absent refuses by name (host_trust_required) and spawns nothing [observed {\"result\": \"refused\", \"state\": \"refused\", \"refusal\": \"unsigned_decision:decision:D-9601\", \"ran\": false, \"states\": [\"prepared\", \"refused\"]}]"
+   ],
+   "diff": "proof/VELDO-0069/receiver-absent-trust-unnamed.diff",
+   "failed_rows": [
+    "VELDO-0069 launch/receiver-recheck"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "b7009beda16783236a761ab1f07b90889a6dc972b71dc4ccc058f296e1e79621",
+   "name": "receiver-absent-trust-unnamed",
+   "named_row_red": true,
+   "named_rows": [
+    "launch/receiver-recheck"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0069 binding/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0069 eligibility/resolved-request",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-framing",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-subject",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-version",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/unsupported-subject-stops",
+     true
+    ],
+    [
+     "VELDO-0069 consumers/inline-bypass",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/future-revision",
+     true
+    ],
+    [
+     "VELDO-0069 binding/owner-ruling",
+     true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     false
+    ]
+   ],
+   "seconds": 6.564,
+   "source_sha256": "caf8970a1a145a2b003d88a02acf9ab2944c13a80c526e782aa0cbd381bfd4d3"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0069 launch/receiver-recheck detail: a receiver configured with no host trust refuses it by name (unsigned_decision) and spawns nothing [observed {\"result\": \"refused\", \"state\": \"refused\", \"refusal\": \"stale_input:approvals; stale_input:decisions; stale_input:settlements; unsigned_decision:decision:D-9601\", \"ran\": false, \"states\": [\"prepared\", \"refused\"]}]",
+    "VELDO-0069 launch/receiver-recheck detail: the receiver naming this host's trust accepts, launches and reaps it: its recheck verified the same signed settlement [observed {\"result\": \"refused\", \"state\": \"refused\", \"refusal\": \"stale_input:approvals; stale_input:decisions; stale_input:settlements\", \"ran\": false, \"states\": [\"prepared\", \"refused\"]}]"
+   ],
+   "diff": "proof/VELDO-0069/ticket-collection-tuples.diff",
+   "failed_rows": [
+    "VELDO-0069 launch/receiver-recheck"
+   ],
+   "module": ".veldo/control_eligibility.py",
+   "mutant_sha256": "a29184daf2ad6ce8912ad82832a7e78b4bb2845d6702336e82305eaf91fba5c9",
+   "name": "ticket-collection-tuples",
+   "named_row_red": true,
+   "named_rows": [
+    "launch/receiver-recheck"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0069 binding/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0069 eligibility/resolved-request",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-framing",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-subject",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-version",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/unsupported-subject-stops",
+     true
+    ],
+    [
+     "VELDO-0069 consumers/inline-bypass",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/future-revision",
+     true
+    ],
+    [
+     "VELDO-0069 binding/owner-ruling",
+     true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     false
+    ]
+   ],
+   "seconds": 6.6,
+   "source_sha256": "e167c611fe81f233f909ec67bfa393c3b875395fd68dbdcd6a3e412920da8f3f"
   }
  ],
  "mutations_per_row": {
@@ -888,6 +1136,11 @@
   ],
   "eligibility/resolved-request": [
    "receipt-without-binding"
+  ],
+  "launch/receiver-recheck": [
+   "receiver-gate-untrusted",
+   "receiver-absent-trust-unnamed",
+   "ticket-collection-tuples"
   ],
   "refusal/future-revision": [
    "future-revision-accepted"
@@ -948,13 +1201,17 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.476,
+   "seconds": 6.577,
    "source_sha256": "b1ee655f4c11a1ec303a2d5963eaa66dc4b4d9ac83ca8e195a85dd4cfc245382"
   },
-  "control_request_settlement.py": {
-   "copy_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905",
+  "control_eligibility.py": {
+   "copy_sha256": "e167c611fe81f233f909ec67bfa393c3b875395fd68dbdcd6a3e412920da8f3f",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -994,10 +1251,114 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.536,
-   "source_sha256": "6d21eccd03d611405e9450af67486e5e9c83cdbefcc573376907c915ed5ca905"
+   "seconds": 6.544,
+   "source_sha256": "e167c611fe81f233f909ec67bfa393c3b875395fd68dbdcd6a3e412920da8f3f"
+  },
+  "control_launch.py": {
+   "copy_sha256": "caf8970a1a145a2b003d88a02acf9ab2944c13a80c526e782aa0cbd381bfd4d3",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0069 binding/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0069 eligibility/resolved-request",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-framing",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-subject",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-version",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/unsupported-subject-stops",
+     true
+    ],
+    [
+     "VELDO-0069 consumers/inline-bypass",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/future-revision",
+     true
+    ],
+    [
+     "VELDO-0069 binding/owner-ruling",
+     true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
+    ]
+   ],
+   "seconds": 6.585,
+   "source_sha256": "caf8970a1a145a2b003d88a02acf9ab2944c13a80c526e782aa0cbd381bfd4d3"
+  },
+  "control_request_settlement.py": {
+   "copy_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0069 binding/one-transaction",
+     true
+    ],
+    [
+     "VELDO-0069 eligibility/resolved-request",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-framing",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-subject",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/wrong-version",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/unsupported-subject-stops",
+     true
+    ],
+    [
+     "VELDO-0069 consumers/inline-bypass",
+     true
+    ],
+    [
+     "VELDO-0069 refusal/future-revision",
+     true
+    ],
+    [
+     "VELDO-0069 binding/owner-ruling",
+     true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
+    ]
+   ],
+   "seconds": 6.486,
+   "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   "plan.py": {
    "copy_sha256": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea",
@@ -1040,15 +1401,19 @@
     [
      "VELDO-0069 binding/owner-ruling",
      true
+    ],
+    [
+     "VELDO-0069 launch/receiver-recheck",
+     true
     ]
    ],
-   "seconds": 5.571,
+   "seconds": 6.6,
    "source_sha256": "fd9ecaa92c63d3be175ab1cebec42d35da789e8667cba5dd5cb0037fa005c0ea"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 69",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 94.305,
+ "serial_seconds": 143.017,
  "spec_id": "VELDO-0069",
  "suite": "scripts/suites/70_veldo_0069_bindings.py"
 }

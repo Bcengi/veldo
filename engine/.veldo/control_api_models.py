@@ -66,12 +66,18 @@ Action = collections.namedtuple('Action', 'name route operation module command s
 Gap = collections.namedtuple('Gap', 'criterion subject spec what')
 
 # THE READ MODELS. Each kind names the module and constant that own it, so the suite can compare the
-# registration with the owning module's own name for it.
+# registration with the owning module's own name for it. Projects (VELDO-0076), objectives (VELDO-0077),
+# backlog items with their nesting (objective_uuid, and the feature an item was taken from; VELDO-0078) and
+# teams (VELDO-0089) are served from their writers' own records. Like every model here, each serves the whole
+# store to the authenticated owner session; no model is filtered to a member's projects yet.
 READ_MODELS = (
     ReadModel('objectives', 'reads.objectives', 'projects/objectives', (
+        Kind('project', 'control_project', 'KIND', 'VELDO-0076'),
+        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077'),
         Kind('intake_proposal', 'control_intake', 'PROPOSAL_KIND', 'VELDO-0126'),
         Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),
     ReadModel('work', 'reads.work', 'backlog/specs/units', (
+        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078'),
         Kind('accepted_document', 'control_alias', 'OWNED_KINDS', 'VELDO-0037'),
         Kind('document_version', 'control_alias', 'OWNED_KINDS', 'VELDO-0037'),
         Kind('accepted_revision', 'control_readset', 'REVISION_KINDS', 'VELDO-0035'),
@@ -97,6 +103,7 @@ READ_MODELS = (
     ReadModel('configuration', 'reads.configuration', 'configuration/workflows', (
         Kind('workflow_head', 'control_workflow', 'HEAD_KIND', 'VELDO-0132'),
         Kind('workflow_revision', 'control_workflow', 'REVISION_KIND', 'VELDO-0132'),
+        Kind('team', 'control_team', 'KIND', 'VELDO-0089'),
         Kind('role_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127'),
         Kind('tool_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127'))),
 )
@@ -120,16 +127,10 @@ ACTIONS = (
 )
 
 GAPS = (
-    Gap('AC2', 'projects', 'VELDO-0076', 'no project record (owner, charter, lifecycle) is written by the engine yet'),
-    Gap('AC2', 'accepted objectives', 'VELDO-0077', 'objectives are served as the intake proposals of VELDO-0126; '
-        'no accepted objective record exists yet'),
-    Gap('AC2', 'backlog items and their nesting', 'VELDO-0078', 'no backlog item is written by the engine yet, so '
-        'specs and units are served flat'),
     Gap('AC2', 'machine registry', 'VELDO-0125', 'machines are derived from the host and platform each dispatch '
         'recorded; no machine or host capability record exists yet'),
     Gap('AC2', 'tool calls', None, 'no specification records a worker\'s tool calls in the store; VELDO-0131 AC2 '
         'consumes them; run steps are the workflow cycles\' traces'),
-    Gap('AC2', 'team configuration', 'VELDO-0089', 'no team configuration record is written by the engine yet'),
 ) + tuple(Gap('AC4', a.name, a.spec, 'no typed authority command exists for it in the engine yet')
           for a in ACTIONS if a.route is None)
 
@@ -213,8 +214,7 @@ def read_model(store, conn, name):
 
 
 def _gap_of(gap, name):
-    return {'projects': 'objectives', 'accepted objectives': 'objectives', 'backlog items and their nesting': 'work',
-            'machine registry': 'workers', 'tool calls': 'runs', 'team configuration': 'configuration'}.get(gap.subject) == name
+    return {'machine registry': 'workers', 'tool calls': 'runs'}.get(gap.subject) == name
 
 
 def machines(dispatches):

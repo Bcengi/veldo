@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -1026 +1026 @@
+-        return self._project_problems(data.get('project'), record, member), read
++        return [], read  # defect: the boundary's project check refuses nothing

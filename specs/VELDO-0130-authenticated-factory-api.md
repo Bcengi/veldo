@@ -466,3 +466,19 @@ head the subscription answers, so the API's cursor is set from the start. New ro
 events/revoked-either-path, events/fill-window-revocation, events/retry-after-failure and
 service/connect-sets-cursor, each red by assertion at c0b27cc; seven new finding 130 mutations, each
 reddening its row. Acceptance criteria, status, risk and dependencies are unchanged.
+
+2026-09-26, Codex review of main 3c85f33b (ask-20260926-215030, finding P2): the read models still
+omitted `project`, `objective`, `backlog_item` and `team`, whose writers (VELDO-0076, 0077, 0078, 0089) are
+implemented, so the endpoints answered those records as empty collections labeled live, and the published
+gaps said they were not written. `control_api_models.READ_MODELS` now registers each from its writer's own
+kind constant: projects and objectives in `objectives`, backlog items (with their nesting: objective,
+feature and project) in `work`, teams in `configuration`, all redacted as every served value is. The four
+gaps are removed; the machine registry and tool calls remain. Like every model here, these serve the
+whole store to the authenticated owner session (members other than the owner are out of this
+specification's scope); reads filtered to a member's projects are a follow-up specification, and no access
+is widened. The AC4 action gaps are unchanged. New row `reads/implemented-writers`: each record written by
+its own service through a real signed command (activation, an objective proposed from the owner's message
+and accepted by it, its feature taken into the backlog, a staffed team proposal) and read back through its
+model exactly as stored; `reads/model-set` and `reads/authoritative` now expect the four kinds. Mutations
+`read-model-{project,objective,backlog-item,team}-unregistered` and `read-model-gaps-claim-projects` in
+finding 130. Status unchanged.

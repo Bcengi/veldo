@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -673 +673 @@
+-            raise EL.Stopped('host_trust_required')
++            return None  # defect: a named trust that is absent reads as no trust
