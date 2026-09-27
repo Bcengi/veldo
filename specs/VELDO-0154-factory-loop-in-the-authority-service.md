@@ -201,3 +201,18 @@ meaning unchanged.
 specification after which a dispatch's configuration names catalog revisions, because the configuration
 a dispatch records is VELDO-0127's; the catalog alone names no revision on a dispatch. Criterion meaning
 unchanged.
+
+2026-09-27: built on branch build-veldo-0154 from main a684f73b. The factory loop is class FactoryLoop in
+`control_service.py`, built at `serve` from the work configuration an installation copies (`--work`,
+veldo.factory_work/v1: each served repository's builder and reviewers); one Line per repository holds the
+VELDO-0039 Runner over the repository's installed launch receiver, the Gate, the dispatch records, the VELDO-0036
+reservation service and the VELDO-0160 account pool, on the service's own connection and principal. Its passes
+start only from `hint_after` (a packet or channel pass that advanced the journal), a run's end on a launch pipe the
+service loop's poll set now watches (`Launch.fileno` and `Launch.pump` in `control_launch.py`, the pipe's end of
+file included), and the reset timer each pass sets to the earliest reset a waiting unit needs. The service now
+serves VELDO-0064's inbox commands too, so the owner's answer to a loop question arrives as a packet. AC2's freed
+account slot needed a seam outside the drafted footprint, added here: `release_account` in
+`control_reservations.py` marks the worker slot's account released (the slot itself stays held, VELDO-0041's
+unknown outcome) over the Runner's kernel observation that the orphaned worker is gone, after the Runner makes the
+stop the dead receiver owed, and `control_account_pool.py` stops counting such a slot among the account's runs;
+`scripts/check_teeth_mutations.py` is added for the finding 154 mutations. Proof in proof/VELDO-0154/.

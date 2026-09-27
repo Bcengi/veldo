@@ -8568,6 +8568,8 @@ def cases():
     # its named row of suite 83, then the seams the rows rest on.
     def loop154(name, module, old, new, rows, also=()):
         add(154, name, '83_veldo_0154_factory_loop.py', module, old, new, list(rows), also)
+        # Suite 83 runs the installed service through four phases and waits for the next minute's reset.
+        result[-1]['seconds'] = 600
     loop154('loop154-pipe-not-polled', 'control_service.py',
             "                    ready = select.select([listener] + sorted(pipes), [], [], wait)[0]\n",
             "                    ready = select.select([listener], [], [], wait)[0]  # defect: the launch pipes are not polled\n",
@@ -8721,7 +8723,8 @@ def main():
         command = [sys.executable, __file__, '--worker', case['name']]
         if path:
             command += ['--mutant', str(path)]
-        proc = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        # A suite that runs an installed service end to end names its own bound (`seconds`); 120 s otherwise.
+        proc = subprocess.run(command, capture_output=True, text=True, timeout=case.get('seconds', 120))
         if proc.returncode:
             raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
         return json.loads(proc.stdout)

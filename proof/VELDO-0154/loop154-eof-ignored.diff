@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -653,2 +653 @@
+-                self.ended = self.lost = True
+-                return True
++                return False  # defect: the receiver's death is not an end

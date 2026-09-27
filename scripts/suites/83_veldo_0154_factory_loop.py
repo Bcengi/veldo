@@ -381,10 +381,16 @@ sys.exit(chosen['code'])
             proc = service_proc[0]
             return proc is not None and proc.poll() is None
 
+        # Every wait of the suite draws on one budget, so a defect that stops the loop ends the run promptly.
+        budget = time.monotonic() + 300
+
+        def bounded(timeout):
+            return max(0.0, min(timeout, budget - time.monotonic())) if live() else 0
+
         def wait_pass(predicate, after, timeout=30.0):
             """The first pass numbered after `after` for which `predicate` holds, or None; at once when no service
             runs, so a tree without this work fails its rows by their assertions, promptly."""
-            end = time.time() + (timeout if live() else 0)
+            end = time.time() + bounded(timeout)
             while True:
                 for seen in passes():
                     if seen['pass'] > after and predicate(seen):
@@ -394,7 +400,7 @@ sys.exit(chosen['code'])
                 time.sleep(0.05)
 
         def wait_until(predicate, timeout=30.0):
-            end = time.time() + (timeout if live() else 0)
+            end = time.time() + bounded(timeout)
             while time.time() < end and live():
                 if predicate():
                     return True
