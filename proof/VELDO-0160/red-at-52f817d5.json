@@ -30,7 +30,7 @@
   "VELDO-0160 limit/rate-limit-result detail: Codex: the run is classified account_limit with its window and reset time [failed, None]",
   "VELDO-0160 limit/rate-limit-result detail: Codex: the metrics count the run ended account_limit on its account and window [None]",
   "VELDO-0160 limit/rate-limit-result detail: Claude Code (a 429 that is not the account's limit): an ordinary nonzero exit ends as the failure it is, not account_limit, and records no exhausted window on the account [not_executed, None, []]",
-  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 12:15am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
+  "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits \u00b7 resets 1:44am (UTC) \u00b7 progress saved\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: \"You're out of usage credits\": the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 add funds to continue': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
   "VELDO-0160 limit/claude-rejected-texts detail: 'Your org is out of usage \u00b7 contact your admin': the run is classified account_limit, the unified window with the reset it states, recorded exhausted on the account [None, not_executed, None, None]",
@@ -46,10 +46,12 @@
   "VELDO-0160 decision/ask detail: claude_code, a call to a tool not marked read-only: decided ask, naming exactly that call [None, no decision module]",
   "VELDO-0160 decision/ask detail: claude_code, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [None, no decision module]",
   "VELDO-0160 decision/ask detail: claude_code, a call to a server the configuration does not list: decided ask, naming exactly that call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: claude_code, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [None, no call-by-call decision]",
   "VELDO-0160 decision/ask detail: claude_code: a record with a gap in its sequence is refused by name, never decided [no decision module]",
   "VELDO-0160 decision/ask detail: codex, a call to a tool not marked read-only: decided ask, naming exactly that call [None, no decision module]",
   "VELDO-0160 decision/ask detail: codex, a call to a tool of a server whose revision marks nothing: decided ask, naming exactly that call [None, no decision module]",
   "VELDO-0160 decision/ask detail: codex, a call to a server the configuration does not list: decided ask, naming exactly that call [None, no decision module]",
+  "VELDO-0160 decision/ask detail: codex, the call-by-call rules alone: a call to a server the configuration does not list asks, naming it [None, no call-by-call decision]",
   "VELDO-0160 decision/ask detail: codex: a record with a gap in its sequence is refused by name, never decided [no decision module]",
   "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with its JSON text truncated: decided ask, naming that line [None, no decision module]",
   "VELDO-0160 decision/unreadable-asks detail: claude_code, an engine line holding a write with a redacted span in place of its input, breaking the JSON: decided ask, naming that line [None, no decision module]",
@@ -185,6 +187,14 @@
   "VELDO-0160 decision/nested-constructs detail: codex, the core's sub-agent activity (sub_agent): decided ask, naming exactly that construct [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: a workflow's task started: a task frame and a workflow's [no decision module]",
   "VELDO-0160 decision/nested-constructs detail: a Bash call, a denied Agent call and its result name no nested work [None, no decision module]",
+  "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [None, None, no decision module]",
+  "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [None, None, no decision module]",
+  "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to a listed read-only tool, only read-only servers configured: decided re-run [None, None, no decision module]",
+  "VELDO-0160 decision/unconfigured-call-asks detail: claude_code, a call to the one tool the configuration gives, only read-only servers configured: decided re-run [None, None, no decision module]",
+  "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a server the configuration does not list, only read-only servers configured: decided ask, naming that line [None, None, no decision module]",
+  "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a tool marked read-only that the configuration does not give the run: decided ask, naming that line [None, None, no decision module]",
+  "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to a listed read-only tool, only read-only servers configured: decided re-run [None, None, no decision module]",
+  "VELDO-0160 decision/unconfigured-call-asks detail: codex, a call to the one tool the configuration gives, only read-only servers configured: decided re-run [None, None, no decision module]",
   "VELDO-0160 pool/moved-off detail: acct-c1's CLI reported its window exhausted, recorded with its reset [{}]",
   "VELDO-0160 pool/moved-off detail: while acct-c1 is at its limit every new dispatch went to another Claude Code account [[(None, 'invalid_input'), (None, 'invalid_input')]]",
   "VELDO-0160 pool/moved-off detail: the refusal is observed with each account's reason [None]",
@@ -228,6 +238,7 @@
   "VELDO-0160 decision/no-write-server-reruns",
   "VELDO-0160 decision/nested-work-asks",
   "VELDO-0160 decision/nested-constructs",
+  "VELDO-0160 decision/unconfigured-call-asks",
   "VELDO-0160 pool/moved-off",
   "VELDO-0160 pool/added-account",
   "VELDO-0160 pool/one-run-while-unknown",
@@ -239,7 +250,7 @@
  "modules": {
   ".veldo/control_account_limit.py": {
    "at_commit": null,
-   "now": "fa66d337422fb8f76c9cebdb736d5a3b4f28416150d84847992b9beb51d76308"
+   "now": "5e198d4c40ac639d55552818cd693538ceaeea4a4095243428f8c578d03226c5"
   },
   ".veldo/control_account_pool.py": {
    "at_commit": null,
@@ -361,6 +372,10 @@
    false
   ],
   [
+   "VELDO-0160 decision/unconfigured-call-asks",
+   false
+  ],
+  [
    "VELDO-0160 pool/moved-off",
    false
   ],
@@ -398,7 +413,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 35.273,
+ "seconds": 34.225,
  "spec_id": "VELDO-0160",
  "suite": "scripts/suites/78_veldo_0160_account_pool.py",
  "tree": "git archive 52f817d5747cba5ff3fe3ef449048be441c17192, unchanged; the current suite file run against it"
