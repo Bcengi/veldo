@@ -57,3 +57,10 @@ The first full selftest completed with 6877 passed and one failed row:
 latency bound below 0.75 seconds. Its suite passed unchanged on an immediate isolated rerun:
 20 suite rows plus 26 preamble rows, zero failures. The full run is repeated under the
 requested stripped environment before completion; no containment code or test is changed.
+
+An additional whole-suite attempt under the stripped environment stopped in the unchanged
+`12_warp_1210_hardening_four` fixture at `_m10_r12_fifo_at`: PYTHONDONTWRITEBYTECODE prevented
+the cache directory that its FIFO fixture assumes a warming subprocess creates. This was a
+FileNotFoundError, not a VELDO-0169 assertion failure. The required nine selected suites passed
+under that environment. The full rerun keeps ordinary bytecode behavior and uses /dev/shm for
+temporary files. No legacy fixture is modified.
