@@ -8564,6 +8564,47 @@ def cases():
     add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
         "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
         "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
+    # VELDO-0154: the factory loop inside the authority service. Each criterion's declared falsifier first, each on
+    # its named row of suite 83, then the seams the rows rest on.
+    def loop154(name, module, old, new, rows, also=()):
+        add(154, name, '83_veldo_0154_factory_loop.py', module, old, new, list(rows), also)
+    loop154('loop154-pipe-not-polled', 'control_service.py',
+            "                    ready = select.select([listener] + sorted(pipes), [], [], wait)[0]\n",
+            "                    ready = select.select([listener], [], [], wait)[0]  # defect: the launch pipes are not polled\n",
+            ['loop/review-offered'])
+    loop154('loop154-eof-ignored', 'control_launch.py',
+            "            if not chunk:\n                self.ended = self.lost = True\n                return True\n",
+            "            if not chunk:\n                return False  # defect: the receiver's death is not an end\n",
+            ['loop/receiver-death'])
+    loop154('loop154-ask-reruns', 'control_service.py',
+            "        if decision['decision'] == LIM.RERUN:\n            return self.rerun(record, report)\n",
+            "        if True:  # defect: every limited run is dispatched again, asking nobody\n"
+            "            return self.rerun(record, report)\n",
+            ['loop/ask-before-rerun'])
+    loop154('loop154-periodic-pass', 'control_service.py',
+            "                    if service.loop is not None and service.loop.due(time.time()):\n",
+            "                    if service.loop is not None:  # defect: every turn of the service loop starts a pass\n",
+            ['loop/no-other-timer'])
+    loop154('loop154-journal-wake-dropped', 'control_service.py',
+            "        if self.loop is not None and self.watermark() > before:\n            self.loop.wake('journal')\n",
+            "", ['loop/journal-wake-offers'])
+    loop154('loop154-account-slot-kept', 'control_account_pool.py',
+            "            active += int(not record.get('retired') and not record.get('account_released'))\n",
+            "            active += int(not record.get('retired'))\n", ['loop/receiver-death'])
+    loop154('loop154-orphan-not-stopped', 'control_launch.py',
+            "                _stop_orphan(entry['group'], entry['process'])\n",
+            "                pass  # defect: the stop the dead receiver owed is never made\n", ['loop/receiver-death'])
+    loop154('loop154-rerun-from-head', 'control_service.py',
+            "                          revision=contract['source']['commit'], holder=context.get('holder'), context=context,\n",
+            "                          revision='HEAD', holder=context.get('holder'), context=context,\n",
+            ['loop/rerun-another-account'])
+    loop154('loop154-owner-no-reruns', 'control_service.py',
+            "        if ruling == ASK_CHOICES[0]:\n",
+            "        if ruling in ASK_CHOICES:  # defect: his stop re-runs the unit too\n", ['loop/owner-no-stops'])
+    loop154('loop154-reset-timer-unset', 'control_service.py',
+            "        self.timer = min(resets) if resets else None\n",
+            "        self.timer = None  # defect: no pass is woken at the reset a waiting unit needs\n",
+            ['loop/reset-timer-wake'])
     return result
 
 

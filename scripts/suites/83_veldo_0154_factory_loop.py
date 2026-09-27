@@ -500,8 +500,8 @@ sys.exit(chosen['code'])
         SUCCESS = {'script': [thread(), turn(), done()], 'code': 0}
         FAILS = {'script': [thread(), turn(), failed('internal error; agent loop died unexpectedly')], 'code': 1}
 
-        def limited(stated, call=False):
-            steps = [thread(), turn()]
+        def limited(stated, call=False, wait=None):
+            steps = [thread(), turn()] + ([{'wait': gate(wait)}] if wait else [])
             if call:
                 steps += [mcp_call('item.started', 'in_progress'),
                           mcp_call('item.completed', 'completed', {'content': [], 'structured_content': None})]
@@ -703,11 +703,21 @@ sys.exit(chosen['code'])
         far = time.time() + 3 * 3600
         exhausted = []
         with region('loop/rerun-another-account'):
-            script(U['L1'], 'build', [limited(far), SUCCESS])
+            script(U['L1'], 'build', [limited(far, wait='l1'), SUCCESS])
             script(U['L1'], 'review', [SUCCESS])
             claim(U['L1'])
             mark = last_pass()
             note()
+            # While the run works, the workspace moves on: a re-run is from the run's own accepted commit, not HEAD.
+            wait_until(lambda: (dispatches(U['L1'], 'build') or [{}])[0].get('state') == 'running', 30)
+            (workspace / 'NEWS').write_text('moved on\n')
+            GP.run(['git', '-C', str(workspace), 'add', 'NEWS'], check=True, capture_output=True)
+            GP.run(['git', '-C', str(workspace), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'moved on'],
+                   check=True, capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+            head = GP.run(['git', '-C', str(workspace), 'rev-parse', 'HEAD'], check=True, capture_output=True,
+                          text=True).stdout.strip()
+            mark = last_pass()
+            release('l1')
             decided = wait_pass(lambda p: bool([d for d in p.get('decisions') or [] if d['unit'] == U['L1']]), mark, 60)
             first_run = (dispatches(U['L1'], 'build') or [{}])[0]
             first_account = first_run.get('contract', {}).get('reservation', {}).get('account')
@@ -726,7 +736,8 @@ sys.exit(chosen['code'])
                   len(again) == 1 and again[0]['rerun_of'] == first_run.get('dispatch_id')
                   and again[0]['dispatch_id'] != first_run.get('dispatch_id') and again[0]['attempt'] == 2
                   and again[0]['account'] in ACCOUNTS and again[0]['account'] != first_account
-                  and again[0]['adapter'] == 'codex' and again[0]['commit'] == dig(first_run, 'contract', 'source', 'commit'))
+                  and again[0]['adapter'] == 'codex' and again[0]['commit'] == dig(first_run, 'contract', 'source', 'commit')
+                  and again[0]['commit'] != head)
             wait_until(lambda: [r['state'] for r in dispatches(U['L1'])] == ['exited', 'exited', 'exited'], 60)
             reset_at = dig(ACC.read(setup, first_account) if first_account else None, 'windows', 'usage_limit', 'reset_at')
             ended_at = next((h['at'] for h in first_run.get('history') or [] if h.get('state') == 'exited'), None)
@@ -855,7 +866,7 @@ sys.exit(chosen['code'])
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
         with contextlib.suppress(Exception):
-            for name in ('u1', 'u2-never', 'blockers', 'w'):
+            for name in ('u1', 'u2-never', 'blockers', 'w', 'l1'):
                 (base / 'gates' / name).write_text('go')
         proc = service_proc[0]
         if proc is not None and proc.poll() is None:
