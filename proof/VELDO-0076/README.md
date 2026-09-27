@@ -62,7 +62,12 @@ its Gate refuses every unit for want of a project record).
 generic upsert of another kind at `project:proj-x` was accepted, admitted the unit and dispatched it,
 and blocked the owner's activation; a demoted or revoked owner's unit was admitted and dispatched).
 
-`python3 -B proof/VELDO-0076/drive.py` regenerates `mutations.json` and the diffs: 23 mutants, each reds
+`red-at-3c85f33b.json` (Codex review ask-20260926-215030, finding P2): the current suite against the
+reviewed tree: exactly `project/paused-claim` and `project/canceled-claim` red by assertion (a signed
+claim through the claim receiver took the paused project's unit, and the canceled project's unit, to
+CLAIMED).
+
+`python3 -B proof/VELDO-0076/drive.py` regenerates `mutations.json` and the diffs: 25 mutants, each reds
 its named row by assertion, the baseline and a no-op copy of each mutated module green. Registry:
 `scripts/check_teeth_mutations.py --finding 76`.
 
@@ -87,6 +92,8 @@ its named row by assertion, the baseline and a no-op copy of each mutated module
 | `project/foreign-kind` | review | `project-kind-unchecked`, `project-prefix-unowned` |
 | `project/owner-demoted` | review | `owner-currency-unchecked`, `demoted-owner-current` |
 | `project/owner-revoked` | review | `owner-currency-unchecked`, `revoked-owner-current` |
+| `project/paused-claim` | AC2, review 2026-09-26 | `claim-ignores-project`, `claim-project-check-empty` |
+| `project/canceled-claim` | AC2, review 2026-09-26 | `claim-ignores-project`, `claim-project-check-empty` |
 | `install/assets` | all | `project-not-scaffolded` |
 | `project/observability` | all | none |
 
