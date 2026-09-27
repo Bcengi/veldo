@@ -247,6 +247,14 @@
    "count": 1,
    "text": ".option(\"--disable-slash-commands\",\"Disable all skills\",()=>!0)"
   },
+  "--forward-subagent-text": {
+   "count": 1,
+   "text": ".option(\"--forward-subagent-text\",\"Forward subagent text and thinking blocks as assistant/user messages with parent_tool_use_id set (only works with --print and --output-format=stream-json)\",()=>!0)"
+  },
+  "--include-partial-messages": {
+   "count": 1,
+   "text": ".option(\"--include-partial-messages\",\"Include partial message chunks as they arrive (only works with --print and --output-format=stream-json)\",()=>!0)"
+  },
   "--mcp-config": {
    "count": 1,
    "text": "\"--mcp-config <configs...>\""
@@ -342,6 +350,30 @@
    ],
    "kind": "option",
    "name": "--disable-slash-commands"
+  },
+  "forward_subagent_text": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "if(_e){if(!Ze||ze!==\"stream-json\"){if(vo)return Yt(\"Error: --forward-subagent-text requires --print and --output-format=stream-json.\");_e=!1}}"
+    },
+    {
+     "count": 1,
+     "text": "forwardSubagentText:n.options.forwardSubagentText??!1"
+    }
+   ],
+   "kind": "option",
+   "name": "--forward-subagent-text"
+  },
+  "include_partial_messages": {
+   "anchors": [
+    {
+     "count": 1,
+     "text": "if(ie){if(!Ze||ze!==\"stream-json\"){if(ko)return Yt(\"Error: --include-partial-messages requires --print and --output-format=stream-json.\");ie=!1}}"
+    }
+   ],
+   "kind": "option",
+   "name": "--include-partial-messages"
   },
   "setting_sources": {
    "anchors": [

@@ -1,0 +1,30 @@
+RUN 1 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 2 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 3 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 4 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 5 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 6 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 7 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 8 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 9 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0
+RUN 10 EXIT 0
+DIAG {"presentation": {"ok": null, "outcome": "published", "reason": null}, "answer": {"ok": null, "outcome": "settled", "reason": null}, "activation": {"ok": true, "outcome": null, "reason": "activate"}}
+DIAG totals 39 0

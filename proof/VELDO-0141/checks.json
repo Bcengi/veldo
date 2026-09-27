@@ -1,0 +1,52 @@
+{
+ "behavior_rows": 33,
+ "engine_copies": {
+  "control_execution_record.py": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
+ },
+ "fixture_rows": 2,
+ "gate_run": false,
+ "implementation_commit": "6652d703821f502b4c260d87350980ce7dff542b",
+ "mutation_assertions": true,
+ "mutation_registry_names_unique": 1774,
+ "mutations_rejected": 46,
+ "new_mutations": 2,
+ "new_rows": [
+  "redaction/clone-leaf-candidates",
+  "redaction/uppercase-hex"
+ ],
+ "partial_run_exit_code": 2,
+ "proof_driver": {
+  "all_by_assertion": true,
+  "all_named_rows_red": true,
+  "controls_green": true
+ },
+ "pushed": false,
+ "red_record": {
+  "by_assertion": true,
+  "failed_rows": [
+   "VELDO-0141 redaction/clone-leaf-candidates",
+   "VELDO-0141 redaction/uppercase-hex"
+  ],
+  "path": "proof/VELDO-0141/red-at-76510207.json"
+ },
+ "required_suites": [
+  {
+   "exit": 2,
+   "passed": true,
+   "suite": "82_veldo_0141_execution_record",
+   "summary": "selftest (PARTIAL, 1 of 121 suites): 61 passed, 0 failed in 17.83s"
+  }
+ ],
+ "round": 3,
+ "rows": 35,
+ "schema": "veldo.review-validation/v1",
+ "spec_id": "VELDO-0141",
+ "validator": {
+  "command": [
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "exit_code": 0
+ }
+}

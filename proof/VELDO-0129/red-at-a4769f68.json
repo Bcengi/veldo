@@ -1,0 +1,102 @@
+{
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0129",
+ "commit": "a4769f68b041d17414d14fecce29819cfdd66ede",
+ "tree": "unchanged git archive; current suite against base production",
+ "modules": {
+  "control_launch_work.py": null,
+  "control_launch.py": "caf8970a1a145a2b003d88a02acf9ab2944c13a80c526e782aa0cbd381bfd4d3",
+  "control_engine_claude.py": "c3e8485375116e3d16b124dc67de05e176c8959b2596e5d8275d7b49a12fdf2a",
+  "executor.py": "da9e124fc1e9cdf23241f734b885ef9e62a5e342ddb8975cb1adfd9d7ec9d76c",
+  "dispatch.py": "1e8c18cb37d4a3126abdad5222d3fe50c25bd08287ec95ece54369fed2730a45",
+  "init_scaffold.py": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
+ },
+ "unavailable": [
+  "VELDO-0129 review/independence-policy unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/nonzero unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/missing-build unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/missing-review unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/malformed-review unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/missing-usage unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 outcome/reservation unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 source/no-completion unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-symlink unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-gitfile unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-commondir unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-alternates unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/gitdir-missing unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/config-neutralization unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 artifact/runtime-binding unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 artifact/floor-binding unavailable: requires the absent control_launch_work module and its live dispatch fixture",
+  "VELDO-0129 build/handoff unavailable: requires the absent control_launch_work module and its live dispatch fixture"
+ ],
+ "rows": [
+  [
+   "VELDO-0129 build/claude",
+   false
+  ],
+  [
+   "VELDO-0129 build/codex",
+   false
+  ],
+  [
+   "VELDO-0129 build/configuration",
+   false
+  ],
+  [
+   "VELDO-0129 review/loop-claude",
+   false
+  ],
+  [
+   "VELDO-0129 review/loop-codex",
+   false
+  ],
+  [
+   "VELDO-0129 review/reviewer-claude",
+   false
+  ],
+  [
+   "VELDO-0129 review/reviewer-codex",
+   false
+  ],
+  [
+   "VELDO-0129 proof/authority",
+   false
+  ],
+  [
+   "VELDO-0129 proof/empty-acceptance",
+   false
+  ],
+  [
+   "VELDO-0129 installation/assets",
+   false
+  ]
+ ],
+ "failed_rows": [
+  "VELDO-0129 build/claude",
+  "VELDO-0129 build/codex",
+  "VELDO-0129 build/configuration",
+  "VELDO-0129 review/loop-claude",
+  "VELDO-0129 review/loop-codex",
+  "VELDO-0129 review/reviewer-claude",
+  "VELDO-0129 review/reviewer-codex",
+  "VELDO-0129 proof/authority",
+  "VELDO-0129 proof/empty-acceptance",
+  "VELDO-0129 installation/assets"
+ ],
+ "details": [
+  "VELDO-0129 build/claude detail: base LiveLoop.build: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.",
+  "VELDO-0129 build/codex detail: base LiveLoop.build: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.",
+  "VELDO-0129 build/configuration detail: base missing configuration refusal: build is a delegated agent step; LiveLoop has no agent wired. Inject a build callable that dispatches the implementer and returns its commit and evidence. Refusing to fabricate a build.",
+  "VELDO-0129 review/loop-claude detail: base LiveLoop.review: review is a delegated fresh-context agent step; LiveLoop has no reviewer wired. Inject a review callable that dispatches the reviewer and returns its verdict. Refusing to fabricate a verdict.",
+  "VELDO-0129 review/loop-codex detail: base LiveLoop.review: review is a delegated fresh-context agent step; LiveLoop has no reviewer wired. Inject a review callable that dispatches the reviewer and returns its verdict. Refusing to fabricate a verdict.",
+  "VELDO-0129 review/reviewer-claude detail: base LiveReviewer.review: review is a delegated fresh-context step; no reviewer is wired. Inject a reviewer that dispatches a fresh context over the built commit and returns its verdict. Refusing to fabricate a verdict.",
+  "VELDO-0129 review/reviewer-codex detail: base LiveReviewer.review: review is a delegated fresh-context step; no reviewer is wired. Inject a reviewer that dispatches a fresh context over the built commit and returns its verdict. Refusing to fabricate a verdict.",
+  "VELDO-0129 proof/authority detail: base default proof service: {'ok': False, 'problems': ['missing_authority:proof_service'], 'bundle': None}",
+  "VELDO-0129 proof/empty-acceptance detail: empty acceptance halts at proof: None",
+  "VELDO-0129 installation/assets detail: base scaffold installs the runtime"
+ ],
+ "by_assertion": true,
+ "one_report_per_row": true,
+ "seconds": 0.412
+}

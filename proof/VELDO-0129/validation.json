@@ -1,0 +1,149 @@
+{
+ "schema": "veldo.worker-wiring-validation/v1",
+ "spec_id": "VELDO-0129",
+ "production_commit": "350517bf34898c05e065daca9f139fe95c2b5b22",
+ "selected_suites": [
+  {
+   "suite": "50_git_environment",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 30 passed, 0 failed in 1.96s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "82_veldo_0129_worker_wiring",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 53 passed, 0 failed in 18.29s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "78_veldo_0060_claude_adapter",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 60 passed, 0 failed in 17.28s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "79_veldo_0061_codex_adapter",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 46 passed, 0 failed in 10.27s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "80_veldo_0155_claude_baseline",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 43 passed, 0 failed in 9.47s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "70_veldo_0069_bindings",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 36 passed, 0 failed in 6.02s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "64_veldo_0050_proof",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 40 passed, 0 failed in 7.36s"
+   ],
+   "stderr": ""
+  }
+ ],
+ "selector_exit_meaning": "2 is an intentionally partial run with no failed assertions; no gate stamp is claimed",
+ "validator": {
+  "command": [
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "exit": 0
+ },
+ "engine_mirror_sha256": {
+  "control_launch.py": "fed2535372b25a9963098f23ef11f5af76669a58df74ae84bee13cfc72f16e00",
+  "control_launch_work.py": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
+  "control_engine_claude.py": "4e96ab58532ca348c6bd43fdbeaf9d18ed987416827efdc95dd93550580ac3d9",
+  "executor.py": "b0f55102eeca3181fa68ebbe3bffd2b9a9196fc5db3317dca7dc800d5f100cab",
+  "dispatch.py": "f57ebe36df3bb50d7f16322a5eb57475917ca176be3061e20123c96a1fff1ed9",
+  "init_scaffold.py": "3a9761ce7471aab4452f2369e9f0df80e32c45464df4d2da62e3271301a46ddf"
+ },
+ "mutation_names": {
+  "total": 1742,
+  "duplicates": 0,
+  "finding_129": 14
+ },
+ "limits": [
+  "No repository gate run",
+  "No model call",
+  "No remote host contacted",
+  "No independent review or landing"
+ ],
+ "finding_129": {
+  "exit": 0,
+  "summary": {
+   "mutations_rejected": 14,
+   "green_suites": {
+    "82_veldo_0129_worker_wiring.py": 53
+   }
+  },
+  "all_rejected_by_assertion": true
+ },
+ "rows": {
+  "baseline_passed": 27,
+  "base_red": 10,
+  "base_unavailable": 17
+ },
+ "regression_mutations": [
+  {
+   "finding": 60,
+   "exit": 0,
+   "summary": {
+    "mutations_rejected": 35,
+    "green_suites": {
+     "78_veldo_0060_claude_adapter.py": 60
+    }
+   }
+  },
+  {
+   "finding": 61,
+   "exit": 0,
+   "summary": {
+    "mutations_rejected": 30,
+    "green_suites": {
+     "79_veldo_0061_codex_adapter.py": 46
+    }
+   }
+  },
+  {
+   "finding": 69,
+   "exit": 0,
+   "summary": {
+    "mutations_rejected": 17,
+    "green_suites": {
+     "70_veldo_0069_bindings.py": 36,
+     "66_veldo_0047_authority.py": 56
+    }
+   }
+  },
+  {
+   "finding": 50,
+   "exit": 0,
+   "summary": {
+    "mutations_rejected": 24,
+    "green_suites": {
+     "64_veldo_0050_proof.py": 40
+    }
+   }
+  }
+ ]
+}

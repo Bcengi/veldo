@@ -706,10 +706,14 @@ out.close()
             switches = TABLE['switches']
             expected = (FLAGS + [switches['setting_sources']['name'], switches['setting_sources']['value'],
                                  '--settings', '%s/settings.json' % config_dir, '--mcp-config', '%s/mcp.json' % config_dir,
-                                 switches['strict_mcp_config']['name'], switches['disable_slash_commands']['name']])
+                                 switches['strict_mcp_config']['name'], switches['disable_slash_commands']['name']]
+                        # VELDO-0141: the stream options, partial messages and forwarded subagent text, last.
+                        + [switches[name]['name'] for name in ('include_partial_messages', 'forward_subagent_text')
+                           if name in switches])
             check('baseline/qualified', 'the run started from the pinned copy with the qualified flags and then exactly '
                   'the baseline, every option one the binary declares: no setting source, the run\'s --settings and '
-                  '--mcp-config files, strict MCP and slash commands off [%s]' % argv[1:],
+                  '--mcp-config files, strict MCP and slash commands off, partial messages and subagent text on [%s]'
+                  % argv[1:],
                   normal_record.get('state') == 'exited' and argv[:1] == [str(pinned)] and argv[1:] == expected
                   and all(a in OPTIONS['options'] for a in argv[1:] if a.startswith('--'))
                   and config_dir is not None and '--bare' not in argv and '--safe-mode' not in argv)
@@ -725,8 +729,9 @@ out.close()
                   and env.get(switches['disable_auto_memory']['name']) == '1')
             shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-qualification.json').read_text())
             entry = (shipped.get('versions') or {}).get(VERSION) or {}
-            named = set((entry.get('baseline') or {}).get('options') or []) | set(((entry.get('baseline') or {})
-                                                                                  .get('environment') or {}))
+            named = (set((entry.get('baseline') or {}).get('options') or [])
+                     | set((entry.get('baseline') or {}).get('stream_options') or [])
+                     | set(((entry.get('baseline') or {}).get('environment') or {})))
             check('baseline/qualified', 'the shipped 2.1.281 record qualifies the version with the module\'s baseline, '
                   'every switch in it one the binary\'s own table reads [%s]' % sorted(named),
                   entry.get('baseline') == getattr(E, 'BASELINE', None) and entry.get('baseline') is not None

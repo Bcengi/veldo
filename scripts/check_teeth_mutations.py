@@ -3006,7 +3006,7 @@ def cases():
              'unknown-never-relaunched')
     dispatch('dispatch-lost-answer-as-refused', 'control_launch.py',
              "            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
-             "                                             expected_state='accepted')\n",
+             "                                             expected_state='accepted', execution_record=self._record_commitment())\n",
              "            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
              "                                            expected_state='accepted')\n",
              'launch-results')
@@ -3255,6 +3255,10 @@ def cases():
          "{'cooperative': stop_grace, 'terminate': kill_grace,",
          "{'cooperative': stop_grace, 'terminate': 0,", 'stop/bounded-group-exit')
     # AC3, declared: the slot is released before the descendants have ended.
+    beat('retire41-config-oserror-unhandled', 'control_launch.py',
+         '    except (OSError, ValueError, KeyError, TypeError):\n        # No receiver ran',
+         '    except (ValueError, KeyError, TypeError):\n        # No receiver ran',
+         'retirement/live-descendant')
     beat('retire-before-descendant-termination', 'control_retirement.py',
          "        kernel = C.retirement(entry['group'], record.get('process'))\n",
          "        kernel = C.retirement(None, record.get('process'))  # defect: only the worker is looked at\n",
@@ -3362,9 +3366,9 @@ def cases():
           '            return self._accept_build(floor, unit, result)\n',
           'authority-to-projection', also=[(guard, unguarded)])
     floor('floor-projection-before-acceptance',
-          '        try:\n            floor.accept_build(sid, commit=',
+          '        try:\n            commit = (steps.get("build") or {}).get("commit")',
           '        floor.publish(sid)  # defect: published before the authority accepted the build\n'
-          '        try:\n            floor.accept_build(sid, commit=',
+          '        try:\n            commit = (steps.get("build") or {}).get("commit")',
           'authority-to-projection',
           also=[('        projection = floor.publish(sid)\n        return {"ok": True, "kind": "build"',
                  '        projection = {}\n        return {"ok": True, "kind": "build"')])
@@ -3416,8 +3420,8 @@ def cases():
           '    if body.get("proof") != record["proof"]["digest"]:\n',
           '    if False:  # defect: the receipt may review another proof\n', 'review-binding')
     floor('floor-review-output-unbound',
-          '    if (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):\n',
-          '    if False:  # defect: the receipt need not be what the review dispatch printed\n', 'review-binding')
+          '    elif (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):\n',
+          '    elif False:  # defect: the receipt need not be what the review dispatch printed\n', 'review-binding')
     floor('floor-review-context-unbound', '    if given.get("payload") != payload:\n',
           '    if False:  # defect: the reviewer may be launched with more than its assignment\n', 'review-binding')
     floor('floor-review-dispatch-source-unbound',
@@ -3510,13 +3514,23 @@ def cases():
     def proof(name, old, new, row, also=(), module='control_proof.py'):
         add(50, name, '64_veldo_0050_proof.py', module, old, new, ['proof/' + row], also)
 
-    accept_block = ('        if self.proofs is not None:\n'
-                    '            try:\n'
-                    '                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n'
-                    '                                              manifest=proof, observation=observation, builder=builder)\n'
-                    '            except CP.Refused as error:\n'
-                    '                return {"ok": False, "problems": list(error.codes), "bundle": None}\n'
-                    '            return dict(accepted, ok=True, problems=[])\n')
+    accept_block = (
+        '        if self.proofs is not None:\n'
+        '            try:\n'
+        '                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n'
+        '                                              manifest=proof, observation=observation, builder=builder)\n'
+        '            except Exception as error:\n'
+        '                if not isinstance(getattr(error, "code", None), str):\n'
+        '                    raise\n'
+        '                return {"ok": False, "problems": list(getattr(error, "codes", [error.code])), "bundle": None}\n'
+        '            if self.runtime is not None:\n'
+        '                try:\n'
+        '                    self.runtime.accept_build(spec, build)\n'
+        '                except Exception as error:\n'
+        '                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],\n'
+        '                            "bundle": accepted["bundle"]}\n'
+        '            return dict(accepted, ok=True, problems=[])\n'
+    )
     # AC1, declared: the manifest is kept only in temporary validation storage, so no fresh reviewer resolves it.
     proof('proof-kept-in-temporary-storage', accept_block,
           '        if self.proofs is not None:\n'
@@ -3533,7 +3547,8 @@ def cases():
           '            accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)\n'
           '                        if gate is not None else None)\n',
           '            accepted = None  # defect: the build is offered with its proof never accepted\n',
-          'accepted-before-offer', module='executor.py')
+          'accepted-before-offer', module='executor.py',
+          also=[('            if gate is not None and accepted is not NotImplemented and not accepted:', '            if False and not accepted:')])
     proof('proof-unstored-accepted',
           '        return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}\n',
           '        return {"ok": True, "problems": [], "bundle": None}  # defect: a proof nothing stored is accepted\n',
@@ -7559,9 +7574,10 @@ def cases():
            "            and (artifact is None or artifact.get('complete') is True))\n",
            "            and True)  # defect: the completion gate ignores the artifact the exit record binds\n",
            'floor/missing-result')
+    # VELDO-0141 added the execution record to the same call, on its next line.
     claude('claude-exit-artifact-unbound', 'control_launch.py',
-           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)\n",
-           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())"
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,\n",
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(),"
            "  # defect: the exit record binds no artifact\n",
            'artifact/exit-record')
     claude('claude-artifact-unreturned', 'control_launch.py',
@@ -8037,9 +8053,356 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    # VELDO-0141: every worker run's execution record, redacted before it is kept, served live by the API. Each
+    # criterion's declared falsifier first, each on its named row of suite 82, then the seams they rest on.
+    def record141(name, module, old, new, rows, also=()):
+        add(141, name, '82_veldo_0141_execution_record.py', module, old, new, list(rows), also)
+    record141('record-error-stream-discarded', 'control_launch.py',
+              "                    worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,\n"
+              "                                              stderr=subprocess.PIPE,",
+              "                    worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,\n"
+              "                                              stderr=subprocess.DEVNULL,  # defect: the error stream is discarded\n"
+              "                                             ",
+              ['record/claude-complete', 'record/codex-complete'])
+    record141('record-served-unredacted', 'control_execution_record.py',
+              "        text, kinds = redact(raw.decode('utf-8', 'surrogateescape'), self.resolved)\n",
+              "        text, kinds = raw.decode('utf-8', 'surrogateescape'), []  # defect: kept and served before redaction\n",
+              ['api/no-secret-served'])
+    record141('route-summarized-steps', 'control_api_authority.py',
+              "                    'lines': lines, 'cursor'",
+              "                    'lines': [dict(x, payload=(json.loads(x['payload']).get('type') if x['payload'].startswith('{')\n"
+              "                                               else 'output')) for x in lines],  # defect: a summarized step list\n"
+              "                    'cursor'",
+              ['route/served-lines'])
+    record141('redaction-scanner-first', 'control_execution_record.py',
+              "    kinds = set()\n"
+              "    for form, kind in (resolved.forms(text) if resolved is not None else ()):\n"
+              "        if form in text:\n"
+              "            text = text.replace(form, marker(kind))\n"
+              "            kinds.add(kind)\n"
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
+              "    kinds = set()\n"
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
+              ['redaction/planted-value'],
+              also=[("    return text, sorted(kinds)\n",
+                     "    for form, kind in (resolved.forms(text) if resolved is not None else ()):  # defect: after the scanner\n"
+                     "        if form in text:\n"
+                     "            text = text.replace(form, marker(kind))\n"
+                     "            kinds.add(kind)\n"
+                     "    return text, sorted(kinds)\n")])
+    record141('record-stream-options-dropped', 'control_engine_claude.py',
+              "    'stream_options': ['--include-partial-messages', '--forward-subagent-text'],\n",
+              "    'stream_options': [],  # defect: a subagent's text and the partial messages never reach the stream\n",
+              ['record/stream-options'])
+    record141('record-hint-unsent', 'control_execution_record.py',
+              "            self.hint(False)\n",
+              "            pass  # defect: the API is told nothing until the run has ended\n",
+              ['api/live'])
+    record141('record-wrapper-line-dropped', 'control_launch.py',
+              "                recorder.line('wrapper', worker.identity_line)\n",
+              "                pass  # defect: the wrapper's identity line is not kept\n",
+              ['record/claude-complete', 'record/codex-complete'])
+    record141('record-exit-uncommitted', 'control_launch.py',
+              "                             execution_record=self.committed)\n",
+              "                             execution_record=None)  # defect: the exit commits nothing of the record\n",
+              ['route/committed'])
+    record141('record-exit-unbound', 'control_dispatch.py',
+              "        record['execution_record'] = params.get('execution_record')\n",
+              "        record['execution_record'] = None  # defect: the dispatch keeps no commitment of its record\n",
+              ['route/committed'])
+    record141('route-digest-unchecked', 'control_execution_record.py',
+              "    if committed is not None:\n        if (",
+              "    if False:  # defect: a record that no longer matches its commitment is served\n        if (",
+              ['route/committed'])
+    record141('route-scope-unchecked', 'control_api_authority.py',
+              "            if not self.CM.scope_covers(member.get('scope'), reservation.get('project', '*')):\n",
+              "            if False:  # defect: any current member reads any run's record\n",
+              ['api/refusals', 'api/service-call'])
+    record141('route-binding-unchecked', 'control_execution_record.py',
+              "    if not isinstance(header, dict) or header.get('schema') != SCHEMA or header.get('dispatch_id') != dispatch_id:\n",
+              "    if not isinstance(header, dict) or header.get('schema') != SCHEMA:  # defect: any run's record is served\n",
+              ['route/committed'])
+    record141('route-cursor-past-end-served', 'control_execution_record.py',
+              "    if after > len(lines):\n",
+              "    if False:  # defect: a cursor past the end is served as an empty record\n",
+              ['api/refusals'])
+    record141('route-record-hint-unrouted', 'control_api.py',
+              "        if isinstance(hint, dict) and hint.get('schema') == RECORD_HINT_SCHEMA:\n",
+              "        if False:  # defect: a record hint is judged as a journal hint and refused\n",
+              ['api/live'])
+    record141('route-service-call-unlisted', 'control_api_assertion.py',
+              "         'record': ('principal', 'dispatch_id', 'after', 'limit')}",
+              "         }  # defect: the record call is not one the service carries",
+              ['api/service-call'])
+    record141('redaction-token-unresolved', 'control_launch.py',
+              "RESOLVERS = [subscription_token]\n",
+              "RESOLVERS = []  # defect: the subscription token never enters the run's set\n",
+              ['redaction/known-pattern'])
+    record141('redaction-kinds-unnamed', 'control_execution_record.py',
+              "'redacted': kinds, 'payload': text})",
+              "'redacted': [], 'payload': text})  # defect: a line never names what was replaced",
+              ['redaction/kinds-field'])
+    # The lead's path decision: a rooted path is scored by segment and a URL by component; the declared falsifier
+    # scores the whole path again. Then the segment rule itself, the query key and value, and the account fields.
+    record141('redaction-path-scored-whole', 'control_execution_record.py',
+              "        found = _ROOT.search(text, at)\n",
+              "        found = None  # defect: a path or URL is one candidate, scored whole\n",
+              ['redaction/paths-kept', 'redaction/path-segment', 'redaction/url-component'])
+    record141('redaction-path-segment-unscored', 'control_execution_record.py',
+              "        for low, high in segments:\n",
+              "        for low, high in ():  # defect: a secret inside a path or URL is never judged\n",
+              ['redaction/path-segment', 'redaction/url-component'])
+    record141('redaction-named-digest-scored', 'control_execution_record.py',
+              "    return _high(token) and not (named and SS._is_digest(named.group(1)))\n",
+              "    return _high(token)  # defect: a clone's directory, a named digest, is replaced as random\n",
+              ['redaction/paths-kept'])
+    record141('redaction-url-query-whole', 'control_execution_record.py',
+              "        elif url and part == 'query' and char == '=' and not keyed:\n",
+              "        elif False:  # defect: a query key is judged with its value and replaced with it\n",
+              ['redaction/url-component'])
+    record141('redaction-account-fields-kept', 'control_execution_record.py',
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
+              "    for start, end, replacement, kind in []:  # defect: the account identifiers are kept\n",
+              ['redaction/account-fields'])
+    record141('record141-partials-line-by-line', 'control_execution_record.py',
+              "        if kind in ('content_block_start', 'content_block_delta') and fields:\n",
+              '        if False:  # defect: redact partial messages one line at a time\n',
+              ['redaction/partial-blocks'])
+    record141('record141-partials-tail-too-short', 'control_execution_record.py',
+              '    safe = max(0, len(text) - tail)\n',
+              '    safe = len(text)  # defect: no withheld suffix\n',
+              ['redaction/partial-blocks'])
+    record141('record141-clone-path-check-skipped', 'control_execution_record.py',
+              '    kept = [(m.start(), m.end()) for m in _RELATIVE.finditer(text) if m.group() in paths]\n',
+              '    kept = []  # defect: relative clone paths are scored as opaque values\n',
+              ['redaction/clone-relative-paths'])
+    record141('record141-handshake-id-scored', 'control_execution_record.py',
+              '    kept += [(m.start(), m.end()) for m in _INITIALIZE.finditer(text)]\n',
+              '    pass  # defect: the known handshake request id is scored\n',
+              ['redaction/clone-relative-paths'])
+    record141('record141-stream-registers-after-fill', 'control_api.py',
+              '        with self._lock:\n            self._streams.append(stream)\n        self._fill_record(stream, answer, always=True)\n        # Catch an end hint delivered after the first page read, before registration.\n        if stream.closed is None:\n            self._fill_record(stream, self._record_page(stream.principal, stream.dispatch_id, stream.cursor))\n',
+              '        self._fill_record(stream, answer, always=True)\n        with self._lock:\n            self._streams.append(stream)\n',
+              ['api/registration-race'])
+    record141('record141-existence-before-scope', 'control_api_authority.py',
+              "            contract = (dispatch or {}).get('contract') or {}\n",
+              "            if dispatch is None:\n                raise ER.Refused('missing_evidence:unknown_run', 'no such run')\n            contract = (dispatch or {}).get('contract') or {}\n",
+              ['api/scope-before-existence'])
+    record141('record141-reader-queue-unbounded', 'control_api.py',
+              '            if len(self._frames) >= self.max_frames or (self._frames and self._queued_bytes + size > self.max_bytes):\n',
+              '            if False:  # defect: a slow reader retains every frame\n',
+              ['api/slow-reader'])
+    record141('record141-encoded-forms-skipped', 'control_execution_record.py',
+              '            for form in forms:\n',
+              '            for form in (value,):  # defect: only the unencoded value\n',
+              ['redaction/encoded-values'])
+    record141('record141-unknown-record-unbound', 'control_dispatch.py',
+              "        record.update(execution_record=params.get('execution_record'))\n",
+              '        record.update(execution_record=None)  # defect: unknown ends carry no commitment\n',
+              ['route/unknown-committed'])
+    record141('record141-unknown-record-uncommitted', 'control_launch.py',
+              "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=self.committed)\n",
+              "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=None)\n",
+              ['route/unknown-committed'])
+    record141('record141-receiver-clone-unlisted', 'control_launch.py',
+              "        self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))\n",
+              '        self.resolved.paths = ()  # defect: receiver never snapshots its clone\n',
+              ['redaction/clone-relative-paths'])
+    record141('record141e-config-catches-only-oserror', 'control_launch.py',
+              '    except (OSError, ValueError, KeyError, TypeError):\n        # No receiver ran',
+              '    except OSError:\n        # No receiver ran',
+              ['config/malformed', 'config/incomplete'])
+    record_config = ("        with open(config_path) as handle:\n"
+                     "            config = json.load(handle)\n"
+                     "        if not isinstance(config, dict):\n"
+                     "            raise ValueError('receiver config must be an object')\n"
+                     "        records = ER.directory(config)\n")
+    record_spawn = ("        child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,\n"
+                    "                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)\n")
+    record141('record141e-config-read-after-spawn', 'control_launch.py',
+              record_config + record_spawn, record_spawn + record_config,
+              ['config/malformed', 'config/incomplete', 'config/missing-file'])
+    record141('record141d-clone-git-discovery-restored', 'control_execution_record.py',
+              '    root = Path(root if root is not None else cwd).absolute()\n',
+              "    spec = importlib.util.spec_from_file_location('record_git', Path(__file__).with_name('git_process.py'))\n"
+              "    gp = importlib.util.module_from_spec(spec)\n"
+              "    spec.loader.exec_module(gp)\n"
+              "    found = gp.run(['git', '-C', str(cwd), 'rev-parse', '--show-toplevel'], capture_output=True, text=True)\n"
+              "    root = Path(found.stdout.strip()) if found.returncode == 0 else Path(cwd).absolute()\n",
+              ['redaction/clone-without-git'])
+    record141('record141-concurrent-fills-interleave', 'control_api.py',
+              '        with stream._fill_lock:\n            self._fill_record_locked(stream, answer, always)\n',
+              '        self._fill_record_locked(stream, answer, always)  # defect: overlapping fills interleave frames\n',
+              ['api/registration-race'])
+    record141('record141b-thinking-unassembled', 'control_execution_record.py',
+              "        fields = [field for field, value in delta.items() if field != 'type' and isinstance(value, str)]\n",
+              "        fields = [field for field, value in delta.items() if field not in ('type', 'thinking') and isinstance(value, str)]\n",
+              ['redaction/thinking-and-unknown'])
+    record141('record141b-unknown-delta-released', 'control_execution_record.py',
+              "                block['hold'] |= not known\n",
+              "                block['hold'] = False\n",
+              ['redaction/thinking-and-unknown'])
+    record141('record141b-diff-prefix-unstripped', 'control_execution_record.py',
+              "        if name.startswith(('a/', 'b/')):\n            name = name[2:]\n",
+              '        if False:\n            name = name[2:]\n',
+              ['redaction/live-paths'])
+    record141('record141b-path-snapshot-restored', 'control_execution_record.py',
+              '    return ClonePaths(root, Path(cwd).absolute())\n',
+              '    names = set()\n    for directory_, dirs, files in os.walk(root):\n        names.update(os.path.relpath(os.path.join(directory_, n), root) for n in dirs + files)\n    names |= {os.path.relpath(root / n, cwd) for n in list(names)}\n    return names\n',
+              ['redaction/live-paths'])
+    record141('record141b-count-pages-restored', 'control_execution_record.py',
+              '        if page and size + width > PAGE_BYTES:\n',
+              '        if False:\n',
+              ['api/byte-pages'])
+    record141('record141b-reader-locked-during-page', 'control_api.py',
+              '        with stream._fill_lock:\n            self._fill_record_locked(stream, answer, always)\n',
+              '        with stream._condition:\n            self._fill_record_locked(stream, answer, always)\n',
+              ['api/fast-catchup'])
+    record141('record141b-runner-commitment-omitted', 'control_launch.py',
+              '        records = self.records\n',
+              '        return None\n        records = self.records\n',
+              ['route/runner-unknown'])
+    record141('record141b-offset-base64-omitted', 'control_execution_record.py',
+              '            for offset in range(3):\n',
+              '            for offset in ():\n',
+              ['redaction/offset-encodings'])
+    record141('record141b-lower-hex-omitted', 'control_execution_record.py',
+              '            forms.add(value.encode().hex())\n',
+              '            pass\n',
+              ['redaction/offset-encodings'])
+    record141('record141b-short-leaf-unscored', 'control_execution_record.py',
+              '                    return index == len(parts) - 1 and not _high(part) and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
+              '                    return index == len(parts) - 1 and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
+              ['redaction/live-paths'])
+    record141('record141c-leaf-candidates-unscored', 'control_execution_record.py',
+              '                    return index == len(parts) - 1 and not _high(part) and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
+              '                    return index == len(parts) - 1 and not _high(part)\n',
+              ['redaction/clone-leaf-candidates'])
+    record141('record141c-upper-hex-omitted', 'control_execution_record.py',
+              '            forms.add(value.encode().hex().upper())\n',
+              '            pass\n',
+              ['redaction/uppercase-hex'])
+    # VELDO-0085: each retained criterion's falsifier and publication bindings.
+    def decomposition(name, module, old, new, rows, also=()):
+        add(85, 'decomposition-' + name, '82_veldo_0085_decomposition.py', module, old, new, rows, also)
+
+    decomposition('artifact-before-unit-validation', 'control_decomposition.py',
+        "        problem = CB.CL.unit_id_problem(raw['unit'])",
+        "        al.allocate(dict(request_id=command['command_id'], principal=principal,\n"
+        "                         repository_uuid=bl.ids['repository_uuid'], workspace=str(bl.workspace),\n"
+        "                         source=raw['source'], role=raw['role'], slug='early', content=b'early artifact'),\n"
+        "                    signer=bl.journal_signer, sign=bl.sign, authority_generation=bl.authority_generation)\n"
+        "        problem = CB.CL.unit_id_problem(raw['unit'])",
+        ['fields/invalid-id-no-artifact'])
+    decomposition('checkout-maximum', 'control_alias.py',
+        "        number = kind['next']",
+        "        number = accepted_maximum(self.paths[repository], _git_process.check_output("
+        "['git', '-C', self.paths[repository], 'rev-parse', 'HEAD']).decode().strip(), kind) + 1",
+        ['aliases/authority-counter'])
+    decomposition('omit-generated-dependency', 'control_decomposition.py',
+        "            spec_dependencies.append(bound['alias'])", "            pass",
+        ['dependencies/eligibility'])
+    decomposition('cross-item-authority', 'control_backlog.py',
+        "bound['backlog_item'] != data['uuid'] or bound['unit'] != name",
+        "bound['unit'] != name", ['binding/one-owner'])
+    decomposition('primary-revision-shared', 'control_backlog.py',
+        "bound['backlog_item'] != data['uuid'] or bound['unit'] != name",
+        "bound['backlog_item'] != data['uuid']", ['binding/one-owner'])
+    decomposition('appended-unit-ready', 'control_backlog.py',
+        "u['unit']: {'kind': UNIT_KIND, 'data': self._new_unit(data, u, revision, entry)}}",
+        "u['unit']: {'kind': UNIT_KIND, 'data': dict(self._new_unit(data, u, revision, entry), state='READY')}}",
+        ['priority/fresh-growth'])
+    decomposition('unit-dependency-lost', 'control_backlog.py',
+        "depends_on=list((u.get('document') or {}).get('dependencies', [])), admitted_revision=None,",
+        "depends_on=[], admitted_revision=None,", ['dependencies/eligibility'])
+    decomposition('stale-bytes-accepted', 'control_decomposition_binding.py',
+        "    if (visible != body or 'sha256:'", "    if (False or 'sha256:'", ['publication/stale-input'])
+    decomposition('unpublished-input', 'control_decomposition_binding.py',
+        "or obligation.get('state') != 'published':", "or False:", ['publication/stale-input'])
+    decomposition('eligibility-unbound', 'control_eligibility.py',
+        "        problems += DP.problems(self.conn, self.repository_uuid, data, self.workspace)",
+        "        problems += []", ['publication/stale-input'])
+    decomposition('admission-unbound', 'control_backlog.py',
+        "            problems += DP.problems(conn, self.ids['repository_uuid'], unit(conn, entry['unit']) or {}, self.workspace)",
+        "            problems += []", ['publication/stale-input'])
+    decomposition('private-refusal-class-only', 'control_decomposition.py',
+        "self.CB = SimpleNamespace(**backlog._unit_entry.__func__.__globals__)",
+        "self.CB = _organ('control_backlog')",
+        ['refusals/service-class'])
+    decomposition('first-specification-match', 'control_decomposition_binding.py',
+        "        if not head.get('superseded_by'):", "        if True:",
+        ['dependencies/current-specification'])
+    decomposition('prepare-dependency-unchecked', 'control_backlog.py',
+        "            if None in current_dependencies or bound['specification_dependencies'] != current_dependencies:",
+        "            if False:", ['dependencies/prepare-mismatch'])
+    decomposition('supersession-omitted', 'control_alias.py',
+        "            changes[identity] = {'kind': 'accepted_document', 'data': dict(old, superseded_by=alias)}",
+        "            pass", ['publication/concurrent-current'])
+    decomposition('supersede-prepared-unit-unchecked', 'control_alias.py',
+        "            if DP.row(conn, meta['unit']) is not None or DP.row(conn, 'admission:' + meta['unit']) is not None:",
+        "            if False:", ['supersession/prepared-unit'])
+    decomposition('supersede-other-item-unchecked', 'control_alias.py',
+        "            if prior_meta.get('backlog_item') != meta.get('backlog_item'):",
+        "            if False:", ['supersession/other-item'])
+    decomposition('supersede-role-unchecked', 'control_alias.py',
+        "            if role != old['role']:",
+        "            if False:", ['supersession/main-role'])
+    decomposition('service-not-installed', 'init_scaffold.py',
+        '    ".veldo/control_decomposition.py",\n', '', ['install/assets'])
+
+    add(129, 'worker129-runtime-architecture-bypassed', '60_veldo_0053_architecture.py', 'control_launch_work.py',
+        "        self.gate.require('provider_request', unit, context=context)",
+        "        pass  # defect: launch without the provider architecture decision",
+        ['architecture/entries-blocked'])
+    add(129, 'worker129-build-unwired', '82_veldo_0129_worker_wiring.py', 'executor.py',
+        '        result = self._worker_call("build", spec, calls)',
+        '        raise ExecutorError("build requires an injected callable")',
+        ['build/claude', 'build/codex'])
+    add(129, 'worker129-builder-context-reused', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "payload=payload, adapter=role['adapter']",
+        "payload=dict(payload, builder_conversation=['builder narrative']) if station == 'review' else payload, adapter=role['adapter']",
+        ['review/loop-claude', 'review/loop-codex', 'review/reviewer-claude', 'review/reviewer-codex'])
+    add(129, 'worker129-exit-manufactures-review', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "            body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)",
+        "            try:\n                body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)\n"
+        "            except Refused:\n                return {'verdict': 'pass', 'findings': []}",
+        ['outcome/missing-review'])
+    add(129, 'worker129-review-subject-unchecked', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "                raise Refused('missing_evidence:review_verdict')",
+        "                return dict(body, verdict='pass')",
+        ['outcome/malformed-review'])
+    add(129, 'worker129-empty-proof-accepted', '82_veldo_0129_worker_wiring.py', 'executor.py',
+        '            if gate is not None and accepted is not NotImplemented and not accepted:', '            if False and not accepted:',
+        ['proof/empty-acceptance'])
+    add(129, 'worker129-clone-group-unrecorded', '82_veldo_0129_worker_wiring.py', 'control_launch.py',
+        '                            provisioner.record_group(dispatch_id, group.report())',
+        '                            pass', ['build/claude', 'build/codex'])
+    add(129, 'worker129-runtime-not-installed', '82_veldo_0129_worker_wiring.py', 'init_scaffold.py',
+        '    ".veldo/control_launch_work.py",', '', ['installation/assets'])
+    add(129, 'worker129-proof-store-optional', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '        raise FloorRefused(error.code, error.detail, error.codes) from error',
+        '        return {"state": "review"}, unit_data', ['proof/authority'])
+    add(129, 'worker129-follow-gitdir-symlink', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        '        if gitdir.is_symlink():',
+        '        if False and gitdir.is_symlink():', ['build/gitdir-symlink'])
+    add(129, 'worker129-skip-gitdir-checks', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "        if gitdir.is_symlink():\n            raise Refused('invalid_input:build_gitdir/symlink')\n        if not gitdir.is_dir():\n            raise Refused('invalid_input:build_gitdir/not_directory')\n        for name in ('commondir', 'objects/info/alternates', 'objects/info/http-alternates'):\n            if os.path.lexists(gitdir / name):\n                raise Refused('invalid_input:build_gitdir/' + name.rsplit('/', 1)[-1])\n",
+        '', ['build/gitdir-symlink', 'build/gitdir-gitfile', 'build/gitdir-commondir', 'build/gitdir-alternates', 'build/gitdir-missing'])
+    add(129, 'worker129-nested-builder-conversation', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '    record["assignments"][identity] = {"reviewer": reviewer, "attempt": attempt, "state": "open",',
+        '    payload["context"]["builder_conversation"] = ["builder narrative"]\n    record["assignments"][identity] = {"reviewer": reviewer, "attempt": attempt, "state": "open",', ['review/loop-claude', 'review/loop-codex', 'review/reviewer-claude', 'review/reviewer-codex'])
+    add(129, 'worker129-runtime-artifact-unbound', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "    if (P.digest(raw) != (record.get('artifact') or {}).get('digest')\n            or document.get('dispatch_id') != record.get('dispatch_id')):\n        raise Refused(missing if record.get('contract', {}).get('station') == 'build' else 'binding_mismatch:engine_artifact')\n",
+        '', ['artifact/runtime-binding'])
+    add(129, 'worker129-floor-artifact-unbound', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '    if build.get("artifact") is not None:',
+        '    if False and build.get("artifact") is not None:', ['artifact/floor-binding'])
+    add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
+        "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
     # VELDO-0169: every new handout asks the Gate's project check.
     def handout(name, module, old, new, rows, also=()):
-        add(169, 'handout-' + name, '82_veldo_0169_project_handouts.py', module, old, new, rows, also)
+        add(169, 'handout-' + name, '84_veldo_0169_project_handouts.py', module, old, new, rows, also)
 
     handout('unlisted-resume', 'control_assignment.py',
             '    def _held_claims(self, entities, principal):',
