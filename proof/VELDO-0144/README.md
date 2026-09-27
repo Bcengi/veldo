@@ -158,6 +158,14 @@ observations are not a gate stamp, an approval or a landing decision.
 - Previous round, `71_veldo_0130_api`: 42 rows passed.
 - Previous round, `python3 scripts/selftest.py`: 6,886 rows passed, zero failed.
 
+Sixth follow-up, at 4d38afcd: `82_veldo_0144_mcp_catalog` passed 29 rows and
+`71_veldo_0130_api` passed 42 rows. `check_teeth_mutations.py --finding 144 --jobs 2`
+ran twice with a green baseline and rejected all 40 each time; the three new
+mutations red their named rows. `--finding 130 --jobs 2` rejected all 100. The whole
+selftest ran once with no concurrent worktree writes: 6,916 passed, 0 failed, exit 0.
+The Git boundary check passes, `python3 .veldo/validate.py all` passes and both
+control_mcp_catalog.py copies are byte-identical.
+
 The requires registry was regenerated without a content change.
 `python3 .veldo/validate.py all` passes. The Git boundary check reports no
 violations, and template sync passes all 234 compared engine pairs.
