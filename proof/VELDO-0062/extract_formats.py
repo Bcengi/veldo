@@ -530,7 +530,25 @@ CLAUDE_NESTED_TOOLS = (
     ('repl', 'REPL', 'var za="REPL";', 'tool_name:za,parent_tool_use_id:T.parentToolUseID||null,'
                                         'elapsed_time_seconds:0,repl_call:{'),
     ('workflow', 'Workflow', 'var Ed="Workflow";', 'name:Ed,aliases:["RunWorkflow"],searchHint:"orchestrate subagents'),
+    ('remote', 'RemoteTrigger', 'var lK="RemoteTrigger",',
+     'name:lK,searchHint:"manage scheduled cloud agent routines; inspect their run history and logs",'
+     'enablesCodeExecution:!0,'),
+    ('cron', 'CronCreate', 'var iy="CronCreate",',
+     'name:iy,searchHint:"schedule a recurring or one-shot prompt",enablesCodeExecution:!0,'),
 )
+# VELDO-0160, the lead's decision on work that outlives the run: a call that starts an agent outside it, which may
+# act on the account's claude.ai connectors whatever the run's configuration. RemoteTrigger (a deferred tool) manages
+# the account's cloud agent routines: its create, update and run start a cloud agent (`description`, `actions`);
+# CronCreate schedules a prompt, and a durable one persists to the project's scheduled tasks and fires after the run
+# (`durable`: its optional field, false by default, read through the binary's semantic boolean, `semantic`).
+CLAUDE_REMOTE = {
+    'description': ('Uno="Manage scheduled remote Claude Code agents (routines) via the claude.ai CCR API', 1),
+    'actions': ('action:z(["list","get","create","update","run","create_webhook_trigger","list_runs","get_run_log"])', 1),
+    'durable': ('durable:BA(O().optional()).describe(uyr(Foe()))', 1),
+    'durable_text': ('function uyr(e){return e?"true = persist to .claude/scheduled_tasks.json and survive restarts. '
+                     'false (default) = in-memory only, dies when this Claude session ends.', 1),
+    'semantic': ('function BA(e=O()){return Yi(dN,e)}function dN(e){return e==="true"?!0:e==="false"?!1:e}', 1),
+}
 CLAUDE_NESTED = {
     'forwarded': ('function Sne(e){return e.type==="progress"&&(e.data.type==="agent_progress"||'
                   'e.data.type==="skill_progress")}', 1),
@@ -703,6 +721,9 @@ def _nested(text, renamed, tops):
     if 'system/task_started' not in frames or not kinds or text.count(CLAUDE_FORMS['task_progress']) != 1 \
             or not any(tag == 'system/task_started' and 'workflow_name' in keys for tag, keys in tops):
         raise Moved('claude task frames moved')
+    for key, (anchor, sites) in CLAUDE_REMOTE.items():
+        if text.count(anchor) != sites:
+            raise Moved('claude remote agent %s: anchor found %d times' % (key, text.count(anchor)))
     return {'tools': {key: sorted(set(value)) for key, value in sorted(tools.items())},
             'task_frames': sorted(set(frames)),
             'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',
@@ -710,12 +731,18 @@ def _nested(text, renamed, tops):
             'repl': {'tool_progress': 'repl_call'},
             'forwarded': {'field': 'parent_tool_use_id', 'progress': kinds},
             'fork': {'field': 'tool_use_result', 'status': 'forked'},
-            'source': "the tools that run an agent, a skill, code or a workflow (each name's binding and the tool's "
-                      "definition or emitter naming it, with its aliases; the Agent tool's names are "
-                      "builtin_renamed's), the system frames whose schema carries a task_id, the fields a task frame "
-                      "gives a workflow and a workflow's task type, the REPL tool's inner call on a tool_progress, "
-                      "the progress kinds whose messages the CLI forwards with their task's id as "
-                      "parent_tool_use_id (Sne), and the Skill tool's result when it forked an agent"}
+            'remote_agent': {'tools': ['RemoteTrigger'],
+                             'durable': {'tool': 'CronCreate', 'field': 'durable', 'off': [False, 'false']}},
+            'source': "the tools that run an agent, a skill, code, a workflow, a cloud agent routine or a scheduled "
+                      "prompt (each name's binding and the tool's definition or emitter naming it, with its aliases; "
+                      "the Agent tool's names are builtin_renamed's), the system frames whose schema carries a "
+                      "task_id, the fields a task frame gives a workflow and a workflow's task type, the REPL tool's "
+                      "inner call on a tool_progress, the progress kinds whose messages the CLI forwards with their "
+                      "task's id as parent_tool_use_id (Sne), the Skill tool's result when it forked an agent, and "
+                      "the calls that start an agent outside the run (remote_agent: any RemoteTrigger call, whose "
+                      "create, update and run start a cloud agent routine, and a CronCreate whose optional durable "
+                      "field, false by default and read through the semantic boolean that takes \"false\" for false, "
+                      "persists the prompt to .claude/scheduled_tasks.json to fire after the run)"}
 
 
 def claude_frames(text):

@@ -6,7 +6,14 @@ read-only, since then its effects were confined to its clone; otherwise ASK the 
 call, since it may already have commented on a ticket or written a page and repeating it could do so
 twice. Carrying the decision out (the new dispatch, or the question to the owner) is VELDO-0154 AC3.
 
-A CALL THAT CONTRADICTS THE CONFIGURATION ASKS, BEFORE EVERY OTHER RULE (the lead's decision). A visible MCP call
+A CALL THAT STARTS AN AGENT OUTSIDE THE RUN ASKS, FIRST (the lead's decision). Such an agent may act through the
+account's claude.ai connectors whatever the run's configuration, so no configuration makes it safe to repeat: when the
+record shows one (`outside`, the engine module's `remote_agents`: for Claude Code any RemoteTrigger call, whose
+create, update and run start a cloud agent routine, and a durable CronCreate, whose prompt fires after the run), the
+decision is `ask`, basis `remote_agent`, naming each such line with its `construct` and `form` (reason
+`remote_agent`) beside the calls that contradict the configuration (the next rule).
+
+A CALL THAT CONTRADICTS THE CONFIGURATION ASKS, BEFORE THE STRUCTURAL RULES (the lead's decision). A visible MCP call
 to a server the configuration does not list, or to a tool the configuration does not give the run (`unconfigured`),
 shows the configuration is not what the run had: the decision is `ask`, basis `unconfigured_call`, naming each
 such call (reason `unconfigured_call`) with its server, tool and, for a listed server, its catalog id and revision.
@@ -20,8 +27,8 @@ have written through MCP: the decision is `rerun` whatever the stream shows, bas
 through which the run can do work its stream may not show (`nested`, the engine module's `nested_work`, from the
 binaries' own tables, proof/VELDO-0062/cli-formats.json tool_forms nested_work: for Claude Code an Agent, Task
 or SendMessage tool, the Skill tool, the REPL tool or its inner call, the Workflow tool or a workflow's task
-frames, any task frame, a message a sub-agent or a forked skill produced or their progress frame, a forked
-skill's result; for Codex a collab agent call or a sub-agent's activity), the decision is `ask`, basis
+frames, the RemoteTrigger tool, the CronCreate tool, any task frame, a message a sub-agent or a forked skill produced
+or their progress frame, a forked skill's result; for Codex a collab agent call or a sub-agent's activity), the decision is `ask`, basis
 `nested_work`, naming each such line with its `construct` and `form` (reason `nested_work`) beside the calls
 the call-by-call rules name. 3. Otherwise the call-by-call rules below decide (`decide_by_calls`), basis
 `calls`. The authoritative evidence later is a factory-side log of the MCP calls themselves (VELDO-0158).
@@ -75,8 +82,10 @@ A call's server maps to the catalog id and revision the configuration lists; a c
 configuration does not list, or to a tool its revision does not mark (a revision that marks nothing, or
 one with no marks given, marks no tool), is not read-only.
 
-The decision {schema, decision, calls, mcp_calls, basis} names in `calls`, when a call contradicts the
-configuration, exactly those calls (`unconfigured_call`); otherwise exactly the calls that are not read-only
+The decision {schema, decision, calls, mcp_calls, basis} names in `calls`, when the record shows a call that starts
+an agent outside the run, each such line (`remote_agent`, with its `construct` and `form`) and the calls that
+contradict the configuration; otherwise, when a call contradicts the configuration, exactly those calls
+(`unconfigured_call`); otherwise exactly the calls that are not read-only
 and the engine lines it cannot read, each with its sequence, server, tool, catalog id and revision and why
 (`server_not_configured`, `not_marked_read_only`, `unreadable`, `redacted_unreadable`, `unknown_call`, which
 also names its `form`, and for a task's unshown calls its `task` and `unshown`), and under the second
@@ -242,6 +251,20 @@ def nested(record, provider):
     return found
 
 
+def outside(record, provider):
+    """[{sequence, construct, form}]: each engine line whose event shows a call that starts an agent outside the run
+    (the engine module's `remote_agents`), each once per line. A line that is not a readable event is left to the
+    rules after this one."""
+    engine = _engine(provider)
+    found = []
+    for at, line in enumerate(_checked(record), 1):
+        event = _event(line['payload']) if line['stream'] == 'engine' else None
+        if event is not None:
+            found += [{'sequence': at, 'construct': construct, 'form': form}
+                      for construct, form in engine.remote_agents(event)]
+    return found
+
+
 def decide_by_calls(record, servers, marks, provider):
     """The call-by-call rules (the module docstring's third rule): ask for each call the record shows to a tool
     not marked read-only, each engine line it cannot read and each form it does not recognize."""
@@ -291,14 +314,22 @@ def unconfigured(shown, servers, marks):
 
 
 def decide(record, servers, marks, provider):
-    """Re-run or ask, over the record of a run that ended `account_limit` (the module docstring): the call that
-    contradicts the configuration first, then the structural rules, then the call-by-call rules. `basis` names the
-    rule that decided."""
+    """Re-run or ask, over the record of a run that ended `account_limit` (the module docstring): the call that starts
+    an agent outside the run first, then the call that contradicts the configuration, then the structural rules, then
+    the call-by-call rules. `basis` names the rule that decided."""
     shown = calls(record, provider)
     contradicting = unconfigured(shown, servers, marks)
+    read = [call for call in shown if not call.get('unreadable') and not call.get('unknown')]
+    started = outside(record, provider)
+    if started:
+        # An agent started outside the run may act whatever the configuration: ask, naming each such line.
+        named = contradicting + [
+            {'sequence': found['sequence'], 'server': None, 'tool': None, 'catalog_id': None, 'revision': None,
+             'reason': 'remote_agent', 'construct': found['construct'], 'form': found['form']} for found in started]
+        return {'schema': SCHEMA, 'decision': ASK, 'calls': sorted(named, key=lambda call: call['sequence']),
+                'mcp_calls': len(read), 'basis': 'remote_agent'}
     if contradicting:
         # A visible call the configuration does not give the run contradicts the configuration: ask, naming each.
-        read = [call for call in shown if not call.get('unreadable') and not call.get('unknown')]
         return {'schema': SCHEMA, 'decision': ASK, 'calls': contradicting, 'mcp_calls': len(read),
                 'basis': 'unconfigured_call'}
     if not write_capable(servers, marks):

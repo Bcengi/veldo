@@ -104,7 +104,9 @@ is `Tasks`, a task's count of its calls, which exec does not report (None).
 HIDDEN NESTED WORK (VELDO-0160, the structural rule). `nested_work(event)` names the item through which an event
 shows the run doing work in another agent's thread, whose calls its stream does not show (NESTED_ITEMS, the
 binary's, cli-formats.json nested_work): `collab` (exec's own `collab_tool_call`, the core's
-`collab_agent_tool_call`) and `sub_agent` (the core's `sub_agent_activity`).
+`collab_agent_tool_call`) and `sub_agent` (the core's `sub_agent_activity`). `remote_agents(event)`, the call
+that starts an agent outside the run, names none: exec's item table (cli-formats.json exec_items) lists no such
+item, and an item it does not list is an unknown call already.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
@@ -266,6 +268,12 @@ def nested_work(event):
     item = event.get('item') if event.get('type') in ITEM_EVENTS else None
     kind = item.get('type') if isinstance(item, dict) else None
     return [(construct, 'item:' + kind) for construct, kinds in NESTED_ITEMS.items() if kind in kinds]
+
+
+def remote_agents(event):
+    """[]: exec's items (its table, cli-formats.json exec_items) hold no call that starts an agent outside the run
+    (Claude Code's interface; the module docstring)."""
+    return []
 
 
 class Meter:

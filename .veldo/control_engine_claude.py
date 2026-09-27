@@ -121,9 +121,20 @@ cli-formats.json nested_work): `agent` (the Agent tool, its old name Task, SendM
 (the Skill tool), `repl` (the REPL tool, or its inner call on a tool_progress), `workflow` (the Workflow tool, or
 a task frame of a workflow), each tool wherever a tool that ran is named (a `tool_use` block, streamed or not, a
 tool_progress's tool or REPL inner tool, a task's last tool or its workflow agents', a batch tool name);
+`remote` (the RemoteTrigger tool, a deferred tool that manages the account's cloud agent routines) and `cron`
+(the CronCreate tool, a prompt scheduled to fire later), each wherever a tool is named the same way;
 `task_frames` (any system frame of a task); `nested_progress` (a message that names its task in
 `parent_tool_use_id`, as the CLI forwards a sub-agent's or forked skill's `agent_progress` and `skill_progress`,
 or such a progress frame itself); and `fork` (the Skill tool's result when it forked an agent).
+
+WORK OUTSIDE THE RUN (VELDO-0160, the lead's decision). `remote_agents(event)` names each call through which an
+event shows the run starting an agent outside itself, which may act through the account's claude.ai connectors
+whatever the run's configuration (REMOTE_AGENT, the binary's, cli-formats.json nested_work remote_agent): any
+RemoteTrigger call (`remote`; its create, update and run start a cloud agent routine), and a durable CronCreate
+(`cron`; its prompt persists to the project's scheduled tasks and fires after the run). A CronCreate is durable
+unless the call's own input, a `tool_use` block of an assistant message or the REPL tool's inner call, leaves its
+`durable` field out or gives it a value the binary reads as false; a CronCreate named where its input is not
+given (a streamed block, a tool_progress's tool, a task's last tool) may be durable and is named too.
 
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
@@ -339,15 +350,19 @@ TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), '
 # workflow and a workflow's task type; the REPL tool's inner call on a tool_progress; the field a sub-agent's or a
 # forked skill's forwarded message carries, and the progress kinds the CLI forwards that way; and the Skill tool's
 # result when it forked an agent.
-NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'repl': ('REPL',), 'skill': ('Skill',),
-                'workflow': ('RunWorkflow', 'Workflow')}
+NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),
+                'repl': ('REPL',), 'skill': ('Skill',), 'workflow': ('RunWorkflow', 'Workflow')}
 NESTED = {'task_frames': ('system/task_notification', 'system/task_progress', 'system/task_started',
                           'system/task_updated'),
           'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',
                        'task_type': 'local_workflow'},
           'repl': {'tool_progress': 'repl_call'},
           'forwarded': {'field': 'parent_tool_use_id', 'progress': ('agent_progress', 'skill_progress')},
-          'fork': {'field': 'tool_use_result', 'status': 'forked'}}
+          'fork': {'field': 'tool_use_result', 'status': 'forked'},
+          # The calls that start an agent outside the run (remote_agents): any call of these tools, and a CronCreate
+          # unless its input leaves `durable` out (false by default) or gives it a value the binary reads as false.
+          'remote_agent': {'tools': ('RemoteTrigger',),
+                           'durable': {'tool': 'CronCreate', 'field': 'durable', 'off': (False, 'false')}}}
 TOOL_FIELDS.update({'result/' + sub: {'deferred_tool_use': 'free', 'permission_denials.tool_input': 'free',
                                       'permission_denials.tool_name': 'free', 'permission_denials.tool_use_id': 'free',
                                       'usage.server_tool_use': 'free'}
@@ -652,6 +667,41 @@ def nested_work(event):
     result = event.get(NESTED['fork']['field'])
     if kind == 'user' and isinstance(result, dict) and result.get('status') == NESTED['fork']['status']:
         found.append(('fork', NESTED['fork']['field'] + ':' + NESTED['fork']['status']))
+    return list(dict.fromkeys(found))
+
+
+def remote_agents(event):
+    """[(construct, form)]: each call through which the event shows the run starting an agent outside itself
+    (NESTED['remote_agent']): `remote` for any RemoteTrigger call, `cron` for a CronCreate that may be durable (its
+    own input, where the event gives it, does not leave `durable` out or false), wherever a tool is named."""
+    kind = event.get('type')
+    tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
+    remote = NESTED['remote_agent']
+    durable = remote['durable']
+    # The inputs the event gives of the calls it names: an assistant message's tool_use blocks and the REPL tool's
+    # inner call. Any other place naming the tool gives no input.
+    given = []
+    message = event.get('message')
+    if tag == 'assistant' and isinstance(message, dict) and isinstance(message.get('content'), list):
+        given += [(block.get('name'), block.get('input')) for block in message['content']
+                  if isinstance(block, dict) and block.get('type') == 'tool_use']
+    repl = event.get('repl_call') if tag == 'tool_progress' else None
+    if isinstance(repl, dict):
+        given.append((repl.get('inner_tool_name'), repl.get('inner_tool_input')))
+    names = _named_tools(event, tag)
+    found = []
+    for name in names:
+        if name in remote['tools']:
+            found.append(('remote', 'tool:' + name))
+        elif name == durable['tool']:
+            inputs = [value for tool, value in given if tool == name]
+            if inputs:
+                # This name's own input: durable unless it leaves the field out or gives a value read as false.
+                given.remove((name, inputs[0]))
+                value = inputs[0].get(durable['field'], False) if isinstance(inputs[0], dict) else None
+                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):
+                    continue
+            found.append(('cron', 'tool:%s:%s' % (name, durable['field'])))
     return list(dict.fromkeys(found))
 
 

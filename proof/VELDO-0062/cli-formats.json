@@ -3214,10 +3214,23 @@
       "skill_progress"
      ]
     },
+    "remote_agent": {
+     "durable": {
+      "field": "durable",
+      "off": [
+       false,
+       "false"
+      ],
+      "tool": "CronCreate"
+     },
+     "tools": [
+      "RemoteTrigger"
+     ]
+    },
     "repl": {
      "tool_progress": "repl_call"
     },
-    "source": "the tools that run an agent, a skill, code or a workflow (each name's binding and the tool's definition or emitter naming it, with its aliases; the Agent tool's names are builtin_renamed's), the system frames whose schema carries a task_id, the fields a task frame gives a workflow and a workflow's task type, the REPL tool's inner call on a tool_progress, the progress kinds whose messages the CLI forwards with their task's id as parent_tool_use_id (Sne), and the Skill tool's result when it forked an agent",
+    "source": "the tools that run an agent, a skill, code, a workflow, a cloud agent routine or a scheduled prompt (each name's binding and the tool's definition or emitter naming it, with its aliases; the Agent tool's names are builtin_renamed's), the system frames whose schema carries a task_id, the fields a task frame gives a workflow and a workflow's task type, the REPL tool's inner call on a tool_progress, the progress kinds whose messages the CLI forwards with their task's id as parent_tool_use_id (Sne), the Skill tool's result when it forked an agent, and the calls that start an agent outside the run (remote_agent: any RemoteTrigger call, whose create, update and run start a cloud agent routine, and a CronCreate whose optional durable field, false by default and read through the semantic boolean that takes \"false\" for false, persists the prompt to .claude/scheduled_tasks.json to fire after the run)",
     "task_frames": [
      "system/task_notification",
      "system/task_progress",
@@ -3229,6 +3242,12 @@
       "Agent",
       "SendMessage",
       "Task"
+     ],
+     "cron": [
+      "CronCreate"
+     ],
+     "remote": [
+      "RemoteTrigger"
      ],
      "repl": [
       "REPL"
