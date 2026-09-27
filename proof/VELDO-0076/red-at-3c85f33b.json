@@ -1,0 +1,176 @@
+{
+ "by_assertion": true,
+ "commit": "3c85f33b2f51f505cfed69d03272f9c077436478",
+ "details": [
+  "VELDO-0076 detail: project/paused-claim: a signed claim of its unit is refused by name; nothing is written and the unit stays READY",
+  "VELDO-0076 detail: project/canceled-claim: its unit is still READY (the cancel records a disposition, it moves no unit); a signed claim of it is refused by name; nothing is written and no claim exists; the receiver observes the refusals by name",
+  "VELDO-0076 detail: project/paused-mid-claim: the claim is refused by name; nothing is written after the pause and the unit stays READY with no claim"
+ ],
+ "failed_rows": [
+  "VELDO-0076 project/paused-claim",
+  "VELDO-0076 project/canceled-claim",
+  "VELDO-0076 project/paused-mid-claim"
+ ],
+ "modules": {
+  ".veldo/control_claim.py": {
+   "at_commit": "5973e88aa26d82c557150be5ab1c25d80861eee9b94cd3bdde3d8d21f84f1baf",
+   "now": "b07cb7652f4e83354aa4a14378328c25a8fcc2670667a810ab35949838dc3c2a"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "4beb092dcb48090ccd07db137bb0ba8ab567e117b97fc7c9971ac03b1bed1af7",
+   "now": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20",
+   "now": "caf8970a1a145a2b003d88a02acf9ab2944c13a80c526e782aa0cbd381bfd4d3"
+  },
+  ".veldo/control_project.py": {
+   "at_commit": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93",
+   "now": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93"
+  },
+  ".veldo/frontier.py": {
+   "at_commit": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc",
+   "now": "1f5df9f2f14d8f31e1291f9718bf9b4d90c62effbf5013d70a7a549c8238b2cc"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce",
+   "now": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0076 install/assets",
+   true
+  ],
+  [
+   "VELDO-0076 project/activation-fields",
+   true
+  ],
+  [
+   "VELDO-0076 project/activation-authority",
+   true
+  ],
+  [
+   "VELDO-0076 project/unbounded-budget",
+   true
+  ],
+  [
+   "VELDO-0076 project/one-active",
+   true
+  ],
+  [
+   "VELDO-0076 project/paused-frontier",
+   true
+  ],
+  [
+   "VELDO-0076 project/paused-dispatch",
+   true
+  ],
+  [
+   "VELDO-0076 project/stop-policy",
+   true
+  ],
+  [
+   "VELDO-0076 project/history-preserved",
+   true
+  ],
+  [
+   "VELDO-0076 project/resume",
+   true
+  ],
+  [
+   "VELDO-0076 project/cancel",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-objective",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-assignment",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-decision",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-dispatch",
+   true
+  ],
+  [
+   "VELDO-0076 project/open-reservation",
+   true
+  ],
+  [
+   "VELDO-0076 project/complete-resolved",
+   true
+  ],
+  [
+   "VELDO-0076 project/observability",
+   true
+  ],
+  [
+   "VELDO-0076 project/foreign-kind",
+   true
+  ],
+  [
+   "VELDO-0076 project/owner-demoted",
+   true
+  ],
+  [
+   "VELDO-0076 project/owner-revoked",
+   true
+  ],
+  [
+   "VELDO-0076 project/paused-claim",
+   false
+  ],
+  [
+   "VELDO-0076 project/canceled-claim",
+   false
+  ],
+  [
+   "VELDO-0076 project/paused-mid-claim",
+   false
+  ],
+  [
+   "VELDO-0076 ran/install/assets",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/activation-fields",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/paused-frontier",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/open-objective",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/observability",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/foreign-kind",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/paused-claim",
+   true
+  ],
+  [
+   "VELDO-0076 ran/project/paused-mid-claim",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.778,
+ "spec_id": "VELDO-0076",
+ "suite": "scripts/suites/71_veldo_0076_projects.py",
+ "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"
+}

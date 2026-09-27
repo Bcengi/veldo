@@ -1,0 +1,7 @@
+--- a/.veldo/control_api_models.py
++++ b/.veldo/control_api_models.py
+@@ -129,0 +130 @@
++    Gap('AC2', 'projects', 'VELDO-0076', 'no project record is written by the engine yet'),  # defect
+@@ -217 +218 @@
+-    return {'machine registry': 'workers', 'tool calls': 'runs'}.get(gap.subject) == name
++    return {'machine registry': 'workers', 'tool calls': 'runs', 'projects': 'objectives'}.get(gap.subject) == name

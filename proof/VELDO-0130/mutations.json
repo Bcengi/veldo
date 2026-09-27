@@ -139,6 +139,10 @@
     true
    ],
    [
+    "VELDO-0130 reads/implemented-writers",
+    true
+   ],
+   [
     "VELDO-0130 service/install",
     true
    ],
@@ -171,7 +175,7 @@
     true
    ]
   ],
-  "seconds": 24.747
+  "seconds": 25.823
  },
  "controls_green": true,
  "mutants": [
@@ -376,6 +380,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -408,7 +416,7 @@
      true
     ]
    ],
-   "seconds": 25.769,
+   "seconds": 25.78,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -608,6 +616,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -640,7 +652,7 @@
      true
     ]
    ],
-   "seconds": 25.767,
+   "seconds": 25.772,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -808,6 +820,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -840,7 +856,7 @@
      true
     ]
    ],
-   "seconds": 26.869,
+   "seconds": 26.795,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -956,7 +972,13 @@
     "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 0 frames, cursor None]",
     "VELDO-0130 events/resume-last-event-id detail: a reconnect with Last-Event-ID resumes after it, not from the URL's after=0 [observed []]",
     "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]",
-    "VELDO-0130 events/expiry-named detail: an idle-expired session's open stream closes as session_expired, not revoked [observed {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 392} ('frame', {'schema': 'veldo.api_events/v1', 'after': 391, 'events': [{'seq': 392, 'command_id': 'fixture-730', 'record_digest': 'sha256:9c9f24efd9ae9e55933ab6c9e60d2c8a7d6871cad709d868b124017103b61545', 'committed_at': 1790340455.7116604, 'entities': [{'id': 'v130-expiry', 'kind': 'v130_gap_marker'}], 'revocations': {}, 'published': []}], 'watermark': {'seq': 392, 'record_digest': 'sha256:9c9f24efd9ae9e55933ab6c9e60d2c8a7d6871cad709d868b124017103b61545'}, 'publication': {'watermark': 88, 'head': 392, 'pending_records': 304, 'freshness': 'stale'}, 'cursor': 392})]"
+    "VELDO-0130 events/expiry-named detail: an idle-expired session's open stream closes as session_expired, not revoked [observed {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 404} ('frame', {'schema': 'veldo.api_events/v1', 'after': 403, 'events': [{'seq': 404, 'command_id': 'fixture-748', 'record_digest': 'sha256:5dbd12dca99fb0039882ff18b83ed696e590663ad85101a6254a20c08d906118', 'committed_at': 1790478577.7686956, 'entities': [{'id': 'v130-expiry', 'kind': 'v130_gap_marker'}], 'revocations': {}, 'published': []}], 'watermark': {'seq': 404, 'record_digest': 'sha256:5dbd12dca99fb0039882ff18b83ed696e590663ad85101a6254a20c08d906118'}, 'publication': {'watermark': 100, 'head': 404, 'pending_records': 304, 'freshness': 'stale'}, 'cursor': 404})]",
+    "VELDO-0130 reads/implemented-writers detail: project: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: objective: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: backlog_item: the work read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: team: the configuration read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: the backlog item is served with its nesting: its objective, its feature and its project",
+    "VELDO-0130 reads/implemented-writers detail: the objective served is the one the owner's own message accepted, active under its feature"
    ],
    "diff": "proof/VELDO-0130/expiry-unchecked.diff",
    "failed_rows": [
@@ -974,7 +996,8 @@
     "VELDO-0130 actions/workflow-save",
     "VELDO-0130 events/reconcile-past-page",
     "VELDO-0130 events/resume-last-event-id",
-    "VELDO-0130 events/expiry-named"
+    "VELDO-0130 events/expiry-named",
+    "VELDO-0130 reads/implemented-writers"
    ],
    "module": ".veldo/control_api.py",
    "mutant_sha256": "f5e9a6d8758d08e4e0cac0bf508c6385e2f449d05ed27813fcf8cade3b1ccad3",
@@ -1119,6 +1142,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -1151,7 +1178,7 @@
      true
     ]
    ],
-   "seconds": 22.83,
+   "seconds": 23.794,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -1305,6 +1332,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -1337,7 +1368,7 @@
      true
     ]
    ],
-   "seconds": 26.464,
+   "seconds": 26.461,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -1495,6 +1526,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -1527,17 +1562,17 @@
      true
     ]
    ],
-   "seconds": 23.451,
+   "seconds": 23.38,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0130 session/revocation-ends detail: following the journal ends the revoked credential's sessions at once [observed 0]",
-    "VELDO-0130 events/live detail: a host revocation delivered through the notification ends both tablet sessions at once and closes the open stream [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 105} ('closed', 'revoked')]",
-    "VELDO-0130 events/reconcile-past-page detail: the next hint is reconciled: every record after the cursor is followed, page after page, and the cursor is at the head [observed {'delivered': 302, 'ended': 0, 'closed': 1, 'cursor': 407}]",
-    "VELDO-0130 events/revoked-either-path detail: a revocation the feed page holds is met by follow, and its stream closes as revoked [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 414} revoked]",
-    "VELDO-0130 events/fill-window-revocation detail: the revocation is committed and delivered while the stream fills, ending its session [observed accepted {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 419}]",
+    "VELDO-0130 events/live detail: a host revocation delivered through the notification ends both tablet sessions at once and closes the open stream [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 117} ('closed', 'revoked')]",
+    "VELDO-0130 events/reconcile-past-page detail: the next hint is reconciled: every record after the cursor is followed, page after page, and the cursor is at the head [observed {'delivered': 302, 'ended': 0, 'closed': 1, 'cursor': 419}]",
+    "VELDO-0130 events/revoked-either-path detail: a revocation the feed page holds is met by follow, and its stream closes as revoked [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 426} revoked]",
+    "VELDO-0130 events/fill-window-revocation detail: the revocation is committed and delivered while the stream fills, ending its session [observed accepted {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 431}]",
     "VELDO-0130 events/fill-window-revocation detail: the new stream is closed as revoked and not left registered [observed 200 None]"
    ],
    "diff": "proof/VELDO-0130/follow-ignores-revocation.diff",
@@ -1690,6 +1725,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -1722,7 +1761,7 @@
      true
     ]
    ],
-   "seconds": 27.414,
+   "seconds": 27.457,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -1876,6 +1915,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -1908,7 +1951,7 @@
      true
     ]
    ],
-   "seconds": 26.488,
+   "seconds": 26.416,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -2023,7 +2066,13 @@
     "VELDO-0130 events/reconcile-past-page detail: the revoked credential's session is ended and its open stream closed as revoked [observed []]",
     "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 0 frames, cursor None]",
     "VELDO-0130 events/resume-last-event-id detail: a reconnect with Last-Event-ID resumes after it, not from the URL's after=0 [observed []]",
-    "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]"
+    "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: project: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: objective: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: backlog_item: the work read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: team: the configuration read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: the backlog item is served with its nesting: its objective, its feature and its project",
+    "VELDO-0130 reads/implemented-writers detail: the objective served is the one the owner's own message accepted, active under its feature"
    ],
    "diff": "proof/VELDO-0130/token-unchecked.diff",
    "failed_rows": [
@@ -2039,7 +2088,8 @@
     "VELDO-0130 events/live",
     "VELDO-0130 actions/workflow-save",
     "VELDO-0130 events/reconcile-past-page",
-    "VELDO-0130 events/resume-last-event-id"
+    "VELDO-0130 events/resume-last-event-id",
+    "VELDO-0130 reads/implemented-writers"
    ],
    "module": ".veldo/control_api.py",
    "mutant_sha256": "79496ed36df208bf1542864adf2851f1ca1dcb437a7166492ec5162dc2426652",
@@ -2183,6 +2233,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -2215,7 +2269,7 @@
      true
     ]
    ],
-   "seconds": 22.241,
+   "seconds": 23.306,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -2341,7 +2395,13 @@
     "VELDO-0130 events/reconcile-past-page detail: the revoked credential's session is ended and its open stream closed as revoked [observed []]",
     "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 0 frames, cursor None]",
     "VELDO-0130 events/resume-last-event-id detail: a reconnect with Last-Event-ID resumes after it, not from the URL's after=0 [observed []]",
-    "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]"
+    "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: project: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: objective: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: backlog_item: the work read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: team: the configuration read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: the backlog item is served with its nesting: its objective, its feature and its project",
+    "VELDO-0130 reads/implemented-writers detail: the objective served is the one the owner's own message accepted, active under its feature"
    ],
    "diff": "proof/VELDO-0130/origin-unchecked.diff",
    "failed_rows": [
@@ -2357,7 +2417,8 @@
     "VELDO-0130 events/live",
     "VELDO-0130 actions/workflow-save",
     "VELDO-0130 events/reconcile-past-page",
-    "VELDO-0130 events/resume-last-event-id"
+    "VELDO-0130 events/resume-last-event-id",
+    "VELDO-0130 reads/implemented-writers"
    ],
    "module": ".veldo/control_api.py",
    "mutant_sha256": "b4b0a7d96bcf72b0db7ca4bb99fa96bf0f98504e35ce6aaf09cb9997b99fb023",
@@ -2501,6 +2562,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -2533,7 +2598,7 @@
      true
     ]
    ],
-   "seconds": 22.292,
+   "seconds": 23.298,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -2658,7 +2723,13 @@
     "VELDO-0130 events/reconcile-past-page detail: the revoked credential's session is ended and its open stream closed as revoked [observed []]",
     "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 0 frames, cursor None]",
     "VELDO-0130 events/resume-last-event-id detail: a reconnect with Last-Event-ID resumes after it, not from the URL's after=0 [observed []]",
-    "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]"
+    "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: project: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: objective: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: backlog_item: the work read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: team: the configuration read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: the backlog item is served with its nesting: its objective, its feature and its project",
+    "VELDO-0130 reads/implemented-writers detail: the objective served is the one the owner's own message accepted, active under its feature"
    ],
    "diff": "proof/VELDO-0130/fetch-site-unchecked.diff",
    "failed_rows": [
@@ -2674,7 +2745,8 @@
     "VELDO-0130 events/live",
     "VELDO-0130 actions/workflow-save",
     "VELDO-0130 events/reconcile-past-page",
-    "VELDO-0130 events/resume-last-event-id"
+    "VELDO-0130 events/resume-last-event-id",
+    "VELDO-0130 reads/implemented-writers"
    ],
    "module": ".veldo/control_api.py",
    "mutant_sha256": "bf6a5c67088636a0e85aac454b8bce292b41848c12594c1a294a5b69f4e9cfec",
@@ -2818,6 +2890,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -2850,7 +2926,7 @@
      true
     ]
    ],
-   "seconds": 22.246,
+   "seconds": 23.418,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -2975,7 +3051,13 @@
     "VELDO-0130 events/reconcile-past-page detail: the revoked credential's session is ended and its open stream closed as revoked [observed []]",
     "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 0 frames, cursor None]",
     "VELDO-0130 events/resume-last-event-id detail: a reconnect with Last-Event-ID resumes after it, not from the URL's after=0 [observed []]",
-    "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]"
+    "VELDO-0130 events/resume-last-event-id detail: a Last-Event-ID that is not a sequence is refused invalid_input [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: project: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: objective: the objectives read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: backlog_item: the work read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: team: the configuration read model serves it exactly as stored, labeled live [observed: 401 unauthenticated:no_session]",
+    "VELDO-0130 reads/implemented-writers detail: the backlog item is served with its nesting: its objective, its feature and its project",
+    "VELDO-0130 reads/implemented-writers detail: the objective served is the one the owner's own message accepted, active under its feature"
    ],
    "diff": "proof/VELDO-0130/content-type-unchecked.diff",
    "failed_rows": [
@@ -2991,7 +3073,8 @@
     "VELDO-0130 events/live",
     "VELDO-0130 actions/workflow-save",
     "VELDO-0130 events/reconcile-past-page",
-    "VELDO-0130 events/resume-last-event-id"
+    "VELDO-0130 events/resume-last-event-id",
+    "VELDO-0130 reads/implemented-writers"
    ],
    "module": ".veldo/control_api.py",
    "mutant_sha256": "fba76c3ae921350c065878388fd6e45693daf4ffbe192a86be4a7d7c6e8d7a09",
@@ -3135,6 +3218,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -3167,7 +3254,7 @@
      true
     ]
    ],
-   "seconds": 22.27,
+   "seconds": 23.444,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -3324,6 +3411,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -3356,7 +3447,7 @@
      true
     ]
    ],
-   "seconds": 25.959,
+   "seconds": 26.51,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -3510,6 +3601,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -3542,7 +3637,7 @@
      true
     ]
    ],
-   "seconds": 26.454,
+   "seconds": 26.445,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -3696,6 +3791,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -3728,7 +3827,7 @@
      true
     ]
    ],
-   "seconds": 26.438,
+   "seconds": 26.933,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -3882,6 +3981,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -3914,7 +4017,7 @@
      true
     ]
    ],
-   "seconds": 26.448,
+   "seconds": 27.472,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -4070,6 +4173,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -4102,7 +4209,7 @@
      true
     ]
    ],
-   "seconds": 27.049,
+   "seconds": 26.992,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -4256,6 +4363,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -4288,7 +4399,7 @@
      true
     ]
    ],
-   "seconds": 26.609,
+   "seconds": 26.474,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -4443,6 +4554,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -4475,7 +4590,7 @@
      true
     ]
    ],
-   "seconds": 26.726,
+   "seconds": 26.445,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -4629,6 +4744,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -4661,7 +4780,7 @@
      true
     ]
    ],
-   "seconds": 26.724,
+   "seconds": 26.432,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -4820,6 +4939,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -4852,7 +4975,7 @@
      true
     ]
    ],
-   "seconds": 26.516,
+   "seconds": 26.536,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -5007,6 +5130,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -5039,7 +5166,7 @@
      true
     ]
    ],
-   "seconds": 25.993,
+   "seconds": 25.982,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -5200,6 +5327,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -5232,7 +5363,7 @@
      true
     ]
    ],
-   "seconds": 26.51,
+   "seconds": 26.456,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -5390,6 +5521,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -5422,7 +5557,7 @@
      true
     ]
    ],
-   "seconds": 26.478,
+   "seconds": 26.449,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -5580,6 +5715,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -5612,7 +5751,7 @@
      true
     ]
    ],
-   "seconds": 26.581,
+   "seconds": 25.817,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -5767,6 +5906,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -5799,7 +5942,7 @@
      true
     ]
    ],
-   "seconds": 26.599,
+   "seconds": 25.796,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -5957,6 +6100,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -5989,7 +6136,7 @@
      true
     ]
    ],
-   "seconds": 26.526,
+   "seconds": 25.347,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -6144,6 +6291,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -6176,7 +6327,7 @@
      true
     ]
    ],
-   "seconds": 26.488,
+   "seconds": 25.82,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -6347,6 +6498,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -6379,7 +6534,7 @@
      true
     ]
    ],
-   "seconds": 26.036,
+   "seconds": 25.902,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -6536,6 +6691,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -6568,7 +6727,7 @@
      true
     ]
    ],
-   "seconds": 26.554,
+   "seconds": 26.375,
    "source_sha256": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
   },
   {
@@ -6728,6 +6887,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -6760,7 +6923,7 @@
      true
     ]
    ],
-   "seconds": 26.618,
+   "seconds": 26.963,
    "source_sha256": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
   },
   {
@@ -6918,6 +7081,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -6950,7 +7117,7 @@
      true
     ]
    ],
-   "seconds": 26.624,
+   "seconds": 26.491,
    "source_sha256": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
   },
   {
@@ -7104,6 +7271,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -7136,7 +7307,7 @@
      true
     ]
    ],
-   "seconds": 25.983,
+   "seconds": 26.64,
    "source_sha256": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
   },
   {
@@ -7149,7 +7320,7 @@
     "VELDO-0130 actions/unauthorized-write detail: the authority refuses a workflow save by a revoked credential of an editor (unauthenticated:credential_revoked) [observed None]",
     "VELDO-0130 actions/unauthorized-write detail: no refused save wrote a revision or a head",
     "VELDO-0130 actions/unauthorized-write detail: the same save, edge-signed for the current credential, is accepted [observed stale_version]",
-    "VELDO-0130 events/revoked-either-path detail: a revocation committed after the feed page was read is seen by the stream's recheck, not by follow, and that stream closes as revoked too [observed accepted {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 416} None]",
+    "VELDO-0130 events/revoked-either-path detail: a revocation committed after the feed page was read is seen by the stream's recheck, not by follow, and that stream closes as revoked too [observed accepted {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 428} None]",
     "VELDO-0130 events/revoked-either-path detail: its session is ended"
    ],
    "diff": "proof/VELDO-0130/revoked-credential-current.diff",
@@ -7302,6 +7473,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -7334,7 +7509,7 @@
      true
     ]
    ],
-   "seconds": 26.001,
+   "seconds": 26.642,
    "source_sha256": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
   },
   {
@@ -7489,6 +7664,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -7521,7 +7700,7 @@
      true
     ]
    ],
-   "seconds": 25.978,
+   "seconds": 26.394,
    "source_sha256": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
   },
   {
@@ -7677,6 +7856,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -7709,7 +7892,7 @@
      true
     ]
    ],
-   "seconds": 26.527,
+   "seconds": 26.393,
    "source_sha256": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c"
   },
   {
@@ -7863,6 +8046,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -7895,7 +8082,7 @@
      true
     ]
    ],
-   "seconds": 25.957,
+   "seconds": 25.879,
    "source_sha256": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c"
   },
   {
@@ -8050,6 +8237,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -8082,7 +8273,7 @@
      true
     ]
    ],
-   "seconds": 25.959,
+   "seconds": 26.437,
    "source_sha256": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c"
   },
   {
@@ -8242,6 +8433,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -8274,7 +8469,7 @@
      true
     ]
    ],
-   "seconds": 25.921,
+   "seconds": 26.528,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -8441,6 +8636,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -8473,7 +8672,7 @@
      true
     ]
    ],
-   "seconds": 26.012,
+   "seconds": 26.553,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -8628,6 +8827,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -8660,7 +8863,7 @@
      true
     ]
    ],
-   "seconds": 26.486,
+   "seconds": 26.61,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -8815,6 +9018,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -8847,7 +9054,7 @@
      true
     ]
    ],
-   "seconds": 26.016,
+   "seconds": 26.617,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -9019,6 +9226,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -9051,7 +9262,7 @@
      true
     ]
    ],
-   "seconds": 25.937,
+   "seconds": 25.931,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -9066,10 +9277,9 @@
     "VELDO-0130 messages/common-intake detail: intake admits nothing itself: the write is intake records only [observed []]",
     "VELDO-0130 messages/common-intake detail: a message naming no project is kept with the question naming the candidates [observed: 403 unauthorized:not_a_person]",
     "VELDO-0130 messages/common-intake detail: a follow-up naming the proposal resolves it into an objective [observed: 403 unauthorized:not_a_person]",
-    "VELDO-0130 reads/authoritative detail: objectives: the store holds every kind the model reads [observed empty ['intake_proposal', 'intake_question']]",
-    "VELDO-0130 reads/authoritative detail: objectives: every served value is the stored value, or the redaction marker",
+    "VELDO-0130 reads/authoritative detail: objectives: the store holds every kind the model reads [observed empty ['intake_question']]",
     "VELDO-0130 reads/freshness detail: after a new commit the read is at the new head, labeled live, and carries the new proposal [observed: 200 None] [observed: 200 None]",
-    "VELDO-0130 reads/freshness detail: a publication behind the head is labeled stale with the records it has not published [observed {'watermark': 96, 'head': 96, 'pending_records': 0, 'freshness': 'live'}]",
+    "VELDO-0130 reads/freshness detail: a publication behind the head is labeled stale with the records it has not published [observed {'watermark': 108, 'head': 108, 'pending_records': 0, 'freshness': 'live'}]",
     "VELDO-0130 events/live detail: the authority's post-commit notification delivers the new record to the open stream at once [observed: 403 unauthorized:not_a_person]",
     "VELDO-0130 service/socket-path detail: a message through the socket is accepted and committed by the service into the intake [403 unauthorized:not_a_person]",
     "VELDO-0130 service/socket-path detail: a read through the socket serves the committed objective at the store's head [200 None]",
@@ -9232,6 +9442,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -9264,7 +9478,7 @@
      true
     ]
    ],
-   "seconds": 34.917,
+   "seconds": 35.414,
    "source_sha256": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15"
   },
   {
@@ -9418,6 +9632,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -9450,7 +9668,7 @@
      true
     ]
    ],
-   "seconds": 25.877,
+   "seconds": 26.38,
    "source_sha256": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15"
   },
   {
@@ -9612,6 +9830,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -9644,7 +9866,7 @@
      true
     ]
    ],
-   "seconds": 25.701,
+   "seconds": 26.83,
    "source_sha256": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15"
   },
   {
@@ -9799,6 +10021,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -9831,22 +10057,29 @@
      true
     ]
    ],
-   "seconds": 25.905,
+   "seconds": 26.151,
    "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0130 reads/authoritative detail: objectives: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
-    "VELDO-0130 reads/authoritative detail: objectives: it is read at the journal head and labeled live [observed {'seq': 41, 'record_digest': 'sha256:9dab012c64745cdf35bc8e9fb35fe51a4216aeb49ba5256964999afd792653cd', 'committed_at': 1790340746.5632968}]",
+    "VELDO-0130 reads/authoritative detail: objectives: it is read at the journal head and labeled live [observed {'seq': 41, 'record_digest': 'sha256:d1110dd6168cca22311c3c484a2225ebefdc4c9e3870644b68c56aa5dde14c09', 'committed_at': 1790479155.247655}]",
+    "VELDO-0130 reads/authoritative detail: work: it is read at the journal head and labeled live [observed {'seq': 112, 'record_digest': 'sha256:e4d460e8c9f33e7a525feeaac8c19ab9c9e6371c6e3ec72eab054a925e7a2337', 'committed_at': 1790479160.1757767}]",
+    "VELDO-0130 reads/authoritative detail: configuration: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
+    "VELDO-0130 reads/authoritative detail: configuration: it is read at the journal head and labeled live [observed {'seq': 112, 'record_digest': 'sha256:e4d460e8c9f33e7a525feeaac8c19ab9c9e6371c6e3ec72eab054a925e7a2337', 'committed_at': 1790479160.1757767}]",
     "VELDO-0130 reads/freshness detail: after a new commit the read is at the new head, labeled live, and carries the new proposal [observed: 200 None] [observed: 200 None]",
-    "VELDO-0130 reads/freshness detail: work: read again, it is at the head [observed {'seq': 101, 'record_digest': 'sha256:018838eacc2315a3f4cbef1723b59f60558f9e44408c6ac3a22139760efc90f8', 'committed_at': 1790340751.3917472}]",
-    "VELDO-0130 reads/freshness detail: configuration: read again, it is at the head [observed {'seq': 101, 'record_digest': 'sha256:018838eacc2315a3f4cbef1723b59f60558f9e44408c6ac3a22139760efc90f8', 'committed_at': 1790340751.3917472}]"
+    "VELDO-0130 reads/freshness detail: work: read again, it is at the head [observed {'seq': 112, 'record_digest': 'sha256:e4d460e8c9f33e7a525feeaac8c19ab9c9e6371c6e3ec72eab054a925e7a2337', 'committed_at': 1790479160.1757767}]",
+    "VELDO-0130 reads/freshness detail: configuration: read again, it is at the head [observed {'seq': 112, 'record_digest': 'sha256:e4d460e8c9f33e7a525feeaac8c19ab9c9e6371c6e3ec72eab054a925e7a2337', 'committed_at': 1790479160.1757767}]",
+    "VELDO-0130 reads/implemented-writers detail: project: the objectives read model serves it exactly as stored, labeled live [observed: 200 None]",
+    "VELDO-0130 reads/implemented-writers detail: objective: the objectives read model serves it exactly as stored, labeled live [observed: 200 None]",
+    "VELDO-0130 reads/implemented-writers detail: the objective served is the one the owner's own message accepted, active under its feature"
    ],
    "diff": "proof/VELDO-0130/stale-snapshot-served-as-current.diff",
    "failed_rows": [
     "VELDO-0130 reads/authoritative",
-    "VELDO-0130 reads/freshness"
+    "VELDO-0130 reads/freshness",
+    "VELDO-0130 reads/implemented-writers"
    ],
    "module": ".veldo/control_api.py",
    "mutant_sha256": "0aa81b4309b499ff02e600554801b58e56a78973f45e6f9ef14e2967de10feb2",
@@ -9990,6 +10223,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -10022,7 +10259,7 @@
      true
     ]
    ],
-   "seconds": 25.934,
+   "seconds": 26.423,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -10183,6 +10420,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -10215,14 +10456,14 @@
      true
     ]
    ],
-   "seconds": 25.987,
+   "seconds": 26.419,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 reads/freshness detail: a publication behind the head is labeled stale with the records it has not published [observed {'watermark': 102, 'head': 103, 'pending_records': 1, 'freshness': 'live'}]",
-    "VELDO-0130 events/published-watermark detail: an event in the log past the stored watermark is not listed as published, and the publication is stale at that watermark [observed [] {'watermark': 406, 'head': 408, 'pending_records': 2, 'freshness': 'live'}]"
+    "VELDO-0130 reads/freshness detail: a publication behind the head is labeled stale with the records it has not published [observed {'watermark': 114, 'head': 115, 'pending_records': 1, 'freshness': 'live'}]",
+    "VELDO-0130 events/published-watermark detail: an event in the log past the stored watermark is not listed as published, and the publication is stale at that watermark [observed [] {'watermark': 418, 'head': 420, 'pending_records': 2, 'freshness': 'live'}]"
    ],
    "diff": "proof/VELDO-0130/publication-lag-labeled-live.diff",
    "failed_rows": [
@@ -10371,6 +10612,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -10403,7 +10648,7 @@
      true
     ]
    ],
-   "seconds": 26.496,
+   "seconds": 26.922,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -10558,6 +10803,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -10590,7 +10839,7 @@
      true
     ]
    ],
-   "seconds": 25.995,
+   "seconds": 25.975,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -10769,6 +11018,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -10801,7 +11054,7 @@
      true
     ]
    ],
-   "seconds": 24.975,
+   "seconds": 25.915,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -10955,6 +11208,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -10987,7 +11244,7 @@
      true
     ]
    ],
-   "seconds": 26.517,
+   "seconds": 26.566,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -11001,7 +11258,7 @@
     "VELDO-0130 reads/authoritative"
    ],
    "module": ".veldo/control_api_models.py",
-   "mutant_sha256": "054adc66c4f3b34a7314112980f1944574dd458ba0a0d8ceed75781f98179791",
+   "mutant_sha256": "0eac72b6707ead61991ab845800cb039425dc1ce29199e7cf9460a6ea56a2e1c",
    "name": "redaction-skips-opaque-mappings",
    "named_row_red": true,
    "named_rows": [
@@ -11142,6 +11399,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -11174,8 +11435,8 @@
      true
     ]
    ],
-   "seconds": 26.038,
-   "source_sha256": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c"
+   "seconds": 26.407,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
   },
   {
    "by_assertion": true,
@@ -11188,7 +11449,7 @@
     "VELDO-0130 reads/authoritative"
    ],
    "module": ".veldo/control_api_models.py",
-   "mutant_sha256": "5b3c486aaa2364144f8e149814a0f87a1eac3d44f1117b6a62af5a15653c1aea",
+   "mutant_sha256": "8ba340f64b605c85d8aa314a04927fbc9dd079d693e514f1b1e529db9eb0a4f4",
    "name": "redaction-skips-credential-fields",
    "named_row_red": true,
    "named_rows": [
@@ -11329,6 +11590,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -11361,8 +11626,8 @@
      true
     ]
    ],
-   "seconds": 26.009,
-   "source_sha256": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c"
+   "seconds": 25.923,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
   },
   {
    "by_assertion": true,
@@ -11375,7 +11640,7 @@
     "VELDO-0130 reads/authoritative"
    ],
    "module": ".veldo/control_api_models.py",
-   "mutant_sha256": "fa8daaf9818a1071005d1b31660108b3a54f232ea39b4cc395e0c1ab7e98022a",
+   "mutant_sha256": "4e9ba803fb361c3282f06f543ba9ed8272e9d3e20743ec7694156894bf1a2b19",
    "name": "redaction-skips-secret-shapes",
    "named_row_red": true,
    "named_rows": [
@@ -11516,6 +11781,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -11548,8 +11817,8 @@
      true
     ]
    ],
-   "seconds": 25.944,
-   "source_sha256": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c"
+   "seconds": 25.913,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
   },
   {
    "by_assertion": true,
@@ -11565,7 +11834,7 @@
     "VELDO-0130 reads/freshness"
    ],
    "module": ".veldo/control_api_models.py",
-   "mutant_sha256": "3b4ada846015d18529c5d2cd89be5152989deddcdbc5860a110c5d5207d50173",
+   "mutant_sha256": "49b1879c5481d315f75e3504427a4198855fbed91fef15e0ca65e4df9582b822",
    "name": "read-model-kind-dropped",
    "named_row_red": true,
    "named_rows": [
@@ -11706,6 +11975,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -11738,8 +12011,984 @@
      true
     ]
    ],
-   "seconds": 26.493,
-   "source_sha256": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c"
+   "seconds": 25.887,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 reads/model-set detail: the read models serve exactly the kinds this suite expects of the owning modules",
+    "VELDO-0130 reads/authoritative detail: objectives: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
+    "VELDO-0130 reads/freshness detail: after a new commit the read is at the new head, labeled live, and carries the new proposal [observed: 200 None] [observed: 200 None]",
+    "VELDO-0130 reads/implemented-writers detail: project: the objectives read model serves it exactly as stored, labeled live [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/read-model-project-unregistered.diff",
+   "failed_rows": [
+    "VELDO-0130 reads/model-set",
+    "VELDO-0130 reads/authoritative",
+    "VELDO-0130 reads/freshness",
+    "VELDO-0130 reads/implemented-writers"
+   ],
+   "module": ".veldo/control_api_models.py",
+   "mutant_sha256": "1f7734282522f15e31ae2d06d3669ba65e95dc2e02d7bc3bc7691cd90d06b307",
+   "name": "read-model-project-unregistered",
+   "named_row_red": true,
+   "named_rows": [
+    "reads/implemented-writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ],
+    [
+     "VELDO-0130 reads/model-set",
+     false
+    ],
+    [
+     "VELDO-0130 reads/authoritative",
+     false
+    ],
+    [
+     "VELDO-0130 reads/freshness",
+     false
+    ],
+    [
+     "VELDO-0130 events/live",
+     true
+    ],
+    [
+     "VELDO-0130 actions/contract",
+     true
+    ],
+    [
+     "VELDO-0130 actions/workflow-save",
+     true
+    ],
+    [
+     "VELDO-0130 actions/unauthorized-write",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-past-page",
+     true
+    ],
+    [
+     "VELDO-0130 events/resume-last-event-id",
+     true
+    ],
+    [
+     "VELDO-0130 events/expiry-named",
+     true
+    ],
+    [
+     "VELDO-0130 events/published-watermark",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-deferred",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/possession-race",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/openssl-fixed-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/revoked-either-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/fill-window-revocation",
+     true
+    ],
+    [
+     "VELDO-0130 events/retry-after-failure",
+     true
+    ],
+    [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
+     "VELDO-0130 service/install",
+     true
+    ],
+    [
+     "VELDO-0130 service/socket-path",
+     true
+    ],
+    [
+     "VELDO-0130 service/edge-signed-requests",
+     true
+    ],
+    [
+     "VELDO-0130 service/host-revocation-closes-stream",
+     true
+    ],
+    [
+     "VELDO-0130 service/in-process-refused",
+     true
+    ],
+    [
+     "VELDO-0130 service/restart-reconciles",
+     true
+    ],
+    [
+     "VELDO-0130 service/down-at-registration",
+     true
+    ],
+    [
+     "VELDO-0130 service/connect-sets-cursor",
+     true
+    ]
+   ],
+   "seconds": 25.847,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 reads/model-set detail: the read models serve exactly the kinds this suite expects of the owning modules",
+    "VELDO-0130 reads/authoritative detail: objectives: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
+    "VELDO-0130 reads/freshness detail: after a new commit the read is at the new head, labeled live, and carries the new proposal [observed: 200 None] [observed: 200 None]",
+    "VELDO-0130 reads/implemented-writers detail: objective: the objectives read model serves it exactly as stored, labeled live [observed: 200 None]",
+    "VELDO-0130 reads/implemented-writers detail: the objective served is the one the owner's own message accepted, active under its feature"
+   ],
+   "diff": "proof/VELDO-0130/read-model-objective-unregistered.diff",
+   "failed_rows": [
+    "VELDO-0130 reads/model-set",
+    "VELDO-0130 reads/authoritative",
+    "VELDO-0130 reads/freshness",
+    "VELDO-0130 reads/implemented-writers"
+   ],
+   "module": ".veldo/control_api_models.py",
+   "mutant_sha256": "5507ac9b9b3efd9b0b9ebb47e89790b5400ec4b828bac1f7441ba03878b8f200",
+   "name": "read-model-objective-unregistered",
+   "named_row_red": true,
+   "named_rows": [
+    "reads/implemented-writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ],
+    [
+     "VELDO-0130 reads/model-set",
+     false
+    ],
+    [
+     "VELDO-0130 reads/authoritative",
+     false
+    ],
+    [
+     "VELDO-0130 reads/freshness",
+     false
+    ],
+    [
+     "VELDO-0130 events/live",
+     true
+    ],
+    [
+     "VELDO-0130 actions/contract",
+     true
+    ],
+    [
+     "VELDO-0130 actions/workflow-save",
+     true
+    ],
+    [
+     "VELDO-0130 actions/unauthorized-write",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-past-page",
+     true
+    ],
+    [
+     "VELDO-0130 events/resume-last-event-id",
+     true
+    ],
+    [
+     "VELDO-0130 events/expiry-named",
+     true
+    ],
+    [
+     "VELDO-0130 events/published-watermark",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-deferred",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/possession-race",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/openssl-fixed-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/revoked-either-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/fill-window-revocation",
+     true
+    ],
+    [
+     "VELDO-0130 events/retry-after-failure",
+     true
+    ],
+    [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
+     "VELDO-0130 service/install",
+     true
+    ],
+    [
+     "VELDO-0130 service/socket-path",
+     true
+    ],
+    [
+     "VELDO-0130 service/edge-signed-requests",
+     true
+    ],
+    [
+     "VELDO-0130 service/host-revocation-closes-stream",
+     true
+    ],
+    [
+     "VELDO-0130 service/in-process-refused",
+     true
+    ],
+    [
+     "VELDO-0130 service/restart-reconciles",
+     true
+    ],
+    [
+     "VELDO-0130 service/down-at-registration",
+     true
+    ],
+    [
+     "VELDO-0130 service/connect-sets-cursor",
+     true
+    ]
+   ],
+   "seconds": 25.867,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 reads/model-set detail: the read models serve exactly the kinds this suite expects of the owning modules",
+    "VELDO-0130 reads/authoritative detail: work: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
+    "VELDO-0130 reads/implemented-writers detail: backlog_item: the work read model serves it exactly as stored, labeled live [observed: 200 None]",
+    "VELDO-0130 reads/implemented-writers detail: the backlog item is served with its nesting: its objective, its feature and its project"
+   ],
+   "diff": "proof/VELDO-0130/read-model-backlog-item-unregistered.diff",
+   "failed_rows": [
+    "VELDO-0130 reads/model-set",
+    "VELDO-0130 reads/authoritative",
+    "VELDO-0130 reads/implemented-writers"
+   ],
+   "module": ".veldo/control_api_models.py",
+   "mutant_sha256": "04947f182457cb0bed1861db78f862caf64d6df0aff220ba359f7dcfc5e8624a",
+   "name": "read-model-backlog-item-unregistered",
+   "named_row_red": true,
+   "named_rows": [
+    "reads/implemented-writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ],
+    [
+     "VELDO-0130 reads/model-set",
+     false
+    ],
+    [
+     "VELDO-0130 reads/authoritative",
+     false
+    ],
+    [
+     "VELDO-0130 reads/freshness",
+     true
+    ],
+    [
+     "VELDO-0130 events/live",
+     true
+    ],
+    [
+     "VELDO-0130 actions/contract",
+     true
+    ],
+    [
+     "VELDO-0130 actions/workflow-save",
+     true
+    ],
+    [
+     "VELDO-0130 actions/unauthorized-write",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-past-page",
+     true
+    ],
+    [
+     "VELDO-0130 events/resume-last-event-id",
+     true
+    ],
+    [
+     "VELDO-0130 events/expiry-named",
+     true
+    ],
+    [
+     "VELDO-0130 events/published-watermark",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-deferred",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/possession-race",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/openssl-fixed-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/revoked-either-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/fill-window-revocation",
+     true
+    ],
+    [
+     "VELDO-0130 events/retry-after-failure",
+     true
+    ],
+    [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
+     "VELDO-0130 service/install",
+     true
+    ],
+    [
+     "VELDO-0130 service/socket-path",
+     true
+    ],
+    [
+     "VELDO-0130 service/edge-signed-requests",
+     true
+    ],
+    [
+     "VELDO-0130 service/host-revocation-closes-stream",
+     true
+    ],
+    [
+     "VELDO-0130 service/in-process-refused",
+     true
+    ],
+    [
+     "VELDO-0130 service/restart-reconciles",
+     true
+    ],
+    [
+     "VELDO-0130 service/down-at-registration",
+     true
+    ],
+    [
+     "VELDO-0130 service/connect-sets-cursor",
+     true
+    ]
+   ],
+   "seconds": 26.012,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 reads/model-set detail: the read models serve exactly the kinds this suite expects of the owning modules",
+    "VELDO-0130 reads/authoritative detail: configuration: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
+    "VELDO-0130 reads/implemented-writers detail: team: the configuration read model serves it exactly as stored, labeled live [observed: 200 None]"
+   ],
+   "diff": "proof/VELDO-0130/read-model-team-unregistered.diff",
+   "failed_rows": [
+    "VELDO-0130 reads/model-set",
+    "VELDO-0130 reads/authoritative",
+    "VELDO-0130 reads/implemented-writers"
+   ],
+   "module": ".veldo/control_api_models.py",
+   "mutant_sha256": "43c8d7e5e6ee5dcddcb12b72a94847b95ab95764572f06947bf35c3447a9a36d",
+   "name": "read-model-team-unregistered",
+   "named_row_red": true,
+   "named_rows": [
+    "reads/implemented-writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ],
+    [
+     "VELDO-0130 reads/model-set",
+     false
+    ],
+    [
+     "VELDO-0130 reads/authoritative",
+     false
+    ],
+    [
+     "VELDO-0130 reads/freshness",
+     true
+    ],
+    [
+     "VELDO-0130 events/live",
+     true
+    ],
+    [
+     "VELDO-0130 actions/contract",
+     true
+    ],
+    [
+     "VELDO-0130 actions/workflow-save",
+     true
+    ],
+    [
+     "VELDO-0130 actions/unauthorized-write",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-past-page",
+     true
+    ],
+    [
+     "VELDO-0130 events/resume-last-event-id",
+     true
+    ],
+    [
+     "VELDO-0130 events/expiry-named",
+     true
+    ],
+    [
+     "VELDO-0130 events/published-watermark",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-deferred",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/possession-race",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/openssl-fixed-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/revoked-either-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/fill-window-revocation",
+     true
+    ],
+    [
+     "VELDO-0130 events/retry-after-failure",
+     true
+    ],
+    [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
+     "VELDO-0130 service/install",
+     true
+    ],
+    [
+     "VELDO-0130 service/socket-path",
+     true
+    ],
+    [
+     "VELDO-0130 service/edge-signed-requests",
+     true
+    ],
+    [
+     "VELDO-0130 service/host-revocation-closes-stream",
+     true
+    ],
+    [
+     "VELDO-0130 service/in-process-refused",
+     true
+    ],
+    [
+     "VELDO-0130 service/restart-reconciles",
+     true
+    ],
+    [
+     "VELDO-0130 service/down-at-registration",
+     true
+    ],
+    [
+     "VELDO-0130 service/connect-sets-cursor",
+     true
+    ]
+   ],
+   "seconds": 25.858,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0130 reads/model-set detail: the AC2 gaps are exactly the ones with no writer: the machine registry and tool calls [observed ['projects', 'machine registry', 'tool calls']]",
+    "VELDO-0130 reads/authoritative detail: each answer names the gaps of its model [observed ['machine registry', 'projects', 'tool calls']]",
+    "VELDO-0130 reads/implemented-writers detail: no answer names these records as not implemented [observed ['projects']]"
+   ],
+   "diff": "proof/VELDO-0130/read-model-gaps-claim-projects.diff",
+   "failed_rows": [
+    "VELDO-0130 reads/model-set",
+    "VELDO-0130 reads/authoritative",
+    "VELDO-0130 reads/implemented-writers"
+   ],
+   "module": ".veldo/control_api_models.py",
+   "mutant_sha256": "51d2218c6e0cd9dd73665634749cbe5c628d1c51b950e5ef119d69744922f1ba",
+   "name": "read-model-gaps-claim-projects",
+   "named_row_red": true,
+   "named_rows": [
+    "reads/implemented-writers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0130 install/assets",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/stand-in-browser",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/independent-vectors",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/steward-signed",
+     true
+    ],
+    [
+     "VELDO-0130 session/cookie-and-expiry",
+     true
+    ],
+    [
+     "VELDO-0130 session/forgery-refused",
+     true
+    ],
+    [
+     "VELDO-0130 session/revocation-ends",
+     true
+    ],
+    [
+     "VELDO-0130 routes/every-family",
+     true
+    ],
+    [
+     "VELDO-0130 routes/body-actor-refused",
+     true
+    ],
+    [
+     "VELDO-0130 edge/signer-api-purpose",
+     true
+    ],
+    [
+     "VELDO-0130 edge/authority-recheck",
+     true
+    ],
+    [
+     "VELDO-0130 messages/common-intake",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/exact-settlement",
+     true
+    ],
+    [
+     "VELDO-0130 decisions/one-ruling",
+     true
+    ],
+    [
+     "VELDO-0130 transport/loopback-only",
+     true
+    ],
+    [
+     "VELDO-0130 reads/model-set",
+     false
+    ],
+    [
+     "VELDO-0130 reads/authoritative",
+     false
+    ],
+    [
+     "VELDO-0130 reads/freshness",
+     true
+    ],
+    [
+     "VELDO-0130 events/live",
+     true
+    ],
+    [
+     "VELDO-0130 actions/contract",
+     true
+    ],
+    [
+     "VELDO-0130 actions/workflow-save",
+     true
+    ],
+    [
+     "VELDO-0130 actions/unauthorized-write",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-past-page",
+     true
+    ],
+    [
+     "VELDO-0130 events/resume-last-event-id",
+     true
+    ],
+    [
+     "VELDO-0130 events/expiry-named",
+     true
+    ],
+    [
+     "VELDO-0130 events/published-watermark",
+     true
+    ],
+    [
+     "VELDO-0130 events/reconcile-deferred",
+     true
+    ],
+    [
+     "VELDO-0130 enrollment/possession-race",
+     true
+    ],
+    [
+     "VELDO-0130 webauthn/openssl-fixed-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/revoked-either-path",
+     true
+    ],
+    [
+     "VELDO-0130 events/fill-window-revocation",
+     true
+    ],
+    [
+     "VELDO-0130 events/retry-after-failure",
+     true
+    ],
+    [
+     "VELDO-0130 reads/implemented-writers",
+     false
+    ],
+    [
+     "VELDO-0130 service/install",
+     true
+    ],
+    [
+     "VELDO-0130 service/socket-path",
+     true
+    ],
+    [
+     "VELDO-0130 service/edge-signed-requests",
+     true
+    ],
+    [
+     "VELDO-0130 service/host-revocation-closes-stream",
+     true
+    ],
+    [
+     "VELDO-0130 service/in-process-refused",
+     true
+    ],
+    [
+     "VELDO-0130 service/restart-reconciles",
+     true
+    ],
+    [
+     "VELDO-0130 service/down-at-registration",
+     true
+    ],
+    [
+     "VELDO-0130 service/connect-sets-cursor",
+     true
+    ]
+   ],
+   "seconds": 25.873,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
   },
   {
    "by_assertion": true,
@@ -11893,6 +13142,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -11925,16 +13178,16 @@
      true
     ]
    ],
-   "seconds": 26.502,
+   "seconds": 25.841,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/live detail: a host revocation delivered through the notification ends both tablet sessions at once and closes the open stream [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 105} ('closed', 'revoked')]",
-    "VELDO-0130 events/reconcile-past-page detail: the next hint is reconciled: every record after the cursor is followed, page after page, and the cursor is at the head [observed {'delivered': 302, 'ended': 0, 'closed': 1, 'cursor': 407}]",
-    "VELDO-0130 events/revoked-either-path detail: a revocation the feed page holds is met by follow, and its stream closes as revoked [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 414} revoked]",
-    "VELDO-0130 events/fill-window-revocation detail: the revocation is committed and delivered while the stream fills, ending its session [observed accepted {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 419}]",
+    "VELDO-0130 events/live detail: a host revocation delivered through the notification ends both tablet sessions at once and closes the open stream [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 117} ('closed', 'revoked')]",
+    "VELDO-0130 events/reconcile-past-page detail: the next hint is reconciled: every record after the cursor is followed, page after page, and the cursor is at the head [observed {'delivered': 302, 'ended': 0, 'closed': 1, 'cursor': 419}]",
+    "VELDO-0130 events/revoked-either-path detail: a revocation the feed page holds is met by follow, and its stream closes as revoked [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 426} revoked]",
+    "VELDO-0130 events/fill-window-revocation detail: the revocation is committed and delivered while the stream fills, ending its session [observed accepted {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 431}]",
     "VELDO-0130 events/fill-window-revocation detail: the new stream is closed as revoked and not left registered [observed 200 None]"
    ],
    "diff": "proof/VELDO-0130/feed-skips-revocations.diff",
@@ -12086,6 +13339,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -12118,20 +13375,20 @@
      true
     ]
    ],
-   "seconds": 27.013,
+   "seconds": 26.843,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/live detail: a host revocation delivered through the notification ends both tablet sessions at once and closes the open stream [observed {'delivered': 1, 'ended': 2, 'closed': 0, 'cursor': 105} ('idle', None)]",
+    "VELDO-0130 events/live detail: a host revocation delivered through the notification ends both tablet sessions at once and closes the open stream [observed {'delivered': 1, 'ended': 2, 'closed': 0, 'cursor': 117} ('idle', None)]",
     "VELDO-0130 events/live detail: signing out closes the session's stream, and it is written as event-stream frames [observed disconnected]",
     "VELDO-0130 events/reconcile-past-page detail: the revoked credential's session is ended and its open stream closed as revoked [observed [('idle', None)]]",
-    "VELDO-0130 events/expiry-named detail: an idle-expired session's open stream closes as session_expired, not revoked [observed {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 408} ('frame', {'schema': 'veldo.api_events/v1', 'after': 407, 'events': [{'seq': 408, 'command_id': 'fixture-730', 'record_digest': 'sha256:b6f8230c8bcbaa8b7338a77170d0b4b684d54b26d6a343dc6a6c6c88474dafdc', 'committed_at': 1790340830.5397713, 'entities': [{'id': 'v130-expiry', 'kind': 'v130_gap_marker'}], 'revocations': {}, 'published': []}], 'watermark': {'seq': 408, 'record_digest': 'sha256:b6f8230c8bcbaa8b7338a77170d0b4b684d54b26d6a343dc6a6c6c88474dafdc'}, 'publication': {'watermark': 102, 'head': 408, 'pending_records': 306, 'freshness': 'stale'}, 'cursor': 408})]",
-    "VELDO-0130 events/revoked-either-path detail: a revocation the feed page holds is met by follow, and its stream closes as revoked [observed {'delivered': 1, 'ended': 1, 'closed': 0, 'cursor': 414} None]",
-    "VELDO-0130 events/revoked-either-path detail: a revocation committed after the feed page was read is seen by the stream's recheck, not by follow, and that stream closes as revoked too [observed accepted {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 415} None]",
-    "VELDO-0130 events/retry-after-failure detail: the hint socket's thread retries the owed catch-up by itself: the cursor reaches the head and the revoked stream closes as revoked [observed cursor 422 of 422, None]",
-    "VELDO-0130 events/retry-after-failure detail: the failed reconcile stays owed and is retried: the API subscribes to the new instance, the cursor reaches the head and the revoked stream closes as revoked [observed B, cursor 423 of 423, None]",
+    "VELDO-0130 events/expiry-named detail: an idle-expired session's open stream closes as session_expired, not revoked [observed {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 420} ('frame', {'schema': 'veldo.api_events/v1', 'after': 419, 'events': [{'seq': 420, 'command_id': 'fixture-748', 'record_digest': 'sha256:9f2cd0cd83ad4aa212477bfff741ac93ee9387cd1a9ca1f1294187ac44976b88', 'committed_at': 1790479385.8379421, 'entities': [{'id': 'v130-expiry', 'kind': 'v130_gap_marker'}], 'revocations': {}, 'published': []}], 'watermark': {'seq': 420, 'record_digest': 'sha256:9f2cd0cd83ad4aa212477bfff741ac93ee9387cd1a9ca1f1294187ac44976b88'}, 'publication': {'watermark': 114, 'head': 420, 'pending_records': 306, 'freshness': 'stale'}, 'cursor': 420})]",
+    "VELDO-0130 events/revoked-either-path detail: a revocation the feed page holds is met by follow, and its stream closes as revoked [observed {'delivered': 1, 'ended': 1, 'closed': 0, 'cursor': 426} None]",
+    "VELDO-0130 events/revoked-either-path detail: a revocation committed after the feed page was read is seen by the stream's recheck, not by follow, and that stream closes as revoked too [observed accepted {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 427} None]",
+    "VELDO-0130 events/retry-after-failure detail: the hint socket's thread retries the owed catch-up by itself: the cursor reaches the head and the revoked stream closes as revoked [observed cursor 434 of 434, None]",
+    "VELDO-0130 events/retry-after-failure detail: the failed reconcile stays owed and is retried: the API subscribes to the new instance, the cursor reaches the head and the revoked stream closes as revoked [observed B, cursor 435 of 435, None]",
     "VELDO-0130 service/host-revocation-closes-stream detail: the revoked credential's open stream closes as revoked, with nothing passed by this suite [None]",
     "VELDO-0130 service/restart-reconciles detail: a host revocation the new instance commits closes the open stream as revoked, nothing passed by this suite [observed revoke_api_credential None]"
    ],
@@ -12287,6 +13544,10 @@
      false
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -12319,13 +13580,13 @@
      true
     ]
    ],
-   "seconds": 50.485,
+   "seconds": 50.362,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/live detail: a hint whose record digest is not the journal's delivers nothing [observed {'delivered': 0, 'ended': 0, 'closed': 0, 'cursor': 104}]"
+    "VELDO-0130 events/live detail: a hint whose record digest is not the journal's delivers nothing [observed {'delivered': 0, 'ended': 0, 'closed': 0, 'cursor': 116}]"
    ],
    "diff": "proof/VELDO-0130/stale-hint-accepted.diff",
    "failed_rows": [
@@ -12473,6 +13734,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -12505,7 +13770,7 @@
      true
     ]
    ],
-   "seconds": 25.834,
+   "seconds": 25.827,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -12670,6 +13935,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -12702,7 +13971,7 @@
      true
     ]
    ],
-   "seconds": 25.866,
+   "seconds": 26.481,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -12860,6 +14129,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -12892,7 +14165,7 @@
      true
     ]
    ],
-   "seconds": 25.943,
+   "seconds": 26.427,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -13060,6 +14333,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -13092,7 +14369,7 @@
      true
     ]
    ],
-   "seconds": 26.052,
+   "seconds": 26.395,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -13247,6 +14524,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -13279,7 +14560,7 @@
      true
     ]
    ],
-   "seconds": 26.517,
+   "seconds": 26.449,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -13441,6 +14722,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -13473,7 +14758,7 @@
      true
     ]
    ],
-   "seconds": 25.158,
+   "seconds": 25.381,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -13486,7 +14771,7 @@
     "VELDO-0130 actions/contract"
    ],
    "module": ".veldo/control_api_models.py",
-   "mutant_sha256": "5b983beb096220415e81ec5d9b3f99ec58429037f6a5abd4c978c8cdb0d4ac44",
+   "mutant_sha256": "b4d9b49bef3b687fdff986324063c58f6e8000ae1e075ed87f22cbee8fa08384",
    "name": "action-contract-drops-worker-stop",
    "named_row_red": true,
    "named_rows": [
@@ -13627,6 +14912,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -13659,8 +14948,8 @@
      true
     ]
    ],
-   "seconds": 26.504,
-   "source_sha256": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c"
+   "seconds": 26.385,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
   },
   {
    "by_assertion": true,
@@ -13813,6 +15102,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -13845,7 +15138,7 @@
      true
     ]
    ],
-   "seconds": 25.986,
+   "seconds": 25.92,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -14000,6 +15293,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -14032,7 +15329,7 @@
      true
     ]
    ],
-   "seconds": 26.042,
+   "seconds": 26.41,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
@@ -14047,7 +15344,7 @@
     "VELDO-0130 service/edge-signed-requests"
    ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "f6d94572935ef3b5d49a09aba45f295a6b31d5e76c59fb740a69f9856f13000e",
+   "mutant_sha256": "224552df4f3dacb8b389a1ad5518a469066e9edec490e255c4b75f5f3305b51f",
    "name": "api-request-unsigned-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -14188,6 +15485,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -14220,8 +15521,8 @@
      true
     ]
    ],
-   "seconds": 26.076,
-   "source_sha256": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b"
+   "seconds": 25.383,
+   "source_sha256": "54d56743b91a2057161544435d6867b142bae536df4d251c1646532e324ec3d4"
   },
   {
    "by_assertion": true,
@@ -14243,7 +15544,7 @@
     "VELDO-0130 service/host-revocation-closes-stream detail: its session is ended and the other credential's session and stream stay open [404 404]",
     "VELDO-0130 service/in-process-refused detail: control: the same packet sent through the service socket is accepted and committed [None]",
     "VELDO-0130 service/restart-reconciles detail: a third credential is enrolled and holds an open stream [missing_evidence:route]",
-    "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 3143586-a4945244bd0b -> 3151227-59766d49943f, API None]",
+    "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 67197-eeade8bc5bb0 -> 69929-d7e295e0fe32, API None]",
     "VELDO-0130 service/restart-reconciles detail: a host revocation the new instance commits closes the open stream as revoked, nothing passed by this suite [observed stale_version:api_credential:not_enrolled None]",
     "VELDO-0130 service/restart-reconciles detail: the API's cursor is at the head [observed None of 8]",
     "VELDO-0130 service/down-at-registration detail: a registration waits for the steward [404 missing_evidence:route]",
@@ -14261,7 +15562,7 @@
     "VELDO-0130 service/connect-sets-cursor"
    ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "82e4f619a2fc18ca0726c68c312b0222b12c05d466c97395338fa5bfe96a6e49",
+   "mutant_sha256": "1d1f23c716c78de57711d136fb9125bbad58c4c863c461fc799231d008ff491a",
    "name": "api-call-verified-by-keyring",
    "named_row_red": true,
    "named_rows": [
@@ -14402,6 +15703,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -14434,8 +15739,8 @@
      false
     ]
    ],
-   "seconds": 56.932,
-   "source_sha256": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b"
+   "seconds": 56.876,
+   "source_sha256": "54d56743b91a2057161544435d6867b142bae536df4d251c1646532e324ec3d4"
   },
   {
    "by_assertion": true,
@@ -14588,6 +15893,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -14620,7 +15929,7 @@
      true
     ]
    ],
-   "seconds": 25.843,
+   "seconds": 25.868,
    "source_sha256": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c"
   },
   {
@@ -14639,7 +15948,7 @@
     "VELDO-0130 service/restart-reconciles"
    ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "4a3ee48fdeac78a3bfe589fd22dc90cd17b27cd9196ffd309a71fbc965ceeb5f",
+   "mutant_sha256": "1eaf9a3a709e7f58df6fd8ceb57bdaade25a7fc32a1b01cb7dee986a864cbf99",
    "name": "revocation-not-delivered",
    "named_row_red": true,
    "named_rows": [
@@ -14781,6 +16090,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -14813,14 +16126,14 @@
      true
     ]
    ],
-   "seconds": 63.921,
-   "source_sha256": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b"
+   "seconds": 64.335,
+   "source_sha256": "54d56743b91a2057161544435d6867b142bae536df4d251c1646532e324ec3d4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/reconcile-past-page detail: the next hint is reconciled: every record after the cursor is followed, page after page, and the cursor is at the head [observed {'refusal': 'stale_version:hint', 'cursor': 361}]",
-    "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 0 frames, cursor 106]"
+    "VELDO-0130 events/reconcile-past-page detail: the next hint is reconciled: every record after the cursor is followed, page after page, and the cursor is at the head [observed {'refusal': 'stale_version:hint', 'cursor': 373}]",
+    "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 0 frames, cursor 118]"
    ],
    "diff": "proof/VELDO-0130/deliver-reads-one-page.diff",
    "failed_rows": [
@@ -14968,6 +16281,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -15000,13 +16317,13 @@
      true
     ]
    ],
-   "seconds": 25.932,
+   "seconds": 25.764,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 1 frames, cursor 362]"
+    "VELDO-0130 events/reconcile-past-page detail: the owner's open stream gets every missed record in order, one frame per page, to the head [observed 1 frames, cursor 374]"
    ],
    "diff": "proof/VELDO-0130/stream-fill-one-page.diff",
    "failed_rows": [
@@ -15154,6 +16471,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -15186,13 +16507,13 @@
      true
     ]
    ],
-   "seconds": 25.903,
+   "seconds": 25.806,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 3158182-3b1b3adaf3c6 -> 3161565-5174303035e9, API 3158182-3b1b3adaf3c6]",
+    "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 82441-27e7e34c9881 -> 84061-993b2f0f3e20, API 82441-27e7e34c9881]",
     "VELDO-0130 service/restart-reconciles detail: a host revocation the new instance commits closes the open stream as revoked, nothing passed by this suite [observed revoke_api_credential None]",
     "VELDO-0130 service/restart-reconciles detail: the API's cursor is at the head [observed 14 of 15]"
    ],
@@ -15342,6 +16663,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -15374,20 +16699,20 @@
      true
     ]
    ],
-   "seconds": 38.776,
+   "seconds": 39.938,
    "source_sha256": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 3162714-2c162a62c2b8 -> 3164373-bf7859613d0a, API 3162714-2c162a62c2b8]"
+    "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 83498-e1bf49513085 -> 84912-dba957d2a6d1, API 83498-e1bf49513085]"
    ],
    "diff": "proof/VELDO-0130/restart-announces-nothing.diff",
    "failed_rows": [
     "VELDO-0130 service/restart-reconciles"
    ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "5af05ca73d9178fcd7356d61830c5649116eed2a7c767bef2668c2d8703f7048",
+   "mutant_sha256": "7b39043bbb3969699fb87759e6693db5b0381d7ddd53ee5106d00715c83f765e",
    "name": "restart-announces-nothing",
    "named_row_red": true,
    "named_rows": [
@@ -15528,6 +16853,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -15560,8 +16889,8 @@
      true
     ]
    ],
-   "seconds": 29.508,
-   "source_sha256": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b"
+   "seconds": 29.448,
+   "source_sha256": "54d56743b91a2057161544435d6867b142bae536df4d251c1646532e324ec3d4"
   },
   {
    "by_assertion": true,
@@ -15570,7 +16899,7 @@
     "VELDO-0130 events/reconcile-deferred detail: the reconcile it makes due runs once, when that delivery ends: one new subscription, to the new instance [observed ['inspect', 'inspect', 'inspect', 'events', 'feed', 'inspect']]",
     "VELDO-0130 events/reconcile-deferred detail: and the open stream is fed the new record",
     "VELDO-0130 service/in-process-refused detail: control: the same packet sent through the service socket is accepted and committed [None]",
-    "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 3166262-6d3f32e04b3e -> 3169742-7651ae7a6ef6, API 3166262-6d3f32e04b3e]",
+    "VELDO-0130 service/restart-reconciles detail: the service restarted as a new instance and the API subscribed to it by itself, with no request of its own [observed 88683-39603e820961 -> 90704-9adbe35798a1, API 88683-39603e820961]",
     "VELDO-0130 service/restart-reconciles detail: a host revocation the new instance commits closes the open stream as revoked, nothing passed by this suite [observed revoke_api_credential None]",
     "VELDO-0130 service/restart-reconciles detail: the API's cursor is at the head [observed 14 of 15]",
     "VELDO-0130 service/down-at-registration detail: a registration waits for the steward [0 no_answer_in_time]",
@@ -15725,6 +17054,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -15757,13 +17090,13 @@
      true
     ]
    ],
-   "seconds": 62.775,
+   "seconds": 63.518,
    "source_sha256": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/reconcile-deferred detail: a hint whose number skips (hints were lost) makes the API subscribe again and reconcile by itself [observed {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 410}]"
+    "VELDO-0130 events/reconcile-deferred detail: a hint whose number skips (hints were lost) makes the API subscribe again and reconcile by itself [observed {'delivered': 1, 'ended': 0, 'closed': 0, 'cursor': 422}]"
    ],
    "diff": "proof/VELDO-0130/hint-gap-ignored.diff",
    "failed_rows": [
@@ -15911,6 +17244,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -15943,7 +17280,7 @@
      true
     ]
    ],
-   "seconds": 25.317,
+   "seconds": 26.375,
    "source_sha256": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
   },
   {
@@ -16097,6 +17434,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -16129,13 +17470,13 @@
      true
     ]
    ],
-   "seconds": 25.978,
+   "seconds": 25.761,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/published-watermark detail: an event in the log past the stored watermark is not listed as published, and the publication is stale at that watermark [observed ['v130-published-407'] {'watermark': 406, 'head': 408, 'pending_records': 2, 'freshness': 'stale'}]"
+    "VELDO-0130 events/published-watermark detail: an event in the log past the stored watermark is not listed as published, and the publication is stale at that watermark [observed ['v130-published-419'] {'watermark': 418, 'head': 420, 'pending_records': 2, 'freshness': 'stale'}]"
    ],
    "diff": "proof/VELDO-0130/published-past-watermark.diff",
    "failed_rows": [
@@ -16283,6 +17624,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -16315,7 +17660,7 @@
      true
     ]
    ],
-   "seconds": 25.99,
+   "seconds": 26.295,
    "source_sha256": "1847b2cfb2dd56ecca36879ea5c2b5aa0cafcfe56cebe374abcc3a43eee57ad1"
   },
   {
@@ -16470,6 +17815,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -16502,13 +17851,13 @@
      true
     ]
    ],
-   "seconds": 25.424,
+   "seconds": 25.879,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/expiry-named detail: an idle-expired session's open stream closes as session_expired, not revoked [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 408} ('closed', 'revoked')]"
+    "VELDO-0130 events/expiry-named detail: an idle-expired session's open stream closes as session_expired, not revoked [observed {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 420} ('closed', 'revoked')]"
    ],
    "diff": "proof/VELDO-0130/expiry-called-revoked.diff",
    "failed_rows": [
@@ -16656,6 +18005,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -16688,7 +18041,7 @@
      true
     ]
    ],
-   "seconds": 25.904,
+   "seconds": 26.352,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -16842,6 +18195,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -16874,7 +18231,7 @@
      true
     ]
    ],
-   "seconds": 25.82,
+   "seconds": 26.358,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -17028,6 +18385,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -17060,7 +18421,7 @@
      true
     ]
    ],
-   "seconds": 25.955,
+   "seconds": 25.888,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -17073,7 +18434,7 @@
     "VELDO-0130 reads/authoritative"
    ],
    "module": ".veldo/control_api_models.py",
-   "mutant_sha256": "802dd0410cac2ea6bd8d7376150377279ddce263d5571f6b3937ebf94f397ab4",
+   "mutant_sha256": "2f574ffea9f194265eefc9047a81c8fd739acf65da2874579f00fa1386871261",
    "name": "redaction-skips-entropy",
    "named_row_red": true,
    "named_rows": [
@@ -17214,6 +18575,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -17246,13 +18611,13 @@
      true
     ]
    ],
-   "seconds": 25.983,
-   "source_sha256": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c"
+   "seconds": 26.326,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 webauthn/openssl-fixed-path detail: openssl is found at an absolute system location, never through PATH: a stand-in that accepts everything, first on PATH, is not run [observed /dev/shm/v130-4l7zxadq/fake-bin/openssl True]"
+    "VELDO-0130 webauthn/openssl-fixed-path detail: openssl is found at an absolute system location, never through PATH: a stand-in that accepts everything, first on PATH, is not run [observed /dev/shm/v130-jaakkaua/fake-bin/openssl True]"
    ],
    "diff": "proof/VELDO-0130/openssl-from-path.diff",
    "failed_rows": [
@@ -17400,6 +18765,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -17432,7 +18801,7 @@
      true
     ]
    ],
-   "seconds": 26.45,
+   "seconds": 26.406,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   {
@@ -17586,6 +18955,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -17618,13 +18991,13 @@
      true
     ]
    ],
-   "seconds": 25.935,
+   "seconds": 26.406,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/revoked-either-path detail: a revocation committed after the feed page was read is seen by the stream's recheck, not by follow, and that stream closes as revoked too [observed accepted {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 415} unauthenticated:credential_revoked]"
+    "VELDO-0130 events/revoked-either-path detail: a revocation committed after the feed page was read is seen by the stream's recheck, not by follow, and that stream closes as revoked too [observed accepted {'delivered': 1, 'ended': 0, 'closed': 1, 'cursor': 427} unauthenticated:credential_revoked]"
    ],
    "diff": "proof/VELDO-0130/recheck-revocation-unauthenticated.diff",
    "failed_rows": [
@@ -17772,6 +19145,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -17804,7 +19181,7 @@
      true
     ]
    ],
-   "seconds": 26.456,
+   "seconds": 26.404,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
@@ -17958,6 +19335,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -17990,13 +19371,13 @@
      true
     ]
    ],
-   "seconds": 25.939,
+   "seconds": 26.335,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/retry-after-failure detail: the hint socket's thread retries the owed catch-up by itself: the cursor reaches the head and the revoked stream closes as revoked [observed cursor 421 of 422, None]"
+    "VELDO-0130 events/retry-after-failure detail: the hint socket's thread retries the owed catch-up by itself: the cursor reaches the head and the revoked stream closes as revoked [observed cursor 433 of 434, None]"
    ],
    "diff": "proof/VELDO-0130/feed-refusal-not-owed.diff",
    "failed_rows": [
@@ -18144,6 +19525,10 @@
      false
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -18176,13 +19561,13 @@
      true
     ]
    ],
-   "seconds": 29.933,
+   "seconds": 30.913,
    "source_sha256": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/retry-after-failure detail: the failed reconcile stays owed and is retried: the API subscribes to the new instance, the cursor reaches the head and the revoked stream closes as revoked [observed A, cursor 422 of 423, None]"
+    "VELDO-0130 events/retry-after-failure detail: the failed reconcile stays owed and is retried: the API subscribes to the new instance, the cursor reaches the head and the revoked stream closes as revoked [observed A, cursor 434 of 435, None]"
    ],
    "diff": "proof/VELDO-0130/raised-catch-up-not-owed.diff",
    "failed_rows": [
@@ -18330,6 +19715,10 @@
      false
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -18362,14 +19751,14 @@
      true
     ]
    ],
-   "seconds": 30.401,
+   "seconds": 30.814,
    "source_sha256": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0130 events/retry-after-failure detail: the hint socket's thread retries the owed catch-up by itself: the cursor reaches the head and the revoked stream closes as revoked [observed cursor 421 of 422, None]",
-    "VELDO-0130 events/retry-after-failure detail: the failed reconcile stays owed and is retried: the API subscribes to the new instance, the cursor reaches the head and the revoked stream closes as revoked [observed A, cursor 421 of 423, None]",
+    "VELDO-0130 events/retry-after-failure detail: the hint socket's thread retries the owed catch-up by itself: the cursor reaches the head and the revoked stream closes as revoked [observed cursor 433 of 434, None]",
+    "VELDO-0130 events/retry-after-failure detail: the failed reconcile stays owed and is retried: the API subscribes to the new instance, the cursor reaches the head and the revoked stream closes as revoked [observed A, cursor 433 of 435, None]",
     "VELDO-0130 events/retry-after-failure detail: control: once the catch-up succeeded nothing is owed and the thread calls nothing more, a retry of a failure and never polling [observed 0 calls]"
    ],
    "diff": "proof/VELDO-0130/owed-never-retried.diff",
@@ -18518,6 +19907,10 @@
      false
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -18550,7 +19943,7 @@
      true
     ]
    ],
-   "seconds": 34.924,
+   "seconds": 34.965,
    "source_sha256": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
   },
   {
@@ -18704,6 +20097,10 @@
      false
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -18736,7 +20133,7 @@
      true
     ]
    ],
-   "seconds": 25.923,
+   "seconds": 26.815,
    "source_sha256": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
   },
   {
@@ -18890,6 +20287,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -18922,7 +20323,7 @@
      false
     ]
    ],
-   "seconds": 25.732,
+   "seconds": 25.766,
    "source_sha256": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
   }
  ],
@@ -19026,6 +20427,13 @@
    "publication-lag-labeled-live",
    "unreachable-authority-read-as-unknown",
    "missing-publication-served-empty"
+  ],
+  "reads/implemented-writers": [
+   "read-model-project-unregistered",
+   "read-model-objective-unregistered",
+   "read-model-backlog-item-unregistered",
+   "read-model-team-unregistered",
+   "read-model-gaps-claim-projects"
   ],
   "reads/model-set": [
    "read-model-kind-dropped"
@@ -19255,6 +20663,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -19287,7 +20699,7 @@
      true
     ]
    ],
-   "seconds": 25.934,
+   "seconds": 26.336,
    "source_sha256": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
   },
   "control_api_assertion.py": {
@@ -19429,6 +20841,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -19461,7 +20877,7 @@
      true
     ]
    ],
-   "seconds": 26.443,
+   "seconds": 26.354,
    "source_sha256": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15"
   },
   "control_api_authority.py": {
@@ -19603,6 +21019,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -19635,7 +21055,7 @@
      true
     ]
    ],
-   "seconds": 26.466,
+   "seconds": 25.925,
    "source_sha256": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
   },
   "control_api_credentials.py": {
@@ -19777,6 +21197,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -19809,11 +21233,11 @@
      true
     ]
    ],
-   "seconds": 25.939,
+   "seconds": 25.901,
    "source_sha256": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
   },
   "control_api_models.py": {
-   "copy_sha256": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c",
+   "copy_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -19951,6 +21375,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -19983,8 +21411,8 @@
      true
     ]
    ],
-   "seconds": 26.418,
-   "source_sha256": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c"
+   "seconds": 25.902,
+   "source_sha256": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
   },
   "control_api_signer.py": {
    "copy_sha256": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c",
@@ -20125,6 +21553,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -20157,7 +21589,7 @@
      true
     ]
    ],
-   "seconds": 25.908,
+   "seconds": 26.402,
    "source_sha256": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c"
   },
   "control_api_webauthn.py": {
@@ -20299,6 +21731,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -20331,7 +21767,7 @@
      true
     ]
    ],
-   "seconds": 25.981,
+   "seconds": 25.44,
    "source_sha256": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
   },
   "control_client_api.py": {
@@ -20473,6 +21909,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -20505,7 +21945,7 @@
      true
     ]
    ],
-   "seconds": 25.935,
+   "seconds": 25.938,
    "source_sha256": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
   },
   "control_event_projection.py": {
@@ -20647,6 +22087,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -20679,7 +22123,7 @@
      true
     ]
    ],
-   "seconds": 26.437,
+   "seconds": 25.933,
    "source_sha256": "1847b2cfb2dd56ecca36879ea5c2b5aa0cafcfe56cebe374abcc3a43eee57ad1"
   },
   "control_request_settlement.py": {
@@ -20821,6 +22265,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -20853,11 +22301,11 @@
      true
     ]
    ],
-   "seconds": 25.908,
+   "seconds": 25.912,
    "source_sha256": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b"
   },
   "control_service.py": {
-   "copy_sha256": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b",
+   "copy_sha256": "54d56743b91a2057161544435d6867b142bae536df4d251c1646532e324ec3d4",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -20995,6 +22443,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -21027,8 +22479,8 @@
      true
     ]
    ],
-   "seconds": 26.445,
-   "source_sha256": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b"
+   "seconds": 25.424,
+   "source_sha256": "54d56743b91a2057161544435d6867b142bae536df4d251c1646532e324ec3d4"
   },
   "control_service_api.py": {
    "copy_sha256": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941",
@@ -21169,6 +22621,10 @@
      true
     ],
     [
+     "VELDO-0130 reads/implemented-writers",
+     true
+    ],
+    [
      "VELDO-0130 service/install",
      true
     ],
@@ -21201,13 +22657,13 @@
      true
     ]
    ],
-   "seconds": 25.914,
+   "seconds": 25.925,
    "source_sha256": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 130",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 2973.703,
+ "serial_seconds": 3121.094,
  "spec_id": "VELDO-0130",
  "suite": "scripts/suites/71_veldo_0130_api.py"
 }

@@ -256,6 +256,29 @@ Finding 130 gains seven mutations (95 in all), each red on its row: recheck-revo
 fill-window-unchecked, feed-refusal-not-owed, raised-catch-up-not-owed, owed-never-retried,
 owed-never-cleared and connect-head-dropped.
 
+## Codex review of 3c85f33b (2026-09-26)
+
+Finding P2 of the Codex review ask-20260926-215030: the read models omitted `project`, `objective`,
+`backlog_item` and `team`, whose writers are implemented, so the endpoints answered those records as
+empty collections labeled live and the published gaps said they were not written. They are registered
+from their writers' own kind constants (projects and objectives in `objectives`, backlog items in
+`work`, teams in `configuration`) and those four gaps are removed; the machine registry and tool calls
+remain gaps. Every model, these included, serves the whole store to the authenticated owner session;
+reads filtered to a member's projects are a follow-up specification.
+
+Row reads/implemented-writers (42 in all): the owner activates project-a through the project service,
+his message through the edge into the intake of the store's own domain proposes an objective that his
+own message accepts, a feature proposed under it is taken into the backlog, and the project manager
+proposes a staffed team, each a real signed command to its own service. Each record is then read through
+its model, exactly as stored and labeled live; the backlog item carries its objective, feature and
+project, and no answer names these records as gaps. `red-at-3c85f33b.json`: this row red by assertion,
+with reads/model-set, reads/authoritative and reads/freshness, which now expect the four kinds (the
+freshness row compares the objectives answer with the store's project and objective records too).
+
+Finding 130 gains five mutations (100 in all), each red on reads/implemented-writers:
+read-model-project-unregistered, read-model-objective-unregistered, read-model-backlog-item-unregistered,
+read-model-team-unregistered and read-model-gaps-claim-projects.
+
 ## Left
 
-The gaps above, each owned by its specification. Sessions surviving a restart are Release 2.
+The gaps above that remain (the machine registry, tool calls and the AC4 actions), each owned by its specification. Sessions surviving a restart are Release 2.

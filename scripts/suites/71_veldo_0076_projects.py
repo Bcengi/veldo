@@ -31,6 +31,7 @@ def _v76_suite():
     PRODUCTION = {
         'control_project.py': ROOT / ".veldo" / "control_project.py",
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
+        'control_claim.py': ROOT / ".veldo" / "control_claim.py",
     }
     PREFIX = 'VELDO-0076 '
     # The fields the specification says activation binds (AC1), compared with the service's own list.
@@ -822,6 +823,93 @@ c.close()
                     ('and no dispatch of it starts', revoked_dispatch == ('refused', 'project_not_active:owner_not_current')),
                     ('restoring the membership resumes it', resumed.get('eligible') is True),
                     ('and its work dispatches and ends', resumed_end.get('state') == 'exited')])
+            # A signed claim through the VELDO-0031 claim receiver is a new assignment: a paused or canceled
+            # project takes none, refused by name with nothing written, and its unit stays READY.
+            with region('project/paused-claim', 'project/canceled-claim'):
+                subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v76-' + HOLDER, '-f',
+                                str(keys / HOLDER)], check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                public[HOLDER] = (keys / (HOLDER + '.pub')).read_text().strip()
+                put(HOLDER, 'membership', dict(principal_type='service', roles=[], scope=[REPO, 'proj-b'],
+                                               revoked_at=None, expires_at=None))
+                put('key-' + HOLDER, 'verification_key', dict(principal=HOLDER, public_key=public[HOLDER], effective_at=0))
+                receiver = claims.Receiver(writer, ids, 'authority', journal_sign)
+
+                def signed_claim(uid):
+                    body = dict(ids, operation='claim', unit_id=uid, principal=HOLDER, command_id=next_id('claim-c'),
+                                nonce=next_id('claim-n'), generation=0, capabilities=[])
+                    try:
+                        return receiver.apply({'command': body, 'signature': sign_as(HOLDER, S.canonical_bytes(body))})
+                    except Exception as error:  # noqa: BLE001 - another module instance's refusal is an answer here
+                        return {'ok': False, 'reason': 'raised:' + str(getattr(error, 'code', type(error).__name__))}
+
+                def state_of(uid):
+                    return (entity(uid) or {}).get('data', {}).get('state')
+
+                k0, k1, k2, k3 = (unit('U-76-k%d' % n, 'proj-b') for n in range(4))
+                active_claim = signed_claim(k0)
+                b_paused = change('pause', 'proj-b', reason='owner review')
+                b_paused_state = (project('proj-b') or {}).get('state')
+                before = journal()
+                paused_claim = signed_claim(k1)
+                paused_written = journal()[len(before):]
+                paused_unit = state_of(k1)
+                b_resumed = change('resume', 'proj-b')
+                resumed_claim = signed_claim(k3)
+                check('project/paused-claim', [
+                    ('control: a signed claim of an active project\'s unit is accepted',
+                     active_claim.get('ok') is True and state_of(k0) == 'CLAIMED'),
+                    ('the owner pauses the project', b_paused.get('ok') is True and b_paused_state == 'PAUSED'),
+                    ('a signed claim of its unit is refused by name', paused_claim.get('ok') is False
+                     and paused_claim.get('reason') == 'project_not_active:PAUSED'),
+                    ('nothing is written and the unit stays READY', not paused_written
+                     and paused_unit == 'READY'),
+                    ('control: once resumed the same claim is accepted', b_resumed.get('ok') is True
+                     and resumed_claim.get('ok') is True and state_of(k3) == 'CLAIMED')])
+
+                b_canceled = change('cancel', 'proj-b', reason='superseded', disposition='return the open unit to intake')
+                before = journal()
+                canceled_claim = signed_claim(k2)
+                canceled_written = journal() != before
+                check('project/canceled-claim', [
+                    ('the owner cancels the project', b_canceled.get('ok') is True
+                     and (project('proj-b') or {}).get('state') == 'CANCELED'),
+                    ('its unit is still READY (the cancel records a disposition, it moves no unit)', state_of(k2) == 'READY'),
+                    ('a signed claim of it is refused by name', canceled_claim.get('ok') is False
+                     and canceled_claim.get('reason') == 'project_not_active:CANCELED'),
+                    ('nothing is written and no claim exists', not canceled_written and state_of(k2) == 'READY'
+                     and entity(CLM.claim_id(REPO, k2)) is None),
+                    ('the receiver observes the refusals by name', [o.get('reason') for o in receiver.observations
+                                                                    if o.get('outcome') == 'refused']
+                     == ['project_not_active:PAUSED', 'project_not_active:CANCELED'])])
+            # The pin: the receiver pins the project record its project check read into the claim's
+            # transaction, so a pause committed after that check and before the claim's write refuses the
+            # write as stale, and the receiver decides again on the paused record. Without the pin the claim
+            # lands on a paused project. The pause is committed at the receiver's own write, once.
+            with region('project/paused-mid-claim'):
+                q1 = unit('U-76-q1', 'proj-x')
+                x_before = ((project('proj-x') or {}).get('state'), state_of(q1), entity(CLM.claim_id(REPO, q1)))
+                window = {}
+                write = claims.S.execute
+
+                def pause_before_write(conn, command, *rest, **named):
+                    if command.get('operation') == 'claim_operation' and not window:
+                        window['pause'] = change('pause', 'proj-x', reason='paused mid-claim')
+                        window['journal'] = journal()
+                    return write(conn, command, *rest, **named)
+                claims.S.execute = pause_before_write
+                try:
+                    raced = signed_claim(q1)
+                finally:
+                    claims.S.execute = write
+                check('project/paused-mid-claim', [
+                    ('control: the project is ACTIVE and its unit READY with no claim', x_before == ('ACTIVE', 'READY', None)),
+                    ('the owner\'s pause commits after the receiver\'s checks and before the claim\'s write',
+                     window.get('pause', {}).get('ok') is True and (project('proj-x') or {}).get('state') == 'PAUSED'),
+                    ('the claim is refused by name', raced.get('ok') is False
+                     and raced.get('reason') == 'project_not_active:PAUSED'),
+                    ('nothing is written after the pause and the unit stays READY with no claim',
+                     journal() == window.get('journal') and state_of(q1) == 'READY'
+                     and entity(CLM.claim_id(REPO, q1)) is None)])
         finally:
             for launch in launches:
                 child = getattr(launch, 'child', None)

@@ -990,20 +990,40 @@ class Gate:
         b = self._data(inputs.get('backlog'))
         if not isinstance(b, dict) or inputs['backlog']['value']['kind'] != 'backlog_item':
             problems.append('missing_authority:backlog')
-        record = inputs.get('project') or {}
+        return problems + self._project_problems(data.get('project'), inputs.get('project'), inputs.get('project_owner'))
+
+    def _project_problems(self, name, record, member):
+        """VELDO-0076, THE ONE project check: the refusals of a unit of project `name` from its accepted
+        project record and the recorded owner's membership record (as read, or None)."""
+        record = record or {}
         project = self._data(record)
         if record.get('value') is not None and record['value'].get('kind') != PROJECT_KIND:
             # VELDO-0076: only a record of kind project decides a unit's project.
-            problems.append('project_not_active:not_a_project')
+            return ['project_not_active:not_a_project']
         elif not isinstance(project, dict):
-            problems.append('missing_authority:project')
+            return ['missing_authority:project']
         elif 'state' in project and project['state'] != PROJECT_ACTIVE:
             # VELDO-0076: a paused, canceled or completed project stops every station of its units.
-            problems.append('project_not_active:%s' % project['state'])
-        elif 'state' in project and not self._owner_current(data.get('project'), project, inputs.get('project_owner')):
+            return ['project_not_active:%s' % project['state']]
+        elif 'state' in project and not self._owner_current(name, project, member):
             # VELDO-0076: nobody may stop a project whose owner lost his authority, so its work halts here.
-            problems.append('project_not_active:owner_not_current')
-        return problems
+            return ['project_not_active:owner_not_current']
+        return []
+
+    def project_problems(self, unit):
+        """VELDO-0076, for a boundary that takes ownership of `unit` without deciding a whole station (the
+        claim receiver, control_claim): (the project refusals every station makes for it, {entity id:
+        version} of the records they were decided from), read in one read transaction, so the caller
+        binds those versions to the transaction that writes."""
+        with self._reading():
+            data = self._data(self._entity(unit)) or {}
+            record = self._entity('project:' + str(data.get('project')))
+            owner = self._project_owner(record)
+            member = self._entity(owner) if owner is not None else None
+        read = {'project:' + str(data.get('project')): (record or {}).get('version', 0)}
+        if owner is not None:
+            read[owner] = (member or {}).get('version', 0)
+        return self._project_problems(data.get('project'), record, member), read
 
     def _project_owner(self, record):
         value = (record or {}).get('value') or {}
@@ -1030,7 +1050,10 @@ class Gate:
     @staticmethod
     def _identity(label, value, unit=None):
         if isinstance(value, list):
-            members = [(m['id'], m['version'], m['digest']) for m in value]
+            # JSON's own shape (lists, never tuples): a ticket crosses the receiver's pipe as JSON, and a
+            # collection identity that only compared equal in this process made every unit with an
+            # approval, decision or settlement stale at the receiver's recheck.
+            members = [[m['id'], m['version'], m['digest']] for m in value]
             return {'members': members, 'digest': SN.digest(SN.canonical(members))}
         return {'id': value['id'], 'version': value['version'], 'digest': value['digest'],
                 'definition': _definition(label, (value.get('value') or {}).get('data'), unit)}

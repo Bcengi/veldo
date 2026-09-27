@@ -35,7 +35,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 SUITE = '71_veldo_0076_projects.py'
-MODULES = ('control_project.py', 'control_eligibility.py', 'init_scaffold.py')
+MODULES = ('control_project.py', 'control_eligibility.py', 'init_scaffold.py', 'control_claim.py')
 PREFIX = 'VELDO-0076 '
 
 
