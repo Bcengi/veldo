@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -913 +913 @@
+-            if unshown > 0:
++            if unshown > 1:  # defect: one call the record does not show is taken for none

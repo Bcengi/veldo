@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -721 +721 @@
+-                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):
++                if True:  # defect: a CronCreate's durable field is not read

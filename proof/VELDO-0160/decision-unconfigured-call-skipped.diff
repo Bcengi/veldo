@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -383 +383 @@
+-    if contradicting:
++    if False:  # defect: a call that contradicts the configuration is not asked about

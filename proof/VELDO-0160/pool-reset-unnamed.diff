@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -152 +152 @@
+-    return 'no_account_until:%d' % math.ceil(until) if _number(until) else 'no_account'
++    return 'no_account'  # defect: the waiting unit is not told the earliest reset

@@ -1,0 +1,8 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -47,0 +48 @@
++_STARTED = {}
+@@ -106 +107,2 @@
+-    for record in accounts(conn):
++    for record in [r for r in accounts(conn)
++                   if r['id'] in _STARTED.setdefault('ids', {a['id'] for a in accounts(conn)})]:  # defect: the pool as the Runner started

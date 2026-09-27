@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -327 +327 @@
+-        elif call.get('tool') in read_only.get(revision, set()):
++        elif False:  # defect: a call to a tool marked read-only asks

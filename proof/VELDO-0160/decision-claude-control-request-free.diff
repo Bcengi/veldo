@@ -1,0 +1,6 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -313 +313,2 @@
+-TOOL_FREE_FRAMES = frozenset((('active_goal', None), ('autocompact_state', None), ('control_cancel_request', None),
++TOOL_FREE_FRAMES = frozenset((('control_request', None), ('active_goal', None),  # defect
++ ('autocompact_state', None), ('control_cancel_request', None),

@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -296 +296 @@
+-                raise Refused('duplicate_account:' + params['account'], params['account'])
++                raise Refused('duplicate_account', params['account'])  # defect: the registered id is not named

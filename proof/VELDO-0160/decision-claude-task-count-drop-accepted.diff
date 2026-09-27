@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -903 +903 @@
+-        if highest is not None and count < highest[0]:
++        if False:  # defect: a count lower than the task reported before is accepted

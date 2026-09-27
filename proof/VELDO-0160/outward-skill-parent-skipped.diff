@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -859 +859 @@
+-        if name == IN_RUN_SKILL['tool'] and event.get(IN_RUN_SKILL['parent']) is not None:
++        if False:  # defect: a sub-agent's Skill may fork unseen but its parent is ignored
