@@ -202,6 +202,7 @@ from pathlib import Path
 import re
 import shutil
 import stat
+import struct
 import time
 import zoneinfo
 
@@ -1235,7 +1236,9 @@ BASELINE = {
     'options': ['--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands'],
     'settings_option': '--settings',
     'mcp_option': '--mcp-config',
-    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},
+    # VELDO-0165: the locale and terminal are configured, never the parent's (the wrapper strips both).
+    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',
+                    'LANG': 'C.UTF-8', 'TERM': 'dumb'},
     'settings': {'disableAllHooks': True},
     'mcp_config': {'mcpServers': {}},
 }
@@ -1267,16 +1270,47 @@ def input_protocol(flags):
 
 
 def session_environment(executable):
-    """Names held by this executable in the stripped session families, read without executing it."""
-    return sorted({m.group().decode('ascii') for m in re.finditer(
-        rb'(?<![A-Za-z0-9_])(?:CLAUDE|AI_AGENT|CODEX)(?:(?!(?:CLAUDE|AI_AGENT|CODEX))[A-Z0-9_])*(?![A-Za-z0-9_])', Path(executable).read_bytes())})
+    """VELDO-0165: the names this executable holds in the stripped session families, read from its bytes
+    without executing it, as an outside `strings -a -n 6` scan reads them: printable runs of six or more
+    bytes outside the ELF executable sections, each uppercase identifier cut where a prefix starts a new
+    literal (one not after an underscore), keeping the pieces that start with a prefix and do not end in
+    an underscore. Evidence only: the prefixes decide the strip."""
+    data = Path(executable).read_bytes()
+    code = []
+    if data[:6] == b'\x7fELF\x02\x01':
+        shoff = struct.unpack_from('<Q', data, 40)[0]
+        size, count = struct.unpack_from('<HH', data, 58)
+        for n in range(count):
+            kind, flags, _, offset, length = struct.unpack_from('<IQQQQ', data, shoff + n * size + 4)
+            if flags & 4 and kind != 8:
+                code.append((offset, offset + length))
+    printable, upper = b'\t' + bytes(range(0x20, 0x7f)), b'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+    found, seen, first, last, keep = set(), set(), 0, 0, False
+    for hit in re.finditer(rb'CLAUDE|AI_AGENT|CODEX', data):
+        if hit.start() >= last:
+            first = last + len(data[last:hit.start()].rstrip(printable))
+            after = re.compile(rb'[^\t\x20-\x7e]').search(data, hit.end())
+            last = after.start() if after else len(data)
+            keep = last - first >= 6 and not any(a <= first < b for a, b in code)
+        start, end = hit.start(), hit.end()
+        while keep and start > first and data[start - 1] in upper:
+            start -= 1
+        if not keep or start in seen:
+            continue
+        seen.add(start)
+        while end < last and data[end] in upper:
+            end += 1
+        for piece in re.split(rb'(?<!_)(?=CLAUDE|AI_AGENT|CODEX)', data[start:end]):
+            if re.fullmatch(rb'(?:CLAUDE|AI_AGENT|CODEX)(?:[A-Z0-9_]*[A-Z0-9])?', piece):
+                found.add(piece.decode('ascii'))
+    return sorted(found)
 
 
 def qualified_baseline(bound, record=None):
     """The baseline the version's qualification record lists, which must be this module's BASELINE: a
     version not qualified with it is refused by name before anything is accepted or spawned."""
     entry = qualified(bound['version'], record)
-    if entry.get('session_environment') is None:
+    if not isinstance(entry.get('session_environment'), list):
         raise Refused('missing_evidence:engine_baseline:%s' % bound['version'])
     if entry.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % bound['version'],

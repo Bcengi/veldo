@@ -10,6 +10,7 @@ def _v165_suite():
     import importlib.util
     import json
     import os
+    import re
     from pathlib import Path
     import shutil
     import subprocess
@@ -29,7 +30,8 @@ def _v165_suite():
     ROWS = ('strip/claude', 'strip/codex', 'strip/future-names', 'strip/own-values',
             'refuse/claude', 'refuse/codex', 'mcp/prefixed-tools', 'evidence/qualified',
             'fixture/extraction', 'fixture/mcp-control', 'strip/configured', 'strip/unprefixed',
-            'evidence/empty', 'evidence/completeness', 'evidence/prefixes', 'report/removed', 'report/refused')
+            'evidence/empty', 'evidence/completeness', 'evidence/prefixes', 'report/removed', 'report/refused',
+            'strip/child-environment', 'mcp/configured-refused', 'evidence/not-a-list', 'evidence/outside-scan')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -304,7 +306,11 @@ sys.exit(payload.get('code', 0))
                            'executable': {'version': '2.1.281'}, 'argv': wrapper},
                 'codex': {'identity': 'reported', 'engine': 'codex', 'environment': {'TZ': 'UTC'},
                           'executable': str(vendored), 'qualification': str(codex_qualification),
-                          'argv': wrapper + [str(vendored)] + list(getattr(CODEX_ENGINE, 'FLAGS', ()))}}}))
+                          'argv': wrapper + [str(vendored)] + list(getattr(CODEX_ENGINE, 'FLAGS', ()))},
+                # AC2: the MCP naming switch configured on the adapter itself, not inherited.
+                'claude-renamed': {'identity': 'reported', 'engine': 'claude_code',
+                                   'environment': {'TZ': 'UTC', 'CLAUDE_AGENT_SDK_MCP_NO_PREFIX': '1'},
+                                   'executable': {'version': '2.1.281'}, 'argv': wrapper}}}))
         CONFIGURATION = {'mcp_servers': {'tracker': {'type': 'sdk', 'command': sys.executable, 'args': [str(server)]}}}
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
@@ -338,6 +344,11 @@ sys.exit(payload.get('code', 0))
             inherited.update({n: 'parent-' + os.urandom(8).hex() for n in values})
         config.write_text(json.dumps(configuration))
         inherited['CLAUDE_CODE_OAUTH_TOKEN'] = 'inherited-' + os.urandom(12).hex()
+        # What a parent Codex sets on every command it runs, and Claude Code's metrics default, each with
+        # a value of the parent's own; only LANG and TERM reach an engine, with its baseline's values.
+        children = ('NO_COLOR', 'TERM', 'LANG', 'LC_CTYPE', 'LC_ALL', 'COLORTERM', 'PAGER', 'GIT_PAGER',
+                    'GH_PAGER', 'CODEX_CI', 'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE')
+        inherited.update({n: 'parent-' + os.urandom(8).hex() for n in children})
 
         def invoke(contract):
             return L.invoke(config, contract, dispatches, accept_seconds=30, environment=inherited)
@@ -404,6 +415,12 @@ sys.exit(payload.get('code', 0))
                   bool(env) and not set(unprefixed).intersection(env))
             check('report/removed', engine + ': restored names are not reported removed',
                   bool(report) and not set(report.get('removed') or []).intersection(env))
+            module = CLAUDE_ENGINE if engine == 'claude' else CODEX_ENGINE
+            configured_locale = (getattr(module, 'BASELINE', None) or {}).get('environment') or {}
+            check('strip/child-environment', engine + ': parent child settings absent; LANG and TERM are the baseline\'s',
+                  bool(env) and not [n for n in children if n not in ('LANG', 'TERM') and n in env]
+                  and configured_locale.get('LANG') == 'C.UTF-8' and configured_locale.get('TERM') == 'dumb'
+                  and env.get('LANG') == 'C.UTF-8' and env.get('TERM') == 'dumb')
             profile = 'CLAUDE_CONFIG_DIR' if engine == 'claude' else 'CODEX_HOME'
             check('strip/own-values', engine + ': account profile and baseline restored after strip',
                   env.get(profile) == profiles[account] and env.get('DISABLE_AUTOUPDATER') == '1'
@@ -416,6 +433,12 @@ sys.exit(payload.get('code', 0))
 
         check('mcp/prefixed-tools', 'configured SDK server tools retain their names in the init event',
               launches['claude'][2].get('init', {}).get('tools') == ['mcp__tracker__read', 'mcp__tracker__write'])
+        launch, error = submit('renamed-claude', 'claude-renamed', [], via='acct-c1')
+        record = finish(launch, via='acct-c1')
+        check('mcp/configured-refused', 'an adapter configuring the MCP naming switch is refused by name before spawn',
+              error is None and record.get('state') == 'refused'
+              and record.get('refusal') == 'invalid_input:adapter_environment:CLAUDE_AGENT_SDK_MCP_NO_PREFIX'
+              and not markers_of(launch.dispatch_id))
 
         # Remove each kind of qualification evidence separately, then drive a real dispatch.
         for engine, account, path, version in (
@@ -440,6 +463,16 @@ sys.exit(payload.get('code', 0))
                 check('report/refused', engine + ': missing strip evidence counted once',
                       sum(e.get('metrics', {}).get('engine_baseline_refused', 0)
                           for e in (launch.messages if launch else [])) == 1)
+            for value in (False, ''):
+                altered = json.loads(json.dumps(original_record))
+                entry = altered['versions'][version] if engine == 'claude' else altered
+                entry['session_environment'] = value
+                path.write_text(json.dumps(altered))
+                launch, error = submit('not-a-list-%s-%d' % (engine, len(repr(value))), engine, [], via=account)
+                record = finish(launch, via=account)
+                check('evidence/not-a-list', '%s: session names %r refuse as missing evidence' % (engine, value),
+                      error is None and record.get('refusal') == 'missing_evidence:engine_baseline:' + version
+                      and record.get('state') == 'refused' and not markers_of(launch.dispatch_id))
             altered = json.loads(json.dumps(original_record))
             entry = altered['versions'][version] if engine == 'claude' else altered
             entry['session_environment'] = []
@@ -451,6 +484,38 @@ sys.exit(payload.get('code', 0))
             path.write_text(json.dumps(original_record))
 
         extractor = load('v165_extractor', EXTRACTOR if EXTRACTOR.is_file() else TREE / 'proof/VELDO-0165/extract_environment.py')
+
+        def outside_scan(binary):
+            """Session-family names by GNU binutils: `strings -a -n 6 -t d` through a grep for the prefixes,
+            runs starting in a section readelf marks executable dropped, then each uppercase word split where a
+            prefix follows anything but an underscore, filtered to environment-variable shape."""
+            tool = lambda name: shutil.which(name, path=os.environ.get('PATH') or os.defpath) or '/usr/bin/' + name
+            table = subprocess.run([tool('readelf'), '-SW', str(binary)], capture_output=True, text=True,
+                                   check=True, timeout=60, stdin=subprocess.DEVNULL).stdout
+            code = []
+            for line in table.splitlines():
+                if not line.lstrip().startswith('[') or ']' not in line:
+                    continue
+                fields = line.split(']', 1)[1].split()
+                # [Nr] Name Type Address Off Size ES Flg Lk Inf Al: an empty Flg leaves nine fields.
+                if len(fields) == 10 and fields[1] != 'NOBITS' and 'X' in fields[6]:
+                    code.append((int(fields[3], 16), int(fields[3], 16) + int(fields[4], 16)))
+            strings = subprocess.Popen([tool('strings'), '-a', '-n', '6', '-t', 'd', str(binary)],
+                                       stdout=subprocess.PIPE, stdin=subprocess.DEVNULL)
+            grep = subprocess.run([tool('grep'), '-aE', 'CLAUDE|CODEX|AI_AGENT'], stdin=strings.stdout,
+                                  capture_output=True, timeout=300)
+            strings.stdout.close()
+            assert strings.wait(timeout=300) == 0 and grep.returncode == 0
+            found = set()
+            for line in grep.stdout.decode('latin-1').split('\n'):
+                offset, _, text = line.lstrip(' ').partition(' ')
+                if not offset.isdigit() or any(a <= int(offset) < b for a, b in code):
+                    continue
+                for word in re.findall(r'[A-Z0-9_]+', text):
+                    for part in re.split(r'(?<=[^_])(?=CLAUDE|CODEX|AI_AGENT)', word):
+                        if re.match(r'(CLAUDE|CODEX|AI_AGENT)', part) and not part.endswith('_'):
+                            found.add(part)
+            return found
         for engine, version, module in (('claude', '2.1.281', CLAUDE_ENGINE), ('codex', '0.154.0', CODEX_ENGINE)):
             evidence = json.loads((TREE / 'proof' / 'VELDO-0165' / (engine + '-environment.json')).read_text())
             shipped = json.loads((ROOT / '.veldo' / 'runtime' / (engine + '-qualification.json')).read_text())
@@ -461,9 +526,22 @@ sys.exit(payload.get('code', 0))
                   and all(n.startswith(('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')) or n in L.EXEC_STRIPPED
                           for n in (extracted or {}).get('parent_session_names', [])))
             if engine == 'claude':
-                check('evidence/completeness', 'child array and unconditional startup assignments are extracted',
-                      set(unprefixed) | {'GIT_EDITOR', 'BUN_OPTIONS', 'TMPPREFIX', 'NoDefaultCurrentDirectoryInExePath'}
+                check('evidence/completeness', 'child array, startup and default assignments are extracted',
+                      set(unprefixed) | {'GIT_EDITOR', 'BUN_OPTIONS', 'TMPPREFIX', 'NoDefaultCurrentDirectoryInExePath',
+                                         'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE'}
                       <= set((extracted or {}).get('parent_session_names', [])))
+            else:
+                check('evidence/completeness', 'the unified exec pairs are extracted whole',
+                      set(children) - {'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE'}
+                      <= set((extracted or {}).get('parent_session_names', [])))
+            # An outside implementation over the same bytes: GNU strings and readelf, never the extractor.
+            outside, outside_error = attempt(lambda: outside_scan(extractor.PINNED[engine][1]))
+            required = {'claude': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS'},
+                        'codex': {'CODEX_THREAD_ID', 'CODEX_SANDBOX', 'CODEX_SESSION_ID'}}[engine]
+            names_now = set((extracted or {}).get('session_names') or [])
+            check('evidence/outside-scan', engine + ': extracted session names equal an independent strings scan',
+                  outside_error is None and bool(outside) and bool(names_now) and names_now == outside
+                  and required <= names_now and required <= outside)
             check('evidence/prefixes', engine + ': wrapper and qualified baseline use identical prefixes',
                   list(getattr(L, 'SESSION_PREFIXES', ())) == module.BASELINE.get('strip_prefixes'))
             prefixes = (entry.get('baseline') or {}).get('strip_prefixes') or []

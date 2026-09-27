@@ -194,6 +194,8 @@ ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('cont
 # the inherited environment loses and an adapter may configure.
 CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.values()))
 STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
+NEVER_CONFIGURED = frozenset().union(*(getattr(engine, 'BASELINE', {}).get('strip_names', ())
+                                       for engine in ENGINES.values()))
 # What every engine module implements, with the same signatures (THE ENGINE PROTOCOL above).
 ENGINE_PROTOCOL = ('PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind', 'command',
                    'environment', 'Terminal', 'baseline', 'profile_problem', 'login_problem', 'Guard')
@@ -240,7 +242,12 @@ WRAPPER_REFUSED = 70
 EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',
                  'SHELL', 'GIT_EDITOR', 'TRACEPARENT', 'TRACESTATE', 'TMUX', 'TMPDIR', 'TMPPREFIX', 'BUN_OPTIONS',
                  'TEMP', 'TMP', 'GIT_CONFIG_PARAMETERS', 'COREPACK_ENABLE_AUTO_PIN',
-                 'NoDefaultCurrentDirectoryInExePath')
+                 'NoDefaultCurrentDirectoryInExePath',
+                 # VELDO-0165: what Claude Code writes into its own environment when unset, for every child.
+                 'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE',
+                 # VELDO-0165: what Codex 0.154.0 sets on every command it runs (its unified exec pairs,
+                 # proof/VELDO-0165/codex-environment.json); each engine's baseline sets LANG and TERM itself.
+                 'NO_COLOR', 'TERM', 'LANG', 'LC_CTYPE', 'LC_ALL', 'COLORTERM', 'PAGER', 'GIT_PAGER', 'GH_PAGER')
 ENGINE_RUNTIME = 'VELDO_ENGINE_RUNTIME_DIR'
 RUN_CONFIG, RUN_RUNTIME = 'config', 'runtime'
 TOKEN_VARIABLE = 'CLAUDE_CODE_OAUTH_TOKEN'
@@ -884,6 +891,10 @@ class Receiver:
         configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)
         if configured:
             return 'invalid_input:adapter_environment:' + configured[0]
+        # VELDO-0165 AC2: a name the baseline strips by name (the MCP tool naming switch) is never configured.
+        renaming = sorted(set(adapter.get('environment') or {}) & NEVER_CONFIGURED)
+        if renaming:
+            return 'invalid_input:adapter_environment:' + renaming[0]
         account = contract['reservation']['account']
         record = ACC.read(self.conn, account)
         if record is not None and record.get('provider') != module.PROVIDER:
