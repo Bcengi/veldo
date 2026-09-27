@@ -1,0 +1,985 @@
+{
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0129",
+ "baseline": {
+  "rows": [
+   [
+    "VELDO-0129 build/claude",
+    true
+   ],
+   [
+    "VELDO-0129 build/codex",
+    true
+   ],
+   [
+    "VELDO-0129 build/configuration",
+    true
+   ],
+   [
+    "VELDO-0129 review/loop-claude",
+    true
+   ],
+   [
+    "VELDO-0129 review/loop-codex",
+    true
+   ],
+   [
+    "VELDO-0129 review/reviewer-claude",
+    true
+   ],
+   [
+    "VELDO-0129 review/reviewer-codex",
+    true
+   ],
+   [
+    "VELDO-0129 review/independence-policy",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/nonzero",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/missing-build",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/missing-review",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/malformed-review",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/missing-usage",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/reservation",
+    true
+   ],
+   [
+    "VELDO-0129 proof/authority",
+    true
+   ],
+   [
+    "VELDO-0129 proof/empty-acceptance",
+    true
+   ],
+   [
+    "VELDO-0129 source/no-completion",
+    true
+   ],
+   [
+    "VELDO-0129 installation/assets",
+    true
+   ]
+  ],
+  "failed_rows": [],
+  "details": [],
+  "by_assertion": true,
+  "one_report_per_row": true,
+  "seconds": 28.323
+ },
+ "mutants": [
+  {
+   "name": "worker129-build-unwired",
+   "module": "executor.py",
+   "source_sha256": "b0f55102eeca3181fa68ebbe3bffd2b9a9196fc5db3317dca7dc800d5f100cab",
+   "mutant_sha256": "2be4bb9150ab8c49e9ff2b478138a558efbf47662651243370d5c29df7ad956a",
+   "edits": [
+    {
+     "old": "        result = self._worker_call(\"build\", spec, calls)",
+     "new": "        raise ExecutorError(\"build requires an injected callable\")"
+    }
+   ],
+   "named_rows": [
+    "build/claude",
+    "build/codex"
+   ],
+   "named_rows_red": true,
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     false
+    ],
+    [
+     "VELDO-0129 build/codex",
+     false
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     false
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     false
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     false
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 build/claude",
+    "VELDO-0129 build/codex",
+    "VELDO-0129 build/configuration",
+    "VELDO-0129 review/loop-claude",
+    "VELDO-0129 review/loop-codex",
+    "VELDO-0129 review/reviewer-claude",
+    "VELDO-0129 review/reviewer-codex",
+    "VELDO-0129 review/independence-policy",
+    "VELDO-0129 outcome/nonzero",
+    "VELDO-0129 outcome/missing-build",
+    "VELDO-0129 outcome/missing-review",
+    "VELDO-0129 outcome/malformed-review",
+    "VELDO-0129 outcome/missing-usage",
+    "VELDO-0129 outcome/reservation",
+    "VELDO-0129 proof/authority",
+    "VELDO-0129 installation/assets"
+   ],
+   "details": [
+    "VELDO-0129 build/claude detail: default build returns a real commit and bound proof: build requires an injected callable",
+    "VELDO-0129 build/claude detail: accepted clone and group precede engine work",
+    "VELDO-0129 build/codex detail: default build returns a real commit and bound proof: build requires an injected callable",
+    "VELDO-0129 build/codex detail: accepted clone and group precede engine work",
+    "VELDO-0129 build/configuration detail: missing installed configuration refuses before dispatch: build requires an injected callable",
+    "VELDO-0129 review/loop-claude detail: independent process receives only assigned artifacts: transition_refused:None:assign_review",
+    "VELDO-0129 review/loop-codex detail: independent process receives only assigned artifacts: transition_refused:None:assign_review",
+    "VELDO-0129 review/reviewer-claude detail: independent process receives only assigned artifacts: transition_refused:None:assign_review",
+    "VELDO-0129 review/reviewer-codex detail: independent process receives only assigned artifacts: transition_refused:None:assign_review",
+    "VELDO-0129 review/independence-policy detail: self review refuses and current critical count requires two: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/nonzero detail: claude: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/nonzero detail: codex: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/nonzero detail: claude review retains charge and honors outcome: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/nonzero detail: codex review retains charge and honors outcome: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/missing-build detail: claude: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/missing-build detail: codex: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/missing-review detail: claude: no verdict manufactured: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/missing-review detail: codex: no verdict manufactured: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/malformed-review detail: claude: no verdict manufactured: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/malformed-review detail: codex: no verdict manufactured: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/missing-usage detail: claude: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/missing-usage detail: codex: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/missing-usage detail: claude review retains charge and honors outcome: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/missing-usage detail: codex review retains charge and honors outcome: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/reservation detail: exhausted allowance causes zero engine launches: build requires an injected callable",
+    "VELDO-0129 outcome/reservation detail: default executor turns the named adapter refusal into a halt: build requires an injected callable",
+    "VELDO-0129 outcome/reservation detail: review allowance is reserved before process invocation: transition_refused:None:assign_review",
+    "VELDO-0129 proof/authority detail: claude: accepted stored bundle feeds floor: build requires an injected callable",
+    "VELDO-0129 proof/authority detail: codex: accepted stored bundle feeds floor: build requires an injected callable",
+    "VELDO-0129 proof/authority detail: committed manifest alone is refused: build requires an injected callable",
+    "VELDO-0129 installation/assets detail: every emitted line uses the recorded formats"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 8.012
+  },
+  {
+   "name": "worker129-builder-context-reused",
+   "module": "control_launch_work.py",
+   "source_sha256": "44a39e19cd0d9c5f462b26bce920a9c6921a05e4c18e68592b3b5967bc07ea6f",
+   "mutant_sha256": "8f0e7a9e7699201fabc8bd14d03593cf60b82f648af243787696cedbe215e9d1",
+   "edits": [
+    {
+     "old": "payload=payload, adapter=role['adapter']",
+     "new": "payload=dict(payload, builder_conversation=['builder narrative']) if station == 'review' else payload, adapter=role['adapter']"
+    }
+   ],
+   "named_rows": [
+    "review/loop-claude",
+    "review/loop-codex",
+    "review/reviewer-claude",
+    "review/reviewer-codex"
+   ],
+   "named_rows_red": true,
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 review/loop-claude",
+    "VELDO-0129 review/loop-codex",
+    "VELDO-0129 review/reviewer-claude",
+    "VELDO-0129 review/reviewer-codex",
+    "VELDO-0129 review/independence-policy",
+    "VELDO-0129 outcome/missing-usage"
+   ],
+   "details": [
+    "VELDO-0129 review/loop-claude detail: independent process receives only assigned artifacts: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 review/loop-codex detail: independent process receives only assigned artifacts: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 review/reviewer-claude detail: independent process receives only assigned artifacts: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 review/reviewer-codex detail: independent process receives only assigned artifacts: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 review/independence-policy detail: self review refuses and current critical count requires two: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 outcome/missing-usage detail: claude review retains charge and honors outcome: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 outcome/missing-usage detail: codex review retains charge and honors outcome: binding_mismatch:review_dispatch/payload"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 27.515
+  },
+  {
+   "name": "worker129-exit-manufactures-review",
+   "module": "control_launch_work.py",
+   "source_sha256": "44a39e19cd0d9c5f462b26bce920a9c6921a05e4c18e68592b3b5967bc07ea6f",
+   "mutant_sha256": "063e721c3ac06f2f9f0a26555c2900cbaf56b32cc03b94376ea712590cc5f3ce",
+   "edits": [
+    {
+     "old": "            body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)",
+     "new": "            try:\n                body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)\n            except Refused:\n                return {'verdict': 'pass', 'findings': []}"
+    }
+   ],
+   "named_rows": [
+    "outcome/missing-review"
+   ],
+   "named_rows_red": true,
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     false
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 outcome/nonzero",
+    "VELDO-0129 outcome/missing-review",
+    "VELDO-0129 outcome/reservation"
+   ],
+   "details": [
+    "VELDO-0129 outcome/nonzero detail: claude review retains charge and honors outcome: None",
+    "VELDO-0129 outcome/nonzero detail: codex review retains charge and honors outcome: None",
+    "VELDO-0129 outcome/missing-review detail: claude: no verdict manufactured: None",
+    "VELDO-0129 outcome/missing-review detail: codex: no verdict manufactured: None",
+    "VELDO-0129 outcome/reservation detail: review allowance is reserved before process invocation: None",
+    "VELDO-0129 outcome/reservation detail: default dispatcher returns the named review refusal: missing_evidence:review_receipt"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 28.011
+  },
+  {
+   "name": "worker129-review-subject-unchecked",
+   "module": "control_launch_work.py",
+   "source_sha256": "44a39e19cd0d9c5f462b26bce920a9c6921a05e4c18e68592b3b5967bc07ea6f",
+   "mutant_sha256": "be0b830308bec93f3d7ad810fd5dc0100b2109f924792c22c7ae14fbbc0020d3",
+   "edits": [
+    {
+     "old": "                raise Refused('missing_evidence:review_verdict')",
+     "new": "                return dict(body, verdict='pass')"
+    }
+   ],
+   "named_rows": [
+    "outcome/malformed-review"
+   ],
+   "named_rows_red": true,
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 outcome/malformed-review"
+   ],
+   "details": [
+    "VELDO-0129 outcome/malformed-review detail: claude: no verdict manufactured: None",
+    "VELDO-0129 outcome/malformed-review detail: codex: no verdict manufactured: None"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 27.081
+  },
+  {
+   "name": "worker129-empty-proof-accepted",
+   "module": "executor.py",
+   "source_sha256": "b0f55102eeca3181fa68ebbe3bffd2b9a9196fc5db3317dca7dc800d5f100cab",
+   "mutant_sha256": "667c9a4c61bad66791e376d8aac84f694efc692299e12b4b69edfb3d6a1de214",
+   "edits": [
+    {
+     "old": "            if gate is not None and not accepted:",
+     "new": "            if False and not accepted:"
+    }
+   ],
+   "named_rows": [
+    "proof/empty-acceptance"
+   ],
+   "named_rows_red": true,
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     false
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 proof/empty-acceptance"
+   ],
+   "details": [
+    "VELDO-0129 proof/empty-acceptance detail: empty acceptance halts at proof: None"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 27.238
+  },
+  {
+   "name": "worker129-clone-group-unrecorded",
+   "module": "control_launch.py",
+   "source_sha256": "fed2535372b25a9963098f23ef11f5af76669a58df74ae84bee13cfc72f16e00",
+   "mutant_sha256": "ff04940848097976ad49e206272406b88d495221e6919ec4b4874306ff8b6c70",
+   "edits": [
+    {
+     "old": "                            provisioner.record_group(dispatch_id, group.report())",
+     "new": "                            pass"
+    }
+   ],
+   "named_rows": [
+    "build/claude",
+    "build/codex"
+   ],
+   "named_rows_red": true,
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     false
+    ],
+    [
+     "VELDO-0129 build/codex",
+     false
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 build/claude",
+    "VELDO-0129 build/codex"
+   ],
+   "details": [
+    "VELDO-0129 build/claude detail: accepted clone and group precede engine work",
+    "VELDO-0129 build/codex detail: accepted clone and group precede engine work"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 27.846
+  },
+  {
+   "name": "worker129-runtime-not-installed",
+   "module": "init_scaffold.py",
+   "source_sha256": "3a9761ce7471aab4452f2369e9f0df80e32c45464df4d2da62e3271301a46ddf",
+   "mutant_sha256": "b58c3c939e50de5e2c376a3552053bd3de42ca02dc67c2ab68979e4fbfc4d407",
+   "edits": [
+    {
+     "old": "    \".veldo/control_launch_work.py\",",
+     "new": ""
+    }
+   ],
+   "named_rows": [
+    "installation/assets"
+   ],
+   "named_rows_red": true,
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     false
+    ],
+    [
+     "VELDO-0129 build/codex",
+     false
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     false
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     false
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     false
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     false
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     false
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 build/claude",
+    "VELDO-0129 build/codex",
+    "VELDO-0129 build/configuration",
+    "VELDO-0129 review/loop-claude",
+    "VELDO-0129 review/loop-codex",
+    "VELDO-0129 review/reviewer-claude",
+    "VELDO-0129 review/reviewer-codex",
+    "VELDO-0129 review/independence-policy",
+    "VELDO-0129 outcome/nonzero",
+    "VELDO-0129 outcome/missing-build",
+    "VELDO-0129 outcome/missing-review",
+    "VELDO-0129 outcome/malformed-review",
+    "VELDO-0129 outcome/missing-usage",
+    "VELDO-0129 outcome/reservation",
+    "VELDO-0129 proof/authority",
+    "VELDO-0129 proof/empty-acceptance",
+    "VELDO-0129 source/no-completion",
+    "VELDO-0129 installation/assets"
+   ],
+   "details": [
+    "VELDO-0129 build/claude detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 build/codex detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 build/configuration detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 review/loop-claude detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 review/loop-codex detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 review/reviewer-claude detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 review/reviewer-codex detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 review/independence-policy detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 outcome/nonzero detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 outcome/missing-build detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 outcome/missing-review detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 outcome/malformed-review detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 outcome/missing-usage detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 outcome/reservation detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 proof/authority detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 proof/empty-acceptance detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 source/no-completion detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')",
+    "VELDO-0129 installation/assets detail: installed journey returns artifacts (base seam: [Errno 2] No such file or directory: '/run/user/1000/v129-fr367ipw/installed/.veldo/control_launch_work.py')"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 0.128
+  },
+  {
+   "name": "worker129-proof-store-optional",
+   "module": "dispatch.py",
+   "source_sha256": "f57ebe36df3bb50d7f16322a5eb57475917ca176be3061e20123c96a1fff1ed9",
+   "mutant_sha256": "f9e976327a57e7ed0a56409c082b2a7c1cada46c7e3e8bec52f82c47bbb38b9a",
+   "edits": [
+    {
+     "old": "        raise FloorRefused(error.code, error.detail, error.codes) from error",
+     "new": "        return {\"state\": \"review\"}, unit_data"
+    }
+   ],
+   "named_rows": [
+    "proof/authority"
+   ],
+   "named_rows_red": true,
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     false
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 proof/authority"
+   ],
+   "details": [
+    "VELDO-0129 proof/authority detail: committed manifest alone is refused: None"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 27.065
+  }
+ ],
+ "all_rejected": true
+}

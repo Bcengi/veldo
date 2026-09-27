@@ -644,7 +644,10 @@ sys.stdout.flush()
                                                                    gate={'green': True}, holder=BUILDER,
                                                                    generation=bad_proof['generation']))
                 release('VELDO-9402', BUILDER, bad_proof['generation'])
-                stale = build('VELDO-9403', 'stale-proof')
+                stale = build('VELDO-9403', 'stale-proof', keep=True)
+                direct_stale = outcome_of(lambda: floor.accept_build('VELDO-9403', commit=stale['tip'],
+                    gate={'green': True}, holder=BUILDER, generation=stale['generation']))
+                release('VELDO-9403', BUILDER, stale['generation'])
                 red = build('VELDO-9404', 'red', keep=True)
                 g = red['generation']
                 direct = {
@@ -694,6 +697,7 @@ sys.stdout.flush()
                       and direct_bad == ('refused', 'missing_evidence:proof/criterion:AC1')
                       and stale.get('ok') is False and stale.get('halted_at') == 'proof'
                       and 'stale_subject:commit/changed_after_implementation' in stale.get('reason', '')
+                      and direct_stale == ('refused', 'stale_proof:changed_after_proof')
                       and red.get('ok') is False and red.get('halted_at') == 'gate'
                       and direct == {'red_gate': ('refused', 'missing_evidence:gate'),
                                      'other_holder': ('refused', 'missing_authority:claim'),

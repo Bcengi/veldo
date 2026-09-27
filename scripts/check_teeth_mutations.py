@@ -3510,7 +3510,23 @@ def cases():
     def proof(name, old, new, row, also=(), module='control_proof.py'):
         add(50, name, '64_veldo_0050_proof.py', module, old, new, ['proof/' + row], also)
 
-    accept_block = '        if self.proofs is not None:\n            try:\n                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n                                              manifest=proof, observation=observation, builder=builder)\n            except Exception as error:\n                if not isinstance(getattr(error, "code", None), str):\n                    raise\n                return {"ok": False, "problems": list(getattr(error, "codes", [error.code])), "bundle": None}\n            if self.runtime is not None:\n                try:\n                    self.runtime.accept_build(spec, build)\n                except Exception as error:\n                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],\n                            "bundle": accepted["bundle"]}\n            return dict(accepted, ok=True, problems=[])\n'
+    accept_block = (
+        '        if self.proofs is not None:\n'
+        '            try:\n'
+        '                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n'
+        '                                              manifest=proof, observation=observation, builder=builder)\n'
+        '            except Exception as error:\n'
+        '                if not isinstance(getattr(error, "code", None), str):\n'
+        '                    raise\n'
+        '                return {"ok": False, "problems": list(getattr(error, "codes", [error.code])), "bundle": None}\n'
+        '            if self.runtime is not None:\n'
+        '                try:\n'
+        '                    self.runtime.accept_build(spec, build)\n'
+        '                except Exception as error:\n'
+        '                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],\n'
+        '                            "bundle": accepted["bundle"]}\n'
+        '            return dict(accepted, ok=True, problems=[])\n'
+    )
     # AC1, declared: the manifest is kept only in temporary validation storage, so no fresh reviewer resolves it.
     proof('proof-kept-in-temporary-storage', accept_block,
           '        if self.proofs is not None:\n'
@@ -3527,7 +3543,8 @@ def cases():
           '            accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)\n'
           '                        if gate is not None else None)\n',
           '            accepted = None  # defect: the build is offered with its proof never accepted\n',
-          'accepted-before-offer', module='executor.py')
+          'accepted-before-offer', module='executor.py',
+          also=[('            if gate is not None and not accepted:', '            if False and not accepted:')])
     proof('proof-unstored-accepted',
           '        return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}\n',
           '        return {"ok": True, "problems": [], "bundle": None}  # defect: a proof nothing stored is accepted\n',
