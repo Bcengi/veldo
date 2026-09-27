@@ -1439,8 +1439,8 @@ err.close()
 
         with region('redaction/clone-relative-paths'):
             check('redaction/clone-relative-paths', 'receiver uses its bound clone, not its own working directory',
-                  whole_high(relative_file) and any(relative_file in line['payload'] for line in main_lines)
-                  and any(relative_file in line['payload'] for line in all_pages(main_launch.dispatch_id)[0]))
+                  whole_high(relative_file) and any(relative_file in (line.get('payload') or '') for line in main_lines)
+                  and any(relative_file in (line.get('payload') or '') for line in all_pages(main_launch.dispatch_id)[0]))
             if ER is None or not hasattr(ER, 'clone_paths'):
                 check('redaction/clone-relative-paths', 'clone path snapshot exists', False)
             else:
