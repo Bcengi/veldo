@@ -176,3 +176,10 @@ checks remain. The byte extractor locates Claude Code's child-environment array 
 startup assignments by content; their unprefixed names join AC4's wrapper list. New rows cover
 configured values, unprefixed parent names, empty evidence, extraction completeness, matching
 prefixes, accurate removed-name reports and the refused-baseline metric.
+
+2026-09-27, review-fix validation complete: the whole selftest ran once with no checkout edits while
+it ran, 6,877 rows passed and zero failed. VELDO-0061 passes 20/20 with unchanged assertions;
+VELDO-0062 passes 22/22 and VELDO-0165 passes 17/17. Finding 165 rejects all 15 mutations, finding 62
+all 50, finding 61 all 30 and finding 155 all 25, each with two jobs. Both base red records were
+regenerated and fail by assertion. Proof records and exact diffs are in proof/VELDO-0165.
+No canonical gate, real engine run or push was performed. Status remains ready for independent review.

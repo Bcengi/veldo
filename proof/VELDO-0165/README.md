@@ -11,7 +11,7 @@ Both engine baselines qualify the four prefixes and explicitly name CLAUDE_AGENT
 A qualification missing that baseline or its extracted session names refuses with
 missing_evidence:engine_baseline:<version> before acceptance and spawn. Existing fake Claude
 qualification writers now extract their own fixture's names too; Codex's production qualification
-writer records the names directly.
+writer records the names directly. An empty list is present evidence; a missing key or null refuses.
 
 ## Byte evidence
 
@@ -69,5 +69,15 @@ an account-layer defect from the finding-62 mutations.
 
 ## Validation
 
-Validation results are recorded here after the whole selftest and the four requested mutation runs.
+review-fix-validation.json records the checks on e381030a. The whole selftest ran once with the
+checkout unchanged throughout: 6,877 rows passed, zero failed. The individual suites pass 20/20
+(VELDO-0061, assertions unchanged), 22/22 (VELDO-0062), 17/17 (VELDO-0155) and 17/17 (VELDO-0165).
+The four requested mutation commands, each with two jobs, reject all cases: finding 165 has 15,
+finding 62 has 50, finding 61 has 30 and finding 155 has 25. The older environment and token-delivery
+mutations now remove the corresponding carrier restoration, so they still model the named defect.
+All 1,877 registered mutation names are unique. Both red records fail by assertion.
+
+The byte extractor reproduces both committed inventories. Template sync compares 231 pairs with
+no drift. The Git subprocess boundary check and repository validator pass. Gate byproducts are
+restored before the final evidence commit and are not part of this change.
 No canonical gate, real model, login or non-loopback network access is part of this review-fix task.
