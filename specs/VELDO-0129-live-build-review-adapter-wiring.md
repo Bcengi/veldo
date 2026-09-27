@@ -26,7 +26,20 @@ footprint:
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
+  - "engine/.veldo/control_eligibility.py"
+  - ".veldo/control_eligibility.py"
+  - "packs/*/.veldo/control_eligibility.py"
   - "scripts/suites/*_veldo_0129_*.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
+  - "scripts/check_teeth_mutations.py"
+  - "scripts/suites/60_veldo_0052_eligibility.py"
+  - "scripts/suites/60_veldo_0053_architecture.py"
+  - "scripts/suites/63_veldo_0049_floor.py"
+  - "scripts/suites/67_veldo_0056_candidates.py"
+  - "scripts/suites/67_veldo_0135_offers.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0129-live-build-review-adapter-wiring.md"
@@ -195,3 +208,48 @@ through. With no dependency left in a later stage, W92 returns to stage 1. Statu
 everything-off baseline, the paid-API guard and the environment strip split out of VELDO-0060 AC5 and
 VELDO-0061 AC5, so real build and review still run only behind them, as they did when those guards were
 part of the adapters this specification depends on. Criteria and status unchanged.
+
+
+2026-09-27, implementation on build-veldo-0129: wire the installed entry points through
+control_launch_work, the existing Runner, receiver, qualification and reservation boundary.
+The runtime constructs the proof service and floor authority. Engine reviews use an artifact
+bound to the dispatch, with the exact accepted spec, source diff and proof as their fresh input.
+The footprint adds init_scaffold.py and its copies because AC1 installs the new runtime module,
+and scripts/check_teeth_mutations.py to register AC1 to AC3 falsifiers as finding 129.
+The factory loop remains VELDO-0154. Status unchanged; proof is in proof/VELDO-0129.
+
+2026-09-27, installation and regression coverage: the scaffolder also registers the existing
+dispatch, work, lander and frontier modules required by the installed floor. AC1's suite now
+uses the real scaffolder. The footprint adds suites 60 and 63 to make their control-logic hooks
+return explicit proof acceptance under AC3. Suite 63 now stores real contextually validated proof
+bundles, and stale proof stops at that earlier boundary. Their existing checks remain; the production empty-acceptance refusal
+has its own 0129 row and mutation.
+
+2026-09-27, proof: suite 82 drives 18 named rows through the installed entry points, including
+both engines and both review entry points, both build and review accounting failures, and the
+stored-proof floor. All rows are red by assertion against a4769f68. Finding 129 carries eight
+mutations, including each declared falsifier, with exact edits and named assertion failures.
+Selected regression suites and the validator are recorded in the proof directory. No real
+model call, remote host, repository gate, independent approval or landing is claimed.
+
+2026-09-27, final integration: normalize named adapter refusals at the executor and reviewer
+entry seams, so the default Executor halts and Dispatcher returns a named refusal when a
+reservation denies work. The reservation row drives those default callers as well as direct
+build and review. The full repository gate remains intentionally unrun.
+
+2026-09-27, review fixes: collection refuses symlink, gitfile, missing git directory,
+commondir and alternates before Git runs. Build clones are dissociated before launch.
+Only regular object bytes enter an authority-owned bare fetch source; collection fetches
+and verifies in a separate authority-owned bare repository before importing to the source.
+Worker config and hooks are never used or rewritten. Git calls use the canonical boundary.
+Suite 82 adds named attack, artifact binding, hostile config and handoff rows, compares
+review context in full and validates fixture formats recursively with a named missing-usage
+exception. Finding 129 covers these review defects with additional unique mutations.
+
+2026-09-27, review evidence correction: regenerate the base record with independent calls
+to each available interface, including empty proof acceptance. Ten rows fail by assertion;
+seventeen runtime-dependent journeys are explicitly unavailable on that base, replacing
+the earlier blanket red claim. The current suite has 27 rows and finding 129 has fourteen
+mutations, including a nested-context falsifier. No repository gate or model call is claimed.
+
+2026-09-27, architecture review fix: distinguish the base LoopSteps proof-service omission from an implemented hook returning no acceptance, preserving the architecture review decision and the installed proof refusal; register Runtime._run for both agent callers, extend the architecture entry drivers without changing assertions, and add finding 129's unique runtime architecture bypass mutation. The full run exposed older candidate, offers and reports drivers that did not provide stored contextual proof; these now exercise the required proof service and the earlier invalid-proof refusal. The footprint includes those drivers and the shared registration; full selftest and findings 129 and 53 results are recorded in proof/VELDO-0129/architecture-review.md.

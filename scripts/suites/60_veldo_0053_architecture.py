@@ -31,6 +31,7 @@ def _v53_suite():
         'validate_checks.py': ROOT / ".veldo" / "validate_checks.py",
         'contract_loader.py': ROOT / ".veldo" / "contract_loader.py",
         'arch.py': ROOT / ".veldo" / "arch.py",
+        'control_launch_work.py': ROOT / ".veldo" / "control_launch_work.py",
     }
 
     def load(name, path):
@@ -374,6 +375,7 @@ def _v53_suite():
         PL = load('v53_plan', mods / 'plan.py')
         EX = load('v53_executor', mods / 'executor.py')
         DSP = load('v53_dispatch', mods / 'dispatch.py')
+        LW = load('v53_launch_work', mods / 'control_launch_work.py')
         claims = top / 'claims'
         receiver = []
         observer = S.open_store(str(db), mode='r')
@@ -559,6 +561,47 @@ def _v53_suite():
                                                            now=tick()))
                 return [SID for _, i, _ in receiver[before:] if i.startswith('direct-')], '' if got[0] == 'ok' else got[1]
 
+            def runtime_calls():
+                # Both installed agent paths share this provider boundary before the Runner.
+                # Like the other entry drivers, count entry to the delegated launch seam.
+                class ReachedRunner(Exception):
+                    pass
+
+                launched = []
+
+                class Runner:
+                    def __init__(self, *args, **kwargs):
+                        pass
+
+                    def submit(self, unit, station, **kwargs):
+                        launched.append(unit)
+                        raise ReachedRunner()
+
+                runtime = LW.Runtime.__new__(LW.Runtime)
+                runtime.gate, runtime.root = gate, base
+                runtime.reservations, runtime.dispatches, runtime.clones = reservations, None, None
+                role = dict(identity='worker-a', account='acct-floor', adapter='claude_code',
+                            configuration=CONFIG, seconds=10)
+                real_runner, effects = LW.L.Runner, {}
+                LW.L.Runner = Runner
+                try:
+                    for station in ('build', 'review'):
+                        launched.clear()
+                        def run():
+                            try:
+                                runtime._run(SID, station, role, 'revision', {}, dict(HOLDER, reviewer='reviewer-b'))
+                            except ReachedRunner:
+                                return
+                        got = observe_effect(run)
+                        effects[station] = (list(launched), '' if got[0] == 'ok' else got[1])
+                finally:
+                    LW.L.Runner = real_runner
+                observed.setdefault('runtime_entries', {})[condition] = effects
+                # One registered boundary, two callers: a disagreement cannot satisfy the row.
+                if effects['build'] != effects['review']:
+                    return effects['build'][0] + effects['review'][0], 'runtime callers disagree'
+                return effects['build']
+
             return {
                 ('frontier.py', 'claimable._add', 'selection'): frontier,
                 ('work.py', 'WorkLoop._claim_next', 'claim'): work,
@@ -571,6 +614,7 @@ def _v53_suite():
                 ('dispatch.py', 'Dispatcher._dispatch_review', 'review'): dispatch_review,
                 ('dispatch.py', 'Dispatcher._land', 'publication'): publication,
                 ('control_eligibility.py', 'CallHandle.invoke', 'provider_request'): invoke,
+                ('control_launch_work.py', 'Runtime._run', 'provider_request'): runtime_calls,
             }
 
         def reset(condition):

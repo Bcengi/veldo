@@ -1,0 +1,5 @@
+--- a/.veldo/control_eligibility.py
++++ b/.veldo/control_eligibility.py
+@@ -994 +994 @@
+-        problems += DP.problems(self.conn, self.repository_uuid, data, self.workspace)
++        problems += []

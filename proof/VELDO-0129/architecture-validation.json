@@ -1,0 +1,40 @@
+{
+  "implementation_commit": "c82c9de86f239cba454a337f24f890b76dbc6996",
+  "full_selftest": {
+    "command": "python3 scripts/selftest.py",
+    "exit_code": 0,
+    "output_sha256": "944dba919414a407e3ed51f74071c80d884a6c5f7e41eee25de7deac67326f0a",
+    "summary": "selftest: 6887 passed, 0 failed",
+    "passed": 6887,
+    "failed": 0,
+    "failing_rows": [],
+    "suites": 122,
+    "scope": "full"
+  },
+  "git_boundary": {
+    "command": "python3 scripts/check_git_boundary.py",
+    "exit_code": 0,
+    "output_sha256": "456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83",
+    "summary": "Git subprocess boundary: pass"
+  },
+  "engine_copies": {
+    "command": "bash scripts/check_template_sync.sh",
+    "exit_code": 0,
+    "output_sha256": "12ad6964ff36c2be9de76e69ac8dc55b7324f0b8b1960c5e360a506896771564",
+    "summary": "template sync: pass (232 pair(s) compared, 6 declared per-repo, 131 engine-only)"
+  },
+  "validator": {
+    "command": "python3 .veldo/validate.py all",
+    "exit_code": 0,
+    "output_sha256": "2831a2a8b5d03a9fdc90e61e92a3ea13c773b2a14385730298c2b24f5d5cc223"
+  },
+  "architecture_assertion_calls_unchanged": 23,
+  "duplicate_mutation_names": [],
+  "mutations": {
+    "129": 15,
+    "53": 52,
+    "evidence": "architecture-mutations.json"
+  },
+  "repository_gate_run": false,
+  "initial_full_attempt": "architecture-first-full-run.json"
+}

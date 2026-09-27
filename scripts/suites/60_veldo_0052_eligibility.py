@@ -40,7 +40,7 @@ def _v52_suite():
     # The front door the production-entry row runs as a real process in the enrolled fixture.
     FRONT_DOOR = ROOT / "bin" / "veldo"
     FLOOR = ('frontier.py', 'work.py', 'plan.py', 'executor.py', 'dispatch.py', 'work_state.py',
-             'control_eligibility.py')
+             'control_eligibility.py', 'control_launch_work.py')
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -255,6 +255,10 @@ def _v52_suite():
             reservations.reserve_worker('slot-' + sid, 'd-' + sid, account, project, sid, now=tick())
 
         class Hooks(EX.LoopSteps):
+            def accept_proof(self, spec, build, gate, proof, context=None):
+                # This fixture owns eligibility/floor control logic. Proof-service behavior is suite 64.
+                return {"ok": True, "bundle": "fixture-proof", "problems": []}
+
             def __init__(self):
                 self.builds, self.root = [], str(base)
 

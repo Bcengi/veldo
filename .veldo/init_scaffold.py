@@ -131,6 +131,8 @@ _FILES = [
     # loaded by the authority, not by the validator, so not REQUIRED_SUBSTRATE.
     ".veldo/control_alias.py",
     ".veldo/control_document.py",
+    ".veldo/control_decomposition.py",
+    ".veldo/control_decomposition_binding.py",
     # VELDO-0029's enrollment binding, which control_document reads to bind a checkout to the
     # repository it is enrolled as.
     ".veldo/control_enrollment.py",
@@ -165,6 +167,12 @@ _FILES = [
     # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
     # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_execution_record.py",
+    ".veldo/control_launch_work.py",
+    ".veldo/dispatch.py",
+    ".veldo/work.py",
+    ".veldo/lander.py",
+    ".veldo/frontier.py",
+
     # VELDO-0040: worker profiles, containment groups, caps and group stop the receiver calls; a
     # runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_containment.py",

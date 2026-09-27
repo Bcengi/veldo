@@ -1,0 +1,2156 @@
+{
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0129",
+ "baseline": {
+  "unavailable": [],
+  "rows": [
+   [
+    "VELDO-0129 build/claude",
+    true
+   ],
+   [
+    "VELDO-0129 build/codex",
+    true
+   ],
+   [
+    "VELDO-0129 build/configuration",
+    true
+   ],
+   [
+    "VELDO-0129 review/loop-claude",
+    true
+   ],
+   [
+    "VELDO-0129 review/loop-codex",
+    true
+   ],
+   [
+    "VELDO-0129 review/reviewer-claude",
+    true
+   ],
+   [
+    "VELDO-0129 review/reviewer-codex",
+    true
+   ],
+   [
+    "VELDO-0129 review/independence-policy",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/nonzero",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/missing-build",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/missing-review",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/malformed-review",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/missing-usage",
+    true
+   ],
+   [
+    "VELDO-0129 outcome/reservation",
+    true
+   ],
+   [
+    "VELDO-0129 proof/authority",
+    true
+   ],
+   [
+    "VELDO-0129 proof/empty-acceptance",
+    true
+   ],
+   [
+    "VELDO-0129 source/no-completion",
+    true
+   ],
+   [
+    "VELDO-0129 installation/assets",
+    true
+   ],
+   [
+    "VELDO-0129 build/gitdir-symlink",
+    true
+   ],
+   [
+    "VELDO-0129 build/gitdir-gitfile",
+    true
+   ],
+   [
+    "VELDO-0129 build/gitdir-commondir",
+    true
+   ],
+   [
+    "VELDO-0129 build/gitdir-alternates",
+    true
+   ],
+   [
+    "VELDO-0129 build/gitdir-missing",
+    true
+   ],
+   [
+    "VELDO-0129 build/config-neutralization",
+    true
+   ],
+   [
+    "VELDO-0129 artifact/runtime-binding",
+    true
+   ],
+   [
+    "VELDO-0129 artifact/floor-binding",
+    true
+   ],
+   [
+    "VELDO-0129 build/handoff",
+    true
+   ]
+  ],
+  "failed_rows": [],
+  "details": [],
+  "by_assertion": true,
+  "one_report_per_row": true,
+  "seconds": 33.859
+ },
+ "mutants": [
+  {
+   "name": "worker129-build-unwired",
+   "module": "executor.py",
+   "source_sha256": "b0f55102eeca3181fa68ebbe3bffd2b9a9196fc5db3317dca7dc800d5f100cab",
+   "mutant_sha256": "2be4bb9150ab8c49e9ff2b478138a558efbf47662651243370d5c29df7ad956a",
+   "edits": [
+    {
+     "old": "        result = self._worker_call(\"build\", spec, calls)",
+     "new": "        raise ExecutorError(\"build requires an injected callable\")"
+    }
+   ],
+   "named_rows": [
+    "build/claude",
+    "build/codex"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     false
+    ],
+    [
+     "VELDO-0129 build/codex",
+     false
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     false
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     false
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     false
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     false
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     false
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     false
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     false
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 build/claude",
+    "VELDO-0129 build/codex",
+    "VELDO-0129 build/configuration",
+    "VELDO-0129 review/loop-claude",
+    "VELDO-0129 review/loop-codex",
+    "VELDO-0129 review/reviewer-claude",
+    "VELDO-0129 review/reviewer-codex",
+    "VELDO-0129 review/independence-policy",
+    "VELDO-0129 outcome/nonzero",
+    "VELDO-0129 outcome/missing-build",
+    "VELDO-0129 outcome/missing-review",
+    "VELDO-0129 outcome/malformed-review",
+    "VELDO-0129 outcome/missing-usage",
+    "VELDO-0129 outcome/reservation",
+    "VELDO-0129 proof/authority",
+    "VELDO-0129 installation/assets",
+    "VELDO-0129 build/gitdir-symlink",
+    "VELDO-0129 build/gitdir-gitfile",
+    "VELDO-0129 build/gitdir-commondir",
+    "VELDO-0129 build/gitdir-alternates",
+    "VELDO-0129 build/gitdir-missing",
+    "VELDO-0129 build/config-neutralization",
+    "VELDO-0129 artifact/runtime-binding",
+    "VELDO-0129 artifact/floor-binding",
+    "VELDO-0129 build/handoff"
+   ],
+   "details": [
+    "VELDO-0129 build/claude detail: default build returns a real commit and bound proof: build requires an injected callable",
+    "VELDO-0129 build/claude detail: accepted clone and group precede engine work",
+    "VELDO-0129 build/codex detail: default build returns a real commit and bound proof: build requires an injected callable",
+    "VELDO-0129 build/codex detail: accepted clone and group precede engine work",
+    "VELDO-0129 build/configuration detail: missing installed configuration refuses before dispatch: build requires an injected callable",
+    "VELDO-0129 review/loop-claude detail: independent process receives only assigned artifacts: transition_refused:None:assign_review",
+    "VELDO-0129 review/loop-codex detail: independent process receives only assigned artifacts: transition_refused:None:assign_review",
+    "VELDO-0129 review/reviewer-claude detail: independent process receives only assigned artifacts: transition_refused:None:assign_review",
+    "VELDO-0129 review/reviewer-codex detail: independent process receives only assigned artifacts: transition_refused:None:assign_review",
+    "VELDO-0129 review/independence-policy detail: self review refuses and current critical count requires two: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/nonzero detail: claude: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/nonzero detail: codex: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/nonzero detail: claude review retains charge and honors outcome: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/nonzero detail: codex review retains charge and honors outcome: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/missing-build detail: claude: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/missing-build detail: codex: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/missing-review detail: claude: no verdict manufactured: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/missing-review detail: codex: no verdict manufactured: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/malformed-review detail: claude: no verdict manufactured: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/malformed-review detail: codex: no verdict manufactured: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/missing-usage detail: claude: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/missing-usage detail: codex: result and conservative charge: build requires an injected callable {}",
+    "VELDO-0129 outcome/missing-usage detail: claude review retains charge and honors outcome: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/missing-usage detail: codex review retains charge and honors outcome: transition_refused:None:assign_review",
+    "VELDO-0129 outcome/reservation detail: exhausted allowance causes zero engine launches: build requires an injected callable",
+    "VELDO-0129 outcome/reservation detail: default executor turns the named adapter refusal into a halt: build requires an injected callable",
+    "VELDO-0129 outcome/reservation detail: review allowance is reserved before process invocation: transition_refused:None:assign_review",
+    "VELDO-0129 proof/authority detail: claude: accepted stored bundle feeds floor: build requires an injected callable",
+    "VELDO-0129 proof/authority detail: codex: accepted stored bundle feeds floor: build requires an injected callable",
+    "VELDO-0129 proof/authority detail: committed manifest alone is refused: build requires an injected callable",
+    "VELDO-0129 installation/assets detail: every emitted line recursively matches the recorded formats; missing-usage/modelUsage is explicit",
+    "VELDO-0129 build/gitdir-symlink detail: hostile layout refuses by name and source config stays byte-identical: build requires an injected callable",
+    "VELDO-0129 build/gitdir-gitfile detail: hostile layout refuses by name and source config stays byte-identical: build requires an injected callable",
+    "VELDO-0129 build/gitdir-commondir detail: hostile layout refuses by name and source config stays byte-identical: build requires an injected callable",
+    "VELDO-0129 build/gitdir-alternates detail: hostile layout refuses by name and source config stays byte-identical: build requires an injected callable",
+    "VELDO-0129 build/gitdir-missing detail: hostile layout refuses by name and source config stays byte-identical: build requires an injected callable",
+    "VELDO-0129 build/config-neutralization detail: hostile fsmonitor and hooks never executed",
+    "VELDO-0129 artifact/runtime-binding detail: claude: prerequisite build",
+    "VELDO-0129 artifact/runtime-binding detail: codex: prerequisite build",
+    "VELDO-0129 artifact/floor-binding detail: claude: prerequisite build",
+    "VELDO-0129 artifact/floor-binding detail: codex: prerequisite build",
+    "VELDO-0129 build/handoff detail: handoff transition: transition_refused:None:handoff",
+    "VELDO-0129 build/handoff detail: handoff transition: transition_refused:None:handoff",
+    "VELDO-0129 build/handoff detail: normal build and review reach the handoff"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 9.887
+  },
+  {
+   "name": "worker129-builder-context-reused",
+   "module": "control_launch_work.py",
+   "source_sha256": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
+   "mutant_sha256": "d2de05d91b2301c7b2598cdc2803fda6dc12b0ad95b37d67b33c898ee41e3f79",
+   "edits": [
+    {
+     "old": "payload=payload, adapter=role['adapter']",
+     "new": "payload=dict(payload, builder_conversation=['builder narrative']) if station == 'review' else payload, adapter=role['adapter']"
+    }
+   ],
+   "named_rows": [
+    "review/loop-claude",
+    "review/loop-codex",
+    "review/reviewer-claude",
+    "review/reviewer-codex"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     false
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 review/loop-claude",
+    "VELDO-0129 review/loop-codex",
+    "VELDO-0129 review/reviewer-claude",
+    "VELDO-0129 review/reviewer-codex",
+    "VELDO-0129 review/independence-policy",
+    "VELDO-0129 outcome/missing-usage",
+    "VELDO-0129 build/handoff"
+   ],
+   "details": [
+    "VELDO-0129 review/loop-claude detail: independent process receives only assigned artifacts: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 review/loop-codex detail: independent process receives only assigned artifacts: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 review/reviewer-claude detail: independent process receives only assigned artifacts: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 review/reviewer-codex detail: independent process receives only assigned artifacts: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 review/independence-policy detail: self review refuses and current critical count requires two: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 outcome/missing-usage detail: claude review retains charge and honors outcome: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 outcome/missing-usage detail: codex review retains charge and honors outcome: binding_mismatch:review_dispatch/payload",
+    "VELDO-0129 build/handoff detail: handoff transition: awaiting_reviews:0/1",
+    "VELDO-0129 build/handoff detail: handoff transition: awaiting_reviews:0/1",
+    "VELDO-0129 build/handoff detail: normal build and review reach the handoff"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.792
+  },
+  {
+   "name": "worker129-exit-manufactures-review",
+   "module": "control_launch_work.py",
+   "source_sha256": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
+   "mutant_sha256": "b8002836d35f70e1c1dfd49de0b1be3d9128cf82c2f29e10f44670f571cee241",
+   "edits": [
+    {
+     "old": "            body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)",
+     "new": "            try:\n                body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)\n            except Refused:\n                return {'verdict': 'pass', 'findings': []}"
+    }
+   ],
+   "named_rows": [
+    "outcome/missing-review"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     false
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 outcome/nonzero",
+    "VELDO-0129 outcome/missing-review",
+    "VELDO-0129 outcome/reservation"
+   ],
+   "details": [
+    "VELDO-0129 outcome/nonzero detail: claude review retains charge and honors outcome: None",
+    "VELDO-0129 outcome/nonzero detail: codex review retains charge and honors outcome: None",
+    "VELDO-0129 outcome/missing-review detail: claude: no verdict manufactured: None",
+    "VELDO-0129 outcome/missing-review detail: codex: no verdict manufactured: None",
+    "VELDO-0129 outcome/reservation detail: review allowance is reserved before process invocation: None",
+    "VELDO-0129 outcome/reservation detail: default dispatcher returns the named review refusal: missing_evidence:review_receipt"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 34.373
+  },
+  {
+   "name": "worker129-review-subject-unchecked",
+   "module": "control_launch_work.py",
+   "source_sha256": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
+   "mutant_sha256": "14d70c8650d2cfda702f8eb99e35f0eefacc2da17bb980c94aa8acbd147fb1c4",
+   "edits": [
+    {
+     "old": "                raise Refused('missing_evidence:review_verdict')",
+     "new": "                return dict(body, verdict='pass')"
+    }
+   ],
+   "named_rows": [
+    "outcome/malformed-review"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     false
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 outcome/malformed-review"
+   ],
+   "details": [
+    "VELDO-0129 outcome/malformed-review detail: claude: no verdict manufactured: None",
+    "VELDO-0129 outcome/malformed-review detail: codex: no verdict manufactured: None"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 34.085
+  },
+  {
+   "name": "worker129-empty-proof-accepted",
+   "module": "executor.py",
+   "source_sha256": "b0f55102eeca3181fa68ebbe3bffd2b9a9196fc5db3317dca7dc800d5f100cab",
+   "mutant_sha256": "667c9a4c61bad66791e376d8aac84f694efc692299e12b4b69edfb3d6a1de214",
+   "edits": [
+    {
+     "old": "            if gate is not None and not accepted:",
+     "new": "            if False and not accepted:"
+    }
+   ],
+   "named_rows": [
+    "proof/empty-acceptance"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     false
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 proof/empty-acceptance"
+   ],
+   "details": [
+    "VELDO-0129 proof/empty-acceptance detail: empty acceptance halts at proof: None"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.893
+  },
+  {
+   "name": "worker129-clone-group-unrecorded",
+   "module": "control_launch.py",
+   "source_sha256": "fed2535372b25a9963098f23ef11f5af76669a58df74ae84bee13cfc72f16e00",
+   "mutant_sha256": "ff04940848097976ad49e206272406b88d495221e6919ec4b4874306ff8b6c70",
+   "edits": [
+    {
+     "old": "                            provisioner.record_group(dispatch_id, group.report())",
+     "new": "                            pass"
+    }
+   ],
+   "named_rows": [
+    "build/claude",
+    "build/codex"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     false
+    ],
+    [
+     "VELDO-0129 build/codex",
+     false
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 build/claude",
+    "VELDO-0129 build/codex"
+   ],
+   "details": [
+    "VELDO-0129 build/claude detail: accepted clone and group precede engine work",
+    "VELDO-0129 build/codex detail: accepted clone and group precede engine work"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.451
+  },
+  {
+   "name": "worker129-runtime-not-installed",
+   "module": "init_scaffold.py",
+   "source_sha256": "3a9761ce7471aab4452f2369e9f0df80e32c45464df4d2da62e3271301a46ddf",
+   "mutant_sha256": "b58c3c939e50de5e2c376a3552053bd3de42ca02dc67c2ab68979e4fbfc4d407",
+   "edits": [
+    {
+     "old": "    \".veldo/control_launch_work.py\",",
+     "new": ""
+    }
+   ],
+   "named_rows": [
+    "installation/assets"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 installation/assets"
+   ],
+   "details": [
+    "VELDO-0129 installation/assets detail: runtime is registered and engine mirrors match"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.488
+  },
+  {
+   "name": "worker129-proof-store-optional",
+   "module": "dispatch.py",
+   "source_sha256": "f57ebe36df3bb50d7f16322a5eb57475917ca176be3061e20123c96a1fff1ed9",
+   "mutant_sha256": "f9e976327a57e7ed0a56409c082b2a7c1cada46c7e3e8bec52f82c47bbb38b9a",
+   "edits": [
+    {
+     "old": "        raise FloorRefused(error.code, error.detail, error.codes) from error",
+     "new": "        return {\"state\": \"review\"}, unit_data"
+    }
+   ],
+   "named_rows": [
+    "proof/authority"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     false
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 proof/authority"
+   ],
+   "details": [
+    "VELDO-0129 proof/authority detail: committed manifest alone is refused: None"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.55
+  },
+  {
+   "name": "worker129-follow-gitdir-symlink",
+   "module": "control_launch_work.py",
+   "source_sha256": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
+   "mutant_sha256": "c33e0b81a20e69853e0b256b7967429d7f4b12ac31d26a17ce8fd12aafc7543b",
+   "edits": [
+    {
+     "old": "        if gitdir.is_symlink():",
+     "new": "        if False and gitdir.is_symlink():"
+    }
+   ],
+   "named_rows": [
+    "build/gitdir-symlink"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 build/gitdir-symlink"
+   ],
+   "details": [
+    "VELDO-0129 build/gitdir-symlink detail: hostile layout refuses by name and source config stays byte-identical: binding_mismatch:build_commit"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.648
+  },
+  {
+   "name": "worker129-skip-gitdir-checks",
+   "module": "control_launch_work.py",
+   "source_sha256": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
+   "mutant_sha256": "23eff5f9588da1eb7c306a65e344681afda3c54382c6cc9942cbf788841ea625",
+   "edits": [
+    {
+     "old": "        if gitdir.is_symlink():\n            raise Refused('invalid_input:build_gitdir/symlink')\n        if not gitdir.is_dir():\n            raise Refused('invalid_input:build_gitdir/not_directory')\n        for name in ('commondir', 'objects/info/alternates', 'objects/info/http-alternates'):\n            if os.path.lexists(gitdir / name):\n                raise Refused('invalid_input:build_gitdir/' + name.rsplit('/', 1)[-1])\n",
+     "new": ""
+    }
+   ],
+   "named_rows": [
+    "build/gitdir-symlink",
+    "build/gitdir-gitfile",
+    "build/gitdir-commondir",
+    "build/gitdir-alternates",
+    "build/gitdir-missing"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     false
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     false
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 build/gitdir-symlink",
+    "VELDO-0129 build/gitdir-gitfile",
+    "VELDO-0129 build/gitdir-commondir",
+    "VELDO-0129 build/gitdir-alternates",
+    "VELDO-0129 build/gitdir-missing"
+   ],
+   "details": [
+    "VELDO-0129 build/gitdir-symlink detail: hostile layout refuses by name and source config stays byte-identical: binding_mismatch:build_commit",
+    "VELDO-0129 build/gitdir-gitfile detail: hostile layout refuses by name and source config stays byte-identical: invalid_input:build_gitdir/objects",
+    "VELDO-0129 build/gitdir-commondir detail: hostile layout refuses by name and source config stays byte-identical: None",
+    "VELDO-0129 build/gitdir-alternates detail: hostile layout refuses by name and source config stays byte-identical: None",
+    "VELDO-0129 build/gitdir-missing detail: hostile layout refuses by name and source config stays byte-identical: invalid_input:build_gitdir/objects"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.578
+  },
+  {
+   "name": "worker129-nested-builder-conversation",
+   "module": "dispatch.py",
+   "source_sha256": "f57ebe36df3bb50d7f16322a5eb57475917ca176be3061e20123c96a1fff1ed9",
+   "mutant_sha256": "91a547fe7d68e0aa419a1b21bd69de22ac0d8eb4443b9e04769daee43b9be559",
+   "edits": [
+    {
+     "old": "    record[\"assignments\"][identity] = {\"reviewer\": reviewer, \"attempt\": attempt, \"state\": \"open\",",
+     "new": "    payload[\"context\"][\"builder_conversation\"] = [\"builder narrative\"]\n    record[\"assignments\"][identity] = {\"reviewer\": reviewer, \"attempt\": attempt, \"state\": \"open\","
+    }
+   ],
+   "named_rows": [
+    "review/loop-claude",
+    "review/loop-codex",
+    "review/reviewer-claude",
+    "review/reviewer-codex"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     false
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     false
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 review/loop-claude",
+    "VELDO-0129 review/loop-codex",
+    "VELDO-0129 review/reviewer-claude",
+    "VELDO-0129 review/reviewer-codex"
+   ],
+   "details": [
+    "VELDO-0129 review/loop-claude detail: independent process receives only assigned artifacts: None",
+    "VELDO-0129 review/loop-codex detail: independent process receives only assigned artifacts: None",
+    "VELDO-0129 review/reviewer-claude detail: independent process receives only assigned artifacts: None",
+    "VELDO-0129 review/reviewer-codex detail: independent process receives only assigned artifacts: None"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.488
+  },
+  {
+   "name": "worker129-runtime-artifact-unbound",
+   "module": "control_launch_work.py",
+   "source_sha256": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
+   "mutant_sha256": "e1ee9768aef0dd0430350cb1dbd0bf30e5420542b21f41e08e02f1e5ec6a8053",
+   "edits": [
+    {
+     "old": "    if (P.digest(raw) != (record.get('artifact') or {}).get('digest')\n            or document.get('dispatch_id') != record.get('dispatch_id')):\n        raise Refused(missing if record.get('contract', {}).get('station') == 'build' else 'binding_mismatch:engine_artifact')\n",
+     "new": ""
+    }
+   ],
+   "named_rows": [
+    "artifact/runtime-binding"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     false
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     false
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 artifact/runtime-binding",
+    "VELDO-0129 artifact/floor-binding"
+   ],
+   "details": [
+    "VELDO-0129 artifact/runtime-binding detail: claude/foreign: None",
+    "VELDO-0129 artifact/runtime-binding detail: codex/foreign: None",
+    "VELDO-0129 artifact/floor-binding detail: claude/foreign: binding_mismatch:build_artifact",
+    "VELDO-0129 artifact/floor-binding detail: codex/foreign: binding_mismatch:build_artifact"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.548
+  },
+  {
+   "name": "worker129-floor-artifact-unbound",
+   "module": "dispatch.py",
+   "source_sha256": "f57ebe36df3bb50d7f16322a5eb57475917ca176be3061e20123c96a1fff1ed9",
+   "mutant_sha256": "6ee74dfe313a3b0daa81bce0a2e906d62083e7da90b318dff8ee1c6a5bbee2eb",
+   "edits": [
+    {
+     "old": "    if build.get(\"artifact\") is not None:",
+     "new": "    if False and build.get(\"artifact\") is not None:"
+    }
+   ],
+   "named_rows": [
+    "artifact/floor-binding"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     false
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 artifact/floor-binding"
+   ],
+   "details": [
+    "VELDO-0129 artifact/floor-binding detail: claude/foreign: None",
+    "VELDO-0129 artifact/floor-binding detail: claude/forged-path: None",
+    "VELDO-0129 artifact/floor-binding detail: claude/none: None",
+    "VELDO-0129 artifact/floor-binding detail: codex/foreign: None",
+    "VELDO-0129 artifact/floor-binding detail: codex/forged-path: None",
+    "VELDO-0129 artifact/floor-binding detail: codex/none: None"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 32.706
+  },
+  {
+   "name": "worker129-worker-config-executed",
+   "module": "control_launch_work.py",
+   "source_sha256": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
+   "mutant_sha256": "4d028a19dcc6cd6da19d3694775283d2363afd7e4615b526eb3a33a1fb46474f",
+   "edits": [
+    {
+     "old": "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
+     "new": "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:"
+    }
+   ],
+   "named_rows": [
+    "build/config-neutralization"
+   ],
+   "named_rows_red": true,
+   "unavailable": [],
+   "rows": [
+    [
+     "VELDO-0129 build/claude",
+     true
+    ],
+    [
+     "VELDO-0129 build/codex",
+     true
+    ],
+    [
+     "VELDO-0129 build/configuration",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/loop-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-claude",
+     true
+    ],
+    [
+     "VELDO-0129 review/reviewer-codex",
+     true
+    ],
+    [
+     "VELDO-0129 review/independence-policy",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/nonzero",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-build",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/malformed-review",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/missing-usage",
+     true
+    ],
+    [
+     "VELDO-0129 outcome/reservation",
+     true
+    ],
+    [
+     "VELDO-0129 proof/authority",
+     true
+    ],
+    [
+     "VELDO-0129 proof/empty-acceptance",
+     true
+    ],
+    [
+     "VELDO-0129 source/no-completion",
+     true
+    ],
+    [
+     "VELDO-0129 installation/assets",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-symlink",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-gitfile",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-commondir",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-alternates",
+     true
+    ],
+    [
+     "VELDO-0129 build/gitdir-missing",
+     true
+    ],
+    [
+     "VELDO-0129 build/config-neutralization",
+     false
+    ],
+    [
+     "VELDO-0129 artifact/runtime-binding",
+     true
+    ],
+    [
+     "VELDO-0129 artifact/floor-binding",
+     true
+    ],
+    [
+     "VELDO-0129 build/handoff",
+     true
+    ]
+   ],
+   "failed_rows": [
+    "VELDO-0129 build/config-neutralization"
+   ],
+   "details": [
+    "VELDO-0129 build/config-neutralization detail: hostile fsmonitor and hooks never executed"
+   ],
+   "by_assertion": true,
+   "one_report_per_row": true,
+   "seconds": 33.247
+  }
+ ],
+ "all_rejected": true
+}

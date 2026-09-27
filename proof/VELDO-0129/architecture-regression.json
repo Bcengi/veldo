@@ -1,0 +1,182 @@
+{
+  "base": "3b81247cd526bd20d63f10818c3fa0e93ba22937",
+  "failed_rows": [
+    "VELDO-0053 architecture/entries-blocked",
+    "VELDO-0053 architecture/forbidden-review-launch"
+  ],
+  "entries": {
+    "valid": {
+      "control_eligibility.py CallHandle.invoke provider_request": [
+        [
+          "VELDO-9301"
+        ],
+        ""
+      ],
+      "dispatch.py Dispatcher._dispatch_build build": [
+        [
+          "VELDO-9301"
+        ],
+        "proof refused: missing_authority:proof_acceptance"
+      ],
+      "dispatch.py Dispatcher._dispatch_review review": [
+        [
+          "VELDO-9301"
+        ],
+        ""
+      ],
+      "dispatch.py Dispatcher._land publication": [
+        [
+          "VELDO-9301"
+        ],
+        ""
+      ],
+      "executor.py Executor._decide build": [
+        [
+          "VELDO-9301"
+        ],
+        "proof refused: missing_authority:proof_acceptance"
+      ],
+      "executor.py Executor._decide direct_execution": [
+        [
+          "VELDO-9301"
+        ],
+        "proof refused: missing_authority:proof_acceptance"
+      ],
+      "executor.py Executor._decide review": [
+        [],
+        "proof refused: missing_authority:proof_acceptance"
+      ],
+      "executor.py Executor._decide_calls provider_request": [
+        [
+          "VELDO-9301"
+        ],
+        "proof refused: missing_authority:proof_acceptance"
+      ],
+      "frontier.py claimable._add selection": [
+        [
+          "VELDO-9301"
+        ],
+        ""
+      ],
+      "plan.py cmd_run_check direct_execution": [
+        [
+          "VELDO-9301"
+        ],
+        "run-check VELDO-9301: clear to build (deps shipped, plan context current)\n"
+      ],
+      "work.py WorkLoop._claim_next claim": [
+        [
+          "VELDO-9301"
+        ],
+        ""
+      ]
+    },
+    "invalid": {
+      "control_eligibility.py CallHandle.invoke provider_request": [
+        [],
+        "Refused:invalid_input:architecture/invalid_structure"
+      ],
+      "dispatch.py Dispatcher._dispatch_build build": [
+        [],
+        "invalid_input:architecture/invalid_structure"
+      ],
+      "dispatch.py Dispatcher._dispatch_review review": [
+        [],
+        "invalid_input:architecture/invalid_structure"
+      ],
+      "dispatch.py Dispatcher._land publication": [
+        [],
+        "invalid_input:architecture/invalid_structure"
+      ],
+      "executor.py Executor._decide build": [
+        [],
+        "eligibility refused: invalid_input:architecture/invalid_structure"
+      ],
+      "executor.py Executor._decide direct_execution": [
+        [],
+        "eligibility refused: invalid_input:architecture/invalid_structure"
+      ],
+      "executor.py Executor._decide review": [
+        [],
+        "proof refused: missing_authority:proof_acceptance"
+      ],
+      "executor.py Executor._decide_calls provider_request": [
+        [],
+        "eligibility refused: invalid_input:architecture/invalid_structure"
+      ],
+      "frontier.py claimable._add selection": [
+        [],
+        ""
+      ],
+      "plan.py cmd_run_check direct_execution": [
+        [],
+        "run-check VELDO-9301: REFUSED\n  - eligibility refused: invalid_input:architecture/invalid_structure\n  - architecture contract refused, so no placement can resolve until it is repaired: version must be an integer >= 1: a contract is versioned; no areas: a contract without areas declares no shape\n"
+      ],
+      "work.py WorkLoop._claim_next claim": [
+        [],
+        ""
+      ]
+    },
+    "missing": {
+      "control_eligibility.py CallHandle.invoke provider_request": [
+        [],
+        "Refused:missing_evidence:architecture/required_absence"
+      ],
+      "dispatch.py Dispatcher._dispatch_build build": [
+        [],
+        "missing_evidence:architecture/required_absence"
+      ],
+      "dispatch.py Dispatcher._dispatch_review review": [
+        [],
+        "missing_evidence:architecture/required_absence"
+      ],
+      "dispatch.py Dispatcher._land publication": [
+        [],
+        "missing_evidence:architecture/required_absence"
+      ],
+      "executor.py Executor._decide build": [
+        [],
+        "eligibility refused: missing_evidence:architecture/required_absence"
+      ],
+      "executor.py Executor._decide direct_execution": [
+        [],
+        "eligibility refused: missing_evidence:architecture/required_absence"
+      ],
+      "executor.py Executor._decide review": [
+        [],
+        "proof refused: missing_authority:proof_acceptance"
+      ],
+      "executor.py Executor._decide_calls provider_request": [
+        [],
+        "eligibility refused: missing_evidence:architecture/required_absence"
+      ],
+      "frontier.py claimable._add selection": [
+        [],
+        ""
+      ],
+      "plan.py cmd_run_check direct_execution": [
+        [],
+        "run-check VELDO-9301: REFUSED\n  - eligibility refused: missing_evidence:architecture/required_absence\n"
+      ],
+      "work.py WorkLoop._claim_next claim": [
+        [],
+        ""
+      ]
+    }
+  },
+  "entries_unchanged": {
+    "invalid": true,
+    "missing": true
+  },
+  "executor_review_builds": {
+    "valid": [
+      "VELDO-9301"
+    ],
+    "invalid": [
+      "VELDO-9301"
+    ],
+    "missing": [
+      "VELDO-9301"
+    ]
+  }
+}

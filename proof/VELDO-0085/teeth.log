@@ -1,0 +1,13 @@
+{"finding": 85, "mutation": "decomposition-artifact-before-unit-validation", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 fields/invalid-id-no-artifact", "VELDO-0085 aliases/authority-counter", "VELDO-0085 binding/one-owner", "VELDO-0085 priority/fresh-growth", "VELDO-0085 dependencies/eligibility", "VELDO-0085 publication/other-process", "VELDO-0085 publication/stale-input"]}
+{"finding": 85, "mutation": "decomposition-checkout-maximum", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 aliases/authority-counter", "VELDO-0085 binding/one-owner", "VELDO-0085 priority/fresh-growth", "VELDO-0085 dependencies/eligibility", "VELDO-0085 publication/other-process", "VELDO-0085 publication/stale-input"]}
+{"finding": 85, "mutation": "decomposition-omit-generated-dependency", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 dependencies/eligibility"]}
+{"finding": 85, "mutation": "decomposition-cross-item-authority", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 binding/one-owner", "VELDO-0085 dependencies/eligibility", "VELDO-0085 priority/fresh-growth", "VELDO-0085 publication/other-process"]}
+{"finding": 85, "mutation": "decomposition-primary-revision-shared", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 binding/one-owner", "VELDO-0085 dependencies/eligibility", "VELDO-0085 priority/fresh-growth", "VELDO-0085 publication/other-process"]}
+{"finding": 85, "mutation": "decomposition-appended-unit-ready", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 priority/fresh-growth"]}
+{"finding": 85, "mutation": "decomposition-unit-dependency-lost", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 binding/one-owner", "VELDO-0085 dependencies/eligibility", "VELDO-0085 priority/fresh-growth", "VELDO-0085 publication/other-process"]}
+{"finding": 85, "mutation": "decomposition-stale-bytes-accepted", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 publication/stale-input"]}
+{"finding": 85, "mutation": "decomposition-unpublished-input", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 publication/stale-input"]}
+{"finding": 85, "mutation": "decomposition-eligibility-unbound", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 publication/stale-input"]}
+{"finding": 85, "mutation": "decomposition-admission-unbound", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 publication/stale-input"]}
+{"finding": 85, "mutation": "decomposition-service-not-installed", "baseline": "green", "assertions": 34, "red_rows": ["VELDO-0085 install/assets"]}
+{"mutations_rejected": 12, "green_suites": {"82_veldo_0085_decomposition.py": 34}}
