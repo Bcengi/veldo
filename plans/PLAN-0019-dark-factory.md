@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172]
     order: 16059
     release: 1
     stage: 6
@@ -1051,7 +1051,7 @@ work:
     spec: VELDO-0145
     title: The UI shell, the live run terminal and the decisions screen on phone and desktop
     feature_refs: [F9]
-    depends_on: [VELDO-0130, VELDO-0141, VELDO-0167]
+    depends_on: [VELDO-0130, VELDO-0141, VELDO-0167, VELDO-0171]
     order: 15145
     release: 1
     stage: 5
@@ -1255,6 +1255,22 @@ work:
     order: 13170
     release: 1
     stage: 3
+  - item: W131
+    spec: VELDO-0171
+    title: Factory setup enrolls the API edge and installs the API behind Tailscale Serve, so the owner enrolls his first passkey on a fresh host, and a second run changes nothing
+    feature_refs: [F9]
+    depends_on: [VELDO-0130, VELDO-0167]
+    order: 15171
+    release: 1
+    stage: 5
+  - item: W132
+    spec: VELDO-0172
+    title: The engine stream-format tables and every fake engine match the real Claude Code and Codex output recorded in the live runs of 2026-09-26
+    feature_refs: [F4]
+    depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0155, VELDO-0156]
+    order: 11172
+    release: 1
+    stage: 1
 
 regression:
   journeys:
@@ -1610,6 +1626,8 @@ These are writing-only allocations; no specification status or existing evidence
 | W128 | VELDO-0168 | 1 | 3; follow-up of the VELDO-0149 review |
 | W129 | VELDO-0169 | 1 | 4; follow-up of the Codex-review fixes |
 | W130 | VELDO-0170 | 1 | 3; follow-up of the Codex-review fixes |
+| W131 | VELDO-0171 | 1 | 5; built before VELDO-0145 |
+| W132 | VELDO-0172 | 1 | 1; follow-up of the live engine runs |
 
 ## Related baseline and follow-up disposition
 
@@ -1806,3 +1824,14 @@ through factory setup; stage 3. VELDO-0167 and VELDO-0170 also build on the stan
 kept in the specifications. W44 (VELDO-0059) depends on all seven. In section 12's order, VELDO-0165 and
 VELDO-0166 are built with the account pool in the first stage, VELDO-0167 before VELDO-0145, and
 VELDO-0168 before the owner's first use of the factory, as the review that filed it asked.
+
+2026-09-27: within revision 4, two more follow-up drafts, each one concern, adding function and cutting
+none. W131's VELDO-0171 has factory setup enroll the api edge by the owner's signed command, install the
+API process as a service that starts with the authority service, listening on loopback behind Tailscale
+Serve on the host's tailnet name (the owner's choice, Telegram 29094), serve the page the owner enrolls his
+first passkey from, and change nothing when run again; stage 5. VELDO-0139's setup never enrolled the api
+edge or installed the API, so VELDO-0145's UI could not run on a host setup built; W105 (VELDO-0145) now
+depends on it, and VELDO-0171 also builds on the standalone VELDO-0139, an edge kept in the
+specifications. W132's VELDO-0172 corrects the stream-format tables and the fake engines to the real Claude
+Code and Codex output of the live runs of 2026-09-26, recorded as a committed capture the rows compare
+with; stage 1, built with the account pool. W44 (VELDO-0059) depends on both.
