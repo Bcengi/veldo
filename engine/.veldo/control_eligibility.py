@@ -1030,7 +1030,10 @@ class Gate:
     @staticmethod
     def _identity(label, value, unit=None):
         if isinstance(value, list):
-            members = [(m['id'], m['version'], m['digest']) for m in value]
+            # JSON's own shape (lists, never tuples): a ticket crosses the receiver's pipe as JSON, and a
+            # collection identity that only compared equal in this process made every unit with an
+            # approval, decision or settlement stale at the receiver's recheck.
+            members = [[m['id'], m['version'], m['digest']] for m in value]
             return {'members': members, 'digest': SN.digest(SN.canonical(members))}
         return {'id': value['id'], 'version': value['version'], 'digest': value['digest'],
                 'definition': _definition(label, (value.get('value') or {}).get('data'), unit)}

@@ -615,6 +615,8 @@ def _v47_suite():
                       and receiver_config.get('journal_key') == str(keys / 'journal')
                       and receiver_config.get('domain') == DOMAIN and receiver_config.get('repository') == REPOSITORY
                       and receiver_config.get('workspace') == str(A) and receiver_config.get('authority_generation') == 1
+                      # VELDO-0069: the host trust whose settlement signers the receiver's recheck verifies with.
+                      and receiver_config.get('host_trust') == str(trust_file)
                       and receiver_config.get('adapters') == ADAPTERS
                       and consumer.get('refusal') is None and consumer.get('qualified') is True
                       and consumer.get('executable') == str(home_dir / 'bin' / 'control_launch.py'))

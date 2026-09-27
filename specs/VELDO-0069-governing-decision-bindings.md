@@ -35,6 +35,16 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
+  - "packs/*/.veldo/control_launch.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "packs/*/.veldo/control_service.py"
+  - "engine/.veldo/control_eligibility.py"
+  - ".veldo/control_eligibility.py"
+  - "packs/*/.veldo/control_eligibility.py"
+  - "scripts/suites/66_veldo_0047_authority.py"
   - "scripts/suites/*_veldo_0069_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -166,3 +176,22 @@ are not checked against the record. New rows `refusal/future-revision` (red at 5
 `binding/owner-ruling` (the owner rejects and returns for elaboration; the signed ruling blocks by
 `decision_ruling` at every consumer). Mutations `future-revision-accepted` and `ruling-forced-approve`;
 `binding-choice-generic` re-aimed as `binding-choice-forced-accept` on the ruling row.
+
+2026-09-26, Codex review of main 3c85f33b (research/codex-reviews/ask-20260926-215030, P1): work the front
+door cleared on a signed owner settlement was refused `unsigned_decision` at launch, because the launch
+receiver's recheck built its Gate with no settlement trust. The footprint gains `control_launch.py`,
+`control_service.py` and `control_eligibility.py` (engine, installed and pack copies) and the VELDO-0047
+suite. The receiver's configuration now names this host's trust file (`host_trust`, written by
+`control_service.install` from the trust it verified), and the recheck derives the settlement signers from
+it exactly as the front door's production Gate does (`HostTrust.settlement_trust(workspace)`); a
+configuration naming no host trust trusts no settlement, and a named trust that is absent is refused
+`host_trust_required`. Driving the real receiver process exposed a second defect on the same path: the
+Gate's collection identities (approvals, decisions, settlements) were tuples, which never equal the JSON
+the ticket crosses the receiver's pipe as, so every unit with one was refused `stale_input` at the
+recheck; they are now lists. Every other production Gate construction was checked: the project service
+and the lander already pass trust, and the landing and backlog readers read no decision. New row
+`launch/receiver-recheck` drives a real Telegram settlement, the real runner's preparation and the real
+receiver process under three configurations; the VELDO-0047 receiver-configuration row also checks
+`host_trust`. Mutations `receiver-gate-untrusted`, `receiver-absent-trust-unnamed`,
+`ticket-collection-tuples` and `installer-receiver-without-host-trust` in finding 69; the finding 39 and
+47 anchors on the changed lines were moved, their defects unchanged. Status unchanged.

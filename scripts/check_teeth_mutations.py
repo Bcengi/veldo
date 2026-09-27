@@ -2698,6 +2698,24 @@ def cases():
     binding('record-status-authority', "    if not mine:\n        return ['unresolved_decision:' + rid]\n",
             "    if not mine:\n        return [] if record.get('state') == 'settled' else ['unresolved_decision:' + rid]  # defect\n",
             'consumers/inline-bypass', module='control_decision_dependency.py')
+    # Codex review of 3c85f33b (P1): the receiver's recheck built its Gate without the settlement trust the front
+    # door's Gate verifies with, so settled governed work was refused unsigned_decision at launch. The trust
+    # dropped again; an absent named trust read as no trust instead of a named stop; the collection identities
+    # of a ticket as tuples, which never equal the JSON the ticket crosses the receiver's pipe as; and the
+    # installer's receiver configuration naming no host trust.
+    binding('receiver-gate-untrusted', "workspace=self.config.get('workspace'), settlement_trust=settlements)\n",
+            "workspace=self.config.get('workspace'))  # defect: the recheck trusts no settlement\n",
+            'launch/receiver-recheck', module='control_launch.py')
+    binding('receiver-absent-trust-unnamed', "            raise EL.Stopped('host_trust_required')\n",
+            "            return None  # defect: a named trust that is absent reads as no trust\n",
+            'launch/receiver-recheck', module='control_launch.py')
+    binding('ticket-collection-tuples', "            members = [[m['id'], m['version'], m['digest']] for m in value]\n",
+            "            members = [(m['id'], m['version'], m['digest']) for m in value]  # defect: tuples never equal JSON\n",
+            'launch/receiver-recheck', module='control_eligibility.py')
+    add(69, 'installer-receiver-without-host-trust', '66_veldo_0047_authority.py', 'control_service.py',
+        "                                'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,\n",
+        "                                'profile': profile,  # defect: the receiver is configured with no host trust\n",
+        ['authority/receiver-configured-with-host-profile'])
     # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
     def clone(name, module, old, new, row, also=()):
         add(42, name, '66_veldo_0042_clones.py', module, old, new, ['clone/' + row], also)
@@ -2947,8 +2965,8 @@ def cases():
              'remote-stop-holds-unit')
     # Integration with VELDO-0053: the receiver's recheck judges its configured workspace.
     dispatch('dispatch-receiver-store-only-gate', 'control_launch.py',
-             "                           workspace=self.config.get('workspace'))",
-             "                           workspace=None)", 'launch-results')
+             "                           workspace=self.config.get('workspace'), settlement_trust=settlements)",
+             "                           workspace=None, settlement_trust=settlements)", 'launch-results')
     # AC1, declared: the worker is spawned before the contract is recorded. The fixed code guards it
     # twice (the runner commits before invoking; the receiver spawns only after an acceptance that
     # needs the prepared record), so the defect is both edits.
@@ -3755,8 +3773,8 @@ def cases():
             "    pass  # defect: a relative key directory is judged wherever it resolves\n", 'key-directory-relative-refused')
     # AC1: the launch receiver's configuration carries this host's qualified worker profile.
     service('authority-receiver-profile-omitted', 'control_service.py',
-            "                                'profile': profile, 'adapters': adapters}), 0o600)\n",
-            "                                'adapters': adapters}), 0o600)  # defect: the receiver gets no worker profile\n",
+            "                                'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,\n",
+            "                                'host_trust': os.path.abspath(str(trust_path)),  # defect: the receiver gets no worker profile\n",
             'receiver-configured-with-host-profile')
     service('authority-profile-not-qualified', 'control_service.py',
             "    if not qualification['qualified']:\n"
