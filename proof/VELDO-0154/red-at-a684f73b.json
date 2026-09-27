@@ -26,7 +26,7 @@
   "VELDO-0154 loop/ask-before-rerun detail: no dispatch until he answers: another pass leaves both units awaiting him and asks nothing again [None, [0, 0]]",
   "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'refused': 'authority_unavailable'}, None, []]",
   "VELDO-0154 loop/owner-no-stops detail: his stop leaves the unit stopped, in that pass and the next [{'refused': 'authority_unavailable'}, [], [0]]",
-  "VELDO-0154 loop/reset-timer-wake detail: the unit waits for the account's reported reset, and the pass set its timer to that earliest reset [[], None, 1790546460]",
+  "VELDO-0154 loop/reset-timer-wake detail: the unit waits for the account's reported reset, and the pass set its timer to that earliest reset [[], None, 1790550660]",
   "VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [None, []]",
   "VELDO-0154 loop/no-other-timer detail: with the unit waiting, no journal advance and no run ending, no pass started for 0.0 s, longer than every interval the service uses, while its accept timeout kept waking it [[], 0 switches]",
   "VELDO-0154 loop/no-other-timer detail: exactly one pass started at the reset, and none between the unit's wait and it [[], []]",
@@ -111,7 +111,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 5.33,
+ "seconds": 5.339,
  "spec_id": "VELDO-0154",
  "suite": "scripts/suites/83_veldo_0154_factory_loop.py",
  "tree": "git archive a684f73bda68efa5c35487972ac9d34b9906a308, unchanged; the current suite file run against it"
