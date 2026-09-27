@@ -131,6 +131,7 @@ DURABILITY_GRADES = ("off_host", "protocol_only")
 # VELDO-0169: the record kind that hands out work, and the eligibility Gate that decides whether its
 # unit's project takes any (see the module docstring). Loaded on the first handout, never at import.
 CLAIM_KIND = "claim"
+CLAIM_PREFIX = "claim:"
 _ELIGIBILITY = []
 
 
@@ -150,8 +151,12 @@ def claim_handout(was, now):
     return None
 
 
-def _claim_data(record):
-    data = (record or {}).get("data") if (record or {}).get("kind") == CLAIM_KIND else None
+def _claim_data(record, eid=""):
+    """A claim record's data, found as its readers find it: by a `claim:` id whatever kind the writer gave
+    it, or by the claim kind (control_claim.claim_id and the Gate read a claim by id, never by kind)."""
+    record = record or {}
+    is_claim = record.get("kind") == CLAIM_KIND or eid.startswith(CLAIM_PREFIX)
+    data = record.get("data") if is_claim else None
     return data if isinstance(data, dict) else {}
 
 
@@ -193,7 +198,9 @@ def handout_problem(conn, changes, before):
     command transaction after its records are written; None when every handout's project takes work."""
     gate = None
     for eid in sorted(changes):
-        was, now = _claim_data(before.get(eid)), _claim_data(changes[eid])
+        if eid.startswith(CLAIM_PREFIX) and (changes[eid] or {}).get("kind") != CLAIM_KIND:
+            return eid, None, ["invalid_input:claim_kind"]
+        was, now = _claim_data(before.get(eid), eid), _claim_data(changes[eid], eid)
         if claim_handout(was, now) is None:
             continue
         gate = gate or _project_gate(conn)

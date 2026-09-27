@@ -674,6 +674,10 @@ def _v169_suite():
                         ('one transaction moving an active unit into the paused project and claiming it',
                          hand('u-store-moved', 'claim', also=moved))):
                     check(row, '%s refused as %s, nothing written' % (label, outcome), outcome == expected and unchanged)
+                # A claim written under another kind at a claim id: its readers find a claim by id, never by kind.
+                outcome, unchanged = run('upsert_entity', dict(entity_id=fresh_cid, kind='Claim', data=built), pins('u-store-fresh'))
+                check(row, 'a claim written under another kind at a claim id refused as %s, nothing written' % outcome,
+                      outcome == 'invalid_input:claim_kind' and unchanged)
                 check(row, 'no claim of the paused project\'s fresh unit exists', entity(fresh_cid) is None)
                 for label in ('renew', 'release'):
                     outcome, _ = hand('u-store-held', label)

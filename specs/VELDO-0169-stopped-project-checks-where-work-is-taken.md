@@ -306,3 +306,5 @@ copy the whole engine, which the store's check loads; 66 keeps its active projec
 organ's three-argument registration); support/v169_rows.py now serves only the upgrade row. The footprint drops
 control_eligibility, init_scaffold, suites 70 and 73 and specs/index.md, none of which this branch
 changes. Status and approval remain unchanged.
+
+2026-09-27, fourth review (rv169d): a claim written under another kind at a claim id was not checked, because the store classified claims by kind while their readers find them by id. The store now treats any record at a claim: id as a claim and refuses one of another kind there (invalid_input:claim_kind). Row case in store/invariant and mutation store-claim-kind-unchecked (finding 169). Filed: a raw sqlite write through the store connection (a forged row), and a claim planted for a unit that does not exist yet.

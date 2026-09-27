@@ -8646,6 +8646,11 @@ def cases():
             "        stopped = handout_problem(conn, changes, before)\n",
             "        stopped = None  # defect: the store hands out whatever a transition writes\n",
             ['store/invariant', 'guard/forge', 'organ/stopped'])
+    handout('store-claim-kind-unchecked', 'control_store.py',
+            '        if eid.startswith(CLAIM_PREFIX) and (changes[eid] or {}).get("kind") != CLAIM_KIND:\n'
+            '            return eid, None, ["invalid_input:claim_kind"]\n',
+            '',
+            ['store/invariant'])
     handout('store-invariant-ignores-resumes', 'control_store.py',
             '        return "resume" if was.get("parked_on") else "claim"\n',
             '        return None if was.get("parked_on") else "claim"  # defect: a parked unit taken again hands nothing out\n',
