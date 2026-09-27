@@ -881,6 +881,38 @@ c.close()
                     ('the receiver observes the refusals by name', [o.get('reason') for o in receiver.observations
                                                                     if o.get('outcome') == 'refused']
                      == ['project_not_active:PAUSED', 'project_not_active:CANCELED'])])
+            # The pin: the receiver pins the project record its project check read into the claim's
+            # transaction, so a pause committed after that check and before the write refuses the write as
+            # stale, and the receiver decides again on the paused record. Without the pin the claim lands.
+            with region('project/paused-mid-claim'):
+                q1 = unit('U-76-q1', 'proj-x')
+                x_before = (project('proj-x') or {}).get('state')
+                checked, window = [], {}
+                decide = receiver._project_problems
+
+                def pause_after_check(uid):
+                    answer = decide(uid)
+                    checked.append(list(answer[0]))
+                    if not window:
+                        window['pause'] = change('pause', 'proj-x', reason='paused mid-claim')
+                        window['journal'] = journal()
+                    return answer
+                receiver._project_problems = pause_after_check
+                try:
+                    raced = signed_claim(q1)
+                finally:
+                    del receiver._project_problems
+                check('project/paused-mid-claim', [
+                    ('control: the project is ACTIVE and the receiver\'s project check refuses nothing',
+                     x_before == 'ACTIVE' and checked[:1] == [[]]),
+                    ('the owner\'s pause commits between that check and the claim\'s write',
+                     window.get('pause', {}).get('ok') is True and (project('proj-x') or {}).get('state') == 'PAUSED'),
+                    ('the claim is refused by name', raced.get('ok') is False
+                     and raced.get('reason') == 'project_not_active:PAUSED'),
+                    ('the receiver decided again on the paused record', checked == [[], ['project_not_active:PAUSED']]),
+                    ('nothing is written after the pause and the unit stays READY with no claim',
+                     journal() == window.get('journal') and state_of(q1) == 'READY'
+                     and entity(CLM.claim_id(REPO, q1)) is None)])
         finally:
             for launch in launches:
                 child = getattr(launch, 'child', None)

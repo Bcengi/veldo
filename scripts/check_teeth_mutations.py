@@ -5421,6 +5421,11 @@ def cases():
             "        return self._project_problems(data.get('project'), record, member), read\n",
             "        return [], read  # defect: the boundary's project check refuses nothing\n",
             ['paused-claim', 'canceled-claim'])
+    # Review of ba4eb66e: the project and owner records the claim receiver's project check read are pinned
+    # in the claim's transaction, and no row drove the pin. Dropped, a pause committed mid-claim is missed.
+    project('claim-pins-dropped', 'control_claim.py',
+            "            versions.update(read)\n",
+            "            pass  # defect: the records the project check read are not pinned\n", ['paused-mid-claim'])
     # VELDO-0138: each criterion's declared falsifier first, then the threat model's other shapes.
     def service_channel(name, module, old, new, row, also=()):
         add(138, name, '71_veldo_0138_channel_service.py', module, old, new, [row], also)
