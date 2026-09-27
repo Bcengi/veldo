@@ -7,7 +7,7 @@ engine's login profile: Claude Code's CLAUDE_CONFIG_DIR, Codex's CODEX_HOME), th
 the provider's CLI reported (utilization, reset time, observed at, source dispatch) and its
 concurrency (one run by default). `.veldo/accounts.py` is the local helper that prepares a profile
 directory and prints its one login step; this module is the record the Runner and the launch
-receiver read. Choosing among accounts, the pool and the limit are VELDO-0160.
+receiver read. Choosing among accounts is control_account_pool (VELDO-0160).
 
 THE LOGIN COMES FROM THE RECORD. `login_environment` builds an engine's environment from the
 inherited one and the adapter's configured one: every provider's profile variable and every variable
@@ -38,6 +38,15 @@ A WINDOW REOPENS ONLY ON ITS REPORTED RESET. `blocking` names the windows that r
 invocation now: a window the CLI reported rejected (its allowance exhausted) until its reported reset,
 and for ever when no reset was reported, until a later observation of that window says otherwise.
 
+ONE REGISTRATION PER ACCOUNT (VELDO-0160). An account is one login: an id already registered, or a
+profile directory already registered for another account on the same host (the same login under
+another name), is refused by name (`duplicate_account:<the registered id>`).
+
+A RUN STOPPED BY ITS ACCOUNT'S LIMIT (VELDO-0160). `classify` ends such a run as `account_limit`, with the
+window and reset its engine's stream stated (each engine meter's `limit()`): when the engine ended with
+its rate-limit result, always; when only the stream reported the window exhausted, unless the run
+completed. No other run is classified so.
+
 Writes go through the store's signed transaction under a declared owner, so only this module's
 command writes an `account` record. `authorize(conn, command)` is the caller's current-authority
 predicate, run inside the transaction. Standard library only.
@@ -46,6 +55,7 @@ import copy
 import importlib.util
 import json
 import math
+import os
 from pathlib import Path
 
 SCHEMA = 'veldo.account/v1'
@@ -75,6 +85,9 @@ WINDOW_STATUSES = ('allowed', 'rejected')
 # trusted launch receiver's service membership).
 OWNER_ROLES = ('project_owner', 'operations_authority')
 OBSERVER_ROLE = 'reservation_service'
+# VELDO-0160: the outcome of a run its account's limit stopped, and the signals that state the limit.
+LIMIT_OUTCOME = 'account_limit'
+LIMIT_SIGNALS = ('stream', 'result')
 
 
 class Refused(Exception):
@@ -163,6 +176,22 @@ def refused(configured, credentials):
     redirect or a paid-API switch: a profile variable, a provider switch, or one of `credentials`."""
     return sorted(name for name in configured
                   if name in PROFILES.values() or name.startswith(REFUSED_PREFIXES) or name in credentials)
+
+
+def classify(outcome, limit):
+    """(outcome, limit): `account_limit` with {window, reset_at, signal} for a run its account's limit
+    stopped, else the outcome as it is and None. `limit` is the engine meter's `limit()`: the last limit
+    the stream stated, `signal` `result` when the engine ended with its rate-limit result (always a limit)
+    or `stream` when the stream reported the window exhausted (a limit unless the run completed)."""
+    if not isinstance(limit, dict) or limit.get('signal') not in LIMIT_SIGNALS or outcome == 'not_executed':
+        return outcome, None
+    if limit['signal'] == 'stream' and outcome == 'completed':
+        return outcome, None
+    return LIMIT_OUTCOME, {'window': limit.get('window'), 'reset_at': limit.get('reset_at'), 'signal': limit['signal']}
+
+
+def _same_profile(value, other):
+    return os.path.normpath(value) == os.path.normpath(other)
 
 
 def login_environment(inherited, record, host, named, configured=None, credentials=frozenset()):
@@ -264,7 +293,13 @@ class Accounts:
         action = params['action']
         if action == 'register':
             if current is not None:
-                raise Refused('duplicate_account', params['account'])
+                raise Refused('duplicate_account:' + params['account'], params['account'])
+            for (data,) in conn.execute('SELECT data FROM entities WHERE kind=? ORDER BY id', (KIND,)):
+                other = json.loads(data)
+                for host, directory in params['profiles'].items():
+                    if _text((other.get('profiles') or {}).get(host)) and _same_profile(other['profiles'][host], directory):
+                        # VELDO-0160: the same login under another name is a second registration of it.
+                        raise Refused('duplicate_account:' + other['id'], '%s on %s' % (directory, host))
             value = {'schema': SCHEMA, 'id': params['account'], 'provider': params['provider'],
                      'label': params['label'], 'status': 'active', 'profiles': params['profiles'],
                      'windows': {}, 'concurrency': params['concurrency'], 'registered_at': params['now']}

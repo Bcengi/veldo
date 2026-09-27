@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -81 +81 @@
+-    return bool((record or {}).get('windows')) or _uses(records, (record or {}).get('id'))[2]
++    return bool((record or {}).get('windows'))  # defect: usage alone is not an observation

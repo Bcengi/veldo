@@ -391,6 +391,587 @@ def _definition(js, name, near):
     return min(sites, key=lambda m: abs(m.start() - near)).start()
 
 
+# VELDO-0160: Claude Code's rate-limit result. The usage-limit message its API error message and its
+# result carry (the template, the reset piece, the binary's names of the windows), the time formats and
+# the zone it states the reset in, and a 429 message that is not the account's limit. Each piece by the
+# exact text of this build.
+CLAUDE_LIMIT = {
+    'template': 'return`You\'ve hit your ${e}${n}${g}`}',
+    'progress': 'g=s?.progressSavedSuffix?" \\xB7 progress saved":""',
+    'resets': 'M=_?` \\xB7 resets ${_}`:""',
+    'names': 'var Ide={',
+    'within_day': 'o.toLocaleTimeString("en-US",{hour:"numeric",minute:c===0?void 0:"2-digit",hour12:!0})'
+                  '.replace(/[ \\u202f]([AP]M)/i,(u,i)=>i.toLowerCase())+(t?` (${a0r()})`:"")',
+    'beyond_day': 'let u={month:"short",day:"numeric",hour:r?"numeric":void 0,minute:!r||c===0?void 0:"2-digit",'
+                  'hour12:r?!0:void 0};if(o.getFullYear()!==s.getFullYear())u.year="numeric";return o.toLocaleString("en-US",u)',
+    'zone': 'function a0r(){if(!g)g=Intl.DateTimeFormat().resolvedOptions().timeZone;return g}',
+    'not_account': 'q$n="Server is temporarily limiting requests (not your usage limit)"',
+}
+
+
+# The binary's other rejected-status texts, which do not start "You've hit your": each return of the
+# message builder's `overageStatus === "rejected"` branch that is not the template, with the texts it
+# makes (the out-of-credits reset and progress pieces, and the admin suffix, are appended to the first and
+# the last two). Each must lie in that branch, after its opening test and before the template's own returns.
+CLAUDE_REJECTED_BRANCH = 'if(e.overageStatus==="rejected"){'
+CLAUDE_REJECTED = (
+    ('return`You\'re out of usage credits${_e}${ve}`', ["You're out of usage credits"]),
+    ('return s?"Your org is out of usage \\xB7 add funds to continue":"Your org is out of usage \\xB7 contact your admin"',
+     ['Your org is out of usage \u00b7 add funds to continue', 'Your org is out of usage \u00b7 contact your admin']),
+    ('return`Your seat type doesn\'t include ${r?"usage":"usage credits"}`',
+     ["Your seat type doesn't include usage", "Your seat type doesn't include usage credits"]),
+    ('return"This service is disabled for your org"', ['This service is disabled for your org']),
+    ('return`Your usage allocation has been disabled by your admin${kke()}`',
+     ['Your usage allocation has been disabled by your admin']),
+    ('return`Your group\'s usage limit is set to $0${kke()}`', ["Your group's usage limit is set to $0"]),
+)
+CLAUDE_ADMIN_SUFFIX = 'function kke(){let e=EKe();return e?` \\xB7 run ${e} to ask your admin for a higher limit`:" \\xB7 ask your admin for a higher limit"'
+
+
+def claude_rejected(text):
+    """(the rejected-status texts that are not "You've hit your ...", each checked in the builder's branch,
+    the ones the admin suffix follows)."""
+    if text.count(CLAUDE_REJECTED_BRANCH) != 1 or text.count(CLAUDE_ADMIN_SUFFIX) != 1:
+        raise Moved('claude rejected-status branch moved')
+    branch = text.index(CLAUDE_REJECTED_BRANCH)
+    end = text.find('return _h("limit",_e,n,', branch)
+    found, suffixed = [], []
+    for anchor, texts in CLAUDE_REJECTED:
+        if text.count(anchor) != 1 or not branch < text.index(anchor) < end:
+            raise Moved('claude rejected-status text moved: ' + anchor[:40])
+        found += texts
+        suffixed += texts if anchor.endswith('${kke()}`') else []
+    return found, suffixed
+
+
+def claude_limit(text):
+    for key, anchor in CLAUDE_LIMIT.items():
+        if anchor not in text:
+            raise Moved('claude usage-limit piece moved: ' + key)
+    at = text.index(CLAUDE_LIMIT['names'])
+    block = text[at + len(CLAUDE_LIMIT['names']) - 1:text.index('}', at) + 1]
+    names = dict(re.findall(r'([a-z_]+):"([^"]+)"', block))
+    if 'five_hour' not in names or 'seven_day' not in names:
+        raise Moved('claude usage-limit names moved')
+    return {'message': "You've hit your ", 'progress_saved': ' \u00b7 progress saved', 'resets': ' \u00b7 resets ',
+            'names': names, 'zone': ' (<IANA zone>)',
+            'formats': ['{hour}{:minute}{am|pm}', '{month} {day}, {hour}{:minute}{am|pm}',
+                        '{month} {day}, {year}, {hour}{:minute}{am|pm}'],
+            'months': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            'not_account': ['Server is temporarily limiting requests (not your usage limit)'],
+            'rejected': claude_rejected(text)[0], 'admin_suffix': ' \u00b7 ask your admin for a higher limit',
+            'admin_suffixed': claude_rejected(text)[1],
+            'rejected_source': "the rejected-status texts that do not start with the template, each the account "
+                               "refused: the out-of-credits text (+ ' \u00b7 resets ' + time, + ' \u00b7 progress "
+                               "saved'), the org, seat, service, admin and $0-group texts (the last two + the admin "
+                               "suffix, or ' \u00b7 run <command> to ask your admin for a higher limit')",
+            'source': "the rate-limit result's text: `You've hit your ${limit}${' \u00b7 resets ' + time}` "
+                      "(+ ' \u00b7 progress saved'), the assistant API error message with error 'rate_limit' and the "
+                      "result's `result`; time en-US with ':minute' only when not 0, 'am'/'pm' lowercased, the date "
+                      "when the reset is over a day away, the year when it is another year, then ' (<zone>)', the "
+                      "engine's resolved IANA time zone"}
+
+
+# VELDO-0160: the forms a tool call can take in Claude Code's stream, each by the exact text of the table
+# it is read from in this build, so the re-run-or-ask decision counts any other form as an unknown call.
+# `messages`: the SDK message union (each member's type and subtype); `response_blocks` and `request_blocks`:
+# the content block unions of an assistant message and of a user message (the modelled members, then the
+# type tags the binary lists); `stream_events`: the streaming events a stream_event carries, as its schema
+# names them; `builtin_tools`: the binary's own list of its built-in tool names.
+CLAUDE_FORMS = {
+    'messages': 'nn=f(()=>Fe([Qo(),sr(),oK(),_K(),',
+    'response_blocks': 'yq=f(()=>Fe([Aq(),Rq(),NR(),zR(),...bR.map(AR)])',
+    'request_blocks': 'fq=f(()=>Fe([Js(),Lo(),yR(),wR(),mq(),Tq(),NR(),zR(),...tq.map(AR)])',
+    'tagged': 'bR=["server_tool_use",',
+    'tagged_request': 'tq=[...bR,"mid_conv_system"]',
+    'stream_events': 'tK=f(()=>ae().describe("One Anthropic Messages API streaming event (message_start, content_block_start, '
+                     'content_block_delta, content_block_stop, message_delta, message_stop) as defined',
+    'builtin_tools': 'dT.BUILTIN_TOOL_NAMES=[',
+    'stdout': 'TRr=f(()=>Fe([nn(),',
+    'agent_tool': 'name:mt,searchHint:"delegate work to a subagent",aliases:[',
+    'agent_names': ',Omo="Launch a new agent to handle complex, multi-step tasks",',
+    'task_progress': 'last_tool_name:e.lastToolName,summary:e.summary,workflow_progress:e.workflowProgress})',
+    'workflow_agent': 'lastToolName:we,lastToolSummary:qe,',
+}
+FORMS_WINDOW = 400000
+# The frames the binary emits carrying a tool's name outside the schema it declares for them, each by the
+# exact text of its emitters and how many there are: the REPL tool's `repl_call` on a tool_progress (its
+# inner tool's name), and the workflow agents' progress entries a task_progress carries.
+CLAUDE_EMITTED = {'repl_call': ('repl_call:{inner_tool_name:', 2)}
+# How a task counts its own calls, each by the exact text of this build and how many times it occurs: the tracker
+# raises its count by one for each tool_use block of the task's own assistant messages (`rise`); an agent's
+# task_progress carries that count (`progress`) under the task's tool_use_id (`progress_frame`); its end
+# notification carries it as usage too (`notification_frame`, `notification_count`); the sub-agent's forwarded
+# assistant and user messages carry the task's id as parent_tool_use_id (`forwarded`); and an agent a sub-agent
+# starts reaches the stream only when forwardSubagentText is set (`nested_gate`, `nested_option`).
+CLAUDE_TASKS = {
+    'rise': ('for(let h of n.message.content){if(h.type!=="tool_use")continue;if(e.toolUseCount++', 1),
+    'progress': ('totalTokens:T.tokenCount,toolUses:T.toolUseCount,lastToolName:_})', 1),
+    'progress_frame': ('type:"system",subtype:"task_progress",task_id:e.taskId,tool_use_id:e.toolUseId,'
+                       'description:e.description,subagent_type:e.subagentType,usage:{total_tokens:e.totalTokens,'
+                       'tool_uses:e.toolUses,', 1),
+    'notification_frame': ('type:"system",subtype:"task_notification",task_id:e,tool_use_id:r?.toolUseId,status:n,', 1),
+    'notification_count': ('usage:{total_tokens:N?.tokenCount??0,tool_uses:N?.toolUseCount??0,', 1),
+    'forwarded': ('parent_tool_use_id:e.parentToolUseID,session_id:Y(),uuid:g.uuid', 2),
+    'nested_gate': ('if(Sne(T)){if(Kt)p(pqt(T));return}', 1),
+    'nested_option': ('Kt=e.options.forwardSubagentText', 1),
+}
+
+
+# VELDO-0160, the lead's structural rule: every construct through which a Claude Code run can do work its stream
+# may not show (a tool that runs an agent, a skill, code or a workflow, a task's frames, a sub-agent's forwarded
+# messages, a forked skill's result), each by the exact text of this build and how many times it occurs. A tool
+# is its name's binding and its definition (the binding's variable as its name); the Agent tool and its alias are
+# builtin_renamed's. `forwarded`: the progress kinds whose messages the CLI forwards under their task's id;
+# `workflow_task`: the task type of a workflow; `skill_forked`: the Skill tool's result when it forked an agent.
+CLAUDE_NESTED_TOOLS = (
+    ('agent', 'SendMessage', 'var eo="SendMessage",', 'name:eo,searchHint:"send messages to agent teammates"'),
+    ('skill', 'Skill', 'var go="Skill",', 'name:go,searchHint:"invoke a slash-command skill"'),
+    ('repl', 'REPL', 'var za="REPL";', 'tool_name:za,parent_tool_use_id:T.parentToolUseID||null,'
+                                        'elapsed_time_seconds:0,repl_call:{'),
+    ('workflow', 'Workflow', 'var Ed="Workflow";', 'name:Ed,aliases:["RunWorkflow"],searchHint:"orchestrate subagents'),
+    ('remote', 'RemoteTrigger', 'var lK="RemoteTrigger",',
+     'name:lK,searchHint:"manage scheduled cloud agent routines; inspect their run history and logs",'
+     'enablesCodeExecution:!0,'),
+    ('cron', 'CronCreate', 'var iy="CronCreate",',
+     'name:iy,searchHint:"schedule a recurring or one-shot prompt",enablesCodeExecution:!0,'),
+)
+# VELDO-0160, the lead's decision on work that outlives the run: a call that starts an agent outside it, which may
+# act on the account's claude.ai connectors whatever the run's configuration. RemoteTrigger (a deferred tool) manages
+# the account's cloud agent routines: its create, update and run start a cloud agent (`description`, `actions`);
+# CronCreate schedules a prompt, and a durable one persists to the project's scheduled tasks and fires after the run
+# (`durable`: its optional field, false by default, read through the binary's semantic boolean, `semantic`).
+CLAUDE_REMOTE = {
+    'description': ('Uno="Manage scheduled remote Claude Code agents (routines) via the claude.ai CCR API', 1),
+    'actions': ('action:z(["list","get","create","update","run","create_webhook_trigger","list_runs","get_run_log"])', 1),
+    'durable': ('durable:BA(O().optional()).describe(uyr(Foe()))', 1),
+    'durable_text': ('function uyr(e){return e?"true = persist to .claude/scheduled_tasks.json and survive restarts. '
+                     'false (default) = in-memory only, dies when this Claude session ends.', 1),
+    'semantic': ('function BA(e=O()){return Yi(dN,e)}function dN(e){return e==="true"?!0:e==="false"?!1:e}', 1),
+}
+CLAUDE_NESTED = {
+    'forwarded': ('function Sne(e){return e.type==="progress"&&(e.data.type==="agent_progress"||'
+                  'e.data.type==="skill_progress")}', 1),
+    'forwarded_emit': ('case"progress":if(Sne(e))yield*oer(e,n);', 1),
+    'workflow_task': ("Only set when task_type is 'local_workflow'.", 2),
+    'skill_forked': ('status:R("forked").describe("Execution status"),agentId:o().describe("The ID of the sub-agent '
+                     'that executed the skill")', 1),
+}
+
+
+# VELDO-0160, the lead's allowlist (fail closed): the built-in tools whose effects stay inside the run's clone and host
+# session, each as (name, why, its name's binding, its definition's own text), each occurring once in this build. The
+# file tools, Glob and Grep, the notebook edit, the session checklist, the deferred-tool loader; Bash and its
+# background companions (TaskStop, aliased KillShell and KillBash, which kills a background task; Monitor, which runs a
+# command through Bash's permission check or reads a WebSocket); the read-only web fetch and search; and rule 2's
+# constructs (the Agent tool unless remote, the Skill, REPL and Workflow tools, CronCreate unless durable, which the
+# remote_agent rule asks for). The binary has no LS tool: no binding names one.
+CLAUDE_IN_RUN = (
+    ('Read', 'reads a local file', 'var lt="Read",',
+     'name:lt,ruleContentField:"file_path",searchHint:"read files, images, PDFs, notebooks",remoteExecution:{supported:!0,'),
+    ('Write', 'writes a local file', 'var vn="Write";',
+     'name:vn,ruleContentField:"file_path",searchHint:"create or overwrite files",remoteExecution:{supported:!0,'),
+    ('Edit', 'edits a local file', 'var Pt="Edit",',
+     'name:Pt,ruleContentField:"file_path",searchHint:"modify file contents in place",remoteExecution:{supported:!0,'),
+    ('NotebookEdit', 'edits a local notebook', 'var lc="NotebookEdit";',
+     'name:lc,ruleContentField:"notebook_path",searchHint:"edit Jupyter notebook cells (.ipynb)",'),
+    ('Glob', 'finds local files', 'var oo="Glob";',
+     'name:oo,searchHint:"find files by name pattern or wildcard",backgrounding:"never",maxResultSizeChars:1e5,'
+     'async description(){return Uwr(void 0)},remoteExecution:{supported:!0}'),
+    ('Grep', 'searches local files', 'var zr="Grep";',
+     'name:zr,searchHint:"search file contents with regex (ripgrep)",remoteExecution:{supported:!0}'),
+    ('TodoWrite', 'the session checklist', 'var nb="TodoWrite";', 'name:nb,searchHint:"manage the session task checklist",'),
+    ('ToolSearch', 'loads a deferred tool\'s schema', 'var xa="ToolSearch",',
+     'name:xa,backgrounding:"never",maxResultSizeChars:1e5,async description(){return G0n()},'),
+    ('Bash', 'the shell', 'var Be="Bash";',
+     'name:Be,enablesCodeExecution:!0,ruleContentField:"command",searchHint:"execute shell commands",'
+     'remoteExecution:{supported:!0,'),
+    ('TaskStop', 'kills a background task (Bash\'s companion)', 'var Om="TaskStop",',
+     'name:Om,searchHint:"kill a running background task",aliases:["KillShell","KillBash"],'),
+    ('Monitor', 'streams a background command or a WebSocket (Bash\'s companion)', 'var Za="Monitor";',
+     'name:Za,enablesCodeExecution:!0,maxResultSizeChars:1e4,shouldDefer:!0,userFacingName(){return"Monitor"},'),
+    ('WebFetch', 'fetches a URL', 'var Wr="WebFetch",',
+     'name:Wr,ruleContentField:"url",searchHint:"fetch and extract content from a URL",'),
+    ('WebSearch', 'searches the web', 'var eI="WebSearch";', 'name:eI,searchHint:"search the web for current information",'),
+    ('Agent', 'a local agent (rule 2), unless remote', 'var mt="Agent",', 'name:mt,searchHint:"delegate work to a subagent",aliases:['),
+    ('Skill', 'a skill (rule 2)', 'var go="Skill",', 'name:go,searchHint:"invoke a slash-command skill"'),
+    ('REPL', 'code whose inner calls the stream names (rule 2)', 'var za="REPL";',
+     'tool_name:za,parent_tool_use_id:T.parentToolUseID||null,elapsed_time_seconds:0,repl_call:{'),
+    ('Workflow', 'local workflow agents (rule 2)', 'var Ed="Workflow";',
+     'name:Ed,aliases:["RunWorkflow"],searchHint:"orchestrate subagents'),
+    ('CronCreate', 'a prompt in this session (rule 2), unless durable', 'var iy="CronCreate",',
+     'name:iy,searchHint:"schedule a recurring or one-shot prompt",'),
+)
+# How an allowlisted call can still act outside the run, each by the exact text of this build (once each). The Agent
+# tool runs remote when its input's `isolation` is "remote" (`agent_input`) or, with none given, when the agent
+# definition its `subagent_type` names says so (`agent_resolved`; an agent file may set isolation remote,
+# `agent_file`); no built-in agent definition sets isolation. A remote agent is a task of type `remote_agent`
+# (`remote_task`), and every task but an observer agent is reported by a task_started naming its type
+# (`task_started`, `task_type`, `observer`). The file tools and Bash take a `_host` naming another machine
+# (`host_field`, `host_request`, `host_local`, `host_local_test`), routed there only when the remote-tools gate is on
+# (`host_route`), and this build's gate is off (`host_gate`, `host_gate_value`). A workflow task's progress gives its
+# current agent's label as its last tool (`workflow_label`), not a tool: its agents' own last tools are named beside it.
+CLAUDE_IN_RUN_CONDITIONS = {
+    'skill_input': ('var Ee=f(()=>d({skill:o().describe("The name of a skill from the available-skills list. '
+                   'Do not guess names."),args:o().optional().describe("Optional arguments for the skill")})),', 1),
+    'skill_schema': ('name:go,searchHint:"invoke a slash-command skill",isEnabled(){return H7t()},'
+                    'backgrounding:"never",maxResultSizeChars:1e5,get inputSchema(){return Ee()}', 1),
+    'skill_context': ('function P9t(e,n,r){return e.getContext?.(n,r)??e.context??"inline"}', 1),
+    'skill_fork': ('if(u?.type==="prompt"&&P9t(u,s||"",n)==="fork"&&!S)try{return await Me(u,p,s,n,r,g,l,a)}', 1),
+    'agent_input': ('isolation:z(["worktree","remote"]).optional().describe(\'Isolation mode. "worktree" creates a '
+                    'temporary git worktree so the agent works on an isolated copy of the repo. "remote" launches the '
+                    'agent in a remote cloud environment', 1),
+    'agent_resolved': ('function an(n){let{agent:e,isolation:h,restricted:g}=n,p=h??e.isolation;', 1),
+    'agent_file': ('let Pe=["worktree","remote"],Le=r.isolation,De;', 1),
+    'remote_task': ('var Kbe={name:"RemoteAgentTask",type:"remote_agent",', 1),
+    'task_started': ('subtype:"task_started",task_id:e.id,owned_by_subagent:zt(e),tool_use_id:e.toolUseId,', 1),
+    'task_type': ('task_type:e.type,workflow_name:', 1),
+    'observer': ('function fu(e){return e.type==="local_agent"&&"isObserver"in e&&e.isObserver===!0}', 1),
+    'host_field': ('var Jr="_host",', 1),
+    'host_request': ('function sqe(e){let{[Jr]:r,...n}=e;if(typeof r!=="string")return{requested:void 0,input:e};'
+                     'let s=r.trim();return{requested:s===""||VE(s)?void 0:s,input:n}}', 1),
+    'host_local': ('var Len="device",Ki=["container","this-machine"],', 1),
+    'host_local_test': ('function VE(e){return Ki.some((r)=>r===e)}', 1),
+    'host_route': ('if(!$j(e).supported||!Ih())return{kind:"local",input:n};', 1),
+    'host_gate': ('async function eY(){return Ih()&&await Nd()}function SG(){return Ih()&&_s()}function Ih(){return cNn()}', 1),
+    'host_gate_value': ('function cNn(){return!1}', 1),
+    'workflow_label': ('toolUses:xe.totalToolCalls,lastToolName:bt?.label,summary:h,workflowProgress:', 1),
+}
+# The task types of the allowlisted tools, from the binary's task table (`name:"...Task",type:"..."`): an agent, a
+# teammate an agent starts, a background shell or command, a workflow, a Monitor's WebSocket.
+CLAUDE_IN_RUN_TASKS = ('in_process_teammate', 'local_agent', 'local_bash', 'local_workflow', 'monitor_ws')
+
+
+def _in_run(text, renamed):
+    """The allowlist (VELDO-0160, the lead's decision), each tool checked against this build's text: {tools, aliases,
+    agent, host, task_types}."""
+    tools, aliases, remote = [], {}, []
+    for name, _, binding, definition in CLAUDE_IN_RUN:
+        for anchor in (binding, definition):
+            if text.count(anchor) != 1:
+                raise Moved('claude in-run tool %s: anchor %r found %d times' % (name, anchor, text.count(anchor)))
+        variable = re.match(r'var ([A-Za-z_$][\w$]*)="([^"]*)"', binding)
+        if variable is None or variable.group(2) != name or not re.match(
+                r'(?:name|tool_name):' + re.escape(variable.group(1)) + ',', definition):
+            raise Moved('claude in-run tool %s: its definition does not name its binding' % name)
+        at = text.index(definition)
+        listed = re.match(r'name:[\w$]+,(?:[^{}]*?,)?aliases:\[([^\]]*)\]', text[at:at + 400])
+        named = [json.loads(alias) for alias in listed.group(1).split(',') if alias.startswith('"')] if listed else []
+        if name == renamed[0]['name']:
+            named = list(renamed[0]['aliases'])
+        tools.append(name)
+        if named:
+            aliases[name] = sorted(named)
+        if 'remoteExecution:{supported:!0' in definition:
+            remote.append(name)
+    for key, (anchor, sites) in CLAUDE_IN_RUN_CONDITIONS.items():
+        if text.count(anchor) != sites:
+            raise Moved('claude in-run condition %s: anchor found %d times' % (key, text.count(anchor)))
+    table = dict((kind, name) for name, kind in re.findall(r'name:"([A-Za-z]+Task)",type:"([a-z_]+)"', text))
+    if 'remote_agent' not in table or not set(CLAUDE_IN_RUN_TASKS) <= set(table):
+        raise Moved('claude task table moved')
+    # The built-in agent definitions (source "built-in"), each by its agentType, none of which sets an isolation.
+    builtin = []
+    for m in re.finditer(r'agentType:("[A-Za-z_-]+"|[A-Za-z_$][\w$]{0,4})[,}]', text):
+        window = text[m.start():m.start() + 3000]
+        if not 0 <= window.find('source:"built-in"') < 2500:
+            continue
+        after = window.find('agentType:', 20)
+        if 'isolation:' in window[:after if after > 0 else 3000]:
+            raise Moved('claude built-in agent %s sets an isolation' % m.group(1))
+        value = m.group(1)
+        if not value.startswith('"'):
+            bound = re.search(r'(?:var |,|;)%s="([^"]+)"' % re.escape(value), text)
+            if bound is None:
+                raise Moved('claude built-in agent type %s unbound' % value)
+            value = json.dumps(bound.group(1))
+        builtin.append(json.loads(value))
+    if not {'general-purpose', 'Explore', 'Plan'} <= set(builtin):
+        raise Moved('claude built-in agents moved')
+    return {'tools': sorted(tools), 'aliases': aliases,
+            'skill': {'tool': 'Skill', 'field': 'context', 'inline': 'inline', 'parent': 'parent_tool_use_id',
+                      'input_fields': ['args', 'skill'], 'input_fork_field': None,
+                      'context_source': 'skill definition: getContext(args, toolUseContext) or context'},
+            'agent': {'tools': sorted([renamed[0]['name']] + list(renamed[0]['aliases'])), 'field': 'isolation',
+                      'values': json.loads(CLAUDE_IN_RUN_CONDITIONS['agent_input'][0][len('isolation:z('):].split(')')[0]),
+                      'outside': 'remote', 'type_field': 'subagent_type', 'builtin_types': sorted(set(builtin))},
+            'host': {'field': '_host', 'local': ['', 'container', 'this-machine'], 'tools': sorted(remote),
+                     'routed': False},
+            'workflow_last_tool': 'label',
+            'task_types': {'field': 'task_type', 'in_run': sorted(CLAUDE_IN_RUN_TASKS),
+                           'table': sorted(table)},
+            'source': "the built-in tools whose effects stay inside the run's clone and host session (each name's "
+                      "binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the "
+                      "notebook edit, the session checklist, the deferred-tool loader, Bash and its background "
+                      "companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs "
+                      "(Agent, Skill, REPL, Workflow, CronCreate); the Agent tool is remote when its input's isolation "
+                      "is remote or, with none given, when the agent definition its subagent_type names says so (no "
+                      "built-in definition sets isolation; builtin_types), and a remote agent is a task of type "
+                      "remote_agent; the file tools and Bash take a _host naming another machine, routed there only "
+                      "when the remote-tools gate is on, which this build compiles off (routed false); the task types "
+                      "of the allowlisted tools, from the binary's task table. Skill's input schema is only skill "
+                      "and optional args, with no fork field; its definition supplies context (getContext or context, "
+                      "default inline). A sub-agent's Skill therefore asks regardless of input; an explicit context "
+                      "in the recorded input must exclude a fork. The binary has no LS tool."}
+
+
+def _tags(schema):
+    """The (type, subtype) pairs a message schema admits."""
+    if schema.get('type') == 'union':
+        return [tag for member in schema['anyOf'] for tag in _tags(member)]
+    fields = schema.get('fields') or {}
+    kind, sub = fields.get('type') or {}, fields.get('subtype')
+    if kind.get('type') != 'literal':
+        raise Moved('a stream message without a literal type')
+    if sub is None:
+        return [(kind['value'], None)]
+    if sub.get('type') == 'literal':
+        return [(kind['value'], sub['value'])]
+    if sub.get('type') == 'enum' and sub.get('values'):
+        return [(kind['value'], value) for value in sub['values']]
+    raise Moved('a stream message subtype that is not a literal or an enum')
+
+
+def _union_members(window, at, anchor):
+    """The member names of the union `NAME=f(()=>Fe([A(),B(),...` at `at` in `window`."""
+    start = at + anchor.index('Fe([') + 4
+    return re.findall(r'([A-Za-z_$][\w$]*)\(\)', window[start:window.index(']', start)])
+
+
+def _lazy(js, name, near):
+    """The body of the lazy schema `name=f(()=>BODY` nearest `near` (a minified name is also bound to other
+    values, which `Js.definition` could pick)."""
+    sites = js._sites(name, r'=f\(\(\)=>')
+    if not sites:
+        raise Moved('no lazy schema ' + name)
+    return min(sites, key=lambda m: abs(m.start() - near)).end()
+
+
+def _tool_free(schema):
+    """Whether a frame's schema provably carries no tool call: only literals, enums, strings, numbers and
+    booleans, in objects, arrays and unions of them, and no field whose name names a tool."""
+    kind = schema.get('type')
+    if kind in ('literal', 'enum', 'string', 'number', 'boolean'):
+        return True
+    if kind == 'object':
+        return all('tool' not in key and _tool_free(field) for key, field in (schema.get('fields') or {}).items())
+    if kind == 'array':
+        return _tool_free(schema.get('items') or {})
+    if kind == 'union':
+        return all(_tool_free(member) for member in schema.get('anyOf') or ())
+    return False  # a record or an unresolved reference may hold anything
+
+
+def _tool_paths(schema, path=()):
+    """The dotted paths of the fields of a schema whose name names a tool (an array's items are its path)."""
+    found = []
+    kind = schema.get('type')
+    if kind == 'object':
+        for key, field in (schema.get('fields') or {}).items():
+            if 'tool' in key.lower():
+                found.append('.'.join(path + (key,)))
+            found += _tool_paths(field, path + (key,))
+    elif kind == 'array':
+        found += _tool_paths(schema.get('items') or {}, path)
+    elif kind == 'union':
+        for member in schema.get('anyOf') or ():
+            found += _tool_paths(member, path)
+    return found
+
+
+def _tag(kind, sub):
+    return kind if sub is None else kind + '/' + sub
+
+
+def _builtin_renamed(text, builtin):
+    """[{name, aliases}]: a tool whose alias is on BUILTIN_TOOL_NAMES under a current name the list omits (the
+    Agent tool, once `Task`), its names bound in the statement that also binds its own description."""
+    for key in ('agent_tool', 'agent_names'):
+        if text.count(CLAUDE_FORMS[key]) != 1:
+            raise Moved('claude %s: anchor found %d times' % (key, text.count(CLAUDE_FORMS[key])))
+    at = text.index(CLAUDE_FORMS['agent_tool'])
+    m = re.compile(r'name:([A-Za-z_$][\w$]*),searchHint:"[^"]*",aliases:\[([^\]]*)\]').match(text, at)
+    names = text.index(CLAUDE_FORMS['agent_names'])
+    start, end = text.rindex('var ', 0, names), text.index(';', names)
+    bound = dict(re.findall(r'(?:var |,)([A-Za-z_$][\w$]*)="([^"]*)"', text[start:end]))
+    if m is None or m.group(1) not in bound or not text[start:names].startswith('var %s="' % m.group(1)):
+        raise Moved('claude agent tool names moved')
+    aliases = [json.loads(a) if a.startswith('"') else bound.get(a) for a in m.group(2).split(',')]
+    name = bound[m.group(1)]
+    if name in builtin or not aliases or not all(alias in builtin for alias in aliases):
+        raise Moved('claude agent tool: its alias is not on BUILTIN_TOOL_NAMES under another name')
+    return [{'name': name, 'aliases': aliases}]
+
+
+def _emitted(text):
+    """The fields a frame carries that name a tool though its declared schema omits them, read from the
+    emitters' own text: {tag: [dotted path]}."""
+    anchor, sites = CLAUDE_EMITTED['repl_call']
+    keys = set()
+    for m in re.finditer(re.escape(anchor), text):
+        body = text[m.start() + len('repl_call:{'):text.index('}', m.start())]
+        keys.add(tuple(re.findall(r'([a-z_]+):', body)))
+    if text.count(anchor) != sites or len(keys) != 1 or 'inner_tool_name' not in next(iter(keys)):
+        raise Moved('claude repl_call emitters moved')
+    for key in ('task_progress', 'workflow_agent'):
+        if text.count(CLAUDE_FORMS[key]) != 1:
+            raise Moved('claude %s: anchor found %d times' % (key, text.count(CLAUDE_FORMS[key])))
+    at = text.index(CLAUDE_FORMS['workflow_agent'])
+    if 'type:"workflow_agent"' not in text[at - 400:at]:
+        raise Moved('claude workflow agent progress moved')
+    return {'tool_progress': ['repl_call.' + key for key in next(iter(keys)) if 'tool' in key],
+            'system/task_progress': ['workflow_progress.lastToolName']}
+
+
+def _task_counts(text, fields):
+    """How a task's count of its own calls reaches the stream: the frames whose schema carries the count and the
+    task's id, the field of a sub-agent's message naming its task, each checked against the emitters' text."""
+    for key, (anchor, sites) in CLAUDE_TASKS.items():
+        if text.count(anchor) != sites:
+            raise Moved('claude task counts %s: anchor found %d times' % (key, text.count(anchor)))
+    at = text.index(CLAUDE_TASKS['notification_frame'][0])
+    if 'usage:r?.usage' not in text[at:at + 300]:
+        raise Moved('claude task notification usage moved')
+    frames = sorted(tag for tag, paths in fields.items() if 'usage.tool_uses' in paths and 'tool_use_id' in paths)
+    if frames != ['system/task_notification', 'system/task_progress'] \
+            or 'tool_use_id' not in fields.get('system/task_started', ()) \
+            or 'parent_tool_use_id' not in fields.get('assistant', ()):
+        raise Moved('claude task count fields moved')
+    return {'frames': frames, 'count': 'usage.tool_uses', 'task': 'tool_use_id', 'parent': 'parent_tool_use_id',
+            'counts': 'tool_use', 'nested_forwarded_only_with': 'forwardSubagentText',
+            'source': "the frames whose schema carries a task's count of its calls (usage.tool_uses) and its id "
+                      "(tool_use_id), the count the tracker raises by one for each tool_use block of the task's "
+                      "own assistant messages (an agent's task_progress and its end notification carry it), the "
+                      "task's id as the parent_tool_use_id of the sub-agent's forwarded messages, and the gate that "
+                      "drops the messages of an agent a sub-agent starts unless forwardSubagentText is set"}
+
+
+def _tops(schema):
+    """[(tag, its top-level field names)] for each member a message schema admits."""
+    if schema.get('type') == 'union':
+        return [pair for member in schema['anyOf'] for pair in _tops(member)]
+    return [(_tag(kind, sub), set(schema.get('fields') or {})) for kind, sub in _tags(schema)]
+
+
+def _nested(text, renamed, tops):
+    """The constructs through which a run can do work its stream may not show (VELDO-0160), each checked against
+    this build's text: {tools: {class: [names]}, task_frames, workflow, repl, forwarded, fork}."""
+    for key, (anchor, sites) in CLAUDE_NESTED.items():
+        if text.count(anchor) != sites:
+            raise Moved('claude nested work %s: anchor found %d times' % (key, text.count(anchor)))
+    tools = {'agent': [renamed[0]['name']] + list(renamed[0]['aliases'])}
+    for construct, name, binding, definition in CLAUDE_NESTED_TOOLS:
+        for anchor in (binding, definition):
+            if text.count(anchor) != 1:
+                raise Moved('claude nested tool %s: anchor %r found %d times' % (name, anchor, text.count(anchor)))
+        variable = re.match(r'var ([A-Za-z_$][\w$]*)="([^"]*)"', binding)
+        if variable is None or variable.group(2) != name or not re.match(
+                r'(?:name|tool_name):' + re.escape(variable.group(1)) + ',', definition):
+            raise Moved('claude nested tool %s: its definition does not name its binding' % name)
+        aliases = re.search(r'aliases:\[([^\]]*)\]', definition)
+        tools.setdefault(construct, []).append(name)
+        tools[construct] += [json.loads(alias) for alias in aliases.group(1).split(',')] if aliases else []
+    at = text.index(CLAUDE_NESTED['forwarded'][0])
+    kinds = re.findall(r'e\.data\.type==="([a-z_]+)"', text[at:text.index('}', at)])
+    frames = sorted(tag for tag, keys in tops if 'task_id' in keys and tag.startswith('system/'))
+    if 'system/task_started' not in frames or not kinds or text.count(CLAUDE_FORMS['task_progress']) != 1 \
+            or not any(tag == 'system/task_started' and 'workflow_name' in keys for tag, keys in tops):
+        raise Moved('claude task frames moved')
+    for key, (anchor, sites) in CLAUDE_REMOTE.items():
+        if text.count(anchor) != sites:
+            raise Moved('claude remote agent %s: anchor found %d times' % (key, text.count(anchor)))
+    return {'tools': {key: sorted(set(value)) for key, value in sorted(tools.items())},
+            'task_frames': sorted(set(frames)),
+            'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',
+                         'task_type': 'local_workflow'},
+            'repl': {'tool_progress': 'repl_call'},
+            'forwarded': {'field': 'parent_tool_use_id', 'progress': kinds},
+            'fork': {'field': 'tool_use_result', 'status': 'forked'},
+            'remote_agent': {'tools': ['RemoteTrigger'],
+                             'durable': {'tool': 'CronCreate', 'field': 'durable', 'off': [False, 'false']}},
+            'source': "the tools that run an agent, a skill, code, a workflow, a cloud agent routine or a scheduled "
+                      "prompt (each name's binding and the tool's definition or emitter naming it, with its aliases; "
+                      "the Agent tool's names are builtin_renamed's), the system frames whose schema carries a "
+                      "task_id, the fields a task frame gives a workflow and a workflow's task type, the REPL tool's "
+                      "inner call on a tool_progress, the progress kinds whose messages the CLI forwards with their "
+                      "task's id as parent_tool_use_id (Sne), the Skill tool's result when it forked an agent, and "
+                      "the calls that start an agent outside the run (remote_agent: any RemoteTrigger call, whose "
+                      "create, update and run start a cloud agent routine, and a CronCreate whose optional durable "
+                      "field, false by default and read through the semantic boolean that takes \"false\" for false, "
+                      "persists the prompt to .claude/scheduled_tasks.json to fire after the run)"}
+
+
+def claude_frames(text):
+    """The StdoutMessage members outside the SDK message union, each (type, subtype, provably tool-free)."""
+    at = text.index(CLAUDE_FORMS['stdout'])
+    window = text[at - FORMS_WINDOW:at + FORMS_WINDOW]
+    js = Js(window)
+    members = _union_members(window, FORMS_WINDOW, CLAUDE_FORMS['stdout'])
+    if members[0] != 'nn':
+        raise Moved('claude stdout union moved')
+    found = []
+    for name in members[1:]:
+        schema = Reader(js, depth=3).parse(_lazy(js, name, FORMS_WINDOW))[0]
+        found += [[kind, sub, _tool_free(schema)] for kind, sub in _tags(schema)]
+    return sorted(found, key=lambda tag: (tag[0], tag[1] or ''))
+
+
+def claude_forms(text):
+    for key, anchor in CLAUDE_FORMS.items():
+        if key in ('agent_tool', 'agent_names', 'task_progress', 'workflow_agent'):
+            continue  # read, with their counts, by _builtin_renamed and _emitted
+        if text.count(anchor) != 1:
+            raise Moved('claude tool-call form table %s: anchor found %d times' % (key, text.count(anchor)))
+    found, fields, tops = {}, {}, []
+    for key in ('messages', 'response_blocks', 'request_blocks'):
+        at = text.index(CLAUDE_FORMS[key])
+        window = text[at - FORMS_WINDOW:at + FORMS_WINDOW]
+        js = Js(window)
+        tags = []
+        for name in _union_members(window, FORMS_WINDOW, CLAUDE_FORMS[key]):
+            body, _ = js.definition(name, FORMS_WINDOW)
+            tags += _tags(Reader(js, depth=1).parse(body)[0])
+            if key == 'messages':
+                schema = Reader(js, depth=6).parse(body)[0]
+                for kind, sub in _tags(schema):
+                    fields.setdefault(_tag(kind, sub), set()).update(_tool_paths(schema))
+                tops += _tops(schema)
+        found[key] = tags
+    tagged = json.loads(text[text.index(CLAUDE_FORMS['tagged']) + 3:].split(']', 1)[0] + ']')
+    found['messages'] = sorted({(kind, sub) for kind, sub in found['messages']}, key=lambda tag: (tag[0], tag[1] or ''))
+    found['response_blocks'] = [kind for kind, _ in found['response_blocks']] + tagged
+    found['request_blocks'] = [kind for kind, _ in found['request_blocks']] + tagged + ['mid_conv_system']
+    at = text.index(CLAUDE_FORMS['stream_events']) + len('tK=f(()=>ae().describe("One Anthropic Messages API streaming event (')
+    stream_events = text[at:text.index(')', at)].split(', ')
+    at = text.index(CLAUDE_FORMS['builtin_tools']) + len(CLAUDE_FORMS['builtin_tools']) - 1
+    builtin = json.loads(text[at:text.index(']', at) + 1])
+    return {'messages': [[kind, sub] for kind, sub in found['messages']],
+            'response_blocks': found['response_blocks'], 'request_blocks': found['request_blocks'],
+            'stream_events': stream_events, 'builtin_tools': builtin,
+            'builtin_renamed': _builtin_renamed(text, builtin),
+            'tool_fields': {tag: sorted(paths) for tag, paths in sorted(fields.items()) if paths},
+            'emitted_tool_fields': _emitted(text), 'frames': claude_frames(text),
+            'task_counts': _task_counts(text, {tag: sorted(paths) for tag, paths in fields.items()}),
+            'nested_work': _nested(text, _builtin_renamed(text, builtin), tops),
+            'in_run': _in_run(text, _builtin_renamed(text, builtin)),
+            'source': "the SDK message union of the stream (each member's type and subtype), the content block "
+                      "unions of an assistant and of a user message (the modelled blocks, then the type tags "
+                      "the binary lists), the streaming events the stream_event schema names, and the binary's "
+                      "BUILTIN_TOOL_NAMES (a partial list of its built-in tools: a name it omits reads as unknown)",
+            'builtin_renamed_source': "a tool whose alias is on BUILTIN_TOOL_NAMES but whose current name is not: "
+                                      "the Agent tool's definition (name, searchHint, aliases) with its names "
+                                      "bound in the statement that binds its own description",
+            'tool_fields_source': "each SDK message's fields whose name names a tool (a dotted path; an array's "
+                                  "items share its path), from its zod schema",
+            'emitted_tool_fields_source': "the fields a frame's emitters write that name a tool though its schema "
+                                          "omits them: the REPL tool's repl_call on a tool_progress (both emitters) "
+                                          "and a task_progress's workflow_progress entries (workflow_agent progress "
+                                          "with lastToolName)",
+            'frames_source': "the StdoutMessage members outside the SDK message union (everything the CLI writes "
+                             "in stream-json mode), each with whether its schema provably carries no tool call: "
+                             "only literals, enums, strings, numbers and booleans and no field naming a tool"}
+
+
 def claude(path):
     raw = Path(path).read_bytes()
     text = raw.decode('latin-1')
@@ -443,7 +1024,8 @@ def claude(path):
     version = Path(path).resolve().name
     return {'binary': str(Path(path).resolve()), 'version': version, 'sha256': _digest(path),
             'source': 'the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)',
-            'events': events, 'notes': notes, 'credential_tables': tables}
+            'events': events, 'notes': notes, 'credential_tables': tables, 'usage_limit': claude_limit(text),
+            'tool_forms': claude_forms(text)}
 
 
 # ---------------------------------------------------------------- Codex: the Rust binary's literals
@@ -453,6 +1035,179 @@ CODEX_EXEC_RUN = (b'ItemCompletedEventThreadStartedEventthread_idTurnCompletedEv
                   b'cache_write_input_tokensoutput_tokensreasoning_output_tokens')
 CODEX_TAGS_RUN = (b'ThreadEventThreadStartedthread.startedTurnStartedturn.startedTurnCompletedturn.completedTurnFailed'
                   b'turn.failedItemStarteditem.startedItemUpdateditem.updatedItemCompleteditem.completederror')
+# VELDO-0160: exec's ThreadItem for an MCP tool call (type tag `mcp_tool_call`), by the literal runs
+# of its type names, its field names and its status values.
+CODEX_ITEM_RUNS = (b'item.completederroritemsqueryactionchangesserverargumentsresult',
+                   b'agent_messagereasoningcommand_executionfile_changemcp_tool_callweb_searchtodo_list',
+                   b'usagein_progresscompletedfailed')
+# VELDO-0160: the item types, by the literal run that lists them. `exec`: exec's ThreadItem (what `codex
+# exec --json` prints), whose `error` item tag is the literal at the head of its field run; `thread`: the
+# core's ThreadItem, the types a thread records, of which exec prints only its own.
+CODEX_EXEC_ITEMS = (b'item.completederroritems',
+                    b'agent_messagereasoningcommand_executionfile_changemcp_tool_callweb_searchtodo_list',
+                    ('agent_message', 'reasoning', 'command_execution', 'file_change', 'mcp_tool_call', 'web_search',
+                     'todo_list'))
+CODEX_THREAD_ITEMS = (b'user_messagefunction_call_outputhook_promptagent_messagereasoningcommand_executiondynamic_tool_call'
+                      b'collab_agent_tool_callsub_agent_activityweb_searchimage_viewextensionentered_review_mode'
+                      b'exited_review_modefile_changemcp_tool_callcontext_compaction',
+                      ('user_message', 'function_call_output', 'hook_prompt', 'agent_message', 'reasoning',
+                       'command_execution', 'dynamic_tool_call', 'collab_agent_tool_call', 'sub_agent_activity',
+                       'web_search', 'image_view', 'extension', 'entered_review_mode', 'exited_review_mode',
+                       'file_change', 'mcp_tool_call', 'context_compaction'))
+
+
+# exec's own sub-agent call item, `collab_tool_call` (its agents' calls are not in exec's stream), whose tag is
+# a literal placed after exec's event struct names rather than in the item run.
+CODEX_EXEC_COLLAB = (b'ItemUpdatedEventThreadErrorEventcollab_tool_call', 'collab_tool_call')
+# VELDO-0160, the lead's structural rule: the items through which a Codex run does work in another agent's thread,
+# whose calls its stream does not show, each by the struct literal naming the other thread: exec's own sub-agent
+# call (above), the core's collab agent call (its receivers' thread ids) and its sub-agent activity (the agent's
+# thread id).
+CODEX_NESTED = {'collab': ((b'CollabAgentToolCallItemreceiver_thread_ids', 'collab_agent_tool_call'),),
+                'sub_agent': ((b'SubAgentActivityItemagent_thread_id', 'sub_agent_activity'),)}
+
+
+# VELDO-0160, the lead's allowlist (fail closed): exec's items are the run's own work (its messages, reasoning,
+# to-do lists and errors, its shell commands, file changes and web searches, an MCP call the configuration judges,
+# and its own sub-agent call), and a sub-agent call is in the run only for the collab tools exec's own CollabTool
+# enum lists: its variant literals, placed between exec's usage field run and its item id field before its
+# ThreadEvent name, each an agent thread of this process (`Spawn a sub-agent for a well-scoped task.`). A tag the
+# run does not hold (a collab tool exec may name elsewhere) is not listed and asks.
+CODEX_IN_RUN_COLLAB = (b'reasoning_output_tokensspawn_agentsend_inputclose_agentidThreadEvent',
+                       ('spawn_agent', 'send_input', 'close_agent'))
+CODEX_IN_RUN_SPAWN = b'Spawn a sub-agent for a well-scoped task.'
+# The enum's `wait` variant is not in that run: the compiler keeps one copy of a short literal, and exec's `wait` is
+# the one its other uses share. exec's serializer for the enum names every variant: a switch on the variant (lea rcx
+# to its jump table, movsxd, add, jmp rax) whose cases each load one variant's literal (lea rdx) and its length (mov
+# ecx, here or at the case it jumps to). The wait variant only waits: the core's wait tool waits on agent ids from
+# spawn_agent, or for a mailbox update from a live agent of the current root thread tree, the run's own agents.
+CODEX_COLLAB_SWITCH = re.compile(rb'\x48\x8d\x0d(.{4})\x48\x63\x04\x81\x48\x01\xc8\xff\xe0', re.DOTALL)
+CODEX_COLLAB_WAIT = (b'Agent ids to wait on. Pass multiple ids to wait for whichever finishes first.',
+                     b'Live agents visible in the current root thread tree.')
+CODEX_COLLAB_WAITS = ('wait',)
+
+
+def _segments(raw):
+    """[(file offset, virtual address, file size, executable)]: the ELF file's loadable segments."""
+    if raw[:5] != b'\x7fELF\x02' or raw[5] != 1:
+        raise Moved('codex is not a little-endian 64-bit ELF file')
+    offset, size, count = (int.from_bytes(raw[0x20:0x28], 'little'), int.from_bytes(raw[0x36:0x38], 'little'),
+                           int.from_bytes(raw[0x38:0x3a], 'little'))
+    found = []
+    for at in range(offset, offset + size * count, size):
+        if int.from_bytes(raw[at:at + 4], 'little') == 1:
+            flags = int.from_bytes(raw[at + 4:at + 8], 'little')
+            found.append(tuple(int.from_bytes(raw[at + k:at + k + 8], 'little') for k in (8, 16, 32)) + (bool(flags & 1),))
+    return found
+
+
+def _file_offset(segments, address):
+    for offset, virtual, size, _ in segments:
+        if virtual <= address < virtual + size:
+            return offset + address - virtual
+    return None
+
+
+def _rel32(raw, at):
+    return int.from_bytes(raw[at:at + 4], 'little', signed=True)
+
+
+def _switch_cases(raw, segments, at, virtual):
+    """[(file offset, literal)]: the literals the switch at file offset `at` (virtual address `virtual`) loads, case by
+    case, or None when it is not a switch whose every case loads a literal and its length."""
+    table = virtual + 7 + _rel32(raw, at + 3)
+    table_at, start = _file_offset(segments, table), virtual + 16
+    if table_at is None:
+        return None
+    cases = []
+    while len(cases) < 64:
+        target = table + _rel32(raw, table_at + 4 * len(cases))
+        case = _file_offset(segments, target)
+        if not start <= target < start + 256 or case is None or raw[case:case + 3] != b'\x48\x8d\x15':
+            break
+        literal = target + 7 + _rel32(raw, case + 3)
+        after = case + 7
+        if raw[after] == 0xeb:
+            after = after + 2 + int.from_bytes(raw[after + 1:after + 2], 'little', signed=True)
+        literal_at = _file_offset(segments, literal)
+        if raw[after] != 0xb9 or literal_at is None:
+            return None
+        length = int.from_bytes(raw[after + 1:after + 5], 'little')
+        text = raw[literal_at:literal_at + length]
+        if not 0 < length <= 64 or not re.fullmatch(rb'[a-z_]+', text):
+            return None
+        cases.append((literal_at, text.decode()))
+    return cases or None
+
+
+def codex_collab_tools(raw, tools):
+    """The variants of exec's CollabTool enum, read from its serializer: the one switch whose cases load the literals of
+    the variant run itself (`tools`, at their places in the run; the core's own collab enum loads its own copies); the
+    variants beyond the run are the waits the core's wait tool describes."""
+    segments = _segments(raw)
+    at = raw.find(CODEX_IN_RUN_COLLAB[0]) + len(b'reasoning_output_tokens')
+    places = set()
+    for tool in tools:
+        places.add((at, tool))
+        at += len(tool)
+    found = []
+    for offset, virtual, size, executable in segments:
+        if not executable:
+            continue
+        for match in CODEX_COLLAB_SWITCH.finditer(raw, offset, offset + size):
+            cases = _switch_cases(raw, segments, match.start(), virtual + match.start() - offset)
+            if cases is not None and places <= set(cases):
+                found.append([tool for _, tool in cases])
+    if len(found) != 1 or len(set(found[0])) != len(found[0]) \
+            or sorted(set(found[0]) - set(tools)) != sorted(CODEX_COLLAB_WAITS) \
+            or any(raw.count(literal) != 1 for literal in CODEX_COLLAB_WAIT):
+        raise Moved('codex collab tool serializer moved')
+    return found[0]
+
+
+def codex_in_run(raw, exec_items):
+    run, tools = CODEX_IN_RUN_COLLAB
+    if raw.count(run) != 1 or ('reasoning_output_tokens' + ''.join(tools) + 'idThreadEvent').encode() != run \
+            or raw.count(CODEX_IN_RUN_SPAWN) != 1 or 'collab_tool_call' not in exec_items:
+        raise Moved('codex collab tools moved')
+    return {'items': sorted(exec_items),
+            'collab': {'item': 'collab_tool_call', 'field': 'tool', 'tools': codex_collab_tools(raw, tools)},
+            'source': "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP "
+                      "call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent "
+                      "call), and the collab tools of exec's CollabTool enum (read from its serializer, whose cases "
+                      "load its variant literals: the run between its usage field run and its item id field, and "
+                      "`wait`, whose literal the compiler shares), each an agent thread of this process or a wait on "
+                      "one (the core's wait tool waits on agent ids from spawn_agent, or on a live agent of the "
+                      "current root thread tree); an item or collab tool these do not list is not a known in-run kind"}
+
+
+def codex_forms(raw):
+    head, run, names = CODEX_EXEC_ITEMS
+    if head not in raw or run not in raw or ''.join(names).encode() != run:
+        raise Moved('codex exec item types moved')
+    if raw.count(CODEX_EXEC_COLLAB[0]) != 1 or not CODEX_EXEC_COLLAB[0].endswith(CODEX_EXEC_COLLAB[1].encode()):
+        raise Moved('codex exec collab_tool_call moved')
+    thread, thread_names = CODEX_THREAD_ITEMS
+    if thread not in raw or ''.join(thread_names).encode() != thread:
+        raise Moved('codex thread item types moved')
+    nested = {'collab': [CODEX_EXEC_COLLAB[1]]}
+    for construct, pieces in CODEX_NESTED.items():
+        for literal, tag in pieces:
+            if literal not in raw or tag not in thread_names:
+                raise Moved('codex nested work %s moved' % tag)
+            nested.setdefault(construct, []).append(tag)
+    nested = {key: sorted(value) for key, value in sorted(nested.items())}
+    nested['source'] = ("the items through which a run does work in another agent's thread: exec's own sub-agent call "
+                        "(collab_tool_call) and the core's items whose struct names another thread (a collab agent "
+                        "call's receiver_thread_ids, a sub-agent activity's agent_thread_id)")
+    return {'exec_items': list(names) + [CODEX_EXEC_COLLAB[1], 'error'], 'thread_items': list(thread_names),
+            'nested_work': nested, 'in_run': codex_in_run(raw, list(names) + [CODEX_EXEC_COLLAB[1], 'error']),
+            'source': "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's "
+                      "ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) "
+                      "and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as "
+                      "unknown"}
+
+
 CODEX_LIMIT = {
     'message': b"You've hit your usage limit",
     'retry_at': (b' Try again at ', b' or try again at '),
@@ -661,6 +1416,15 @@ def codex(path):
              'suffixes': ['st', 'nd', 'rd', 'th'],
              'source': "protocol error Display: the message, then ' Try again at <local time>.' (same day: %-I:%M %p; "
                        "else %b %-d<suffix>, %Y %-I:%M %p) or ' Try again later.' with no reset"}
+    for run in CODEX_ITEM_RUNS:
+        if run not in raw:
+            raise Moved('codex exec item literals moved: %r' % run[:40])
+    items = {'mcp_tool_call': {'type': 'object', 'fields': {
+        'id': {'type': 'string'}, 'type': {'type': 'literal', 'value': 'mcp_tool_call'},
+        'server': {'type': 'string'}, 'tool': {'type': 'string'}, 'arguments': {'type': 'any'},
+        'result': {'type': 'any', 'optional': True, 'nullable': True},
+        'error': {'type': 'any', 'optional': True, 'nullable': True},
+        'status': {'type': 'enum', 'values': ['in_progress', 'completed', 'failed']}}}}
     for piece in CODEX_USAGE_SOURCE:
         if piece not in raw:
             raise Moved('codex usage source moved: %r' % piece)
@@ -699,6 +1463,12 @@ def codex(path):
                       "binary's literals; the strings show field names, not which are always present, so every usage "
                       "field is marked optional",
             'events': events, 'usage_limit': limit, 'errors': codex_errors(raw), 'credential_tables': tables,
+            'items': items, 'tool_forms': codex_forms(raw),
+            'items_source': ("exec's ThreadItem (the `item` of item.started, item.updated and item.completed, tag "
+                             "`type`): the type names, the field names server, arguments and result, and the status "
+                             "values in_progress, completed and failed are the binary's literal runs; `id`, `type` and "
+                             "`tool` are names of four bytes or fewer, which the compiler places in code, not in the "
+                             "literal pool, and `result` and `error` are present only when the call has one"),
             'notes': {'turn.completed.usage': (
                 "exec's turn usage is read from the thread token usage its event processor receives "
                 "(thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's "

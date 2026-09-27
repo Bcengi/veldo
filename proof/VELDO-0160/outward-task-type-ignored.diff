@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -858 +858 @@
+-        if task_type not in IN_RUN_TASKS['in_run']:
++        if False:  # defect: a remote agent's task is not read

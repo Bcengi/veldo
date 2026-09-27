@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -130 +130 @@
+-        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))
++        ranked.append(((0, -used) if used is not None else (1, 0), active, last, name))  # defect

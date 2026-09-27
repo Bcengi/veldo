@@ -1,0 +1,8 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -847,0 +848,3 @@
++        if name not in IN_RUN and name in BUILTIN:  # defect: a tool the binary's list does not name is allowed
++            found.append('tool:' + name)
++            continue
+@@ -849 +851,0 @@
+-            found.append('tool:' + name)

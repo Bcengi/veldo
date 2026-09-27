@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -816 +816 @@
+-        if kind is not None and kind not in IN_RUN_AGENT['builtin_types']:
++        if False:  # defect: an agent definition that is not built in is taken to be local

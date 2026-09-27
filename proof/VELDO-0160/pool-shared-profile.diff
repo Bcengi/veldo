@@ -1,0 +1,4 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -160,0 +161 @@
++    directory = os.path.join(os.path.dirname(directory or '.'), 'shared-' + str(record.get('provider')))  # defect: one profile shared by the accounts of a provider

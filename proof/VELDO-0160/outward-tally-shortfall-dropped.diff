@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -305 +305 @@
+-                     'unshown': call['unshown']} for call in tasks.close()]
++                     'unshown': call['unshown']} for call in tasks.close() if False]  # defect: a task's shortfall is not read

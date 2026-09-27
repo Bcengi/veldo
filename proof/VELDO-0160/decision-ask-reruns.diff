@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -335 +335 @@
+-    return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(read)}
++    return {'schema': SCHEMA, 'decision': RERUN, 'calls': named, 'mcp_calls': len(read)}  # defect

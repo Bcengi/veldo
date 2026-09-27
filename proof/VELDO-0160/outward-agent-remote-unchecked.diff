@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -814 +814 @@
+-        if isolation is not None and isolation not in local:
++        if False:  # defect: the Agent tool's remote isolation is not read

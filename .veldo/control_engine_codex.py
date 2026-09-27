@@ -82,6 +82,32 @@ own window with none, and the account stays refused until observed otherwise. Th
 (transient, request and local errors, Codex's own rollout and thread budgets) states no allowance and
 records nothing.
 
+THE ACCOUNT'S LIMIT (VELDO-0160). `limit()` is the last exhaustion message the stream stated, as its
+window and reset, with its signal: in an `error` event the stream reports its window exhausted
+(`stream`); in a `turn.failed` the engine ends with its rate-limit result (`result`).
+
+TOOL CALLS (VELDO-0160). `tool_calls(event, seen, redacted)` names the MCP tool calls an event shows: the
+`item` of an `item.started`, `item.updated` or `item.completed` whose type is `mcp_tool_call`, with its
+server and tool, by the item id (exec's ThreadItem, proof/VELDO-0062/cli-formats.json, codex items and
+tool_forms). It reads only the forms the binary's tables list and fails closed on everything else. What
+may be a tool call and cannot be read is named `unreadable` (an item that is not an object naming its
+type, an `mcp_tool_call` whose server or tool is not a name). A tool-call form this reading does not
+recognize is named `unknown` with its form, never taken for no call: exec's own sub-agent call
+`collab_tool_call` (SUBAGENT_ITEMS: the agents it spawns or drives make calls exec does not print), an item
+whose type exec's table does not list (the core's `dynamic_tool_call`, `collab_agent_tool_call` and
+`sub_agent_activity` among them, which exec does not print under those names), and an event type the table
+does not list. exec's own non-MCP items are no MCP call: its messages,
+reasoning, to-do lists and errors (TOOL_FREE_ITEMS), and its commands, file changes and web searches
+(BUILTIN_ITEMS), whose effects stay in the clone. `seen` and `redacted` are Claude Code's interface, and so
+is `Tasks`, a task's count of its calls, which exec does not report (None).
+
+HIDDEN NESTED WORK (VELDO-0160, the structural rule). `nested_work(event)` names the item through which an event
+shows the run doing work in another agent's thread, whose calls its stream does not show (NESTED_ITEMS, the
+binary's, cli-formats.json nested_work): `collab` (exec's own `collab_tool_call`, the core's
+`collab_agent_tool_call`) and `sub_agent` (the core's `sub_agent_activity`). `remote_agents(event)`, the call
+that starts an agent outside the run, names none: exec's item table (cli-formats.json exec_items) lists no such
+item, and an item it does not list is an unknown call already.
+
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
 THE ADAPTER (VELDO-0061). REGISTRATION is the Codex adapter as the launch receiver runs it: its
@@ -151,6 +177,29 @@ EXHAUSTED = (
     ('To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.', 'plan'),
 )
 MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+MCP_ITEM = 'mcp_tool_call'
+ITEM_EVENTS = ('item.started', 'item.updated', 'item.completed')
+# The tool-call forms (VELDO-0160), from the binary's tables (proof/VELDO-0062/cli-formats.json, codex): its
+# exec events, and exec's ThreadItem types, those that are no tool call and exec's own tools.
+EVENTS = ('thread.started', 'turn.started', 'turn.completed', 'turn.failed') + ITEM_EVENTS + ('error',)
+TOOL_FREE_ITEMS = frozenset(('agent_message', 'reasoning', 'todo_list', 'error'))
+BUILTIN_ITEMS = frozenset(('command_execution', 'file_change', 'web_search'))
+# exec's own sub-agent call: the agents it spawns or drives make calls exec does not print, so it is an unknown call.
+SUBAGENT_ITEMS = frozenset(('collab_tool_call',))
+# The items through which a run does work in another agent's thread, whose calls its stream does not show
+# (VELDO-0160, the structural rule; cli-formats.json codex tool_forms nested_work), by class.
+NESTED_ITEMS = {'collab': ('collab_agent_tool_call', 'collab_tool_call'), 'sub_agent': ('sub_agent_activity',)}
+# exec reports no task counting its sub-agents' calls: its own sub-agent call is already an unknown call above.
+Tasks = None
+# The known in-run kinds (VELDO-0160, the lead's allowlist; cli-formats.json codex tool_forms in_run): exec's own items,
+# and for its sub-agent call the collab tools of exec's CollabTool enum (read from its serializer), each an agent
+# thread of this process or a wait on one (`wait`: the core's wait tool waits on agent ids from spawn_agent, or on a
+# live agent of the current root thread tree). An item or collab tool these do not list asks (outward_tools); the
+# core's own tool name wait_agent is not one exec writes, so it asks.
+IN_RUN_ITEMS = frozenset(('agent_message', 'collab_tool_call', 'command_execution', 'error', 'file_change',
+                          'mcp_tool_call', 'reasoning', 'todo_list', 'web_search'))
+IN_RUN_COLLAB = {'item': 'collab_tool_call', 'field': 'tool',
+                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent')}
 RETRY_AT = re.compile(r'(?:Try|or try) again at (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2})(?:st|nd|rd|th), '
                       r'(?P<year>\d{4}) )?(?P<hour>\d{1,2}):(?P<minute>\d{2}) (?P<half>AM|PM)\.')
 
@@ -198,6 +247,65 @@ def limit_reset(message, now, zone):
     return max(stated) + 60
 
 
+def tool_calls(event, seen=None, redacted=False):
+    """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160); an item that may be
+    a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}, and a tool-call form
+    this reading does not recognize {id, server: None, tool: None, unknown: <form>}."""
+    name = event.get('type')
+    if name not in EVENTS:
+        return [{'id': None, 'server': None, 'tool': None, 'unknown': 'event:%s' % name}]
+    if name not in ITEM_EVENTS:
+        return []
+    item = event.get('item')
+    kind = item.get('type') if isinstance(item, dict) else None
+    if not isinstance(kind, str):
+        return [{'id': None, 'server': None, 'tool': None, 'unreadable': True}]
+    if kind in TOOL_FREE_ITEMS or kind in BUILTIN_ITEMS:
+        return []
+    ident = item.get('id') if isinstance(item.get('id'), str) else None
+    if kind != MCP_ITEM:
+        return [{'id': ident, 'server': None, 'tool': None, 'unknown': kind}]
+    server, tool = item.get('server'), item.get('tool')
+    if not (isinstance(server, str) and server and isinstance(tool, str) and tool):
+        return [{'id': item.get('id'), 'server': None, 'tool': None, 'unreadable': True}]
+    return [{'id': item.get('id'), 'server': server, 'tool': tool}]
+
+
+def nested_work(event):
+    """[(construct, form)]: the item through which the event shows the run doing work in another agent's thread
+    (NESTED_ITEMS): `collab` for a collab agent call, `sub_agent` for a sub-agent's activity."""
+    item = event.get('item') if event.get('type') in ITEM_EVENTS else None
+    kind = item.get('type') if isinstance(item, dict) else None
+    return [(construct, 'item:' + kind) for construct, kinds in NESTED_ITEMS.items() if kind in kinds]
+
+
+def remote_agents(event):
+    """[]: exec's items (its table, cli-formats.json exec_items) hold no call that starts an agent outside the run
+    (Claude Code's interface; the module docstring)."""
+    return []
+
+
+def tool_inputs(event):
+    """[]: exec's items carry their own input (Claude Code's interface)."""
+    return []
+
+
+def outward_tools(event, inputs=None):
+    """[form]: the item an event shows that is not a known in-run kind (VELDO-0160, the lead's allowlist, rule A): an
+    item type exec's own items do not list (`item:<type>`), or a sub-agent call whose collab tool exec's CollabTool enum
+    does not list (`item:collab_tool_call:<tool>`). An item that cannot be read is the call-by-call rules'."""
+    item = event.get('item') if event.get('type') in ITEM_EVENTS else None
+    kind = item.get('type') if isinstance(item, dict) else None
+    if not isinstance(kind, str):
+        return []
+    if kind not in IN_RUN_ITEMS:
+        return ['item:' + kind]
+    tool = item.get(IN_RUN_COLLAB['field'])
+    if kind == IN_RUN_COLLAB['item'] and tool not in IN_RUN_COLLAB['tools']:
+        return ['item:%s:%s' % (kind, tool if isinstance(tool, str) else 'unreadable')]
+    return []
+
+
 class Meter:
     """Reads one invocation's stream line by line; the same interface as control_engine_claude.Meter.
     `clock` and `zone` are the engine's clock and local time zone (its TZ), for the reset its
@@ -211,7 +319,8 @@ class Meter:
         self.incomplete = False
         self.turns = 0
         self.tokens = 0
-        self.limit = set()
+        self.stated = set()
+        self.limited = None
 
     def feed(self, chunk):
         self.pending += chunk
@@ -242,7 +351,11 @@ class Meter:
             return None
         return {'provider': PROVIDER, 'id': self.thread, 'tokens': self.final().get('tokens'), 'charged': 'whole'}
 
-    def _limited(self, seen, message):
+    def limit(self):
+        """{window, reset_at, signal}: the last limit the stream stated (VELDO-0160), or None."""
+        return dict(self.limited) if self.limited else None
+
+    def _limited(self, seen, message, signal='stream'):
         """An exhaustion message of the error table as its window, exhausted: the usage-limit message with
         the reset it states (or none), every other with no reset. The same statement again adds nothing."""
         if not isinstance(message, str):
@@ -254,9 +367,10 @@ class Meter:
             if window is None:
                 return []
             reset = None
-        if (window, reset) in self.limit:
+        self.limited = {'window': window, 'reset_at': reset, 'signal': signal}
+        if (window, reset) in self.stated:
             return []
-        self.limit.add((window, reset))
+        self.stated.add((window, reset))
         return [dict(seen, kind='window', window_id=window, status='rejected', reset_at=reset, utilization=None)]
 
     def line(self, line):
@@ -290,7 +404,7 @@ class Meter:
             if self.open:
                 self.open, self.incomplete = False, True
             error = event.get('error')
-            found.extend(self._limited(seen, error.get('message') if isinstance(error, dict) else None))
+            found.extend(self._limited(seen, error.get('message') if isinstance(error, dict) else None, 'result'))
         elif kind == 'error':
             found.extend(self._limited(seen, event.get('message')))
         return found

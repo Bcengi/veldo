@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -500 +500 @@
+-    return [] if name in BUILTIN else [_unknown('repl_call:' + name, ident)]
++    return []  # defect: a REPL inner tool neither mcp__ nor built in is no call

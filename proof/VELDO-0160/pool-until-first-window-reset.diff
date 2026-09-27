@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -122 +122 @@
+-                until = max(resets) if until is None else min(until, max(resets))
++                until = min(resets) if until is None else min(until, min(resets))  # defect: an account reopens at its first window's reset

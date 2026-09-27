@@ -116,6 +116,8 @@ ENGINE_PROTOCOL with the same signatures, and the receiver drives each through t
   completion: the exit record binds the report's verdict, completeness and digest, and the runner's slot
   and the build and review floor read completion from that record through control_dispatch.completed.
 - `Meter` (VELDO-0062), with PROVIDER, CREDENTIALS, SETTINGS and REGISTRATION (the lifecycle operations).
+  Its methods are the same for every engine: `feed`, `close`, `final`, `session` and (VELDO-0160)
+  `limit()`, the account limit the engine's own stream reported, or None, which settle classifies.
 An engine module that does not implement the protocol is refused by name before acceptance.
 
 THE EVERYTHING-OFF BASELINE, THE PAID-API GUARD AND THE ENVIRONMENT STRIP (VELDO-0155, VELDO-0156). The
@@ -422,7 +424,14 @@ class Runner:
             data = json.loads(row[0]) if row else {}
             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
         dispatch_id = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
-        self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, self.account, project, unit, now=now)
+        account = self.account
+        if hasattr(account, 'reserve'):
+            # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
+            # reservation, reading the pool now: an account registered while work runs takes this dispatch.
+            account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
+                                      adapter=adapter, now=now)
+        else:
+            self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
         try:
             entity, version, slot_digest = self._slot(dispatch_id)
             contract = {
@@ -436,7 +445,7 @@ class Runner:
                 'capability': {'adapter': adapter, 'configuration': configuration,
                                'configuration_digest': D.digest(configuration)},
                 'reservation': {'entity': entity, 'version': version, 'digest': slot_digest,
-                                'account': self.account, 'project': project},
+                                'account': account, 'project': project},
                 'claim': claim, 'deadline': deadline, 'authority_generation': self.dispatches.generation,
             }
             self.dispatches.prepare(contract, now=now)
@@ -1647,6 +1656,7 @@ class Metering:
             return
         self.settled = True
         now = time.time()
+        limit = None
         if termination is None:
             usage, outcome = {}, 'not_executed'
         else:
@@ -1665,11 +1675,14 @@ class Metering:
             self.report = self._artifact(termination, cause)
             if outcome == 'completed' and not self.report['complete']:
                 outcome = 'failed'  # a zero exit is a completion only with its terminal record (THE ENGINE PROTOCOL)
+            # VELDO-0160: a run its account's limit stopped ends account_limit, with the window and reset.
+            outcome, limit = ACC.classify(outcome, self.meter.limit())
         self.sequence += 1
         session = self.meter.session() if termination is not None else None
         try:
             self.guard.observe('usage/%s/%d' % (self.dispatch_id, self.sequence), self.invocation, self.sequence,
-                               usage, now=now, final=True, outcome=outcome, receipts=self.receipts, session=session)
+                               usage, now=now, final=True, outcome=outcome, receipts=self.receipts, session=session,
+                               limit=limit)
         except (D.RES.Refused, ACC.Refused, S.StoreRefused) as error:
             self.errors.append(error.code)
         finally:

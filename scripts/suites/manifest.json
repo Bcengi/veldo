@@ -997,6 +997,15 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal, enrollment, possession, edge and API signatures, VELDO-0025 enrollment by the steward's signed commands, real Git repositories enrolled by control_enrollment.enroll and bound by control_store.bind_repositories, the VELDO-0067 Telegram edge enrollment and a standing delegation, the actual protected signer process, the VELDO-0066 Acquirer, the VELDO-0064 inbox, the VELDO-0065 presenter over a loopback Bot API, the VELDO-0068 settlement through API answers and Telegram replies, and the VELDO-0076 project service. Writes only temporary fixtures."
   },
   {
+   "name": "78_veldo_0160_account_pool",
+   "file": "78_veldo_0160_account_pool.py",
+   "requires": [
+    "78_veldo_0160_account_pool"
+   ],
+   "regions": "Every registered subscription account at once: three Claude Code accounts and one Codex account, registered once each by the owner over profiles the local helper prepares, running concurrently through the account pool the VELDO-0036 worker reservation chooses in, each invocation on exactly its own account's profile and charged to that account, with overlapping recorded start and end times; a second registration of an account, by its id or by its login under another name, refused by name; new work moved off an account whose CLI reported its window exhausted until its reported reset, the next dispatch waiting with the earliest reset named when every account is busy or at its limit; an account registered while work runs taking the next dispatch with the preparing process and every running worker keeping its process identity and start time, and admitting one run at a time until its first observation; a run whose stream reports its window exhausted or whose engine ends with its rate-limit result classified account_limit with the window and reset recorded on the account, for Claude Code and Codex, and an ordinary nonzero exit and a 429 that is not the account's limit ending as ordinary failures; the re-run-or-ask decision over fixture records naming exactly the calls to MCP tools not marked read-only; the scaffold laying down the new modules",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization with control_account_pool choosing inside them, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with fake claude and codex executables the suite writes that print scripted lines in the CLIs' own stream formats (checked against proof/VELDO-0062/cli-formats.json); no real engine runs, no login and no credential. Worker launches use the wrapper without a containment group, so the systemd user manager is never touched. Writes only temporary fixtures."
+  },
+  {
    "name": "78_veldo_0060_claude_adapter",
    "file": "78_veldo_0060_claude_adapter.py",
    "requires": [

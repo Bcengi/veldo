@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -363 +363 @@
+-    started = outside(record, provider)
++    started = []  # defect: an agent started outside the run is not asked about

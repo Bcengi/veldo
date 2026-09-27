@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -268 +268 @@
+-        shown = _event(line['payload']) if line['stream'] == 'engine' else None
++        shown = line['payload'] if line['stream'] == 'engine' and isinstance(line['payload'], dict) else None  # defect: a line held as JSON text is not read for an agent started outside the run

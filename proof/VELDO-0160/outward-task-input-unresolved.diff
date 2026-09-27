@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -742 +742 @@
+-            if isinstance(parent, str) and isinstance(block.get('name'), str):
++            if False:  # defect: a sub-agent's shown call does not give its task's last tool its input

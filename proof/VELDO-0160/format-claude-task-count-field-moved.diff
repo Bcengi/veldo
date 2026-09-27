@@ -1,0 +1,6 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -345 +345,2 @@
+-TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), 'count': 'usage.tool_uses',
++TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), 'count': 'usage.total_tokens',  # defect: the count is read from another field
++
