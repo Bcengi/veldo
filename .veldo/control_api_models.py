@@ -105,6 +105,9 @@ MODELS = {m.name: m for m in READ_MODELS}
 # THE UI ACTION CONTRACT. An action with a route executes the named existing command; an action without
 # one is a gap owned by the named specification.
 ACTIONS = (
+    Action('mcp_server_save', 'mcp.save', 'save_mcp_server', 'control_mcp_catalog', 'SAVE', 'VELDO-0144'),
+    Action('mcp_credential_set', 'mcp.credential_set', 'set_mcp_credential', 'control_credential', 'SET', 'VELDO-0144'),
+    Action('mcp_credential_delete', 'mcp.credential_delete', 'delete_mcp_credential', 'control_credential', 'DELETE', 'VELDO-0144'),
     Action('send_message', 'messages.send', 'send_message', 'control_intake', 'RECORD', 'VELDO-0126'),
     Action('answer_decision', 'decisions.answer', 'answer_decision', 'control_request_settlement', 'API', 'VELDO-0068'),
     Action('revoke_credential', 'auth.revoke_credential', 'revoke_credential', 'control_api_credentials', 'REVOKE',

@@ -7395,6 +7395,70 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    add(144, 'mcp144-overwrite-revision', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    rid = revision_id(domain, d['id'], revision)\n    if entity(conn, rid) is not None:\n        raise Refused('stale_version:immutable_mcp_server')",
+        "    rid = revision_id(domain, d['id'], max(1, revision - 1))",
+        ['catalog/immutable-history'], (("            rid = revision_id(self.domain, definition['id'], base + 1)\n            expected = {hid: base, rid: 0}", "            rid = revision_id(self.domain, definition['id'], max(1, base))\n            expected = {hid: base, rid: (entity(self.conn, rid) or {}).get('version', 0)}"),))
+    add(144, 'mcp144-value-on-argv', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        argv += ['application', 'veldo', 'credential', name]",
+        "        argv += ['application', 'veldo', 'credential', name]\n        if value is not None:\n            argv += [value]",
+        ['credential/no-value-on-command-line'], ())
+    add(144, 'mcp144-value-in-record', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal)",
+        "                    data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal, value=value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-owner-check-off', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    if (not AC.active_member(member, now)[0] or member.get('principal_type') != 'person'\n            or 'project_owner' not in (member.get('roles') or [])",
+        '    if (not AC.active_member(member, now)[0]',
+        ['catalog/stale-unauthorized', 'credential/authority-binding'], ())
+    add(144, 'mcp144-stdio-arguments-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "'data': dict(d, revision=revision)",
+        "'data': dict(d, revision=revision, arguments=[])",
+        ['catalog/stdio'], ())
+    add(144, 'mcp144-http-headers-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "'data': dict(d, revision=revision)",
+        "'data': dict(d, revision=revision, headers={})",
+        ['catalog/http', 'catalog/atlassian'], ())
+    add(144, 'mcp144-invalid-transport-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')",
+        "    if d['transport'] == 'connector':\n        return\n    valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')",
+        ['catalog/invalid'], ())
+    add(144, 'mcp144-delete-kept', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        self._run('clear', name)",
+        '        return None',
+        ['credential/replace-delete'], ())
+    add(144, 'mcp144-replace-kept', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        self._run('store', name, value)",
+        "        if self.get('keychain', name) is None:\n            self._run('store', name, value)",
+        ['credential/replace-delete'], ())
+    add(144, 'mcp144-locked-success', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        '        if done.returncode:\n',
+        "        if done.returncode and b'locked' not in done.stderr.lower():\n",
+        ['credential/keystore-refusals'], ())
+    add(144, 'mcp144-read-back-allowed', '82_veldo_0144_mcp_catalog.py', 'control_api.py',
+        "        raise Refused('unauthorized:credential_read_back', 'credentials are write-only')",
+        "        return 200, {'outcome': 'read_back_allowed'}",
+        ['credential/read-back'], ())
+    add(144, 'mcp144-value-binding-off', '82_veldo_0144_mcp_catalog.py', 'control_api_authority.py',
+        'or not hmac.compare_digest(hashlib.sha256(value.encode()).hexdigest(), bound)',
+        'or False',
+        ['credential/authority-binding'], ())
+    add(144, 'mcp144-host-command-unwired', '82_veldo_0144_mcp_catalog.py', 'control_service.py',
+        "            elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:",
+        "            elif command.get('operation') in SA.AUTH.CV.OPERATIONS:",
+        ['catalog/host-command'], ())
+    add(144, 'mcp144-credential-log-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "        self.record(dict(about, outcome=outcome, seq=saved['seq']))",
+        "        self.record(dict(about, outcome=outcome, seq=saved['seq'], value=value))",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stale-base-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "            rid = revision_id(self.domain, definition['id'], base + 1)",
+        "            base = (entity(self.conn, hid) or {}).get('version', 0)\n            rid = revision_id(self.domain, definition['id'], base + 1)",
+        ['catalog/stale-unauthorized'], ())
+    add(144, 'mcp144-value-in-command-digest', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "            stored = {k: v for k, v in params.items() if k != 'value'}",
+        '            stored = dict(params)',
+        ['credential/no-value-in-records'], ())
     return result
 
 

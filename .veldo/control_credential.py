@@ -33,6 +33,10 @@ def reference(domain, identity):
     return 'keychain:veldo/' + entity_id(domain, identity).split(':')[1]
 
 
+def without_value(conn, params, before):
+    raise Refused('invalid_input:credential_command_requires_service')
+
+
 class Credentials:
     def __init__(self, store, conn, *, domain, repository, signer, sign, generation=1, observe=None, keystore=None):
         self.S, self.conn, self.domain, self.repository = store, conn, domain, repository
@@ -41,6 +45,8 @@ class Credentials:
         self.observations = []
         self.keystore = keystore or KS.SecretService()
         store.declare_owners(conn, 'mcp_credentials', kinds={KIND: OPERATIONS}, module=__file__)
+        for operation in OPERATIONS:
+            conn.command_registry[operation] = {'transaction_transition': without_value, 'writes': MC.WRITES}
 
     def apply(self, operation, params, *, principal, command_id, session=None):
         identity = params.get('id')
@@ -81,7 +87,8 @@ class Credentials:
             self.record(dict(about, outcome='refused', refusal=error.code))
             raise Refused(error.code) from None
         finally:
-            self.conn.command_registry.pop(operation, None)
+            if operation in OPERATIONS:
+                self.conn.command_registry[operation] = {'transaction_transition': without_value, 'writes': MC.WRITES}
         outcome = 'deleted' if operation == DELETE else 'replaced' if params['base'] else 'written'
         self.record(dict(about, outcome=outcome, seq=saved['seq']))
         return dict(outcome=outcome, id=identity, reference=ref, version=params['base'] + 1, seq=saved['seq'])

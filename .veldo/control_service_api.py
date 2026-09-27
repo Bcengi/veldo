@@ -170,6 +170,8 @@ class ServiceApi:
                                      repository=ids['repository_uuid'], root=self.config['publication_root'])
         common = dict(domain=ids['domain_uuid'], repository=ids['repository_uuid'], signer=principal,
                       sign=sign, generation=generation)
+        self.mcp_log = Path(state_dir) / 'observations.jsonl'
+        common['observe'] = self.observe_mcp
         catalog = AUTH.MC.Catalog(self.S, self.conn, **common)
         mcp_credentials = AUTH.CV.Credentials(self.S, self.conn, **common)
         self.edge = self.config['api_edge']
@@ -353,6 +355,13 @@ class ServiceApi:
         finally:
             channel.close()
 
+    def observe_mcp(self, event):
+        observed = dict(event, kind='api', at=time.time(), domain_uuid=self.config['authority_ids']['domain_uuid'])
+        fd = os.open(str(self.mcp_log), os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
+        with os.fdopen(fd, 'w') as handle:
+            handle.write(json.dumps(observed, sort_keys=True) + '\n')
+
     def status(self):
         return {'available': True, 'instance': self.instance, 'edge': self.edge, 'subscribers': len(self.subscribers),
-                'counts': dict(self.counts), 'metrics': self.authority.metrics()}
+                'counts': dict(self.counts), 'metrics': self.authority.metrics(),
+                'catalog': self.authority.catalog.metrics(), 'credentials': self.authority.mcp_credentials.metrics()}

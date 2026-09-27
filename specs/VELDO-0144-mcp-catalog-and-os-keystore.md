@@ -33,6 +33,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0144_*.py"
+  - "scripts/suites/71_veldo_0130_api.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -164,3 +165,21 @@ its AC1 and AC2 are the former AC3 and AC4 with their text and falsifiers unchan
 set criterion. The footprint drops `control_launch` and `control_engine`, which only delivery touches. AC2 sets the
 credential through the API's credential route, which is what it drives; no form is part of this
 specification.
+
+
+2026-09-27, implementation on build-veldo-0144: added the immutable mcp_server
+catalog and write-only credential commands on the passkey API and authority service.
+Linux Secret Service is reached only through secret-tool, with values on standard
+input and metadata alone passed to the store. The API assertion binds a separate
+value by digest; no value is passed to the assertion signer. The runtime adapter
+implements secretref's existing keychain store interface. The scaffold installs the
+new modules and secretref; engine copies match the repository copies.
+
+The footprint adds scripts/suites/71_veldo_0130_api.py because AC1 and AC2 extend
+its published route and action universe: its forgery and actor-field checks now
+exercise the new routes, and its authority fixture registers their real commands.
+No existing assertion is removed or narrowed. Suite 82_veldo_0144_mcp_catalog uses
+real passkey ceremonies, signed authority commands, SQLite and loopback TLS with
+a generated certificate, and a generated fake secret-tool isolated from the real
+keyring. Proof, the base-commit red record and finding 144 mutations are retained in
+proof/VELDO-0144. Specification status and approval requirements are unchanged.
