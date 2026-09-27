@@ -21,6 +21,7 @@ def organ(name):
 
 AC = organ('authority_contract')
 CM = organ('control_membership')
+SS = organ('secret_scan')
 KIND, HEAD_KIND, SAVE = 'mcp_server', 'mcp_server_head', 'save_mcp_server'
 FIELDS = ('id', 'label', 'transport', 'command', 'arguments', 'url', 'environment', 'headers', 'hosts', 'read_only_tools')
 WRITES = ('entities', 'journal', 'commands', 'nonces')
@@ -66,10 +67,22 @@ def owner(conn, principal, repository, now):
         raise Refused('unauthorized:mcp_owner')
 
 
+def credential_literal(value):
+    if isinstance(value, dict):
+        if set(value) == {'reference'} and reference(value['reference']):
+            return False
+        return any(SS.scan_text(str(k)) or credential_literal(v) for k, v in value.items())
+    if isinstance(value, list):
+        return any(credential_literal(v) for v in value)
+    return isinstance(value, str) and bool(SS.scan_text(value))
+
+
 def validate(definition):
     if not isinstance(definition, dict) or set(definition) != set(FIELDS):
         raise Refused('invalid_input:server_definition')
     d = definition
+    if credential_literal(d):
+        raise Refused('invalid_input:server_credential_literal')
     valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')
     for field in ('arguments', 'hosts', 'read_only_tools'):
         items = d[field]
@@ -106,6 +119,19 @@ def transition(conn, params, before):
     owner(conn, params['principal'], params['repository'], time.time())
     validate(params['definition'])
     d, domain, base = params['definition'], params['domain'], params['base']
+    for field in ('environment', 'headers'):
+        for item in d[field].values():
+            ref = item.get('reference')
+            if ref is None:
+                continue
+            recorded = False
+            for row in conn.execute("SELECT id, data FROM entities WHERE kind='credential'"):
+                credential = json.loads(row[1])
+                digest = hashlib.sha256((domain + '/' + credential['id']).encode()).hexdigest()
+                if row[0] == 'credential:' + digest and credential.get('reference') == ref == 'keychain:veldo/' + digest:
+                    recorded = True
+            if not recorded:
+                raise Refused('invalid_input:server_credential_reference')
     hid = head_id(domain, d['id'])
     head = entity(conn, hid)
     current = head['data']['revision'] if head else 0

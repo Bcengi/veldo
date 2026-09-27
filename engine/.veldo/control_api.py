@@ -654,7 +654,10 @@ class ControlApi:
         if route.operation == 'set_mcp_credential':
             if not isinstance(value, str) or not value:
                 raise Refused('invalid_input:credential', 'a nonempty credential value')
-            parameters['value_digest'] = hashlib.sha256(value.encode()).hexdigest()
+            try:
+                parameters['value_digest'] = hashlib.sha256(value.encode()).hexdigest()
+            except UnicodeEncodeError:
+                raise Refused('invalid_input:credential_encoding', 'credential must be valid UTF-8') from None
         now = time.time()
         request_id = 'api-' + secrets.token_hex(16)
         expected = ({parameters['request_id']: parameters['request_version'],

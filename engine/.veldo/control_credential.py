@@ -6,6 +6,7 @@ current authority and version checks inside the serialized store transaction.
 """
 import hashlib
 import importlib.util
+import json
 from pathlib import Path
 import time
 
@@ -60,36 +61,52 @@ class Credentials:
             if operation == SET and (not MC.text(params['label']) or not isinstance(value, str) or not value
                                      or '\x00' in value):
                 raise Refused('invalid_input:credential')
+            if operation == SET:
+                try:
+                    value_digest = hashlib.sha256(value.encode('utf-8')).hexdigest()
+                except UnicodeEncodeError:
+                    raise Refused('invalid_input:credential_encoding') from None
             eid = entity_id(self.domain, identity)
             ref = reference(self.domain, identity)
             stored = {k: v for k, v in params.items() if k != 'value'}
+            if operation == SET:
+                stored['value_digest'] = value_digest
+            outcome = 'deleted' if operation == DELETE else 'replaced' if params['base'] else 'written'
             stored.update(principal=principal, repository=self.repository, reference=ref, session=session)
 
             def transition(conn, safe, before):
+                nonlocal outcome
                 MC.owner(conn, principal, self.repository, time.time())
                 old = before.get(eid)
                 if operation == DELETE and old is None:
                     raise Refused('missing_evidence:credential')
                 if operation == SET:
+                    outcome = 'replaced' if old and not old['data'].get('deleted') else 'written'
                     self.keystore.set(ref.split(':', 1)[1], value)
                     data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal)
                 else:
                     self.keystore.delete(ref.split(':', 1)[1])
                     # Preserve the reference and its history; no value remains resolvable.
-                    data = dict(old['data'], set_at=time.time(), set_by=principal)
+                    data = dict(old['data'], set_at=time.time(), set_by=principal, deleted=True)
                 return {eid: {'kind': KIND, 'data': data}}
 
             self.conn.command_registry[operation] = {'transaction_transition': transition, 'writes': MC.WRITES}
             command = dict(command_id=command_id, principal=principal, operation=operation, parameters=stored,
                            expected_versions={eid: params['base']}, artifact_digests=[], nonce=command_id)
             saved = self.S.execute(self.conn, command, self.signer, self.sign, self.generation)
+            if saved.get('replayed') and operation == SET:
+                outcome = 'written'
+                for row in self.conn.execute('SELECT transition FROM journal WHERE seq < ? ORDER BY seq DESC', (saved['seq'],)):
+                    prior = json.loads(row[0]).get(eid)
+                    if prior is not None:
+                        outcome = 'written' if prior['data'].get('deleted') else 'replaced'
+                        break
         except (Refused, KS.Refused, self.S.StoreRefused) as error:
             self.record(dict(about, outcome='refused', refusal=error.code))
             raise Refused(error.code) from None
         finally:
             if operation in OPERATIONS:
                 self.conn.command_registry[operation] = {'transaction_transition': without_value, 'writes': MC.WRITES}
-        outcome = 'deleted' if operation == DELETE else 'replaced' if params['base'] else 'written'
         self.record(dict(about, outcome=outcome, seq=saved['seq']))
         return dict(outcome=outcome, id=identity, reference=ref, version=params['base'] + 1, seq=saved['seq'])
 

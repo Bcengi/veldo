@@ -44,7 +44,9 @@ def _v144_suite():
              'catalog/stale-unauthorized', 'catalog/invalid', 'catalog/atlassian', 'credential/write',
              'credential/replace-delete', 'credential/read-back', 'credential/no-value-on-command-line',
              'credential/no-value-in-records', 'credential/keystore-refusals', 'credential/authority-binding',
-             'catalog/observability', 'install/assets')
+             'catalog/observability', 'install/assets', 'catalog/credential-literals',
+             'catalog/credential-domain', 'credential/libsecret-protocol', 'credential/replay-value',
+             'credential/encoding', 'credential/deleted-state')
     rows = {name: [] for name in names}
 
     def check(row, label, condition):
@@ -72,6 +74,28 @@ def _v144_suite():
     server, ing, fixture, lock = None, None, None, None
     with tempfile.TemporaryDirectory(prefix='v144-') as temporary:
         base = Path(temporary)
+        # Capture actual fd 1 and fd 2, including os.write and inherited child descriptors.
+        captures = [open(base / ('fd-' + str(fd)), 'w+b', buffering=0) for fd in (1, 2)]
+        saved_fds = [os.dup(fd) for fd in (1, 2)]
+        sys.stdout.flush()
+        sys.stderr.flush()
+        for fd, capture in zip((1, 2), captures):
+            os.dup2(capture.fileno(), fd)
+        process_outputs, lookup_outputs = [], []
+        original_popen = subprocess.Popen
+
+        class CapturedProcess(original_popen):
+            def communicate(self, *args, **kwargs):
+                stdout, stderr = super().communicate(*args, **kwargs)
+                argv = self.args if isinstance(self.args, list) else []
+                # Lookup stdout is the intended value channel, not a diagnostic.
+                lookup = len(argv) > 1 and Path(str(argv[0])).name == 'secret-tool' and argv[1] == 'lookup'
+                if lookup:
+                    lookup_outputs.append(stdout)
+                process_outputs.extend([stderr, None if lookup else stdout])
+                return stdout, stderr
+
+        subprocess.Popen = CapturedProcess
         try:
             mods = base / 'installed'
             mods.mkdir()
@@ -91,7 +115,13 @@ import hashlib, json, os, pathlib, sys, time
 home = pathlib.Path(__file__).parent
 action = sys.argv[1]
 data = sys.stdin.buffer.read()
-name = sys.argv[-1]
+args = sys.argv[2:]
+label = '-' * 2 + 'label='
+has_label = bool(args and args[0].startswith(label))
+if has_label:
+    args = args[1:]
+attributes = dict(zip(args[::2], args[1::2]))
+name = json.dumps(attributes, sort_keys=True)
 mode = (home / 'mode').read_text() if (home / 'mode').exists() else ''
 seen = []
 for entry in pathlib.Path('/proc').glob('[0-9]*/cmdline'):
@@ -105,19 +135,30 @@ record = {'action': action, 'argv': sys.argv[1:], 'bytes': len(data),
           'input_digest': hashlib.sha256(data).hexdigest(), 'exposed': seen}
 with (home / 'calls').open('a') as out:
     out.write(json.dumps(record) + '\\n')
+if len(args) % 2 or (action == 'store' and not has_label):
+    sys.exit(2)
 if mode:
     sys.stderr.write('collection locked' if mode == 'locked' else 'service unreachable')
     sys.exit(1)
-place = home / ('item-' + hashlib.sha256(name.encode()).hexdigest())
+identity = hashlib.sha256(name.encode()).hexdigest()
+place = home / ('item-' + identity)
+matches = []
+for metadata in home.glob('attributes-*'):
+    stored = json.loads(metadata.read_text())
+    if all(stored.get(k) == v for k, v in attributes.items()):
+        matches.append(home / ('item-' + metadata.name.removeprefix('attributes-')))
 if action == 'store':
     place.write_bytes(data)
+    (home / ('attributes-' + identity)).write_text(name)
     time.sleep(0.08)
 elif action == 'lookup':
-    if not place.exists():
+    if not matches:
         sys.exit(1)
-    sys.stdout.buffer.write(place.read_bytes() + b'\\n')
+    sys.stdout.buffer.write(matches[0].read_bytes() + (b'\\n' if sys.stdout.isatty() else b''))
 elif action == 'clear':
-    place.unlink(missing_ok=True)
+    for place in matches:
+        place.unlink(missing_ok=True)
+        (home / ('attributes-' + place.name.removeprefix('item-'))).unlink(missing_ok=True)
 else:
     sys.exit(2)
 ''')
@@ -266,7 +307,7 @@ else:
             cv = getattr(judge, 'mcp_credentials', None)
             catalog = getattr(judge, 'catalog', None)
             SR = load('v144_secretref', mods / 'secretref.py')
-            first_value, second_value = os.urandom(33).hex(), os.urandom(35).hex()
+            first_value, second_value = os.urandom(33).hex(), os.urandom(35).hex() + '\n'
             candidates = [first_value, second_value]
             command_audit = []
             if cv is not None:
@@ -295,6 +336,8 @@ else:
                 return attempt(lambda: SR.resolve_for_runtime(ref, cv.keystore))
 
             def absent_values():
+                sys.stdout.flush()
+                sys.stderr.flush()
                 # Includes database, WAL, journal, proof directory, observations, signer state and API state.
                 paths = [p for p in base.rglob('*') if p.is_file() and not p.name.startswith('item-')]
                 paths += [p for p in (tree / 'proof/VELDO-0144').glob('*') if p.is_file()]
@@ -313,7 +356,9 @@ for name in paths:
                 done = subprocess.run([sys.executable, '-c', scanner],
                                       input=json.dumps([[str(p) for p in paths], candidates]).encode(),
                                       capture_output=True, timeout=15)
-                return done.returncode == 0
+                outputs = [v.encode() if isinstance(v, str) else v for v in process_outputs if v]
+                return (done.returncode == 0 and all(v.encode() not in out for v in candidates for out in outputs)
+                        and all(out in [b''] + [v.encode() for v in candidates] for out in lookup_outputs))
 
             commandline_checks = []
 
@@ -369,6 +414,8 @@ for name in paths:
                     check('credential/replace-delete', 'deletion clears the keystore item and runtime resolution refuses',
                           valid_write and gone[0] == 200 and later is None and failure == 'SecretError'
                           and not list(fake.glob('item-*')))
+                    check('credential/deleted-state', 'deleted record carries a tombstone',
+                          any(d.get('id') == 'atlassian' and d.get('deleted') is True for d in data_of('credential')))
                 commandline_checks.append(commandlines_safe())
                 refused = call('GET', prefix + 'credentials?id=atlassian')
                 check('credential/read-back', stage + ': read-back is refused by name',
@@ -376,6 +423,27 @@ for name in paths:
             # Store a fresh value for the ordinary Atlassian catalog record.
             last = call('POST', prefix + 'credentials/set', dict(id='atlassian', label='Atlassian', base=3, value=second_value))
             ref = last[2].get('reference') or 'keychain:absent'
+            check('credential/deleted-state', 'set after delete is a write and removes the tombstone',
+                  last[0] == 200 and last[2].get('outcome') == 'written'
+                  and all('deleted' not in d for d in data_of('credential')))
+            handle, failure = resolve(ref)
+            attrs = ['application', 'veldo', 'credential', ref.split(':', 1)[1]]
+            lookup = subprocess.run([str(program), 'lookup'] + attrs, input=b'', capture_output=True)
+            wrong = subprocess.run([str(program), 'lookup', 'application', 'other'] + attrs[2:], input=b'', capture_output=True)
+            subset = subprocess.run([str(program), 'lookup'] + attrs[2:], input=b'', capture_output=True)
+            unlabeled = subprocess.run([str(program), 'store'] + attrs, input=b'', capture_output=True)
+            check('credential/libsecret-protocol', 'lookup preserves a real newline, matches all attributes, and store requires label',
+                  valid_write and handle is not None and handle.reveal() == second_value
+                  and lookup.stdout == second_value.encode() and wrong.returncode == 1 and not wrong.stdout
+                  and subset.stdout == second_value.encode() and unlabeled.returncode != 0
+                  and all(c['argv'][2:4] == ['application', 'veldo'] for c in calls() if c['action'] == 'store' and c['bytes']))
+            before_encoding = head()
+            bad_encoding = call('POST', prefix + 'credentials/set',
+                                dict(id='encoding', label='encoding', base=0, value=chr(0xd800)))
+            check('credential/encoding', 'invalid Unicode refuses by name, writes nothing and records an API observation',
+                  bad_encoding[0] == 400 and bad_encoding[2].get('refusal') == 'invalid_input:credential_encoding'
+                  and head() == before_encoding
+                  and 'invalid_input:credential_encoding' in json.dumps(api.observations))
 
             def definition(identity, transport, label):
                 return dict(id=identity, label=label, transport=transport, command='/usr/bin/mcp' if transport == 'stdio' else None,
@@ -416,8 +484,8 @@ for name in paths:
                   and set(definitions['atlassian'][1]) == {'id', 'revision', 'label', 'transport', 'command', 'arguments',
                                                          'url', 'environment', 'headers', 'hosts', 'read_only_tools'})
 
-            def host_command(operation, params, who='owner', signature_as=None):
-                cmd = dict(A.ids, command_id=A.next_id('host-mcp'), operation=operation, principal=who, parameters=params)
+            def host_command(operation, params, who='owner', signature_as=None, command_id=None):
+                cmd = dict(A.ids, command_id=command_id or A.next_id('host-mcp'), operation=operation, principal=who, parameters=params)
                 return service.apply(A.signed_command(signature_as or who, cmd), coordinates)
 
             for transport in ('stdio', 'http'):
@@ -445,6 +513,46 @@ for name in paths:
                 malformed.append(result[0] == 400 and result[2].get('refusal', '').startswith('invalid_input:server'))
             check('catalog/invalid', 'invalid transports, fields and value/reference shapes store no definition',
                   saves[0][0] == 200 and all(malformed) and head() == before)
+
+            before = head()
+            shaped = 'gh' + 'p_' + os.urandom(18).hex()
+            for shape in ('environment', 'arguments', 'url'):
+                doc = definition('literal-' + shape, 'http' if shape == 'url' else 'stdio', 'refuse literal')
+                if shape == 'environment':
+                    doc[shape]['ACCESS'] = {'literal': shaped}
+                elif shape == 'arguments':
+                    doc[shape] = ['-' * 2 + 'token=' + shaped]
+                else:
+                    doc[shape] += '?token=' + shaped
+                refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
+                check('catalog/credential-literals', shape + ' is refused before any write',
+                      refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_literal'
+                      and head() == before and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
+            foreign = 'keychain:veldo/' + hashlib.sha256(('another-domain/atlassian').encode()).hexdigest()
+            for bad_ref in (foreign, 'keychain:someone-elses-item'):
+                doc = definition('foreign', 'http', 'refuse foreign reference')
+                doc['headers']['Authorization'] = {'reference': bad_ref}
+                refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
+                check('catalog/credential-domain', 'reference must belong to a credential recorded in this domain',
+                      refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_reference'
+                      and head() == before)
+            replay_id = A.next_id('replay-value')
+            replay_params = dict(id='replay', label='Replay', base=0, value=first_value)
+            initial = host_command('set_mcp_credential', replay_params, command_id=replay_id)
+            replay_head, replay_calls = head(), len(calls())
+            same = host_command('set_mcp_credential', replay_params, command_id=replay_id)
+            different = host_command('set_mcp_credential', dict(replay_params, value=second_value), command_id=replay_id)
+            check('credential/replay-value', 'identical retry is idempotent; changed value refuses before touching keystore',
+                  initial.get('ok') and same.get('ok') and different.get('reason') == 'command_content_conflict'
+                  and head() == replay_head and len(calls()) == replay_calls)
+
+            host_command('delete_mcp_credential', dict(id='replay', base=1))
+            recreate_id = A.next_id('recreate')
+            recreated = host_command('set_mcp_credential', dict(replay_params, base=2), command_id=recreate_id)
+            recreated_again = host_command('set_mcp_credential', dict(replay_params, base=2), command_id=recreate_id)
+            check('credential/deleted-state', 'replaying a recreation preserves its written outcome',
+                  recreated.get('result', {}).get('outcome') == 'written'
+                  and recreated_again.get('result', {}).get('outcome') == 'written')
 
             # A valid session does not grant the owner's role forever, and neither version nor binding is advisory.
             before = head()
@@ -511,8 +619,8 @@ for name in paths:
             cmetrics = cv.metrics() if cv is not None else {}
             mmetrics = catalog.metrics() if catalog is not None else {}
             check('catalog/observability', 'save and credential observations join actor, revision, session and command; metrics count operations',
-                  mmetrics.get('revisions') == 8 and cmetrics.get('written') == 1 and cmetrics.get('replaced') == 2
-                  and cmetrics.get('deleted') == 1 and len(cmetrics.get('refused', {})) >= 3
+                  mmetrics.get('revisions') == 8 and cmetrics.get('written') == 6 and cmetrics.get('replaced') == 1
+                  and cmetrics.get('deleted') == 2 and len(cmetrics.get('refused', {})) >= 3
                   and any(r.get('session') and r.get('command_id') and r.get('actor') == 'owner' and r.get('revision') == 2
                           for r in getattr(catalog, 'observations', []))
                   and any(r.get('session') and r.get('command_id') and r.get('set_by') == 'owner'
@@ -531,6 +639,13 @@ for name in paths:
             for name in names:
                 check(name, 'the row ran to its end (it raised ' + type(exc).__name__ + ')', False)
         finally:
+            subprocess.Popen = original_popen
+            sys.stdout.flush()
+            sys.stderr.flush()
+            for fd, saved, capture in zip((1, 2), saved_fds, captures):
+                os.dup2(saved, fd)
+                os.close(saved)
+                capture.close()
             if server is not None:
                 server.server_close()
             if ing is not None:

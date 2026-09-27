@@ -5209,8 +5209,8 @@ def cases():
         ['actions/workflow-save'])
     api('action-contract-drops-worker-stop', MO130,
         "    Action('worker_stop', None, None, None, None, 'VELDO-0041'),\n", '', ['actions/contract'])
-    api('save-executes-another-command', AU130, "                'save_workflow': WF.SAVE}",
-        "                'save_workflow': AS.IN.RECORD}  # defect", ['actions/contract'])
+    api('save-executes-another-command', AU130, "'save_workflow': WF.SAVE, MC.SAVE",
+        "'save_workflow': AS.IN.RECORD, MC.SAVE", ['actions/contract'])
     # VELDO-0130 phase 3: the API through the installed authority service. The API runs a command in-process
     # again; the service accepts an API call whose request the api edge did not sign, or verifies it as any
     # member's; the signer signs a request that is not an API call; a commit at the host is never delivered.
@@ -7504,6 +7504,46 @@ def cases():
         "            stored = {k: v for k, v in params.items() if k != 'value'}",
         '            stored = dict(params)',
         ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stderr-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    self.keystore.set(ref.split(':', 1)[1], value)",
+        "                    __import__('os').write(2, value.encode())\n                    self.keystore.set(ref.split(':', 1)[1], value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stdout-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    self.keystore.set(ref.split(':', 1)[1], value)",
+        "                    __import__('os').write(1, value.encode())\n                    self.keystore.set(ref.split(':', 1)[1], value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-catalog-literal-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '    if credential_literal(d):',
+        '    if False:',
+        ['catalog/credential-literals'], ())
+    add(144, 'mcp144-foreign-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '            if not recorded:',
+        '            if False:',
+        ['catalog/credential-domain'], ())
+    add(144, 'mcp144-application-attribute-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        argv += ['application', 'veldo', 'credential', name]",
+        "        argv += ['credential', name]",
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-store-label-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "            argv += ['-' * 2 + 'label=Veldo credential']",
+        '            pass',
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-lookup-newline-stripped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "return done.stdout.decode('utf-8')",
+        "return done.stdout.removesuffix(b'\\n').decode('utf-8')",
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-replay-value-unbound', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                stored['value_digest'] = value_digest",
+        '                pass',
+        ['credential/replay-value'], ())
+    add(144, 'mcp144-delete-marker-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        'set_by=principal, deleted=True)',
+        'set_by=principal)',
+        ['credential/deleted-state'], ())
+    add(144, 'mcp144-recreated-counted-replacement', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "outcome = 'replaced' if old and not old['data'].get('deleted') else 'written'",
+        "outcome = 'replaced' if old else 'written'",
+        ['credential/deleted-state'], ())
     return result
 
 

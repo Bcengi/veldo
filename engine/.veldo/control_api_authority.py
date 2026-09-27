@@ -355,6 +355,8 @@ class ApiAuthority:
                 p['value'] = value
             return self.mcp_credentials.apply(a['operation'], p, principal=a['principal'],
                                               command_id=a['request_id'], session=a['session'])
+        except UnicodeEncodeError:
+            return {'outcome': 'refused', 'reason': 'invalid_input:credential_encoding'}
         except (MC.Refused, CV.Refused) as error:
             return {'outcome': 'refused', 'reason': error.code}
 

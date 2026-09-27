@@ -35,7 +35,7 @@ class SecretService:
                 else 'keystore_unreachable'
             raise Refused('unavailable_service:' + reason)
         if action == 'lookup':
-            return done.stdout.removesuffix(b'\n').decode('utf-8')
+            return done.stdout.decode('utf-8')
         return None
 
     def set(self, name, value):

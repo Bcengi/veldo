@@ -183,3 +183,23 @@ real passkey ceremonies, signed authority commands, SQLite and loopback TLS with
 a generated certificate, and a generated fake secret-tool isolated from the real
 keyring. Proof, the base-commit red record and finding 144 mutations are retained in
 proof/VELDO-0144. Specification status and approval requirements are unchanged.
+
+2026-09-27, review fixes on build-veldo-0144: merged main and repaired finding
+130's catalog-expanded command anchor. Catalog revision fields now reject the
+repository scanner's credential shapes by name before storage. Reference fields
+must resolve by metadata record to a credential in this domain. Values still use
+the credential route. Its replay identity includes the value digest; malformed
+Unicode receives a named refusal and an API observation. Deleted records carry a
+tombstone, while a subsequent SET stores the original five fields and counts as a
+write. The keystore adapter preserves trailing newlines on piped lookup output.
+
+The proof now captures authority and API file descriptors 1 and 2 and subprocess
+pipe outputs, including fake secret-tool diagnostics. Lookup stdout remains the
+intended runtime value channel. The fake requires a store label and matches
+attribute pairs, including subset lookups, like Secret Service. Added assertion
+rows cover all review decisions and mutations exercise diagnostic leaks, literal
+and foreign-reference acceptance, CLI protocol drift, replay mismatch and deleted
+state. The signed assertion excludes the value; the request signer receives the
+request through pipes. This clarifies the earlier signer statement. The canonical
+gate is intentionally not run under the implementation request; scoped checks
+and proof remain observations for independent review, not a landing approval.
