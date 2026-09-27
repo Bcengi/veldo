@@ -11,7 +11,8 @@ candidate at the next dispatch, with nothing restarted.
 THE CANDIDATES are the accounts of the dispatch's engine that are active, have a profile on the host the
 adapter runs on, are outside every rate-limit window their CLI reported (control_accounts.blocking: a
 window reported exhausted takes nothing until its reported reset) and are under their concurrency (the
-account's `concurrency`, one by default). An account with no observation yet (no window on its record
+account's `concurrency`, one by default; an unretired slot whose account slot the reservation service
+released, VELDO-0154's receiver that died, runs nothing on the account and is not counted). An account with no observation yet (no window on its record
 and no usage its CLI reported in the ledger) admits one run at a time until its first observation,
 because unknown is never zero. The VELDO-0036 account caps are checked for each candidate in turn
 (`check`), so an account at its cap is passed over too; a project or unit cap refuses the dispatch.
@@ -68,7 +69,8 @@ def _uses(records, account):
         if (record.get('context') or {}).get('account') != account:
             continue
         if record.get('type') == 'worker':
-            active += int(not record.get('retired'))
+            # VELDO-0154: a slot whose account was released (its receiver died, its worker gone) runs nothing on it.
+            active += int(not record.get('retired') and not record.get('account_released'))
             last = max(last, record.get('reserved_seq') or 0)
         elif record.get('type') == 'invocation':
             last = max(last, record.get('accepted_seq') or 0)

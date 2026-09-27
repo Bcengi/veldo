@@ -159,6 +159,15 @@ then by the secret scanner. After each batch the API is hinted with the last seq
 recorded a last hint marks it ended, before the runner is told. The record lives under the configuration's
 `records`, else the factory state root's `records`.
 
+THE LAUNCH PIPE (VELDO-0154). The factory loop in the authority service (control_service.FactoryLoop) owns a
+Runner and registers each running dispatch's receiver output, `Launch.fileno()`, in its service loop's poll set.
+`Launch.pump()` takes what the pipe holds without waiting and is true once the run's end is seen: the receiver's
+`exited` or `unknown` report, or the pipe's end of file when the receiver died without either (`lost`). The loop
+then settles the run through `Runner.wait(launch, timeout=0)`, which records a silent receiver's running dispatch
+`outcome_unknown` as always, and for a lost receiver `Runner.orphaned` frees the dispatch's ACCOUNT SLOT (its worker
+slot and usage reservation stay held, since its outcome is unknown): it makes the stop the dead receiver owed, reads
+from the kernel that nothing of the run is left and commits the reservation service's `release_account`.
+
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
 """
@@ -380,6 +389,8 @@ class Runner:
         self.clock = clock or time.time
         self.observations = []
         self.launches = {}
+        # VELDO-0154: dispatches whose receiver died, whose account slot waits for their worker to be gone.
+        self.orphans = {}
         self.retirements = RT.Retirements(reservations, dispatches, clones=clones, clock=self.clock,
                                           observations=self.observations)
 
@@ -489,6 +500,78 @@ class Runner:
         self.sweep()
         return record
 
+    def orphaned(self, launch):
+        """VELDO-0154 AC2: the receiver of a running dispatch died before it reported the run's end (its launch pipe
+        reached its end of file), and `wait` has recorded the run `outcome_unknown` under its original dispatch. The
+        worker slot stays held with its outcome open and its usage reservation retained (VELDO-0041: an unknown
+        outcome is never retired), but the ACCOUNT SLOT is freed for the next dispatch once nothing of the run is
+        left: the stop the dead receiver owed is made here (its reported containment group killed, or the worker's
+        recorded process, checked by its identity on this boot, sent SIGKILL), and the release is the reservation
+        service's `release_account` over the runner's own kernel observation. A release that cannot be made yet
+        stays pending in `orphans` and is tried again by `release_orphans`. Returns what `release_orphans` returns."""
+        record = self.dispatches.record(launch.dispatch_id) or {}
+        if record.get('state') == 'unknown':
+            entry = self.retirements.entries.get(launch.dispatch_id) or {}
+            self.orphans[launch.dispatch_id] = {'group': getattr(launch, 'group', None) or entry.get('group'),
+                                                'process': record.get('process'), 'stopped': False}
+        return self.release_orphans()
+
+    def release_orphans(self):
+        """Free the account slot of every dispatch in `orphans` whose worker the kernel now shows gone; the
+        released dispatches, in order. A refused release keeps its dispatch pending, named in the observations."""
+        released = []
+        for dispatch_id, entry in sorted(self.orphans.items()):
+            if not entry['stopped']:
+                entry['stopped'] = True
+                _stop_orphan(entry['group'], entry['process'])
+            end = time.monotonic() + ORPHAN_SECONDS
+            seen = C.retirement(entry['group'], entry['process'])
+            while not (seen['terminated'] and seen['cleaned']) and time.monotonic() < end:
+                time.sleep(0.02)
+                seen = C.retirement(entry['group'], entry['process'])
+
+            def lifecycle(_dispatch, seen=seen, dispatch_id=dispatch_id):
+                state = (self.dispatches.record(dispatch_id) or {}).get('state')
+                return dict(seen, state=state, observer=RT.OBSERVER, basis='receiver_lost')
+            event = {'operation': 'release_account', 'dispatch_id': dispatch_id, 'request': 'release-account/' + dispatch_id}
+            try:
+                self.reservations.release_account('release-account/' + dispatch_id, dispatch_id, lifecycle,
+                                                  now=self.clock())
+            except Exception as error:  # noqa: BLE001 - a refused release keeps the account slot held, by name
+                self.observations.append(dict(event, outcome='refused', refusal=getattr(error, 'code', None)
+                                              or type(error).__name__))
+                continue
+            del self.orphans[dispatch_id]
+            self.observations.append(dict(event, outcome='released'))
+            released.append(dispatch_id)
+        return released
+
+
+# VELDO-0154: how long the runner waits for the kernel to show an orphaned worker gone after its stop.
+ORPHAN_SECONDS = 5.0
+
+
+def _stop_orphan(group, process):
+    """The stop a dead receiver owed its worker: its containment group killed at once (cgroup.kill), or, with no
+    group, the recorded process sent SIGKILL through a descriptor of its own, only while its identity (pid, start
+    time and boot id) still names it, so a reused pid is never signaled."""
+    if isinstance(group, dict) and group.get('cgroup'):
+        with contextlib.suppress(OSError):
+            (C.CGROUP / group['cgroup'].lstrip('/') / 'cgroup.kill').write_text('1')
+        return
+    if not isinstance(process, dict) or not isinstance(process.get('pid'), int):
+        return
+    try:
+        fd = os.pidfd_open(process['pid'])
+    except OSError:
+        return
+    try:
+        if C.alive(process):
+            with contextlib.suppress(OSError):
+                signal.pidfd_send_signal(fd, signal.SIGKILL)
+    finally:
+        os.close(fd)
+
 
 def RES_ENTITY(domain, dispatch_id):
     return D.RES.entity('worker', [domain, dispatch_id])
@@ -520,6 +603,9 @@ class Launch:
         self.ends_by = None
         self.heartbeat = None
         self.artifact = None
+        # VELDO-0154: the run's end seen on the launch pipe, and whether it was the pipe's end of file.
+        self.ended = False
+        self.lost = False
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -545,6 +631,36 @@ class Launch:
             if not chunk:
                 return None
             self.pending += chunk
+        return self._take()
+
+    def fileno(self):
+        """THE LAUNCH PIPE (VELDO-0154): the receiver's output, which a scheduler's service loop registers in its
+        poll set while the dispatch runs; None once its end has been seen, or when no receiver of it runs."""
+        if not self.owned or self.child is None or self.child.stdout is None or self.ended:
+            return None
+        return self.child.stdout.fileno()
+
+    def pump(self, read=True):
+        """What the launch pipe holds now, without waiting (VELDO-0154): each whole line already read is taken as
+        `_message` takes it and, with `read`, one read of the pipe the poll set found readable. True once the run's
+        end is seen: the receiver reported `exited` or `unknown`, or the pipe reached its end of file because the
+        receiver ended without reporting either (`lost`, so its run is settled as the receiver's silence is)."""
+        if self.ended or self.fileno() is None:
+            return self.ended
+        if read and b'\n' not in self.pending:
+            chunk = os.read(self.child.stdout.fileno(), 65536)
+            if not chunk:
+                self.ended = self.lost = True
+                return True
+            self.pending += chunk
+        while b'\n' in self.pending:
+            message = self._take()
+            if message.get('event') in ('exited', 'unknown'):
+                self.ended = True
+                return True
+        return False
+
+    def _take(self):
         line, _, self.pending = self.pending.partition(b'\n')
         try:
             message = json.loads(line)
