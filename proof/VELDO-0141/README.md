@@ -153,17 +153,22 @@ first word with the span and leaves the rest, so the order decides the result; t
 GitHub pattern finds. `format/fake-lines`: every event line the fakes printed has the binary's own fields and
 required fields, Codex's items their table's fields, and the error-stream warning is the binary's text.
 
-RUNS_LINE
+Plain run: 42 passed (26 preamble, 16 rows) in about 12 seconds; under the gate's environment the same. Every
+suite that loads a module this change touched (47, from `01_warp_0101_reviewer_notes` to this one) passes, plainly
+and under the gate's environment.
 
 ## Red record
 
-RED_LINE
+`red-at-3c85f33b.json`: the current suite over `git archive 3c85f33b`, unchanged. All 14 behavior rows fail by
+their own assertions (none raised): that tree's receiver discards the error stream and keeps nothing of a run,
+its API has no record route and no record call, its dispatch commits no record and its Claude Code baseline has
+no stream options. The two fixture rows are green there, as they must be.
 
 ## Mutations (finding 141)
 
 Registered in `scripts/check_teeth_mutations.py`, each declared falsifier first; `drive.py` records
-`mutations.json` and one applied diff per mutant. `check_teeth_mutations.py --finding 141 --jobs 2`: all
-rejected.
+`mutations.json` and one applied diff per mutant. `check_teeth_mutations.py --finding 141 --jobs 2`: all 17
+rejected, each on its named rows.
 
 | Mutant | Module | Named rows |
 |---|---|---|

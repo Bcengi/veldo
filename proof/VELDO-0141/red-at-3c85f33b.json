@@ -6,7 +6,7 @@
   "VELDO-0141 record/claude-complete detail: the record holds every tool call with its input (the command, the failing command, the edit, the subagent), each result with the command's output and its error stream, the failed command as an error, and the edit made in the clone [[], 0 results]",
   "VELDO-0141 record/codex-complete detail: every line the Codex worker printed on its output and its error stream was kept, in order, after the wrapper's identity line [['no record bound to the dispatch', 'engine: 0 kept of 10 printed', 'stderr: 0 kept of 1 printed', 'the wrapper identity line is not the first, naming the engine']]",
   "VELDO-0141 record/codex-complete detail: the record holds both commands with their output and error stream, the failed one's exit code, the file change, the error item, the error stream's own line [[], []]",
-  "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-puutf4z1/state/factory/runs/af541d3b2b04af8c7784b45f64d5eb47/config/settings.json', '--mcp-config', '/run/user/1000/v141-puutf4z1/state/factory/runs/af541d3b2b04af8c7784b45f64d5eb47/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
+  "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-npywxdol/state/factory/runs/db46bb5b17fe2856e3cb16579b3a7030/config/settings.json', '--mcp-config', '/run/user/1000/v141-npywxdol/state/factory/runs/db46bb5b17fe2856e3cb16579b3a7030/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
   "VELDO-0141 record/stream-options detail: the shipped 2.1.281 record qualifies the baseline with them",
   "VELDO-0141 record/stream-options detail: the subagent's forwarded text and the partial messages are in the record [0 subagent, 0 partial]",
   "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [0 frames, 0 before the exit, 0 hints]",
@@ -26,6 +26,7 @@
   "VELDO-0141 route/served-lines detail: every engine event served is the one the engine printed: each tool call with its input and result, each command's output, the edit and the error [0 of 13]",
   "VELDO-0141 route/committed detail: after the run ended the route names it ended with the committed line count and digest, the exit record's, which the kept file matches [404, {}]",
   "VELDO-0141 route/committed detail: a record whose file no longer matches the committed digest is refused by name [{'a line changed': (404, 'missing_evidence:route'), 'a line added': (404, 'missing_evidence:route')}]",
+  "VELDO-0141 route/committed detail: another run's record in this run's place is refused as bound to another run [404 missing_evidence:route]",
   "VELDO-0141 route/committed detail: the record file is the receiver's alone: 0600 in a 0700 directory",
   "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [[], True]",
   "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[]]",
@@ -55,11 +56,11 @@
  "modules": {
   ".veldo/control_api.py": {
    "at_commit": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5",
-   "now": "12a8fe55da78a6f0e2c73ab84c4b2ccffbbf701c3de183c3fc62f25fc6157828"
+   "now": "d2c509e24862b6224bef807b525376ab5a9111200542503dbb11998647adf918"
   },
   ".veldo/control_api_assertion.py": {
    "at_commit": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15",
-   "now": "946821ea836085adaceb9720ad876bb015898a67500349823b08fd9922894d6e"
+   "now": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268"
   },
   ".veldo/control_api_authority.py": {
    "at_commit": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c",
@@ -67,7 +68,7 @@
   },
   ".veldo/control_client_api.py": {
    "at_commit": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e",
-   "now": "f1f5cfd4be9cae8920b2bfddf3fa2a0a631e4eceeccd0aa79203f263e1858e46"
+   "now": "46e892aa5ba09a4197cfe22278f03b40193b16025e36a636f8063490f74414ef"
   },
   ".veldo/control_dispatch.py": {
    "at_commit": "f6579c773d1b7fdd09f69d8f808dc2957c9d28fa483d2e577b27d0e43308f49c",
@@ -79,11 +80,11 @@
   },
   ".veldo/control_execution_record.py": {
    "at_commit": null,
-   "now": "aba9a4e2bafea9c703706f5a75267b3b18c2e20bdabe8d7b7da2597ad0d60c31"
+   "now": "85d04809a286ed2a9aec7dd4e451e64632c058a4fd30efd498d89dd1156ae404"
   },
   ".veldo/control_launch.py": {
    "at_commit": "715be808741badf2a083f4429fed08538d4336484a9a15086ce949973a84db20",
-   "now": "60a69442e3ee111a5152fed3ea73f10bdf4de3cc26b4242ed7a44748fa2a5c9d"
+   "now": "036a391a6a827c99d4f542eff220d265b710e561577fc943269d4e97989c478c"
   },
   ".veldo/control_service_api.py": {
    "at_commit": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941",
@@ -158,7 +159,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 11.505,
+ "seconds": 11.508,
  "spec_id": "VELDO-0141",
  "suite": "scripts/suites/82_veldo_0141_execution_record.py",
  "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"
