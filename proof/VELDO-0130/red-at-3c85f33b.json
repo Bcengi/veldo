@@ -1,0 +1,268 @@
+{
+ "by_assertion": true,
+ "commit": "3c85f33b2f51f505cfed69d03272f9c077436478",
+ "details": [
+  "VELDO-0130 reads/model-set detail: the read models serve exactly the kinds this suite expects of the owning modules",
+  "VELDO-0130 reads/model-set detail: the AC2 gaps are exactly the ones with no writer: the machine registry and tool calls [observed ['projects', 'accepted objectives', 'backlog items and their nesting', 'machine registry', 'tool calls', 'team configuration']]",
+  "VELDO-0130 reads/authoritative detail: objectives: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
+  "VELDO-0130 reads/authoritative detail: work: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
+  "VELDO-0130 reads/authoritative detail: configuration: the answer is exactly the store's entities, identity, kind, version and digest [observed: 200 None]",
+  "VELDO-0130 reads/authoritative detail: each answer names the gaps of its model [observed ['accepted objectives', 'backlog items and their nesting', 'machine registry', 'projects', 'team configuration', 'tool calls']]",
+  "VELDO-0130 reads/freshness detail: after a new commit the read is at the new head, labeled live, and carries the new proposal [observed: 200 None] [observed: 200 None]",
+  "VELDO-0130 reads/implemented-writers detail: project: the objectives read model serves it exactly as stored, labeled live [observed: 200 None]",
+  "VELDO-0130 reads/implemented-writers detail: objective: the objectives read model serves it exactly as stored, labeled live [observed: 200 None]",
+  "VELDO-0130 reads/implemented-writers detail: backlog_item: the work read model serves it exactly as stored, labeled live [observed: 200 None]",
+  "VELDO-0130 reads/implemented-writers detail: team: the configuration read model serves it exactly as stored, labeled live [observed: 200 None]",
+  "VELDO-0130 reads/implemented-writers detail: the backlog item is served with its nesting: its objective, its feature and its project",
+  "VELDO-0130 reads/implemented-writers detail: the objective served is the one the owner's own message accepted, active under its feature",
+  "VELDO-0130 reads/implemented-writers detail: no answer names these records as not implemented [observed ['accepted objectives', 'backlog items and their nesting', 'projects', 'team configuration']]"
+ ],
+ "failed_rows": [
+  "VELDO-0130 reads/model-set",
+  "VELDO-0130 reads/authoritative",
+  "VELDO-0130 reads/freshness",
+  "VELDO-0130 reads/implemented-writers"
+ ],
+ "modules": {
+  ".veldo/authority_contract.py": {
+   "at_commit": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9",
+   "now": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9"
+  },
+  ".veldo/control_api.py": {
+   "at_commit": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5",
+   "now": "7016cd3cece11bc02d5b70f69a4012c105eabf60a17b023ed4d573e05496e2b5"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15",
+   "now": "650daefd2cc23c64d63745fcf70c4d185b4c20d71e6e34b73a0f852ffd898b15"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c",
+   "now": "79499b4347cab650e03cd977c734555b913d3ba0ac49fb4471ec03e63d6cb16c"
+  },
+  ".veldo/control_api_credentials.py": {
+   "at_commit": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a",
+   "now": "39c1b93cc05b1448c3106e97c0dff76845eec64caf50a8fcbbf60e3d995d0b3a"
+  },
+  ".veldo/control_api_models.py": {
+   "at_commit": "3866261395f203c1d872fb0eac513205fd4b85fee121e6aebb5961cbc62e910c",
+   "now": "41b8ca40591454ac903a3bc9d97b91d3eb4f7ad97d969ef60fea7af0f342b214"
+  },
+  ".veldo/control_api_signer.py": {
+   "at_commit": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c",
+   "now": "9a7544b5b45c67d7c4ab3299b70d34527dfdaa3593e3f5224bc7f0b53a52288c"
+  },
+  ".veldo/control_api_webauthn.py": {
+   "at_commit": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064",
+   "now": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
+  },
+  ".veldo/control_channel_enrollment.py": {
+   "at_commit": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622",
+   "now": "fb28a714a8687ec92745a45100dd4b74684375d200a783d3ae88e8b155f07622"
+  },
+  ".veldo/control_client_api.py": {
+   "at_commit": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e",
+   "now": "e949b01b58e16987fba81fcf9f6d9e061d5101189669c84fdad2c188afcf188e"
+  },
+  ".veldo/control_event_projection.py": {
+   "at_commit": "1847b2cfb2dd56ecca36879ea5c2b5aa0cafcfe56cebe374abcc3a43eee57ad1",
+   "now": "1847b2cfb2dd56ecca36879ea5c2b5aa0cafcfe56cebe374abcc3a43eee57ad1"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "f78c6381e0626316c36db8db01d44d58a1850b4967f4f52e2bac76ee8e69430e",
+   "now": "54d56743b91a2057161544435d6867b142bae536df4d251c1646532e324ec3d4"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941",
+   "now": "c9eeb560d2f4b9f2f7c205ea82df4a231e3fc37b87b7727bf9ccbc0787a9b941"
+  },
+  ".veldo/control_signer_answers.py": {
+   "at_commit": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f",
+   "now": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f"
+  },
+  ".veldo/events.py": {
+   "at_commit": "f6c78862b338888c19937cebf57e1ae4cdea862f71a2d6c9dad667ffc2c2c4c0",
+   "now": "f6c78862b338888c19937cebf57e1ae4cdea862f71a2d6c9dad667ffc2c2c4c0"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce",
+   "now": "1bdcd8c944f6a2e9993b35eec242138234bd3f86a1d60cb344c5656aecd160ce"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0130 install/assets",
+   true
+  ],
+  [
+   "VELDO-0130 webauthn/stand-in-browser",
+   true
+  ],
+  [
+   "VELDO-0130 webauthn/independent-vectors",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/pending-grants-nothing",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/steward-signed",
+   true
+  ],
+  [
+   "VELDO-0130 session/cookie-and-expiry",
+   true
+  ],
+  [
+   "VELDO-0130 session/forgery-refused",
+   true
+  ],
+  [
+   "VELDO-0130 session/revocation-ends",
+   true
+  ],
+  [
+   "VELDO-0130 routes/every-family",
+   true
+  ],
+  [
+   "VELDO-0130 routes/body-actor-refused",
+   true
+  ],
+  [
+   "VELDO-0130 edge/signer-api-purpose",
+   true
+  ],
+  [
+   "VELDO-0130 edge/authority-recheck",
+   true
+  ],
+  [
+   "VELDO-0130 messages/common-intake",
+   true
+  ],
+  [
+   "VELDO-0130 decisions/exact-settlement",
+   true
+  ],
+  [
+   "VELDO-0130 decisions/one-ruling",
+   true
+  ],
+  [
+   "VELDO-0130 transport/loopback-only",
+   true
+  ],
+  [
+   "VELDO-0130 reads/model-set",
+   false
+  ],
+  [
+   "VELDO-0130 reads/authoritative",
+   false
+  ],
+  [
+   "VELDO-0130 reads/freshness",
+   false
+  ],
+  [
+   "VELDO-0130 events/live",
+   true
+  ],
+  [
+   "VELDO-0130 actions/contract",
+   true
+  ],
+  [
+   "VELDO-0130 actions/workflow-save",
+   true
+  ],
+  [
+   "VELDO-0130 actions/unauthorized-write",
+   true
+  ],
+  [
+   "VELDO-0130 events/reconcile-past-page",
+   true
+  ],
+  [
+   "VELDO-0130 events/resume-last-event-id",
+   true
+  ],
+  [
+   "VELDO-0130 events/expiry-named",
+   true
+  ],
+  [
+   "VELDO-0130 events/published-watermark",
+   true
+  ],
+  [
+   "VELDO-0130 events/reconcile-deferred",
+   true
+  ],
+  [
+   "VELDO-0130 enrollment/possession-race",
+   true
+  ],
+  [
+   "VELDO-0130 webauthn/openssl-fixed-path",
+   true
+  ],
+  [
+   "VELDO-0130 events/revoked-either-path",
+   true
+  ],
+  [
+   "VELDO-0130 events/fill-window-revocation",
+   true
+  ],
+  [
+   "VELDO-0130 events/retry-after-failure",
+   true
+  ],
+  [
+   "VELDO-0130 reads/implemented-writers",
+   false
+  ],
+  [
+   "VELDO-0130 service/install",
+   true
+  ],
+  [
+   "VELDO-0130 service/socket-path",
+   true
+  ],
+  [
+   "VELDO-0130 service/edge-signed-requests",
+   true
+  ],
+  [
+   "VELDO-0130 service/host-revocation-closes-stream",
+   true
+  ],
+  [
+   "VELDO-0130 service/in-process-refused",
+   true
+  ],
+  [
+   "VELDO-0130 service/restart-reconciles",
+   true
+  ],
+  [
+   "VELDO-0130 service/down-at-registration",
+   true
+  ],
+  [
+   "VELDO-0130 service/connect-sets-cursor",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 25.812,
+ "spec_id": "VELDO-0130",
+ "suite": "scripts/suites/71_veldo_0130_api.py",
+ "tree": "git archive 3c85f33b2f51f505cfed69d03272f9c077436478, unchanged; the current suite file run against it"
+}
