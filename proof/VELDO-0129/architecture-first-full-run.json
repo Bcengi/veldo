@@ -1,0 +1,18 @@
+{
+  "command": "python3 scripts/selftest.py",
+  "implementation_commit": "dc45175523813f42b7eb2e32343297993ff44478",
+  "exit_code": 1,
+  "completed": false,
+  "failing_rows": [
+    "VELDO-0056 candidate/rejection-leaves-trunk",
+    "VELDO-0056 candidate/named-policy-refusals",
+    "VELDO-0056 candidate/observations",
+    "VELDO-0056 ran/candidate/rejection-leaves-trunk",
+    "VELDO-0135 offers/no-reclaim",
+    "VELDO-0135 offers/floor-station",
+    "VELDO-0135 offers/finding-path",
+    "VELDO-0135 offers/end-to-end",
+    "VELDO-0135 offers/observations"
+  ],
+  "abort": "VELDO-0128 setup: missing_evidence:proof_bundle"
+}

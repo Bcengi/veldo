@@ -269,11 +269,21 @@ def engine_argv(argv, reported):
     it), a reported adapter's argv after its transport's wrapper (`control_launch.py exec`); None when a
     reported argv names no wrapper."""
     if not reported:
-        return list(argv)
+        return custody_worker(argv)
     for at in range(len(argv) - 2, -1, -1):
         if Path(argv[at]).name == WRAPPER_MODULE and argv[at + 1] == 'exec':
             return list(argv[at + 2:])
     return None
+
+
+def custody_worker(argv):
+    """Unwrap only this installation's custody wrapper, with this interpreter."""
+    argv = list(argv)
+    wrapper = str(Path(__file__).with_name('control_keys_custody.py').resolve())
+    if (len(argv) > 6 and os.path.realpath(argv[0]) == os.path.realpath(sys.executable)
+            and argv[1:4] == ['-B', wrapper, 'confine'] and '-' * 2 in argv[4:]):
+        return argv[argv.index('-' * 2, 4) + 1:]
+    return argv
 
 
 def entrance(engine):
@@ -1130,6 +1140,10 @@ class Receiver:
                         problems = ['spawn_failed:containment:identity']
                     if not problems:
                         HB.make_group(group.cgroup)
+                        if self.config.get('clones'):
+                            clone = _organ('control_clone')
+                            provisioner = clone.Clones(self.dispatches, **self.config['clones'])
+                            provisioner.record_group(dispatch_id, group.report())
                 except (OSError, ValueError, TypeError, KeyError, AttributeError, subprocess.SubprocessError):
                     problems = ['spawn_failed:containment:unavailable']
                 if problems:
@@ -1609,7 +1623,7 @@ def wrap(argv):
     environment = dict(os.environ)
     # THE ENGINE PROTOCOL: the names of the exec-time re-hash reach the clone entrance only, never an engine.
     pinned, expected = environment.pop(ENGINE_PATH, None), environment.pop(ENGINE_DIGEST, None)
-    if pinned is not None and entrance(argv):
+    if pinned is not None and entrance(custody_worker(argv)):
         environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected
     elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):
         # This wrapper execs the pinned engine itself (however its path is spelled), so it re-hashes the

@@ -1049,6 +1049,15 @@
    ],
    "regions": "Decomposition field validation before artifacts, one primary revision and backlog owner, fresh priority, authority aliases and source mapping, exact publication in another process, dependency eligibility and stale input refusal.",
    "requires_note": "Uses only shared ROOT and expect. Generated OpenSSH keys, real signed store commands, SQLite, Git, enrolled publication and loopback presentation."
+    },
+    {
+   "name": "82_veldo_0129_worker_wiring",
+   "file": "82_veldo_0129_worker_wiring.py",
+   "requires": [
+    "82_veldo_0129_worker_wiring"
+   ],
+   "regions": "Installed build and independent review through qualified engine adapters, Runner, reservations and proof authority.",
+   "requires_note": "Only shared ROOT and expect. Real contained processes, isolated Git clones, signed SQLite authority records. Fake engines use recorded binary formats. No live credentials or model calls."
   }
  ]
 }
