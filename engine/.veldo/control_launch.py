@@ -655,8 +655,12 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
         launch = Launch(None, contract, dispatches, clock or time.time)
         launch._settle(lost=True)
         return launch
-    with open(config_path) as handle:
-        records = ER.directory(json.load(handle))
+    try:
+        with open(config_path) as handle:
+            records = ER.directory(json.load(handle))
+    except OSError:
+        # Let the runner settle an unavailable receiver and retain its cleanup obligations.
+        records = None
     launch = Launch(child, contract, dispatches, clock or time.time, records=records)
     try:
         # The receiver's stdin stays open as its control channel: Launch.stop writes a stop request on it.
