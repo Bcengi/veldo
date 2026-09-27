@@ -20,14 +20,10 @@ footprint:
   - ".veldo/control_andon*.py"
   - "engine/.veldo/control_claim.py"
   - ".veldo/control_claim.py"
-  - "engine/.veldo/control_eligibility*.py"
-  - ".veldo/control_eligibility*.py"
   - "engine/.veldo/control_store.py"
   - ".veldo/control_store.py"
   - "engine/.veldo/control_heartbeat.py"
   - ".veldo/control_heartbeat.py"
-  - "engine/.veldo/init_scaffold.py"
-  - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0169_*.py"
   - "scripts/suites/support/v169_*.py"
   - "scripts/suites/62_veldo_0039_dispatch.py"
@@ -51,15 +47,12 @@ footprint:
   - "scripts/suites/60_veldo_0064_inbox.py"
   - "scripts/suites/66_veldo_0047_authority.py"
   - "scripts/suites/69_veldo_0133_dispositions.py"
-  - "scripts/suites/70_veldo_0069_bindings.py"
   - "scripts/suites/71_veldo_0076_projects.py"
   - "scripts/suites/72_veldo_0075_andon.py"
-  - "scripts/suites/73_veldo_0078_backlog.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0169-stopped-project-checks-where-work-is-taken.md"
-  - "specs/index.md"
   - "proof/VELDO-0169/*"
 behavior_bearing: true
 observability:
@@ -77,14 +70,12 @@ observability:
     The refusals are the Gate's own names, unchanged: project_not_active:PAUSED, :CANCELED, :COMPLETED,
     :owner_not_current, :not_a_project and missing_authority:project, whether the caller's check or the
     claim organ's and the station contract writer's own check inside the write names them; a pause
-    committed after the caller's check and before the write refuses as stale_version. A writer the census
-    does not name, a handout writer that does not ask the check, or a claim built outside the claim
-    organ, fails the census by the writer's module and function. The store refuses a claim record that
-    is not exactly what the claim organ returned in the same transaction as entity_owned, another
-    function offered as the organ as foreign_transition, an organ decision or a station contract issued
-    outside a command transaction as outside_transaction, and an organ decision in a store where the
-    organ was never declared as undeclared_organ; an andon resume race that is not a project race keeps
-    stale_subject.
+    committed after the caller's check and before the write refuses as stale_version. The store's commit
+    path refuses a transaction writing a claim record that hands out work of a stopped project by the
+    same Gate names, whoever built the record. A writer the census does not name, a handout writer that
+    does not ask the check, or a claim built outside the claim organ, fails the census by the writer's
+    module and function. A station contract issued outside a command transaction is refused
+    outside_transaction; an andon resume race that is not a project race keeps stale_subject.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -275,3 +266,40 @@ sys.modules[...].CONTRACT_KIND, or a kind given as another module's attribute (X
 checks at run time refuse all three. A store that already holds claims written before the organ was
 declared refuses the declaration (ownership_conflict), as every first ownership declaration does;
 the re-declaration path is Release 2. Status and approval remain unchanged.
+
+2026-09-27: third review-fix round on build-veldo-0169 (review rv169c), with the lead's decision that
+the data layer holds the invariant, with no identity bound to code bytes. The reviewer found that the
+claim-kind ownership of the second round bricked an existing factory (a store holding any claim
+written by main's organ refused the declaration at startup, ownership_conflict, and every later edit
+of control_claim.py would refuse it again), and that the store trusted conn.organ_writes, a public
+attribute any transition could set, so a hand-built claim for a paused project was accepted. The
+claim-kind declaration (control_store.declare_organ, organ_write, the entity_organs table) and
+conn.organ_writes are removed, and the claim receiver, the inbox and the heartbeat's renewals no
+longer declare anything, so an earlier store attaches exactly as on main. Instead the store's commit
+path (control_store.handout_problem) refuses, whole and by the Gate's own name, any transaction that
+writes a claim record handing out work (control_store.claim_handout: a new holder, a parked unit
+taken again, or a park cleared) when control_eligibility.Gate.project_problems, asked by the store on
+the transaction's own connection after the records are written, finds a problem for any unit the
+record names (its unit_id before and after, and every execution unit its id can name). It trusts no
+caller and no attribute, so the claim organ, a hand-built record, an injected attribute and the
+generic upsert are all held to it; the renewal of a claim already held, a release and a park pass
+unchanged. The store loads the Gate by a literal file name, so the installer's closure includes it.
+The claim organ keeps its own check, which refuses earlier, before any other reason, by the same
+name. Suite 84 replaces organ/ownership with store/invariant (the reviewer's inject probe, a claim
+built by hand, the generic upsert, a hand-built resume and unpark, a record whose id names a paused
+unit and whose fields an active one, and one transaction that moves a unit into a paused project and
+claims it, all refused; a renewal and a release of a claim held before the pause and a hand-built
+claim of an active project written) and adds store/upgrade (the reviewer's upgrade probe: a store
+holding held, released and parked claims as main's organ wrote them, on units with no project, which
+the claim receiver and the inbox attach to, whose held claim is renewed and released, and whose units
+take a new claim only once their project is active). organ/stopped adds the hand-built claim, resume
+and unpark for each stopped state and the organ's precedence; organ/outside keeps the station
+contract writer alone. Finding 169 drops the four mutations of the removed ownership
+(organ-write-outside-transaction, store-claim-ownership-dropped, store-organ-content-ignored,
+store-organ-origin-unchecked) and gains store-invariant-skipped, store-invariant-ignores-resumes,
+store-reads-outside-transaction and store-id-unit-unchecked. Suites 58, 59, 66, 70 and 79 return to
+main's form where only the ownership needed a change (58 and 59 keep their active project, AC4, and
+copy the whole engine, which the store's check loads; 66 keeps its active project, and 66 and 79 the
+organ's three-argument registration); support/v169_rows.py now serves only the upgrade row. The footprint drops
+control_eligibility, init_scaffold, suites 70 and 73 and specs/index.md, none of which this branch
+changes. Status and approval remain unchanged.

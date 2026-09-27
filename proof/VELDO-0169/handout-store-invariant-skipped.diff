@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -608 +608 @@
+-        stopped = handout_problem(conn, changes, before)
++        stopped = None  # defect: the store hands out whatever a transition writes

@@ -1,61 +1,60 @@
 # VELDO-0169 proof
 
 Implemented from 6512503076f231b94485421f91dc663ee0a36649 on build-veldo-0169; revised in the
-review-fix round of review rv169a (from 0a2ba0f9) and again in the round of review rv169b (from
-6d2f40a7).
+review-fix rounds of reviews rv169a (from 0a2ba0f9), rv169b (from 6d2f40a7) and rv169c (from
+d22c687e).
 
-**The claim organ checks, it trusts no token.** The receipt of the first round is gone. Every claim
-record is decided by one function of control_claim, `_decide`, reached through
-`transition(conn, params, before)`, which is itself a store transaction transition. For a claim, a
-resume or an unpark (control_claim.HANDOUTS) it asks control_eligibility.Gate.project_problems of the
-unit on the transaction's own connection while that transaction holds the write lock, and refuses by
-the Gate's own name with nothing written. Andon.issue_station_contract does the same inside its
-command transaction. Callers pass nothing. They still ask the same check before they build the
-command, to name the refusal early and to pin the project and owner records it read, so a pause or
-owner change after that check is stale_version. Park, release, renew and use are not checked.
+**The store holds the invariant, in its commit path.** A transaction that writes a claim record
+handing out work (control_store.claim_handout: a new holder, a parked unit taken again, or a park
+cleared, which makes the unit claimable) is refused, whole, by the Gate's own name when
+control_eligibility.Gate.project_problems finds a problem for any unit the record names: its unit_id
+before and after the write, and every execution unit its id can name. The store asks the check
+itself (control_store.handout_problem), on the transaction's own connection, after the transition's
+records are written and before the journal record is signed, so it reads exactly the state the
+transaction commits. It trusts no caller and no attribute and binds nothing to any module's bytes:
+the claim organ, a transition that builds a claim by hand, one that sets conn.organ_writes, and the
+generic upsert_entity are all held to it, and a store written by earlier code attaches unchanged. The
+renewal of a claim already held (the same record with a new heartbeat), a release and a park pass
+unchanged. The store loads the Gate by a literal file name on the first handout, so the installer's
+closure includes it.
 
-**The store owns the claim kind through its organ.** control_store gains organ-owned kinds:
-`declare_organ` persists that one function (its qualified name, its module file and that file's
-sha256) decides every entity of a kind, and `organ_write` runs that function inside the open command
-transaction and records what it returned for that transaction only. Execute refuses entity_owned for
-any claim record that is not exactly what the organ returned in the same transaction: a claim built by
-hand, a generic upsert of one, the organ's answer edited on the way out. Another function offered as
-the organ is foreign_transition; an organ decision outside a command transaction is
-outside_transaction; one in a store where the organ was never declared is undeclared_organ. The
-claim receiver, the assignment inbox and the heartbeat's renewals declare the organ when they attach.
+**The claim organ keeps its own check.** control_claim.transition(conn, params, before), a store
+transaction transition, asks the same check for a claim, a resume or an unpark
+(control_claim.HANDOUTS) on the transaction's connection before any other reason, and refuses by the
+same name. Andon.issue_station_contract does the same inside its command transaction. Callers still
+ask the check first, to name the refusal early and to pin the project and owner records it read, so a
+pause or owner change after that check is stale_version. The claim-kind ownership of the second round
+(control_store.declare_organ, organ_write, the entity_organs table, conn.organ_writes) is removed.
 
-**The census** (scripts/suites/support/v169_census.py) still reads the engine's syntax trees for every
+**The census** (scripts/suites/support/v169_census.py) reads the engine's syntax trees for every
 reference to a callable named transition on any receiver (getattr, aliases and imports included),
-every call of the station contract writer and every entity of its kind. It now follows the organ's
-three-argument signature, refuses any claim entity built outside control_claim, and resolves a
-module's own method or function named transition as not the organ. A handout's parameters must be
-built after the Gate's check on every path through the function that builds them, and where they are
-built at the write itself or are not resolved, the write's own function must ask it.
+every call of the station contract writer and every entity of its kind, follows the organ's
+three-argument signature, refuses any claim entity built outside control_claim, and requires a
+handout's parameters to be built after the Gate's check on every path through the function that
+builds them.
 
-Suite `84_veldo_0169_project_handouts`, 26 rows:
+Suite `84_veldo_0169_project_handouts`, 27 rows:
 
 | Criterion | Rows |
 | :--- | :--- |
-| AC1 | `census/writers`; `census/planted`: the reviewer's planted writers and more of their shape, each refused at the planted function (the resume copy dispatched only, with its own write and through the resume's write, a local alias, a renamed attribute, getattr, a plain attribute, a bound-method alias, a dynamic getattr, a bare registration, a claim built by hand, a registered lambda building one, a second andon resume, a contract written without its writer, the check inside a branch). |
+| AC1 | `census/writers`; `census/planted`: the reviewer's planted writers and more of their shape, each refused at the planted function. |
 | AC2, AC3 | The five `resume/`, `dispose/` and `andon/` rows each, with active controls. |
 | AC4 | `claim/absent`, `claim/null`. |
-| Lead decision 1 | `organ/stopped`: a paused, canceled, completed and owner-not-current project refuses the organ's claim, resume and unpark and the station contract writer, on paths with no caller check and nothing passed, with active controls; `organ/outside`; `organ/race`: the owner pauses and resumes the project from a second process while claims run (three rounds, a delay between the receiver's check and its write, and through the organ bare), and the journal shows no claim written while the project was not ACTIVE; `guard/resume-again`: the reviewer's resume copies over a paused project, refused by the organ. |
-| Lead decision 2 | `organ/ownership`: the declaration held by the store, and a claim built by hand, a generic upsert, an edited organ answer and a foreign organ refused by name, with a control; `guard/forge`: the forge probe's cases on a paused project (a literal project check, another unit's rewritten check, a hand-built claim entity) refused. |
+| The organ's check | `organ/stopped`: a paused, canceled, completed and owner-not-current project refuses the organ's claim, resume and unpark, the station contract writer, and a hand-built claim, resume and unpark, on paths with no caller check, and the organ names the project before any other reason; active controls. `organ/outside`: the station contract writer outside a command transaction. `organ/race`: the owner pauses and resumes the project from a second process while claims run, and the journal shows no claim written while the project was not ACTIVE; a check from an earlier transaction never decides a later one. `guard/resume-again`: the reviewer's resume copies over a paused project. |
+| The store's invariant | `store/invariant`: the reviewer's inject probe, a claim built by hand, the generic upsert, a hand-built resume and unpark, a record whose id names a paused unit and whose fields an active one, and one transaction that moves a unit into a paused project and claims it, all refused by the Gate's name with nothing written; a renewal and a release of a claim held before the pause pass; a hand-built claim of an active project is written. `guard/forge`: the forge probe's cases. `store/upgrade`: the reviewer's upgrade probe, a store holding held, released and parked claims as main's organ wrote them on units with no project (support/v169_rows.py plants them), which the claim receiver and the inbox attach to, whose held claim is renewed and released, and whose unit takes a new claim only once its project is active. |
 | VELDO-0075 | `andon/subject-race`. |
 
-Fixture suites no longer carry receipts (support/v169_claims.py is removed). They register the organ
-as a transaction transition and declare it first. A claim a fixture sets in a state no transition
-makes is planted around execute (support/v169_rows.py). Suite 66 takes its launch fixture's claim
-through the installed organ, suite 79's second installation reaches the same organ file, and suite 71
-reads the receiver's own check and pin directly.
-
-`red-at-65125030.json`, `red-at-0a2ba0f9.json`, `red-at-6d2f40a7.json`: the current suite and its
-census against the starting tree and against both reviewed trees, every failing row red by
-assertion. At 6d2f40a7 the organ has the receipt interface, so the rows driving the organ's new
-signature red on its refusal to be called that way; the hand-built claim and the generic upsert of one
-are accepted there, which is the reviewer's second finding. Reproduce with proof/VELDO-0169/drive.py
-and its red option naming the commit.
+`red-at-65125030.json`, `red-at-0a2ba0f9.json`, `red-at-6d2f40a7.json`, `red-at-d22c687e.json`: the
+current suite and its apparatus against the starting tree and every reviewed tree, every failing row
+red by assertion. At d22c687e the claim-kind ownership refuses the hand-built records by entity_owned
+where the rows now expect the Gate's name, the organ refuses the upgrade store's receiver
+(ownership_conflict), and a hand-built claim of an active project is refused. Reproduce with
+proof/VELDO-0169/drive.py and its red option naming the commit.
 
 `mutations.json`: finding 169's mutants with their diffs, a green baseline and a green no-op per
-changed module; every named row red by assertion. `validation.json` holds the checks. The canonical
-gate is not run and no stamp is claimed; the specification stays ready.
+changed module; every named row red by assertion. The third round removes the four mutants of the
+removed ownership (organ-write-outside-transaction, store-claim-ownership-dropped,
+store-organ-content-ignored, store-organ-origin-unchecked) and adds store-invariant-skipped,
+store-invariant-ignores-resumes, store-reads-outside-transaction and store-id-unit-unchecked.
+`validation.json` holds the checks. The canonical gate is not run and no stamp is claimed; the
+specification stays ready.

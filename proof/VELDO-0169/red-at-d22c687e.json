@@ -1,0 +1,167 @@
+{
+ "apparatus": {
+  "scripts/suites/support/v169_census.py": "0f249390736f7e90240b371fcc4a53fc34ebdf1ea004776c64f9a0de4eb8a9de",
+  "scripts/suites/support/v169_rows.py": "93c8007fd858a44307565fb1d551b3aaa87bd2493c64fd889632a0b7bf72c8d9"
+ },
+ "by_assertion": true,
+ "census": [
+  "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"not the claim organ\": 14, \"nothing\": 3}, \"failures\": [], \"writers\": [{\"classification\": \"not the claim organ\", \"function\": \"Andon._transition\", \"line\": 366, \"module\": \"control_andon\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Andon._transition\", \"line\": 392, \"module\": \"control_andon\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"built_at\": [\"control_andon.Andon.resume:796\"], \"classification\": \"handout\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"a fresh station contract\", \"writer\": \"issue_station_contract\"}, {\"actions\": [\"resume\"], \"built_at\": [\"control_assignment.Inbox._resume:608\"], \"classification\": \"handout\", \"function\": \"Inbox._transition\", \"line\": 897, \"module\": \"control_assignment\", \"reason\": \"its action can be resume\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 912, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 925, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"actions\": [\"unpark\"], \"built_at\": [\"control_assignment.Inbox._dispose:841\"], \"classification\": \"handout\", \"function\": \"Inbox._dispose_changes\", \"line\": 988, \"module\": \"control_assignment\", \"reason\": \"its action can be unpark\", \"writer\": \"transition\"}, {\"actions\": [\"park\"], \"built_at\": [\"control_assignment.Inbox._claim_to_park:564\"], \"classification\": \"nothing\", \"function\": \"Inbox._transition\", \"line\": 891, \"module\": \"control_assignment\", \"reason\": \"it can only park a claim already held or parked\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 932, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Backlog._edge\", \"line\": 1020, \"module\": \"control_backlog\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"actions\": [\"claim\"], \"built_at\": [\"control_claim.Receiver._apply:330\"], \"classification\": \"handout\", \"function\": \"Receiver._in_transaction\", \"line\": 272, \"module\": \"control_claim\", \"reason\": \"its action can be claim\", \"writer\": \"transition\"}, {\"actions\": [\"release\", \"renew\", \"use\"], \"built_at\": [\"control_claim.Receiver._apply:335\"], \"classification\": \"nothing\", \"function\": \"Receiver._in_transaction\", \"line\": 272, \"module\": \"control_claim\", \"reason\": \"it can only release, renew, use a claim already held or parked\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"transition\", \"line\": 342, \"module\": \"control_dispatch\", \"reason\": \"the module's own function transition, which its own name refers to\", \"writer\": \"defined\"}, {\"actions\": [\"renew\"], \"built_at\": [\"control_heartbeat.Renewals._transition:249\"], \"classification\": \"nothing\", \"function\": \"Renewals._transition\", \"line\": 249, \"module\": \"control_heartbeat\", \"reason\": \"it can only renew a claim already held or parked\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Objectives._edge\", \"line\": 806, \"module\": \"control_objective\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Projects._edge\", \"line\": 614, \"module\": \"control_project\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"attach_revisions\", \"line\": 411, \"module\": \"control_readset\", \"reason\": \"Revisions.transition, a method of this module's own class\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Settlement._settle_transition\", \"line\": 395, \"module\": \"control_request_settlement\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"transition\", \"line\": 384, \"module\": \"entity_contract\", \"reason\": \"the module's own function transition, which its own name refers to\", \"writer\": \"defined\"}, {\"classification\": \"not the claim organ\", \"function\": \"accept_release_execution\", \"line\": 286, \"module\": \"release_floor_contract\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}]}"
+ ],
+ "commit": "d22c687e9d9c36e93e87409cc2bac95999bd35c9",
+ "details": [
+  "VELDO-0169 detail: organ/stopped: PAUSED: hand-built claim refused as accepted, nothing written; PAUSED: hand-built resume refused as accepted, nothing written; PAUSED: hand-built unpark refused as accepted, nothing written; CANCELED: hand-built claim refused as accepted, nothing written; CANCELED: hand-built resume refused as accepted, nothing written; CANCELED: hand-built unpark refused as accepted, nothing written; COMPLETED: hand-built claim refused as accepted, nothing written; COMPLETED: hand-built resume refused as accepted, nothing written; COMPLETED: hand-built unpark refused as accepted, nothing written; owner_not_current: hand-built claim refused as accepted, nothing written; owner_not_current: hand-built resume refused as accepted, nothing written; owner_not_current: hand-built unpark refused as accepted, nothing written",
+  "VELDO-0169 detail: store/invariant: the inject probe (a hand-built claim that sets conn.organ_writes itself) refused as accepted, nothing written; a claim entity built by hand, alone refused as accepted, nothing written; a claim written by the generic upsert refused as entity_owned, nothing written; a resume built by hand refused as accepted, nothing written; an unpark built by hand refused as accepted, nothing written; a record whose id names the paused unit and whose fields name an active one refused as accepted, nothing written; one transaction moving an active unit into the paused project and claiming it refused as accepted, nothing written; no claim of the paused project's fresh unit exists",
+  "VELDO-0169 detail: guard/forge: a claim entity built by hand on the paused project refused as accepted, nothing written; no claim of the paused project's unit exists; control: the project resumed, the same claim is taken",
+  "VELDO-0169 detail: guard/resume-again: own writer: parked work and answered assignment; own writer: refused by the claim organ as missing_authority; own writer: control: the project resumed, the real resume takes the same work; shared writer: parked work and answered assignment; shared writer: refused by the claim organ as missing_authority; shared writer: control: the project resumed, the real resume takes the same work",
+  "VELDO-0169 detail: store/upgrade: the claim receiver attaches to the earlier store (StoreRefused ownership_conflict); the assignment inbox attaches to the earlier store (StoreRefused ownership_conflict); the claim held before the upgrade is renewed and released (undeclared_organ, undeclared_organ); a new claim of a unit naming no project is refused by the Gate's name (undeclared_organ); control: with its project active the same unit is claimed (undeclared_organ)"
+ ],
+ "failed_rows": [
+  "VELDO-0169 organ/stopped",
+  "VELDO-0169 store/invariant",
+  "VELDO-0169 guard/forge",
+  "VELDO-0169 guard/resume-again",
+  "VELDO-0169 store/upgrade"
+ ],
+ "modules": {
+  ".veldo/control_andon.py": {
+   "at_commit": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64",
+   "now": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
+  },
+  ".veldo/control_assignment.py": {
+   "at_commit": "fee78afd38228f2f95a2b27dea7bc98587e307b2547754c32c833bf632c8a53d",
+   "now": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
+  },
+  ".veldo/control_claim.py": {
+   "at_commit": "6dbb4ea6d31b8eab5d7a3c52cc7f8ea318fabd2029b6fcd5920d80f0c98b990f",
+   "now": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "affa2acc2d63662d7314c0d0edb09adbe12cb3c265abd10b467b0901aa148bd1",
+   "now": "affa2acc2d63662d7314c0d0edb09adbe12cb3c265abd10b467b0901aa148bd1"
+  },
+  ".veldo/control_heartbeat.py": {
+   "at_commit": "47776ca3997cdfb3e0d0ea0bd0b228c0eef0a2b699c7206c8b8b7bc1b8beda0b",
+   "now": "b1ed1ad6e77eb0a342df5390f43955144442e1ddc89bf0dc532f26eaa922b3ea"
+  },
+  ".veldo/control_store.py": {
+   "at_commit": "b39d2061b76fcbdfdc97cc09905e27fc9686ca5c89b95da192db9a302f25658b",
+   "now": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0169 census/writers",
+   true
+  ],
+  [
+   "VELDO-0169 census/planted",
+   true
+  ],
+  [
+   "VELDO-0169 resume/PAUSED",
+   true
+  ],
+  [
+   "VELDO-0169 resume/CANCELED",
+   true
+  ],
+  [
+   "VELDO-0169 resume/COMPLETED",
+   true
+  ],
+  [
+   "VELDO-0169 resume/owner_not_current",
+   true
+  ],
+  [
+   "VELDO-0169 resume/race",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/PAUSED",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/CANCELED",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/COMPLETED",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/owner_not_current",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/race",
+   true
+  ],
+  [
+   "VELDO-0169 andon/PAUSED",
+   true
+  ],
+  [
+   "VELDO-0169 andon/CANCELED",
+   true
+  ],
+  [
+   "VELDO-0169 andon/COMPLETED",
+   true
+  ],
+  [
+   "VELDO-0169 andon/owner_not_current",
+   true
+  ],
+  [
+   "VELDO-0169 andon/race",
+   true
+  ],
+  [
+   "VELDO-0169 claim/absent",
+   true
+  ],
+  [
+   "VELDO-0169 claim/null",
+   true
+  ],
+  [
+   "VELDO-0169 organ/stopped",
+   false
+  ],
+  [
+   "VELDO-0169 organ/outside",
+   true
+  ],
+  [
+   "VELDO-0169 store/invariant",
+   false
+  ],
+  [
+   "VELDO-0169 guard/forge",
+   false
+  ],
+  [
+   "VELDO-0169 organ/race",
+   true
+  ],
+  [
+   "VELDO-0169 guard/resume-again",
+   false
+  ],
+  [
+   "VELDO-0169 andon/subject-race",
+   true
+  ],
+  [
+   "VELDO-0169 store/upgrade",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 11.797,
+ "spec_id": "VELDO-0169",
+ "suite": "scripts/suites/84_veldo_0169_project_handouts.py",
+ "tree": "git archive d22c687e9d9c36e93e87409cc2bac95999bd35c9, unchanged; the current suite file and its apparatus run against it"
+}

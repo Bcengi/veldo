@@ -1,8 +1,9 @@
 {
  "apparatus": {
-  "scripts/suites/support/v169_census.py": "18ff50fe020a195d29509ae79bf4bf06830f81dea1bd39158bf7c45bd7e5414d"
+  "scripts/suites/support/v169_census.py": "0f249390736f7e90240b371fcc4a53fc34ebdf1ea004776c64f9a0de4eb8a9de",
+  "scripts/suites/support/v169_rows.py": "93c8007fd858a44307565fb1d551b3aaa87bd2493c64fd889632a0b7bf72c8d9"
  },
- "by_assertion": true,
+ "by_assertion": false,
  "census": [
   "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"not the claim organ\": 14}, \"failures\": [\"control_claim.<module>:0 control_claim.HANDOUTS does not name the transitions that hand out work\", \"control_claim.<module>:0 control_claim.KIND does not name the claim kind\", \"<engine>.<module>:0 the station contract writer issue_station_contract is not found\", \"control_assignment.Inbox._transition:872 the claim write hands out work without asking the Gate's project check before it\", \"control_assignment.Inbox._dispose_changes:963 the claim write hands out work without asking the Gate's project check before it\", \"control_assignment.Inbox._transition:866 the claim write hands out work without asking the Gate's project check before it\", \"control_claim.Receiver.__init__:166 registers transition bare: what it is called with is not visible here\", \"control_heartbeat.Renewals._transition:247 the claim write hands out work without asking the Gate's project check before it\"], \"writers\": [{\"classification\": \"not the claim organ\", \"function\": \"Andon._transition\", \"line\": 358, \"module\": \"control_andon\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Andon._transition\", \"line\": 384, \"module\": \"control_andon\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"actions\": [\"resume\"], \"built_at\": [\"control_assignment.Inbox._resume:584\"], \"classification\": \"handout\", \"function\": \"Inbox._transition\", \"line\": 872, \"module\": \"control_assignment\", \"reason\": \"its action can be \", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 887, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 900, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._dispose_changes\", \"line\": 958, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"actions\": [\"unpark\"], \"built_at\": [\"control_assignment.Inbox._dispose:816\"], \"classification\": \"handout\", \"function\": \"Inbox._dispose_changes\", \"line\": 963, \"module\": \"control_assignment\", \"reason\": \"its action can be \", \"writer\": \"transition\"}, {\"actions\": [\"park\"], \"built_at\": [\"control_assignment.Inbox._claim_to_park:557\"], \"classification\": \"handout\", \"function\": \"Inbox._transition\", \"line\": 866, \"module\": \"control_assignment\", \"reason\": \"its action can be \", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 907, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Backlog._edge\", \"line\": 996, \"module\": \"control_backlog\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"transition\", \"line\": 324, \"module\": \"control_dispatch\", \"reason\": \"the module's own function transition, which its own name refers to\", \"writer\": \"defined\"}, {\"actions\": [\"renew\"], \"built_at\": [\"control_heartbeat.Renewals._transition:247\"], \"classification\": \"handout\", \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"its action can be \", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Objectives._edge\", \"line\": 806, \"module\": \"control_objective\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Projects._edge\", \"line\": 614, \"module\": \"control_project\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"attach_revisions\", \"line\": 411, \"module\": \"control_readset\", \"reason\": \"Revisions.transition, a method of this module's own class\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Settlement._settle_transition\", \"line\": 395, \"module\": \"control_request_settlement\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"transition\", \"line\": 384, \"module\": \"entity_contract\", \"reason\": \"the module's own function transition, which its own name refers to\", \"writer\": \"defined\"}, {\"classification\": \"not the claim organ\", \"function\": \"accept_release_execution\", \"line\": 286, \"module\": \"release_floor_contract\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}]}"
  ],
@@ -27,12 +28,13 @@
   "VELDO-0169 detail: andon/race: Gate refusal None; claim, park, stop and unit unchanged; no station contract issued; refusal names project and read versions; refusal counted by reason; owner read pinned through commit",
   "VELDO-0169 detail: claim/absent: missing project refused; nothing written; missing project refusal observed and counted",
   "VELDO-0169 detail: claim/null: missing project refused; nothing written; missing project refusal observed and counted",
-  "VELDO-0169 detail: organ/stopped: PAUSED: claim refused as raised TypeError, nothing written; PAUSED: resume refused as raised TypeError, nothing written; PAUSED: unpark refused as raised TypeError, nothing written; PAUSED: station contract refused as raised AttributeError, nothing written; CANCELED: claim refused as raised TypeError, nothing written; CANCELED: resume refused as raised TypeError, nothing written; CANCELED: unpark refused as raised TypeError, nothing written; CANCELED: station contract refused as raised AttributeError, nothing written; COMPLETED: claim refused as raised TypeError, nothing written; COMPLETED: resume refused as raised TypeError, nothing written; COMPLETED: unpark refused as raised TypeError, nothing written; COMPLETED: station contract refused as raised AttributeError, nothing written; owner_not_current: claim refused as raised TypeError, nothing written; owner_not_current: resume refused as raised TypeError, nothing written; owner_not_current: unpark refused as raised TypeError, nothing written; owner_not_current: station contract refused as raised AttributeError, nothing written; control: the same claim of an active project is taken (raised TypeError); control: the same resume of an active project is taken (raised TypeError); control: the same unpark of an active project is taken (raised TypeError); control: the station contract writer issues it for an active project (raised AttributeError)",
-  "VELDO-0169 detail: organ/outside: the claim organ refuses to decide outside a command transaction (raised TypeError); the station contract writer refuses to decide outside a command transaction (raised AttributeError); control: the same claim inside its transaction is taken (raised TypeError)",
-  "VELDO-0169 detail: organ/ownership: the store holds the claim organ's declaration; a claim entity built by hand refused as accepted, nothing written; a claim written by the generic upsert refused as accepted, nothing written; the organ's claim edited on the way out refused as raised TypeError, nothing written; another function offered as the organ refused as raised AttributeError, nothing written; control: the organ's own claim of the same unit is written (raised TypeError)",
+  "VELDO-0169 detail: organ/stopped: PAUSED: claim refused as raised TypeError, nothing written; PAUSED: resume refused as raised TypeError, nothing written; PAUSED: unpark refused as raised TypeError, nothing written; PAUSED: station contract refused as raised AttributeError, nothing written; PAUSED: hand-built claim refused as accepted, nothing written; PAUSED: hand-built resume refused as accepted, nothing written; PAUSED: hand-built unpark refused as accepted, nothing written; PAUSED: the organ names the project before any other reason (raised TypeError); CANCELED: claim refused as raised TypeError, nothing written; CANCELED: resume refused as raised TypeError, nothing written; CANCELED: unpark refused as raised TypeError, nothing written; CANCELED: station contract refused as raised AttributeError, nothing written; CANCELED: hand-built claim refused as accepted, nothing written; CANCELED: hand-built resume refused as accepted, nothing written; CANCELED: hand-built unpark refused as accepted, nothing written; CANCELED: the organ names the project before any other reason (raised TypeError); COMPLETED: claim refused as raised TypeError, nothing written; COMPLETED: resume refused as raised TypeError, nothing written; COMPLETED: unpark refused as raised TypeError, nothing written; COMPLETED: station contract refused as raised AttributeError, nothing written; COMPLETED: hand-built claim refused as accepted, nothing written; COMPLETED: hand-built resume refused as accepted, nothing written; COMPLETED: hand-built unpark refused as accepted, nothing written; COMPLETED: the organ names the project before any other reason (raised TypeError); owner_not_current: claim refused as raised TypeError, nothing written; owner_not_current: resume refused as raised TypeError, nothing written; owner_not_current: unpark refused as raised TypeError, nothing written; owner_not_current: station contract refused as raised AttributeError, nothing written; owner_not_current: hand-built claim refused as accepted, nothing written; owner_not_current: hand-built resume refused as accepted, nothing written; owner_not_current: hand-built unpark refused as accepted, nothing written; owner_not_current: the organ names the project before any other reason (raised TypeError); control: the same claim of an active project is taken (raised TypeError); control: the same resume of an active project is taken (raised TypeError); control: the same unpark of an active project is taken (raised TypeError); control: the organ refuses the unit the worker may not hold (raised TypeError); control: the station contract writer issues it for an active project (raised AttributeError)",
+  "VELDO-0169 detail: organ/outside: the station contract writer refuses to decide outside a command transaction (raised AttributeError); control: the same claim inside its transaction is taken (raised TypeError)",
+  "VELDO-0169 detail: store/invariant: the inject probe (a hand-built claim that sets conn.organ_writes itself) refused as accepted, nothing written; a claim entity built by hand, alone refused as accepted, nothing written; a claim written by the generic upsert refused as accepted, nothing written; a resume built by hand refused as accepted, nothing written; an unpark built by hand refused as accepted, nothing written; a record whose id names the paused unit and whose fields name an active one refused as accepted, nothing written; one transaction moving an active unit into the paused project and claiming it refused as accepted, nothing written; no claim of the paused project's fresh unit exists",
   "VELDO-0169 detail: guard/forge: a literal project check on the paused project refused as raised TypeError, nothing written; another unit's check, rewritten on the paused project refused as raised TypeError, nothing written; a claim entity built by hand on the paused project refused as accepted, nothing written; no claim of the paused project's unit exists; control: the project resumed, the same claim is taken",
   "VELDO-0169 detail: organ/race: a claim taken, released, the project paused: the next claim is refused (raised TypeError, raised TypeError)",
-  "VELDO-0169 detail: guard/resume-again: the copy is built on the installed inbox ('resume', 'ask', 'dispose')); the copy is built on the installed inbox ('resume', 'ask', 'dispose'))"
+  "VELDO-0169 detail: guard/resume-again: the copy is built on the installed inbox ('resume', 'ask', 'dispose')); the copy is built on the installed inbox ('resume', 'ask', 'dispose'))",
+  "VELDO-0169 detail: store/upgrade: ran to its end: AttributeError(\"module 'ingress_control_claim' has no attribute '_changes'\")"
  ],
  "failed_rows": [
   "VELDO-0169 census/writers",
@@ -56,10 +58,11 @@
   "VELDO-0169 claim/null",
   "VELDO-0169 organ/stopped",
   "VELDO-0169 organ/outside",
-  "VELDO-0169 organ/ownership",
+  "VELDO-0169 store/invariant",
   "VELDO-0169 guard/forge",
   "VELDO-0169 organ/race",
-  "VELDO-0169 guard/resume-again"
+  "VELDO-0169 guard/resume-again",
+  "VELDO-0169 store/upgrade"
  ],
  "modules": {
   ".veldo/control_andon.py": {
@@ -68,11 +71,11 @@
   },
   ".veldo/control_assignment.py": {
    "at_commit": "c25ba5c04d8684c2f5fbb6185c2783355b344ee72a3bdb0674f195ca4824b398",
-   "now": "fee78afd38228f2f95a2b27dea7bc98587e307b2547754c32c833bf632c8a53d"
+   "now": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   ".veldo/control_claim.py": {
    "at_commit": "b07cb7652f4e83354aa4a14378328c25a8fcc2670667a810ab35949838dc3c2a",
-   "now": "6dbb4ea6d31b8eab5d7a3c52cc7f8ea318fabd2029b6fcd5920d80f0c98b990f"
+   "now": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   ".veldo/control_eligibility.py": {
    "at_commit": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e",
@@ -80,11 +83,11 @@
   },
   ".veldo/control_heartbeat.py": {
    "at_commit": "ce3c084188c369ce87847e3016ac1b28683fc4972e5a84a45139cfeede021d1f",
-   "now": "47776ca3997cdfb3e0d0ea0bd0b228c0eef0a2b699c7206c8b8b7bc1b8beda0b"
+   "now": "b1ed1ad6e77eb0a342df5390f43955144442e1ddc89bf0dc532f26eaa922b3ea"
   },
   ".veldo/control_store.py": {
    "at_commit": "5329072d96dc6642556bc2977823341c65f1a7f4ff52ea29a9b1e86155f87c4e",
-   "now": "b39d2061b76fcbdfdc97cc09905e27fc9686ca5c89b95da192db9a302f25658b"
+   "now": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
   }
  },
  "preamble_rows": 26,
@@ -174,7 +177,7 @@
    false
   ],
   [
-   "VELDO-0169 organ/ownership",
+   "VELDO-0169 store/invariant",
    false
   ],
   [
@@ -192,10 +195,14 @@
   [
    "VELDO-0169 andon/subject-race",
    true
+  ],
+  [
+   "VELDO-0169 store/upgrade",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 12.524,
+ "seconds": 10.914,
  "spec_id": "VELDO-0169",
  "suite": "scripts/suites/84_veldo_0169_project_handouts.py",
  "tree": "git archive 6512503076f231b94485421f91dc663ee0a36649, unchanged; the current suite file and its apparatus run against it"

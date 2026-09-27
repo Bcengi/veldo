@@ -895,15 +895,18 @@ def _v169_suite():
                                     claim_id=claims.claim_id(old_repo, uid), holder='holder-u', generation=generation,
                                     capabilities=[], repository_uuid=old_repo, **extra)
 
-                    # main's claim organ is this branch's claims._changes, byte for byte; its records are planted as a
+                    # The records main's claim organ writes for a claim, and then for its release or park, planted as a
                     # store written before the handout invariant holds them.
                     for uid, then in (('u-old-held', None), ('u-old-released', 'release'), ('u-old-parked', 'park')):
-                        for action in ('claim',) + ((then,) if then else ()):
-                            current = S.materialized_state(old)['entities']
-                            generation = (current.get(claims.claim_id(old_repo, uid)) or {}).get('data', {}).get('generation', 0)
-                            for eid, entity_ in claims._changes(organ(uid, action, generation, parked_on='assignment:old'),
-                                                                current).items():
-                                PLANT.plant(S, old, eid, entity_['kind'], entity_['data'])
+                        data = dict(unit_id=uid, backlog_item_uuid='backlog:' + uid, repository_uuid=old_repo, holder='holder-u',
+                                    generation=1, state='owned', heartbeat_at=claims.CL._now())
+                        if then is not None:
+                            data.update(state='released', holder=None)
+                        if then == 'park':
+                            data['parked_on'] = 'assignment:old'
+                        PLANT.plant(S, old, claims.claim_id(old_repo, uid), 'claim', data)
+                        PLANT.plant(S, old, uid, 'execution_unit', dict(old_entity(uid)['data'], state='CLAIMED'))
+                        PLANT.plant(S, old, 'backlog:' + uid, 'backlog_item', dict(old_entity('backlog:' + uid)['data'], state='ACTIVE'))
                     held = {uid: (old_entity(claims.claim_id(old_repo, uid)) or {}).get('data', {}) for uid in units}
                     check(row, 'the store holds a held, a released and a parked claim (%s)' % {
                           k: (v.get('state'), v.get('parked_on')) for k, v in held.items()},
