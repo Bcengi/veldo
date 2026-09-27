@@ -167,16 +167,14 @@ class Reviewer:
 
 
 class LiveReviewer(Reviewer):
-    """Reference reviewer wired to nothing. Fails LOUD: an adopting runtime must
-    inject a reviewer that dispatches a fresh context over the built commit and
-    returns its verdict. Refusing to fabricate a verdict is the honest default,
-    exactly as the executor's LiveLoop refuses to fabricate a build."""
+    """Independent review through the installed worker configuration and Runner."""
+
+    def __init__(self, root=ROOT, configuration=None, runtime=None):
+        self.loop = EX.LiveLoop(root=root, configuration=configuration, runtime=runtime)
+        self.identity = None
 
     def review(self, spec, unit, calls=None):
-        raise EX.ExecutorError(
-            "review is a delegated fresh-context step; no reviewer is wired. Inject "
-            "a reviewer that dispatches a fresh context over the built commit and "
-            "returns its verdict. Refusing to fabricate a verdict.")
+        return self.loop.review(spec, {}, calls)
 
 
 class Dispatcher(WK.Dispatcher):
@@ -186,9 +184,9 @@ class Dispatcher(WK.Dispatcher):
     reference so a misconfigured dispatcher refuses rather than fabricates:
 
       hooks    the executor LoopSteps seam for the build path (a fake in tests;
-               the executor's LiveLoop, whose agent build fails loud, otherwise).
+               the executor's LiveLoop over installed worker configuration otherwise).
       reviewer the fresh-context Reviewer seam (a fake in tests; LiveReviewer,
-               which fails loud, otherwise).
+               over installed worker configuration otherwise).
       lander   the serialized lander for the review path (a fake in tests; a
                real LD.Lander over GitLandOps for the built ref, injected by the
                caller, otherwise). None means no land is wired: the dispatcher
@@ -203,12 +201,19 @@ class Dispatcher(WK.Dispatcher):
 
     def __init__(self, repo_root=None, hooks=None, reviewer=None, lander=None,
                  worker_id=None, claims_root=None, fail_status="ready", eligibility=None, calls=None,
-                 authority=None):
+                 authority=None, configuration=None):
         self.repo_root = str(repo_root or ROOT)
         self._hooks = hooks
-        self._reviewer = reviewer or LiveReviewer()
+        self._runtime = None
+        if configuration is not None or (Path(self.repo_root) / ".veldo" / "worker.json").is_file():
+            self._runtime = EX.LiveLoop(root=self.repo_root, configuration=configuration).worker()
+            authority = authority or self._runtime.floor
+            eligibility = eligibility or self._runtime.gate
+            calls = calls or self._runtime
+        self._reviewer = reviewer or LiveReviewer(root=self.repo_root, runtime=self._runtime)
         self._lander = lander
-        self.worker_id = worker_id or ("dispatcher-" + uuid.uuid4().hex[:12])
+        self.worker_id = worker_id or (self._runtime.role("build")["identity"] if self._runtime else
+                                       "dispatcher-" + uuid.uuid4().hex[:12])
         self.claims_root = claims_root
         self.fail_status = fail_status
         # VELDO-0052: the shared eligibility Gate and the StationCalls that reserve every
@@ -265,8 +270,9 @@ class Dispatcher(WK.Dispatcher):
 
     def _build_hooks(self):
         """The executor build seam: an injected fake in tests, the executor's
-        LiveLoop (its agent build fails loud without an agent) as the reference."""
-        return self._hooks if self._hooks is not None else EX.LiveLoop(root=self.repo_root)
+        LiveLoop over the installed worker configuration as the reference."""
+        return self._hooks if self._hooks is not None else EX.LiveLoop(root=self.repo_root, runtime=self._runtime,
+                                                                                   proofs=self._runtime.proofs if self._runtime else None)
 
     # spec status on disk (the durable handoff between units)
 
@@ -394,8 +400,12 @@ class Dispatcher(WK.Dispatcher):
         observation = {"green": gate_step.get("ok") is True, "detail": gate_step.get("detail")}
         context = self._context(unit)
         try:
-            floor.accept_build(sid, commit=(steps.get("build") or {}).get("commit"), gate=observation,
-                               holder=context["holder"], generation=context["generation"])
+            commit = (steps.get("build") or {}).get("commit")
+            current = floor.record(sid) or {}
+            if not (current.get("state") == "review" and current.get("source", {}).get("commit") == commit
+                    and current.get("builder") == context["holder"] and current.get("proof_bundle")):
+                floor.accept_build(sid, commit=commit, gate=observation,
+                                   holder=context["holder"], generation=context["generation"])
         except FloorRefused as error:
             return self._floor_refused("build", sid, error, "build_acceptance", reviewed=False, result=result)
         projection = floor.publish(sid)
@@ -414,6 +424,8 @@ class Dispatcher(WK.Dispatcher):
         VELDO-0049: an enrolled review is assigned, recorded and handed off only
         through the authority, and nothing here writes shipped (_review_floor)."""
         sid = unit["spec"]
+        if self._runtime is not None and isinstance(self._reviewer, LiveReviewer):
+            self._reviewer.identity = self._runtime.reviewer(sid)["identity"]
         gate = self._gate()
         decision = None
         context = None
@@ -436,7 +448,7 @@ class Dispatcher(WK.Dispatcher):
             try:
                 with self._launch("review", unit, context, decision) as handle:
                     rv = self._reviewer.review(spec, unit, calls=handle) or {}
-            except EL.Refused as error:
+            except (EL.Refused, EX._eligibility_organ().Refused) as error:
                 codes = (error.decision or {}).get("refusals") or [error.code]
                 return self._refused("review", sid, {"refusals": list(codes)}, verdict=None, shipped=False,
                                      landed=False)
@@ -475,7 +487,7 @@ class Dispatcher(WK.Dispatcher):
         try:
             with self._launch("review", unit, context, decision) as handle:
                 rv = self._reviewer.review(spec, unit, calls=handle) or {}
-        except EL.Refused as error:
+        except (EL.Refused, EX._eligibility_organ().Refused) as error:
             codes = (error.decision or {}).get("refusals") or [error.code]
             return self._refused("review", sid, {"refusals": list(codes)}, **refused)
         try:
@@ -873,6 +885,21 @@ def _accept_build(conn, params, before, record, unit_data):
         raise FloorRefused("missing_evidence:gate", "the gate did not pass on the built commit")
     build = _build_dispatch(conn, params, holder, generation)
     path, body, implementation = _accepted_proof(repo, commit, unit)
+    P = _floor_organ("control_proof")
+    try:
+        bundle = P.resolve(store, conn, domain=domain, repository=repository, unit=unit, commit=commit)
+    except P.Refused as error:
+        raise FloorRefused(error.code, error.detail, error.codes) from error
+    if bundle.get("builder") != holder:
+        raise FloorRefused("binding_mismatch:proof_builder")
+    if build.get("artifact") is not None:
+        W = _floor_organ("control_launch_work")
+        try:
+            returned = json.loads(W.answer(W.artifact(build, params.get("artifact"))))
+        except (W.Refused, ValueError, TypeError):
+            raise FloorRefused("missing_evidence:build_artifact")
+        if returned.get("commit") != commit or returned.get("proof") != bundle["manifest"]["body"]:
+            raise FloorRefused("binding_mismatch:build_artifact")
     record = record or {"schema": FLOOR_SCHEMA, "unit": unit, "domain": domain, "repository": repository,
                         "attempt": 0, "assignments": {}, "reviews": [], "findings": {}, "dispositions": []}
     record.update(state="review", attempt=record["attempt"] + 1,
@@ -882,6 +909,7 @@ def _accept_build(conn, params, before, record, unit_data):
                   builder=holder, builders=sorted(set(record.get("builders") or []) | {holder}),
                   generation=generation,
                   build={"dispatch": build["dispatch_id"], "process": build.get("process")},
+                  proof_bundle=bundle["bundle"] if bundle else None,
                   handoff=None, returned_to=None)
     # The builder is the unit's producer: the review station's independence predicate reads it.
     return record, dict(unit_data, producer=holder)
@@ -904,6 +932,21 @@ def _assign_review(conn, params, before, record, unit_data):
             other["state"] = "superseded"
     payload = {"schema": ASSIGNMENT_SCHEMA, "assignment": identity, "unit": params["unit"], "reviewer": reviewer,
                "attempt": attempt, "source": {"commit": record["source"]["commit"]}, "proof": dict(record["proof"])}
+    if record.get("proof_bundle"):
+        P = _floor_organ("control_proof")
+        store = _floor_organ("control_store")
+        repo = store.bound_repository(conn, params["domain"], params["repository"])
+        bundle = P.resolve(store, conn, domain=params["domain"], repository=params["repository"],
+                           unit=params["unit"], commit=record["source"]["commit"])
+        diff = P._git(repo, "diff", "-" * 2 + "no-ext-diff", "-" * 2 + "no-textconv",
+                      bundle["base"], record["source"]["commit"])
+        if diff.returncode:
+            raise FloorRefused("missing_evidence:review_diff")
+        payload["context"] = {"spec": P.blob(repo, bundle["base"], bundle["spec"]["path"]).decode(),
+                              "diff": diff.stdout.decode(), "proof": bundle["manifest"]["body"],
+                              "output": "Return JSON veldo.review_receipt/v1 with assignment, unit, reviewer, "
+                              "source (commit), proof (digest), verdict and findings. Review the exact source "
+                              "in this fresh clone. No builder conversation is supplied."}
     record["assignments"][identity] = {"reviewer": reviewer, "attempt": attempt, "state": "open",
                                        "payload": payload, "payload_digest": _digest(canonical(payload))}
     return record, unit_data
@@ -924,7 +967,7 @@ def _review_receipt(receipt):
     return printed, body, signature
 
 
-def _review_dispatch(conn, params, record, assignment, dispatch_id, printed):
+def _review_dispatch(conn, params, record, assignment, dispatch_id, printed, receipt=None):
     """The review dispatch the receipt names: exited cleanly at this unit's review station, launched
     with exactly the assignment at the assigned commit as the assigned reviewer, and the receipt is
     exactly what that process printed."""
@@ -943,7 +986,16 @@ def _review_dispatch(conn, params, record, assignment, dispatch_id, printed):
         raise FloorRefused("binding_mismatch:review_dispatch/source", "the reviewer was launched at another commit")
     if (given.get("context") or {}).get("reviewer") != assignment["reviewer"]:
         raise FloorRefused("binding_mismatch:review_dispatch/reviewer", "the dispatch reviewed as another principal")
-    if (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):
+    if dispatch.get("artifact") is not None:
+        W = _floor_organ("control_launch_work")
+        try:
+            document = W.artifact(dispatch, (receipt or {}).get("artifact"))
+            same = json.loads(W.answer(document)) == json.loads(printed)["body"]
+        except (W.Refused, ValueError, TypeError, KeyError):
+            same = False
+        if not same:
+            raise FloorRefused("binding_mismatch:review_output")
+    elif (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):
         raise FloorRefused("binding_mismatch:review_output", "the receipt is not what the review dispatch printed")
     if dispatch.get("process") == (record.get("build") or {}).get("process"):
         raise FloorRefused("reviewer_not_independent:process", "the review ran in the builder's process")
@@ -978,7 +1030,7 @@ def _record_review(conn, params, before, record, unit_data):
     reviewer = assignment["reviewer"]
     receipt = params.get("receipt")
     printed, body, signature = _review_receipt(receipt)
-    dispatch = _review_dispatch(conn, params, record, assignment, receipt["dispatch"], printed)
+    dispatch = _review_dispatch(conn, params, record, assignment, receipt["dispatch"], printed, receipt)
     _receipt_bound(conn, params, record, reviewer, body, signature)
     blocking = list(PC.blocking_findings(body))
     # A blocking review dimension, and a failing verdict that lists no finding, are blocking judgements too:
@@ -1167,10 +1219,10 @@ class FloorAuthority:
         self.observe(dict(event, outcome="accepted", watermark=result["seq"], state=record["state"]))
         return record
 
-    def accept_build(self, unit, *, commit, gate, holder, generation):
+    def accept_build(self, unit, *, commit, gate, holder, generation, artifact=None):
         """The build handed to review: accepted proof at `commit`, a green `gate`, the current claim."""
         return self._run("accept_build", unit, {"commit": commit, "gate": gate, "holder": holder,
-                                                "generation": generation})
+                                                "generation": generation, "artifact": artifact})
 
     def assign_review(self, unit, reviewer):
         """One review position for `reviewer`; returns the assignment payload the reviewer is launched with."""

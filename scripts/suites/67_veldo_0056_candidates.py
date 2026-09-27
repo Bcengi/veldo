@@ -379,8 +379,18 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             made['proof'] = outcome_of(lambda: proofs.accept(sid, commit=commit, base=BASE,
                                                              spec_path='specs/%s-candidate-fixture.md' % sid,
                                                              manifest=manifest, observation=reference, builder=BUILDER))
-            floor.accept_build(sid, commit=commit, gate={'green': observation['green'], 'detail': observation['terminal']},
-                               holder=BUILDER, generation=g)
+            try:
+                floor.accept_build(sid, commit=commit, gate={'green': observation['green'], 'detail': observation['terminal']},
+                                   holder=BUILDER, generation=g)
+            except DSP.FloorRefused as error:
+                # Invalid proof is now refused before review as well as by the candidate finalizer.
+                if made['proof'][0] != 'raised' or error.code != 'missing_evidence:proof_bundle':
+                    raise
+                made['floor_refusal'] = error.code
+                made['floor'] = (floor.record(sid) or {}).get('state')
+                return made
+            if made['proof'][0] == 'raised':
+                raise AssertionError('the floor accepted a build without its stored proof')
             assignment = floor.assign_review(sid, REVIEWER)
             contract = runner.prepare(sid, 'review', holder=BUILDER, source=str(caller), revision=commit,
                                       payload=assignment, adapter=REVIEWER, configuration=CONFIG,
@@ -617,8 +627,10 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                 check('candidate/named-policy-refusals',
                       cases['red_gate']['detail'].get('refusal') == 'missing_evidence:gate'
                       and cases['red_gate']['detail'].get('exit') == 1
-                      and cases['invalid_proof']['detail'].get('refusals') == ['missing_evidence:proof_bundle']
+                      and cases['invalid_proof']['detail'].get('refusals') == ['missing_evidence:proof_bundle',
+                                                                             'missing_authority:floor_record']
                       and made['VELDO-9564']['proof'][0] == 'raised'
+                      and made['VELDO-9564']['floor_refusal'] == 'missing_evidence:proof_bundle'
                       and len(finding) == 1
                       and cases['unresolved_finding']['detail'].get('refusals') == ['not_handed_off:returned',
                                                                                    'unresolved_finding:' + finding[0]]
@@ -628,7 +640,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                       and all(made[s]['proof'][0] == 'ok' and made[s]['floor'] == 'handoff'
                               for s in ('VELDO-9563', 'VELDO-9566', 'VELDO-9567'))
                       and made['VELDO-9565']['proof'][0] == 'ok' and made['VELDO-9565']['floor'] == 'returned'
-                      and made['VELDO-9564']['floor'] == 'handoff'
+                      and made['VELDO-9564']['floor'] is None
                       and ((valid.get('finalized') or {}).get('authority') or {}).get('refusals') == []
                       and ((valid.get('finalized') or {}).get('authority') or {}).get('proof') ==
                       CP.bundle_id(DOMAIN, REPOSITORY, 'VELDO-9567', builds['VELDO-9567']['commit']))
