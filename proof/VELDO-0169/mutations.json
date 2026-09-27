@@ -118,7 +118,7 @@
     true
    ]
   ],
-  "seconds": 12.948
+  "seconds": 12.429
  },
  "controls_green": true,
  "mutants": [
@@ -252,7 +252,7 @@
      true
     ]
    ],
-   "seconds": 12.534,
+   "seconds": 12.547,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -385,7 +385,7 @@
      true
     ]
    ],
-   "seconds": 12.51,
+   "seconds": 12.343,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -520,7 +520,7 @@
      true
     ]
    ],
-   "seconds": 12.41,
+   "seconds": 12.389,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -666,7 +666,7 @@
      true
     ]
    ],
-   "seconds": 12.473,
+   "seconds": 12.676,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -810,7 +810,7 @@
      true
     ]
    ],
-   "seconds": 12.083,
+   "seconds": 12.463,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -954,7 +954,7 @@
      true
     ]
    ],
-   "seconds": 12.577,
+   "seconds": 12.584,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -1092,7 +1092,7 @@
      true
     ]
    ],
-   "seconds": 12.43,
+   "seconds": 12.393,
    "source_sha256": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   {
@@ -1228,7 +1228,7 @@
      true
     ]
    ],
-   "seconds": 12.52,
+   "seconds": 11.991,
    "source_sha256": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   {
@@ -1367,7 +1367,7 @@
      false
     ]
    ],
-   "seconds": 12.234,
+   "seconds": 12.391,
    "source_sha256": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   {
@@ -1500,7 +1500,7 @@
      true
     ]
    ],
-   "seconds": 12.533,
+   "seconds": 12.388,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -1633,7 +1633,7 @@
      true
     ]
    ],
-   "seconds": 12.321,
+   "seconds": 12.407,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -1774,7 +1774,7 @@
      true
     ]
    ],
-   "seconds": 11.829,
+   "seconds": 11.115,
    "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
   },
   {
@@ -1910,7 +1910,7 @@
      true
     ]
    ],
-   "seconds": 12.571,
+   "seconds": 11.992,
    "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
   },
   {
@@ -2043,7 +2043,7 @@
      true
     ]
    ],
-   "seconds": 12.256,
+   "seconds": 12.157,
    "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
   },
   {
@@ -2178,7 +2178,7 @@
      true
     ]
    ],
-   "seconds": 12.467,
+   "seconds": 12.33,
    "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
   },
   {
@@ -2314,7 +2314,7 @@
      true
     ]
    ],
-   "seconds": 12.661,
+   "seconds": 12.393,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -2450,7 +2450,7 @@
      true
     ]
    ],
-   "seconds": 12.382,
+   "seconds": 12.504,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -2583,7 +2583,7 @@
      true
     ]
    ],
-   "seconds": 12.382,
+   "seconds": 12.409,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -2716,7 +2716,7 @@
      true
     ]
    ],
-   "seconds": 12.853,
+   "seconds": 12.586,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -2849,7 +2849,7 @@
      true
     ]
    ],
-   "seconds": 12.472,
+   "seconds": 12.341,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -2982,7 +2982,7 @@
      true
     ]
    ],
-   "seconds": 12.386,
+   "seconds": 12.651,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   }
  ],
@@ -3168,7 +3168,7 @@
      true
     ]
    ],
-   "seconds": 12.69,
+   "seconds": 12.486,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   "control_assignment.py": {
@@ -3289,7 +3289,7 @@
      true
     ]
    ],
-   "seconds": 12.299,
+   "seconds": 12.28,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   "control_claim.py": {
@@ -3410,7 +3410,7 @@
      true
     ]
    ],
-   "seconds": 12.041,
+   "seconds": 12.394,
    "source_sha256": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   "control_store.py": {
@@ -3531,13 +3531,13 @@
      true
     ]
    ],
-   "seconds": 12.155,
+   "seconds": 12.177,
    "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 169",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 323.017,
+ "serial_seconds": 320.816,
  "spec_id": "VELDO-0169",
  "suite": "scripts/suites/84_veldo_0169_project_handouts.py"
 }
