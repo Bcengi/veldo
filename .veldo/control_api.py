@@ -836,6 +836,11 @@ class ControlApi:
         return 'revoked' if problem in REVOKED else 'unauthenticated:' + problem
 
     def _fill_record(self, stream, answer, always=False):
+        # Initial catch-up and a concurrent hint share one cursor and one ordered frame queue.
+        with stream._condition:
+            self._fill_record_locked(stream, answer, always)
+
+    def _fill_record_locked(self, stream, answer, always=False):
         """Queue the record's lines after the stream's cursor, one frame per page (the first frame always),
         reading the next page through `record` until the cursor reaches the lines the record held when read
         (so past any hinted sequence), or a page brings nothing new; once the run has ended and every line
