@@ -1049,6 +1049,15 @@
    ],
    "regions": "Versioned MCP catalog saves through the passkey API and host authority commands; exact immutable revisions, stale and unauthorized refusals; write-only Linux Secret Service credentials, replacement, deletion, runtime keychain resolution and no value in commands, store, journal, events, logs or proof",
    "requires_note": "Only shared ROOT and expect. Real SQLite, OpenSSH signatures and protected signer, WebAuthn ceremonies, production API over loopback TLS with generated certificate, Service.apply and ServiceApi.call on the authority connection; a generated fake secret-tool and unreachable scratch D-Bus address ensure no real keyring is touched."
+  },
+  {
+   "name": "82_veldo_0129_worker_wiring",
+   "file": "82_veldo_0129_worker_wiring.py",
+   "requires": [
+    "82_veldo_0129_worker_wiring"
+   ],
+   "regions": "Installed build and independent review through qualified engine adapters, Runner, reservations and proof authority.",
+   "requires_note": "Only shared ROOT and expect. Real contained processes, isolated Git clones, signed SQLite authority records. Fake engines use recorded binary formats. No live credentials or model calls."
   }
  ]
 }

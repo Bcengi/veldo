@@ -200,8 +200,10 @@ class LoopSteps:
         spec, the installed catalog, Git and the gate's observation, and its storage as accepted
         immutable evidence, before the unit is offered as built or for review. Return {ok, problems,
         bundle}: ok False halts the run at proof with the named problems. A control-logic seam that
-        keeps no proof service returns None and the run records no bundle; LiveLoop never does."""
-        return None
+        keeps no proof service returns NotImplemented and records no bundle. An implemented
+        acceptance hook must return a result; None refuses an enrolled run. LiveLoop always
+        implements this boundary through its proof service."""
+        return NotImplemented
 
     # VELDO-0052: who reviews. The review station decides reviewer independence over this identity
     # before any reviewer is launched; None is refused (reviewer_not_independent), never presumed.
@@ -239,8 +241,8 @@ class LiveLoop(LoopSteps):
     hermetic (gate over the canonical verify command, proof validation over the
     contract validator, events over the event emitter, spec resolution over the
     spec files, plan enforcement over the plan ops). The agent and human steps
-    fail LOUD, so an adopting runtime must inject an agent-backed build and
-    review and a human-backed approve: a loop that silently no-ops a build or a
+    use the installed worker configuration for build and review and require
+    a human-backed approve: a loop that silently no-ops a build or a
     review is more dangerous than one that refuses to run.
 
     VELDO-0050: `proofs` is the control_proof.ProofService the proof is accepted into. With one wired,
@@ -248,15 +250,20 @@ class LiveLoop(LoopSteps):
     executor asks for acceptance only with the floor enabled, and there accept_proof without a proof
     service refuses (missing_authority:proof_service); the pre-factory loop is unchanged."""
 
-    def __init__(self, root=ROOT, proofs=None, installation=None):
+    def __init__(self, root=ROOT, proofs=None, installation=None, configuration=None, runtime=None):
         self.root = Path(root)
         self.proofs = proofs
+        self.configuration, self.runtime = configuration, runtime
+        self.work_root = self.root
+        self.built = None
+        self.spec_id = None
         # VELDO-0058: a directory holding the trusted scripts/verify.sh; by default the verifier of
         # the base commit resolve() found, laid down from Git objects outside the workspace.
         self.installation = str(installation) if installation is not None else None
         self.base = None
 
     def resolve(self, spec_id):
+        self.spec_id = spec_id
         V = _load_module("veldo_validate_exec", ".veldo/validate.py")
         specs = self.root / "specs"
         matches = sorted(specs.glob("%s*.md" % spec_id)) if specs.exists() else []
@@ -291,11 +298,41 @@ class LiveLoop(LoopSteps):
             capture_output=True, text=True, cwd=str(self.root))
         return (r.returncode == 0, (r.stdout + r.stderr).strip())
 
+    @property
+    def reviewer_identity(self):
+        if self.runtime is None or self.spec_id is None:
+            return None
+        return self.runtime.reviewer(self.spec_id)["identity"]
+
+    def close(self):
+        if self.runtime is not None:
+            self.runtime.close()
+            self.runtime = None
+
+    def worker(self):
+        if self.runtime is None:
+            W = _load_module("veldo_worker_exec", ".veldo/control_launch_work.py")
+            try:
+                self.runtime = W.configured(self.root, self.configuration)
+            except W.Refused as error:
+                raise ExecutorError(error.code + ": Inject an installed worker configuration") from error
+        self.proofs = self.runtime.proofs
+        return self.runtime
+
+    def _worker_call(self, operation, *args):
+        try:
+            return getattr(self.worker(), operation)(*args)
+        except Exception as error:
+            code = getattr(error, "code", None)
+            if not isinstance(code, str):
+                raise
+            raise _eligibility_organ().Refused(code, decision=getattr(error, "decision", None)) from error
+
     def build(self, spec, calls=None):
-        raise ExecutorError(
-            "build is a delegated agent step; LiveLoop has no agent wired. Inject "
-            "a build callable that dispatches the implementer and returns its "
-            "commit and evidence. Refusing to fabricate a build.")
+        result = self._worker_call("build", spec, calls)
+        self.built = result
+        self.work_root = Path(result["workspace"])
+        return result
 
     def gate(self):
         """The canonical gate, run once and OBSERVED (VELDO-0050): green only on exit 0, a terminal
@@ -316,7 +353,7 @@ class LiveLoop(LoopSteps):
                 # gate reads a range from them (the proof service is handed the spec's base commit
                 # explicitly, and merge_ready reads the spec). HEAD, its tree, the index and every
                 # file outside .git stay bound.
-                observed, _reference = CV.observe_gate(self.root, installed, Path(directory) / "gate",
+                observed, _reference = CV.observe_gate(self.work_root, installed, Path(directory) / "gate",
                                                        bind_refs=False)
             except CV.Refused as error:
                 return {"green": False, "detail": "gate not run: %s" % error.code}
@@ -341,6 +378,8 @@ class LiveLoop(LoopSteps):
         committed = proof_organ().committed_manifest(self.root, (build or {}).get("commit"), spec.get("id"))
         if committed is not None:
             return committed
+        if isinstance((build or {}).get("proof"), dict):
+            return build["proof"]
         evidence = (build or {}).get("evidence") or {}
         criteria = []
         for cid in spec.get("criteria_ids") or []:
@@ -378,23 +417,28 @@ class LiveLoop(LoopSteps):
         sid = (spec or {}).get("id")
         commit = (build or {}).get("commit")
         observation = (gate or {}).get("observation")
-        builder = (context or {}).get("holder")
+        builder = (context or {}).get("holder") or (build or {}).get("producer")
         if self.proofs is not None:
             try:
                 accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),
                                               manifest=proof, observation=observation, builder=builder)
-            except CP.Refused as error:
-                return {"ok": False, "problems": list(error.codes), "bundle": None}
+            except Exception as error:
+                if not isinstance(getattr(error, "code", None), str):
+                    raise
+                return {"ok": False, "problems": list(getattr(error, "codes", [error.code])), "bundle": None}
+            if self.runtime is not None:
+                try:
+                    self.runtime.accept_build(spec, build)
+                except Exception as error:
+                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],
+                            "bundle": accepted["bundle"]}
             return dict(accepted, ok=True, problems=[])
         # The floor is enabled (the executor asks only then) and no proof service is wired: a proof
         # that cannot be stored is not accepted.
         return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}
 
     def review(self, spec, proof, calls=None):
-        raise ExecutorError(
-            "review is a delegated fresh-context agent step; LiveLoop has no "
-            "reviewer wired. Inject a review callable that dispatches the "
-            "reviewer and returns its verdict. Refusing to fabricate a verdict.")
+        return self._worker_call("review", spec, calls)
 
     def merge_ready(self, spec, proof, verdict):
         """Ready unless the change touches a human lane or protected paths that
@@ -500,6 +544,13 @@ class Executor:
     def __init__(self, hooks, observer=None, eligibility=None, calls=None, station="direct_execution",
                  context=None, ticket=None):
         self.hooks = hooks
+        if isinstance(hooks, LiveLoop) and (hooks.runtime is not None or hooks.configuration is not None
+                or (hooks.root / ".veldo" / "worker.json").is_file()):
+            runtime = hooks.worker()
+            eligibility = eligibility or runtime.gate
+            calls = calls or runtime
+            context = dict(context or {})
+            context.setdefault("holder", runtime.role("build")["identity"])
         self.observer = observer
         # VELDO-0052: the shared eligibility Gate and the runner's StationCalls. With the floor
         # enabled (a Gate, or an enrolled repository, which stops by name without one) every build
@@ -737,6 +788,12 @@ class Executor:
             # names every problem. The pre-factory loop (no Gate) keeps its structural check alone.
             accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)
                         if gate is not None else None)
+            if gate is not None and accepted is not NotImplemented and not accepted:
+                accepted = {"ok": False, "problems": ["missing_authority:proof_acceptance"]}
+            # The base control-logic seam has no acceptance service. Keep that distinct from
+            # an implemented service returning no result, which must refuse above.
+            if accepted is NotImplemented:
+                accepted = None
             if accepted is not None and not accepted.get("ok"):
                 problems = list(accepted.get("problems") or ["unknown_outcome:proof"])
                 record("proof", False, cycle=cycle, errors=p_err, refusals=problems)

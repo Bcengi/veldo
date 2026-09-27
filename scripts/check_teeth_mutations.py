@@ -3362,9 +3362,9 @@ def cases():
           '            return self._accept_build(floor, unit, result)\n',
           'authority-to-projection', also=[(guard, unguarded)])
     floor('floor-projection-before-acceptance',
-          '        try:\n            floor.accept_build(sid, commit=',
+          '        try:\n            commit = (steps.get("build") or {}).get("commit")',
           '        floor.publish(sid)  # defect: published before the authority accepted the build\n'
-          '        try:\n            floor.accept_build(sid, commit=',
+          '        try:\n            commit = (steps.get("build") or {}).get("commit")',
           'authority-to-projection',
           also=[('        projection = floor.publish(sid)\n        return {"ok": True, "kind": "build"',
                  '        projection = {}\n        return {"ok": True, "kind": "build"')])
@@ -3416,8 +3416,8 @@ def cases():
           '    if body.get("proof") != record["proof"]["digest"]:\n',
           '    if False:  # defect: the receipt may review another proof\n', 'review-binding')
     floor('floor-review-output-unbound',
-          '    if (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):\n',
-          '    if False:  # defect: the receipt need not be what the review dispatch printed\n', 'review-binding')
+          '    elif (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):\n',
+          '    elif False:  # defect: the receipt need not be what the review dispatch printed\n', 'review-binding')
     floor('floor-review-context-unbound', '    if given.get("payload") != payload:\n',
           '    if False:  # defect: the reviewer may be launched with more than its assignment\n', 'review-binding')
     floor('floor-review-dispatch-source-unbound',
@@ -3510,13 +3510,23 @@ def cases():
     def proof(name, old, new, row, also=(), module='control_proof.py'):
         add(50, name, '64_veldo_0050_proof.py', module, old, new, ['proof/' + row], also)
 
-    accept_block = ('        if self.proofs is not None:\n'
-                    '            try:\n'
-                    '                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n'
-                    '                                              manifest=proof, observation=observation, builder=builder)\n'
-                    '            except CP.Refused as error:\n'
-                    '                return {"ok": False, "problems": list(error.codes), "bundle": None}\n'
-                    '            return dict(accepted, ok=True, problems=[])\n')
+    accept_block = (
+        '        if self.proofs is not None:\n'
+        '            try:\n'
+        '                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n'
+        '                                              manifest=proof, observation=observation, builder=builder)\n'
+        '            except Exception as error:\n'
+        '                if not isinstance(getattr(error, "code", None), str):\n'
+        '                    raise\n'
+        '                return {"ok": False, "problems": list(getattr(error, "codes", [error.code])), "bundle": None}\n'
+        '            if self.runtime is not None:\n'
+        '                try:\n'
+        '                    self.runtime.accept_build(spec, build)\n'
+        '                except Exception as error:\n'
+        '                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],\n'
+        '                            "bundle": accepted["bundle"]}\n'
+        '            return dict(accepted, ok=True, problems=[])\n'
+    )
     # AC1, declared: the manifest is kept only in temporary validation storage, so no fresh reviewer resolves it.
     proof('proof-kept-in-temporary-storage', accept_block,
           '        if self.proofs is not None:\n'
@@ -3533,7 +3543,8 @@ def cases():
           '            accepted = (self.hooks.accept_proof(spec, build, g, proof, context=self.context)\n'
           '                        if gate is not None else None)\n',
           '            accepted = None  # defect: the build is offered with its proof never accepted\n',
-          'accepted-before-offer', module='executor.py')
+          'accepted-before-offer', module='executor.py',
+          also=[('            if gate is not None and accepted is not NotImplemented and not accepted:', '            if False and not accepted:')])
     proof('proof-unstored-accepted',
           '        return {"ok": False, "problems": ["missing_authority:proof_service"], "bundle": None}\n',
           '        return {"ok": True, "problems": [], "bundle": None}  # defect: a proof nothing stored is accepted\n',
@@ -8188,6 +8199,56 @@ def cases():
         "outcome = 'replaced' if old and not old['data'].get('deleted') else 'written'",
         "outcome = 'replaced' if old else 'written'",
         ['credential/deleted-state'], ())
+    add(129, 'worker129-runtime-architecture-bypassed', '60_veldo_0053_architecture.py', 'control_launch_work.py',
+        "        self.gate.require('provider_request', unit, context=context)",
+        "        pass  # defect: launch without the provider architecture decision",
+        ['architecture/entries-blocked'])
+    add(129, 'worker129-build-unwired', '82_veldo_0129_worker_wiring.py', 'executor.py',
+        '        result = self._worker_call("build", spec, calls)',
+        '        raise ExecutorError("build requires an injected callable")',
+        ['build/claude', 'build/codex'])
+    add(129, 'worker129-builder-context-reused', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "payload=payload, adapter=role['adapter']",
+        "payload=dict(payload, builder_conversation=['builder narrative']) if station == 'review' else payload, adapter=role['adapter']",
+        ['review/loop-claude', 'review/loop-codex', 'review/reviewer-claude', 'review/reviewer-codex'])
+    add(129, 'worker129-exit-manufactures-review', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "            body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)",
+        "            try:\n                body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)\n"
+        "            except Refused:\n                return {'verdict': 'pass', 'findings': []}",
+        ['outcome/missing-review'])
+    add(129, 'worker129-review-subject-unchecked', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "                raise Refused('missing_evidence:review_verdict')",
+        "                return dict(body, verdict='pass')",
+        ['outcome/malformed-review'])
+    add(129, 'worker129-empty-proof-accepted', '82_veldo_0129_worker_wiring.py', 'executor.py',
+        '            if gate is not None and accepted is not NotImplemented and not accepted:', '            if False and not accepted:',
+        ['proof/empty-acceptance'])
+    add(129, 'worker129-clone-group-unrecorded', '82_veldo_0129_worker_wiring.py', 'control_launch.py',
+        '                            provisioner.record_group(dispatch_id, group.report())',
+        '                            pass', ['build/claude', 'build/codex'])
+    add(129, 'worker129-runtime-not-installed', '82_veldo_0129_worker_wiring.py', 'init_scaffold.py',
+        '    ".veldo/control_launch_work.py",', '', ['installation/assets'])
+    add(129, 'worker129-proof-store-optional', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '        raise FloorRefused(error.code, error.detail, error.codes) from error',
+        '        return {"state": "review"}, unit_data', ['proof/authority'])
+    add(129, 'worker129-follow-gitdir-symlink', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        '        if gitdir.is_symlink():',
+        '        if False and gitdir.is_symlink():', ['build/gitdir-symlink'])
+    add(129, 'worker129-skip-gitdir-checks', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "        if gitdir.is_symlink():\n            raise Refused('invalid_input:build_gitdir/symlink')\n        if not gitdir.is_dir():\n            raise Refused('invalid_input:build_gitdir/not_directory')\n        for name in ('commondir', 'objects/info/alternates', 'objects/info/http-alternates'):\n            if os.path.lexists(gitdir / name):\n                raise Refused('invalid_input:build_gitdir/' + name.rsplit('/', 1)[-1])\n",
+        '', ['build/gitdir-symlink', 'build/gitdir-gitfile', 'build/gitdir-commondir', 'build/gitdir-alternates', 'build/gitdir-missing'])
+    add(129, 'worker129-nested-builder-conversation', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '    record["assignments"][identity] = {"reviewer": reviewer, "attempt": attempt, "state": "open",',
+        '    payload["context"]["builder_conversation"] = ["builder narrative"]\n    record["assignments"][identity] = {"reviewer": reviewer, "attempt": attempt, "state": "open",', ['review/loop-claude', 'review/loop-codex', 'review/reviewer-claude', 'review/reviewer-codex'])
+    add(129, 'worker129-runtime-artifact-unbound', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "    if (P.digest(raw) != (record.get('artifact') or {}).get('digest')\n            or document.get('dispatch_id') != record.get('dispatch_id')):\n        raise Refused(missing if record.get('contract', {}).get('station') == 'build' else 'binding_mismatch:engine_artifact')\n",
+        '', ['artifact/runtime-binding'])
+    add(129, 'worker129-floor-artifact-unbound', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '    if build.get("artifact") is not None:',
+        '    if False and build.get("artifact") is not None:', ['artifact/floor-binding'])
+    add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
+        "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
     return result
 
 
