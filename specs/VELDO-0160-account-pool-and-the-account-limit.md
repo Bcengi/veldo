@@ -227,7 +227,11 @@ the configuration; an MCP tool is judged by the configuration rules. The allowli
 into `cli-formats.json` (`tool_forms` `in_run`): for Claude Code the file tools, Glob and Grep, the notebook edit,
 TodoWrite, ToolSearch, Bash with its background companions, the read-only web fetch and search, and rule 2's constructs
 (Agent unless remote, Skill, REPL, Workflow, CronCreate unless durable); for Codex exec's own items and the collab tools
-of exec's CollabTool enum. SendMessage in any form and the Agent tool with isolation remote are not on it.
+of exec's CollabTool enum (spawn_agent, send_input, wait and close_agent, read from its serializer). SendMessage in any
+form and the Agent tool with isolation remote are not on it. The calls a depth-2 agent or a workflow agent makes are
+never shown, so rule A also reads each task's tally: a task that counts more calls than the record shows under it, or
+a count that cannot be read or goes down, asks the same way (reason and basis `outward_tool`), whatever the
+configuration.
 
 Use canonical engine assets and synchronize installed copies. Inventory every asset the selected
 journey installs. Compare executable registrations to each criterion's declared universe, observe the
@@ -401,3 +405,21 @@ to decide first where it now does; 14 more finding 160 mutations (rule A skipped
 tool allowed, Agent's remote isolation unchecked, and each other condition dropped). Follow-up for the lead
 (VELDO-0155): the baseline should pass the same allowlist to the engine, so these tools are off for the run, nested
 agents included, and not only caught afterwards; rule A sees only what the stream shows. Status unchanged.
+
+2026-09-27, rule A reads the tally (the checker's probe8, probe9 and probe10): rule A saw only the calls the stream
+shows, and the calls a depth-2 agent or a workflow agent makes are never shown; only the call-by-call rules read each
+task's count of its calls, so with no write-capable MCP server rule 1 decided re-run first. Rule A now also reads each
+task's tally (`untallied`, the engine module's `Tasks`): a shortfall (form `task_tool_uses`, with the task and the
+calls unshown), or a count that cannot be read or goes down (form `task_tool_uses:unreadable`), decides ask, reason
+and basis `outward_tool`, whatever the configuration. Codex: exec's CollabTool enum has four variants, read from its
+serializer's switch in the 0.154.0 bytes (spawn_agent, send_input, wait, close_agent; `wait` is not in the variant
+literal run because the compiler shares its literal), and the core's wait tool waits on agent ids from spawn_agent or
+on a live agent of the current root thread tree, so `wait` is allowlisted; `wait_agent` is the core's tool name, which
+exec never writes in a collab_tool_call, and still asks. The extractor reads the serializer into `cli-formats.json`.
+Rows in `decision/outward-tool-asks`: probe8's depth-2 agent, probe10's workflow, an unreadable and a decreasing count
+ask under no server, only read-only servers and a write-capable server; a sub-agent whose calls are all shown and
+allowlisted, and probe8's normal run with one, re-run; a Codex run that spawns, waits on and closes an agent re-runs;
+a collab_tool_call naming wait_agent asks. `decision/no-write-server-reruns`, `decision/nested-work-asks` and
+`decision/remote-agent-asks` expect rule A to name the tally where their fixtures count unshown calls. 5 more finding
+160 mutations (the shortfall not consulted in rule A, an unreadable count trusted, the shortfalls dropped, wait not
+listed, wait_agent listed). Status unchanged.
