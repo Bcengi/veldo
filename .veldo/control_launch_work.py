@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import tempfile
 import time
 
@@ -30,7 +31,7 @@ L = organ('control_launch')
 P = organ('control_proof')
 EL = organ('control_eligibility')
 CL = organ('control_clone')
-GP = organ('git_process')
+_git_process = organ('git_process')
 
 
 class Refused(EL.Refused):
@@ -50,14 +51,15 @@ def answer(document):
 
 def artifact(record, reference):
     """Resolve exactly the receiver document bound into the dispatch's exit."""
+    missing = 'missing_evidence:build_artifact' if record.get('contract', {}).get('station') == 'build' else 'missing_evidence:engine_artifact'
     try:
         raw = Path(reference['path']).read_bytes()
         document = json.loads(raw)
     except (OSError, ValueError, TypeError, KeyError):
-        raise Refused('missing_evidence:engine_artifact')
+        raise Refused(missing)
     if (P.digest(raw) != (record.get('artifact') or {}).get('digest')
             or document.get('dispatch_id') != record.get('dispatch_id')):
-        raise Refused('binding_mismatch:engine_artifact')
+        raise Refused(missing if record.get('contract', {}).get('station') == 'build' else 'binding_mismatch:engine_artifact')
     if not L.D.completed(record):
         raise Refused('unknown_outcome:engine/' + str(document.get('verdict')))
     return document
@@ -144,6 +146,12 @@ class Runtime:
 
         def receive(contract):
             handles[contract['dispatch_id']] = self.clones.create(contract)
+            if station == 'build':
+                # Still authority-owned: no worker has entered this clone yet.
+                work = Path(self.clones._paths(handles[contract['dispatch_id']])['work'])
+                _git_process.run(['git', '-C', str(work), 'repack', '-a', '-d'],
+                                 check=True, capture_output=True, timeout=60)
+                (work / '.git/objects/info/alternates').unlink(missing_ok=True)
             return L.invoke(self.path, contract, self.dispatches)
 
         runner = L.Runner(self.gate, self.reservations, self.dispatches, receive,
@@ -173,20 +181,55 @@ class Runtime:
             runner.wait(launch)
 
     def _collect(self, handle, result, revision):
-        """Read worker Git only after neutralizing its local configuration and hooks."""
+        """Import object bytes only; Git never opens worker-owned metadata or configuration."""
         work = Path(self.clones._paths(handle)['work'])
+        gitdir = work / '.git'
+        # Check directory entries before any Git call, including dangling links.
+        if gitdir.is_symlink():
+            raise Refused('invalid_input:build_gitdir/symlink')
+        if not gitdir.is_dir():
+            raise Refused('invalid_input:build_gitdir/not_directory')
+        for name in ('commondir', 'objects/info/alternates', 'objects/info/http-alternates'):
+            if os.path.lexists(gitdir / name):
+                raise Refused('invalid_input:build_gitdir/' + name.rsplit('/', 1)[-1])
         commit = result.get('commit')
         if not P._hex(commit):
             raise Refused('missing_evidence:build_commit')
-        config = work / '.git' / 'config'
-        config.unlink(missing_ok=True)
-        config.write_text('[core]\nrepositoryformatversion = 0\nbare = false\nhooksPath = /dev/null\nfsmonitor = false\n')
-        if not P.commit_exists(work, commit) or not P.descends(work, revision, commit):
-            raise Refused('binding_mismatch:build_commit')
-        fetched = GP.run(['git', '-C', str(self.root), '-c', 'core.hooksPath=/dev/null', 'fetch', OPT + 'no-tags',
-                          OPT + 'no-write-fetch-head', str(work), commit], capture_output=True, timeout=60)
-        if fetched.returncode or not P.commit_exists(self.root, commit):
-            raise Refused('unavailable_service:build_objects')
+        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:
+            source, collected = Path(directory) / 'source.git', Path(directory) / 'collected.git'
+            for repo in (source, collected):
+                _git_process.run(['git', 'init', '-q', OPT + 'bare', OPT + 'template=', str(repo)],
+                                 check=True, capture_output=True, timeout=30)
+            # An authority-owned fetch source exposes only the clone's object data. Copying
+            # regular files (never hardlinks) also prevents later worker writes changing it.
+            objects = gitdir / 'objects'
+            def copy_objects(origin, target):
+                if not stat.S_ISDIR(origin.lstat().st_mode):
+                    raise Refused('invalid_input:build_gitdir/objects')
+                target.mkdir(exist_ok=True)
+                for entry in origin.iterdir():
+                    mode = entry.lstat().st_mode
+                    if stat.S_ISDIR(mode):
+                        copy_objects(entry, target / entry.name)
+                    elif stat.S_ISREG(mode):
+                        shutil.copyfile(entry, target / entry.name, follow_symlinks=False)
+                    else:
+                        raise Refused('invalid_input:build_gitdir/objects')
+            try:
+                copy_objects(objects, source / 'objects')
+            except OSError as error:
+                raise Refused('invalid_input:build_gitdir/objects') from error
+            (source / 'HEAD').write_text(commit + '\n')
+            fetched = _git_process.run(['git', '-C', str(collected), '-c', 'core.hooksPath=/dev/null',
+                                        'fetch', OPT + 'no-tags', OPT + 'no-write-fetch-head',
+                                        str(source), commit], capture_output=True, timeout=60)
+            if fetched.returncode or not P.commit_exists(collected, commit) or not P.descends(collected, revision, commit):
+                raise Refused('binding_mismatch:build_commit')
+            fetched = _git_process.run(['git', '-C', str(self.root), '-c', 'core.hooksPath=/dev/null',
+                                        'fetch', OPT + 'no-tags', OPT + 'no-write-fetch-head',
+                                        str(collected), commit], capture_output=True, timeout=60)
+            if fetched.returncode or not P.commit_exists(self.root, commit):
+                raise Refused('unavailable_service:build_objects')
 
     def build(self, spec, calls=None):
         role = self.role('build')
@@ -204,9 +247,9 @@ class Runtime:
         # Verification uses a fresh checkout of the collected commit, never the worker's config or hooks.
         directory = tempfile.mkdtemp(prefix='candidate-', dir=self.config['work']['candidates'])
         self.candidates.append(directory)
-        GP.run(['git', 'clone', '-q', OPT + 'no-checkout', OPT + 'no-hardlinks', str(self.root), directory],
+        _git_process.run(['git', 'clone', '-q', OPT + 'no-checkout', OPT + 'no-hardlinks', str(self.root), directory],
                check=True, capture_output=True, timeout=60)
-        GP.run(['git', '-C', directory, 'checkout', '-q', OPT + 'detach', result['commit']],
+        _git_process.run(['git', '-C', directory, 'checkout', '-q', OPT + 'detach', result['commit']],
                check=True, capture_output=True, timeout=30)
         return dict(result, ok=True, producer=role['identity'], dispatch=reference['dispatch'], artifact=reference['artifact'], workspace=directory)
 

@@ -229,3 +229,12 @@ model call, remote host, repository gate, independent approval or landing is cla
 entry seams, so the default Executor halts and Dispatcher returns a named refusal when a
 reservation denies work. The reservation row drives those default callers as well as direct
 build and review. The full repository gate remains intentionally unrun.
+
+2026-09-27, review fixes: collection refuses symlink, gitfile, missing git directory,
+commondir and alternates before Git runs. Build clones are dissociated before launch.
+Only regular object bytes enter an authority-owned bare fetch source; collection fetches
+and verifies in a separate authority-owned bare repository before importing to the source.
+Worker config and hooks are never used or rewritten. Git calls use the canonical boundary.
+Suite 82 adds named attack, artifact binding, hostile config and handoff rows, compares
+review context in full and validates fixture formats recursively with a named missing-usage
+exception. Finding 129 covers these review defects with additional unique mutations.

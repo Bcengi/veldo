@@ -26,7 +26,9 @@ def _v129_suite():
              'review/reviewer-claude', 'review/reviewer-codex', 'review/independence-policy',
              'outcome/nonzero', 'outcome/missing-build', 'outcome/missing-review', 'outcome/malformed-review',
              'outcome/missing-usage', 'outcome/reservation', 'proof/authority', 'proof/empty-acceptance',
-             'source/no-completion', 'installation/assets')
+             'source/no-completion', 'installation/assets', 'build/gitdir-symlink', 'build/gitdir-gitfile',
+             'build/gitdir-commondir', 'build/gitdir-alternates', 'build/gitdir-missing',
+             'build/config-neutralization', 'artifact/runtime-binding', 'artifact/floor-binding', 'build/handoff')
     rows = {name: [] for name in names}
     def check(row, label, ok):
         rows[row].append((label, bool(ok)))
@@ -63,7 +65,7 @@ def _v129_suite():
                 check(name, 'installed journey returns artifacts (base seam: %s)' % refusal, value is not None)
             return
         W = load('v129_work', mods / 'control_launch_work.py')
-        L, P, S, GP = W.L, W.P, W.L.S, W.GP
+        L, P, S, GP = W.L, W.P, W.L.S, W._git_process
         DSP = load('v129_floor', mods / 'dispatch.py')
         SIG = load('v129_sign', mods / 'control_signer.py')
         CUST = load('v129_custody', mods / 'control_keys_custody.py')
@@ -108,7 +110,7 @@ def _v129_suite():
         (src / '.veldo/policy.yaml').write_text('risk_tiers:\n  standard: {reviews: 1}\n  critical: {reviews: 2}\n')
         policy = DSP.review_policy_record(src / '.veldo/policy.yaml')
         put(DSP.review_policy_id(repository), 'review_policy', policy)
-        units = ['VELDO-91%02d' % n for n in range(1, 25)]
+        units = ['VELDO-91%02d' % n for n in range(1, 40)]
         for unit in units:
             (src / 'specs' / (unit + '.md')).write_text('\n'.join([
                 dash, 'schema: veldo.spec/v1', 'id: ' + unit, 'title: Worker fixture', 'status: ready',
@@ -123,6 +125,7 @@ def _v129_suite():
         git('-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'Fixture source')
         base_commit = git('rev-parse', 'HEAD')
         S.bind_repositories(writer, domain, {repository: str(src)})
+        writer.execute('PRAGMA wal_checkpoint(FULL)')
         res = L.D.RES.Reservations(S, writer, domain=domain, repository=repository, principal='service',
                                    signer='service', sign=sign, authorize=L.D.RES.service_authority)
         ceiling = dict(capacity=40, invocations=200, wall_seconds=100000)
@@ -154,12 +157,16 @@ def _v129_suite():
             return entity(cid)['data']['generation']
         markers = base / 'markers'
         markers.mkdir()
+        for name in ('hostile', 'post-checkout', 'pre-upload-pack'):
+            script = markers / name
+            script.write_text('#!/bin/sh\n' + 'touch ' + str(markers / 'hostile-ran') + '\n')
+            script.chmod(0o755)
         # Output shapes are from cli-formats.json, the initialize table, and codex-exec.json.
         table = json.loads((TREE / 'proof/VELDO-0062/cli-formats.json').read_text())
         baseline = json.loads((TREE / 'proof/VELDO-0155/claude-baseline.json').read_text())
         status_line = next(message for message, kind in L.ENGINES['codex'].LOGIN_STATUS if kind == 'chatgpt')
         fake = r'''#!@@PYTHON@@ -B
-import hashlib, json, os, subprocess, sys, uuid
+import hashlib, json, os, sqlite3, subprocess, sys, uuid
 from pathlib import Path
 markers, protected = Path(@@MARKERS@@), Path(@@PRIVATE@@)
 engine = 'codex' if 'codex' in sys.argv[0] else 'claude_code'
@@ -214,8 +221,26 @@ if packet['station'] == 'build':
     git('commit', '-q', '-m', 'Fixture proof')
     result = {'commit': git('rev-parse', 'HEAD'), 'proof': proof}
     # A used clone's configuration must never run outside confinement while collecting its result.
-    with open('.git/config', 'a') as stream:
-        stream.write('\n[core]\nfsmonitor = '+ str(markers / 'hostile') + '\nhooksPath = '+str(markers)+'\n')
+    if mode.startswith('gitdir-'):
+        if mode == 'gitdir-symlink':
+            conn = sqlite3.connect('file:' + @@DB@@ + '?immutable=1', uri=True)
+            source = conn.execute('SELECT path FROM repository_bindings').fetchone()[0]
+            conn.close()
+            Path('.git').rename('.git-real')
+            Path('.git').symlink_to(Path(source) / '.git', target_is_directory=True)
+        elif mode in ('gitdir-gitfile', 'gitdir-missing'):
+            Path('.git').rename('.git-real')
+            if mode == 'gitdir-gitfile':
+                Path('.git').write_text('gitdir: .git-real\n')
+        elif mode == 'gitdir-commondir':
+            Path('.git/commondir').write_text(str(Path.cwd() / '.git') + '\n')
+        elif mode == 'gitdir-alternates':
+            Path('.git/objects/info/alternates').write_text('/untrusted/objects\n')
+    elif mode == 'valid':
+        pass
+    if not mode.startswith('gitdir-'):
+        with open('.git/config', 'a') as stream:
+            stream.write('\n[core]\nfsmonitor = '+ str(markers / 'hostile') + '\nhooksPath = '+str(markers)+'\n')
 else:
     result = {'schema': 'veldo.review_receipt/v1', 'assignment': payload['assignment'], 'unit': unit,
               'reviewer': payload['reviewer'], 'source': payload['source']['commit'], 'proof': payload['proof']['digest'],
@@ -226,7 +251,9 @@ if mode in ('missing-build', 'missing-review'):
     text = 'No artifact supplied.'
 else:
     text = json.dumps(result)
-usage = {'input_tokens': 3, 'output_tokens': 2, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0}
+usage = {'input_tokens': 3, 'output_tokens': 2, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0,
+         'cache_creation': {'ephemeral_1h_input_tokens': 0, 'ephemeral_5m_input_tokens': 0},
+         'server_tool_use': {'web_fetch_requests': 0, 'web_search_requests': 0}, 'service_tier': 'standard'}
 if engine == 'claude_code':
     event = {'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4,
              'is_error': False, 'num_turns': 1, 'result': text, 'stop_reason': 'end_turn', 'total_cost_usd': 0,
@@ -247,7 +274,7 @@ else:
 sys.exit(7 if mode == 'nonzero' else 0)
 '''
         fake = fake.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
-            '@@PRIVATE@@', repr(str(private / 'builder'))).replace('@@STATUS@@', repr(status_line)).replace(
+            '@@DB@@', repr(str(db))).replace('@@PRIVATE@@', repr(str(private / 'builder'))).replace('@@STATUS@@', repr(status_line)).replace(
             '@@SUBSCRIPTION@@', repr(baseline['input_protocol']['subscriptions']['values'][2])).replace(
             '@@PROVIDER@@', repr(baseline['input_protocol']['providers']['subscription']))
         factory = state / 'factory'
@@ -361,6 +388,37 @@ sys.exit(7 if mode == 'nonzero' else 0)
             accepted, error = accept(built)
             check('proof/authority', engine + ': accepted stored bundle feeds floor: ' + str(error),
                   accepted and accepted.get('proof_bundle') and accepted['state'] == 'review')
+        # Exercise both binding boundaries with valid artifacts and three substitutions.
+        for engine, built in builds.items():
+            unit, generation, loop, run, path, spec, result, error = built
+            record = (run.last or {}).get('record') or {}
+            if not result:
+                check('artifact/runtime-binding', engine + ': prerequisite build', False)
+                check('artifact/floor-binding', engine + ': prerequisite build', False)
+                continue
+            foreign = builds['codex' if engine == 'claude' else 'claude'][6]
+            for label, reference in [('own', result['artifact']),
+                                     ('foreign', foreign['artifact'] if foreign else None),
+                                     ('forged-path', dict(result['artifact'], path=str(base / 'forged.json'))),
+                                     ('none', None)]:
+                value, error = attempt(lambda: W.artifact(record, reference))
+                check('artifact/runtime-binding', engine + '/' + label + ': ' + str(error),
+                      bool(value) if label == 'own' else value is None and error == 'missing_evidence:build_artifact')
+                value, error = attempt(lambda: DSP._accept_build(writer,
+                    dict(domain=domain, repository=repository, unit=unit, commit=result['commit'], gate={'green': True},
+                         holder='builder', generation=generation, artifact=reference, now=time.time()),
+                    {key: entity(key) for key, in writer.execute('SELECT id FROM entities')}, None, entity(unit)['data']))
+                check('artifact/floor-binding', engine + '/' + label + ': ' + str(error),
+                      bool(value) if label == 'own' else value is None and error == 'missing_evidence:build_artifact')
+        for mode, reason in [('symlink', 'symlink'), ('gitfile', 'not_directory'), ('commondir', 'commondir'),
+                             ('alternates', 'alternates'), ('missing', 'not_directory')]:
+            before = (src / '.git/config').read_bytes()
+            built = build('claude', 'gitdir-' + mode)
+            check('build/gitdir-' + mode, 'hostile layout refuses by name and source config stays byte-identical: ' + str(built[7]),
+                  built[6] is None and built[7] == 'invalid_input:build_gitdir/' + reason
+                  and (src / '.git/config').read_bytes() == before)
+        check('build/config-neutralization', 'hostile fsmonitor and hooks never executed',
+              all(b[6] for b in builds.values()) and not (markers / 'hostile-ran').exists())
         for entry in ('loop', 'reviewer'):
             for engine in ('claude', 'codex'):
                 built = builds[engine] if entry == 'loop' else build(engine)
@@ -384,9 +442,23 @@ sys.exit(7 if mode == 'nonzero' else 0)
                       verdict and verdict.get('verdict') == 'pass' and len(floor.get('reviews', [])) == 1
                       and context.get('spec') == (src / spec['spec_path']).read_text()
                       and context.get('proof') == result['proof'] and 'built.txt' in context.get('diff', '')
+                      and context == {'spec': (src / spec['spec_path']).read_text(),
+                          'proof': result['proof'],
+                          'diff': P._git(src, 'diff', opt + 'no-ext-diff', opt + 'no-textconv',
+                                         spec['base'], result['commit']).stdout.decode(),
+                          'output': 'Return JSON veldo.review_receipt/v1 with assignment, unit, reviewer, '
+                                    'source (commit), proof (digest), verdict and findings. Review the exact source '
+                                    'in this fresh clone. No builder conversation is supplied.'}
+                      and payload.get('source') == {'commit': result['commit']}
+                      and payload.get('proof') == floor.get('proof')
                       and set(payload) == {'schema', 'assignment', 'unit', 'reviewer', 'attempt', 'source', 'proof', 'context'}
                       and observation.get('pid') != floor.get('build', {}).get('process', {}).get('pid')
                       and payload.get('reviewer') != 'builder' and not run.floor.handoff_refusals(unit))
+        for built in builds.values():
+            value, error = attempt(lambda: built[3].floor.handoff(built[0]))
+            check('build/handoff', 'handoff transition: ' + str(error), bool(value))
+        check('build/handoff', 'normal build and review reach the handoff',
+              all((b[3].floor.record(b[0]) or {}).get('state') == 'handoff' for b in builds.values()))
         built = build('claude', risk='critical')
         accepted, error = accept(built)
         unit, generation, loop, run, path, spec, result, error = built
@@ -493,20 +565,48 @@ sys.exit(7 if mode == 'nonzero' else 0)
               '.veldo/control_launch_work.py' in installed
               and all((TREE / 'engine/.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes()
                       for name in PRODUCTION if (ROOT / '.veldo' / name).exists()))
-        # Verify every fake output line belongs to the recorded engine vocabulary.
-        bad = []
+        # Recursively compare required fields and types, including records and nested objects.
+        def matches(value, schema):
+            if value is None and schema.get('nullable'): return True
+            kind = schema['type']
+            if kind == 'any': return True
+            if kind == 'object':
+                fields = schema['fields']
+                return (isinstance(value, dict) and not set(value) - set(fields)
+                        and all((name not in value and field.get('optional')) or
+                                (name in value and matches(value[name], field)) for name, field in fields.items()))
+            if kind == 'record': return isinstance(value, dict) and all(matches(v, schema['values']) for v in value.values())
+            if kind == 'array': return isinstance(value, list) and all(matches(v, schema['items']) for v in value)
+            if kind == 'literal': return value == schema['value']
+            if kind == 'enum': return value in schema['values']
+            if kind == 'number': return type(value) in (int, float) and (not schema.get('int') or type(value) is int)
+            if kind == 'boolean': return type(value) is bool
+            if kind == 'string': return isinstance(value, str)
+            return False
+        bad, exceptions = [], []
         for path in markers.glob('*.out'):
+            mode = json.loads(path.with_suffix('.json').read_text())['packet']['configuration']['fixture_mode']
             for event in json.loads(path.read_text()):
                 kind = event['type']
                 if kind == 'control_response':
                     valid = set(event) == {'type', 'response'} and event['response']['subtype'] == 'success'
                 elif kind == 'result':
-                    fields = table['claude_code']['events']['result/success']['fields']
-                    valid = not set(event) - set(fields) and {f for f, v in fields.items() if not v.get('optional')} - {'modelUsage'} <= set(event)
+                    schema = table['claude_code']['events']['result/success']
+                    if mode == 'missing-usage':
+                        # Named negative fixture exception: deliberately omit only modelUsage.
+                        schema = json.loads(json.dumps(schema))
+                        schema['fields']['modelUsage']['optional'] = True
+                        exceptions.append('missing-usage/modelUsage')
+                        valid = 'modelUsage' not in event and matches(event, schema)
+                    else:
+                        valid = matches(event, schema)
                 else:
-                    valid = kind in CE.EVENTS and CE._malformed(event) is None
+                    valid = (kind in table['codex']['events'] and matches(event, table['codex']['events'][kind])
+                             and kind in CE.EVENTS and CE._malformed(event) is None)
                 if not valid: bad.append(event)
-        check('installation/assets', 'every emitted line uses the recorded formats', bool(list(markers.glob('*.out'))) and not bad)
+        check('installation/assets', 'every emitted line recursively matches the recorded formats; missing-usage/modelUsage is explicit',
+              bool(list(markers.glob('*.out'))) and bool(exceptions) and not bad)
+
     except Exception as error:
         for row in names:
             check(row, 'fixture setup did not complete: %s: %s' % (type(error).__name__, str(error)[:500]), False)
