@@ -3006,7 +3006,7 @@ def cases():
              'unknown-never-relaunched')
     dispatch('dispatch-lost-answer-as-refused', 'control_launch.py',
              "            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
-             "                                             expected_state='accepted')\n",
+             "                                             expected_state='accepted', execution_record=self._record_commitment())\n",
              "            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
              "                                            expected_state='accepted')\n",
              'launch-results')
