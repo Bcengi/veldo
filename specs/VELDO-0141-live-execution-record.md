@@ -275,5 +275,5 @@ cursor update and frame queue insertion. A two-thread row and mutation reject in
 2026-09-27, second review fix round: assemble thinking and every unknown string delta field; replace
 pre-run path snapshots with confined live membership and git-prefix handling; bound record pages by
 bytes and separate fill serialization from the reader lock. Runner-side unknown outcomes commit their
-records. Exact resolved forms cover embedded base64 and lowercase hex. Six regression rows and nine
+records. Exact resolved forms cover embedded base64 and lowercase hex. Six regression rows and ten
 finding-141 mutations cover these changes. Acceptance criteria and ready status unchanged.

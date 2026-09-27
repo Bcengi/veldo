@@ -310,7 +310,8 @@ fields are redacted. Base64 exact forms include the stable substring for all thr
 
 Path membership no longer enumerates the tree. Git's a/ and b/ prefixes are removed before checking.
 Directory traversal uses directory descriptors with O_NOFOLLOW at every step. A missing leaf is accepted
-only when its parent exists and the leaf itself does not score as high entropy. Git stat's three-dot
+only when its parent exists and the leaf itself does not score as high entropy, even below the
+scanner's usual minimum token length. Git stat's three-dot
 prefix is a path root, so each remaining segment is scored independently.
 
 Record pages have a 1 MiB encoded-line budget and always contain at least one line when any remain.

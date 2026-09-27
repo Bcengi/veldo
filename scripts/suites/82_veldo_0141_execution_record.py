@@ -1685,6 +1685,9 @@ err.close()
                 check('redaction/live-paths', 'diff prefixes, new files, truncations and safe new leaves survive',
                       ER.redact(output, resolved)[0] == output)
                 opaque = fresh()[:20] + '/' + fresh()
+                short_leaf = 'src/' + fresh()[:28]
+                while not whole_high(short_leaf) or SS.shannon(short_leaf[4:]) < SS.ENTROPY_THRESHOLD:
+                    short_leaf = 'src/' + fresh()[:28]
                 outside = base / 'outside-paths'
                 outside.mkdir()
                 hidden = fresh()
@@ -1692,6 +1695,7 @@ err.close()
                 (clone / 'link').symlink_to(outside, target_is_directory=True)
                 check('redaction/live-paths', 'nonexistent opaque keys and symlink escapes remain redacted',
                       ER.redact(opaque, resolved)[0] == ENTROPY
+                      and whole_high(short_leaf) and ER.redact(short_leaf, resolved)[0] == ENTROPY
                       and hidden not in ER.redact('link/' + hidden, resolved)[0])
 
         with region('redaction/offset-encodings'):

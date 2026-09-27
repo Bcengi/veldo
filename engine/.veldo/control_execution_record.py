@@ -317,8 +317,7 @@ class ClonePaths:
                 try:
                     info = os.lstat(part, dir_fd=fd)
                 except FileNotFoundError:
-                    return index == len(parts) - 1 and not any(
-                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))
+                    return index == len(parts) - 1 and not _high(part)
                 if index == len(parts) - 1:
                     return True
                 if not stat.S_ISDIR(info.st_mode):
