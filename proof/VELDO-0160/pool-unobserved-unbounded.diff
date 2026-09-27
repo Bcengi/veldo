@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -94 +94 @@
+-    return (record.get('concurrency') or 1) if observed(record, records) else 1
++    return record.get('concurrency') or 1  # defect: unknown admits the account's whole concurrency

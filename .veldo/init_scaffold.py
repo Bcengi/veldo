@@ -91,6 +91,10 @@ _FILES = [
     ".veldo/accounts.py",
     ".veldo/control_engine_claude.py",
     ".veldo/control_engine_codex.py",
+    # VELDO-0160: the account pool the reservations choose a dispatch's account through, and the
+    # re-run-or-ask decision over the record of a run its account's limit stopped. Runtime assets.
+    ".veldo/control_account_pool.py",
+    ".veldo/control_account_limit.py",
     # VELDO-0035: accepted snapshots and transactional read-set registrations.
     # Runtime assets; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_snapshot.py",

@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -185,0 +186,2 @@
++    if outcome == 'failed':
++        return LIMIT_OUTCOME, {'window': 'unified', 'reset_at': None, 'signal': 'stream'}  # defect: every failure

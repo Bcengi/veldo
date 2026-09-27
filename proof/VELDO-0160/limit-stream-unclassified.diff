@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -188 +188 @@
+-    if limit['signal'] == 'stream' and outcome == 'completed':
++    if limit['signal'] == 'stream':  # defect: a window the stream reported exhausted is not a limit

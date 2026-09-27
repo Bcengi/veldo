@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -310 +310 @@
+-BUILTIN = BUILTIN_TOOLS | frozenset(BUILTIN_RENAMED)
++BUILTIN = BUILTIN_TOOLS  # defect: the Agent tool's current name is not built in

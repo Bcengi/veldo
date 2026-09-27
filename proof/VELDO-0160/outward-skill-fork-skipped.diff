@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -811 +811 @@
+-    if name == IN_RUN_SKILL['tool'] and (not isinstance(value, dict)
++    if False and (not isinstance(value, dict)

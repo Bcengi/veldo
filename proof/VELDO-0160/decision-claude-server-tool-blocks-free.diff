@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -569 +569 @@
+-            found.append(_unknown(kind, block.get('id') if isinstance(block.get('id'), str) else None))
++            pass  # defect: an MCP-connector, server-tool or unlisted block is no call

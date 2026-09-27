@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -627 +627 @@
+-            if 'repl_call' in event:
++            if False:  # defect: the REPL tool's inner calls are not read

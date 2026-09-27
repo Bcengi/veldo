@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -202 +202 @@
+-                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent')}
++                 'tools': ('spawn_agent', 'send_input', 'wait', 'close_agent', 'wait_agent')}  # defect: the core's wait_agent, which exec never writes, is taken to stay in the run

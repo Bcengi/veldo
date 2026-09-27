@@ -42,6 +42,8 @@ footprint:
   - "specs/VELDO-0160-account-pool-and-the-account-limit.md"
   - "specs/index.md"
   - "proof/VELDO-0160/*"
+  - "proof/VELDO-0062/extract_formats.py"
+  - "proof/VELDO-0062/cli-formats.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -185,7 +187,57 @@ servers, each with its catalog id and revision, and for each such revision the s
 marks read-only, the `read-only tools` field of VELDO-0144's `mcp_server`; a revision that marks nothing
 has an empty set. A server named in a call maps to the catalog id and revision the dispatch's
 configuration lists, and a call whose server is not listed counts as not read-only. VELDO-0154 AC3 feeds
-the decision each real run's record and catalog marks in the same form.
+the decision each real run's record and catalog marks in the same form. Each server of the configuration may
+also give the tools the dispatch selects for the run (VELDO-0127's selection, `all` tools or a list); a server
+that gives no list gives all its tools.
+
+**The structural rule for the re-run-or-ask decision (the lead's decision).** Three rounds of checks each found
+a new way Claude Code keeps a nested MCP call out of the stream (the REPL tool's inner calls, an agent a
+sub-agent starts, a skill a sub-agent forks, whose messages are dropped and whose end reports no count), so
+rebuilding the calls from the stream cannot be made complete, and the configuration decides first. First of all, a
+call that starts an agent outside the run asks whatever the configuration, since that agent may act through the
+account's claude.ai connectors, which no configuration of the run governs: for Claude Code any RemoteTrigger call
+(a deferred tool whose create, update and run start a cloud agent routine) and a durable CronCreate (its prompt
+persists to the project's scheduled tasks and fires after the run; a CronCreate named where its input is not given
+may be durable), read from the binary's bytes into `cli-formats.json` (`nested_work` `remote_agent`); the decision is
+ask, naming each such line (reason `remote_agent`, basis `remote_agent`) beside the calls that contradict the
+configuration. Next, before rule 1, a visible call that contradicts the configuration asks: an MCP call the record shows to a server the run's
+configuration does not list, or to a tool the configuration does not give the run, shows the run did not have the
+configuration the decision reads, so the decision is ask, naming each such line (reason `unconfigured_call`, basis
+`unconfigured_call`), even when every configured server is read-only. Rule 1: when
+the configuration gives the run no MCP server with a tool not marked read-only (no server, or each lists its
+tools and its revision marks every one read-only), the run could not have written through MCP, and the
+decision is re-run whatever the stream shows; a structurally malformed record is still refused by name. Rule 2:
+otherwise, when the record shows any construct that can run nested work the stream may not show, the decision
+is ask, naming each such line and its construct: for Claude Code an Agent tool call (or its old name Task, or
+SendMessage to a teammate), a Skill tool call, the REPL tool or its inner call, the Workflow tool or a
+workflow's task frames, a RemoteTrigger call, a CronCreate call, any task frame (`task_started`, `task_progress`, `task_notification`,
+`task_updated`), a message a sub-agent or a forked skill produced (it names its task in `parent_tool_use_id`,
+how the CLI forwards `agent_progress` and `skill_progress`) and a forked skill's result; for Codex a collab
+agent call (exec's `collab_tool_call`, the core's `collab_agent_tool_call`) and a sub-agent's activity. The
+construct list is read from the binaries' bytes into `cli-formats.json` (`nested_work`). Rule 3: otherwise the
+call-by-call rules above decide, unchanged: a visible call to a tool not marked read-only asks, an engine line
+that cannot be read asks, a form the decision does not recognize asks. The authoritative evidence later is a
+factory-side log of the MCP calls themselves, which no engine stream can hide (filed for VELDO-0158).
+
+**The allowlist for built-in tools (the lead's decision, rule A).** Checked first, alongside the rule for an agent
+started outside the run and before every rule above: any call of a built-in tool that the allowlist does not show
+staying inside the run's clone and host session decides ask, naming the line (reason and basis `outward_tool`), whatever
+the configuration; an MCP tool is judged by the configuration rules. The allowlist is read from the binaries' bytes
+into `cli-formats.json` (`tool_forms` `in_run`): for Claude Code the file tools, Glob and Grep, the notebook edit,
+TodoWrite, ToolSearch, Bash with its background companions, the read-only web fetch and search, and rule 2's constructs
+(Agent unless remote, Skill, REPL, Workflow, CronCreate unless durable); for Codex exec's own items and the collab tools
+of exec's CollabTool enum (spawn_agent, send_input, wait and close_agent, read from its serializer). SendMessage in any
+form and the Agent tool with isolation remote are not on it. The calls a depth-2 agent or a workflow agent makes are
+never shown, so rule A also reads each task's tally: a task that counts more calls than the record shows under it, or
+a count that cannot be read or goes down, asks the same way (reason and basis `outward_tool`), whatever the
+configuration. A Skill call inside a sub-agent (its message carries `parent_tool_use_id`) also asks by rule A,
+regardless of its input: the fork runs outside the task-progress loop, its end notification has no usage, and its
+messages can be dropped. An input carrying `context` that is not explicitly `inline`, or an input that cannot be
+read, also asks as a possible fork. The 2.1.281 binary's actual Skill input schema contains only `skill` and optional
+`args`, no fork field; the skill definition supplies `context` or `getContext(args, toolUseContext)`, defaulting to
+`inline`. The extractor pins both the schema and that resolution. A top-level Skill with ordinary input and no fork
+indication remains eligible to re-run under no write-capable server, as the lead directs.
 
 Use canonical engine assets and synchronize installed copies. Inventory every asset the selected
 journey installs. Compare executable registrations to each criterion's declared universe, observe the
@@ -210,3 +262,184 @@ AC2 and AC3 elsewhere stay right. Criterion meaning unchanged. A draft.
 
 2026-09-25, lead: AC1's registration and concurrency claims each get their own falsifier beside
 isolation.
+
+2026-09-26, built (Release 1, Linux): the account pool (`control_account_pool`) chooses each dispatch's
+account inside its VELDO-0036 worker reservation (`Reservations.reserve_pooled`), reading the account
+records at every dispatch: candidates are the active accounts of the adapter's engine with a profile on
+its host, outside every reported window and under their concurrency, one run at a time until an
+account's first observation, in the Notes' order; with none the dispatch is refused
+`no_account_until:<earliest reset>` naming each account's reason. The Runner takes the pool as its
+account (two small `control_launch.py` hunks, the pool branch in `Runner.prepare` and the classification
+in `Metering.settle`). A second registration of an account, by id or by its profile under another name,
+is refused `duplicate_account:<id>`. Each engine meter keeps the limit its stream stated (Claude Code's
+rejected `rate_limit_event` or its rate-limit result, whose usage-limit message gives the window and
+reset; Codex's usage-limit message in an `error` event or a `turn.failed`), and the final report ends
+such a run `account_limit` with its window and reset. `control_account_limit.decide` makes the re-run-or-
+ask decision over a fixture record in the Notes' form. Proof in `proof/VELDO-0160/`: suite
+`78_veldo_0160_account_pool` (13 rows), the red record at 52f817d5 (all 11 behavior rows red by
+assertion, the two format rows green) and 35 finding 160 mutations, each red on its named row. The
+footprint adds `proof/VELDO-0062/extract_formats.py` and `cli-formats.json`: the extractor now also
+reads Claude Code's usage-limit message and Codex's MCP tool-call item out of the binaries, so every
+fake line comes from the real formats. Status unchanged.
+
+2026-09-26, review fixes: the re-run-or-ask decision now asks, naming the line, for an engine line it
+cannot read (a payload that is not a JSON object naming its type, or a tool call the engine module cannot
+read), reason `unreadable` or `redacted_unreadable` when the line's `redacted` field is set, since
+VELDO-0141 AC4's redaction can break a line; a structurally malformed record is still refused by name. One
+call id seen read-only and then naming a write counts the write. Claude Code's other rejected-status texts
+(out of usage credits, the org, seat, service, admin and $0-group forms), read out of the binary into
+`cli-formats.json`, classify `account_limit`. New rows `limit/claude-rejected-texts`,
+`decision/unreadable-asks`, `decision/same-id-write`, `pool/usage-observes`, `pool/selection-order` and
+`pool/until-earliest` pin these and the Notes' selection order and earliest reset; 13 more finding 160
+mutations. Status unchanged.
+
+2026-09-26, merged with main (VELDO-0060 and VELDO-0061) and the lead's fail-closed decision: the final
+report now closes the meter, takes the exit's outcome, keeps the engine's artifact and makes a zero exit
+without its terminal record a failure before it classifies the account limit, so a limit the stream
+stated on such a run is still `account_limit`; the engine protocol names each meter's `limit()`. The
+re-run-or-ask decision reads only the tool-call forms the binaries' own tables list (the extractor now
+reads Claude Code's stream message union, its assistant and user content block unions, its streaming
+events and its built-in tool list, and Codex exec's and the core's item types into `cli-formats.json`)
+and counts any other form as an unknown call that asks, naming its line and form (reason
+`unknown_call`): a Claude Code `mcp_tool_use` or other server-tool block, a `stream_event` carrying a
+`tool_use`, a user `tool_result`, a `tool_progress` or a `tool_use_summary` for a call id no earlier line
+showed, a Codex `dynamic_tool_call`, `collab_agent_tool_call` or `sub_agent_activity`, and any message,
+subtype, block, item or event type the tables do not list. On a redacted line a Claude Code tool name
+that is neither `mcp__...` nor a built-in tool is `redacted_unreadable`. New rows
+`decision/unknown-forms`, `decision/redacted-name`, `decision/tool-free-forms` (the negative control)
+and `format/tool-forms`, and 17 more finding 160 mutations. Status unchanged.
+
+2026-09-26, the second check's fixes: an MCP write made through Claude Code's REPL tool is now decided
+ask. Its inner calls reach the stream only as a `tool_progress` of the REPL call carrying a `repl_call`
+the binary's emitters write and its schema omits; an `mcp__` inner name is that MCP call, a name neither
+`mcp__` nor built in an unknown call, and a malformed `repl_call` unreadable. The other fields that name
+a tool that ran count the same way: a `tool_progress`'s own tool, a `system/task_progress`'s
+`last_tool_name` and its workflow agents' `lastToolName`, and an assistant message's MCP attribution and
+batch tool names; the reader's table of every tool-named field, declared or emitted, is the binary's.
+The binary's `BUILTIN_TOOL_NAMES` lists the Agent tool under its old name `Task`, so its current name
+`Agent`, read from the tool's definition, is built in and an Agent call on a redacted line re-runs. The
+frames the CLI writes outside the message union whose schema provably carries no tool call (`keep_alive`,
+`control_cancel_request`, `active_goal`, `autocompact_state`, `post_turn_summary`, `task_summary`) are no
+call; a control request or response and the transcript mirror cannot be shown tool-free and still ask.
+Codex exec's own `collab_tool_call` is in exec's item table, an unknown call. The extractor reads each
+of these out of the binaries into `cli-formats.json`. New rows `decision/repl-inner-call`,
+`decision/task-progress-tool` and `decision/frame-tool-names`; `decision/redacted-name`,
+`decision/unknown-forms`, `decision/tool-free-forms` and `format/tool-forms` extended; 13 more finding
+160 mutations (78 in all, each rejected). Status unchanged.
+
+2026-09-26, the lead's decision on a nested agent's hidden call (fail closed): in Claude Code 2.1.281 an
+agent that a sub-agent starts (depth 2 or more) has its messages dropped unless the SDK's
+`forwardSubagentText` option is set, so its `tool_use` blocks never reach the stream and its task's progress
+names only the last tool of each message; a depth-2 reply of an MCP write then `Read` showed only `Read` and
+was decided re-run. The decision now reads, for every task the stream reports (`system/task_started`,
+`task_progress` and `task_notification`, keyed by the task's `tool_use_id`), the task's count of its own
+calls (`usage.tool_uses`, which the binary raises by one for each `tool_use` block of the task's own
+messages) against the distinct `tool_use` blocks the record shows under it (`parent_tool_use_id`); any
+shortfall is that many calls the record cannot name, an unknown call of form `task_tool_uses` that asks,
+naming the task and the shortfall (`unshown`). A count frame whose count cannot be read, and a count lower
+than the task reported before, are unreadable and ask. Every field, frame and the forwarding gate were read
+from the 2.1.281 bytes, and the extractor now records them in `cli-formats.json` (`task_counts`). New row
+`decision/subagent-calls`; `decision/task-progress-tool`, `decision/tool-free-forms` and `format/tool-forms`
+follow the reading; 8 more finding 160 mutations (86 in all). Forwarding sub-agent text
+(`forwardSubagentText`), which would put a nested agent's own blocks in the stream, is filed for VELDO-0141's
+live view, not set here. Status unchanged.
+
+2026-09-26, the lead's structural rule for the re-run-or-ask decision: a third check found a skill forked by a
+sub-agent whose `skill_progress` is dropped and whose fork reports no count of its calls, so its MCP write left
+no trace in the stream and was decided re-run. Rebuilding the calls from the stream cannot be made complete, so
+the configuration now decides first (the Notes): a configuration with no MCP server giving a tool not marked
+read-only re-runs whatever the stream shows (basis `no_write_capable_server`); otherwise any construct that can
+run hidden nested work asks, naming its line and construct (reason `nested_work`, basis `nested_work`); otherwise
+the call-by-call rules decide as before (`decide_by_calls`, basis `calls`). The fixture configuration's servers
+may list the tools they give the run. The extractor reads the construct list out of both binaries into
+`cli-formats.json` (`nested_work`). New rows `decision/no-write-server-reruns`, `decision/nested-work-asks` and
+`decision/nested-constructs`; the rows that judge how the call-by-call rules read a record holding such a
+construct drive `decide_by_calls`, since `decide` now answers those records by the structural rule, and the
+others check they were decided by the calls; `format/tool-forms` compares the construct tables. 15 more finding
+160 mutations (rule 1 skipped, rule 2 skipped, each construct class dropped, and the configuration's tool list
+misread). The authoritative evidence later is a factory-side log of the MCP calls (filed for VELDO-0158). Status
+unchanged.
+
+2026-09-26, the lead's decision on a call the configuration does not give the run: before rule 1, a visible MCP
+call to a server the run's configuration does not list, or to a tool the configuration does not give the run,
+decides ask, naming the line (reason `unconfigured_call`, basis `unconfigured_call`), since it contradicts the
+configuration rule 1 trusts; before this a run configured with only read-only servers that visibly called an
+unlisted server was re-run. The call-by-call rules keep `server_not_configured` for their own callers. New row
+`decision/unconfigured-call-asks` (an unlisted server's call and an unselected read-only tool's call ask with only
+read-only servers configured; the same record calling a listed read-only tool re-runs); `decision/ask` now expects
+the unlisted server's call to be decided by this rule and checks the call-by-call rules still name it. 2 more
+finding 160 mutations (the check skipped, the configuration's tool list ignored). Status unchanged.
+
+2026-09-26, merged with main (VELDO-0155 and VELDO-0156) and the lead's decision on work outside the run: the
+suite's fake Claude Code is qualified with stream JSON input and main's everything-off baseline and answers the
+initialize handshake with a subscription login, and its fake Codex prints `login status` on stderr as 0.154.0
+does, as main's suites do. A call that starts an agent outside the run now asks first, whatever the configuration
+(basis and reason `remote_agent`): any Claude Code RemoteTrigger call (create, update and run start a cloud agent
+routine that keeps the account's claude.ai connectors) and a durable CronCreate (a prompt that fires after the
+run; `durable` true or the text "true", or a CronCreate named where its input is not given), each named beside the
+calls that contradict the configuration; before this a routine created and run with no MCP server configured was
+re-run. RemoteTrigger and CronCreate are also rule 2's constructs (`remote`, `cron`). The extractor reads both
+tools, RemoteTrigger's actions and CronCreate's `durable` field with its default and semantic boolean out of the
+2.1.281 bytes into `cli-formats.json`. New row `decision/remote-agent-asks` (the checker's routine and durable
+cron ask under no server, only read-only tools and a write-capable server; a non-durable cron and the checker's
+normal runs keep their decisions); `decision/nested-constructs` and `format/tool-forms` cover the two
+constructs; 10 more finding 160 mutations. Status unchanged.
+
+2026-09-27, the lead's allowlist (rule A, fail closed): each check round found another Claude Code built-in tool that
+acts outside the run (SendMessage to another session, which the binary treats as read-only for plain text; the Agent
+tool with isolation remote; the claude.ai-writing tools Artifact, ArtifactData, ArtifactComments, Projects, ClaudeDesign,
+DesignSync, ShareOnboardingGuide, the memory-store save and SendFile; self_hosted_runner_spawn_local; PushNotification),
+and none was caught with no write-capable MCP server configured. A list of outward tools is never complete, so the
+decision now asks first, alongside the remote_agent rule and before every other rule, for any call of a built-in tool
+the allowlist does not show staying inside the run's clone and host session, naming the line (reason and basis
+`outward_tool`), whatever the configuration; an MCP tool is judged by the configuration rules as before. The allowlist,
+read from the 2.1.281 and 0.154.0 bytes into `cli-formats.json` (`tool_forms` `in_run`), is the file tools Read, Write,
+Edit and NotebookEdit, Glob and Grep, TodoWrite, ToolSearch, Bash with its background companions TaskStop (KillShell,
+KillBash) and Monitor, the read-only WebFetch and WebSearch, and rule 2's constructs Agent (Task), Skill, REPL, Workflow
+(RunWorkflow) and CronCreate; the binary has no LS tool. An allowlisted Agent call still asks when its input's isolation
+is remote, when it names an agent definition that is not built in (the binary takes the definition's isolation when
+the input gives none, and an agent file may set remote) and when its input is shown nowhere (an agent a sub-agent's
+own sub-agent starts); a file tool or Bash naming another machine in `_host` asks (the binary routes it only when its
+remote-tools gate is on, and this build compiles the gate off); a task whose type is not an allowlisted tool's (a
+remote agent is task type `remote_agent`), a workflow agent reported remote, any tool-call block other than `tool_use`
+and a tool name that cannot be read ask. For Codex, an item type exec's own items do not list, or a sub-agent call whose
+collab tool exec's CollabTool enum does not list, asks. New row `decision/outward-tool-asks` (the checker's probe7, each
+outward tool under no server, only read-only servers and a write-capable server, every allowlisted tool and alias
+re-running with no write-capable server, an unknown future tool, and the normal runs keeping their decisions);
+`format/tool-forms` compares the allowlist; `decision/unreadable-asks` and `decision/nested-constructs` expect rule A
+to decide first where it now does; 14 more finding 160 mutations (rule A skipped, SendMessage allowlisted, an unknown
+tool allowed, Agent's remote isolation unchecked, and each other condition dropped). Follow-up for the lead
+(VELDO-0155): the baseline should pass the same allowlist to the engine, so these tools are off for the run, nested
+agents included, and not only caught afterwards; rule A sees only what the stream shows. Status unchanged.
+
+2026-09-27, rule A reads the tally (the checker's probe8, probe9 and probe10): rule A saw only the calls the stream
+shows, and the calls a depth-2 agent or a workflow agent makes are never shown; only the call-by-call rules read each
+task's count of its calls, so with no write-capable MCP server rule 1 decided re-run first. Rule A now also reads each
+task's tally (`untallied`, the engine module's `Tasks`): a shortfall (form `task_tool_uses`, with the task and the
+calls unshown), or a count that cannot be read or goes down (form `task_tool_uses:unreadable`), decides ask, reason
+and basis `outward_tool`, whatever the configuration. Codex: exec's CollabTool enum has four variants, read from its
+serializer's switch in the 0.154.0 bytes (spawn_agent, send_input, wait, close_agent; `wait` is not in the variant
+literal run because the compiler shares its literal), and the core's wait tool waits on agent ids from spawn_agent or
+on a live agent of the current root thread tree, so `wait` is allowlisted; `wait_agent` is the core's tool name, which
+exec never writes in a collab_tool_call, and still asks. The extractor reads the serializer into `cli-formats.json`.
+Rows in `decision/outward-tool-asks`: probe8's depth-2 agent, probe10's workflow, an unreadable and a decreasing count
+ask under no server, only read-only servers and a write-capable server; a sub-agent whose calls are all shown and
+allowlisted, and probe8's normal run with one, re-run; a Codex run that spawns, waits on and closes an agent re-runs;
+a collab_tool_call naming wait_agent asks. `decision/no-write-server-reruns`, `decision/nested-work-asks` and
+`decision/remote-agent-asks` expect rule A to name the tally where their fixtures count unshown calls. 5 more finding
+160 mutations (the shortfall not consulted in rule A, an unreadable count trusted, the shortfalls dropped, wait not
+listed, wait_agent listed). Status unchanged.
+
+2026-09-27, the lead's Skill fork review fix (probe11 b6 and probe12): rule A now asks, reason and basis
+`outward_tool`, for every Skill call carrying a sub-agent parent and for a Skill input whose explicit context may
+fork or cannot be read. The binary's Skill input has no fork field; the extractor pins its `skill` and `args`
+schema and the definition's context resolver. The forked record moves from `decision/no-write-server-reruns` to
+`decision/outward-tool-asks`, with and without the fork's task frames, as objects and JSON text, under no server,
+read-only servers and write-capable servers. Top-level Skill with no fork still re-runs without a write-capable
+server and asks by rule 2 with one; probe12's normal general-purpose and Explore run still re-runs. Two mutations
+skip the parent and fork checks independently. Status unchanged.
+The rule 2 row retains exact forwarded-message and last-tool coverage through a fully shown nested Agent record,
+after the full mutation run exposed the assertion lost when the forked Skill moved to rule A.
+Validation of this fix: all 33 suite rows pass, all 134 finding 160 mutations are rejected, the red record at
+52f817d5 has 31 assertion failures and two green fixture rows, format extraction matches, engine copies are
+identical, and repository validation passes. The gate was not run.

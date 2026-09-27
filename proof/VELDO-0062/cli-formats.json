@@ -2899,6 +2899,695 @@
   },
   "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
   "source": "the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)",
+  "tool_forms": {
+   "builtin_renamed": [
+    {
+     "aliases": [
+      "Task"
+     ],
+     "name": "Agent"
+    }
+   ],
+   "builtin_renamed_source": "a tool whose alias is on BUILTIN_TOOL_NAMES but whose current name is not: the Agent tool's definition (name, searchHint, aliases) with its names bound in the statement that binds its own description",
+   "builtin_tools": [
+    "Bash",
+    "Read",
+    "Write",
+    "Edit",
+    "Glob",
+    "Grep",
+    "NotebookEdit",
+    "WebFetch",
+    "WebSearch",
+    "Task",
+    "TodoWrite",
+    "TaskCreate",
+    "TaskUpdate",
+    "TaskGet",
+    "TaskList",
+    "TaskStop",
+    "Skill",
+    "REPL",
+    "JavaScript",
+    "AskUserQuestion",
+    "ToolSearch",
+    "SendUserMessage"
+   ],
+   "emitted_tool_fields": {
+    "system/task_progress": [
+     "workflow_progress.lastToolName"
+    ],
+    "tool_progress": [
+     "repl_call.inner_tool_name",
+     "repl_call.inner_tool_input",
+     "repl_call.inner_tool_use_id"
+    ]
+   },
+   "emitted_tool_fields_source": "the fields a frame's emitters write that name a tool though its schema omits them: the REPL tool's repl_call on a tool_progress (both emitters) and a task_progress's workflow_progress entries (workflow_agent progress with lastToolName)",
+   "frames": [
+    [
+     "active_goal",
+     null,
+     true
+    ],
+    [
+     "autocompact_state",
+     null,
+     true
+    ],
+    [
+     "control_cancel_request",
+     null,
+     true
+    ],
+    [
+     "control_request",
+     null,
+     false
+    ],
+    [
+     "control_response",
+     null,
+     false
+    ],
+    [
+     "keep_alive",
+     null,
+     true
+    ],
+    [
+     "system",
+     "post_turn_summary",
+     true
+    ],
+    [
+     "system",
+     "task_summary",
+     true
+    ],
+    [
+     "transcript_mirror",
+     null,
+     false
+    ]
+   ],
+   "frames_source": "the StdoutMessage members outside the SDK message union (everything the CLI writes in stream-json mode), each with whether its schema provably carries no tool call: only literals, enums, strings, numbers and booleans and no field naming a tool",
+   "in_run": {
+    "agent": {
+     "builtin_types": [
+      "Explore",
+      "Plan",
+      "claude",
+      "claude-code-guide",
+      "comment-thread-analyst",
+      "fork",
+      "general-purpose",
+      "statusline-setup",
+      "web-fetch",
+      "worker",
+      "workflow-subagent"
+     ],
+     "field": "isolation",
+     "outside": "remote",
+     "tools": [
+      "Agent",
+      "Task"
+     ],
+     "type_field": "subagent_type",
+     "values": [
+      "worktree",
+      "remote"
+     ]
+    },
+    "aliases": {
+     "Agent": [
+      "Task"
+     ],
+     "TaskStop": [
+      "KillBash",
+      "KillShell"
+     ],
+     "Workflow": [
+      "RunWorkflow"
+     ]
+    },
+    "host": {
+     "field": "_host",
+     "local": [
+      "",
+      "container",
+      "this-machine"
+     ],
+     "routed": false,
+     "tools": [
+      "Bash",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+     ]
+    },
+    "skill": {
+     "context_source": "skill definition: getContext(args, toolUseContext) or context",
+     "field": "context",
+     "inline": "inline",
+     "input_fields": [
+      "args",
+      "skill"
+     ],
+     "input_fork_field": null,
+     "parent": "parent_tool_use_id",
+     "tool": "Skill"
+    },
+    "source": "the built-in tools whose effects stay inside the run's clone and host session (each name's binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the notebook edit, the session checklist, the deferred-tool loader, Bash and its background companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs (Agent, Skill, REPL, Workflow, CronCreate); the Agent tool is remote when its input's isolation is remote or, with none given, when the agent definition its subagent_type names says so (no built-in definition sets isolation; builtin_types), and a remote agent is a task of type remote_agent; the file tools and Bash take a _host naming another machine, routed there only when the remote-tools gate is on, which this build compiles off (routed false); the task types of the allowlisted tools, from the binary's task table. Skill's input schema is only skill and optional args, with no fork field; its definition supplies context (getContext or context, default inline). A sub-agent's Skill therefore asks regardless of input; an explicit context in the recorded input must exclude a fork. The binary has no LS tool.",
+    "task_types": {
+     "field": "task_type",
+     "in_run": [
+      "in_process_teammate",
+      "local_agent",
+      "local_bash",
+      "local_workflow",
+      "monitor_ws"
+     ],
+     "table": [
+      "auto_mode_scan",
+      "dream",
+      "in_process_teammate",
+      "local_agent",
+      "local_bash",
+      "local_workflow",
+      "monitor_ws",
+      "remote_agent"
+     ]
+    },
+    "tools": [
+     "Agent",
+     "Bash",
+     "CronCreate",
+     "Edit",
+     "Glob",
+     "Grep",
+     "Monitor",
+     "NotebookEdit",
+     "REPL",
+     "Read",
+     "Skill",
+     "TaskStop",
+     "TodoWrite",
+     "ToolSearch",
+     "WebFetch",
+     "WebSearch",
+     "Workflow",
+     "Write"
+    ],
+    "workflow_last_tool": "label"
+   },
+   "messages": [
+    [
+     "assistant",
+     null
+    ],
+    [
+     "auth_status",
+     null
+    ],
+    [
+     "command_lifecycle",
+     null
+    ],
+    [
+     "conversation_reset",
+     null
+    ],
+    [
+     "prompt_suggestion",
+     null
+    ],
+    [
+     "rate_limit_event",
+     null
+    ],
+    [
+     "result",
+     "error_during_execution"
+    ],
+    [
+     "result",
+     "error_max_budget_usd"
+    ],
+    [
+     "result",
+     "error_max_structured_output_retries"
+    ],
+    [
+     "result",
+     "error_max_turns"
+    ],
+    [
+     "result",
+     "success"
+    ],
+    [
+     "stream_event",
+     null
+    ],
+    [
+     "system",
+     "api_retry"
+    ],
+    [
+     "system",
+     "background_tasks_changed"
+    ],
+    [
+     "system",
+     "cloud_session_delta"
+    ],
+    [
+     "system",
+     "code_change_published"
+    ],
+    [
+     "system",
+     "commands_changed"
+    ],
+    [
+     "system",
+     "compact_boundary"
+    ],
+    [
+     "system",
+     "control_request_progress"
+    ],
+    [
+     "system",
+     "dev_intent"
+    ],
+    [
+     "system",
+     "elicitation_complete"
+    ],
+    [
+     "system",
+     "feedback_draft_queued"
+    ],
+    [
+     "system",
+     "files_persisted"
+    ],
+    [
+     "system",
+     "hook_progress"
+    ],
+    [
+     "system",
+     "hook_response"
+    ],
+    [
+     "system",
+     "hook_started"
+    ],
+    [
+     "system",
+     "informational"
+    ],
+    [
+     "system",
+     "init"
+    ],
+    [
+     "system",
+     "local_command_output"
+    ],
+    [
+     "system",
+     "memory_recall"
+    ],
+    [
+     "system",
+     "mirror_error"
+    ],
+    [
+     "system",
+     "model_refusal_fallback"
+    ],
+    [
+     "system",
+     "model_refusal_no_fallback"
+    ],
+    [
+     "system",
+     "notification"
+    ],
+    [
+     "system",
+     "peer_message_hold"
+    ],
+    [
+     "system",
+     "per_turn_effort_changed"
+    ],
+    [
+     "system",
+     "permission_denied"
+    ],
+    [
+     "system",
+     "plugin_install"
+    ],
+    [
+     "system",
+     "session_state_changed"
+    ],
+    [
+     "system",
+     "status"
+    ],
+    [
+     "system",
+     "task_notification"
+    ],
+    [
+     "system",
+     "task_progress"
+    ],
+    [
+     "system",
+     "task_started"
+    ],
+    [
+     "system",
+     "task_updated"
+    ],
+    [
+     "system",
+     "thinking_tokens"
+    ],
+    [
+     "system",
+     "turn_handoff_available"
+    ],
+    [
+     "system",
+     "turn_preempted"
+    ],
+    [
+     "system",
+     "vcs_state_changed"
+    ],
+    [
+     "system",
+     "worker_shutting_down"
+    ],
+    [
+     "tool_progress",
+     null
+    ],
+    [
+     "tool_use_summary",
+     null
+    ],
+    [
+     "user",
+     null
+    ]
+   ],
+   "nested_work": {
+    "fork": {
+     "field": "tool_use_result",
+     "status": "forked"
+    },
+    "forwarded": {
+     "field": "parent_tool_use_id",
+     "progress": [
+      "agent_progress",
+      "skill_progress"
+     ]
+    },
+    "remote_agent": {
+     "durable": {
+      "field": "durable",
+      "off": [
+       false,
+       "false"
+      ],
+      "tool": "CronCreate"
+     },
+     "tools": [
+      "RemoteTrigger"
+     ]
+    },
+    "repl": {
+     "tool_progress": "repl_call"
+    },
+    "source": "the tools that run an agent, a skill, code, a workflow, a cloud agent routine or a scheduled prompt (each name's binding and the tool's definition or emitter naming it, with its aliases; the Agent tool's names are builtin_renamed's), the system frames whose schema carries a task_id, the fields a task frame gives a workflow and a workflow's task type, the REPL tool's inner call on a tool_progress, the progress kinds whose messages the CLI forwards with their task's id as parent_tool_use_id (Sne), the Skill tool's result when it forked an agent, and the calls that start an agent outside the run (remote_agent: any RemoteTrigger call, whose create, update and run start a cloud agent routine, and a CronCreate whose optional durable field, false by default and read through the semantic boolean that takes \"false\" for false, persists the prompt to .claude/scheduled_tasks.json to fire after the run)",
+    "task_frames": [
+     "system/task_notification",
+     "system/task_progress",
+     "system/task_started",
+     "system/task_updated"
+    ],
+    "tools": {
+     "agent": [
+      "Agent",
+      "SendMessage",
+      "Task"
+     ],
+     "cron": [
+      "CronCreate"
+     ],
+     "remote": [
+      "RemoteTrigger"
+     ],
+     "repl": [
+      "REPL"
+     ],
+     "skill": [
+      "Skill"
+     ],
+     "workflow": [
+      "RunWorkflow",
+      "Workflow"
+     ]
+    },
+    "workflow": {
+     "system/task_progress": "workflow_progress",
+     "system/task_started": "workflow_name",
+     "task_type": "local_workflow"
+    }
+   },
+   "request_blocks": [
+    "text",
+    "image",
+    "document",
+    "search_result",
+    "tool_use",
+    "tool_result",
+    "thinking",
+    "redacted_thinking",
+    "server_tool_use",
+    "web_search_tool_result",
+    "web_fetch_tool_result",
+    "advisor_tool_result",
+    "code_execution_tool_result",
+    "bash_code_execution_tool_result",
+    "text_editor_code_execution_tool_result",
+    "tool_search_tool_result",
+    "mcp_tool_use",
+    "mcp_tool_result",
+    "container_upload",
+    "compaction",
+    "fallback",
+    "mid_conv_system"
+   ],
+   "response_blocks": [
+    "text",
+    "tool_use",
+    "thinking",
+    "redacted_thinking",
+    "server_tool_use",
+    "web_search_tool_result",
+    "web_fetch_tool_result",
+    "advisor_tool_result",
+    "code_execution_tool_result",
+    "bash_code_execution_tool_result",
+    "text_editor_code_execution_tool_result",
+    "tool_search_tool_result",
+    "mcp_tool_use",
+    "mcp_tool_result",
+    "container_upload",
+    "compaction",
+    "fallback"
+   ],
+   "source": "the SDK message union of the stream (each member's type and subtype), the content block unions of an assistant and of a user message (the modelled blocks, then the type tags the binary lists), the streaming events the stream_event schema names, and the binary's BUILTIN_TOOL_NAMES (a partial list of its built-in tools: a name it omits reads as unknown)",
+   "stream_events": [
+    "message_start",
+    "content_block_start",
+    "content_block_delta",
+    "content_block_stop",
+    "message_delta",
+    "message_stop"
+   ],
+   "task_counts": {
+    "count": "usage.tool_uses",
+    "counts": "tool_use",
+    "frames": [
+     "system/task_notification",
+     "system/task_progress"
+    ],
+    "nested_forwarded_only_with": "forwardSubagentText",
+    "parent": "parent_tool_use_id",
+    "source": "the frames whose schema carries a task's count of its calls (usage.tool_uses) and its id (tool_use_id), the count the tracker raises by one for each tool_use block of the task's own assistant messages (an agent's task_progress and its end notification carry it), the task's id as the parent_tool_use_id of the sub-agent's forwarded messages, and the gate that drops the messages of an agent a sub-agent starts unless forwardSubagentText is set",
+    "task": "tool_use_id"
+   },
+   "tool_fields": {
+    "assistant": [
+     "attribution_mcp_tool",
+     "batch_tool_uses",
+     "context_usage.mcp_tools",
+     "message.usage.server_tool_use",
+     "parent_tool_use_id",
+     "tool_use_meta",
+     "wire_tool_inputs"
+    ],
+    "result/error_during_execution": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "result/error_max_budget_usd": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "result/error_max_structured_output_retries": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "result/error_max_turns": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "result/success": [
+     "deferred_tool_use",
+     "permission_denials.tool_input",
+     "permission_denials.tool_name",
+     "permission_denials.tool_use_id",
+     "usage.server_tool_use"
+    ],
+    "stream_event": [
+     "parent_tool_use_id"
+    ],
+    "system/compact_boundary": [
+     "compact_metadata.pre_compact_discovered_tools"
+    ],
+    "system/informational": [
+     "tool_use_id"
+    ],
+    "system/init": [
+     "tools"
+    ],
+    "system/permission_denied": [
+     "tool_name",
+     "tool_use_id"
+    ],
+    "system/task_notification": [
+     "tool_use_id",
+     "usage.tool_uses"
+    ],
+    "system/task_progress": [
+     "last_tool_name",
+     "tool_use_id",
+     "usage.tool_uses"
+    ],
+    "system/task_started": [
+     "tool_use_id"
+    ],
+    "system/turn_handoff_available": [
+     "tools"
+    ],
+    "tool_progress": [
+     "parent_tool_use_id",
+     "tool_name",
+     "tool_use_id"
+    ],
+    "tool_use_summary": [
+     "preceding_tool_use_ids"
+    ],
+    "user": [
+     "parent_tool_use_id",
+     "source_tool_assistant_uuid",
+     "source_tool_use_id",
+     "tool_result_meta",
+     "tool_use_result"
+    ]
+   },
+   "tool_fields_source": "each SDK message's fields whose name names a tool (a dotted path; an array's items share its path), from its zod schema"
+  },
+  "usage_limit": {
+   "admin_suffix": " \u00b7 ask your admin for a higher limit",
+   "admin_suffixed": [
+    "Your usage allocation has been disabled by your admin",
+    "Your group's usage limit is set to $0"
+   ],
+   "formats": [
+    "{hour}{:minute}{am|pm}",
+    "{month} {day}, {hour}{:minute}{am|pm}",
+    "{month} {day}, {year}, {hour}{:minute}{am|pm}"
+   ],
+   "message": "You've hit your ",
+   "months": [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+   ],
+   "names": {
+    "five_hour": "session limit",
+    "overage": "usage credit limit",
+    "seven_day": "weekly limit",
+    "seven_day_opus": "Opus limit",
+    "seven_day_overage_included": "Fable limit",
+    "seven_day_sonnet": "Sonnet limit"
+   },
+   "not_account": [
+    "Server is temporarily limiting requests (not your usage limit)"
+   ],
+   "progress_saved": " \u00b7 progress saved",
+   "rejected": [
+    "You're out of usage credits",
+    "Your org is out of usage \u00b7 add funds to continue",
+    "Your org is out of usage \u00b7 contact your admin",
+    "Your seat type doesn't include usage",
+    "Your seat type doesn't include usage credits",
+    "This service is disabled for your org",
+    "Your usage allocation has been disabled by your admin",
+    "Your group's usage limit is set to $0"
+   ],
+   "rejected_source": "the rejected-status texts that do not start with the template, each the account refused: the out-of-credits text (+ ' \u00b7 resets ' + time, + ' \u00b7 progress saved'), the org, seat, service, admin and $0-group texts (the last two + the admin suffix, or ' \u00b7 run <command> to ask your admin for a higher limit')",
+   "resets": " \u00b7 resets ",
+   "source": "the rate-limit result's text: `You've hit your ${limit}${' \u00b7 resets ' + time}` (+ ' \u00b7 progress saved'), the assistant API error message with error 'rate_limit' and the result's `result`; time en-US with ':minute' only when not 0, 'am'/'pm' lowercased, the date when the reset is over a day away, the year when it is another year, then ' (<zone>)', the engine's resolved IANA time zone",
+   "zone": " (<IANA zone>)"
+  },
   "version": "2.1.281"
  },
  "codex": {
@@ -3495,11 +4184,120 @@
     "type": "object"
    }
   },
+  "items": {
+   "mcp_tool_call": {
+    "fields": {
+     "arguments": {
+      "type": "any"
+     },
+     "error": {
+      "nullable": true,
+      "optional": true,
+      "type": "any"
+     },
+     "id": {
+      "type": "string"
+     },
+     "result": {
+      "nullable": true,
+      "optional": true,
+      "type": "any"
+     },
+     "server": {
+      "type": "string"
+     },
+     "status": {
+      "type": "enum",
+      "values": [
+       "in_progress",
+       "completed",
+       "failed"
+      ]
+     },
+     "tool": {
+      "type": "string"
+     },
+     "type": {
+      "type": "literal",
+      "value": "mcp_tool_call"
+     }
+    },
+    "type": "object"
+   }
+  },
+  "items_source": "exec's ThreadItem (the `item` of item.started, item.updated and item.completed, tag `type`): the type names, the field names server, arguments and result, and the status values in_progress, completed and failed are the binary's literal runs; `id`, `type` and `tool` are names of four bytes or fewer, which the compiler places in code, not in the literal pool, and `result` and `error` are present only when the call has one",
   "notes": {
    "turn.completed.usage": "exec's turn usage is read from the thread token usage its event processor receives (thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's TokenUsageInfo of total_token_usage, last_token_usage and model_context_window): a thread total and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed thread is never subtracted: the sum of the invocation's own completed turns never counts less than the CLI recorded under either reading"
   },
   "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
   "source": "the serde names of codex-exec's ThreadEvent (tag 'type') and its payload structs, packed in the binary's literals; the strings show field names, not which are always present, so every usage field is marked optional",
+  "tool_forms": {
+   "exec_items": [
+    "agent_message",
+    "reasoning",
+    "command_execution",
+    "file_change",
+    "mcp_tool_call",
+    "web_search",
+    "todo_list",
+    "collab_tool_call",
+    "error"
+   ],
+   "in_run": {
+    "collab": {
+     "field": "tool",
+     "item": "collab_tool_call",
+     "tools": [
+      "spawn_agent",
+      "send_input",
+      "wait",
+      "close_agent"
+     ]
+    },
+    "items": [
+     "agent_message",
+     "collab_tool_call",
+     "command_execution",
+     "error",
+     "file_change",
+     "mcp_tool_call",
+     "reasoning",
+     "todo_list",
+     "web_search"
+    ],
+    "source": "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent call), and the collab tools of exec's CollabTool enum (read from its serializer, whose cases load its variant literals: the run between its usage field run and its item id field, and `wait`, whose literal the compiler shares), each an agent thread of this process or a wait on one (the core's wait tool waits on agent ids from spawn_agent, or on a live agent of the current root thread tree); an item or collab tool these do not list is not a known in-run kind"
+   },
+   "nested_work": {
+    "collab": [
+     "collab_agent_tool_call",
+     "collab_tool_call"
+    ],
+    "source": "the items through which a run does work in another agent's thread: exec's own sub-agent call (collab_tool_call) and the core's items whose struct names another thread (a collab agent call's receiver_thread_ids, a sub-agent activity's agent_thread_id)",
+    "sub_agent": [
+     "sub_agent_activity"
+    ]
+   },
+   "source": "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as unknown",
+   "thread_items": [
+    "user_message",
+    "function_call_output",
+    "hook_prompt",
+    "agent_message",
+    "reasoning",
+    "command_execution",
+    "dynamic_tool_call",
+    "collab_agent_tool_call",
+    "sub_agent_activity",
+    "web_search",
+    "image_view",
+    "extension",
+    "entered_review_mode",
+    "exited_review_mode",
+    "file_change",
+    "mcp_tool_call",
+    "context_compaction"
+   ]
+  },
   "usage_limit": {
    "formats": [
     "%-I:%M %p",

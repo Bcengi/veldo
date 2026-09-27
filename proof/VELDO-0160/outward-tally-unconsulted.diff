@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_limit.py
++++ b/.veldo/control_account_limit.py
+@@ -369 +369 @@
+-    unshown = untallied(record, provider)
++    unshown = []  # defect: a task's shortfall is not consulted in rule A

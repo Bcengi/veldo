@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -862 +862 @@
+-        if isinstance(entry, dict) and entry.get(IN_RUN_AGENT['field']) == IN_RUN_AGENT['outside']:
++        if False:  # defect: a workflow agent launched remote is not read

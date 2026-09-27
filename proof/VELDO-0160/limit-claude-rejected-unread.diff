@@ -1,0 +1,6 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1060,2 +1060 @@
+-            if status == 'rejected':
+-                # VELDO-0160: the stream reports its window exhausted.
++            if False:  # defect: a rejected window is not the account's limit

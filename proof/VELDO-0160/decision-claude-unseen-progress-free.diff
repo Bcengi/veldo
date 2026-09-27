@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -623 +623 @@
+-        found = [_unknown(kind, ident) for ident in ids if ident not in seen]
++        found = []  # defect: progress and summaries of calls never shown are no call

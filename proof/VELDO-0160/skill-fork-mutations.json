@@ -1,0 +1,2647 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0160 pool/per-account-isolation",
+    true
+   ],
+   [
+    "VELDO-0160 pool/one-registration",
+    true
+   ],
+   [
+    "VELDO-0160 pool/concurrent",
+    true
+   ],
+   [
+    "VELDO-0160 limit/stream-exhausted",
+    true
+   ],
+   [
+    "VELDO-0160 limit/rate-limit-result",
+    true
+   ],
+   [
+    "VELDO-0160 limit/claude-rejected-texts",
+    true
+   ],
+   [
+    "VELDO-0160 decision/rerun",
+    true
+   ],
+   [
+    "VELDO-0160 decision/ask",
+    true
+   ],
+   [
+    "VELDO-0160 decision/unreadable-asks",
+    true
+   ],
+   [
+    "VELDO-0160 decision/same-id-write",
+    true
+   ],
+   [
+    "VELDO-0160 decision/unknown-forms",
+    true
+   ],
+   [
+    "VELDO-0160 decision/redacted-name",
+    true
+   ],
+   [
+    "VELDO-0160 decision/tool-free-forms",
+    true
+   ],
+   [
+    "VELDO-0160 format/tool-forms",
+    true
+   ],
+   [
+    "VELDO-0160 decision/repl-inner-call",
+    true
+   ],
+   [
+    "VELDO-0160 decision/task-progress-tool",
+    true
+   ],
+   [
+    "VELDO-0160 decision/frame-tool-names",
+    true
+   ],
+   [
+    "VELDO-0160 decision/subagent-calls",
+    true
+   ],
+   [
+    "VELDO-0160 decision/no-write-server-reruns",
+    true
+   ],
+   [
+    "VELDO-0160 decision/nested-work-asks",
+    true
+   ],
+   [
+    "VELDO-0160 decision/nested-constructs",
+    true
+   ],
+   [
+    "VELDO-0160 decision/unconfigured-call-asks",
+    true
+   ],
+   [
+    "VELDO-0160 decision/remote-agent-asks",
+    true
+   ],
+   [
+    "VELDO-0160 decision/outward-tool-asks",
+    true
+   ],
+   [
+    "VELDO-0160 pool/moved-off",
+    true
+   ],
+   [
+    "VELDO-0160 pool/added-account",
+    true
+   ],
+   [
+    "VELDO-0160 pool/one-run-while-unknown",
+    true
+   ],
+   [
+    "VELDO-0160 pool/usage-observes",
+    true
+   ],
+   [
+    "VELDO-0160 pool/selection-order",
+    true
+   ],
+   [
+    "VELDO-0160 pool/until-earliest",
+    true
+   ],
+   [
+    "VELDO-0160 install/assets",
+    true
+   ],
+   [
+    "VELDO-0160 format/claude-fake-lines",
+    true
+   ],
+   [
+    "VELDO-0160 format/codex-fake-lines",
+    true
+   ]
+  ],
+  "seconds": 25.253
+ },
+ "controls_green": true,
+ "implementation_commit": "d77dc121d8fdeda3e38a646b24fe45f6bf60035e",
+ "inputs_sha256": {
+  ".veldo/control_engine_claude.py": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444",
+  "engine/.veldo/control_engine_claude.py": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444",
+  "proof/VELDO-0062/cli-formats.json": "d3927021dc2e06892ae1c3e3ef6aaa66b3d53de0201b27947d9a338f22ebbb6d",
+  "proof/VELDO-0062/extract_formats.py": "d72bfcfb2ef7fd171caf54ac5e2d0394b44541e40b63bc2209c0ad6389f9c9b2",
+  "scripts/check_teeth_mutations.py": "8418f36ba3e9d9f5fedb1497a47a992e66cd0ccc156c828e5e56d4c01a032750",
+  "scripts/suites/78_veldo_0160_account_pool.py": "2b0b5064f4972d1cc787d9fdd9c639918d3bc504295d78e4e82229af5a8e29ad"
+ },
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/outward-tool-asks detail: sub-agent Skill fork, fork calls hidden (probe11 b6), no MCP server, JSON text False: ask for the Skill parent [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: sub-agent Skill fork, fork calls hidden (probe11 b6), only read-only tools, JSON text False: ask for the Skill parent [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: sub-agent Skill fork, fork calls hidden (probe11 b6), a write-capable server, JSON text False: ask for the Skill parent [nested_work, [(3, 'nested_work', 'tool:Agent'), (4, 'nested_work', 'system/task_started'), (5, 'nested_work', 'parent_tool_use_id'), (5, 'nested_work', 'tool:Skill'), (6, 'nested_work', 'system/task_progress'), (6, 'nested_work', 'tool:Skill'), (7, 'nested_work', 'system/task_started'), (8, 'nested_work', 'system/task_notification'), (9, 'nested_work', 'parent_tool_use_id'), (10, 'nested_work', 'system/task_notification')]]",
+    "VELDO-0160 decision/outward-tool-asks detail: sub-agent Skill fork, fork calls hidden (probe11 b6), no MCP server, JSON text True: ask for the Skill parent [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: sub-agent Skill fork, fork calls hidden (probe11 b6), only read-only tools, JSON text True: ask for the Skill parent [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: sub-agent Skill fork, fork calls hidden (probe11 b6), a write-capable server, JSON text True: ask for the Skill parent [nested_work, [(3, 'nested_work', 'tool:Agent'), (4, 'nested_work', 'system/task_started'), (5, 'nested_work', 'parent_tool_use_id'), (5, 'nested_work', 'tool:Skill'), (6, 'nested_work', 'system/task_progress'), (6, 'nested_work', 'tool:Skill'), (7, 'nested_work', 'system/task_started'), (8, 'nested_work', 'system/task_notification'), (9, 'nested_work', 'parent_tool_use_id'), (10, 'nested_work', 'system/task_notification')]]",
+    "VELDO-0160 decision/outward-tool-asks detail: same, fork task frames absent (probe11 b6), no MCP server, JSON text False: ask for the Skill parent [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: same, fork task frames absent (probe11 b6), only read-only tools, JSON text False: ask for the Skill parent [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: same, fork task frames absent (probe11 b6), a write-capable server, JSON text False: ask for the Skill parent [nested_work, [(3, 'nested_work', 'tool:Agent'), (4, 'nested_work', 'system/task_started'), (5, 'nested_work', 'parent_tool_use_id'), (5, 'nested_work', 'tool:Skill'), (6, 'nested_work', 'system/task_progress'), (6, 'nested_work', 'tool:Skill'), (7, 'nested_work', 'parent_tool_use_id'), (8, 'nested_work', 'system/task_notification')]]",
+    "VELDO-0160 decision/outward-tool-asks detail: same, fork task frames absent (probe11 b6), no MCP server, JSON text True: ask for the Skill parent [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: same, fork task frames absent (probe11 b6), only read-only tools, JSON text True: ask for the Skill parent [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: same, fork task frames absent (probe11 b6), a write-capable server, JSON text True: ask for the Skill parent [nested_work, [(3, 'nested_work', 'tool:Agent'), (4, 'nested_work', 'system/task_started'), (5, 'nested_work', 'parent_tool_use_id'), (5, 'nested_work', 'tool:Skill'), (6, 'nested_work', 'system/task_progress'), (6, 'nested_work', 'tool:Skill'), (7, 'nested_work', 'parent_tool_use_id'), (8, 'nested_work', 'system/task_notification')]]"
+   ],
+   "diff": "proof/VELDO-0160/outward-skill-parent-skipped.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/outward-tool-asks"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "33dabefabb241e5ad13299dd673c23e7e719121492a0c5cccfac022f2e0d1ac0",
+   "name": "outward-skill-parent-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/outward-tool-asks"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 decision/subagent-calls",
+     true
+    ],
+    [
+     "VELDO-0160 decision/no-write-server-reruns",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-work-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-constructs",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/remote-agent-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/outward-tool-asks",
+     false
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 24.943,
+   "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': 'fork'}, no MCP server: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': 'fork'}, only read-only tools: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': 'fork'}, a write-capable server: ask for possible fork [nested_work, [(3, 'nested_work', 'tool:Skill')]]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': None}, no MCP server: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': None}, only read-only tools: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': None}, a write-capable server: ask for possible fork [nested_work, [(3, 'nested_work', 'tool:Skill')]]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': '[redacted]'}, no MCP server: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': '[redacted]'}, only read-only tools: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': '[redacted]'}, a write-capable server: ask for possible fork [nested_work, [(3, 'nested_work', 'tool:Skill')]]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': {}}, no MCP server: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': {}}, only read-only tools: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input {'skill': 'triage', 'context': {}}, a write-capable server: ask for possible fork [nested_work, [(3, 'nested_work', 'tool:Skill')]]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input None, no MCP server: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input None, only read-only tools: ask for possible fork [no_write_capable_server, None]",
+    "VELDO-0160 decision/outward-tool-asks detail: Skill input None, a write-capable server: ask for possible fork [nested_work, [(3, 'nested_work', 'tool:Skill')]]"
+   ],
+   "diff": "proof/VELDO-0160/outward-skill-fork-skipped.diff",
+   "failed_rows": [
+    "VELDO-0160 decision/outward-tool-asks"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "936331c4a90604d161ef54f099e0916a79b0692e6c9ea1fa673a3ed210e40ac6",
+   "name": "outward-skill-fork-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "decision/outward-tool-asks"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 decision/subagent-calls",
+     true
+    ],
+    [
+     "VELDO-0160 decision/no-write-server-reruns",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-work-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-constructs",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/remote-agent-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/outward-tool-asks",
+     false
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.009,
+   "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
+  }
+ ],
+ "noop": {
+  "copy_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444",
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0160 pool/per-account-isolation",
+    true
+   ],
+   [
+    "VELDO-0160 pool/one-registration",
+    true
+   ],
+   [
+    "VELDO-0160 pool/concurrent",
+    true
+   ],
+   [
+    "VELDO-0160 limit/stream-exhausted",
+    true
+   ],
+   [
+    "VELDO-0160 limit/rate-limit-result",
+    true
+   ],
+   [
+    "VELDO-0160 limit/claude-rejected-texts",
+    true
+   ],
+   [
+    "VELDO-0160 decision/rerun",
+    true
+   ],
+   [
+    "VELDO-0160 decision/ask",
+    true
+   ],
+   [
+    "VELDO-0160 decision/unreadable-asks",
+    true
+   ],
+   [
+    "VELDO-0160 decision/same-id-write",
+    true
+   ],
+   [
+    "VELDO-0160 decision/unknown-forms",
+    true
+   ],
+   [
+    "VELDO-0160 decision/redacted-name",
+    true
+   ],
+   [
+    "VELDO-0160 decision/tool-free-forms",
+    true
+   ],
+   [
+    "VELDO-0160 format/tool-forms",
+    true
+   ],
+   [
+    "VELDO-0160 decision/repl-inner-call",
+    true
+   ],
+   [
+    "VELDO-0160 decision/task-progress-tool",
+    true
+   ],
+   [
+    "VELDO-0160 decision/frame-tool-names",
+    true
+   ],
+   [
+    "VELDO-0160 decision/subagent-calls",
+    true
+   ],
+   [
+    "VELDO-0160 decision/no-write-server-reruns",
+    true
+   ],
+   [
+    "VELDO-0160 decision/nested-work-asks",
+    true
+   ],
+   [
+    "VELDO-0160 decision/nested-constructs",
+    true
+   ],
+   [
+    "VELDO-0160 decision/unconfigured-call-asks",
+    true
+   ],
+   [
+    "VELDO-0160 decision/remote-agent-asks",
+    true
+   ],
+   [
+    "VELDO-0160 decision/outward-tool-asks",
+    true
+   ],
+   [
+    "VELDO-0160 pool/moved-off",
+    true
+   ],
+   [
+    "VELDO-0160 pool/added-account",
+    true
+   ],
+   [
+    "VELDO-0160 pool/one-run-while-unknown",
+    true
+   ],
+   [
+    "VELDO-0160 pool/usage-observes",
+    true
+   ],
+   [
+    "VELDO-0160 pool/selection-order",
+    true
+   ],
+   [
+    "VELDO-0160 pool/until-earliest",
+    true
+   ],
+   [
+    "VELDO-0160 install/assets",
+    true
+   ],
+   [
+    "VELDO-0160 format/claude-fake-lines",
+    true
+   ],
+   [
+    "VELDO-0160 format/codex-fake-lines",
+    true
+   ]
+  ],
+  "seconds": 25.887,
+  "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
+ },
+ "prior_registry_check": {
+  "completed_mutations": 127,
+  "exit_code": 1,
+  "resolution": "Restore exact forwarded-message and last-tool assertions using a fully shown nested Agent record.",
+  "unfailed_named_row": {
+   "mutation": "nested-progress-dropped",
+   "row": "decision/nested-work-asks"
+  }
+ },
+ "registry_check": {
+  "command": [
+   "python3",
+   "scripts/check_teeth_mutations.py",
+   "--finding",
+   "160",
+   "--jobs",
+   "2"
+  ],
+  "exit_code": 0,
+  "results": [
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-shared-profile",
+    "red_rows": [
+     "VELDO-0160 pool/per-account-isolation"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-second-registration-accepted",
+    "red_rows": [
+     "VELDO-0160 pool/one-registration"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-duplicate-id-unnamed",
+    "red_rows": [
+     "VELDO-0160 pool/one-registration"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-launches-serialized",
+    "red_rows": [
+     "VELDO-0160 pool/per-account-isolation",
+     "VELDO-0160 pool/concurrent",
+     "VELDO-0160 pool/moved-off",
+     "VELDO-0160 pool/added-account",
+     "VELDO-0160 pool/one-run-while-unknown",
+     "VELDO-0160 pool/usage-observes"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-selection-untraced",
+    "red_rows": [
+     "VELDO-0160 pool/per-account-isolation",
+     "VELDO-0160 pool/selection-order"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-result-ordinary",
+    "red_rows": [
+     "VELDO-0160 limit/rate-limit-result",
+     "VELDO-0160 limit/claude-rejected-texts"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-claude-result-unread",
+    "red_rows": [
+     "VELDO-0160 limit/rate-limit-result",
+     "VELDO-0160 limit/claude-rejected-texts"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-claude-any-error-result",
+    "red_rows": [
+     "VELDO-0160 limit/rate-limit-result"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-claude-reset-minute-start",
+    "red_rows": [
+     "VELDO-0160 limit/rate-limit-result",
+     "VELDO-0160 limit/claude-rejected-texts"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-codex-failed-turn-unread",
+    "red_rows": [
+     "VELDO-0160 limit/rate-limit-result"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-stream-unclassified",
+    "red_rows": [
+     "VELDO-0160 limit/stream-exhausted"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-claude-rejected-unread",
+    "red_rows": [
+     "VELDO-0160 limit/stream-exhausted"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-reopened-window-kept",
+    "red_rows": [
+     "VELDO-0160 limit/stream-exhausted"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-every-failure",
+    "red_rows": [
+     "VELDO-0160 limit/stream-exhausted",
+     "VELDO-0160 limit/rate-limit-result",
+     "VELDO-0160 limit/claude-rejected-texts"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-unreported",
+    "red_rows": [
+     "VELDO-0160 limit/stream-exhausted",
+     "VELDO-0160 limit/rate-limit-result",
+     "VELDO-0160 limit/claude-rejected-texts",
+     "VELDO-0160 pool/moved-off",
+     "VELDO-0160 pool/added-account",
+     "VELDO-0160 pool/selection-order"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-ask-reruns",
+    "red_rows": [
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/unreadable-asks",
+     "VELDO-0160 decision/same-id-write",
+     "VELDO-0160 decision/unknown-forms",
+     "VELDO-0160 decision/redacted-name",
+     "VELDO-0160 decision/repl-inner-call",
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/frame-tool-names",
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-unlisted-server-read-only",
+    "red_rows": [
+     "VELDO-0160 decision/ask"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-unmarked-revision-read-only",
+    "red_rows": [
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/repl-inner-call",
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/frame-tool-names"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-calls-unread",
+    "red_rows": [
+     "VELDO-0160 decision/rerun",
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/same-id-write",
+     "VELDO-0160 decision/redacted-name",
+     "VELDO-0160 decision/repl-inner-call",
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/frame-tool-names",
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/unconfigured-call-asks",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-codex-calls-unread",
+    "red_rows": [
+     "VELDO-0160 decision/rerun",
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/unreadable-asks",
+     "VELDO-0160 decision/same-id-write",
+     "VELDO-0160 decision/unconfigured-call-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-call-named-twice",
+    "red_rows": [
+     "VELDO-0160 decision/rerun",
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/frame-tool-names"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-read-only-asks",
+    "red_rows": [
+     "VELDO-0160 decision/rerun",
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/same-id-write",
+     "VELDO-0160 decision/redacted-name",
+     "VELDO-0160 decision/repl-inner-call",
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-gap-accepted",
+    "red_rows": [
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/no-write-server-reruns"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-unreadable-line-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/unreadable-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-unreadable-call-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/unreadable-asks",
+     "VELDO-0160 decision/redacted-name",
+     "VELDO-0160 decision/repl-inner-call",
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/frame-tool-names",
+     "VELDO-0160 decision/subagent-calls"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-event-any-object",
+    "red_rows": [
+     "VELDO-0160 decision/unreadable-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-nameless-call-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/unreadable-asks",
+     "VELDO-0160 decision/task-progress-tool"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-codex-serverless-call-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/unreadable-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-redaction-unread",
+    "red_rows": [
+     "VELDO-0160 decision/unreadable-asks",
+     "VELDO-0160 decision/redacted-name"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-same-id-first-wins",
+    "red_rows": [
+     "VELDO-0160 decision/same-id-write"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "limit-claude-rejected-texts-unread",
+    "red_rows": [
+     "VELDO-0160 limit/claude-rejected-texts"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-observed-by-window-only",
+    "red_rows": [
+     "VELDO-0160 pool/usage-observes"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-highest-utilization-first",
+    "red_rows": [
+     "VELDO-0160 pool/selection-order"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-most-recently-used-first",
+    "red_rows": [
+     "VELDO-0160 pool/selection-order"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-until-latest-reset",
+    "red_rows": [
+     "VELDO-0160 pool/until-earliest"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-until-first-window-reset",
+    "red_rows": [
+     "VELDO-0160 pool/until-earliest"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-inside-window",
+    "red_rows": [
+     "VELDO-0160 pool/moved-off",
+     "VELDO-0160 pool/until-earliest"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-read-at-start",
+    "red_rows": [
+     "VELDO-0160 pool/added-account",
+     "VELDO-0160 pool/one-run-while-unknown",
+     "VELDO-0160 pool/usage-observes",
+     "VELDO-0160 pool/selection-order",
+     "VELDO-0160 pool/until-earliest"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-unobserved-unbounded",
+    "red_rows": [
+     "VELDO-0160 pool/one-run-while-unknown"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-usage-unobserved",
+    "red_rows": [
+     "VELDO-0160 pool/one-run-while-unknown"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-concurrency-ignored",
+    "red_rows": [
+     "VELDO-0160 pool/per-account-isolation",
+     "VELDO-0160 pool/moved-off",
+     "VELDO-0160 pool/added-account",
+     "VELDO-0160 pool/one-run-while-unknown",
+     "VELDO-0160 pool/usage-observes"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-reset-unnamed",
+    "red_rows": [
+     "VELDO-0160 pool/moved-off",
+     "VELDO-0160 pool/until-earliest"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-read-once-per-runner",
+    "red_rows": [
+     "VELDO-0160 pool/per-account-isolation",
+     "VELDO-0160 pool/concurrent",
+     "VELDO-0160 pool/moved-off",
+     "VELDO-0160 pool/added-account",
+     "VELDO-0160 pool/one-run-while-unknown",
+     "VELDO-0160 pool/usage-observes",
+     "VELDO-0160 pool/selection-order",
+     "VELDO-0160 pool/until-earliest"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-refusal-reasons-unobserved",
+    "red_rows": [
+     "VELDO-0160 pool/moved-off"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-limit-uncounted",
+    "red_rows": [
+     "VELDO-0160 limit/stream-exhausted",
+     "VELDO-0160 limit/rate-limit-result"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-dispatches-uncounted",
+    "red_rows": [
+     "VELDO-0160 pool/per-account-isolation"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-unknown-call-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms",
+     "VELDO-0160 decision/repl-inner-call",
+     "VELDO-0160 decision/nested-work-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-server-tool-blocks-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-unseen-result-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-streamed-tool-use-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-unlisted-message-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-unlisted-stream-event-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-unseen-progress-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-codex-unlisted-item-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms",
+     "VELDO-0160 decision/nested-work-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-codex-unlisted-event-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-redacted-name-trusted",
+    "red_rows": [
+     "VELDO-0160 decision/redacted-name"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-redaction-not-passed",
+    "red_rows": [
+     "VELDO-0160 decision/redacted-name"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-shown-ids-per-line",
+    "red_rows": [
+     "VELDO-0160 decision/tool-free-forms",
+     "VELDO-0160 decision/repl-inner-call",
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/frame-tool-names",
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-tool-ids-unremembered",
+    "red_rows": [
+     "VELDO-0160 decision/tool-free-forms",
+     "VELDO-0160 decision/repl-inner-call",
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/frame-tool-names",
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-codex-builtin-items-ask",
+    "red_rows": [
+     "VELDO-0160 decision/tool-free-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-thinking-asks",
+    "red_rows": [
+     "VELDO-0160 decision/tool-free-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "format-claude-builtin-table-drifts",
+    "red_rows": [
+     "VELDO-0160 decision/redacted-name",
+     "VELDO-0160 decision/tool-free-forms",
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/repl-inner-call"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "format-codex-dynamic-item-builtin",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms",
+     "VELDO-0160 format/tool-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-repl-inner-unread",
+    "red_rows": [
+     "VELDO-0160 decision/repl-inner-call"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-repl-unknown-inner-free",
+    "red_rows": [
+     "VELDO-0160 decision/repl-inner-call"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-repl-malformed-free",
+    "red_rows": [
+     "VELDO-0160 decision/repl-inner-call"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-task-progress-tool-unread",
+    "red_rows": [
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/subagent-calls"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-workflow-progress-unread",
+    "red_rows": [
+     "VELDO-0160 decision/task-progress-tool"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-progress-tool-name-unread",
+    "red_rows": [
+     "VELDO-0160 decision/frame-tool-names"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-attribution-unread",
+    "red_rows": [
+     "VELDO-0160 decision/frame-tool-names"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-batch-names-unread",
+    "red_rows": [
+     "VELDO-0160 decision/frame-tool-names"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-agent-rename-unread",
+    "red_rows": [
+     "VELDO-0160 decision/redacted-name",
+     "VELDO-0160 format/tool-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-tool-free-frames-ask",
+    "red_rows": [
+     "VELDO-0160 decision/tool-free-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-control-request-free",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms",
+     "VELDO-0160 format/tool-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "format-claude-tool-field-unlisted",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "format-codex-collab-item-builtin",
+    "red_rows": [
+     "VELDO-0160 decision/unknown-forms",
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/nested-work-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-task-counts-unread",
+    "red_rows": [
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/subagent-calls"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-task-one-over-allowed",
+    "red_rows": [
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-task-shown-any-parent",
+    "red_rows": [
+     "VELDO-0160 decision/task-progress-tool",
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-task-count-drop-accepted",
+    "red_rows": [
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-task-count-unreadable-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-task-first-count-kept",
+    "red_rows": [
+     "VELDO-0160 decision/subagent-calls"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-claude-task-notification-count-unread",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/subagent-calls"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "format-claude-task-count-field-moved",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/subagent-calls",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-unconfigured-call-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/unconfigured-call-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-unconfigured-tool-ignored",
+    "red_rows": [
+     "VELDO-0160 decision/unconfigured-call-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "remote-agent-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "remote-agent-text-lines-unread",
+    "red_rows": [
+     "VELDO-0160 decision/remote-agent-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "remote-agent-contradicting-unnamed",
+    "red_rows": [
+     "VELDO-0160 decision/remote-agent-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "remote-trigger-not-outside",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "remote-cron-durable-unread",
+    "red_rows": [
+     "VELDO-0160 decision/remote-agent-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "remote-cron-durable-text-missed",
+    "red_rows": [
+     "VELDO-0160 decision/remote-agent-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "remote-cron-default-durable",
+    "red_rows": [
+     "VELDO-0160 decision/nested-constructs",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "remote-cron-unseen-input-trusted",
+    "red_rows": [
+     "VELDO-0160 decision/remote-agent-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-remote-dropped",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-cron-dropped",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/nested-constructs",
+     "VELDO-0160 decision/remote-agent-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-rule-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/unreadable-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-sendmessage-allowlisted",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-unknown-tool-allowed",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-agent-remote-unchecked",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-agent-input-assumed",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-agent-definition-trusted",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-task-type-ignored",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-host-ignored",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-server-block-ignored",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-workflow-remote-ignored",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-task-input-unresolved",
+    "red_rows": [
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-workflow-label-read",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-codex-unknown-item-allowed",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-codex-collab-tool-unchecked",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-skill-parent-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-skill-fork-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-tally-unconsulted",
+    "red_rows": [
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-tally-unreadable-dropped",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-tally-shortfall-dropped",
+    "red_rows": [
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-codex-wait-unlisted",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "outward-codex-wait-agent-allowed",
+    "red_rows": [
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-rule1-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/no-write-server-reruns",
+     "VELDO-0160 decision/unconfigured-call-asks",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-rule2-skipped",
+    "red_rows": [
+     "VELDO-0160 decision/no-write-server-reruns",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-listed-tools-ignored",
+    "red_rows": [
+     "VELDO-0160 decision/no-write-server-reruns",
+     "VELDO-0160 decision/unconfigured-call-asks",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-all-tools-read-only",
+    "red_rows": [
+     "VELDO-0160 decision/rerun",
+     "VELDO-0160 decision/ask",
+     "VELDO-0160 decision/unreadable-asks",
+     "VELDO-0160 decision/same-id-write",
+     "VELDO-0160 decision/no-write-server-reruns",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs",
+     "VELDO-0160 decision/remote-agent-asks",
+     "VELDO-0160 decision/outward-tool-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-nested-text-lines-unread",
+    "red_rows": [
+     "VELDO-0160 decision/nested-work-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-agent-dropped",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-skill-dropped",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/no-write-server-reruns",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-repl-dropped",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-workflow-dropped",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-task-frames-dropped",
+    "red_rows": [
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-progress-dropped",
+    "red_rows": [
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-fork-dropped",
+    "red_rows": [
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-codex-collab-dropped",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-codex-sub-agent-dropped",
+    "red_rows": [
+     "VELDO-0160 format/tool-forms",
+     "VELDO-0160 decision/nested-constructs"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "nested-claude-last-tool-unread",
+    "red_rows": [
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/remote-agent-asks"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "pool-not-scaffolded",
+    "red_rows": [
+     "VELDO-0160 install/assets"
+    ]
+   },
+   {
+    "assertions": 59,
+    "baseline": "green",
+    "finding": 160,
+    "mutation": "decision-not-scaffolded",
+    "red_rows": [
+     "VELDO-0160 install/assets"
+    ]
+   }
+  ],
+  "summary": {
+   "green_suites": {
+    "78_veldo_0160_account_pool.py": 59
+   },
+   "mutations_rejected": 134
+  }
+ },
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0160",
+ "structural_controls": {
+  "all_by_assertion": true,
+  "all_named_rows_red": true,
+  "baseline": {
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 decision/subagent-calls",
+     true
+    ],
+    [
+     "VELDO-0160 decision/no-write-server-reruns",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-work-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-constructs",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/remote-agent-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/outward-tool-asks",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 25.547
+  },
+  "controls_green": true,
+  "mutants": [
+   {
+    "by_assertion": true,
+    "details": [
+     "VELDO-0160 decision/nested-work-asks detail: a shown Agent call under a sub-agent, JSON text False: ask by rule 2, naming every construct including forwarded messages and the last tool [nested_work, [(3, 'agent', 'tool:Agent'), (4, 'task_frames', 'system/task_started'), (5, 'agent', 'tool:Agent'), (6, 'agent', 'tool:Agent'), (6, 'task_frames', 'system/task_progress'), (8, 'task_frames', 'system/task_notification')]]",
+     "VELDO-0160 decision/nested-work-asks detail: a shown Agent call under a sub-agent, JSON text True: ask by rule 2, naming every construct including forwarded messages and the last tool [nested_work, [(3, 'agent', 'tool:Agent'), (4, 'task_frames', 'system/task_started'), (5, 'agent', 'tool:Agent'), (6, 'agent', 'tool:Agent'), (6, 'task_frames', 'system/task_progress'), (8, 'task_frames', 'system/task_notification')]]",
+     "VELDO-0160 decision/nested-constructs detail: claude_code, a message a sub-agent produced (nested_progress): decided ask, naming exactly that construct [None]",
+     "VELDO-0160 decision/nested-constructs detail: claude_code, a forked skill's progress frame (nested_progress): decided ask, naming exactly that construct [None]"
+    ],
+    "diff": "proof/VELDO-0160/nested-progress-dropped.diff",
+    "failed_rows": [
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/nested-constructs"
+    ],
+    "module": ".veldo/control_engine_claude.py",
+    "mutant_sha256": "e32a877115aa35c2e017251c5cb30af212f2a836a1411330bd7e55269f75f8c2",
+    "name": "nested-progress-dropped",
+    "named_row_red": true,
+    "named_rows": [
+     "decision/nested-constructs",
+     "decision/nested-work-asks"
+    ],
+    "preamble_rows": 26,
+    "rows": [
+     [
+      "VELDO-0160 pool/per-account-isolation",
+      true
+     ],
+     [
+      "VELDO-0160 pool/one-registration",
+      true
+     ],
+     [
+      "VELDO-0160 pool/concurrent",
+      true
+     ],
+     [
+      "VELDO-0160 limit/stream-exhausted",
+      true
+     ],
+     [
+      "VELDO-0160 limit/rate-limit-result",
+      true
+     ],
+     [
+      "VELDO-0160 limit/claude-rejected-texts",
+      true
+     ],
+     [
+      "VELDO-0160 decision/rerun",
+      true
+     ],
+     [
+      "VELDO-0160 decision/ask",
+      true
+     ],
+     [
+      "VELDO-0160 decision/unreadable-asks",
+      true
+     ],
+     [
+      "VELDO-0160 decision/same-id-write",
+      true
+     ],
+     [
+      "VELDO-0160 decision/unknown-forms",
+      true
+     ],
+     [
+      "VELDO-0160 decision/redacted-name",
+      true
+     ],
+     [
+      "VELDO-0160 decision/tool-free-forms",
+      true
+     ],
+     [
+      "VELDO-0160 format/tool-forms",
+      true
+     ],
+     [
+      "VELDO-0160 decision/repl-inner-call",
+      true
+     ],
+     [
+      "VELDO-0160 decision/task-progress-tool",
+      true
+     ],
+     [
+      "VELDO-0160 decision/frame-tool-names",
+      true
+     ],
+     [
+      "VELDO-0160 decision/subagent-calls",
+      true
+     ],
+     [
+      "VELDO-0160 decision/no-write-server-reruns",
+      true
+     ],
+     [
+      "VELDO-0160 decision/nested-work-asks",
+      false
+     ],
+     [
+      "VELDO-0160 decision/nested-constructs",
+      false
+     ],
+     [
+      "VELDO-0160 decision/unconfigured-call-asks",
+      true
+     ],
+     [
+      "VELDO-0160 decision/remote-agent-asks",
+      true
+     ],
+     [
+      "VELDO-0160 decision/outward-tool-asks",
+      true
+     ],
+     [
+      "VELDO-0160 pool/moved-off",
+      true
+     ],
+     [
+      "VELDO-0160 pool/added-account",
+      true
+     ],
+     [
+      "VELDO-0160 pool/one-run-while-unknown",
+      true
+     ],
+     [
+      "VELDO-0160 pool/usage-observes",
+      true
+     ],
+     [
+      "VELDO-0160 pool/selection-order",
+      true
+     ],
+     [
+      "VELDO-0160 pool/until-earliest",
+      true
+     ],
+     [
+      "VELDO-0160 install/assets",
+      true
+     ],
+     [
+      "VELDO-0160 format/claude-fake-lines",
+      true
+     ],
+     [
+      "VELDO-0160 format/codex-fake-lines",
+      true
+     ]
+    ],
+    "seconds": 25.927,
+    "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
+   },
+   {
+    "by_assertion": true,
+    "details": [
+     "VELDO-0160 decision/nested-work-asks detail: a shown Agent call under a sub-agent, JSON text False: ask by rule 2, naming every construct including forwarded messages and the last tool [nested_work, [(3, 'agent', 'tool:Agent'), (4, 'task_frames', 'system/task_started'), (5, 'agent', 'tool:Agent'), (5, 'nested_progress', 'parent_tool_use_id'), (6, 'task_frames', 'system/task_progress'), (7, 'nested_progress', 'parent_tool_use_id'), (8, 'task_frames', 'system/task_notification')]]",
+     "VELDO-0160 decision/nested-work-asks detail: a shown Agent call under a sub-agent, JSON text True: ask by rule 2, naming every construct including forwarded messages and the last tool [nested_work, [(3, 'agent', 'tool:Agent'), (4, 'task_frames', 'system/task_started'), (5, 'agent', 'tool:Agent'), (5, 'nested_progress', 'parent_tool_use_id'), (6, 'task_frames', 'system/task_progress'), (7, 'nested_progress', 'parent_tool_use_id'), (8, 'task_frames', 'system/task_notification')]]",
+     "VELDO-0160 decision/remote-agent-asks detail: a CronCreate named where its input is not given (a task's last tool), no MCP server configured: decided ask, naming each such line [ask, outward_tool, None]",
+     "VELDO-0160 decision/remote-agent-asks detail: a CronCreate named where its input is not given (a task's last tool), only read-only tools configured: decided ask, naming each such line [ask, outward_tool, None]",
+     "VELDO-0160 decision/remote-agent-asks detail: a CronCreate named where its input is not given (a task's last tool), a write-capable server configured: decided ask, naming each such line [ask, outward_tool, None]"
+    ],
+    "diff": "proof/VELDO-0160/nested-claude-last-tool-unread.diff",
+    "failed_rows": [
+     "VELDO-0160 decision/nested-work-asks",
+     "VELDO-0160 decision/remote-agent-asks"
+    ],
+    "module": ".veldo/control_engine_claude.py",
+    "mutant_sha256": "e9f4bbdff88f42a7e5ef5654d4887153c0e061b632cc203952b595dedf656940",
+    "name": "nested-claude-last-tool-unread",
+    "named_row_red": true,
+    "named_rows": [
+     "decision/nested-work-asks"
+    ],
+    "preamble_rows": 26,
+    "rows": [
+     [
+      "VELDO-0160 pool/per-account-isolation",
+      true
+     ],
+     [
+      "VELDO-0160 pool/one-registration",
+      true
+     ],
+     [
+      "VELDO-0160 pool/concurrent",
+      true
+     ],
+     [
+      "VELDO-0160 limit/stream-exhausted",
+      true
+     ],
+     [
+      "VELDO-0160 limit/rate-limit-result",
+      true
+     ],
+     [
+      "VELDO-0160 limit/claude-rejected-texts",
+      true
+     ],
+     [
+      "VELDO-0160 decision/rerun",
+      true
+     ],
+     [
+      "VELDO-0160 decision/ask",
+      true
+     ],
+     [
+      "VELDO-0160 decision/unreadable-asks",
+      true
+     ],
+     [
+      "VELDO-0160 decision/same-id-write",
+      true
+     ],
+     [
+      "VELDO-0160 decision/unknown-forms",
+      true
+     ],
+     [
+      "VELDO-0160 decision/redacted-name",
+      true
+     ],
+     [
+      "VELDO-0160 decision/tool-free-forms",
+      true
+     ],
+     [
+      "VELDO-0160 format/tool-forms",
+      true
+     ],
+     [
+      "VELDO-0160 decision/repl-inner-call",
+      true
+     ],
+     [
+      "VELDO-0160 decision/task-progress-tool",
+      true
+     ],
+     [
+      "VELDO-0160 decision/frame-tool-names",
+      true
+     ],
+     [
+      "VELDO-0160 decision/subagent-calls",
+      true
+     ],
+     [
+      "VELDO-0160 decision/no-write-server-reruns",
+      true
+     ],
+     [
+      "VELDO-0160 decision/nested-work-asks",
+      false
+     ],
+     [
+      "VELDO-0160 decision/nested-constructs",
+      true
+     ],
+     [
+      "VELDO-0160 decision/unconfigured-call-asks",
+      true
+     ],
+     [
+      "VELDO-0160 decision/remote-agent-asks",
+      false
+     ],
+     [
+      "VELDO-0160 decision/outward-tool-asks",
+      true
+     ],
+     [
+      "VELDO-0160 pool/moved-off",
+      true
+     ],
+     [
+      "VELDO-0160 pool/added-account",
+      true
+     ],
+     [
+      "VELDO-0160 pool/one-run-while-unknown",
+      true
+     ],
+     [
+      "VELDO-0160 pool/usage-observes",
+      true
+     ],
+     [
+      "VELDO-0160 pool/selection-order",
+      true
+     ],
+     [
+      "VELDO-0160 pool/until-earliest",
+      true
+     ],
+     [
+      "VELDO-0160 install/assets",
+      true
+     ],
+     [
+      "VELDO-0160 format/claude-fake-lines",
+      true
+     ],
+     [
+      "VELDO-0160 format/codex-fake-lines",
+      true
+     ]
+    ],
+    "seconds": 25.972,
+    "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
+   }
+  ],
+  "noop": {
+   "copy_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0160 pool/per-account-isolation",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-registration",
+     true
+    ],
+    [
+     "VELDO-0160 pool/concurrent",
+     true
+    ],
+    [
+     "VELDO-0160 limit/stream-exhausted",
+     true
+    ],
+    [
+     "VELDO-0160 limit/rate-limit-result",
+     true
+    ],
+    [
+     "VELDO-0160 limit/claude-rejected-texts",
+     true
+    ],
+    [
+     "VELDO-0160 decision/rerun",
+     true
+    ],
+    [
+     "VELDO-0160 decision/ask",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unreadable-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/same-id-write",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unknown-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/redacted-name",
+     true
+    ],
+    [
+     "VELDO-0160 decision/tool-free-forms",
+     true
+    ],
+    [
+     "VELDO-0160 format/tool-forms",
+     true
+    ],
+    [
+     "VELDO-0160 decision/repl-inner-call",
+     true
+    ],
+    [
+     "VELDO-0160 decision/task-progress-tool",
+     true
+    ],
+    [
+     "VELDO-0160 decision/frame-tool-names",
+     true
+    ],
+    [
+     "VELDO-0160 decision/subagent-calls",
+     true
+    ],
+    [
+     "VELDO-0160 decision/no-write-server-reruns",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-work-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/nested-constructs",
+     true
+    ],
+    [
+     "VELDO-0160 decision/unconfigured-call-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/remote-agent-asks",
+     true
+    ],
+    [
+     "VELDO-0160 decision/outward-tool-asks",
+     true
+    ],
+    [
+     "VELDO-0160 pool/moved-off",
+     true
+    ],
+    [
+     "VELDO-0160 pool/added-account",
+     true
+    ],
+    [
+     "VELDO-0160 pool/one-run-while-unknown",
+     true
+    ],
+    [
+     "VELDO-0160 pool/usage-observes",
+     true
+    ],
+    [
+     "VELDO-0160 pool/selection-order",
+     true
+    ],
+    [
+     "VELDO-0160 pool/until-earliest",
+     true
+    ],
+    [
+     "VELDO-0160 install/assets",
+     true
+    ],
+    [
+     "VELDO-0160 format/claude-fake-lines",
+     true
+    ],
+    [
+     "VELDO-0160 format/codex-fake-lines",
+     true
+    ]
+   ],
+   "seconds": 26.142,
+   "source_sha256": "755753c24a15df505cf9205b557c0465d8d624adb35137df833709dc7328d444"
+  },
+  "schema": "veldo.proof-mutations/v1",
+  "spec_id": "VELDO-0160",
+  "suite": "scripts/suites/78_veldo_0160_account_pool.py"
+ },
+ "suite": "scripts/suites/78_veldo_0160_account_pool.py",
+ "test_commit": "fd748ebdd062e31d29a8e78656736723cd0ddc85"
+}

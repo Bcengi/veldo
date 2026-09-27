@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -365 +365 @@
+-          'remote_agent': {'tools': ('RemoteTrigger',),
++          'remote_agent': {'tools': (),  # defect: a RemoteTrigger call starts nothing outside the run
