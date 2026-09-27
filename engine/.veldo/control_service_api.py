@@ -168,11 +168,15 @@ class ServiceApi:
                                  generation=generation, clock=clock)
         publication = EVP.Projection(self.S, self.config['store_path'], domain=ids['domain_uuid'],
                                      repository=ids['repository_uuid'], root=self.config['publication_root'])
+        common = dict(domain=ids['domain_uuid'], repository=ids['repository_uuid'], signer=principal,
+                      sign=sign, generation=generation)
+        catalog = AUTH.MC.Catalog(self.S, self.conn, **common)
+        mcp_credentials = AUTH.CV.Credentials(self.S, self.conn, **common)
         self.edge = self.config['api_edge']
         self.authority = AUTH.ApiAuthority(self.S, CM, self.conn, ids=ids, domain=self.config['domain'], edge=self.edge,
                                            intake=intake, settlement=ingress.settlement, credentials=self.credentials,
                                            workflows=workflows, publication=publication, clock=clock,
-                                           authority_lock=lock)
+                                           authority_lock=lock, catalog=catalog, mcp_credentials=mcp_credentials)
         self.instance = '%d-%s' % (os.getpid(), os.urandom(6).hex())
         # The subscribed APIs' hint sockets, remembered across a restart in this 0600 file of the service's
         # state directory, and each one's hint number from this instance.

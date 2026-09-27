@@ -147,6 +147,16 @@ ROUTES = (
           ('version',), None),
     Route('workflows.save', 'POST', '/api/v1/domains/{domain}/workflows/save', 'configuration', True,
           ('workflow', 'base', 'definition'), ('layout',), 'save_workflow'),
+    Route('mcp.save', 'POST', '/api/v1/domains/{domain}/mcp/catalog/save', 'configuration', True,
+          ('definition', 'base'), (), 'save_mcp_server'),
+    Route('mcp.read', 'GET', '/api/v1/domains/{domain}/mcp/catalog', 'configuration', True,
+          ('server', 'revision'), (), None),
+    Route('mcp.credential_set', 'POST', '/api/v1/domains/{domain}/mcp/credentials/set', 'configuration', True,
+          ('id', 'label', 'base', 'value'), (), 'set_mcp_credential'),
+    Route('mcp.credential_delete', 'POST', '/api/v1/domains/{domain}/mcp/credentials/delete', 'configuration', True,
+          ('id', 'base'), (), 'delete_mcp_credential'),
+    Route('mcp.credential_read', 'GET', '/api/v1/domains/{domain}/mcp/credentials', 'configuration', True,
+          ('id',), (), None),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
 )
@@ -362,6 +372,9 @@ class ControlApi:
                          'decisions.answer': self._write, 'reads.contract': self._contract,
                          'reads.workflow': self._workflow_read, 'workflows.save': self._write,
                          'events.read': self._events_read, 'events.stream': self._stream}
+        self.handlers.update({'mcp.save': self._write, 'mcp.read': self._mcp_read,
+                              'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
+                              'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
 
     def route_problems(self):
@@ -637,6 +650,11 @@ class ControlApi:
 
     def _write(self, route, body, session, extra, headers):
         parameters = {f: body.get(f) for f in route.required + route.optional}
+        value = parameters.pop('value', None) if route.operation == 'set_mcp_credential' else None
+        if route.operation == 'set_mcp_credential':
+            if not isinstance(value, str) or not value:
+                raise Refused('invalid_input:credential', 'a nonempty credential value')
+            parameters['value_digest'] = hashlib.sha256(value.encode()).hexdigest()
         now = time.time()
         request_id = 'api-' + secrets.token_hex(16)
         expected = ({parameters['request_id']: parameters['request_version'],
@@ -645,7 +663,9 @@ class ControlApi:
         if route.operation == 'save_workflow':
             expected = {'workflow:' + str(parameters['workflow']): parameters['base']}
         target = {'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
-                  'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow'))}[route.operation]
+                  'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow')),
+                  'save_mcp_server': 'mcp_catalog', 'set_mcp_credential': 'mcp_credential',
+                  'delete_mcp_credential': 'mcp_credential'}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -663,8 +683,10 @@ class ControlApi:
                 raise Refused('unauthenticated:credential_not_current', 'the credential is no longer current') from None
             raise Refused('unavailable_service:signer:' + str(code), 'the protected signer did not sign') from None
         try:
-            answer = self.authority.apply({'assertion': assertion, 'signature': signature,
-                                           'domain_signature': domain_signature})
+            packet = {'assertion': assertion, 'signature': signature, 'domain_signature': domain_signature}
+            if route.operation == 'set_mcp_credential':
+                packet['value'] = value
+            answer = self.authority.apply(packet)
         except Exception:  # noqa: BLE001 - an unreachable authority executed nothing we can name
             raise Refused('unavailable_service:authority', 'the authority did not answer') from None
         self._refuse_unless_ok(answer)
@@ -674,7 +696,7 @@ class ControlApi:
         result = answer.get('result') or {}
         keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
-                'layout_digest')
+                'layout_digest', 'server', 'id', 'reference', 'seq')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod
@@ -703,6 +725,20 @@ class ControlApi:
 
     def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
+
+    def _mcp_read(self, route, body, session, extra, headers):
+        catalog = organ('control_mcp_catalog')
+        if not catalog.identifier(body['server']):
+            raise Refused('invalid_input:server', 'a catalog identifier')
+        revision = _count(body['revision'], 'revision')
+        identity = catalog.revision_id(self.ids['domain_uuid'], body['server'], revision)
+        row = self._inspect([identity]).get(identity)
+        if row is None or row.get('kind') != catalog.KIND:
+            raise Refused('missing_evidence:mcp_server', 'no such revision')
+        return 200, {'server': row['data']}
+
+    def _credential_read_refused(self, route, body, session, extra, headers):
+        raise Refused('unauthorized:credential_read_back', 'credentials are write-only')
 
     def _workflow_read(self, route, body, session, extra, headers):
         version = _count(body.get('version'), 'version') if 'version' in body else None

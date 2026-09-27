@@ -231,6 +231,11 @@ _FILES = [
     # api_credential store kind, the typed API assertion, the protected signer's "api" purpose, the
     # authority's judgment of it, and the published read models and UI action contract). Runtime assets the API, the signer and the authority load; no
     # validator imports them, so none is REQUIRED_SUBSTRATE.
+    # VELDO-0144: catalog records and the Linux runtime credential reference adapter.
+    ".veldo/control_mcp_catalog.py",
+    ".veldo/control_credential.py",
+    ".veldo/control_credential_keystore.py",
+    ".veldo/secretref.py",
     ".veldo/control_api.py",
     ".veldo/control_api_assertion.py",
     ".veldo/control_api_authority.py",

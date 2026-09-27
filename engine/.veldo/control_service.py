@@ -991,6 +991,8 @@ class Service:
                 result = self.inspect(packet)
             elif SA.AS.is_call(packet):
                 result = self.api_call(packet)
+            elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:
+                result = self.mcp_command(packet, repository)
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
             elif command.get('operation') == CH.AUTHORIZE:
@@ -1028,6 +1030,38 @@ class Service:
             raise Refused('unavailable_service:api:' + (self.api_refusal or 'not_configured'),
                           'this instance runs no authenticated API')
         return self.api.call(packet)
+
+    def mcp_command(self, packet, repository):
+        """Host-signed catalog and write-only credential commands, never generic mutations."""
+        if self.api is None:
+            raise Refused('unavailable_service:mcp', 'the API authority is not configured')
+        command = packet['command']
+        judge = self.api.authority
+        judge._authority()
+        if any(command.get(k) != v for k, v in judge.ids.items()) or repository != judge.ids['repository_uuid']:
+            raise Refused('unauthorized:mcp_coordinates')
+        principal = command.get('principal')
+        state, now = CM.authority_state(S, self.conn), time.time()
+        member = AC.membership_entry(state['membership'], principal)
+        key = AC.active_key(state['keyring'], principal, now) if AC.active_member(member, now)[0] else None
+        if key is None or not AC.ssh_keygen_verify(S.canonical_bytes(command), packet.get('signature') or '',
+                                                   AC.allowed_signers_line(principal, key['public_key']), principal)[0]:
+            raise Refused('unauthorized:mcp_signature')
+        try:
+            p = command.get('parameters')
+            if not isinstance(p, dict):
+                raise SA.AUTH.MC.Refused('invalid_input:mcp_command')
+            if command['operation'] == SA.AUTH.MC.SAVE:
+                if set(p) != {'definition', 'base'}:
+                    raise SA.AUTH.MC.Refused('invalid_input:mcp_command')
+                result = judge.catalog.save(p['definition'], principal=principal, base=p['base'],
+                                            command_id=command.get('command_id'))
+            else:
+                result = judge.mcp_credentials.apply(command['operation'], p, principal=principal,
+                                                     command_id=command.get('command_id'))
+        except (SA.AUTH.MC.Refused, SA.AUTH.CV.Refused) as error:
+            return {'ok': False, 'reason': error.code}
+        return {'ok': True, 'reason': command['operation'], 'result': result}
 
     def api_credential(self, packet, observation):
         """A steward's enroll_api_credential or revoke_api_credential, signed at the host."""
