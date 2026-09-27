@@ -1,133 +1,13 @@
 {
  "schema": "veldo.worker-wiring-validation/v1",
  "spec_id": "VELDO-0129",
- "production_commit": "28e7e26e",
+ "production_commit": "350517bf34898c05e065daca9f139fe95c2b5b22",
  "selected_suites": [
   {
-   "suite": "03_plugin_extension_loading_runner",
+   "suite": "50_git_environment",
    "exit": 2,
    "summary": [
-    "selftest (PARTIAL, 2 of 121 suites): 898 passed, 0 failed in 14.09s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "24_veldo_0007_install_and_run",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 131 passed, 0 failed in 21.48s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "26_veldo_0009_install_stamp",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 58 passed, 0 failed in 0.35s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "60_veldo_0052_eligibility",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 80 passed, 0 failed in 1.03s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "62_veldo_0039_dispatch",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 47 passed, 0 failed in 8.05s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "63_veldo_0040_containment",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 46 passed, 0 failed in 6.30s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "63_veldo_0049_floor",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 46 passed, 0 failed in 9.27s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "64_veldo_0050_proof",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 40 passed, 0 failed in 7.30s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "66_veldo_0042_clones",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 46 passed, 0 failed in 1.58s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "67_veldo_0041_heartbeat",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 49 passed, 0 failed in 10.97s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "69_veldo_0058_gate_output",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 42 passed, 0 failed in 16.14s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "75_veldo_0062_accounts",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 48 passed, 0 failed in 27.41s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "78_veldo_0060_claude_adapter",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 60 passed, 0 failed in 16.60s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "79_veldo_0061_codex_adapter",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 46 passed, 0 failed in 9.81s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "80_veldo_0155_claude_baseline",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 43 passed, 0 failed in 9.10s"
-   ],
-   "stderr": ""
-  },
-  {
-   "suite": "81_veldo_0156_codex_baseline",
-   "exit": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 47 passed, 0 failed in 2.27s"
+    "selftest (PARTIAL, 1 of 121 suites): 30 passed, 0 failed in 1.96s"
    ],
    "stderr": ""
   },
@@ -135,7 +15,47 @@
    "suite": "82_veldo_0129_worker_wiring",
    "exit": 2,
    "summary": [
-    "selftest (PARTIAL, 1 of 121 suites): 44 passed, 0 failed in 14.55s"
+    "selftest (PARTIAL, 1 of 121 suites): 53 passed, 0 failed in 18.29s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "78_veldo_0060_claude_adapter",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 60 passed, 0 failed in 17.28s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "79_veldo_0061_codex_adapter",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 46 passed, 0 failed in 10.27s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "80_veldo_0155_claude_baseline",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 43 passed, 0 failed in 9.47s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "70_veldo_0069_bindings",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 36 passed, 0 failed in 6.02s"
+   ],
+   "stderr": ""
+  },
+  {
+   "suite": "64_veldo_0050_proof",
+   "exit": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 121 suites): 40 passed, 0 failed in 7.36s"
    ],
    "stderr": ""
   }
@@ -151,77 +71,79 @@
  },
  "engine_mirror_sha256": {
   "control_launch.py": "fed2535372b25a9963098f23ef11f5af76669a58df74ae84bee13cfc72f16e00",
-  "control_launch_work.py": "44a39e19cd0d9c5f462b26bce920a9c6921a05e4c18e68592b3b5967bc07ea6f",
+  "control_launch_work.py": "5c1a93973b9d3ae6a2736f4a7a4eedb349a2a09af16475d22778dedde72e75f6",
   "control_engine_claude.py": "4e96ab58532ca348c6bd43fdbeaf9d18ed987416827efdc95dd93550580ac3d9",
   "executor.py": "b0f55102eeca3181fa68ebbe3bffd2b9a9196fc5db3317dca7dc800d5f100cab",
   "dispatch.py": "f57ebe36df3bb50d7f16322a5eb57475917ca176be3061e20123c96a1fff1ed9",
   "init_scaffold.py": "3a9761ce7471aab4452f2369e9f0df80e32c45464df4d2da62e3271301a46ddf"
  },
- "prior_mutation_controls": [
-  {
-   "name": "floor-projection-before-acceptance",
-   "exit": 0,
-   "targets": {
-    "floor/authority-to-projection": [
-     false
-    ]
-   },
-   "stderr": ""
-  },
-  {
-   "name": "floor-stale-proof-accepted",
-   "exit": 0,
-   "targets": {
-    "floor/build-acceptance": [
-     false
-    ]
-   },
-   "stderr": ""
-  },
-  {
-   "name": "floor-review-output-unbound",
-   "exit": 0,
-   "targets": {
-    "floor/review-binding": [
-     false
-    ]
-   },
-   "stderr": ""
-  },
-  {
-   "name": "proof-kept-in-temporary-storage",
-   "exit": 0,
-   "targets": {
-    "proof/fresh-reviewer-resolves": [
-     false
-    ]
-   },
-   "stderr": ""
-  },
-  {
-   "name": "proof-offered-without-acceptance",
-   "exit": 0,
-   "targets": {
-    "proof/accepted-before-offer": [
-     false
-    ]
-   },
-   "stderr": ""
-  },
-  {
-   "name": "proof-check-json-alone",
-   "exit": 0,
-   "targets": {
-    "proof/contextual-refusals": [
-     false
-    ]
-   },
-   "stderr": ""
-  }
- ],
+ "mutation_names": {
+  "total": 1742,
+  "duplicates": 0,
+  "finding_129": 14
+ },
  "limits": [
   "No repository gate run",
   "No model call",
+  "No remote host contacted",
   "No independent review or landing"
+ ],
+ "finding_129": {
+  "exit": 0,
+  "summary": {
+   "mutations_rejected": 14,
+   "green_suites": {
+    "82_veldo_0129_worker_wiring.py": 53
+   }
+  },
+  "all_rejected_by_assertion": true
+ },
+ "rows": {
+  "baseline_passed": 27,
+  "base_red": 10,
+  "base_unavailable": 17
+ },
+ "regression_mutations": [
+  {
+   "finding": 60,
+   "exit": 0,
+   "summary": {
+    "mutations_rejected": 35,
+    "green_suites": {
+     "78_veldo_0060_claude_adapter.py": 60
+    }
+   }
+  },
+  {
+   "finding": 61,
+   "exit": 0,
+   "summary": {
+    "mutations_rejected": 30,
+    "green_suites": {
+     "79_veldo_0061_codex_adapter.py": 46
+    }
+   }
+  },
+  {
+   "finding": 69,
+   "exit": 0,
+   "summary": {
+    "mutations_rejected": 17,
+    "green_suites": {
+     "70_veldo_0069_bindings.py": 36,
+     "66_veldo_0047_authority.py": 56
+    }
+   }
+  },
+  {
+   "finding": 50,
+   "exit": 0,
+   "summary": {
+    "mutations_rejected": 24,
+    "green_suites": {
+     "64_veldo_0050_proof.py": 40
+    }
+   }
+  }
  ]
 }
