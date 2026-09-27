@@ -80,10 +80,14 @@ base. red-at-fd81afc0.json does the same for the reviewed commit. Failures are a
 exceptions. Both fixture controls stay green. Rows whose behavior already existed at a base remain
 green there; the red records retain each individual outcome.
 
-Finding 165 registers 15 globally unique mutations. In addition to the original nine, these cover
+Finding 165 registers 23 globally unique mutations. In addition to the original nine, these cover
 empty evidence treated as missing for either engine, configured values dropped after the strip,
 unprefixed child names left in the environment, the old hand-list extraction and the refused metric
-not incremented. mutations.json and individual diffs record controls and named assertion failures.
+not incremented. The second review fix adds eight: session names that are not a list accepted for
+either engine, the extractor dropping names ending in _ID, Codex's child settings or Claude Code's
+metrics default left off the wrapper list, either baseline not setting LANG and TERM, and an adapter
+configuring the MCP naming switch accepted. Both red records were regenerated over the 21-row suite
+and fail by assertion; outside-scan is red at fd81afc0, whose session names came from the old pattern. mutations.json and individual diffs record controls and named assertion failures.
 
 The VELDO-0062 suite still checks configured login, redirect and provider-switch refusal. Its existing
 non-login-setting row now requires CLAUDE_CODE_MAX_OUTPUT_TOKENS when configured and its absence when
@@ -93,6 +97,13 @@ an account-layer defect from the finding-62 mutations.
 
 ## Validation
 
+Second review fix, on 8cc010bf: the whole selftest ran once with the checkout unchanged throughout,
+6,908 rows passed and zero failed. VELDO-0165 passes 21/21. The four mutation commands, each with
+two jobs, reject all cases: finding 165 has 23, finding 62 has 50, finding 61 has 30 and finding 155
+has 25. All 1,900 registered mutation names are unique. The Git subprocess boundary check and the
+repository validator pass, and the engine copies are byte-identical.
+
+Earlier round:
 review-fix-validation.json records the checks on e381030a. The whole selftest ran once with the
 checkout unchanged throughout: 6,877 rows passed, zero failed. The individual suites pass 20/20
 (VELDO-0061, assertions unchanged), 22/22 (VELDO-0062), 17/17 (VELDO-0155) and 17/17 (VELDO-0165).

@@ -194,3 +194,8 @@ are now read as GNU strings reads them, outside executable sections, and a row c
 an independent strings and readelf scan. An adapter configuring CLAUDE_AGENT_SDK_MCP_NO_PREFIX is
 refused by name, and session names that are not a list refuse as missing evidence. The footprint
 adds the merged VELDO-0129 suite for its fake qualification writer.
+On 8cc010bf the whole selftest passes 6,908 rows with none failing and VELDO-0165 passes 21/21.
+Finding 165 rejects all 23 mutations, finding 62 all 50, finding 61 all 30 and finding 155 all 25,
+each with two jobs; both red records were regenerated and fail by assertion. The Git boundary check
+and the repository validator pass. No canonical gate, real engine run or push was performed. Status
+remains ready for independent review.
