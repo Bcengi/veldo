@@ -277,3 +277,5 @@ pre-run path snapshots with confined live membership and git-prefix handling; bo
 bytes and separate fill serialization from the reader lock. Runner-side unknown outcomes commit their
 records. Exact resolved forms cover embedded base64 and lowercase hex. Six regression rows and ten
 finding-141 mutations cover these changes. Acceptance criteria and ready status unchanged.
+
+2026-09-27, review regression fixes: score both whole missing clone leaves and each scanner candidate within them; redact uppercase hex resolved values alongside lowercase hex. Two assertion rows and two finding-141 mutations cover both regressions while keeping real clone file leaves readable.

@@ -79,6 +79,7 @@ def _v141_suite():
             'redaction/partial-blocks', 'redaction/clone-relative-paths', 'redaction/encoded-values',
             'api/scope-before-existence', 'api/registration-race', 'api/slow-reader', 'route/unknown-committed',
             'redaction/thinking-and-unknown', 'redaction/live-paths', 'redaction/offset-encodings',
+            'redaction/clone-leaf-candidates', 'redaction/uppercase-hex',
             'api/byte-pages', 'api/fast-catchup', 'route/runner-unknown')
     rows = {name: [] for name in ROWS}
 
@@ -1697,6 +1698,33 @@ err.close()
                       ER.redact(opaque, resolved)[0] == ENTROPY
                       and whole_high(short_leaf) and ER.redact(short_leaf, resolved)[0] == ENTROPY
                       and hidden not in ER.redact('link/' + hidden, resolved)[0])
+
+        with region('redaction/clone-leaf-candidates'):
+            clone = base / 'candidate-leaf-clone'
+            clone.mkdir()
+            resolved = ER.Resolved()
+            resolved.paths = ER.clone_paths(clone)
+            while True:
+                candidate = ''.join(pick.choice(string.ascii_letters + string.digits) for _ in range(36))
+                leaf = candidate + '.' * 30
+                if whole_high(candidate) and SS.shannon(leaf) < SS.ENTROPY_THRESHOLD:
+                    break
+            text = 'checking %s ok' % leaf
+            check('redaction/clone-leaf-candidates', 'a low entropy leaf cannot hide a scanner candidate',
+                  ER.redact(text, resolved) == ('checking %s%s ok' % (ENTROPY, '.' * 30), ['entropy']))
+            (clone / leaf).touch()
+            check('redaction/clone-leaf-candidates', 'a real clone file leaf stays readable',
+                  ER.redact(text, resolved) == (text, []))
+
+        with region('redaction/uppercase-hex'):
+            resolved = ER.Resolved()
+            resolved.add(PLANTED_KIND, planted)
+            lower = planted.encode().hex()
+            upper = lower.upper()
+            check('redaction/uppercase-hex', 'hex cases differ and both carry the resolved marker',
+                  lower != upper and all(ER.redact('value %s done' % value, resolved)
+                                        == ('value %s done' % ER.marker(PLANTED_KIND), [PLANTED_KIND])
+                                        for value in (lower, upper)))
 
         with region('redaction/offset-encodings'):
             import base64

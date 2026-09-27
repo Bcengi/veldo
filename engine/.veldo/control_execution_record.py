@@ -158,6 +158,7 @@ class Resolved:
                      base64.urlsafe_b64encode(value.encode()).decode(),
                      urllib.parse.quote(value, safe=''), urllib.parse.quote_plus(value, safe='')}
             forms.add(value.encode().hex())
+            forms.add(value.encode().hex().upper())
             # A value can begin at any byte offset inside Basic auth or an encoded assignment.
             for offset in range(3):
                 raw = b' ' * offset + value.encode()
@@ -317,7 +318,8 @@ class ClonePaths:
                 try:
                     info = os.lstat(part, dir_fd=fd)
                 except FileNotFoundError:
-                    return index == len(parts) - 1 and not _high(part)
+                    return index == len(parts) - 1 and not _high(part) and not any(
+                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))
                 if index == len(parts) - 1:
                     return True
                 if not stat.S_ISDIR(info.st_mode):

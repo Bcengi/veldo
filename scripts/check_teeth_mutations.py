@@ -7637,9 +7637,17 @@ def cases():
               '            pass\n',
               ['redaction/offset-encodings'])
     record141('record141b-short-leaf-unscored', 'control_execution_record.py',
-              '                    return index == len(parts) - 1 and not _high(part)\n',
+              '                    return index == len(parts) - 1 and not _high(part) and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
               '                    return index == len(parts) - 1 and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
               ['redaction/live-paths'])
+    record141('record141c-leaf-candidates-unscored', 'control_execution_record.py',
+              '                    return index == len(parts) - 1 and not _high(part) and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
+              '                    return index == len(parts) - 1 and not _high(part)\n',
+              ['redaction/clone-leaf-candidates'])
+    record141('record141c-upper-hex-omitted', 'control_execution_record.py',
+              '            forms.add(value.encode().hex().upper())\n',
+              '            pass\n',
+              ['redaction/uppercase-hex'])
     return result
 
 
