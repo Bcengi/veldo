@@ -1,0 +1,118 @@
+{
+ "by_assertion": true,
+ "commit": "a684f73bda68efa5c35487972ac9d34b9906a308",
+ "details": [
+  "VELDO-0154 install/assets detail: the installation lays down its work configuration 0600 and the fixed executable carries the loop's organs [TypeError install() got an unexpected keyword argument 'work', ['control_account_limit.py', 'control_assignment.py', 'entity_contract.py', 'control_account_pool.py']]",
+  "VELDO-0154 install/assets detail: a work configuration naming a repository this instance does not serve is refused by name before anything is written",
+  "VELDO-0154 loop/runner-in-service detail: the installed service process holds the authority lock, its log holds the pass, its principal prepared the dispatch and the launch receiver is its child process [None, None, [], None]",
+  "VELDO-0154 loop/runner-in-service detail: the service reports its factory loop available with the passes it ran [{}]",
+  "VELDO-0154 loop/journal-wake-offers detail: the signed packet that advanced the journal started one pass, with the journal as its only source [{'refused': 'authority_unavailable'}, None]",
+  "VELDO-0154 loop/journal-wake-offers detail: the pass offered every assigned eligible unit, and only those, each to the Runner with this host and one of the owner's accounts [[]]",
+  "VELDO-0154 loop/journal-wake-offers detail: each offer is a prepared dispatch in the store on the account the pass names [{'VELDO-9154-U1': [], 'VELDO-9154-U2': []}]",
+  "VELDO-0154 loop/journal-wake-offers detail: the paused project's assigned unit is not offered: the Gate refuses it project_not_active:PAUSED [True, []]",
+  "VELDO-0154 loop/review-offered detail: the build's end on its launch pipe started a pass whose only source is the run's end, and nothing else ran between [None, []]",
+  "VELDO-0154 loop/review-offered detail: the pass settled the build as exited and offered its review, following that build, from its commit, to an independent reviewer [[], []]",
+  "VELDO-0154 loop/review-offered detail: the review is a dispatch in the store [[]]",
+  "VELDO-0154 loop/receiver-death detail: with every other account busy, the waiting unit waits for an account [[], []]",
+  "VELDO-0154 loop/receiver-death detail: killing the receiver mid-run started exactly one pass, whose only source is the run's end [False, []]",
+  "VELDO-0154 loop/receiver-death detail: the run is recorded outcome_unknown under its original dispatch, its receiver lost [(None, None), []]",
+  "VELDO-0154 loop/receiver-death detail: its usage reservation is retained: the worker slot is not retired and the invocation keeps its reserved charge, unsettled [None, None, None]",
+  "VELDO-0154 loop/receiver-death detail: its account slot is freed once its worker is gone, and the next dispatch, in that same pass, takes it [False, None, []]",
+  "VELDO-0154 loop/rerun-another-account detail: the run ended account_limit with its account's window and reset, and VELDO-0160's decision over its execution record is re-run [None, []]",
+  "VELDO-0154 loop/rerun-another-account detail: one new dispatch of the same station, under a new dispatch identity, on another account of the role's engine, from the same accepted commit [[]]",
+  "VELDO-0154 loop/rerun-another-account detail: nothing is sent to the exhausted account before its reported reset [None, []]",
+  "VELDO-0154 loop/ask-before-rerun detail: L2: a run whose record shows a call to an MCP tool not marked read-only raised one ordinary decision request to the project's owner, naming the call [[], (None, None, None)]",
+  "VELDO-0154 loop/ask-before-rerun detail: L3: a run whose record shows a call to an MCP tool not marked read-only raised one ordinary decision request to the project's owner, naming the call [[], (None, None, None)]",
+  "VELDO-0154 loop/ask-before-rerun detail: no dispatch until he answers: another pass leaves both units awaiting him and asks nothing again [None, [0, 0]]",
+  "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'refused': 'authority_unavailable'}, None, []]",
+  "VELDO-0154 loop/owner-no-stops detail: his stop leaves the unit stopped, in that pass and the next [{'refused': 'authority_unavailable'}, [], [0]]",
+  "VELDO-0154 loop/reset-timer-wake detail: the unit waits for the account's reported reset, and the pass set its timer to that earliest reset [[], None, 1790546460]",
+  "VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [None, []]",
+  "VELDO-0154 loop/no-other-timer detail: with the unit waiting, no journal advance and no run ending, no pass started for 0.0 s, longer than every interval the service uses, while its accept timeout kept waking it [[], 0 switches]",
+  "VELDO-0154 loop/no-other-timer detail: exactly one pass started at the reset, and none between the unit's wait and it [[], []]",
+  "VELDO-0154 loop/no-other-timer detail: across the whole run every pass came from a wake source, the service's start included none, and the reset timer started only that one [[]]"
+ ],
+ "failed_rows": [
+  "VELDO-0154 install/assets",
+  "VELDO-0154 loop/runner-in-service",
+  "VELDO-0154 loop/journal-wake-offers",
+  "VELDO-0154 loop/review-offered",
+  "VELDO-0154 loop/receiver-death",
+  "VELDO-0154 loop/rerun-another-account",
+  "VELDO-0154 loop/ask-before-rerun",
+  "VELDO-0154 loop/owner-yes-reruns",
+  "VELDO-0154 loop/owner-no-stops",
+  "VELDO-0154 loop/reset-timer-wake",
+  "VELDO-0154 loop/no-other-timer"
+ ],
+ "modules": {
+  ".veldo/control_account_pool.py": {
+   "at_commit": "c15048a41936f6570a8b246386b23c4da84b095c080b9be626248137656c11c4",
+   "now": "bdd0f2b1f5db82a7e3ca38aa04a6d32d8e33cce0b38bf83ced121641aff92fba"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "ed73f929e5857ab53da6620d105fe3749697838791e8526c337380caab96bdeb",
+   "now": "f6779d15537f3de3f92877f35d4b25c2ccc5b09d48804d998c650665fc5ccd24"
+  },
+  ".veldo/control_reservations.py": {
+   "at_commit": "308d51b7700b7193f7ba43c322b7f2d44d2f6a6cec543e204fc9a3e57d604491",
+   "now": "765127ca913122ec67492750db84f4378d9e9a9e753455f89caf147c3118469d"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "8d30d3c68846e580eed5e5cc8dc2fd9f812257de1bf40d719442d25b3bc23f4f",
+   "now": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0154 install/assets",
+   false
+  ],
+  [
+   "VELDO-0154 loop/runner-in-service",
+   false
+  ],
+  [
+   "VELDO-0154 loop/journal-wake-offers",
+   false
+  ],
+  [
+   "VELDO-0154 loop/review-offered",
+   false
+  ],
+  [
+   "VELDO-0154 loop/receiver-death",
+   false
+  ],
+  [
+   "VELDO-0154 loop/rerun-another-account",
+   false
+  ],
+  [
+   "VELDO-0154 loop/ask-before-rerun",
+   false
+  ],
+  [
+   "VELDO-0154 loop/owner-yes-reruns",
+   false
+  ],
+  [
+   "VELDO-0154 loop/owner-no-stops",
+   false
+  ],
+  [
+   "VELDO-0154 loop/reset-timer-wake",
+   false
+  ],
+  [
+   "VELDO-0154 loop/no-other-timer",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 5.33,
+ "spec_id": "VELDO-0154",
+ "suite": "scripts/suites/83_veldo_0154_factory_loop.py",
+ "tree": "git archive a684f73bda68efa5c35487972ac9d34b9906a308, unchanged; the current suite file run against it"
+}

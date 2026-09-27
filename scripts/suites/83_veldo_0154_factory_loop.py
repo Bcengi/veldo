@@ -414,6 +414,8 @@ sys.exit(chosen['code'])
             return [e for e in (seen or {}).get('ended') or [] if name is None or e['unit'] == name]
 
         def proc_stat(pid):
+            if not isinstance(pid, int):
+                return None
             try:
                 text = Path('/proc/%d/stat' % pid).read_text()
             except OSError:
@@ -425,6 +427,8 @@ sys.exit(chosen['code'])
             return bool(fields) and fields[19] == identity.get('start') and fields[0] != 'Z'
 
         def switches(pid):
+            if not isinstance(pid, int):
+                return None
             try:
                 for line in Path('/proc/%d/status' % pid).read_text().splitlines():
                     if line.startswith('voluntary_ctxt_switches:'):
@@ -602,7 +606,7 @@ sys.exit(chosen['code'])
             parent = (proc_stat(receiver.get('pid')) or [None, None])[1] if isinstance(receiver.get('pid'), int) else None
             lock = {}
             with contextlib.suppress(OSError, ValueError):
-                lock = json.loads(Path(config['lock']).read_text())
+                lock = json.loads(Path(config.get('lock') or base / 'no-lock').read_text())
             status = send({'operation': 'inspect', 'entity_ids': []})
             loop_status = ((status or {}).get('result') or status or {}).get('loop') or {}
             check('loop/runner-in-service', 'the installed service process holds the authority lock, its log holds the '
