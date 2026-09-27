@@ -9,15 +9,15 @@
  },
  "check_log_sha256": {
   "130": "8cad449f021928159df4eff26d718af58a624715ff97524ff7a7cd8ff36e8f26",
-  "144": "329eeefcf4e8378731a758dcd0b78901da0a61f52ae98b09b0fd0c3d3859b417"
+  "144": "7f1582056210b41a8ef622e4d84440dae9ff6e555736b771bb45b0c0aade3f08"
  },
- "credential_position_cases": 58,
+ "credential_position_cases": 84,
  "engine_copies_identical": true,
  "gate": {
   "reason": "The implementation request prohibits running the canonical gate.",
   "run": false
  },
- "known_shape_cases": 19,
+ "known_shape_cases": 21,
  "mutation_names_unique_across_findings": true,
  "mutations": {
   "all_by_assertion": true,
@@ -26,10 +26,10 @@
   "finding": 144,
   "jobs": 2,
   "registry": "scripts/check_teeth_mutations.py",
-  "rejected": 31
+  "rejected": 35
  },
- "ordinary_config_cases": 24,
- "production_commit": "8218a34a2c08aaf6464e93a575e388555cff48e5",
+ "ordinary_config_cases": 70,
+ "production_commit": "3fa3264895d87e2c83b77b7516d35d6869a42103",
  "production_sha256": {
   ".veldo/control_api.py": "0fdb23cd8782c7d1a3d5ec562b9f8380145bccaedcea5c8b2a6136611dccafbd",
   ".veldo/control_api_assertion.py": "f77c7e890ebb5515ee2bedfac40ffd31366846205fde130746bef1a7a76ad17e",
@@ -37,71 +37,74 @@
   ".veldo/control_api_models.py": "5c69710145f6bf5da67c61ca6146f7f064ea578ebedea54fc8bb46594d122376",
   ".veldo/control_credential.py": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95",
   ".veldo/control_credential_keystore.py": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294",
-  ".veldo/control_mcp_catalog.py": "ea3c9918f17b9ada16d39e6e4537238dd1d2f37eab9234e8dae61489f3916cd2",
+  ".veldo/control_mcp_catalog.py": "10bd39d6f9f7ccc22a0eca054f309ff146df16e59ca551b8ea558afc89fd65ce",
   ".veldo/control_service.py": "8d30d3c68846e580eed5e5cc8dc2fd9f812257de1bf40d719442d25b3bc23f4f",
   ".veldo/control_service_api.py": "5fb5a240461200b78e4eb62f9aad245985c6f628b92223424b6fdab2d5971f8d",
-  ".veldo/init_scaffold.py": "3a9374afb50947e14dbf0dc53c1da0f7f31c06e002634fc89478183be830f159"
+  ".veldo/init_scaffold.py": "8e28abbabcc5263c11b42296dda3d6e91be82bfd4f8d4f8b2928e2b07752f2fd"
  },
  "proof_sha256": {
-  "mutations.json": "0cbae8102444ea7ce81e1ae763116ca38cadc65f60d2e4bf7fc0aa8dfd5ee746",
+  "mutations.json": "3aa09c4e4ad437037c9effb21de79b084d52fe3d3f64f53fd2accda096d41c0d",
   "red-at-3c85f33b.json": "0c8f5771b1c666a5c57c44b39f732d36d603bc341fb4bcc84d24f4c12656017d",
+  "red-at-514915a1.json": "1637f3f69b14f77e705357f88deb86c337a6d65b2b5a89a141037ea7bd195c26",
   "red-at-6e1c725f.json": "b0770e5ccb4de27c251ecb60d6fce2228cc2dc6ba7e65cf3ca15ff38d95c18df",
+  "red-at-7df42187.json": "befd35a67647d776e49d9580f42b07d2ce63bc17a52c736d985bb0c584f5bca0",
   "red-at-a4769f68.json": "af91cdd94e49620ccf235d9b201c99e9803ace28c55e04f2089e038ebd3fbbea"
  },
  "red": {
-  "commit": "a4769f68b041d17414d14fecce29819cfdd66ede",
-  "rows_red_by_assertion": 25
+  "commit": "7df42187524b329a2241e056e125fa3043e19df5",
+  "rows_red_by_assertion": 26
  },
+ "refusal_no_value_cases": 96,
  "review_round_red": {
   "by_assertion": true,
-  "commit": "6e1c725f63d18cf78e9a9c974aa108800abd656d",
+  "commit": "514915a16f03cb29945d09e0e178368d1cb74dfc",
   "failed_rows": [
    "VELDO-0144 catalog/observability",
    "VELDO-0144 catalog/known-shape-refused",
    "VELDO-0144 catalog/ordinary-config-saves",
    "VELDO-0144 catalog/credential-position-refused",
-   "VELDO-0144 catalog/deleted-reference",
-   "VELDO-0144 catalog/credential-domain"
+   "VELDO-0144 catalog/credential-domain",
+   "VELDO-0144 catalog/refusal-no-value"
   ]
  },
  "schema": "veldo.scoped-observations/v1",
  "secret_scan_unchanged": true,
  "selftest_scope": "Scoped runs return status 2 with zero failed assertions; no aggregate verification or passed unit-evidence record is claimed.",
  "spec_id": "VELDO-0144",
- "suite_sha256": "9b5c223aa556482c5446bbfe56cf2287ba044fc5fd98994d9eb4602a78190c90",
+ "suite_sha256": "c8ab335b91bfc792db9ea109a253d74c568171ab648dc1d0c3550e3ac539aaa6",
  "suites": [
   {
    "exit_code": 2,
    "failed": 0,
-   "log_sha256": "688e003079b2640771e3f64292156033a7fdf30ab7d2e9082f434602fdb894dd",
+   "log_sha256": "7ea692b39234ca42349125a426aae3642b8e99bf6f2642ade1194b97ac0f93f7",
    "name": "82_veldo_0144_mcp_catalog",
-   "own_rows_passed": 25
+   "own_rows_passed": 26
   },
   {
    "exit_code": 2,
    "failed": 0,
-   "log_sha256": "c2b5ae87e94d379f142691d47f97083deb791d47f0d7d3ef7daa3d1b5465e4cc",
+   "log_sha256": "2b376e8feb73c04c1762f76b969b8e8e219ba9695ad7393977327e6d6efce298",
    "name": "71_veldo_0130_api",
    "own_rows_passed": 42
   },
   {
    "exit_code": 2,
    "failed": 0,
-   "log_sha256": "8fc40abef67b9d2bf8cfa942d29ad06bcc1204507e24776824495739bc3ba70a",
+   "log_sha256": "98b0e16a5153b3f2c1d99ceba54aa1cb13bb2ee3c17f7d5904064e39e13be6fa",
    "name": "66_veldo_0042_clones",
    "own_rows_passed": 20
   },
   {
    "exit_code": 2,
    "failed": 0,
-   "log_sha256": "95b4f94778e071c6314d1f116bb62db3579ef4c55ee97240693b0d50412a9a1e",
+   "log_sha256": "8f8d96bda4302ed8b4587b590923e557a28a9bddcefeb3770bea343c140c78f9",
    "name": "66_veldo_0047_authority",
    "own_rows_passed": 30
   },
   {
    "exit_code": 2,
    "failed": 0,
-   "log_sha256": "6e66beca1e2f0e4baaec735acd20beca7a9497070cc0935bdc26f924fdf65e22",
+   "log_sha256": "cba18eec3d48560d679f73fb619767f7482fc827eb6c599aac4ecabe0f7a07bf",
    "name": "66_veldo_0051_events",
    "own_rows_passed": 11
   }
@@ -112,6 +115,7 @@
    ".veldo/validate.py",
    "all"
   ],
-  "exit_code": 0
+  "exit_code": 0,
+  "log_sha256": "8203eaa488986a1d9f2b55593532a31927021c0c5dc4b222c65ca957bb76a0e5"
  }
 }

@@ -25,6 +25,14 @@ assets; changed engine modules are byte-identical to their repository copies.
 The catalog check guards credential positions and known token shapes before a
 revision is stored. One named-position function covers environment names, stdio
 flags with inline or following values, HTTP query names, URL userinfo and headers.
+Names split on underscores, hyphens, dots and camelCase boundaries into lower-case
+tokens. Credential tokens match whole tokens, and key or pat match only the last
+token. A final file, path, dir, name, port, url, host, id or callback exempts the
+name. Absolute filesystem paths starting with / or ~/ are allowed as position
+values. A bare credential flag consumes only a following item that does not start
+with a hyphen. Headers remain reference-only. Refusals record the top-level field
+name and reason, with no server id; a refused id cannot enter either catalog
+observations or observations.jsonl.
 Known shapes reuse the repository scanner's PATTERNS by import. The catalog never
 calls scan_text or applies entropy; the repository scanner is unchanged. A secret
 the owner types as an ordinary literal elsewhere is the owner's choice, and the
@@ -53,9 +61,10 @@ Suite: `scripts/suites/82_veldo_0144_mcp_catalog.py`. Each row reports once.
 - AC1, AC2, `catalog/observability`: Session and command provenance, revision and credential identities, and operation/refusal counts agree with the driven changes.
 - AC1, AC2, `install/assets`: Scaffold assets, the authority's derived module closure, API handlers and engine copies agree.
 
-- AC1, `catalog/ordinary-config-saves`: All 20 ordinary probe values, the worktree and Mac paths and a Confluence REST URL save with every field compared exactly in the API and store. The probe's environment helper used API_TOKEN; these ordinary values use CONFIG to obey the position rule. Named references and an ordinary generated literal also save exactly.
-- AC1, `catalog/credential-position-refused`: Generated hex values, including digest widths previously accepted, and short values refuse by name in environment entries, both stdio flag forms and HTTP queries. Userinfo and literal headers also refuse. No store command is called and no revision or journal entry is written.
+- AC1, `catalog/ordinary-config-saves`: All 20 ordinary probe values, the worktree and Mac paths and a Confluence REST URL save with every field compared exactly in the API and store. The probe's environment helper used API_TOKEN; these ordinary values use CONFIG to obey the position rule. Named references and an ordinary generated literal also save exactly. Runtime generated additions exercise author arguments, GIT_AUTHOR_NAME, OAUTH_CALLBACK_PORT, SORT_ORDER, credential file paths, every last-token exemption and a bare no-auth flag followed by a port flag. There are 70 saves in this row.
+- AC1, `catalog/credential-position-refused`: Generated hex values, including digest widths previously accepted, and short values refuse by name in environment entries, both stdio flag forms and HTTP queries. CamelCase privateKey and accessKey, dotted api.key, PASS, api-key flags and x-api-key literal headers are included. Userinfo and literal headers also refuse. There are 84 cases, with credential values generated at runtime. No store command is called and no revision or journal entry is written.
 - AC1, `catalog/known-shape-refused`: Generated known shapes refuse across string fields, including names and references. All eight existing PATTERNS entries are exercised outside credential positions.
+- AC1, `catalog/refusal-no-value`: Generated values refused in credential positions and every known-shape field appear in neither catalog observations nor observations.jsonl. Both records retain the field name and reason; API and host-command refusals of a generated id omit its value.
 - AC1, `catalog/deleted-reference`: A tombstoned credential cannot satisfy either an environment or header reference. Both refuse by name without storage.
 - AC1, `catalog/credential-domain`: Another domain's reference and a non-Veldo name are refused without writes.
 - AC2, `credential/libsecret-protocol`: Piped lookup preserves a real trailing newline, attribute pairs and subset matching work, and store requires a label. Independent full-attribute lookup catches an adapter omitting the application attribute.
@@ -89,26 +98,25 @@ not a live desktop keyring or a deployed TLS terminator.
 
 ## Red record and mutations
 
-`red-at-a4769f68.json` records the current suite against the unchanged production
+`red-at-7df42187.json` records the current suite against unchanged production
 files extracted with git archive from
-`a4769f68b041d17414d14fecce29819cfdd66ede`, the merge base with main. All 25 rows are red by assertion;
-none relies on an exception. No other worktree or branch is created or modified.
-Reproduce with `python3 proof/VELDO-0144/drive.py red a4769f68`.
-The original `red-at-3c85f33b.json` is regenerated with the same current suite.
-`red-at-6e1c725f.json` records this review round's starting commit: ordinary
-configuration, credential positions, deleted references and known shapes are red
-by assertion, along with the dependent observability and domain rows. This
-separates the review regressions from the feature's original missing behavior.
-Reproduce with the same driver and positional arguments `red 6e1c725f`.
+`7df42187524b329a2241e056e125fa3043e19df5`, the branch's merge base with main after
+this round's merge. All 26 rows are red by assertion, with no exception-based red.
+No other worktree or branch is created or modified. Reproduce with
+`python3 proof/VELDO-0144/drive.py red 7df42187`.
+`red-at-514915a1.json` records this round's starting commit, separating this
+round's regressions from the feature's original missing behavior. Reproduce with
+the same driver and positional arguments `red 514915a1`. Earlier red records are
+retained as historical evidence for their respective review rounds.
 
-Finding 144 registers 31 uniquely named mutations in
+Finding 144 registers 35 uniquely named mutations in
 `scripts/check_teeth_mutations.py`. `mutations.json` records the baseline, a
 byte-identical copy control for each mutated module, every exact edit and source
 digest, every row outcome and its failure detail. Both declared falsifiers are
 included: `mcp144-overwrite-revision` really overwrites the earlier revision,
 and `mcp144-value-on-argv` passes the generated value as an argument. Every mutant
 fails on its named row by assertion. Reproduce the detailed record with
-`python3 proof/VELDO-0144/drive.py`; the registry checker also rejects all 31 with
+`python3 proof/VELDO-0144/drive.py`; the registry checker also rejects all 35 with
 finding 144 and two jobs. Finding 130 also rejects all 100 mutations with two
 jobs after its expanded command-map anchor is repaired. Names are unique across
 the entire mutation registry. The old catalog/credential-literals row and
@@ -116,7 +124,10 @@ mcp144-catalog-literal-accepted mutation are replaced by catalog/known-shape-ref
 and mcp144-known-shape-accepted. The new entropy-restored mutation requires the
 ordinary configuration row to fail, and separate environment, argument and query
 mutations require the position row to fail. The deleted-reference mutation
-requires the tombstone row to fail. No row still asserts entropy refusal.
+requires the tombstone row to fail. No row still asserts entropy refusal. Four further mutations replace token
+matching with substring matching, drop the last-token exemption, consume a
+following flag as a bare flag's value, and record a refused id's value. The first
+three fail ordinary-config-saves and the last fails refusal-no-value.
 
 ## Checks and review boundary
 
@@ -124,7 +135,7 @@ All selected selftest runs have zero failed assertions. The dispatcher deliberat
 returns status 2 for successful scoped runs. These observations are not a passing
 aggregate unit record, a gate stamp, an approval or a landing decision.
 
-- `82_veldo_0144_mcp_catalog`: 25 rows passed.
+- `82_veldo_0144_mcp_catalog`: 26 rows passed.
 - `71_veldo_0130_api`: 42 rows passed.
 - `66_veldo_0042_clones`: 20 rows passed.
 - `66_veldo_0047_authority`: 30 rows passed.
