@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -487 +487 @@
+-    'stream_options': ['--include-partial-messages', '--forward-subagent-text'],
++    'stream_options': [],  # defect: a subagent's text and the partial messages never reach the stream

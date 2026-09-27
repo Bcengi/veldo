@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -841 +841 @@
+-        with stream._fill_lock:
++        with stream._condition:

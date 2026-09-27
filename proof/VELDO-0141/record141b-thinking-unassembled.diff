@@ -1,0 +1,5 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -496 +496 @@
+-        fields = [field for field, value in delta.items() if field != 'type' and isinstance(value, str)]
++        fields = [field for field, value in delta.items() if field not in ('type', 'thinking') and isinstance(value, str)]

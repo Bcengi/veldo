@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -742 +742 @@
+-        self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))
++        self.resolved.paths = ()  # defect: receiver never snapshots its clone

@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_assertion.py
++++ b/.veldo/control_api_assertion.py
+@@ -68 +68 @@
+-         'record': ('principal', 'dispatch_id', 'after', 'limit')}
++         }  # defect: the record call is not one the service carries

@@ -1,0 +1,197 @@
+{
+ "by_assertion": true,
+ "commit": "e9e418d8b10a1574d5debefe0aa0ea7c7496687a",
+ "details": [
+  "VELDO-0141 redaction/partial-blocks detail: safe output is live before block stop",
+  "VELDO-0141 redaction/partial-blocks detail: safe output is live before block stop",
+  "VELDO-0141 redaction/partial-blocks detail: every fragment of each value has a named replacement",
+  "VELDO-0141 redaction/partial-blocks detail: initial block text participates in delta redaction",
+  "VELDO-0141 redaction/partial-blocks detail: unbounded pattern and entropy spans never release an affected fragment",
+  "VELDO-0141 redaction/partial-blocks detail: message end flushes isolated blocks with all fragments marked",
+  "VELDO-0141 redaction/clone-relative-paths detail: receiver uses its bound clone, not its own working directory",
+  "VELDO-0141 redaction/clone-relative-paths detail: clone path snapshot exists",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
+  "VELDO-0141 api/scope-before-existence detail: outsider receives the same refusal for present and absent dispatches",
+  "VELDO-0141 api/registration-race detail: end in the first page window closes the stream",
+  "VELDO-0141 api/registration-race detail: end in the first fill window closes the stream",
+  "VELDO-0141 api/registration-race detail: initial catch-up and concurrent hint keep cursor and frame order",
+  "VELDO-0141 api/slow-reader detail: overflow ends by name after a bounded contiguous prefix",
+  "VELDO-0141 api/slow-reader detail: one oversized frame is refused before queueing",
+  "VELDO-0141 route/unknown-committed detail: unknown end commits the received record"
+ ],
+ "failed_rows": [
+  "VELDO-0141 redaction/partial-blocks",
+  "VELDO-0141 redaction/clone-relative-paths",
+  "VELDO-0141 redaction/encoded-values",
+  "VELDO-0141 api/scope-before-existence",
+  "VELDO-0141 api/registration-race",
+  "VELDO-0141 api/slow-reader",
+  "VELDO-0141 route/unknown-committed"
+ ],
+ "modules": {
+  ".veldo/control_api.py": {
+   "at_commit": "d2c509e24862b6224bef807b525376ab5a9111200542503dbb11998647adf918",
+   "now": "6198790c94ad555f2f75d2ad151062f55e58ebc272ddca70ad789fac4dc4f53c"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268",
+   "now": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": "9c5fc45e6003097fcbca8ad0094b245c2c2ed3eabf1f6ecad5e4daa4770ba057",
+   "now": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
+  },
+  ".veldo/control_client_api.py": {
+   "at_commit": "46e892aa5ba09a4197cfe22278f03b40193b16025e36a636f8063490f74414ef",
+   "now": "46e892aa5ba09a4197cfe22278f03b40193b16025e36a636f8063490f74414ef"
+  },
+  ".veldo/control_dispatch.py": {
+   "at_commit": "6557e96b2e022b2524b0084aa9bf594a7b8e9703fd90e4dcc98ee1f065939b37",
+   "now": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b",
+   "now": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b"
+  },
+  ".veldo/control_execution_record.py": {
+   "at_commit": "2ddb686054b62623f331455b972b00ac44c43ba9c390d4ed6cdc0efa73c940bd",
+   "now": "e2f5f4d30167554ae72630e2578584558c37496cbf50a43c70190825c10aff71"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "036a391a6a827c99d4f542eff220d265b710e561577fc943269d4e97989c478c",
+   "now": "943c48d53434bc0a6d95d4950c2b0fe5f0b88fb8c060e2597c9a127978ff6c17"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": "90e0d1dcb8c7a9cc08d96bbb5ec6319eb8ebdd49ee67462f57a032e5b368b3d9",
+   "now": "90e0d1dcb8c7a9cc08d96bbb5ec6319eb8ebdd49ee67462f57a032e5b368b3d9"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0141 record/claude-complete",
+   true
+  ],
+  [
+   "VELDO-0141 record/codex-complete",
+   true
+  ],
+  [
+   "VELDO-0141 record/stream-options",
+   true
+  ],
+  [
+   "VELDO-0141 api/live",
+   true
+  ],
+  [
+   "VELDO-0141 api/cursor",
+   true
+  ],
+  [
+   "VELDO-0141 api/refusals",
+   true
+  ],
+  [
+   "VELDO-0141 api/no-secret-served",
+   true
+  ],
+  [
+   "VELDO-0141 api/service-call",
+   true
+  ],
+  [
+   "VELDO-0141 route/served-lines",
+   true
+  ],
+  [
+   "VELDO-0141 route/committed",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/planted-value",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/known-pattern",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/kinds-field",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/exact-set",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/paths-kept",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/path-segment",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/url-component",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/account-fields",
+   true
+  ],
+  [
+   "VELDO-0141 fixture/planted-control",
+   true
+  ],
+  [
+   "VELDO-0141 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0141 redaction/partial-blocks",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/clone-relative-paths",
+   false
+  ],
+  [
+   "VELDO-0141 redaction/encoded-values",
+   false
+  ],
+  [
+   "VELDO-0141 api/scope-before-existence",
+   false
+  ],
+  [
+   "VELDO-0141 api/registration-race",
+   false
+  ],
+  [
+   "VELDO-0141 api/slow-reader",
+   false
+  ],
+  [
+   "VELDO-0141 route/unknown-committed",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 15.42,
+ "spec_id": "VELDO-0141",
+ "suite": "scripts/suites/82_veldo_0141_execution_record.py",
+ "tree": "git archive e9e418d8b10a1574d5debefe0aa0ea7c7496687a, unchanged; the current suite file run against it"
+}
