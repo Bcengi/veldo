@@ -43,6 +43,18 @@
     true
    ],
    [
+    "VELDO-0085 supersession/prepared-unit",
+    true
+   ],
+   [
+    "VELDO-0085 supersession/other-item",
+    true
+   ],
+   [
+    "VELDO-0085 supersession/main-role",
+    true
+   ],
+   [
     "VELDO-0085 publication/concurrent-current",
     true
    ],
@@ -55,7 +67,7 @@
     true
    ]
   ],
-  "seconds": 3.479
+  "seconds": 4.202
  },
  "controls_green": true,
  "mutants": [
@@ -71,6 +83,9 @@
     "VELDO-0085 detail: refusals/service-class: each service refusal returns by name; every refusal observed; reason counts increment",
     "VELDO-0085 detail: dependencies/current-specification: all twin publications accepted; dependent names only current specification",
     "VELDO-0085 detail: dependencies/prepare-mismatch: new dependency revision accepted; prepare refuses stale dependency by name",
+    "VELDO-0085 detail: supersession/prepared-unit: prerequisite publication accepted",
+    "VELDO-0085 detail: supersession/other-item: prerequisite publication accepted",
+    "VELDO-0085 detail: supersession/main-role: prerequisite publication accepted",
     "VELDO-0085 detail: publication/concurrent-current: both callers return named outcomes; both source revisions published; exactly one current specification; earlier commit superseded by later",
     "VELDO-0085 detail: publication/stale-input: prerequisite publication accepted"
    ],
@@ -85,6 +100,9 @@
     "VELDO-0085 refusals/service-class",
     "VELDO-0085 dependencies/current-specification",
     "VELDO-0085 dependencies/prepare-mismatch",
+    "VELDO-0085 supersession/prepared-unit",
+    "VELDO-0085 supersession/other-item",
+    "VELDO-0085 supersession/main-role",
     "VELDO-0085 publication/concurrent-current",
     "VELDO-0085 publication/stale-input"
    ],
@@ -134,6 +152,18 @@
      false
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     false
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     false
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     false
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      false
     ],
@@ -146,7 +176,7 @@
      true
     ]
    ],
-   "seconds": 1.803,
+   "seconds": 1.689,
    "source_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
   },
   {
@@ -160,6 +190,9 @@
     "VELDO-0085 detail: refusals/service-class: each service refusal returns by name; every refusal observed; reason counts increment",
     "VELDO-0085 detail: dependencies/current-specification: all twin publications accepted; dependent names only current specification",
     "VELDO-0085 detail: dependencies/prepare-mismatch: new dependency revision accepted; prepare refuses stale dependency by name",
+    "VELDO-0085 detail: supersession/prepared-unit: prerequisite publication accepted",
+    "VELDO-0085 detail: supersession/other-item: prerequisite publication accepted",
+    "VELDO-0085 detail: supersession/main-role: prerequisite publication accepted",
     "VELDO-0085 detail: publication/concurrent-current: both callers return named outcomes; both source revisions published; exactly one current specification; earlier commit superseded by later",
     "VELDO-0085 detail: publication/stale-input: prerequisite publication accepted"
    ],
@@ -173,11 +206,14 @@
     "VELDO-0085 refusals/service-class",
     "VELDO-0085 dependencies/current-specification",
     "VELDO-0085 dependencies/prepare-mismatch",
+    "VELDO-0085 supersession/prepared-unit",
+    "VELDO-0085 supersession/other-item",
+    "VELDO-0085 supersession/main-role",
     "VELDO-0085 publication/concurrent-current",
     "VELDO-0085 publication/stale-input"
    ],
    "module": ".veldo/control_alias.py",
-   "mutant_sha256": "5000ca86b7cff25a47707fbe23778f67f4709613a6f9be8a7ddfd7e4f19a824d",
+   "mutant_sha256": "db2f82a6645d0cc76a9720c5b77673c4274e9584393db78a065479b1883b6054",
    "name": "decomposition-checkout-maximum",
    "named_row_red": true,
    "named_rows": [
@@ -222,6 +258,18 @@
      false
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     false
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     false
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     false
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      false
     ],
@@ -234,8 +282,8 @@
      true
     ]
    ],
-   "seconds": 1.766,
-   "source_sha256": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353"
+   "seconds": 1.687,
+   "source_sha256": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64"
   },
   {
    "by_assertion": true,
@@ -304,6 +352,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -316,7 +376,7 @@
      true
     ]
    ],
-   "seconds": 3.19,
+   "seconds": 3.847,
    "source_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
   },
   {
@@ -380,6 +440,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -392,7 +464,7 @@
      true
     ]
    ],
-   "seconds": 3.159,
+   "seconds": 3.878,
    "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
@@ -458,6 +530,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -470,7 +554,7 @@
      true
     ]
    ],
-   "seconds": 3.279,
+   "seconds": 4.337,
    "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
@@ -528,6 +612,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -540,7 +636,7 @@
      true
     ]
    ],
-   "seconds": 3.47,
+   "seconds": 4.274,
    "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
@@ -606,6 +702,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -618,7 +726,7 @@
      true
     ]
    ],
-   "seconds": 3.09,
+   "seconds": 4.211,
    "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
@@ -676,6 +784,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -688,7 +808,7 @@
      true
     ]
    ],
-   "seconds": 3.244,
+   "seconds": 4.21,
    "source_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
   },
   {
@@ -746,6 +866,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -758,7 +890,7 @@
      true
     ]
    ],
-   "seconds": 3.331,
+   "seconds": 4.205,
    "source_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
   },
   {
@@ -816,6 +948,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -828,7 +972,7 @@
      true
     ]
    ],
-   "seconds": 4.303,
+   "seconds": 4.139,
    "source_sha256": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78"
   },
   {
@@ -886,6 +1030,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -898,7 +1054,7 @@
      true
     ]
    ],
-   "seconds": 4.818,
+   "seconds": 4.176,
    "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
@@ -956,6 +1112,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -968,7 +1136,7 @@
      true
     ]
    ],
-   "seconds": 3.487,
+   "seconds": 4.249,
    "source_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
   },
   {
@@ -1028,6 +1196,18 @@
      false
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1040,7 +1220,7 @@
      true
     ]
    ],
-   "seconds": 3.376,
+   "seconds": 4.082,
    "source_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
   },
   {
@@ -1098,6 +1278,18 @@
      false
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1110,7 +1302,7 @@
      true
     ]
    ],
-   "seconds": 3.551,
+   "seconds": 4.197,
    "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   {
@@ -1118,16 +1310,18 @@
    "details": [
     "VELDO-0085 detail: dependencies/current-specification: old head names superseding alias; dependent names only current specification",
     "VELDO-0085 detail: dependencies/prepare-mismatch: prepare refuses stale dependency by name; refused prepare creates no units",
+    "VELDO-0085 detail: supersession/main-role: main role republish before prepare supersedes",
     "VELDO-0085 detail: publication/concurrent-current: exactly one current specification; earlier commit superseded by later"
    ],
    "diff": "proof/VELDO-0085/decomposition-supersession-omitted.diff",
    "failed_rows": [
     "VELDO-0085 dependencies/current-specification",
     "VELDO-0085 dependencies/prepare-mismatch",
+    "VELDO-0085 supersession/main-role",
     "VELDO-0085 publication/concurrent-current"
    ],
    "module": ".veldo/control_alias.py",
-   "mutant_sha256": "f8d26ea25bc8de12ec3c7ba1f0b2cfcd4daa351dce24d360e269e9515b67667a",
+   "mutant_sha256": "d6c44bf19b675163cced81919fb94e540bf0fc39a4cc502ea3161c23922249cb",
    "name": "decomposition-supersession-omitted",
    "named_row_red": true,
    "named_rows": [
@@ -1172,6 +1366,18 @@
      false
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     false
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      false
     ],
@@ -1184,8 +1390,254 @@
      true
     ]
    ],
-   "seconds": 3.543,
-   "source_sha256": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353"
+   "seconds": 4.178,
+   "source_sha256": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: supersession/prepared-unit: allocate refuses prepared unit by name; refusal leaves authority unchanged; original unit stays admissible; allocate refuses admitted unit by name; admitted unit stays unchanged"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-supersede-prepared-unit-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0085 supersession/prepared-unit"
+   ],
+   "module": ".veldo/control_alias.py",
+   "mutant_sha256": "90575fd515ffdcdcd15ca7e3f431c3d354609ffd0be4bbb6db35486f17ba2dec",
+   "name": "decomposition-supersede-prepared-unit-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "supersession/prepared-unit"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/prepared-unit",
+     false
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 4.224,
+   "source_sha256": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: supersession/other-item: second item refused by name; refusal leaves authority unchanged; owning item still prepares"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-supersede-other-item-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0085 supersession/other-item"
+   ],
+   "module": ".veldo/control_alias.py",
+   "mutant_sha256": "c8e55646c811c40628977821f7e4f170c1aa70140fa68942836f4dd4df0a11d9",
+   "name": "decomposition-supersede-other-item-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "supersession/other-item"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     false
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 4.109,
+   "source_sha256": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0085 detail: supersession/main-role: other role refused by name; refusal leaves authority unchanged; main role republish before prepare supersedes"
+   ],
+   "diff": "proof/VELDO-0085/decomposition-supersede-role-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0085 supersession/main-role"
+   ],
+   "module": ".veldo/control_alias.py",
+   "mutant_sha256": "4804ae025d87c06b3262c18c6b7f2bb466303c582ac84d5a27e7d80d7ec4271a",
+   "name": "decomposition-supersede-role-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "supersession/main-role"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0085 fields/invalid-id-no-artifact",
+     true
+    ],
+    [
+     "VELDO-0085 aliases/authority-counter",
+     true
+    ],
+    [
+     "VELDO-0085 binding/one-owner",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/eligibility",
+     true
+    ],
+    [
+     "VELDO-0085 priority/fresh-growth",
+     true
+    ],
+    [
+     "VELDO-0085 publication/other-process",
+     true
+    ],
+    [
+     "VELDO-0085 refusals/service-class",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/current-specification",
+     true
+    ],
+    [
+     "VELDO-0085 dependencies/prepare-mismatch",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     false
+    ],
+    [
+     "VELDO-0085 publication/concurrent-current",
+     true
+    ],
+    [
+     "VELDO-0085 publication/stale-input",
+     true
+    ],
+    [
+     "VELDO-0085 install/assets",
+     true
+    ]
+   ],
+   "seconds": 4.103,
+   "source_sha256": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64"
   },
   {
    "by_assertion": true,
@@ -1242,6 +1694,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1254,7 +1718,7 @@
      false
     ]
    ],
-   "seconds": 3.383,
+   "seconds": 4.1,
    "source_sha256": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4"
   }
  ],
@@ -1296,11 +1760,20 @@
   ],
   "refusals/service-class": [
    "decomposition-private-refusal-class-only"
+  ],
+  "supersession/main-role": [
+   "decomposition-supersede-role-unchecked"
+  ],
+  "supersession/other-item": [
+   "decomposition-supersede-other-item-unchecked"
+  ],
+  "supersession/prepared-unit": [
+   "decomposition-supersede-prepared-unit-unchecked"
   ]
  },
  "noop": {
   "control_alias.py": {
-   "copy_sha256": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353",
+   "copy_sha256": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1342,6 +1815,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1354,8 +1839,8 @@
      true
     ]
    ],
-   "seconds": 4.053,
-   "source_sha256": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353"
+   "seconds": 4.466,
+   "source_sha256": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64"
   },
   "control_backlog.py": {
    "copy_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2",
@@ -1400,6 +1885,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1412,7 +1909,7 @@
      true
     ]
    ],
-   "seconds": 5.71,
+   "seconds": 4.231,
    "source_sha256": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
   },
   "control_decomposition.py": {
@@ -1458,6 +1955,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1470,7 +1979,7 @@
      true
     ]
    ],
-   "seconds": 5.672,
+   "seconds": 4.211,
    "source_sha256": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
   },
   "control_decomposition_binding.py": {
@@ -1516,6 +2025,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1528,7 +2049,7 @@
      true
     ]
    ],
-   "seconds": 5.487,
+   "seconds": 4.269,
    "source_sha256": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
   },
   "control_eligibility.py": {
@@ -1574,6 +2095,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1586,7 +2119,7 @@
      true
     ]
    ],
-   "seconds": 7.265,
+   "seconds": 4.338,
    "source_sha256": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78"
   },
   "init_scaffold.py": {
@@ -1632,6 +2165,18 @@
      true
     ],
     [
+     "VELDO-0085 supersession/prepared-unit",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/other-item",
+     true
+    ],
+    [
+     "VELDO-0085 supersession/main-role",
+     true
+    ],
+    [
      "VELDO-0085 publication/concurrent-current",
      true
     ],
@@ -1644,13 +2189,13 @@
      true
     ]
    ],
-   "seconds": 4.764,
+   "seconds": 4.433,
    "source_sha256": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 85",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 89.223,
+ "serial_seconds": 104.045,
  "spec_id": "VELDO-0085",
  "suite": "scripts/suites/82_veldo_0085_decomposition.py"
 }

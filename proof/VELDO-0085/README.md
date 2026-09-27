@@ -77,3 +77,26 @@ only the original implementation's partial runs.
 
 Whole-run result: `selftest: 6872 passed, 0 failed`. All sixteen mutations were rejected, with
 green baseline and no-op controls and no raised regions.
+
+## Blocking supersession review fix
+
+The allocator checks unit and admission existence, the prior document's owning
+item, and its specification role inside the authority transaction. Refusal rolls
+back allocation; a valid republication before prepare still supersedes.
+
+| Row | Observation | Dropped check mutation |
+| --- | --- | --- |
+| supersession/prepared-unit | Prepare after allocation planning; allocation refuses by name, authority stays unchanged, and the original unit is admitted. Further allocation after admission also refuses. | decomposition-supersede-prepared-unit-unchecked |
+| supersession/other-item | Another item publishing the same unit ID refuses by name; the owner can still prepare. | decomposition-supersede-other-item-unchecked |
+| supersession/main-role | Direct allocation as specification/other refuses by name; an ordinary main-role republication before prepare supersedes. | decomposition-supersede-role-unchecked |
+
+The concurrency row now starts two publisher processes with independent SQLite
+connections, synchronizes their first allocation plans, and verifies distinct
+process IDs and successful reaping. The source-tuple counter row uses a separate
+unit for its other-role artifact, preserving source identity and role coverage.
+
+`red-at-f7134094.json` runs the current suite against the unchanged review base:
+exactly the three new rows fail, all by assertion. `mutations.json` and the applied
+diffs record the current nineteen mutations, their controls and named assertion
+failures. Earlier validation records above remain historical; this fix's checks
+are recorded in `blocking-review-checks.json`.

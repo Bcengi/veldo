@@ -678,6 +678,15 @@ class Allocations:
                 'state': 'pending', 'observed_digest': None}},
         }
         for identity, version, old in DP.supersession(conn, repository, p['content']):
+            meta = DP._front_matter(p['content'])['decomposition']
+            prior = DP.row(conn, version_id(repository, old['alias'], old['version']))
+            prior_meta = DP._front_matter(prior['content'])['decomposition']
+            if DP.row(conn, meta['unit']) is not None or DP.row(conn, 'admission:' + meta['unit']) is not None:
+                self._refuse('invalid_transition:supersede_prepared_unit', 'the unit is prepared or admitted')
+            if prior_meta.get('backlog_item') != meta.get('backlog_item'):
+                self._refuse('binding_mismatch:supersede_other_item', 'the specification belongs to another item')
+            if role != old['role']:
+                self._refuse('binding_mismatch:supersede_role', 'the unit specification has another role')
             if identity not in before or before[identity]['version'] != version:
                 self._refuse('stale_version', 'the current unit specification changed')
             changes[identity] = {'kind': 'accepted_document', 'data': dict(old, superseded_by=alias)}

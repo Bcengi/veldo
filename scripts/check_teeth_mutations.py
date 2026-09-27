@@ -8093,6 +8093,15 @@ def cases():
     decomposition('supersession-omitted', 'control_alias.py',
         "            changes[identity] = {'kind': 'accepted_document', 'data': dict(old, superseded_by=alias)}",
         "            pass", ['publication/concurrent-current'])
+    decomposition('supersede-prepared-unit-unchecked', 'control_alias.py',
+        "            if DP.row(conn, meta['unit']) is not None or DP.row(conn, 'admission:' + meta['unit']) is not None:",
+        "            if False:", ['supersession/prepared-unit'])
+    decomposition('supersede-other-item-unchecked', 'control_alias.py',
+        "            if prior_meta.get('backlog_item') != meta.get('backlog_item'):",
+        "            if False:", ['supersession/other-item'])
+    decomposition('supersede-role-unchecked', 'control_alias.py',
+        "            if role != old['role']:",
+        "            if False:", ['supersession/main-role'])
     decomposition('service-not-installed', 'init_scaffold.py',
         '    ".veldo/control_decomposition.py",\n', '', ['install/assets'])
 

@@ -12,6 +12,7 @@ def _v85_suite():
     import http.server
     import importlib.util
     import json
+    import multiprocessing
     import os
     from pathlib import Path
     import shutil
@@ -450,7 +451,8 @@ def _v85_suite():
             accepted = osend('pm', 'accept', objective=o1, objective_version=(OB.read(conn, o1) or {}).get('version'),
                              request=rid_o)
             features = {}
-            for name in ('intake', 'prepared', 'admitted', 'prioritized', 'main', 'rejected', 'returned', 'closed', 'running'):
+            for name in ('intake', 'prepared', 'admitted', 'prioritized', 'main', 'rejected', 'returned', 'closed', 'running',
+                         'supersede-prepared', 'supersede-other', 'supersede-role'):
                 made = osend('pm', 'propose_feature', objective=o1, objective_version=(OB.read(conn, o1) or {}).get('version'),
                              feature='f-' + name, title='Feature %s' % name, scope=['checkout'])
                 features[name] = made.get('feature_id')
@@ -462,7 +464,8 @@ def _v85_suite():
             labels = ('fields/invalid-id-no-artifact', 'binding/one-owner', 'priority/fresh-growth',
                       'aliases/authority-counter', 'publication/other-process', 'publication/stale-input',
                       'dependencies/eligibility', 'install/assets', 'refusals/service-class',
-                      'dependencies/current-specification', 'dependencies/prepare-mismatch', 'publication/concurrent-current')
+                      'dependencies/current-specification', 'dependencies/prepare-mismatch', 'publication/concurrent-current',
+                      'supersession/prepared-unit', 'supersession/other-item', 'supersession/main-role')
             if not (mods / 'control_decomposition.py').is_file():
                 for label in labels:
                     check(label, [('publication service exists', False)])
@@ -552,7 +555,8 @@ def _v85_suite():
                 a = publish(aliases_item, base_entry)
                 again = publish(aliases_item, base_entry)
                 revised = publish(aliases_item, raw('UNIT-85-alias', revision='2'))
-                role = publish(aliases_item, raw('UNIT-85-alias', role='specification/other'))
+                role = publish(aliases_item, dict(raw('UNIT-85-alias-other', role='specification/other'),
+                                                  source=base_entry['source']))
                 other = publish(aliases_item, raw('UNIT-85-other'))
                 answers = [a, revised, role, other]
                 mapping = []
@@ -677,6 +681,98 @@ def _v85_suite():
                      stale_prepare.get('reason') == 'binding_mismatch:dependency_specification'),
                     ('refused prepare creates no units', data_of('UNIT-85-twin') == {} and data_of('UNIT-85-twin-dependent') == {})])
 
+            def direct_republish(entry, revision, role='specification/main'):
+                document = allocations.current(AL.version_id(REPO, entry['specification'], 1))[1]
+                fields = CB.GR.Y.front_matter(document['content'])
+
+                def content(alias):
+                    return DP.Y.render_document(dict(fields, id=alias), '\nRepublished specification.\n').encode()
+
+                try:
+                    allocated = allocations.allocate(dict(request_id=next_id('supersede'), principal='pm',
+                        repository_uuid=REPO, workspace=str(work), source=dict(document['source'], revision=revision),
+                        role=role, slug='republished', content=b''), content_for_alias=content, **signing)
+                except S.StoreRefused as error:
+                    return {'ok': False, 'reason': error.code}
+                publisher.publish(REPO, allocated['alias'], allocated['version'], 'pm', **signing)
+                return dict(ok=True, **allocated)
+
+            with region('supersession/prepared-unit'):
+                _, prepared_item = take('supersede-prepared')
+                published = publish(prepared_item, raw('UNIT-85-prepared-guard'))
+                if not published.get('ok'):
+                    check('supersession/prepared-unit', [('prerequisite publication accepted', False)])
+                else:
+                    entry = published.get('unit', {})
+                    original_author = allocations.author_allocation
+                    prepared_during_allocation = []
+                    snapshot = []
+
+                    def prepare_after_authoring(*args, **kwargs):
+                        plan = original_author(*args, **kwargs)
+                        prepared_during_allocation.append(bop('pm', 'prepare', prepared_item, units=[entry]))
+                        snapshot.append(S.table_snapshot(conn))
+                        return plan
+
+                    # Prepare after the allocator's outside-transaction read. The transaction must recheck.
+                    allocations.author_allocation = prepare_after_authoring
+                    try:
+                        refused = direct_republish(entry, '2')
+                    finally:
+                        allocations.author_allocation = original_author
+                    unchanged = bool(snapshot) and S.table_snapshot(conn) == snapshot[0]
+                    problems = DP.B.problems(conn, REPO, data_of(entry['unit']), work)
+                    bop('pm', 'request_grooming', prepared_item)
+                    admitted = admit(prepared_item, 'supersede-prepared-admission')[2]
+                    snapshot_admitted = S.table_snapshot(conn)
+                    refused_admitted = direct_republish(entry, '3')
+                    check('supersession/prepared-unit', [
+                        ('publication and preparation accepted', published.get('ok') and
+                         len(prepared_during_allocation) == 1 and prepared_during_allocation[0].get('ok')),
+                        ('allocate refuses prepared unit by name', refused ==
+                         {'ok': False, 'reason': 'invalid_transition:supersede_prepared_unit'}),
+                        ('refusal leaves authority unchanged', unchanged),
+                        ('original unit stays admissible', not problems and admitted.get('ok')),
+                        ('allocate refuses admitted unit by name', refused_admitted ==
+                         {'ok': False, 'reason': 'invalid_transition:supersede_prepared_unit'}),
+                        ('admitted unit stays unchanged', S.table_snapshot(conn) == snapshot_admitted)])
+
+            with region('supersession/other-item'):
+                _, owning_item = take('supersede-other')
+                original = publish(owning_item, raw('UNIT-85-item-guard'))
+                if not original.get('ok'):
+                    check('supersession/other-item', [('prerequisite publication accepted', False)])
+                else:
+                    snapshot = S.table_snapshot(conn)
+                    stolen = publish(invalid_item, raw('UNIT-85-item-guard', revision='2'))
+                    unchanged = S.table_snapshot(conn) == snapshot
+                    prepared_owner = bop('pm', 'prepare', owning_item, units=[original.get('unit', {})])
+                    check('supersession/other-item', [
+                        ('original publication accepted', original.get('ok')),
+                        ('second item refused by name', stolen ==
+                         {'ok': False, 'reason': 'binding_mismatch:supersede_other_item'}),
+                        ('refusal leaves authority unchanged', unchanged),
+                        ('owning item still prepares', prepared_owner.get('ok'))])
+
+            with region('supersession/main-role'):
+                _, role_item = take('supersede-role')
+                original = publish(role_item, raw('UNIT-85-role-guard'))
+                if not original.get('ok'):
+                    check('supersession/main-role', [('prerequisite publication accepted', False)])
+                else:
+                    snapshot = S.table_snapshot(conn)
+                    wrong_role = direct_republish(original.get('unit', {}), '2', role='specification/other')
+                    unchanged = S.table_snapshot(conn) == snapshot
+                    ordinary = publish(role_item, raw('UNIT-85-role-guard', revision='3'))
+                    old_head = allocations.current(AL.head_id(REPO, original.get('unit', {}).get('specification')))[1] or {}
+                    check('supersession/main-role', [
+                        ('original publication accepted', original.get('ok')),
+                        ('other role refused by name', wrong_role ==
+                         {'ok': False, 'reason': 'binding_mismatch:supersede_role'}),
+                        ('refusal leaves authority unchanged', unchanged),
+                        ('main role republish before prepare supersedes', ordinary.get('ok') and
+                         old_head.get('superseded_by') == ordinary.get('unit', {}).get('specification'))])
+
             with region('publication/concurrent-current'):
                 _, concurrent_item = take('running')
                 packets = []
@@ -684,13 +780,16 @@ def _v85_suite():
                     packets.append(signed('pm', dict(ids, operation='publish_decomposition', principal='pm',
                         command_id=next_id('concurrent'), item=concurrent_item,
                         item_version=item(concurrent_item)['version'], unit=raw('UNIT-85-concurrent', revision=revision))))
-                barrier = threading.Barrier(2)
-                verify_lock = threading.Lock()
-                results = [None, None]
+                process_context = multiprocessing.get_context('fork')
+                barrier = process_context.Barrier(2)
+                verify_lock = process_context.Lock()
+                result_queue = process_context.Queue()
 
                 def concurrent_publish(index):
                     connection = None
                     try:
+                        for inherited in connections:
+                            inherited.close()
                         connection = S.open_store(str(db))
                         backlog = CB.Backlog(S, CM, connection, ids, 'authority', journal_sign, workspace=str(work))
                         allocator = AL.attach(S, connection, DOMAIN, {REPO: str(work)})
@@ -707,19 +806,29 @@ def _v85_suite():
                             return plan
 
                         allocator.author_allocation = synchronized
-                        results[index] = DP.Decomposition(backlog, allocator, materializer).publish(packets[index])
+                        result = DP.Decomposition(backlog, allocator, materializer).publish(packets[index])
                     except Exception as error:
-                        results[index] = ('error', type(error).__name__)
+                        result = ('error', type(error).__name__)
                         barrier.abort()
                     finally:
                         if connection is not None:
                             connection.close()
+                    result_queue.put((os.getpid(), result))
 
-                workers = [threading.Thread(target=concurrent_publish, args=(i,)) for i in range(2)]
+                workers = [process_context.Process(target=concurrent_publish, args=(i,)) for i in range(2)]
                 for worker in workers:
                     worker.start()
                 for worker in workers:
                     worker.join(timeout=30)
+                completed = all(not worker.is_alive() and worker.exitcode == 0 for worker in workers)
+                for worker in workers:
+                    if worker.is_alive():
+                        worker.terminate()
+                        worker.join(timeout=5)
+                observed = [result_queue.get(timeout=5) for _ in workers] if completed else []
+                results = [result for _, result in observed]
+                result_queue.close()
+                result_queue.join_thread()
                 heads = []
                 for identity, version, text in conn.execute("SELECT id, version, data FROM entities WHERE kind='accepted_document'"):
                     head = json.loads(text)
@@ -739,7 +848,8 @@ def _v85_suite():
                     ('exactly one current specification', len(current) == 1),
                     ('earlier commit superseded by later', len(current) == 1 and all(
                         h == current[0] or h.get('superseded_by') == current[0]['alias'] for _, _, h in heads)),
-                    ('workers reaped', not any(worker.is_alive() for worker in workers))])
+                    ('two separate publisher processes reaped', completed and len({pid for pid, _ in observed}) == 2
+                     and all(pid != os.getpid() for pid, _ in observed))])
 
             with region('publication/stale-input'):
                 if not first.get('ok'):

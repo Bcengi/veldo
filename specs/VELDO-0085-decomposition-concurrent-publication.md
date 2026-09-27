@@ -206,3 +206,5 @@ The alias and backlog regression suites pass. Git boundary checking reports no v
 all 233 engine pairs are byte-identical; repository validation passes. The whole selftest
 completed once with no failing row. `proof/VELDO-0085/review-checks.json` and its logs retain
 the exact results. No repository gate, independent approval or push is claimed.
+
+2026-09-27, blocking review fix: the allocator transaction refuses superseding prepared or admitted units as `invalid_transition:supersede_prepared_unit`, other owning items as `binding_mismatch:supersede_other_item`, and another specification role as `binding_mismatch:supersede_role`; ordinary republication before prepare still supersedes. Three assertion rows and three globally unique finding 85 mutations cover these checks, and the concurrency row now uses two processes. This resolves the earlier same-unit cross-item publication limitation. Filed, not fixed: admission does not recheck a dependency superseded from another item after prepare, and `unit_heads` scans every accepted head per lookup.

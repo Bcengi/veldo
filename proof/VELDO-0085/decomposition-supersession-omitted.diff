@@ -1,5 +1,5 @@
 --- a/.veldo/control_alias.py
 +++ b/.veldo/control_alias.py
-@@ -683 +683 @@
+@@ -692 +692 @@
 -            changes[identity] = {'kind': 'accepted_document', 'data': dict(old, superseded_by=alias)}
 +            pass
