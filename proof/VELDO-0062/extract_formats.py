@@ -67,12 +67,37 @@ class Js:
             self.cache[key] = list(re.finditer(r'(?<![A-Za-z0-9_$.])' + re.escape(name) + suffix, self.text))
         return self.cache[key]
 
+    # Windows searched around `near` before the whole text: a window answers only when the nearest match in it is
+    # provably the nearest in the whole text (every match that could be as near starts and ends inside it).
+    WINDOWS = (1 << 22, 1 << 24)
+    MARGIN = 1 << 20
+
+    def nearest(self, name, suffix, near):
+        """The match of `name` + `suffix` whose start is nearest `near` (the earliest on a tie), or None: the
+        same answer as min(self._sites(name, suffix), key=distance), found without scanning the whole text
+        when a window around `near` already proves it (no match of length under MARGIN that could be as near
+        lies outside the window)."""
+        distance = lambda m: abs(m.start() - near)
+        if (name, suffix) not in self.cache:
+            pattern = re.compile(r'(?<![A-Za-z0-9_$.])' + re.escape(name) + suffix)
+            size = len(self.text)
+            for width in self.WINDOWS:
+                lo, hi = max(0, near - width), min(size, near + width)
+                found = list(pattern.finditer(self.text, lo, hi))
+                if not found:
+                    continue
+                best = min(found, key=distance)
+                d = distance(best)
+                if (lo == 0 or near - d >= lo) and (hi == size or near + d + self.MARGIN <= hi):
+                    return best
+        sites = self._sites(name, suffix)
+        return min(sites, key=distance) if sites else None
+
     def array(self, name, near):
         """The string values of `name=[...]` nearest `near`, or None."""
-        sites = self._sites(name, r'=\[("(?:[^"\\]|\\.)*"(?:,"(?:[^"\\]|\\.)*")*)\]')
-        if not sites:
+        best = self.nearest(name, r'=\[("(?:[^"\\]|\\.)*"(?:,"(?:[^"\\]|\\.)*")*)\]', near)
+        if best is None:
             return None
-        best = min(sites, key=lambda m: abs(m.start() - near))
         return json.loads('[' + best.group(1) + ']')
 
     def tokens(self, at):
@@ -86,10 +111,9 @@ class Js:
 
     def definition(self, name, near):
         """The body of `name=f(()=>BODY)` or `name=d(...)` nearest `near` (minified names repeat)."""
-        sites = self._sites(name, r'=(f\(\(\)=>)?(?=[A-Za-z_$])')
-        if not sites:
+        best = self.nearest(name, r'=(f\(\(\)=>)?(?=[A-Za-z_$])', near)
+        if best is None:
             raise Moved('no definition of ' + name)
-        best = min(sites, key=lambda m: abs(m.start() - near))
         return best.end(), bool(best.group(1))
 
 
@@ -385,10 +409,10 @@ def _js_list(js, at, seen=()):
 
 def _definition(js, name, near):
     """The offset of the nearest `NAME=[` or `NAME=new Set([` (minified names repeat)."""
-    sites = js._sites(name, r'=(?:new Set\()?\[')
-    if not sites:
+    best = js.nearest(name, r'=(?:new Set\()?\[', near)
+    if best is None:
         raise Moved('no list named ' + name)
-    return min(sites, key=lambda m: abs(m.start() - near)).start()
+    return best.start()
 
 
 # VELDO-0160: Claude Code's rate-limit result. The usage-limit message its API error message and its
@@ -741,10 +765,10 @@ def _union_members(window, at, anchor):
 def _lazy(js, name, near):
     """The body of the lazy schema `name=f(()=>BODY` nearest `near` (a minified name is also bound to other
     values, which `Js.definition` could pick)."""
-    sites = js._sites(name, r'=f\(\(\)=>')
-    if not sites:
+    best = js.nearest(name, r'=f\(\(\)=>', near)
+    if best is None:
         raise Moved('no lazy schema ' + name)
-    return min(sites, key=lambda m: abs(m.start() - near)).end()
+    return best.end()
 
 
 def _tool_free(schema):
