@@ -1473,6 +1473,8 @@ err.close()
                       and 'scripts/suites/82_veldo_0141_execution_record.py' in paths.paths)
                 opaque = fresh()[:20] + '/' + fresh()
                 request_id = 'veldo-initialize-' + os.urandom(8).hex()
+                while not whole_high(request_id):
+                    request_id = 'veldo-initialize-' + os.urandom(8).hex()
                 check('redaction/clone-relative-paths', 'slash-bearing opaque value goes and handshake id stays',
                       ER.redact(opaque, paths)[0] == ENTROPY and ER.redact(request_id, paths)[0] == request_id)
 
