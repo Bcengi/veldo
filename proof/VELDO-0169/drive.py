@@ -24,7 +24,9 @@ HERE.mkdir(exist_ok=True)
 SUITE = '84_veldo_0169_project_handouts.py'
 PREFIX = 'VELDO-0169 '
 FINDING = 169
-MODULES = ('control_assignment.py', 'control_claim.py', 'control_andon.py')
+MODULES = ('control_assignment.py', 'control_claim.py', 'control_andon.py', 'control_eligibility.py')
+# The suite's own apparatus, which a red run brings to the archived tree with the suite itself.
+APPARATUS = ('scripts/suites/support/v169_census.py',)
 
 
 def _load(name, path):
@@ -98,10 +100,16 @@ def red(commit):
         tree.mkdir()
         archive = _git_process.run(['git', '-C', str(ROOT), 'archive', resolved], capture_output=True, check=True).stdout
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
+        apparatus = {}
+        for relative in APPARATUS:
+            (tree / relative).parent.mkdir(parents=True, exist_ok=True)
+            (tree / relative).write_bytes((ROOT / relative).read_bytes())
+            apparatus[relative] = _sha(tree / relative)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
         observed = run({}, tree)
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0169', suite='scripts/suites/' + SUITE, commit=resolved,
-                  tree='git archive %s, unchanged; the current suite file run against it' % resolved, modules=modules,
+                  tree='git archive %s, unchanged; the current suite file and its apparatus run against it' % resolved,
+                  modules=modules, apparatus=apparatus,
                   by_assertion=not _raised(observed), **observed)
     name = 'red-at-%s.json' % commit
     (HERE / name).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')

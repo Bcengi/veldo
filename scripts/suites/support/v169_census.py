@@ -354,7 +354,8 @@ class Census:
         for c in constructions:
             values = union(values, c['actions'])
         values = self.narrow(module, fn, call, self.action_expressions(module, fn, params), values)
-        handout = hands_out(values, self.handouts)
+        # Without the organ's declared handouts every claim writer hands out work (it fails closed).
+        handout = hands_out(values, self.handouts) if self.handouts else True
         record = dict(module=module.stem, function=where, line=call.lineno, writer=ORGAN, actions=shown(values),
                       classification='handout' if handout else 'nothing',
                       built_at=['%s.%s:%s' % (module.stem, module.name_of(c['function']), c['node'].lineno)
@@ -362,7 +363,9 @@ class Census:
                       reason=('its action can be ' + ', '.join(sorted(set(self.handouts) & set(values)))
                               if handout and not isinstance(values, All) else
                               'its action is not resolved, so it hands out work' if handout else
-                              'it can only ' + ', '.join(sorted(values)) + ' a claim already held or parked'))
+                              'it can only ' + (', '.join(sorted(values)) if not isinstance(values, All) else
+                                                'carry an action outside the handouts, ' + repr(values))
+                              + ' a claim already held or parked'))
         self.records.append(record)
         if handout:
             self.require(module, fn, call, 'the claim write')

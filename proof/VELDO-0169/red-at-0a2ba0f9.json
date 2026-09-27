@@ -1,0 +1,138 @@
+{
+ "apparatus": {
+  "scripts/suites/support/v169_census.py": "a2a16e5aede9ddba5bcd58e2c30fc73a11ae581338bc264f3204ba7f2e891ebb"
+ },
+ "by_assertion": true,
+ "census": [
+  "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"not the claim organ\": 13}, \"failures\": [\"control_claim.<module>:0 control_claim.HANDOUTS does not name the transitions that hand out work\", \"<engine>.<module>:0 the station contract writer issue_station_contract is not found\", \"control_assignment.Inbox._transition:892 the claim write hands out work without obtaining the Gate's project-check receipt before it\", \"control_assignment.Inbox._dispose_changes:983 the claim write hands out work without obtaining the Gate's project-check receipt before it\", \"control_assignment.Inbox._transition:886 the claim write hands out work without obtaining the Gate's project-check receipt before it\", \"control_claim.Receiver.__init__:166 registers transition bare: the store calls it with no receipt read in the transaction\", \"control_heartbeat.Renewals._transition:247 the claim write hands out work without obtaining the Gate's project-check receipt before it\"], \"writers\": [{\"classification\": \"not the claim organ\", \"function\": \"Andon._transition\", \"line\": 366, \"module\": \"control_andon\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Andon._transition\", \"line\": 392, \"module\": \"control_andon\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"actions\": [\"resume\"], \"built_at\": [\"control_assignment.Inbox._resume:603\"], \"classification\": \"handout\", \"function\": \"Inbox._transition\", \"line\": 892, \"module\": \"control_assignment\", \"reason\": \"its action can be \", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 907, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 920, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._dispose_changes\", \"line\": 978, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"actions\": [\"unpark\"], \"built_at\": [\"control_assignment.Inbox._dispose:836\"], \"classification\": \"handout\", \"function\": \"Inbox._dispose_changes\", \"line\": 983, \"module\": \"control_assignment\", \"reason\": \"its action can be \", \"writer\": \"transition\"}, {\"actions\": [\"park\"], \"built_at\": [\"control_assignment.Inbox._claim_to_park:562\"], \"classification\": \"handout\", \"function\": \"Inbox._transition\", \"line\": 886, \"module\": \"control_assignment\", \"reason\": \"its action can be \", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 927, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Backlog._edge\", \"line\": 996, \"module\": \"control_backlog\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Dispatches.__init__\", \"line\": 430, \"module\": \"control_dispatch\", \"reason\": \"a transaction transition is called with three arguments\", \"writer\": \"registered\"}, {\"actions\": [\"renew\"], \"built_at\": [\"control_heartbeat.Renewals._transition:247\"], \"classification\": \"handout\", \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"its action can be \", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Objectives._edge\", \"line\": 806, \"module\": \"control_objective\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Projects._edge\", \"line\": 614, \"module\": \"control_project\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"attach_revisions\", \"line\": 411, \"module\": \"control_readset\", \"reason\": \"a transaction transition is called with three arguments\", \"writer\": \"registered\"}, {\"classification\": \"not the claim organ\", \"function\": \"Settlement._settle_transition\", \"line\": 395, \"module\": \"control_request_settlement\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"accept_release_execution\", \"line\": 286, \"module\": \"release_floor_contract\", \"reason\": \"4 arguments cannot bind transition(params, before)\", \"writer\": \"transition\"}]}"
+ ],
+ "commit": "0a2ba0f9979b137f64be47e57679421d7c3c8ece",
+ "details": [
+  "VELDO-0169 detail: census/writers: control_claim.<module>:0 control_claim.HANDOUTS does not name the transitions that hand out work; <engine>.<module>:0 the station contract writer issue_station_contract is not found; control_assignment.Inbox._transition:892 the claim write hands out work without obtaining the Gate's project-check receipt before it; control_assignment.Inbox._dispose_changes:983 the claim write hands out work without obtaining the Gate's project-check receipt before it; control_assignment.Inbox._transition:886 the claim write hands out work without obtaining the Gate's project-check receipt before it; control_claim.Receiver.__init__:166 registers transition bare: the store calls it with no receipt read in the transaction; control_heartbeat.Renewals._transition:247 the claim write hands out work without obtaining the Gate's project-check receipt before it; finds control_claim handout claim; finds control_andon handout issue_station_contract; finds control_assignment nothing park; finds control_claim nothing release; finds control_heartbeat nothing renew",
+  "VELDO-0169 detail: census/planted: resume-again-dispatch-only refused at Inbox._resume_again; resume-again-shared-writer refused at Inbox._resume_again; andon-second-resume refused at Andon.resume_quick; contract-without-writer refused at Andon.quick_contract; check-in-a-branch built on these sources (anchor \"            receipt = self._project_receipt(params['resume']\")",
+  "VELDO-0169 detail: guard/receipt: the Gate makes a receipt of the unit, its project and the versions it read; a claim without a receipt refused by name (accepted), nothing written; a resume without a receipt refused by name (claimed), nothing written; an unpark without a receipt refused by name (stale_subject), nothing written; a receipt of another unit refused by name (claimed), nothing written; a receipt whose reads this transaction did not pin refused by name (claimed), nothing written; the project is active again at a later version; a receipt of an older project version refused by name (claimed), nothing written; the station contract writer refuses no receipt (no station contract writer); the station contract writer refuses a receipt of another unit (no station contract writer); the station contract writer refuses a receipt of an older project version (no station contract writer); control: the station contract writer writes it with a current receipt; control: a current receipt takes the claim (claimed)",
+  "VELDO-0169 detail: guard/resume-again: own writer: refused by the claim organ as resume_again; own writer: claim, park and unit unchanged; own writer: control: the real resume takes the same work; shared writer: refused by the claim organ as resume_again; shared writer: claim, park and unit unchanged; shared writer: control: the real resume takes the same work",
+  "VELDO-0169 detail: andon/subject-race: refused as stale_version"
+ ],
+ "failed_rows": [
+  "VELDO-0169 census/writers",
+  "VELDO-0169 census/planted",
+  "VELDO-0169 guard/receipt",
+  "VELDO-0169 guard/resume-again",
+  "VELDO-0169 andon/subject-race"
+ ],
+ "modules": {
+  ".veldo/control_andon.py": {
+   "at_commit": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5",
+   "now": "4502012c98736d34778485cda334ac72039a3ae6ebce00eef603f149038f1b20"
+  },
+  ".veldo/control_assignment.py": {
+   "at_commit": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea",
+   "now": "d45d161e51fb0a56113fa78d64e4282b5a95ee5c9a2f47adaee17b6f2ff8b8a2"
+  },
+  ".veldo/control_claim.py": {
+   "at_commit": "c779130a8c27a2cec4ed5ffb97fe559dc8cc8541f88a4ef8386ec5231d9a6dfc",
+   "now": "c52c7e497889ba22fd0ba061e857be1466df9163cac65204983fa7024c0c4e91"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "bfd65dbd1a6ec1753977ccf75d1c8915f52295c93cc9f13a1737e397b85b957e",
+   "now": "907c8fe1512d03cf98a176cb2e3a8978981f38eac3ac113bc04cc7947084f11a"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0169 census/writers",
+   false
+  ],
+  [
+   "VELDO-0169 census/planted",
+   false
+  ],
+  [
+   "VELDO-0169 resume/PAUSED",
+   true
+  ],
+  [
+   "VELDO-0169 resume/CANCELED",
+   true
+  ],
+  [
+   "VELDO-0169 resume/COMPLETED",
+   true
+  ],
+  [
+   "VELDO-0169 resume/owner_not_current",
+   true
+  ],
+  [
+   "VELDO-0169 resume/race",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/PAUSED",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/CANCELED",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/COMPLETED",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/owner_not_current",
+   true
+  ],
+  [
+   "VELDO-0169 dispose/race",
+   true
+  ],
+  [
+   "VELDO-0169 andon/PAUSED",
+   true
+  ],
+  [
+   "VELDO-0169 andon/CANCELED",
+   true
+  ],
+  [
+   "VELDO-0169 andon/COMPLETED",
+   true
+  ],
+  [
+   "VELDO-0169 andon/owner_not_current",
+   true
+  ],
+  [
+   "VELDO-0169 andon/race",
+   true
+  ],
+  [
+   "VELDO-0169 claim/absent",
+   true
+  ],
+  [
+   "VELDO-0169 claim/null",
+   true
+  ],
+  [
+   "VELDO-0169 guard/receipt",
+   false
+  ],
+  [
+   "VELDO-0169 guard/resume-again",
+   false
+  ],
+  [
+   "VELDO-0169 andon/subject-race",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 7.661,
+ "spec_id": "VELDO-0169",
+ "suite": "scripts/suites/84_veldo_0169_project_handouts.py",
+ "tree": "git archive 0a2ba0f9979b137f64be47e57679421d7c3c8ece, unchanged; the current suite file and its apparatus run against it"
+}

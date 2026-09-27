@@ -5433,14 +5433,17 @@ def cases():
             "        if command['operation'] == 'claim':\n",
             "        if False:  # defect: a claim never asks the unit's project\n", ['paused-claim', 'canceled-claim'])
     project('claim-project-check-empty', 'control_eligibility.py',
-            "        return self._project_problems(data.get('project'), record, member), read\n",
-            "        return [], read  # defect: the boundary's project check refuses nothing\n",
+            "        refusals = self._project_problems(data.get('project'), record, member)\n",
+            "        refusals = []  # defect: the boundary's project check refuses nothing\n",
             ['paused-claim', 'canceled-claim'])
     # Review of ba4eb66e: the project and owner records the claim receiver's project check read are pinned
-    # in the claim's transaction, and no row drove the pin. Dropped, a pause committed mid-claim is missed.
+    # in the claim's transaction, and no row drove the pin. Since VELDO-0169 the claim organ takes only a
+    # receipt whose reads its transaction pinned, and the check is read again inside that transaction, so a
+    # pause committed mid-claim is refused by name either way; dropped, the pin refuses every claim instead
+    # (stale_subject:project_check), and the active controls of the claim rows go red.
     project('claim-pins-dropped', 'control_claim.py',
             "            versions.update(read)\n",
-            "            pass  # defect: the records the project check read are not pinned\n", ['paused-mid-claim'])
+            "            pass  # defect: the records the project check read are not pinned\n", ['paused-claim', 'canceled-claim'])
     # VELDO-0138: each criterion's declared falsifier first, then the threat model's other shapes.
     def service_channel(name, module, old, new, row, also=()):
         add(138, name, '71_veldo_0138_channel_service.py', module, old, new, [row], also)
