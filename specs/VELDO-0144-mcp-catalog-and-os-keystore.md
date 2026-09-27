@@ -233,3 +233,18 @@ entry. The mcp144-entropy-restored mutation makes ordinary-config-saves fail.
 Three separate position mutations make credential-position-refused fail, and
 mcp144-deleted-reference-accepted makes deleted-reference fail. No row or mutation
 continues to require entropy refusal. Status and acceptance criteria are unchanged.
+
+
+2026-09-27, fourth review fix on build-veldo-0144: merged main. Credential names
+now use lower-case tokens split at underscores, hyphens, dots and camelCase
+boundaries, with the agreed final-token exemptions and absolute path allowance.
+A bare credential flag does not consume a following flag. Known scanner shapes
+still refuse anywhere, and headers remain reference-only. Refusal observations
+record the field name and reason with the server id absent, including when the
+refused value was the id. Extended ordinary and credential-position rows and a
+new refusal-value row carry generated values; four new mutations exercise the
+regressions. Filed, not fixed here: the repository secret_scan PATTERNS lacks
+github_pat_, sk-proj- and sk-ant- shapes, which require a separate scanner change;
+a token inside another argument such as docker -e NAME=value or --env NAME=value,
+single-dash flags, and SORT_KEY-style names ending in key being refused remain
+follow-up work. The repository scanner and acceptance criteria are unchanged.

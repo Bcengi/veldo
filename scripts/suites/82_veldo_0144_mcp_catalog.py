@@ -47,7 +47,7 @@ def _v144_suite():
              'catalog/observability', 'install/assets', 'catalog/known-shape-refused',
              'catalog/ordinary-config-saves', 'catalog/credential-position-refused', 'catalog/deleted-reference',
              'catalog/credential-domain', 'credential/libsecret-protocol', 'credential/replay-value',
-             'credential/encoding', 'credential/deleted-state')
+             'credential/encoding', 'credential/deleted-state', 'catalog/refusal-no-value')
     rows = {name: [] for name in names}
 
     def check(row, label, condition):
@@ -542,9 +542,32 @@ for name in paths:
                 ('mac application support', 'arguments', [('/Users/dmitry/Library/' 'Application Support/Ve' 'ldo')]),
                 ('confluence REST URL', 'url', ('https://api.atlassian.' 'com/ex/confluence/5c04' 'fb27-13f8-4d0f-ae1b-be' '13e14a815a/wiki/rest/a' 'pi')),
             ]
+            generated = os.urandom(12).hex()
+            absolute = '/home/config/' + generated + '/sa.json'
+            ordinary += [
+                ('author flag', 'arguments', ['-' * 2 + 'author', generated]),
+                ('token file flag', 'arguments', ['-' * 2 + 'token-file', absolute]),
+                ('bare auth before flag', 'arguments', ['-' * 2 + 'no-auth', '-' * 2 + 'port', str(int.from_bytes(os.urandom(2)))]),
+                ('absolute credential argument', 'arguments', ['-' * 2 + 'api-key', absolute]),
+                ('home credential argument', 'arguments', ['-' * 2 + 'token=~/' + generated]),
+            ]
+            for name in ('GIT_AUTHOR_NAME', 'OAUTH_CALLBACK_PORT', 'GOOGLE_APPLICATION_CREDENTIALS_FILE',
+                         'SORT_ORDER', 'AUTHOR', 'OAUTH'):
+                ordinary.append((name, 'environment', {name: {'literal': generated}}))
+            for value in (absolute, '~/' + generated + '/sa.json'):
+                ordinary.append(('absolute credential environment', 'environment',
+                                 {'GOOGLE_APPLICATION_CREDENTIALS': {'literal': value}}))
+            for suffix in ('file', 'path', 'dir', 'name', 'port', 'url', 'host', 'id', 'callback'):
+                name = 'token_' + suffix
+                ordinary.append((name, 'environment', {name: {'literal': generated}}))
+                ordinary.append((name, 'arguments', ['-' * 2 + name + '=' + generated]))
+                ordinary.append((name, 'url', 'https://localhost/mcp?' + name + '=' + generated))
+            for name in ('SIG', 'signature', 'code', 'author', 'oauth'):
+                ordinary.append((name, 'url', 'https://localhost/mcp?' + name + '=' + generated))
+            ordinary.append(('absolute credential query', 'url', 'https://localhost/mcp?token=' + absolute))
             for index, (label, field, value) in enumerate(ordinary):
                 doc = definition('ordinary-' + str(index), 'http' if field == 'url' else 'stdio', label)
-                doc[field] = {'CONFIG': {'literal': value}} if field == 'environment' else value
+                doc[field] = {'CONFIG': {'literal': value}} if field == 'environment' and isinstance(value, str) else value
                 saved = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
                 check('catalog/ordinary-config-saves', label + ' saves every field exactly',
                       saved[0] == 200 and saved[2].get('revision') == 1
@@ -552,9 +575,9 @@ for name in paths:
                       and call('GET', prefix + 'catalog?server=' + doc['id'] + '&revision=1')[2].get('server')
                       == dict(doc, revision=1))
 
-            position_names = ('aPi_ToKeN', 'client_secret_value', 'Password', 'service_passwd', 'vendor_apikey',
-                              'api_key', 'access_key_id', 'private_key_file', 'credentials', 'Authorization',
-                              'service_KEY', 'service_PAT')
+            position_names = ('apiToken', 'client_secret_value', 'Password', 'service_passwd', 'vendor_apikey',
+                              'api_key', 'privateKey', 'accessKey', 'api.key', 'PASS', 'credentials', 'auth',
+                              'service_KEY', 'service_PAT', 'pwd', 'bearer', 'cookie', 'credential', 'APIKey')
             doc = definition('credential-references', 'stdio', 'Named references')
             doc['environment'] = {name: {'reference': ref} for name in position_names}
             doc['arguments'] = ['-' * 2 + 'password']  # A bare flag without a following item holds no value.
@@ -566,6 +589,18 @@ for name in paths:
                   and call('GET', prefix + 'catalog?server=' + doc['id'] + '&revision=1')[2].get('server')
                   == dict(doc, revision=1))
 
+            def refusal_has_no_value(field, value, reason):
+                observations = getattr(catalog, 'observations', [])
+                record = observations[-1] if observations else {}
+                log = state / 'observations.jsonl'
+                logged = [json.loads(line) for line in log.read_text().splitlines()] if log.is_file() else []
+                return (any(all(event.get(key) == record.get(key) for key in
+                                ('command_id', 'field', 'refusal', 'server', 'outcome')) for event in logged)
+                        and record.get('field') == field and record.get('refusal') == reason
+                        and record.get('outcome') == 'refused' and record.get('server') is None
+                        and value not in json.dumps(observations)
+                        and log.is_file() and value not in log.read_text())
+
             before = head()
             position_values = [os.urandom(size).hex() for size in (32, 33, 16, 3)]
             position_cases = []
@@ -576,13 +611,14 @@ for name in paths:
                 position_cases.append(('arguments', [flag + '=' + value]))
                 position_cases.append(('arguments', [flag, value]))
                 position_cases.append(('url', 'https://localhost/mcp?' + name + '=' + value))
-            for name in ('key', 'SIG', 'signature', 'code', '%61pi%5Ftoken'):
+            for name in ('key', '%61pi%5Ftoken'):
                 position_cases.append(('url', 'https://localhost/mcp?' + name + '=' + position_values[0]))
             position_cases += [('url', 'https://user:' + position_values[0] + '@localhost/mcp'),
                                ('url', 'https://user@localhost/mcp'),
                                ('url', 'https://localhost/mcp?key='),
                                ('arguments', ['-' * 2 + 'token=']),
-                               ('headers', {'Authorization': {'literal': position_values[0]}})]
+                               ('headers', {'Authorization': {'literal': position_values[0]}}),
+                               ('headers', {'x-api-key': {'literal': position_values[1]}})]
             store_attempts = []
             if catalog is not None:
                 store_execute = catalog.S.execute
@@ -601,6 +637,9 @@ for name in paths:
                           refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_position'
                           and head() == before and not store_attempts
                           and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
+                    check('catalog/refusal-no-value', field + ' position refusal records field and reason',
+                          all(refusal_has_no_value(field, candidate, 'invalid_input:server_credential_position')
+                              for candidate in position_values))
             finally:
                 if catalog is not None:
                     catalog.S.execute = store_execute
@@ -627,6 +666,16 @@ for name in paths:
                 check('catalog/known-shape-refused', shape + ' is refused before any write',
                       refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_literal'
                       and head() == before and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
+                field = {'environment-name': 'environment', 'header-name': 'headers',
+                         'reference': 'environment'}.get(shape, shape)
+                check('catalog/refusal-no-value', shape + ' refusal records only field and reason',
+                      refusal_has_no_value(field, shaped, 'invalid_input:server_credential_literal'))
+                if shape == 'id':
+                    host_refused = host_command('save_mcp_server', dict(definition=doc, base=0))
+                    check('catalog/refusal-no-value', 'host id refusal records only field and reason',
+                          host_refused.get('reason') == 'invalid_input:server_credential_literal'
+                          and head() == before
+                          and refusal_has_no_value('id', shaped, 'invalid_input:server_credential_literal'))
             known_shapes = [
                 '-' * 5 + 'BEGIN ' + 'PRIVATE KEY' + '-' * 5,
                 'sk' + '_live_' + os.urandom(12).hex(),
@@ -644,6 +693,14 @@ for name in paths:
                 check('catalog/known-shape-refused', 'known shape ' + str(index) + ' refuses by name without storage',
                       refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_literal'
                       and head() == before and not any(d['id'] == doc['id'] for d in data_of('mcp_server')))
+            for field, value in (('environment', {'GOOGLE_APPLICATION_CREDENTIALS': {'literal': '/home/' + shaped}}),
+                                 ('arguments', ['-' * 2 + 'token-file', '~/' + shaped])):
+                doc = definition('shaped-path', 'stdio', 'Known shape in path')
+                doc[field] = value
+                refused = call('POST', prefix + 'catalog/save', dict(definition=doc, base=0))
+                check('catalog/known-shape-refused', field + ' path still refuses known shapes',
+                      refused[0] == 400 and refused[2].get('refusal') == 'invalid_input:server_credential_literal'
+                      and head() == before)
             foreign = 'keychain:veldo/' + hashlib.sha256(('another-domain/atlassian').encode()).hexdigest()
             for bad_ref in (foreign, 'keychain:someone-elses-item'):
                 doc = definition('foreign', 'http', 'refuse foreign reference')

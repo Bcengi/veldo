@@ -8118,17 +8118,35 @@ def cases():
         'return isinstance(value, str) and bool(SS.scan_text(value))',
         ['catalog/ordinary-config-saves'], ())
     add(144, 'mcp144-environment-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
-        "    if any(named(name) and 'literal' in item for name, item in d['environment'].items()):",
+        "    if any('literal' in item and positioned(name, item['literal']) for name, item in d['environment'].items()):",
         '    if False:',
         ['catalog/credential-position-refused'], ())
     add(144, 'mcp144-argument-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
-        "                if named(name) and (equals or index + 1 < len(d['arguments'])):",
+        "                if positioned(name, value):",
         '                if False:',
         ['catalog/credential-position-refused'], ())
     add(144, 'mcp144-query-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
-        '            if any(named(name, query=True) for name, _ in parse_qsl(url.query, keep_blank_values=True)):',
+        '            if any(positioned(name, value) for name, value in parse_qsl(url.query, keep_blank_values=True)):',
         '            if False:',
         ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-name-substrings-restored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "return (any(part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',\n"
+        "                             'credential', 'credentials', 'auth', 'bearer', 'cookie') for part in tokens)",
+        "return (any(part in name.lower() for part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',\n"
+        "                             'credential', 'credentials', 'auth', 'bearer', 'cookie'))",
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-last-token-exemption-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if not tokens or tokens[-1] in ('file', 'path', 'dir', 'name', 'port', 'url', 'host', 'id', 'callback'):",
+        'if not tokens:',
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-bare-flag-consumes-flag', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if index + 1 == len(d['arguments']) or d['arguments'][index + 1].startswith('-'):",
+        "if index + 1 == len(d['arguments']):",
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-refusal-records-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "self.record(dict(about, server=None, field=getattr(error, 'field', None),",
+        "self.record(dict(about, field=getattr(error, 'field', None),",
+        ['catalog/refusal-no-value'], ())
     add(144, 'mcp144-deleted-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
         "if (not credential.get('deleted') and row[0] == 'credential:' + digest",
         "if (row[0] == 'credential:' + digest",

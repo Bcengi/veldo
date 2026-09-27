@@ -28,8 +28,8 @@ WRITES = ('entities', 'journal', 'commands', 'nonces')
 
 
 class Refused(Exception):
-    def __init__(self, code):
-        self.code = code
+    def __init__(self, code, field=None):
+        self.code, self.field = code, field
         super().__init__(code)
 
 
@@ -78,33 +78,43 @@ def credential_literal(value):
 
 def credential_position(d):
     """Guard named credential positions. Ordinary literals are the trusted owner's choice."""
-    def named(name, query=False):
-        name = name.upper().replace('-', '_')
-        return (any(part in name for part in ('TOKEN', 'SECRET', 'PASSWORD', 'PASSWD', 'APIKEY',
-                                             'API_KEY', 'ACCESS_KEY', 'PRIVATE_KEY', 'CREDENTIAL', 'AUTH'))
-                or name.endswith(('_KEY', '_PAT'))
-                or (query and name in ('KEY', 'SIG', 'SIGNATURE', 'CODE')))
+    def named(name):
+        name = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', name)
+        name = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', name)
+        tokens = [part for part in re.split(r'[_\-.]+', name.lower()) if part]
+        if not tokens or tokens[-1] in ('file', 'path', 'dir', 'name', 'port', 'url', 'host', 'id', 'callback'):
+            return False
+        return (any(part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',
+                             'credential', 'credentials', 'auth', 'bearer', 'cookie') for part in tokens)
+                or tokens[-1] in ('key', 'pat'))
 
-    if any(named(name) and 'literal' in item for name, item in d['environment'].items()):
-        return True
+    def positioned(name, value):
+        return named(name) and not value.startswith(('/', '~/'))
+
+    if any('literal' in item and positioned(name, item['literal']) for name, item in d['environment'].items()):
+        return 'environment'
     if any('literal' in item for item in d['headers'].values()):
-        return True
+        return 'headers'
     if d['transport'] == 'stdio':
         for index, argument in enumerate(d['arguments']):
             if argument.startswith('-' * 2):
-                name, equals, _ = argument[2:].partition('=')
-                if named(name) and (equals or index + 1 < len(d['arguments'])):
-                    return True
+                name, equals, value = argument[2:].partition('=')
+                if not equals:
+                    if index + 1 == len(d['arguments']) or d['arguments'][index + 1].startswith('-'):
+                        continue
+                    value = d['arguments'][index + 1]
+                if positioned(name, value):
+                    return 'arguments'
     if d['transport'] == 'http' and isinstance(d['url'], str):
         try:
             url = urlsplit(d['url'])
             if url.username is not None or url.password is not None:
-                return True
-            if any(named(name, query=True) for name, _ in parse_qsl(url.query, keep_blank_values=True)):
-                return True
+                return 'url'
+            if any(positioned(name, value) for name, value in parse_qsl(url.query, keep_blank_values=True)):
+                return 'url'
         except ValueError:
             pass  # Transport validation gives malformed URLs their named refusal.
-    return False
+    return None
 
 
 def validate(definition):
@@ -112,7 +122,8 @@ def validate(definition):
         raise Refused('invalid_input:server_definition')
     d = definition
     if credential_literal(d):
-        raise Refused('invalid_input:server_credential_literal')
+        raise Refused('invalid_input:server_credential_literal',
+                      next(field for field in FIELDS if credential_literal(d[field])))
     valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')
     for field in ('arguments', 'hosts', 'read_only_tools'):
         items = d[field]
@@ -131,8 +142,9 @@ def validate(definition):
                     valid = valid and (reference(item) if kind == 'reference' else isinstance(item, str))
     if not valid:
         raise Refused('invalid_input:server_definition')
-    if credential_position(d):
-        raise Refused('invalid_input:server_credential_position')
+    field = credential_position(d)
+    if field:
+        raise Refused('invalid_input:server_credential_position', field)
     if d['transport'] == 'stdio':
         valid = text(d['command']) and d['url'] is None and not d['headers']
     else:
@@ -164,7 +176,7 @@ def transition(conn, params, before):
                         and credential.get('reference') == ref == 'keychain:veldo/' + digest):
                     recorded = True
             if not recorded:
-                raise Refused('invalid_input:server_credential_reference')
+                raise Refused('invalid_input:server_credential_reference', field)
     hid = head_id(domain, d['id'])
     head = entity(conn, hid)
     current = head['data']['revision'] if head else 0
@@ -203,7 +215,8 @@ class Catalog:
                            expected_versions=expected, artifact_digests=[], nonce=command_id)
             saved = self.S.execute(self.conn, command, self.signer, self.sign, self.generation)
         except (Refused, self.S.StoreRefused) as error:
-            self.record(dict(about, outcome='refused', refusal=error.code))
+            self.record(dict(about, server=None, field=getattr(error, 'field', None),
+                             outcome='refused', refusal=error.code))
             raise Refused(error.code) from None
         self.record(dict(about, outcome='saved', revision=base + 1, seq=saved['seq']))
         return dict(outcome='saved', server=definition['id'], revision=base + 1, seq=saved['seq'])
