@@ -6,7 +6,12 @@ read-only, since then its effects were confined to its clone; otherwise ASK the 
 call, since it may already have commented on a ticket or written a page and repeating it could do so
 twice. Carrying the decision out (the new dispatch, or the question to the owner) is VELDO-0154 AC3.
 
-THE STRUCTURAL RULES COME FIRST (the lead's decision). The stream cannot be made to show every nested MCP call
+A CALL THAT CONTRADICTS THE CONFIGURATION ASKS, BEFORE EVERY OTHER RULE (the lead's decision). A visible MCP call
+to a server the configuration does not list, or to a tool the configuration does not give the run (`unconfigured`),
+shows the configuration is not what the run had: the decision is `ask`, basis `unconfigured_call`, naming each
+such call (reason `unconfigured_call`) with its server, tool and, for a listed server, its catalog id and revision.
+
+THE STRUCTURAL RULES COME NEXT (the lead's decision). The stream cannot be made to show every nested MCP call
 (the REPL's inner calls, a depth-2 sub-agent's, a skill a sub-agent forks), so the decision does not rest on it
 alone. 1. When the configuration gives the run no MCP server with a tool not marked read-only (`write_capable`
 is empty: no server, or each lists its tools and its revision marks every one read-only), the run could not
@@ -70,14 +75,15 @@ A call's server maps to the catalog id and revision the configuration lists; a c
 configuration does not list, or to a tool its revision does not mark (a revision that marks nothing, or
 one with no marks given, marks no tool), is not read-only.
 
-The decision {schema, decision, calls, mcp_calls, basis} names in `calls` exactly the calls that are not
-read-only and the engine lines it cannot read, each with its sequence, server, tool, catalog id and
-revision and why (`server_not_configured`, `not_marked_read_only`, `unreadable`, `redacted_unreadable`,
-`unknown_call`, which also names its `form`, and for a task's unshown calls its `task` and `unshown`), and
-under the second structural rule each construct line (`nested_work`, with its `construct` and `form`);
-`mcp_calls` counts the MCP calls it read (None under the first structural rule, which reads no call). A structurally malformed record (a line without exactly its
-fields, a gap in its sequence, an unknown stream or receive time) or configuration is refused by name,
-never decided.
+The decision {schema, decision, calls, mcp_calls, basis} names in `calls`, when a call contradicts the
+configuration, exactly those calls (`unconfigured_call`); otherwise exactly the calls that are not read-only
+and the engine lines it cannot read, each with its sequence, server, tool, catalog id and revision and why
+(`server_not_configured`, `not_marked_read_only`, `unreadable`, `redacted_unreadable`, `unknown_call`, which
+also names its `form`, and for a task's unshown calls its `task` and `unshown`), and under the second
+structural rule each construct line (`nested_work`, with its `construct` and `form`); `mcp_calls` counts the
+MCP calls it read (None under the first structural rule, which reads no call). A structurally malformed
+record (a line without exactly its fields, a gap in its sequence, an unknown stream or receive time) or
+configuration is refused by name, never decided.
 Standard library only.
 """
 import importlib.util
@@ -266,9 +272,35 @@ def decide_by_calls(record, servers, marks, provider):
     return {'schema': SCHEMA, 'decision': ASK if named else RERUN, 'calls': named, 'mcp_calls': len(read)}
 
 
+def unconfigured(shown, servers, marks):
+    """[{sequence, server, tool, catalog_id, revision, reason}]: each MCP call of `shown` (the record's `calls`) to a
+    server the configuration does not list, or to a tool the configuration does not give the run, reason
+    `unconfigured_call`."""
+    configured, _, selected = _configuration(servers, marks)
+    found = []
+    for call in shown:
+        if call.get('unknown') or call.get('unreadable'):
+            continue
+        revision = configured.get(call.get('server'))
+        if revision is not None and (selected[call['server']] is None or call.get('tool') in selected[call['server']]):
+            continue
+        found.append({'sequence': call['sequence'], 'server': call.get('server'), 'tool': call.get('tool'),
+                      'catalog_id': revision[0] if revision else None, 'revision': revision[1] if revision else None,
+                      'reason': 'unconfigured_call'})
+    return found
+
+
 def decide(record, servers, marks, provider):
-    """Re-run or ask, over the record of a run that ended `account_limit` (the module docstring): the structural
-    rules first, then the call-by-call rules. `basis` names the rule that decided."""
+    """Re-run or ask, over the record of a run that ended `account_limit` (the module docstring): the call that
+    contradicts the configuration first, then the structural rules, then the call-by-call rules. `basis` names the
+    rule that decided."""
+    shown = calls(record, provider)
+    contradicting = unconfigured(shown, servers, marks)
+    if contradicting:
+        # A visible call the configuration does not give the run contradicts the configuration: ask, naming each.
+        read = [call for call in shown if not call.get('unreadable') and not call.get('unknown')]
+        return {'schema': SCHEMA, 'decision': ASK, 'calls': contradicting, 'mcp_calls': len(read),
+                'basis': 'unconfigured_call'}
     if not write_capable(servers, marks):
         # The configuration gives the run no tool that is not read-only: it could not have written through MCP.
         _engine(provider)

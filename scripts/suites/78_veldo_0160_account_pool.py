@@ -60,7 +60,7 @@ def _v160_suite():
             'decision/unknown-forms', 'decision/redacted-name', 'decision/tool-free-forms', 'format/tool-forms',
             'decision/repl-inner-call', 'decision/task-progress-tool', 'decision/frame-tool-names',
             'decision/subagent-calls', 'decision/no-write-server-reruns', 'decision/nested-work-asks',
-            'decision/nested-constructs',
+            'decision/nested-constructs', 'decision/unconfigured-call-asks',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
             'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
@@ -921,12 +921,20 @@ sys.exit(payload.get('code', 0))
                         ('a call to a tool of a server whose revision marks nothing', unmarked,
                          [(first - 2, 'wiki', 'read_page', 'mcp_server:wiki', 1, 'not_marked_read_only')]),
                         ('a call to a server the configuration does not list', elsewhere,
-                         [(first - 2, 'mailer', 'send', None, None, 'server_not_configured')])):
+                         [(first - 2, 'mailer', 'send', None, None, 'unconfigured_call')])):
                     found, error = decide(record, provider)
+                    basis = 'unconfigured_call' if record is elsewhere else 'calls'
                     check('decision/ask', '%s, %s: decided ask, naming exactly that call [%s, %s]'
                           % (provider, label, (found or {}).get('decision'), named(found) or error),
                           (found or {}).get('decision') == 'ask' and named(found) == expected
-                          and (found or {}).get('basis') == 'calls')
+                          and (found or {}).get('basis') == basis)
+                # The call-by-call rules alone name an unlisted server's call too (`decide` asks first, by the call
+                # that contradicts the configuration, decision/unconfigured-call-asks).
+                found, error = by_calls(elsewhere, provider)
+                check('decision/ask', '%s, the call-by-call rules alone: a call to a server the configuration does not '
+                      'list asks, naming it [%s, %s]' % (provider, (found or {}).get('decision'), named(found) or error),
+                      (found or {}).get('decision') == 'ask'
+                      and named(found) == [(first - 2, 'mailer', 'send', None, None, 'server_not_configured')])
                 gap = [dict(line) for line in writes]
                 gap[2]['sequence'] = 9
                 found, error = decide(gap, provider)
@@ -1535,6 +1543,43 @@ sys.exit(payload.get('code', 0))
             check('decision/nested-constructs', 'a Bash call, a denied Agent call and its result name no nested work '
                   '[%s, %s]' % ((found or {}).get('decision'), hidden(found) or error),
                   (found or {}).get('decision') == 'rerun' and hidden(found) == [] and (found or {}).get('basis') == 'calls')
+
+        # The lead's decision: a visible call the configuration does not give the run contradicts the configuration
+        # and asks, naming the line, before every other rule (even with only read-only servers configured).
+        with region('decision/unconfigured-call-asks'):
+            selected = [dict(READ_ONLY[0], tools=['get_issue']), READ_ONLY[1]]
+            for provider in ('claude_code', 'codex'):
+                if provider == 'claude_code':
+                    def u_rec(server, tool):
+                        return c_rec([c_blocks([tool_use('toolu_u', 'mcp__%s__%s' % (server, tool))])])
+                    u_at = len(c_head) + 1
+                else:
+                    def u_rec(server, tool):
+                        return x_rec([x_item('item.started', 'item_u', server, tool, 'in_progress')])
+                    u_at = len(x_head) + 1
+                for what, record, servers, expected in (
+                        ('a call to a server the configuration does not list, only read-only servers configured',
+                         u_rec('mailer', 'send'), READ_ONLY, [(u_at, 'mailer', 'send', None, None, 'unconfigured_call')]),
+                        ('a call to a tool marked read-only that the configuration does not give the run',
+                         u_rec('tracker', 'search'), selected,
+                         [(u_at, 'tracker', 'search', 'mcp_server:tracker', 3, 'unconfigured_call')])):
+                    found, error = decide(record, provider, servers)
+                    check('decision/unconfigured-call-asks', '%s, %s: decided ask, naming that line [%s, %s, %s]'
+                          % (provider, what, (found or {}).get('decision'), (found or {}).get('basis'),
+                             named(found) or error),
+                          (found or {}).get('decision') == 'ask' and (found or {}).get('basis') == 'unconfigured_call'
+                          and named(found) == expected and (found or {}).get('mcp_calls') == 1
+                          and LIMIT is not None and LIMIT.write_capable(servers, MARKS) == [])
+                # Negative control: the same record calling a listed read-only tool the run is given re-runs.
+                for what, record, servers in (('a listed read-only tool', u_rec('tracker', 'get_issue'), READ_ONLY),
+                                              ('the one tool the configuration gives', u_rec('tracker', 'get_issue'),
+                                               selected)):
+                    found, error = decide(record, provider, servers)
+                    check('decision/unconfigured-call-asks', '%s, a call to %s, only read-only servers configured: '
+                          'decided re-run [%s, %s, %s]' % (provider, what, (found or {}).get('decision'),
+                                                           (found or {}).get('basis'), named(found) or error),
+                          (found or {}).get('decision') == 'rerun' and (found or {}).get('calls') == []
+                          and (found or {}).get('basis') == 'no_write_capable_server')
 
         # The readers' tables are the binaries' own; each listed fixture form is one they list, each unlisted one not.
         with region('format/tool-forms'):
