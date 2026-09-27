@@ -5153,6 +5153,19 @@ def cases():
     api('read-model-kind-dropped', MO130,
         "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),\n", "        )),\n",
         ['reads/model-set'])
+    # Codex review of 3c85f33b (P2): the project, objective, backlog item and team records their writers keep
+    # were registered in no read model, so the endpoints answered them empty and live; each registration dropped
+    # again, and the published gaps claiming them not implemented again.
+    for kind, line in (('project', "        Kind('project', 'control_project', 'KIND', 'VELDO-0076'),\n"),
+                       ('objective', "        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077'),\n"),
+                       ('backlog-item', "        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078'),\n"),
+                       ('team', "        Kind('team', 'control_team', 'KIND', 'VELDO-0089'),\n")):
+        api('read-model-%s-unregistered' % kind, MO130, line, '', ['reads/implemented-writers'])
+    api('read-model-gaps-claim-projects', MO130,
+        "    return {'machine registry': 'workers', 'tool calls': 'runs'}.get(gap.subject) == name\n",
+        "    return {'machine registry': 'workers', 'tool calls': 'runs', 'projects': 'objectives'}.get(gap.subject) == name\n",
+        ['reads/implemented-writers'],
+        also=[("GAPS = (\n", "GAPS = (\n    Gap('AC2', 'projects', 'VELDO-0076', 'no project record is written by the engine yet'),  # defect\n")])
     api('event-data-leaked', AU130,
         "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],",
         "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind'),"
