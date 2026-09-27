@@ -123,6 +123,7 @@ AR = _organ('control_architecture')
 # import-free module: the backlog service itself loads the entity contract and with it the engine's
 # parser, which this process runs only inside the architecture snapshot.
 BL = _organ('control_backlog_priority')
+DP = _organ('control_decomposition_binding')
 
 # The stations the floor's entries invoke, each with its station-specific predicates. The shipped
 # contract's set is the floor of each; current admission is added to every station because R52
@@ -990,6 +991,7 @@ class Gate:
         b = self._data(inputs.get('backlog'))
         if not isinstance(b, dict) or inputs['backlog']['value']['kind'] != 'backlog_item':
             problems.append('missing_authority:backlog')
+        problems += DP.problems(self.conn, self.repository_uuid, data, self.workspace)
         return problems + self._project_problems(data.get('project'), inputs.get('project'), inputs.get('project_owner'))
 
     def _project_problems(self, name, record, member):

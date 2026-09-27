@@ -175,6 +175,7 @@ ADMISSION_RULINGS = {'approve': 'ADMITTED', 'reject': 'REJECTED', 'return_for_el
 DECISION_ROLES = {'admit': ('admission_authority',), 'prioritize': ('priority_authority',),
                   'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}
 GR = _organ('control_grooming_request')
+DP = _organ('control_decomposition_binding')
 BLOCK_TARGET_KIND, UNIT_TARGET_KIND = 'backlog_block', 'execution_unit'
 ALTERNATIVE_OUTCOMES = ('not_required',)
 REQUEST_KIND, SETTLEMENT_KIND, EFFECT_KIND = 'assignment', 'request_settlement', 'settlement_effect'
@@ -558,7 +559,7 @@ class Backlog:
 
     def _unit_entry(self, conn, data, raw, taken):
         """One validated decomposition entry, or a named refusal."""
-        if not isinstance(raw, dict) or set(raw) - set(UNIT_FIELDS) - {'produces'} or not set(UNIT_FIELDS) <= set(raw):
+        if not isinstance(raw, dict) or set(raw) - set(UNIT_FIELDS) - {'produces', 'document'} or not set(UNIT_FIELDS) <= set(raw):
             raise Refused('invalid_input:unit', 'a unit names %s' % ', '.join(UNIT_FIELDS))
         name = raw['unit']
         problem = CL.unit_id_problem(name)
@@ -578,15 +579,38 @@ class Backlog:
             raise Refused('out_of_scope:' + outside[0], 'a unit stays inside its item\'s scope')
         if 'produces' in raw and not _is_str(raw['produces']):
             raise Refused('invalid_input:produces', 'a declared output is a path')
-        return {k: (list(raw[k]) if isinstance(raw[k], list) else raw[k]) for k in raw}
+        bound, errors = DP.binding(conn, self.ids['repository_uuid'], raw['specification'], self.workspace)
+        if errors:
+            raise Refused(errors[0])
+        if raw.get('document') is not None and bound != raw['document']:
+            raise Refused('stale_subject:specification_revision')
+        if bound is not None:
+            if (bound['backlog_item'] != data['uuid'] or bound['unit'] != name
+                    or any(bound[k] != raw[k] for k in ('scope', 'requirements', 'eligible_holders'))):
+                raise Refused('invalid_input:unit_ownership')
+        for (text,) in conn.execute("SELECT data FROM entities WHERE kind='execution_unit'"):
+            other = json.loads(text)
+            primary = other.get('primary_specification')
+            alias = primary.get('alias') if isinstance(primary, dict) else primary
+            if (other.get('state') not in UNIT_TERMINAL and alias == raw['specification']
+                    and (other.get('specification_document') or {}).get('version') == (bound or {}).get('version')):
+                raise Refused('already_exists:specification_revision')
+        result = {k: (list(raw[k]) if isinstance(raw[k], list) else raw[k]) for k in raw}
+        if bound is not None:
+            result['document'] = bound
+        return result
 
     def _new_unit(self, data, u, revision, entry):
         return dict(schema=UNIT_SCHEMA, uuid=u['unit'], entity_type=UNIT_KIND, state='PLANNED',
                     domain_uuid=self.ids['domain_uuid'], repository_uuid=self.ids['repository_uuid'],
-                    backlog_item_uuid=data['uuid'], project=data['project'], primary_specification=u['specification'],
+                    backlog_item_uuid=data['uuid'], project=data['project'],
+                    primary_specification=({'alias': u['specification'], 'revision': u['document']['version']}
+                                           if u.get('document') else u['specification']),
                     scope=list(u['scope']), scope_digest=unit_scope_digest(data['uuid'], u),
                     requirements=list(u['requirements']), eligible_holders=list(u['eligible_holders']),
-                    produces=u.get('produces'), revision=1, depends_on=[], admitted_revision=None,
+                    produces=u.get('produces'), revision=1,
+                    specification_document=u.get('document'),
+                    depends_on=list((u.get('document') or {}).get('dependencies', [])), admitted_revision=None,
                     decomposition_revision=revision, alternative_outcome=None,
                     history=[dict(entry, source=None, target='PLANNED')])
 
@@ -600,7 +624,10 @@ class Backlog:
             raise Refused('invalid_input:units', 'a decomposition lists at least one unit')
         units = []
         for raw in raws:
-            units.append(self._unit_entry(conn, data, raw, {u['unit'] for u in units}))
+            prepared = self._unit_entry(conn, data, raw, {u['unit'] for u in units})
+            if any(u['specification'] == prepared['specification'] for u in units):
+                raise Refused('already_exists:specification_revision')
+            units.append(prepared)
         self._edge(KIND, 'RAW', 'PREPARED', {'intake_validated': True})
         data.update(state='PREPARED', decomposition=units, decomposition_revision=1,
                     decomposition_digest=decomposition_digest(data['uuid'], 1, units))
@@ -688,6 +715,8 @@ class Backlog:
         objective = objective['data'] if objective is not None and objective['kind'] == OBJECTIVE_KIND else {}
         fields = request.get('content') or {}
         problems = GR.live_problems(fields, data, objective, project['data'])
+        for entry in data.get('decomposition') or []:
+            problems += DP.problems(conn, self.ids['repository_uuid'], unit(conn, entry['unit']) or {}, self.workspace)
         found, missing = GR.specified(data, GR.read_specifications(self.workspace, GR.specifications(data)))
         problems += missing + ['stale_subject:' + f for f in GR.WORKSPACE_FIELDS if found[f] != fields.get(f)]
         at = GR.expiry_time(fields.get('expiry'))
@@ -757,7 +786,7 @@ class Backlog:
             for u in pending:
                 row = _row(conn, u['unit'])
                 ud = json.loads(json.dumps(row['data']))
-                self._edge(UNIT_KIND, 'PLANNED', 'READY', {'primary_specification_revision_bound': _is_str(
+                self._edge(UNIT_KIND, 'PLANNED', 'READY', {'primary_specification_revision_bound': bool(
                     ud.get('primary_specification')), 'backlog_item_prioritized': True})
                 ud.update(state='READY', admitted_revision=data['decomposition_revision'])
                 ud['history'] = list(ud['history']) + [dict(entry, source='PLANNED', target='READY',
@@ -826,7 +855,7 @@ class Backlog:
                 scope_digest=unit_scope_digest(data['uuid'], u), decomposition_revision=data['decomposition_revision'],
                 request_id=request['uuid'], settlement_id=None, intake_command=evidence['intake_command'])}
             ud = json.loads(json.dumps(_row(conn, u['unit'])['data']))
-            self._edge(UNIT_KIND, 'PLANNED', 'READY', {'primary_specification_revision_bound': _is_str(
+            self._edge(UNIT_KIND, 'PLANNED', 'READY', {'primary_specification_revision_bound': bool(
                 ud.get('primary_specification')), 'backlog_item_prioritized': True})
             ud.update(state='READY', admitted_revision=data['decomposition_revision'])
             ud['history'] = list(ud['history']) + [dict(entry, source='PLANNED', target='READY',

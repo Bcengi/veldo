@@ -439,17 +439,16 @@ class Allocations:
             return self._execute(command, signing)
         return self.observe('enable_artifact_kind', request, work)
 
-    def author_allocation(self, request):
+    def author_allocation(self, request, content_for_alias=None):
         """The command allocate() would execute now, or a reuse result. Separated so a caller's
         stale read of the counter is demonstrably refused by the store rather than trusted."""
         repository = self._repository(request)
         source, role, kind_name = parse_source(request['source'], request['role'])
-        text = _text(request['content'])
-        digest = SN.digest(request['content'])
         key = source_key(repository, source, role)
         _, mapping = self.current(source_id(repository, key))
         if mapping is not None:
-            return None, mapping, digest
+            content = content_for_alias(mapping['alias']) if content_for_alias else request['content']
+            return None, mapping, SN.digest(content)
         kind_version, kind = self.current(kind_id(repository, kind_name))
         if kind is None:
             raise SN.Refused('missing_authority', 'artifact kind %s is not enabled' % kind_name)
@@ -458,6 +457,8 @@ class Allocations:
         problem = CLAIM.unit_id_problem(alias)
         if problem is not None:
             raise SN.Refused('invalid_unit_id', problem)
+        content = content_for_alias(alias) if content_for_alias else request['content']
+        text, digest = _text(content), SN.digest(content)
         path = path_for(kind, number, request.get('slug'))
         parameters = {'repository_uuid': repository, 'role': role, 'source': source, 'number': number,
                       'slug': request.get('slug'), 'content': text, 'digest': digest}
@@ -469,11 +470,13 @@ class Allocations:
         return command, {'alias': alias, 'path': path, 'source_key': key,
                          'kind': kind_id(repository, kind_name), 'kind_version': kind_version}, digest
 
-    def allocate(self, request, **signing):
+    def allocate(self, request, *, content_for_alias=None, **signing):
+        """Allocate accepted bytes. An optional renderer receives the authority alias on
+        each counter attempt and on reuse, so generated document IDs match their allocation."""
         def work(event):
             event.update(workspace=request['workspace'])
             for _ in range(ATTEMPTS):
-                command, plan, digest = self.author_allocation(request)
+                command, plan, digest = self.author_allocation(request, content_for_alias)
                 if command is None:
                     return self._reuse(plan, digest, event)
                 event.update(source_key=plan['source_key'], alias=plan['alias'])

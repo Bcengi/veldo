@@ -131,6 +131,8 @@ _FILES = [
     # loaded by the authority, not by the validator, so not REQUIRED_SUBSTRATE.
     ".veldo/control_alias.py",
     ".veldo/control_document.py",
+    ".veldo/control_decomposition.py",
+    ".veldo/control_decomposition_binding.py",
     # VELDO-0029's enrollment binding, which control_document reads to bind a checkout to the
     # repository it is enrolled as.
     ".veldo/control_enrollment.py",

@@ -41,6 +41,14 @@ footprint:
   - "specs/VELDO-0085-decomposition-concurrent-publication.md"
   - "specs/index.md"
   - "proof/VELDO-0085/*"
+  - "engine/.veldo/control_backlog.py"
+  - ".veldo/control_backlog.py"
+  - "packs/*/.veldo/control_backlog.py"
+  - "engine/.veldo/control_eligibility.py"
+  - ".veldo/control_eligibility.py"
+  - "packs/*/.veldo/control_eligibility.py"
+  - "scripts/check_teeth_mutations.py"
+  - "scripts/drive.py"
 behavior_bearing: true
 observability:
   logs: >
