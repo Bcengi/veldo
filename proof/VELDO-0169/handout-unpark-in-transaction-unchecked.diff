@@ -1,5 +1,0 @@
---- a/.veldo/control_assignment.py
-+++ b/.veldo/control_assignment.py
-@@ -997 +997 @@
--            receipt = self._project_receipt(plan['unpark']['unit_id'])
-+            receipt = None

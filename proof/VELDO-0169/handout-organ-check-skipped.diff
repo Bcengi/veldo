@@ -1,5 +1,5 @@
 --- a/.veldo/control_claim.py
 +++ b/.veldo/control_claim.py
-@@ -134 +134 @@
--        if problem is not None:
+@@ -148 +148 @@
+-        if refusals:
 +        if False:

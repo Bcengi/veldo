@@ -1,5 +1,5 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -496 +496 @@
+@@ -498 +498 @@
 -        versions.update(observation.get('project_versions', {}))
 +        versions.update({k: v for k, v in observation.get('project_versions', {}).items() if not k.startswith('project:')})

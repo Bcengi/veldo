@@ -1,5 +1,0 @@
---- a/.veldo/control_assignment.py
-+++ b/.veldo/control_assignment.py
-@@ -905 +905 @@
--            receipt = self._project_receipt(params['resume']['unit_id'])
-+            receipt = None

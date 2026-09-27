@@ -1,5 +1,0 @@
---- a/.veldo/control_claim.py
-+++ b/.veldo/control_claim.py
-@@ -124 +124 @@
--            or any(eid not in before or before[eid].get('version') != version for eid, version in read.items())):
-+            or any(eid not in before for eid in read)):

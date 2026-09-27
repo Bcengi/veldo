@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -399 +399 @@
--                        **self.issue_station_contract(params['contract'], receipt, before))
+@@ -398 +398 @@
+-                        **self.issue_station_contract(params['contract'], before))
 +                        **{cid: {'kind': CONTRACT_KIND, 'data': params['contract']}})

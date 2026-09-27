@@ -1,5 +1,0 @@
---- a/.veldo/control_andon.py
-+++ b/.veldo/control_andon.py
-@@ -395 +395 @@
--            receipt = self._project_receipt(unit)
-+            receipt = None

@@ -1,5 +1,0 @@
---- a/.veldo/control_claim.py
-+++ b/.veldo/control_claim.py
-@@ -122 +122 @@
--    if (receipt.get('unit') != unit or unit not in before or receipt.get('project') != project
-+    if (unit not in before or receipt.get('project') != project

@@ -1,5 +1,0 @@
---- a/.veldo/control_claim.py
-+++ b/.veldo/control_claim.py
-@@ -256 +256 @@
--            refusals, _read, receipt = self._project_problems(params['unit_id'])
-+            refusals, _read, receipt = [], {}, None

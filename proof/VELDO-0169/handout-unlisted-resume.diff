@@ -1,9 +1,9 @@
 --- a/.veldo/control_assignment.py
 +++ b/.veldo/control_assignment.py
-@@ -471,0 +472,2 @@
+@@ -473,0 +474,2 @@
 +            elif op == 'resume_again':
 +                touched.update(self._resume_again(state, entities, current, principal, now, command, params, observation))
-@@ -573,0 +576,9 @@
+@@ -575,0 +578,9 @@
 +
 +    def _resume_again(self, state, entities, current, principal, now, command, params, observation):
 +        unit = self.read(params['assignment_id'])['data'].get('unit_id')

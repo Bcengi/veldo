@@ -1,5 +1,5 @@
 --- a/.veldo/control_andon.py
 +++ b/.veldo/control_andon.py
-@@ -797 +797 @@
--            refusals, expected, _receipt = self.project_gate.project_problems(unit)
-+            refusals, expected, _receipt = [], {}, None
+@@ -790 +790 @@
+-            refusals, expected = self.project_gate.project_problems(unit)
++            refusals, expected = [], {}

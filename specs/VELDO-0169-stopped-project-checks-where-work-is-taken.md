@@ -22,6 +22,10 @@ footprint:
   - ".veldo/control_claim.py"
   - "engine/.veldo/control_eligibility*.py"
   - ".veldo/control_eligibility*.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
+  - "engine/.veldo/control_heartbeat.py"
+  - ".veldo/control_heartbeat.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0169_*.py"
@@ -47,6 +51,7 @@ footprint:
   - "scripts/suites/60_veldo_0064_inbox.py"
   - "scripts/suites/66_veldo_0047_authority.py"
   - "scripts/suites/69_veldo_0133_dispositions.py"
+  - "scripts/suites/70_veldo_0069_bindings.py"
   - "scripts/suites/71_veldo_0076_projects.py"
   - "scripts/suites/72_veldo_0075_andon.py"
   - "scripts/suites/73_veldo_0078_backlog.py"
@@ -70,13 +75,16 @@ observability:
     version it read.
   error_taxonomy: >
     The refusals are the Gate's own names, unchanged: project_not_active:PAUSED, :CANCELED, :COMPLETED,
-    :owner_not_current, :not_a_project and missing_authority:project; a pause committed after the check
-    and before the write refuses as stale_version. A writer the census does not name, or a handout
-    writer that does not ask the check, fails the census by the writer's module and function. A handout
-    that reaches the claim organ or the station contract writer without the Gate's receipt is refused
-    missing_evidence:project_check, and one with a receipt for another unit or project, or for a version
-    its transaction did not pin, stale_subject:project_check; an andon resume race that is not a project
-    race keeps stale_subject.
+    :owner_not_current, :not_a_project and missing_authority:project, whether the caller's check or the
+    claim organ's and the station contract writer's own check inside the write names them; a pause
+    committed after the caller's check and before the write refuses as stale_version. A writer the census
+    does not name, a handout writer that does not ask the check, or a claim built outside the claim
+    organ, fails the census by the writer's module and function. The store refuses a claim record that
+    is not exactly what the claim organ returned in the same transaction as entity_owned, another
+    function offered as the organ as foreign_transition, an organ decision or a station contract issued
+    outside a command transaction as outside_transaction, and an organ decision in a store where the
+    organ was never declared as undeclared_organ; an andon resume race that is not a project race keeps
+    stale_subject.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -230,3 +238,40 @@ suite is renumbered 84, since main's 82 is taken, and its driver moves to proof/
 beside main's scripts/drive.py. The footprint drops scripts/drive.py and gains the census and claim
 support modules and the sixteen suites whose fixture claims now carry the receipt. Status and
 approval remain unchanged.
+
+2026-09-27: second review-fix round on build-veldo-0169 (review rv169b), with the lead's decisions. The
+reviewer found that the project-check receipt was a plain dict any caller could build or rewrite, and
+that a transition returning a hand-built claim entity committed a claim on a paused project, since the
+claim kind had no store ownership. The receipt is removed: the consumer checks, it trusts no token.
+The claim organ (control_claim) now decides every claim in one function, `_decide`, reached through
+transition(conn, params, before), itself a store transaction transition: for a claim, a resume or an
+unpark it asks Gate.project_problems of the unit on the transaction's own connection while that
+transaction holds the write lock, and refuses by the Gate's name with nothing written.
+Andon.issue_station_contract does the same inside its command transaction. Callers pass nothing; they
+still ask the check first, to name a refusal early and pin what it read. The store gains organ-owned
+kinds (control_store.declare_organ and organ_write): the claim organ declares the claim kind when the
+claim receiver, the inbox or the heartbeat's renewals attach, and the store writes an entity of kind
+claim only when it is exactly what the declared organ returned in the same command transaction, so a
+hand-built claim, a generic upsert of one, an organ answer edited on the way out and another function
+offered as the organ are refused by name (entity_owned, foreign_transition), and an organ decision
+outside a command transaction is refused outside_transaction. The census keeps AC1: it now requires
+the check where each handout's parameters are built (or at the write, when they are built there or not
+resolved), refuses a claim built outside the claim organ, follows the organ's new signature, and
+resolves a module's own method or function named transition as not the organ. New rows of suite 84:
+organ/stopped (a paused, canceled, completed and owner-not-current project refuses the organ's claim,
+resume and unpark and the station contract writer on paths with no caller check), organ/outside,
+organ/ownership, guard/forge (the forge probe's cases) and organ/race (the owner's pause and resume
+from a second process while claims run, three rounds, with a delay between the receiver's check and
+its write, and through the organ bare); guard/resume-again now drives the reviewer's copies over a
+paused project. The fixture suites no longer carry receipts (support/v169_claims.py is removed): they
+register the organ as a transaction transition and declare it first. A claim a fixture sets in a state
+no transition makes is planted around execute (support/v169_rows.py), as 59_veldo_0037_aliases plants
+a revision. Suite 66 takes the launch fixture's claim through the installed organ, suite 79's second
+installation reaches the same organ file, and suite 71 reads the receiver's own check and pin
+directly, since the organ's own check now refuses those claims too. The footprint gains
+control_store.py, control_heartbeat.py and suite 70_veldo_0069_bindings. Filed, not built: the census
+does not resolve a callable reached through __dict__['transition'], a kind read as
+sys.modules[...].CONTRACT_KIND, or a kind given as another module's attribute (X.KIND); the store's
+checks at run time refuse all three. A store that already holds claims written before the organ was
+declared refuses the declaration (ownership_conflict), as every first ownership declaration does;
+the re-declaration path is Release 2. Status and approval remain unchanged.
