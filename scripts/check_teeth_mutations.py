@@ -8400,15 +8400,39 @@ def cases():
     add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
         "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
         "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
-    # VELDO-0169: every new handout asks the Gate's project check.
+    # VELDO-0169: every path that hands out work asks the Gate's one project check, and the claim organ and
+    # the station contract writer refuse a handout without its receipt. Each criterion's declared falsifier
+    # first (AC1 to AC4), then the lead's receipt decisions, then the seams they rest on.
     def handout(name, module, old, new, rows, also=()):
         add(169, 'handout-' + name, '84_veldo_0169_project_handouts.py', module, old, new, rows, also)
 
+    # AC1: a second resume path that writes a claim without the check; the census fails on it.
     handout('unlisted-resume', 'control_assignment.py',
-            '    def _held_claims(self, entities, principal):',
-            "    def second_resume(self, params, before):\n"
-            "        return self.claims.transition(params['resume'], before)\n\n"
-            '    def _held_claims(self, entities, principal):', ['census/writers'])
+            '    def _check_project(self, unit, entities, observation):',
+            "    def _resume_again(self, state, entities, current, principal, now, command, params, observation):\n"
+            "        unit = self.read(params['assignment_id'])['data'].get('unit_id')\n"
+            "        backlog = entities[unit]['data']['backlog_item_uuid']\n"
+            "        params['resume'] = dict(action='resume', unit_id=unit, backlog_item_uuid=backlog,\n"
+            "                                claim_id=self.claims.claim_id(self.ids['repository_uuid'], unit), holder=principal,\n"
+            "                                generation=0, capabilities=[], repository_uuid=self.ids['repository_uuid'],\n"
+            "                                parked_on=params['assignment_id'])\n"
+            "        return {unit, backlog}\n\n"
+            '    def _check_project(self, unit, entities, observation):',
+            ['census/writers'],
+            also=[("            elif op == 'resume':\n",
+                   "            elif op == 'resume_again':\n"
+                   "                touched.update(self._resume_again(state, entities, current, principal, now, command, params, observation))\n"
+                   "            elif op == 'resume':\n")])
+    handout('unlisted-station-contract', 'control_andon.py',
+            '    def run(self):\n',
+            "    def resume_quick(self, sid, contract, permission, evidence, expected, command_id):\n"
+            "        self._commit(dict(action='resume', stop_id=sid, unit_id=contract['unit'], contract=contract,\n"
+            "                          permission=permission, evidence=evidence), expected, self.journal_signer, command_id, command_id)\n\n"
+            '    def run(self):\n', ['census/writers'])
+    handout('constructor-bypassed', 'control_andon.py',
+            "                        **self.issue_station_contract(params['contract'], receipt, before))\n",
+            "                        **{cid: {'kind': CONTRACT_KIND, 'data': params['contract']}})\n", ['census/writers'])
+    # AC2 and AC3: the resume, the backlog disposition and the andon resume without the check.
     handout('resume-unchecked', 'control_assignment.py',
             "        self._check_project(unit, entities, observation)\n        params['resume']",
             "        params['resume']", ['resume/PAUSED', 'census/writers'])
@@ -8416,12 +8440,49 @@ def cases():
             "            self._check_project(unit, entities, observation)\n            plan['unpark']",
             "            plan['unpark']", ['dispose/PAUSED', 'census/writers'])
     handout('andon-unchecked', 'control_andon.py',
-            '            refusals, expected = self.project_gate.project_problems(unit)',
-            '            refusals, expected = [], {}', ['andon/PAUSED', 'census/writers'])
+            '            refusals, expected, _receipt = self.project_gate.project_problems(unit)',
+            '            refusals, expected, _receipt = [], {}, None', ['andon/PAUSED', 'census/writers'])
+    # AC4: the null-project claim skipped, as before the fix.
     handout('null-claim-unchecked', 'control_claim.py',
             "        if command['operation'] == 'claim':",
             "        if command['operation'] == 'claim' and u['data'].get('project') is not None:",
             ['claim/absent', 'claim/null'])
+    # Lead decision 1: the organ skips the receipt, the receipt ignores the project version, and the other
+    # bindings of a receipt (its unit, the transaction's pins) and of the station contract writer.
+    handout('organ-receipt-skipped', 'control_claim.py',
+            "        problem = project_check_problem(params.get('project_check'), unit, before)\n        if problem is not None:",
+            "        problem = project_check_problem(params.get('project_check'), unit, before)\n        if False:",
+            ['guard/receipt', 'guard/resume-again'])
+    handout('receipt-version-ignored', 'control_claim.py',
+            "            or any(eid not in before or before[eid].get('version') != version for eid, version in read.items())):",
+            "            or any(eid not in before for eid in read)):", ['guard/receipt'])
+    handout('receipt-unit-ignored', 'control_claim.py',
+            "    if (receipt.get('unit') != unit or unit not in before",
+            "    if (unit not in before", ['guard/receipt'])
+    handout('receipt-unpinned-accepted', 'control_claim.py',
+            "            or any(eid not in before or before[eid].get('version') != version for eid, version in read.items())):",
+            "            or any(eid in before and before[eid].get('version') != version for eid, version in read.items())):",
+            ['guard/receipt'])
+    handout('contract-receipt-skipped', 'control_andon.py',
+            "        if problem is not None:\n            raise self.S.StoreRefused(problem, 'a station contract",
+            "        if False:\n            raise self.S.StoreRefused(problem, 'a station contract", ['guard/receipt'])
+    handout('gate-receipt-despite-refusal', 'control_eligibility.py',
+            "        receipt = None if refusals else self.claims.project_check_receipt(unit, data.get('project'), read)\n",
+            "        receipt = self.claims.project_check_receipt(unit, data.get('project'), read)\n", ['guard/receipt'])
+    # The check read again inside each handout's own store transaction.
+    handout('resume-in-transaction-unchecked', 'control_assignment.py',
+            "            receipt = self._project_receipt(params['resume']['unit_id'])\n",
+            "            receipt = None\n", ['resume/PAUSED', 'census/writers'])
+    handout('unpark-in-transaction-unchecked', 'control_assignment.py',
+            "            receipt = self._project_receipt(plan['unpark']['unit_id'])\n",
+            "            receipt = None\n", ['dispose/PAUSED', 'census/writers'])
+    handout('andon-in-transaction-unchecked', 'control_andon.py',
+            "            receipt = self._project_receipt(unit)\n",
+            "            receipt = None\n", ['andon/PAUSED', 'census/writers'])
+    handout('receiver-in-transaction-unchecked', 'control_claim.py',
+            "            refusals, _read, receipt = self._project_problems(params['unit_id'])\n",
+            "            refusals, _read, receipt = [], {}, None\n", ['claim/absent', 'census/writers'])
+    # The project and owner records the check read, pinned through the commit.
     handout('assignment-project-unpinned', 'control_assignment.py',
             "        versions.update(observation.get('project_versions', {}))",
             "        versions.update({k: v for k, v in observation.get('project_versions', {}).items() if not k.startswith('project:')})",
@@ -8438,9 +8499,13 @@ def cases():
             "            expected = dict(self._pinned(state, permission['principal']), **expected,",
             "            expected = dict(self._pinned(state, permission['principal']), **{k: v for k, v in expected.items() if k.startswith('project:')},",
             ['andon/race'])
-    handout('andon-stale-renamed', 'control_andon.py',
-            "exc.code if exc.code == 'stale_version' else",
-            "'stale_subject' if exc.code == 'stale_version' else", ['andon/race'])
+    # A project race is stale_version; any other race of the andon resume keeps stale_subject.
+    handout('andon-project-race-renamed', 'control_andon.py',
+            "            return 'stale_version' if moved else 'stale_subject'\n",
+            "            return 'stale_subject'\n", ['andon/race'])
+    handout('andon-subject-race-renamed', 'control_andon.py',
+            "            return 'stale_version' if moved else 'stale_subject'\n",
+            "            return 'stale_version'\n", ['andon/subject-race'])
     return result
 
 

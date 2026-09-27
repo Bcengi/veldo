@@ -84,13 +84,15 @@ def shown(values):
 class Module:
     def __init__(self, stem, source):
         self.stem = stem
+        self.source = source
         self.tree = ast.parse(source)
+        self.nodes = list(ast.walk(self.tree))
         self.parents = {}
-        for node in ast.walk(self.tree):
+        for node in self.nodes:
             for child in ast.iter_child_nodes(node):
                 self.parents[child] = node
         self.functions = {}
-        for node in ast.walk(self.tree):
+        for node in self.nodes:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 self.functions[self.qualname(node)] = node
         self.defined = {n.name for n in self.tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
@@ -160,7 +162,7 @@ class Module:
         return node
 
 
-_PARSED = {}
+_PARSED, _SCANNED = {}, {}
 
 
 def parsed(stem, text):
@@ -222,25 +224,40 @@ class Census:
     def run(self):
         kinds = self.constructor_kinds()
         for module in self.modules.values():
-            self.dynamic(module)
-            self.receipts(module)
-            for name, kind in ((ORGAN, 'claim'), (CONSTRUCTOR, 'station')):
-                for ref in self.references(module, name):
-                    for site in self.calls(module, ref, name):
-                        if kind == 'claim':
-                            self.claim_site(module, site)
-                        else:
-                            self.station_site(module, site)
-            self.station_bypass(module, kinds)
+            # What a module contributes depends only on its own source and on what the organ and the
+            # station contract writer declare, so an unchanged module is not read twice.
+            key = (module.stem, module.source, self.signature, self.handouts, self.schema, frozenset(kinds))
+            if key not in _SCANNED:
+                records, failures = self.records, self.failures
+                self.records, self.failures = [], []
+                self.scan(module, kinds)
+                _SCANNED[key] = (self.records, self.failures)
+                self.records, self.failures = records, failures
+            self.records += _SCANNED[key][0]
+            for failure in _SCANNED[key][1]:
+                if failure not in self.failures:
+                    self.failures.append(failure)
         return self
+
+    def scan(self, module, kinds):
+        self.dynamic(module)
+        self.receipts(module)
+        for name, kind in ((ORGAN, 'claim'), (CONSTRUCTOR, 'station')):
+            for ref in self.references(module, name):
+                for site in self.calls(module, ref, name):
+                    if kind == 'claim':
+                        self.claim_site(module, site)
+                    else:
+                        self.station_site(module, site)
+        self.station_bypass(module, kinds)
 
     def references(self, module, name):
         """Every expression that can evaluate to a callable called `name` in this module."""
         imported = set()
-        for node in ast.walk(module.tree):
+        for node in module.nodes:
             if isinstance(node, ast.ImportFrom):
                 imported.update(a.asname or a.name for a in node.names if a.name == name)
-        for node in ast.walk(module.tree):
+        for node in module.nodes:
             if isinstance(node, ast.Attribute) and node.attr == name:
                 yield node
             elif (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'getattr'
@@ -418,7 +435,7 @@ class Census:
         """Every place this module builds a mapping entry `key`: an item assignment, a dict() keyword or a
         dict display, with the value it stores there."""
         found, unresolved = [], False
-        for node in ast.walk(module.tree):
+        for node in module.nodes:
             values = []
             if isinstance(node, ast.Assign):
                 for t in node.targets:
@@ -444,7 +461,7 @@ class Census:
         its operation carries."""
         cls = module.cls_of(fn)
         operations = []
-        for node in ast.walk(module.tree):
+        for node in module.nodes:
             if not isinstance(node, ast.Dict):
                 continue
             for k, v in zip(node.keys, node.values):
@@ -469,7 +486,7 @@ class Census:
         if not operations:
             return [], True
         found, unresolved = [], False
-        for node in ast.walk(module.tree):
+        for node in module.nodes:
             carried = None
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'dict':
                 entries = {k.arg: k.value for k in node.keywords if k.arg}
@@ -623,7 +640,7 @@ class Census:
             parent = module.parents.get(ref)
             if not (isinstance(parent, ast.Call) and parent.func is ref) or (module.stem, module.name_of(fn)) != RECEIPT_MAKER:
                 self.fail(module.stem, module.name_of(fn), ref.lineno, 'makes a project-check receipt outside the Gate\'s check')
-        for node in ast.walk(module.tree):
+        for node in module.nodes:
             if ((isinstance(node, ast.Name) and node.id == RECEIPT_SCHEMA or isinstance(node, ast.Attribute) and node.attr == RECEIPT_SCHEMA)
                   and module.stem != ORGAN_MODULE):
                 self.fail(module.stem, module.name_of(module.enclosing(node)), node.lineno, 'uses the receipt schema outside the claim organ')
@@ -657,7 +674,7 @@ class Census:
         return NOVALUE if value is None else module.const(value)
 
     def station_bypass(self, module, kinds):
-        for node in ast.walk(module.tree):
+        for node in module.nodes:
             kind = self.kind_of(module, node)
             if kind is NOVALUE or kind not in kinds:
                 continue
@@ -683,7 +700,7 @@ class Census:
 
     def dynamic(self, module):
         tracked = (ORGAN, CONSTRUCTOR, RECEIPT)
-        for node in ast.walk(module.tree):
+        for node in module.nodes:
             if not isinstance(node, ast.Call) or callee(node) not in DYNAMIC:
                 continue
             name = callee(node)
