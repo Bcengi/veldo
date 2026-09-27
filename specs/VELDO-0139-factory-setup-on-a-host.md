@@ -40,8 +40,9 @@ acceptance_criteria:
       Set and completeness: Run it over an empty 0700 state root owned by the account and read back the
       store, the owner's membership, the host trust, the workspace binding and the installed unit;
       refuse by name, writing nothing, when the state root is absent, not 0700, not the account's, or
-      already holds a store, trust or binding. Falsifier: Overwrite an existing store; the no-overwrite
-      check must fail.
+      already holds a store, trust or binding laid down with any argument other than this run's; a run
+      over a state root laid down with every argument equal is VELDO-0171's re-run, which overwrites
+      nothing. Falsifier: Overwrite an existing store; the no-overwrite check must fail.
     falsified_by: >
       Overwrite an existing store; the no-overwrite check must fail.
   - id: AC2
@@ -166,3 +167,10 @@ owner's chat (the delegation lifecycle work, VELDO-0140).
 reporter in the channel pass, that service commits its first report cursor on its first active pass, about
 a second before those rows, so under load the commit could land inside a refusal the row requires to write
 nothing (row host-trust/directory-checked, gate for eacf645). Nothing after those rows needs the service.
+
+2026-09-27, PLAN-0019 revision 4, follow-up drafts: AC1 amended for VELDO-0171, whose re-run is the one
+upgrade path for a host this setup laid down. The refusal of a state root that already holds a store, trust
+or binding narrows to one laid down with any argument other than this run's; a run with every argument
+equal is VELDO-0171's re-run, which reports each step already done, runs only a missing step, and refuses,
+never overwrites, any file that would differ. AC1's falsifier is unchanged: overwriting an existing store
+still fails the no-overwrite check. Built behavior is unchanged until VELDO-0171 lands. Status unchanged.
