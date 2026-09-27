@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -495 +495 @@
+@@ -497 +497 @@
 -        if kind in ('content_block_start', 'content_block_delta') and fields:
 +        if False:  # defect: redact partial messages one line at a time

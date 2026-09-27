@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -464 +464 @@
+@@ -466 +466 @@
 -        text, kinds = redact(raw.decode('utf-8', 'surrogateescape'), self.resolved)
 +        text, kinds = raw.decode('utf-8', 'surrogateescape'), []  # defect: kept and served before redaction

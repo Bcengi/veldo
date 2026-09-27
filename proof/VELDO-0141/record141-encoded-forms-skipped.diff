@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -169 +169 @@
+@@ -170 +170 @@
 -            for form in forms:
 +            for form in (value,):  # defect: only the unencoded value

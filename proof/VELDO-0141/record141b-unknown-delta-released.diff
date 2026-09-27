@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -501 +501 @@
+@@ -503 +503 @@
 -                block['hold'] |= not known
 +                block['hold'] = False

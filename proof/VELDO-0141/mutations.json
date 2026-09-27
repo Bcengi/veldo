@@ -127,6 +127,14 @@
     true
    ],
    [
+    "VELDO-0141 redaction/clone-leaf-candidates",
+    true
+   ],
+   [
+    "VELDO-0141 redaction/uppercase-hex",
+    true
+   ],
+   [
     "VELDO-0141 api/byte-pages",
     true
    ],
@@ -139,7 +147,7 @@
     true
    ]
   ],
-  "seconds": 18.615
+  "seconds": 18.707
  },
  "controls_green": true,
  "mutants": [
@@ -295,6 +303,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -307,20 +323,20 @@
      true
     ]
    ],
-   "seconds": 18.595,
+   "seconds": 18.715,
    "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['ambervgm', 'harborpmt', 'lanternskk', 'token', 'pattern', 'high'], 18 lines served]",
-    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['ambervgm', 'harborpmt', 'lanternskk', 'token', 'pattern', 'high'], False]",
+    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['amberjvq', 'harborsbg', 'lanternssh', 'token', 'pattern', 'high'], 18 lines served]",
+    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['amberjvq', 'harborsbg', 'lanternssh', 'token', 'pattern', 'high'], False]",
     "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[[], []]]",
     "VELDO-0141 redaction/known-pattern detail: the token of a known pattern is redacted by the scanner in the messages and the error stream, its kind named [[[], []]]",
-    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token v141-subscription-c0b7a408abc35b60']]",
+    "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token v141-subscription-29ea8ceb22696b2e']]",
     "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[]]",
-    "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.95dcb838@example.invalid', 'organization': '14ae43e9-e04c-4b63-80cb-74ca10c49a95', 'subscriptionType': 'Claude Max'} [[]]]",
-    "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.2d682429@example.invalid', 'organization': '0d4dc1aa-6cd7-438a-90ba-abadc255de63', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]"
+    "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.f26d5adc@example.invalid', 'organization': 'd7f0fdab-c641-4fc2-8925-dde65da662a8', 'subscriptionType': 'Claude Max'} [[]]]",
+    "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.0240ddb4@example.invalid', 'organization': '9a596080-9938-41ed-882d-f76290ba56e9', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]"
    ],
    "diff": "proof/VELDO-0141/record-served-unredacted.diff",
    "failed_rows": [
@@ -331,7 +347,7 @@
     "VELDO-0141 redaction/account-fields"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "c3c70c215acb1d1f63a5c31406dbd00cde4eacfca86c7866ad3fa08742d02f25",
+   "mutant_sha256": "86c17a89805abae584a9b4448595351649364d2ce8582333fd547e9892857d7f",
    "name": "record-served-unredacted",
    "named_row_red": true,
    "named_rows": [
@@ -460,6 +476,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -472,8 +496,8 @@
      true
     ]
    ],
-   "seconds": 18.304,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.419,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -624,6 +648,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      false
     ],
@@ -636,17 +668,17 @@
      true
     ]
    ],
-   "seconds": 18.635,
+   "seconds": 18.695,
    "source_sha256": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['harbormjm', 'lanternwkf'], 18 lines served]",
-    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['harbormjm', 'lanternwkf'], False]",
+    "VELDO-0141 api/no-secret-served detail: every page and every stream frame the API served of the planted run holds no part of the planted value, the subscription token, the known-pattern token or the high-entropy span [['harborgtm', 'lanternbdz'], 18 lines served]",
+    "VELDO-0141 redaction/planted-value detail: the planted resolver's value, printed alone, inside a command's output, in the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker naming its kind, and no line holds any part of it [['harborgtm', 'lanternbdz'], False]",
     "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[['entropy'], ['entropy']]]",
     "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token [REDACTED:entropy]']]",
-    "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted]/[REDACTED:entropy].harbormjm.lanternwkf/notes]",
+    "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted]/[REDACTED:entropy].harborgtm.lanternbdz/notes]",
     "VELDO-0141 redaction/encoded-values detail: encoded resolved value has an exact named replacement",
     "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
     "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
@@ -665,7 +697,7 @@
     "VELDO-0141 redaction/offset-encodings"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "3ee87c05e32c7a187612e7247ff4ce164dc2980efcdd5285171e7a6c7acd2ecc",
+   "mutant_sha256": "eeae69511a80137f355486a3fc05f672f67356869bad586b6bc6c47ec16975e4",
    "name": "redaction-scanner-first",
    "named_row_red": true,
    "named_rows": [
@@ -794,6 +826,14 @@
      false
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -806,13 +846,13 @@
      true
     ]
    ],
-   "seconds": 18.655,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.763,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-r5vtstqb/state/factory/runs/931699dc59d5c4a734d918e16fc2a250/config/settings.json', '--mcp-config', '/run/user/1000/v141-r5vtstqb/state/factory/runs/931699dc59d5c4a734d918e16fc2a250/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
+    "VELDO-0141 record/stream-options detail: the Claude Code run carried --verbose, --include-partial-messages and --forward-subagent-text, each an option the binary declares and the qualified baseline lists [['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json', '--setting-sources', '', '--settings', '/run/user/1000/v141-pvkm8zcw/state/factory/runs/71b6122b009e5247f52f5b82c60982be/config/settings.json', '--mcp-config', '/run/user/1000/v141-pvkm8zcw/state/factory/runs/71b6122b009e5247f52f5b82c60982be/config/mcp.json', '--strict-mcp-config', '--disable-slash-commands']]",
     "VELDO-0141 record/stream-options detail: the shipped 2.1.281 record qualifies the baseline with them",
     "VELDO-0141 record/stream-options detail: the subagent's forwarded text and the partial messages are in the record [0 subagent, 0 partial]"
    ],
@@ -950,6 +990,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -962,7 +1010,7 @@
      true
     ]
    ],
-   "seconds": 18.273,
+   "seconds": 18.293,
    "source_sha256": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b"
   },
   {
@@ -975,7 +1023,7 @@
     "VELDO-0141 api/live"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "f658163c7d7ddfb471fb4552ecae31cecd87ef03aaf5e5cd253347776d3863ca",
+   "mutant_sha256": "ff069f60c8fca05037888cb22e487de56817bfebb3171aeb4ca176263d727ec9",
    "name": "record-hint-unsent",
    "named_row_red": true,
    "named_rows": [
@@ -1104,6 +1152,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -1116,8 +1172,8 @@
      true
     ]
    ],
-   "seconds": 18.682,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.76,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -1265,6 +1321,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -1277,7 +1341,7 @@
      true
     ]
    ],
-   "seconds": 18.642,
+   "seconds": 18.716,
    "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
@@ -1420,6 +1484,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -1432,7 +1504,7 @@
      true
     ]
    ],
-   "seconds": 18.825,
+   "seconds": 18.703,
    "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
@@ -1575,6 +1647,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -1587,7 +1667,7 @@
      true
     ]
    ],
-   "seconds": 18.776,
+   "seconds": 18.62,
    "source_sha256": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de"
   },
   {
@@ -1605,7 +1685,7 @@
     "VELDO-0141 route/runner-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "59b3cf2eb27242eac18c908639af2c11b5d657bf26d0cf46cf3f6f3a8f7ad9cb",
+   "mutant_sha256": "f535b11dd77da04885233eb59ef5fd985d67139da166d279b34b9c57167d9b29",
    "name": "route-digest-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -1734,6 +1814,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -1746,8 +1834,8 @@
      false
     ]
    ],
-   "seconds": 18.805,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 19.245,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -1894,6 +1982,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -1906,7 +2002,7 @@
      true
     ]
    ],
-   "seconds": 18.853,
+   "seconds": 19.237,
    "source_sha256": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
   },
   {
@@ -1919,7 +2015,7 @@
     "VELDO-0141 route/committed"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "665857add198584c25c270e63a728c213a92a95adff6ac9678451e45dc4765eb",
+   "mutant_sha256": "b75fcc3ce79d4ad68d4977d5147f62c49f8dbf98a5f1b8b85daf0867dd5afcdd",
    "name": "route-binding-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2048,6 +2144,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -2060,8 +2164,8 @@
      true
     ]
    ],
-   "seconds": 18.74,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 19.344,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -2073,7 +2177,7 @@
     "VELDO-0141 api/refusals"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "556a9ab3c8a435404c9be1923659eccce4aa95954fcec762f0ebb4e83588c631",
+   "mutant_sha256": "987cb6d7981378184ca074c35d7c3926408583fba22d3d8e5f7ba09a8937dd45",
    "name": "route-cursor-past-end-served",
    "named_row_red": true,
    "named_rows": [
@@ -2202,6 +2306,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -2214,13 +2326,13 @@
      true
     ]
    ],
-   "seconds": 18.721,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 19.287,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [1 frames, 1 before the exit, 18 hints]",
+    "VELDO-0141 api/live detail: the owner followed the run from the first cursor while it wrote: frames of kept lines arrived before the exit was recorded, each woken by a record hint [1 frames, 1 before the exit, 17 hints]",
     "VELDO-0141 api/live detail: after the run ended the stream served the rest and closed as ended, having served every kept line once, in sequence [1 served, 19 kept, []]",
     "VELDO-0141 api/live detail: each frame is a record frame whose id is its cursor, the last one the committed count",
     "VELDO-0141 route/served-lines detail: and so did the live stream"
@@ -2360,6 +2472,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -2372,7 +2492,7 @@
      true
     ]
    ],
-   "seconds": 28.748,
+   "seconds": 28.81,
    "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   {
@@ -2514,6 +2634,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -2526,7 +2654,7 @@
      true
     ]
    ],
-   "seconds": 18.726,
+   "seconds": 18.952,
    "source_sha256": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268"
   },
   {
@@ -2670,6 +2798,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -2682,7 +2818,7 @@
      true
     ]
    ],
-   "seconds": 18.668,
+   "seconds": 18.665,
    "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
@@ -2691,7 +2827,7 @@
     "VELDO-0141 redaction/planted-value detail: the joined span: the value replaced whole and the high-entropy rest redacted by the scanner [[[], []]]",
     "VELDO-0141 redaction/known-pattern detail: the token of a known pattern is redacted by the scanner in the messages and the error stream, its kind named [[[], []]]",
     "VELDO-0141 redaction/known-pattern detail: the account's subscription token, a resolved value, is replaced as one [['token [REDACTED:subscription_token]']]",
-    "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[2, 5, 6, 7, 8]]",
+    "VELDO-0141 redaction/kinds-field detail: each kept line's redaction field names exactly the kinds replaced in it [[3, 5, 6, 7, 8]]",
     "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': '[REDACTED:account:email]', 'organization': '[REDACTED:account:organization]', 'subscriptionType': 'Claude Max'} [[]]]",
     "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': '[REDACTED:account:email]', 'organization': '[REDACTED:account:organization]', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]",
     "VELDO-0141 redaction/partial-blocks detail: every fragment of each value has a named replacement",
@@ -2712,7 +2848,7 @@
     "VELDO-0141 redaction/thinking-and-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "19aefbcc1aa7046f9960baf21752c97628d6fc226210308c2eeae2d3995d18a1",
+   "mutant_sha256": "1771e20e985c564fe1d3ebf200a2a709593175442b5139091213ae65b145fbf5",
    "name": "redaction-kinds-unnamed",
    "named_row_red": true,
    "named_rows": [
@@ -2841,6 +2977,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -2853,15 +2997,15 @@
      true
     ]
    ],
-   "seconds": 18.643,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.657,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/paths-kept detail: the live run's init line is kept as printed, its working directory (the clone under the runtime directory, which the scanner judging it whole would replace) whole [['{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"[REDACTED:entropy]\", \"session_id\": \"73d8af10-5001-4333-94c9-2b4eec1396b7\",']]",
+    "VELDO-0141 redaction/paths-kept detail: the live run's init line is kept as printed, its working directory (the clone under the runtime directory, which the scanner judging it whole would replace) whole [['{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"[REDACTED:entropy]\", \"session_id\": \"36a7573b-9e5a-44c6-bf6f-cd20868edbd7\",']]",
     "VELDO-0141 redaction/paths-kept detail: the Edit tool call's input is kept as printed, its absolute file path whole [[', \"stop_reason\": null, \"stop_sequence\": null, \"usage\": {\"input_tokens\": 3, \"output_tokens\": 2, \"cache_creation_input_tokens\": 0, \"cache_read_input_tokens\": 0}}}']]",
-    "VELDO-0141 redaction/paths-kept detail: typical real paths (a clone path under the runtime directory, its clone directory named by a digest, a worktree's control_launch.py, a pinned engine path with its version and a digest segment, bare and named, Codex's vendor binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging it whole replaces [['[REDACTED:entropy]', '[REDACTED:entropy].veldo/control_launch.py', '[REDACTED:entropy].1.281/a185cde1dbadb1168915e6b61de77822fa62c1acc365056044f1130f0dcacccb/', '/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@[RED', '[REDACTED:entropy]', '[REDACTED:entropy].1.[REDACTED:entropy]', 'cd [REDACTED:entropy] && python3 [REDACTED:entropy].veldo/control_launch.py', '{\"type\": \"tool_use\", \"input\": {\"command\": \"ls [REDACTED:entropy].1.281/a185cde1dbadb116891']]",
+    "VELDO-0141 redaction/paths-kept detail: typical real paths (a clone path under the runtime directory, its clone directory named by a digest, a worktree's control_launch.py, a pinned engine path with its version and a digest segment, bare and named, Codex's vendor binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging it whole replaces [['[REDACTED:entropy]', '[REDACTED:entropy].veldo/control_launch.py', '[REDACTED:entropy].1.281/779c1fc6fdc435eccd3343f013682937ee8ee398e9ccd3b95239bad55884493a/', '/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@[RED', '[REDACTED:entropy]', '[REDACTED:entropy].1.[REDACTED:entropy]', 'cd [REDACTED:entropy] && python3 [REDACTED:entropy].veldo/control_launch.py', '{\"type\": \"tool_use\", \"input\": {\"command\": \"ls [REDACTED:entropy].1.281/779c1fc6fdc435eccd3']]",
     "VELDO-0141 redaction/path-segment detail: a path with an embedded 40-character random segment keeps the rest and replaces that segment [[REDACTED:entropy].txt]",
     "VELDO-0141 redaction/path-segment detail: likewise inside a tool input [{\"type\": \"tool_use\", \"input\": {\"file_path\": \"[REDACTED:entropy].txt\"}}]",
     "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted][REDACTED:entropy][REDACTED:v141_planted]/notes]",
@@ -2880,7 +3024,7 @@
     "VELDO-0141 redaction/live-paths"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "92ce209cefb068e8d305a2c4af642ec39a134aa7f3ad484d8c0fbb77909b3419",
+   "mutant_sha256": "3f21e84dbedc0e7cbef6c8d4e2899f556f1859cabd97922d023a1b4492c52663",
    "name": "redaction-path-scored-whole",
    "named_row_red": true,
    "named_rows": [
@@ -3011,6 +3155,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -3023,17 +3175,17 @@
      true
     ]
    ],
-   "seconds": 18.642,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.623,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/path-segment detail: a path with an embedded 40-character random segment keeps the rest and replaces that segment [/home/dmitry/projects/veldo-worktrees/build-veldo-0141/ynHXo6soIPaOS9cOlDaGZgyLZ1OeQALpMCKR1EcF/notes.txt]",
-    "VELDO-0141 redaction/path-segment detail: likewise inside a tool input [cts/veldo-worktrees/build-veldo-0141/ynHXo6soIPaOS9cOlDaGZgyLZ1OeQALpMCKR1EcF/notes.txt\"}}]",
-    "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted]/OgVBdU851DzCRbYQu1R2wqlLyXOhLAvRtcBcxUX5[REDACTED:v141_planted]/notes]",
-    "VELDO-0141 redaction/url-component detail: a URL with a token query value keeps its host, path and key and replaces only the value [https://api.example.com/v1/repos/owner/name?access_token=kTtvb0yOpXeXxoBHZ3axKAeGcIlgsDKNMfwASkiX&page=2]",
-    "VELDO-0141 redaction/url-component detail: and a high-entropy path segment of a URL goes, the rest kept [{\"url\": \"https://api.example.com/v1/OH43TQDpUbHs2xS1zZ63qUlb7O7FrLWT7WgWxSbg/items?page=2\"}]"
+    "VELDO-0141 redaction/path-segment detail: a path with an embedded 40-character random segment keeps the rest and replaces that segment [/home/dmitry/projects/veldo-worktrees/build-veldo-0141/eXqohO1G6uOMY63n3SEB2t1LqErWg1q5OooBq4qI/notes.txt]",
+    "VELDO-0141 redaction/path-segment detail: likewise inside a tool input [cts/veldo-worktrees/build-veldo-0141/eXqohO1G6uOMY63n3SEB2t1LqErWg1q5OooBq4qI/notes.txt\"}}]",
+    "VELDO-0141 redaction/path-segment detail: a resolved value inside a path is replaced first, whole, and a high-entropy segment joined to it still goes [/home/dmitry/work/[REDACTED:v141_planted]/oVHVwwwzyak09uQGxJTevpyGYBiu6XCxtnwS5RBj[REDACTED:v141_planted]/notes]",
+    "VELDO-0141 redaction/url-component detail: a URL with a token query value keeps its host, path and key and replaces only the value [https://api.example.com/v1/repos/owner/name?access_token=dOg730quAXwY9vCQKAsyzQk9IumKXQbEeJRVEAzh&page=2]",
+    "VELDO-0141 redaction/url-component detail: and a high-entropy path segment of a URL goes, the rest kept [{\"url\": \"https://api.example.com/v1/tYuGvlp3kPUvvZqEO8XjMz0hbCsKL0YSN91sl0Uj/items?page=2\"}]"
    ],
    "diff": "proof/VELDO-0141/redaction-path-segment-unscored.diff",
    "failed_rows": [
@@ -3041,7 +3193,7 @@
     "VELDO-0141 redaction/url-component"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "cc744e9fba16f7c84edb5df97195f1357bb336a82f16f09a77ad638c4c9ac4aa",
+   "mutant_sha256": "17896b34eaea35b4119d2e92e050c916be9ff790c1fbc64f161c92cab0d8e033",
    "name": "redaction-path-segment-unscored",
    "named_row_red": true,
    "named_rows": [
@@ -3171,6 +3323,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -3183,20 +3343,24 @@
      true
     ]
    ],
-   "seconds": 18.762,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.729,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/paths-kept detail: typical real paths (a clone path under the runtime directory, its clone directory named by a digest, a worktree's control_launch.py, a pinned engine path with its version and a digest segment, bare and named, Codex's vendor binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging it whole replaces [['/run/user/1000/state/clones/[REDACTED:entropy]/work', '/var/lib/veldo/factory/engines/claude_code/2.1.281/[REDACTED:entropy]/claude']]"
+    "VELDO-0141 redaction/paths-kept detail: the live run's init line is kept as printed, its working directory (the clone under the runtime directory, which the scanner judging it whole would replace) whole [['{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"/run/user/1000/v141-q0j9nrh8/state/clones/[REDACTED:entropy]/work\", \"sessi']]",
+    "VELDO-0141 redaction/paths-kept detail: the Edit tool call's input is kept as printed, its absolute file path whole [[', \"stop_reason\": null, \"stop_sequence\": null, \"usage\": {\"input_tokens\": 3, \"output_tokens\": 2, \"cache_creation_input_tokens\": 0, \"cache_read_input_tokens\": 0}}}']]",
+    "VELDO-0141 redaction/paths-kept detail: typical real paths (a clone path under the runtime directory, its clone directory named by a digest, a worktree's control_launch.py, a pinned engine path with its version and a digest segment, bare and named, Codex's vendor binary), alone and inside a command and a tool input, are kept whole, each one the scanner judging it whole replaces [['/run/user/1000/v141-q0j9nrh8/state/clones/[REDACTED:entropy]/work/src', '/run/user/1000/state/clones/[REDACTED:entropy]/work', '/var/lib/veldo/factory/engines/claude_code/2.1.281/[REDACTED:entropy]/claude', 'cd /run/user/1000/v141-q0j9nrh8/state/clones/[REDACTED:entropy]/work/src && python3 /home/']]",
+    "VELDO-0141 redaction/account-fields detail: an init line's account and organization uuid and email are replaced by field, its working directory kept [{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"/run/user/1000/v141-q0j9nrh8/state/clones/[REDACTED:entropy]/work\", \"apiKeySource\": \"none\", \"accountUuid\": \"[REDACTED:account:accountUuid]\", \"organizationUuid\": \"[REDACTED:account:organizationUuid]\", \"email\": \"[REDACTED:account:email]\"}]"
    ],
    "diff": "proof/VELDO-0141/redaction-named-digest-scored.diff",
    "failed_rows": [
-    "VELDO-0141 redaction/paths-kept"
+    "VELDO-0141 redaction/paths-kept",
+    "VELDO-0141 redaction/account-fields"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "1dcdf72f77537588b1c22a1d7c53ff7dd03e7da7789293d9c96e533589c8c305",
+   "mutant_sha256": "e7cbe622df938a2b6c27a47a2280f8e6fa7fe0ac32dfe63f5ddaab395776d3a9",
    "name": "redaction-named-digest-scored",
    "named_row_red": true,
    "named_rows": [
@@ -3274,7 +3438,7 @@
     ],
     [
      "VELDO-0141 redaction/account-fields",
-     true
+     false
     ],
     [
      "VELDO-0141 fixture/planted-control",
@@ -3325,6 +3489,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -3337,8 +3509,8 @@
      true
     ]
    ],
-   "seconds": 18.816,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.671,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -3350,7 +3522,7 @@
     "VELDO-0141 redaction/url-component"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "7df04eb47b67aa55f7c97fe01d1b6dcd36e5f4b038ce883c7380e97efcce7073",
+   "mutant_sha256": "1675dac16428eea408e1c2081602e7266770192c7560f27c1eae25916526e0b1",
    "name": "redaction-url-query-whole",
    "named_row_red": true,
    "named_rows": [
@@ -3479,6 +3651,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -3491,22 +3671,22 @@
      true
     ]
    ],
-   "seconds": 18.681,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.662,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.5eddcd26@example.invalid', 'organization': 'c9b0f071-3855-400b-981c-7f9821c35263', 'subscriptionType': 'Claude Max'} [[]]]",
-    "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.1ce4b881@example.invalid', 'organization': '4e2b5fd6-8f58-4260-b939-858456017b65', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]",
-    "VELDO-0141 redaction/account-fields detail: an init line's account and organization uuid and email are replaced by field, its working directory kept [{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"/run/user/1000/v141-khceg96t/state/clones/clone-339d9aebd538479b8af447e297876736/work\", \"apiKeySource\": \"none\", \"accountUuid\": \"86054120-2b99-4b83-ba9e-08f97a996958\", \"organizationUuid\": \"e7d80b68-8d01-415f-ab7f-86deb514f321\", \"email\": \"owner.67dd2d56@example.invalid\"}]"
+    "VELDO-0141 redaction/account-fields detail: the plain login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.2e066a21@example.invalid', 'organization': '3b3c51f2-6cf7-46a1-9423-9f8fb9efe2cd', 'subscriptionType': 'Claude Max'} [[]]]",
+    "VELDO-0141 redaction/account-fields detail: the token login: the handshake answer's email and organization are replaced by field and appear nowhere in the record; how the run logged in is kept [{'apiProvider': 'firstParty', 'email': 'owner.18cd18a5@example.invalid', 'organization': '5d260022-95de-4db9-9456-9b7f4b78cead', 'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} [[]]]",
+    "VELDO-0141 redaction/account-fields detail: an init line's account and organization uuid and email are replaced by field, its working directory kept [{\"type\": \"system\", \"subtype\": \"init\", \"cwd\": \"/run/user/1000/v141-zhzl22_s/state/clones/clone-03fa7da407b54bca8246a6af5f8a2abf/work\", \"apiKeySource\": \"none\", \"accountUuid\": \"55882fa5-3c03-48fc-b9bc-d7cc5b362e22\", \"organizationUuid\": \"98622e7e-f40f-437f-a1e1-f8d6c4df738b\", \"email\": \"owner.1e16911e@example.invalid\"}]"
    ],
    "diff": "proof/VELDO-0141/redaction-account-fields-kept.diff",
    "failed_rows": [
     "VELDO-0141 redaction/account-fields"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "4be4aac6bc538dab0e0865e09dfcf583ed8f27884596726e98cfdba4361f859c",
+   "mutant_sha256": "e88ed0ddddf8abe833a1f3e36c95e3fc05fcfe6198ee2b365712578b239c9e05",
    "name": "redaction-account-fields-kept",
    "named_row_red": true,
    "named_rows": [
@@ -3635,6 +3815,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -3647,8 +3835,8 @@
      true
     ]
    ],
-   "seconds": 18.656,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.796,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -3671,7 +3859,7 @@
     "VELDO-0141 redaction/thinking-and-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "9ae1a61b174e20935e60c0f2513f8d69f7b9cbe7d727530b29c9f30828798908",
+   "mutant_sha256": "9df7249b58e8cbc1dd8e403d631ce976a32d1b629402d950e4612cdb1ed893ca",
    "name": "record141-partials-line-by-line",
    "named_row_red": true,
    "named_rows": [
@@ -3800,6 +3988,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -3812,8 +4008,8 @@
      true
     ]
    ],
-   "seconds": 18.566,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 19.309,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -3833,7 +4029,7 @@
     "VELDO-0141 redaction/thinking-and-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "7ce3e7982ce0c21556eb6b0c91e49fe22d42596517282ccd9ae5988176ff198a",
+   "mutant_sha256": "0a98fd67271fbb8ebb2a06e93cdb1b09b27c1f9ee8260cf07b8851c7752a456a",
    "name": "record141-partials-tail-too-short",
    "named_row_red": true,
    "named_rows": [
@@ -3962,6 +4158,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -3974,23 +4178,25 @@
      true
     ]
    ],
-   "seconds": 18.646,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 19.71,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0141 redaction/clone-relative-paths detail: receiver uses its bound clone, not its own working directory",
     "VELDO-0141 redaction/clone-relative-paths detail: git stat, status and every traceback keep clone file names",
-    "VELDO-0141 redaction/live-paths detail: diff prefixes, new files, truncations and safe new leaves survive"
+    "VELDO-0141 redaction/live-paths detail: diff prefixes, new files, truncations and safe new leaves survive",
+    "VELDO-0141 redaction/clone-leaf-candidates detail: a real clone file leaf stays readable"
    ],
    "diff": "proof/VELDO-0141/record141-clone-path-check-skipped.diff",
    "failed_rows": [
     "VELDO-0141 redaction/clone-relative-paths",
-    "VELDO-0141 redaction/live-paths"
+    "VELDO-0141 redaction/live-paths",
+    "VELDO-0141 redaction/clone-leaf-candidates"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "47653f66c706aeb0e555fc00eadd7740f35654d02914e407228d7381c446a50d",
+   "mutant_sha256": "29b0e22e444291fbcdcfc50d985437d33fb19d7db8c45ed96566718fce1b179b",
    "name": "record141-clone-path-check-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -4119,6 +4325,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -4131,8 +4345,8 @@
      true
     ]
    ],
-   "seconds": 18.125,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.168,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -4144,7 +4358,7 @@
     "VELDO-0141 redaction/clone-relative-paths"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "d3dc2518dadbbf847518fc39c63c500b8269084332b597d5199b14baa05778f0",
+   "mutant_sha256": "211a0dc6b7345c2cbefdcdf2d2d6970315c0766e1590b06a3928395444f4408a",
    "name": "record141-handshake-id-scored",
    "named_row_red": true,
    "named_rows": [
@@ -4273,6 +4487,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -4285,8 +4507,8 @@
      true
     ]
    ],
-   "seconds": 18.652,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.784,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -4428,6 +4650,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -4440,7 +4670,7 @@
      true
     ]
    ],
-   "seconds": 18.804,
+   "seconds": 19.499,
    "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   {
@@ -4582,6 +4812,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -4594,7 +4832,7 @@
      true
     ]
    ],
-   "seconds": 18.598,
+   "seconds": 19.946,
    "source_sha256": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
   },
   {
@@ -4736,6 +4974,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -4748,7 +4994,7 @@
      true
     ]
    ],
-   "seconds": 18.622,
+   "seconds": 19.822,
    "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   {
@@ -4773,15 +5019,17 @@
     "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
     "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
     "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
-    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker"
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/uppercase-hex detail: hex cases differ and both carry the resolved marker"
    ],
    "diff": "proof/VELDO-0141/record141-encoded-forms-skipped.diff",
    "failed_rows": [
     "VELDO-0141 redaction/encoded-values",
-    "VELDO-0141 redaction/offset-encodings"
+    "VELDO-0141 redaction/offset-encodings",
+    "VELDO-0141 redaction/uppercase-hex"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "fbe48ed5a0f5ea3c01dd5f08d5a9e11951d84164ddd9a75d96f6ea0b1ab60cdb",
+   "mutant_sha256": "9fb0eb378e059494280612190e20f4e195fe33152cf0af7476e11e911dd468be",
    "name": "record141-encoded-forms-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -4910,6 +5158,14 @@
      false
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     false
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -4922,8 +5178,8 @@
      true
     ]
    ],
-   "seconds": 18.586,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 19.009,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -5069,6 +5325,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -5081,7 +5345,7 @@
      false
     ]
    ],
-   "seconds": 18.614,
+   "seconds": 18.974,
    "source_sha256": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de"
   },
   {
@@ -5223,6 +5487,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -5235,7 +5507,7 @@
      true
     ]
    ],
-   "seconds": 18.615,
+   "seconds": 18.921,
    "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
@@ -5377,6 +5649,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -5389,7 +5669,7 @@
      true
     ]
    ],
-   "seconds": 18.555,
+   "seconds": 18.979,
    "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
@@ -5531,6 +5811,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -5543,7 +5831,7 @@
      true
     ]
    ],
-   "seconds": 17.638,
+   "seconds": 17.949,
    "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   {
@@ -5557,7 +5845,7 @@
     "VELDO-0141 redaction/thinking-and-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "33b8524835abb3e26f40c7e791c146412dfe31bfc00000f9bd823a76b615215e",
+   "mutant_sha256": "c85266b2cff0083cfeab1e466122c7595d3e9add2b0118fb2c2919f28fb86ed4",
    "name": "record141b-thinking-unassembled",
    "named_row_red": true,
    "named_rows": [
@@ -5686,6 +5974,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -5698,8 +5994,8 @@
      true
     ]
    ],
-   "seconds": 18.63,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.891,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -5711,7 +6007,7 @@
     "VELDO-0141 redaction/thinking-and-unknown"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "0e5fee8ea4070c0a2edd49fc75339908043ff86ea5e35acb0928dea38aac1949",
+   "mutant_sha256": "f887ad5bd6bb2e7008b4b6ad76b4b09248b671affc517fdcc9009c5d84071ad0",
    "name": "record141b-unknown-delta-released",
    "named_row_red": true,
    "named_rows": [
@@ -5840,6 +6136,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -5852,8 +6156,8 @@
      true
     ]
    ],
-   "seconds": 18.968,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.966,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -5865,7 +6169,7 @@
     "VELDO-0141 redaction/live-paths"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "e29122dc5dc700baa5475d3028223b002477a83d3ba3255b93c6c59da54b029e",
+   "mutant_sha256": "da37f22ba6c2beee70f643ebefea29b5275602e2307354440694acd72ae19d96",
    "name": "record141b-diff-prefix-unstripped",
    "named_row_red": true,
    "named_rows": [
@@ -5994,6 +6298,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -6006,20 +6318,22 @@
      true
     ]
    ],
-   "seconds": 18.626,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 19.33,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/live-paths detail: diff prefixes, new files, truncations and safe new leaves survive"
+    "VELDO-0141 redaction/live-paths detail: diff prefixes, new files, truncations and safe new leaves survive",
+    "VELDO-0141 redaction/clone-leaf-candidates detail: a real clone file leaf stays readable"
    ],
    "diff": "proof/VELDO-0141/record141b-path-snapshot-restored.diff",
    "failed_rows": [
-    "VELDO-0141 redaction/live-paths"
+    "VELDO-0141 redaction/live-paths",
+    "VELDO-0141 redaction/clone-leaf-candidates"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "4bd2ae9dda7fc657af02f11575c05283a5c4e3e9c2792531de94e819264589eb",
+   "mutant_sha256": "5d3d6a84405390e30d6730fd4bcfdb5ff02e40c2b458fe49bc766f5f1249d54f",
    "name": "record141b-path-snapshot-restored",
    "named_row_red": true,
    "named_rows": [
@@ -6148,6 +6462,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -6160,8 +6482,8 @@
      true
     ]
    ],
-   "seconds": 18.05,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.438,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -6173,7 +6495,7 @@
     "VELDO-0141 api/byte-pages"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "31bc3c76ba5296106a556345206e5fb251373328bde35e43edde1f7b75ff844b",
+   "mutant_sha256": "e19359d00d1590ccc663edc048ffb778565e2d9fbd64c52805763eb91f6001bc",
    "name": "record141b-count-pages-restored",
    "named_row_red": true,
    "named_rows": [
@@ -6302,6 +6624,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      false
     ],
@@ -6314,8 +6644,8 @@
      true
     ]
    ],
-   "seconds": 18.606,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 19.919,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -6458,6 +6788,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      false
     ],
@@ -6470,7 +6808,7 @@
      true
     ]
    ],
-   "seconds": 18.848,
+   "seconds": 20.053,
    "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   {
@@ -6615,6 +6953,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -6627,7 +6973,7 @@
      false
     ]
    ],
-   "seconds": 18.61,
+   "seconds": 19.267,
    "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   },
   {
@@ -6643,7 +6989,7 @@
     "VELDO-0141 redaction/offset-encodings"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "2d67b04460cd29afb528c1f6b63d760c42a6b6906271767f7db7f1a3ab6ab77d",
+   "mutant_sha256": "0be14e016da2802afaea1c56a01bcf5a2b94308c3f7929bae0512eb757232641",
    "name": "record141b-offset-base64-omitted",
    "named_row_red": true,
    "named_rows": [
@@ -6772,6 +7118,14 @@
      false
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -6784,20 +7138,22 @@
      true
     ]
    ],
-   "seconds": 18.661,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.911,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker"
+    "VELDO-0141 redaction/offset-encodings detail: offset base64 and lowercase hex carry the resolved marker",
+    "VELDO-0141 redaction/uppercase-hex detail: hex cases differ and both carry the resolved marker"
    ],
    "diff": "proof/VELDO-0141/record141b-lower-hex-omitted.diff",
    "failed_rows": [
-    "VELDO-0141 redaction/offset-encodings"
+    "VELDO-0141 redaction/offset-encodings",
+    "VELDO-0141 redaction/uppercase-hex"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "8806ea02aca99b89aea362f94ad529bde6d96252e6abd99f079546014b6c8c74",
+   "mutant_sha256": "74f8a1ecb69e07ddbad349a0b609e77ae3bcd71489fa8ca365ee67b71ab86f97",
    "name": "record141b-lower-hex-omitted",
    "named_row_red": true,
    "named_rows": [
@@ -6926,6 +7282,14 @@
      false
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     false
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -6938,8 +7302,8 @@
      true
     ]
    ],
-   "seconds": 18.676,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.881,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   {
    "by_assertion": true,
@@ -6951,7 +7315,7 @@
     "VELDO-0141 redaction/live-paths"
    ],
    "module": ".veldo/control_execution_record.py",
-   "mutant_sha256": "8e0d51ab3cbb323a5ea0b6e945180f52059da6f396ed9cc4820e17ea7761ce60",
+   "mutant_sha256": "09d26bafa9e7964ae57f117967264663c0ffaf050627706888de8c406d0ddb44",
    "name": "record141b-short-leaf-unscored",
    "named_row_red": true,
    "named_rows": [
@@ -7080,6 +7444,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -7092,8 +7464,332 @@
      true
     ]
    ],
-   "seconds": 18.645,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.762,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/clone-leaf-candidates detail: a low entropy leaf cannot hide a scanner candidate"
+   ],
+   "diff": "proof/VELDO-0141/record141c-leaf-candidates-unscored.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/clone-leaf-candidates"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "242feb28127b3f02ad31fc113b1e492bd5127a56f569e8b0674d4f8caa64be67",
+   "name": "record141c-leaf-candidates-unscored",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/clone-leaf-candidates"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     false
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.832,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0141 redaction/uppercase-hex detail: hex cases differ and both carry the resolved marker"
+   ],
+   "diff": "proof/VELDO-0141/record141c-upper-hex-omitted.diff",
+   "failed_rows": [
+    "VELDO-0141 redaction/uppercase-hex"
+   ],
+   "module": ".veldo/control_execution_record.py",
+   "mutant_sha256": "c66024b0552cc46a47430c9e36913e2f454d5fcf3b8da300247a11de00d30682",
+   "name": "record141c-upper-hex-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "redaction/uppercase-hex"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0141 record/claude-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/codex-complete",
+     true
+    ],
+    [
+     "VELDO-0141 record/stream-options",
+     true
+    ],
+    [
+     "VELDO-0141 api/live",
+     true
+    ],
+    [
+     "VELDO-0141 api/cursor",
+     true
+    ],
+    [
+     "VELDO-0141 api/refusals",
+     true
+    ],
+    [
+     "VELDO-0141 api/no-secret-served",
+     true
+    ],
+    [
+     "VELDO-0141 api/service-call",
+     true
+    ],
+    [
+     "VELDO-0141 route/served-lines",
+     true
+    ],
+    [
+     "VELDO-0141 route/committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/planted-value",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/known-pattern",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/kinds-field",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/exact-set",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/paths-kept",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/path-segment",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/url-component",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/account-fields",
+     true
+    ],
+    [
+     "VELDO-0141 fixture/planted-control",
+     true
+    ],
+    [
+     "VELDO-0141 format/fake-lines",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/partial-blocks",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-relative-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/encoded-values",
+     true
+    ],
+    [
+     "VELDO-0141 api/scope-before-existence",
+     true
+    ],
+    [
+     "VELDO-0141 api/registration-race",
+     true
+    ],
+    [
+     "VELDO-0141 api/slow-reader",
+     true
+    ],
+    [
+     "VELDO-0141 route/unknown-committed",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/thinking-and-unknown",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/live-paths",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/offset-encodings",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     false
+    ],
+    [
+     "VELDO-0141 api/byte-pages",
+     true
+    ],
+    [
+     "VELDO-0141 api/fast-catchup",
+     true
+    ],
+    [
+     "VELDO-0141 route/runner-unknown",
+     true
+    ]
+   ],
+   "seconds": 18.998,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   }
  ],
  "mutations_per_row": {
@@ -7142,6 +7838,9 @@
   "redaction/account-fields": [
    "redaction-account-fields-kept"
   ],
+  "redaction/clone-leaf-candidates": [
+   "record141c-leaf-candidates-unscored"
+  ],
   "redaction/clone-relative-paths": [
    "record141-clone-path-check-skipped",
    "record141-handshake-id-scored",
@@ -7183,6 +7882,9 @@
   "redaction/thinking-and-unknown": [
    "record141b-thinking-unassembled",
    "record141b-unknown-delta-released"
+  ],
+  "redaction/uppercase-hex": [
+   "record141c-upper-hex-omitted"
   ],
   "redaction/url-component": [
    "redaction-path-scored-whole",
@@ -7334,6 +8036,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -7346,7 +8056,7 @@
      true
     ]
    ],
-   "seconds": 18.628,
+   "seconds": 18.79,
    "source_sha256": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612"
   },
   "control_api_assertion.py": {
@@ -7476,6 +8186,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -7488,7 +8206,7 @@
      true
     ]
    ],
-   "seconds": 18.589,
+   "seconds": 18.686,
    "source_sha256": "fdd8c7e5508422905d05f33484b57884b438985badf40345fbf634d3a40de268"
   },
   "control_api_authority.py": {
@@ -7618,6 +8336,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -7630,7 +8356,7 @@
      true
     ]
    ],
-   "seconds": 18.666,
+   "seconds": 18.662,
    "source_sha256": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4"
   },
   "control_dispatch.py": {
@@ -7760,6 +8486,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -7772,7 +8506,7 @@
      true
     ]
    ],
-   "seconds": 18.631,
+   "seconds": 18.71,
    "source_sha256": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de"
   },
   "control_engine_claude.py": {
@@ -7902,6 +8636,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -7914,11 +8656,11 @@
      true
     ]
    ],
-   "seconds": 18.604,
+   "seconds": 18.784,
    "source_sha256": "4a534b523da5d2125e2aca8fc0c28dae7726a1feb17c20135773ed15a0abce6b"
   },
   "control_execution_record.py": {
-   "copy_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534",
+   "copy_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -8044,6 +8786,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -8056,8 +8806,8 @@
      true
     ]
    ],
-   "seconds": 18.608,
-   "source_sha256": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534"
+   "seconds": 18.728,
+   "source_sha256": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
   },
   "control_launch.py": {
    "copy_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088",
@@ -8186,6 +8936,14 @@
      true
     ],
     [
+     "VELDO-0141 redaction/clone-leaf-candidates",
+     true
+    ],
+    [
+     "VELDO-0141 redaction/uppercase-hex",
+     true
+    ],
+    [
      "VELDO-0141 api/byte-pages",
      true
     ],
@@ -8198,13 +8956,13 @@
      true
     ]
    ],
-   "seconds": 18.634,
+   "seconds": 18.708,
    "source_sha256": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 141",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 978.164,
+ "serial_seconds": 1031.455,
  "spec_id": "VELDO-0141",
  "suite": "scripts/suites/82_veldo_0141_execution_record.py"
 }

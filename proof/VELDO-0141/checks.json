@@ -1,29 +1,19 @@
 {
- "behavior_rows": 31,
- "empty_runner_record": {
-  "committed": true,
-  "readable": true
- },
+ "behavior_rows": 33,
  "engine_copies": {
-  "control_api.py": "e9d2578e64cb3b0fb6adfa27b77d5ebe919d920f66f9160eeed608c7c6ab0612",
-  "control_api_authority.py": "bc13ad7e136ab0abf9754745b1245a7052ac1c8f3bdae6e00ae22df3cceea1c4",
-  "control_dispatch.py": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de",
-  "control_execution_record.py": "39bf41b9be78e2e8d4ec85a8404507eead22bac1af7346e4ee8170235957c534",
-  "control_launch.py": "f149649ea80e484ccfdc94314a502a30474ddc1db6396b2003aec8a381ee4088"
+  "control_execution_record.py": "d2674d692a350afb73cb938651372939d3f60732babac678985ffa0f23b5c6c5"
  },
  "fixture_rows": 2,
  "gate_run": false,
- "git_output_sample": {
-  "changed_lines": 0,
-  "diff_header_lines": 40,
-  "log_stat_lines": 122,
-  "status_lines": 37
- },
- "implementation_commit": "ec96365beef1a8da166a789cb858f51e13aa9a30",
+ "implementation_commit": "6652d703821f502b4c260d87350980ce7dff542b",
  "mutation_assertions": true,
- "mutation_registry_names_unique": 1772,
- "mutations_rejected": 44,
- "new_mutations": 10,
+ "mutation_registry_names_unique": 1774,
+ "mutations_rejected": 46,
+ "new_mutations": 2,
+ "new_rows": [
+  "redaction/clone-leaf-candidates",
+  "redaction/uppercase-hex"
+ ],
  "partial_run_exit_code": 2,
  "proof_driver": {
   "all_by_assertion": true,
@@ -34,72 +24,23 @@
  "red_record": {
   "by_assertion": true,
   "failed_rows": [
-   "VELDO-0141 api/slow-reader",
-   "VELDO-0141 redaction/thinking-and-unknown",
-   "VELDO-0141 redaction/live-paths",
-   "VELDO-0141 redaction/offset-encodings",
-   "VELDO-0141 api/byte-pages",
-   "VELDO-0141 api/fast-catchup",
-   "VELDO-0141 route/runner-unknown"
+   "VELDO-0141 redaction/clone-leaf-candidates",
+   "VELDO-0141 redaction/uppercase-hex"
   ],
-  "path": "proof/VELDO-0141/red-at-9dbda25f.json"
+  "path": "proof/VELDO-0141/red-at-76510207.json"
  },
  "required_suites": [
   {
    "exit": 2,
    "passed": true,
-   "suite": "71_veldo_0076_projects",
-   "summary": "selftest (PARTIAL, 1 of 121 suites): 58 passed, 0 failed in 2.89s"
-  },
-  {
-   "exit": 2,
-   "passed": true,
-   "suite": "71_veldo_0138_channel_service",
-   "summary": "selftest (PARTIAL, 1 of 121 suites): 39 passed, 0 failed in 28.87s"
-  },
-  {
-   "exit": 2,
-   "passed": true,
-   "suite": "71_veldo_0130_api",
-   "summary": "selftest (PARTIAL, 1 of 121 suites): 68 passed, 0 failed in 18.04s"
-  },
-  {
-   "exit": 2,
-   "passed": true,
-   "suite": "78_veldo_0060_claude_adapter",
-   "summary": "selftest (PARTIAL, 1 of 121 suites): 60 passed, 0 failed in 16.66s"
-  },
-  {
-   "exit": 2,
-   "passed": true,
-   "suite": "79_veldo_0061_codex_adapter",
-   "summary": "selftest (PARTIAL, 1 of 121 suites): 46 passed, 0 failed in 9.73s"
-  },
-  {
-   "exit": 2,
-   "passed": true,
-   "suite": "80_veldo_0155_claude_baseline",
-   "summary": "selftest (PARTIAL, 1 of 121 suites): 43 passed, 0 failed in 9.09s"
-  },
-  {
-   "exit": 2,
-   "passed": true,
    "suite": "82_veldo_0141_execution_record",
-   "summary": "selftest (PARTIAL, 1 of 121 suites): 59 passed, 0 failed in 17.75s"
+   "summary": "selftest (PARTIAL, 1 of 121 suites): 61 passed, 0 failed in 17.83s"
   }
  ],
- "reviewer_thinking_probe": {
-  "final_leaks": [],
-  "live_leaks": []
- },
- "round": 2,
- "rows": 33,
+ "round": 3,
+ "rows": 35,
  "schema": "veldo.review-validation/v1",
  "spec_id": "VELDO-0141",
- "template_sync": {
-  "passed": true,
-  "summary": "template sync: pass (230 pair(s) compared, 6 declared per-repo, 131 engine-only)"
- },
  "validator": {
   "command": [
    "python3",

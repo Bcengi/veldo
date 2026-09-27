@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -420 +420 @@
+@@ -422 +422 @@
 -    safe = max(0, len(text) - tail)
 +    safe = len(text)  # defect: no withheld suffix

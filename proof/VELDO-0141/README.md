@@ -343,3 +343,21 @@ The current results are in [checks.json](checks.json), the mutation observations
 [mutations.json](mutations.json), and the reviewed tree's failing assertions in
 [red-at-9dbda25f.json](red-at-9dbda25f.json). The required partial selftests are recorded as partial runs,
 with their intentional exit code 2; no gate or verification stamp is claimed for this checkout.
+
+
+## Clone leaf and uppercase hex regression fixes
+
+Missing clone leaves must pass both whole-leaf entropy scoring and scoring of every scanner candidate
+inside the leaf. The `redaction/clone-leaf-candidates` row generates a 36-character alphanumeric value
+at run time and appends 30 dots. It requires redaction with clone paths set, then creates a file with
+the same leaf and requires that real clone file name to remain readable. The
+`record141c-leaf-candidates-unscored` mutation restores the whole-leaf-only check.
+
+Resolved values include uppercase hex alongside lowercase hex. The `redaction/uppercase-hex` row
+requires both cases to carry the resolved marker, and `record141c-upper-hex-omitted` removes the
+uppercase form. Both new mutation names are unique across all findings.
+
+[red-at-76510207.json](red-at-76510207.json) runs the current suite against the reviewed commit:
+exactly these two rows fail, both by assertion. The refreshed [mutations.json](mutations.json) records
+all finding-141 mutations and their controls. [checks.json](checks.json) records this review fix's
+validation. The partial suite result carries its required exit code 2 and does not claim a gate run.

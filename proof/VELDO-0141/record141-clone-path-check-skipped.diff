@@ -1,5 +1,5 @@
 --- a/.veldo/control_execution_record.py
 +++ b/.veldo/control_execution_record.py
-@@ -364 +364 @@
+@@ -366 +366 @@
 -    kept = [(m.start(), m.end()) for m in _RELATIVE.finditer(text) if m.group() in paths]
 +    kept = []  # defect: relative clone paths are scored as opaque values
