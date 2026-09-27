@@ -51,3 +51,9 @@ Validation recorded so far:
 
 The canonical gate is not run, as instructed. No verification stamp is claimed. Independent
 review, approval and landing remain the reviewer's work; the specification stays ready.
+
+The first full selftest completed with 6877 passed and one failed row:
+`VELDO-0040 containment/exit-notified`. That unchanged row includes an exit-notification
+latency bound below 0.75 seconds. Its suite passed unchanged on an immediate isolated rerun:
+20 suite rows plus 26 preamble rows, zero failures. The full run is repeated under the
+requested stripped environment before completion; no containment code or test is changed.
