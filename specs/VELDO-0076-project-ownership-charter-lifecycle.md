@@ -183,3 +183,9 @@ the claim through the transition, not this receiver, and does not ask the projec
 changed here. Rows `project/paused-claim` and `project/canceled-claim` (signed claims through the real
 receiver; red at 3c85f33b by assertion); mutations `claim-ignores-project` and
 `claim-project-check-empty` in finding 76. Status unchanged.
+
+2026-09-27, review of ba4eb66e: the receiver's pin of the project and owner records into the claim's
+transaction was never driven (a mutant dropping it survived). Row `project/paused-mid-claim` commits the
+owner's real pause at the receiver's own write, after its checks, and requires the claim refused by name
+with nothing written and the unit READY with no claim; red at 3c85f33b by assertion. Mutation
+`claim-pins-dropped` in finding 76 reds it (finding 76: 26). Status unchanged.

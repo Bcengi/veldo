@@ -63,11 +63,12 @@ generic upsert of another kind at `project:proj-x` was accepted, admitted the un
 and blocked the owner's activation; a demoted or revoked owner's unit was admitted and dispatched).
 
 `red-at-3c85f33b.json` (Codex review ask-20260926-215030, finding P2): the current suite against the
-reviewed tree: exactly `project/paused-claim` and `project/canceled-claim` red by assertion (a signed
-claim through the claim receiver took the paused project's unit, and the canceled project's unit, to
-CLAIMED).
+reviewed tree: exactly `project/paused-claim`, `project/canceled-claim` and `project/paused-mid-claim`
+red by assertion (a signed claim through the claim receiver took the paused project's unit, and the
+canceled project's unit, to CLAIMED, and a claim whose project was paused at the receiver's own write
+landed).
 
-`python3 -B proof/VELDO-0076/drive.py` regenerates `mutations.json` and the diffs: 25 mutants, each reds
+`python3 -B proof/VELDO-0076/drive.py` regenerates `mutations.json` and the diffs: 26 mutants, each reds
 its named row by assertion, the baseline and a no-op copy of each mutated module green. Registry:
 `scripts/check_teeth_mutations.py --finding 76`.
 
@@ -94,6 +95,7 @@ its named row by assertion, the baseline and a no-op copy of each mutated module
 | `project/owner-revoked` | review | `owner-currency-unchecked`, `revoked-owner-current` |
 | `project/paused-claim` | AC2, review 2026-09-26 | `claim-ignores-project`, `claim-project-check-empty` |
 | `project/canceled-claim` | AC2, review 2026-09-26 | `claim-ignores-project`, `claim-project-check-empty` |
+| `project/paused-mid-claim` | AC2, review of ba4eb66e | `claim-pins-dropped` |
 | `install/assets` | all | `project-not-scaffolded` |
 | `project/observability` | all | none |
 
@@ -137,6 +139,14 @@ into, a `note` record at a unit's project id refuses exactly `project_not_active
 `project_not_active:owner_not_current` with its dispatch refused by that name; restoring the role
 admits it again. The same with zed revoked, and after restoring the membership the unit dispatches and
 its worker exits.
+
+**Review of ba4eb66e.** The claim receiver pins the project and owner records its project check read
+into the claim's transaction, and no row drove the pin. `project/paused-mid-claim` sends a signed claim
+of an ACTIVE project's READY unit through the real receiver and has the owner's real pause commit at the
+receiver's own write, after its checks; the pinned project version moved, so the write refuses as stale,
+the receiver decides again on the PAUSED record and refuses `project_not_active:PAUSED`, nothing is
+journaled after the pause and the unit stays READY with no claim. With the pin dropped
+(`claim-pins-dropped`) the claim lands.
 
 ## Checks run
 
