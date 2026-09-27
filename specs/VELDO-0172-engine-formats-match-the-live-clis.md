@@ -178,3 +178,9 @@ row. The falsifier plants a value of a kind the source really has, which must no
 VELDO-0160. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27, implementation on build-veldo-0172: the allowlist scrubber selects the two engine streams
+and exactly the two named tap answers. Host read-back preserves every selected key and value type and
+checks all non-allowlisted source strings by literal grep. The extractor reconciles the binary schemas
+with the scrubbed capture and records its digest, versions and field-level line provenance. Proof and
+fake-engine comparisons are in progress; status unchanged.

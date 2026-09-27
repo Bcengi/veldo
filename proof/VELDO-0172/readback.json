@@ -1,0 +1,10 @@
+{
+ "capture_sha256": "sha256:8f5b8eb50df11324ebdf50834e1018c0a2bbc93f653d81b5a69327e20808c8e3",
+ "keys_and_types_equal": true,
+ "literal_grep_no_matches": true,
+ "non_allowlisted_strings_checked": 810,
+ "schema": "veldo.capture-readback/v1",
+ "selected_taps": 2,
+ "spec_id": "VELDO-0172",
+ "typed_paths": 462
+}

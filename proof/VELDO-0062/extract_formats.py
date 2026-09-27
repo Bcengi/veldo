@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Extract the report formats and credential tables of the installed CLIs, VELDO-0062.
 
-Reads only the two binaries' bytes: the schema Claude Code embeds for its stream JSON (the zod
+Reads the allowlist-scrubbed live capture beside the two binaries' bytes: the schema Claude Code embeds for its stream JSON (the zod
 objects its SDK message types are built from) and the literals Codex's Rust binary carries for its
 `exec --json` events, its usage-limit message and its credential variables. Nothing is executed, no
 model runs, nothing logs in and no profile, credential or configuration file is opened.
@@ -1478,10 +1478,83 @@ def codex(path):
                 "than the CLI recorded under either reading")}}
 
 
+CAPTURE = HERE.parent / 'VELDO-0172' / 'capture.json'
+
+
+def event_name(line):
+    kind = line.get('type')
+    return kind + '/' + line['subtype'] if kind in ('system', 'result') else kind
+
+
+def observe_schema(schema, samples, source, path='', changes=None):
+    """Union the observed field universe with the binary schema, retaining its optional fields.
+
+    Samples carry their original stream line numbers, including inside arrays and model records.
+    Only types and paths enter the schema; scrubbed placeholders never become enum constants.
+    """
+    changes = [] if changes is None else changes
+    if not schema:
+        value = next((value for _, value in samples if value is not None), None)
+        kind = ('object' if isinstance(value, dict) else 'array' if isinstance(value, list) else
+                'boolean' if isinstance(value, bool) else 'number' if isinstance(value, (int, float)) else
+                'string' if isinstance(value, str) else 'any')
+        schema.update(type=kind, source=source, capture_lines=sorted({n for n, _ in samples}))
+        changes.append({'field': path, 'change': 'known', 'lines': schema['capture_lines']})
+        if kind == 'object':
+            schema['fields'] = {}
+        if kind == 'array':
+            schema['items'] = {}
+    if any(value is None for _, value in samples):
+        schema['nullable'] = True
+    kind = schema.get('type')
+    objects = [(n, value) for n, value in samples if isinstance(value, dict)]
+    if kind == 'object' and objects:
+        fields = schema['fields']
+        for key in sorted(set(fields) | {key for _, obj in objects for key in obj}):
+            present = [(n, obj[key]) for n, obj in objects if key in obj]
+            field = fields.setdefault(key, {})
+            if present:
+                observe_schema(field, present, source, path + '.' + key, changes)
+            if len(present) < len(objects) and not field.get('optional'):
+                field.update(optional=True, optional_source=source,
+                             omitted_lines=sorted({n for n, obj in objects if key not in obj}))
+                changes.append({'field': path + '.' + key, 'change': 'optional', 'lines': field['omitted_lines']})
+    elif kind == 'record' and objects:
+        observe_schema(schema['values'], [(n, v) for n, obj in objects for v in obj.values()],
+                       source, path + '.*', changes)
+    elif kind == 'array':
+        entries = [(n, v) for n, array in samples if isinstance(array, list) for v in array]
+        if entries:
+            observe_schema(schema['items'], entries, source, path + '[]', changes)
+    elif kind == 'any' and objects:
+        # An open binary payload stays open for uncaptured variants; its observed fields are still known.
+        observe_schema(schema.setdefault('observed', {}), objects, source, path, changes)
+    return schema
+
+
+def reconcile(table, capture_path=CAPTURE):
+    capture = json.loads(Path(capture_path).read_text())
+    changes = []
+    for engine, key in (('claude', 'claude_code'), ('codex', 'codex')):
+        events = table[key]['events']
+        groups = {}
+        for number, line in enumerate(capture['streams'][engine], 1):
+            groups.setdefault(event_name(line), []).append((number, line))
+        for event, samples in groups.items():
+            source = 'proof/VELDO-0172/capture.json:streams.' + engine
+            observe_schema(events.setdefault(event, {}), samples, source, event, changes)
+    table['capture'] = {'path': 'proof/VELDO-0172/capture.json', 'sha256': _digest(capture_path),
+                        'recorded_run': '2026-09-26',
+                        'versions': {key: table[key]['version'] for key in ('claude_code', 'codex')},
+                        'changes': changes}
+    return table
+
+
 def extract(claude_path, codex_path):
-    return {'schema': 'veldo.cli-formats/v1', 'spec_id': 'VELDO-0062',
-            'generated_by': 'proof/VELDO-0062/extract_formats.py (reads the binaries\' bytes only)',
+    table = {'schema': 'veldo.cli-formats/v1', 'spec_id': 'VELDO-0062',
+            'generated_by': 'proof/VELDO-0062/extract_formats.py (reads binary schemas and the allowlist-scrubbed live capture)',
             'claude_code': claude(claude_path), 'codex': codex(codex_path)}
+    return reconcile(table)
 
 
 def main():
