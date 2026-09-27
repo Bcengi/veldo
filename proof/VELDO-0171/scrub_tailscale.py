@@ -1,4 +1,4 @@
-"""Allowlist scrub of the three authorized local Tailscale captures.
+"""Allowlist scrub of the five authorized local Tailscale captures.
 
 Raw input stays outside the repository. Dynamic map keys are values too.
 This records captured states only; it does not invent capability fields.
@@ -16,7 +16,7 @@ ID NodeID PublicKey HostName DNSName OS UserID AllowedIPs Addrs CurAddr Relay Pe
 RxBytes TxBytes Created LastWrite LastSeen LastHandshake Online ExitNode ExitNodeOption
 Active PeerAPIURL TaildropTarget NoFileSharingReason Capabilities CapMap InNetworkMap
 InMagicSock InEngine KeyExpiry Name MagicDNSEnabled LoginName DisplayName ProfilePicURL
-TCP Web HTTPS Handlers Proxy Foreground AllowFunnel'''.split())
+TCP Web HTTPS Handlers Proxy Foreground AllowFunnel OperatorUser'''.split())
 STATES = {'Running', 'Stopped', 'NeedsLogin', 'NeedsMachineAuth', 'NoState', 'Starting'}
 
 
@@ -55,14 +55,22 @@ def main():
     if not re.fullmatch(r'\d+\.\d+\.\d+', version):
         raise ValueError('unrecognized CLI version schema constant')
     raw = {name: json.loads((SOURCE / (name + '.stdout')).read_text())
-           for name in ('status', 'serve-status')}
+           for name in ('status', 'serve-status', 'prefs')}
+    help_text = (SOURCE / 'serve-help.stderr').read_text()
+    def prefs_names(value):
+        if isinstance(value, dict):
+            return {k: (('<string>' if v else '') if k == 'OperatorUser' else prefs_names(v))
+                    for k, v in value.items() if re.fullmatch(r'[A-Za-z][A-Za-z0-9]*', k)}
+        if isinstance(value, list):
+            return [prefs_names(v) for v in value]
+        return None
     versions = [version]
     # The status version can include a build suffix. Keep only the plain CLI
     # version constant; a status build identity is scrubbed like any other value.
     result = {
         'schema': 'veldo.tailscale_capture/v1',
         'date': '2026-09-27',
-        'constant_allowlist': {'Version': versions, 'BackendState': sorted(STATES)},
+        'constant_allowlist': {'Version': versions, 'BackendState': sorted(STATES), 'protocol': ['https']},
         'field_allowlist': sorted(FIELDS),
         'scrub_rules': {
             'strings': '<string> unless the field and value are in constant_allowlist',
@@ -73,17 +81,49 @@ def main():
         },
         'captured': {
             'version': '\n'.join([version] + ['<string>'] * (len(raw_version.splitlines()) - 1)) + '\n',
-            **{name: scrub(value, versions=versions) for name, value in raw.items()}
+            **{name: scrub(value, versions=versions) for name, value in raw.items() if name != 'prefs'},
+            'prefs': prefs_names(raw['prefs']),
+            'serve-help': ('--bg\n' if '--bg' in help_text.split() else '')
         },
         'derived_states': [],
         'field_edits': [],
-        'blocker': 'Neither captured JSON output exposes the operator setting or a background-persistence capability. No derived refusal or post-write state has been fabricated.'
+        'streams': {'version': 'stdout', 'status': 'stdout', 'serve-status': 'stdout', 'prefs': 'stdout', 'serve-help': 'stderr'},
+        'capture_commands': ['version', 'status --json', 'serve status --json', 'debug prefs', 'serve --help']
     }
+    # Every executable test state is a named edit of the scrubbed capture.
+    edits = {
+        'ready': [('status', ['Self', 'DNSName'], 'factory.invalid.'),
+                  ('status', ['CertDomains'], ['factory.invalid']),
+                  ('serve-status', [], {})],
+        'operator': [('prefs', ['OperatorUser'], '')],
+        'https': [('status', ['CertDomains'], [])],
+        'persistence': [('serve-help', [], '')],
+        'logged-out': [('status', ['BackendState'], 'NeedsLogin')],
+        'served': [('serve-status', [], {'TCP': {'443': {'HTTPS': True}},
+                    'Web': {'factory.invalid:443': {'Handlers': {'/': {'Proxy': 'http://127.0.0.1:8765'}}}}})],
+        'occupied': [('serve-status', [], {'TCP': {'443': {'HTTPS': True}},
+                      'Web': {'factory.invalid:443': {'Handlers': {'/': {'Proxy': 'http://127.0.0.1:9876'}}}}})]
+    }
+    import copy
+    for name, changes in edits.items():
+        state = copy.deepcopy(result['captured'] if name == 'ready' else result['derived_states'][0]['outputs'])
+        listed = []
+        for source, path, value in changes:
+            parent = state
+            for key in [source] + path[:-1] if path else []:
+                parent = parent[key]
+            key = path[-1] if path else source
+            listed.append({'source': source, 'path': path, 'before': parent.get(key), 'after': value})
+            parent[key] = value
+        result['derived_states'].append({'name': name, 'base': 'captured' if name == 'ready' else 'ready', 'outputs': state})
+        result['field_edits'].append({'state': name, 'edits': listed})
+    result['scrub_rules']['prefs'] = 'Schema names only; OperatorUser presence as a string placeholder; every other leaf null'
+    result['scrub_rules']['serve-help'] = 'Only the schema flag --bg, when listed; all prose discarded'
     text = json.dumps(result, indent=2, sort_keys=True) + '\n'
-    constants = FIELDS | STATES | set(versions)
+    constants = FIELDS | STATES | set(versions) | {'https'} | set(k for k in strings(result['captured']['prefs']) if k != '<string>')
     # Literal substring checks cover every raw string value, and also dynamic
     # keys. Report counts only, never an identifying value.
-    needles = {s for value in raw.values() for s in strings(value)} | set(raw_version.splitlines())
+    needles = {s for value in raw.values() for s in strings(value)} | set(raw_version.splitlines()) | {help_text}
     needles = {s for s in needles if len(s) > 3 and s not in constants}
     leaks = sum(s in text for s in needles)
     if leaks:

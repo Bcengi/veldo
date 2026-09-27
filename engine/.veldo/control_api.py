@@ -114,6 +114,7 @@ STREAM_IDLE_SECONDS = 15
 REVOKED = ('credential_revoked', 'principal_not_member')
 EVENT_LIMIT = 256
 # Body fields that name who is speaking. The speaker is the session's member; a body naming one is refused.
+CSP = "default-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'"
 ACTOR_FIELDS = ('principal', 'actor', 'actor_id', 'decider')
 STATUS = {'unauthenticated': 401, 'unauthorized': 403, 'invalid_input': 400, 'stale_version': 409,
           'missing_evidence': 404, 'unavailable_service': 503, 'unknown_outcome': 500}
@@ -387,7 +388,7 @@ class ControlApi:
         self.observe(event)
         kind = 'text/event-stream' if isinstance(value, Stream) else 'application/json'
         out = [('Content-Type', kind), ('Cache-Control', 'no-store'),
-               ('Strict-Transport-Security', HSTS), ('X-Content-Type-Options', 'nosniff')] + extra
+               ('Strict-Transport-Security', HSTS), ('Content-Security-Policy', CSP), ('X-Content-Type-Options', 'nosniff')] + extra
         return status, out, value
 
     def _handle(self, method, path, headers, raw, extra, about):
@@ -894,7 +895,7 @@ def listen(api, host, port):
                 self.close_connection = True
                 status, value = 413, {'refusal': 'invalid_input:body_too_large', 'error': 'invalid_input'}
                 headers = [('Content-Type', 'application/json'), ('Strict-Transport-Security', HSTS),
-                           ('Connection', 'close')]
+                           ('Connection', 'close'), ('Content-Security-Policy', CSP)]
             else:
                 raw = self.rfile.read(size) if size else b''
                 status, headers, value = api.handle(method, self.path, self.headers, raw)

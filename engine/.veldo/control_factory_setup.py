@@ -309,8 +309,8 @@ class _Step:
         return False
 
 
-def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
-          unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time):
+def _fresh(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
+          unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time, api_name=None):
     """Lay the factory down; returns what was laid down. Refused by name, writing nothing, when a check fails."""
     EL = organ('control_eligibility')
     plan = check(state_root, owner, owner_key, workspace, chat, token_file,
@@ -345,7 +345,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                   'requester': _keygen(os.path.join(keys, REQUESTER_KEY), 'veldo-qualification-requester')}
         journal_principal, journal_sign = IN.journal_signer({'principal': JOURNAL_PRINCIPAL,
                                                              'key': os.path.join(keys, JOURNAL_KEY)})
-    conn = None
+    conn, lock = None, None
 
     def envelope(command, principal):
         now = CM.authority_state(S, conn)
@@ -368,6 +368,9 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             # the same mode.
             os.close(os.open(plan['store'], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600))
             os.chmod(plan['store'], 0o600)
+            import fcntl
+            lock = os.open(os.path.join(root, STORE_DIR, CS.LOCK_NAME), os.O_RDWR | os.O_CREAT, 0o600)
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             conn = S.open_store(plan['store'])
             CM.attach(S)
             K.attach(S)
@@ -450,14 +453,20 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             IN.read_token(config['bot_api']['token_file'])
             IN.journal_signer(config['journal'])
             IN.decision_signer(config, EL.load_host_trust(plan['host_trust']).settlement_trust(workspace))
+        api_service = None
+        if api_name is not None:
+            api = organ('control_factory_setup_api')
+            api_service = _private(os.path.join(host, 'api-service.json'), api.text(api.service_config(plan, ids, api_name)))
         with step('service_install'):
             installed = CS.install([workspace], host_trust=plan['host_trust'], key_directory=keys,
                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
-                                   writable=plan['writable'], runner=runner, channel_ingress=ingress)
+                                   writable=plan['writable'], runner=runner, channel_ingress=ingress, api_service=api_service)
         genesis = S.export_journal(conn)[0]
     finally:
         if conn is not None:
             conn.close()
+        if lock is not None:
+            os.close(lock)
     return {'schema': SCHEMA, 'outcome': 'set_up', 'state_root': root, 'store': plan['store'], 'authority_ids': ids,
             'owner': owner, 'owner_key_digest': 'sha256:' + __import__('hashlib').sha256(owner_public.encode()).hexdigest(),
             'genesis': {'command_id': genesis.get('command_id'), 'principal': genesis.get('principal'),
@@ -470,11 +479,25 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'next': 'start it explicitly: systemctl --user start %s, then veldo channel qualify' % installed['unit']}
 
 
+def setup(state_root, owner, owner_key, workspace, chat, token_file, **options):
+    """Complete missing setup steps; the re-run keeps every existing equal file."""
+    try:
+        return organ('control_factory_setup_rerun').setup(state_root, owner, owner_key, workspace, chat, token_file,
+                                                         **options)
+    except Exception as exc:
+        if hasattr(exc, 'code'):
+            raise Refused(exc.code, getattr(exc, 'detail', '')) from None
+        raise
+
+
 def main(argv=None, **overrides):
     """veldo factory setup --state-root DIR --owner NAME --owner-key FILE --workspace CLONE --chat ID
     --token-file FILE. Prints one JSON answer; exit 0 set up, 1 refused by name, 2 usage."""
     import argparse
     import sys
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == 'passkey':
+        return organ('control_factory_setup_passkey').main(argv[1:])
     parser = argparse.ArgumentParser(prog='veldo factory setup', description='Lay a real factory down on this host '
                                      'from the owner\'s own signed commands.')
     parser.add_argument('action', choices=('setup',))

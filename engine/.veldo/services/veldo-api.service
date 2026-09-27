@@ -1,0 +1,16 @@
+# veldo.api_unit/v1
+[Unit]
+Description=Veldo authenticated factory API
+BindsTo=@AUTHORITY@
+PartOf=@AUTHORITY@
+After=@AUTHORITY@
+
+[Service]
+Type=simple
+ExecStart=@PYTHON@ -B @EXECUTABLE@ serve @CONFIG@
+Restart=no
+UMask=0077
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=@AUTHORITY@

@@ -154,7 +154,7 @@ MUTATIONS = tuple(sorted(S.COMMAND_REGISTRY))
 # The programs an installation runs by path: the service (the unit's ExecStart), the launch receiver
 # with its trusted wrapper, and the key custody wrapper. The rest of the fixed executable is derived
 # from what these and the architecture validator load (closure()), never listed by hand.
-ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py')
+ENTRY_POINTS = ('control_client_api.py', 'control_service.py', 'control_launch.py', 'control_keys_custody.py')
 # The one way an engine module loads a sibling: importlib.util.spec_from_file_location.
 LOADER = 'spec_from_file_location'
 
@@ -996,6 +996,8 @@ class Service:
                 result = self.api_call(packet)
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
+            elif command.get('operation') == 'enroll_channel_edge' and 'envelope' in packet:
+                result = self.enroll_edge(packet, repository)
             elif command.get('operation') == CH.AUTHORIZE:
                 result = self.channel_command(packet, repository, observation)
             elif command.get('operation') in CH.DELEGATION_OPERATIONS:
@@ -1024,6 +1026,19 @@ class Service:
         self.hint_after(before)
         self._count(observation)
         return result
+
+    def enroll_edge(self, packet, repository):
+        """An owner's possession-cosigned edge enrollment, under this service's lock."""
+        if self.channel is None:
+            raise Refused('unavailable_service:channel', 'edge enrollment needs its ingress')
+        edge = _organ('control_channel_enrollment')
+        ing = self.channel.ingress
+        ids = dict(domain_uuid=self.domain, store_uuid=self.store, repository_uuid=repository)
+        projection = self.channel.config['signer']['config']
+        projection = json.loads(Path(projection).read_text())['allowed_signers']
+        writer = edge.Enrollment(ing.activations.S, ing.conn, ids, self.principal, self.sign, projection=projection)
+        observed = writer.admit(packet['envelope'], packet['command'], packet.get('signature'), packet.get('possession'))
+        return dict(ok=observed.get('outcome') == 'accepted', reason=observed.get('refusal'), enrollment=observed)
 
     def api_call(self, packet):
         """One API call (VELDO-0130), run by this instance's API judge; refused by name without one."""
