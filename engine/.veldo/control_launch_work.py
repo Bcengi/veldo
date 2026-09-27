@@ -85,6 +85,8 @@ class Runtime:
         common = dict(domain=c['domain'], repository=c['repository'], principal=c['principal'],
                       signer=c['principal'], sign=self.sign, generation=c.get('authority_generation', 1))
         trust = EL.load_host_trust(c['host_trust']) if c.get('host_trust') else None
+        if c.get('host_trust') and trust is None:
+            raise Refused('missing_authority:host_trust')
         self.gate = EL.Gate(L.S, self.conn, domain_uuid=c['domain'], repository_uuid=c['repository'],
                             workspace=str(self.root), authority_generation=common['generation'],
                             settlement_trust=trust.settlement_trust(c.get('workspace')) if trust else None)
@@ -191,9 +193,10 @@ class Runtime:
         context = dict(getattr(calls, 'context', {}) or {}, holder=role['identity'])
         source = P.blob(self.root, spec['base'], spec['spec_path'])
         payload = {'operation': 'build', 'spec': source.decode(), 'spec_revision': spec['revision'],
-                   'producer': role['identity'], 'output': 'Return JSON with commit and proof. Commit evidence files. '
+                   'producer': role['identity'], 'output': 'Return JSON with final commit and proof. Commit implementation and evidence first, then '
                    'Proof uses veldo.proof/v1, spec_revision, producer, criteria with type/path/digest evidence, '
-                   'checks and rollback. Do not change the specification.'}
+                   'checks and rollback. Commit that manifest at proof/' + spec['id'] + '/manifest.json in a second '
+                   'commit, then return that final commit. Do not change the specification.'}
         result, reference = self._run(spec['id'], 'build', role, spec['base'], payload, context)
         proof = result.get('proof')
         if not isinstance(proof, dict) or proof.get('spec_revision') != spec['revision']:
@@ -205,7 +208,14 @@ class Runtime:
                check=True, capture_output=True, timeout=60)
         GP.run(['git', '-C', directory, 'checkout', '-q', OPT + 'detach', result['commit']],
                check=True, capture_output=True, timeout=30)
-        return dict(result, ok=True, producer=role['identity'], dispatch=reference['dispatch'], workspace=directory)
+        return dict(result, ok=True, producer=role['identity'], dispatch=reference['dispatch'], artifact=reference['artifact'], workspace=directory)
+
+    def accept_build(self, spec, build):
+        claim = L.D._entity(self.conn, L.D.CLM.claim_id(self.config['repository'], spec['id']))
+        data = (claim or {}).get('data') or {}
+        return self.floor.accept_build(spec['id'], commit=build['commit'], gate={'green': True},
+                                       holder=data.get('holder'), generation=data.get('generation'),
+                                       artifact=build.get('artifact'))
 
     def review(self, spec, calls=None):
         unit = spec['id']
@@ -215,6 +225,7 @@ class Runtime:
             role = self.role('review', supplied['reviewer']) if supplied else self.reviewer(unit)
             assignment = supplied or self.floor.assign_review(unit, role['identity'])
             context = dict(getattr(calls, 'context', {}) or {}, reviewer=role['identity'])
+            context.setdefault('holder', (self.floor.record(unit) or {}).get('builder'))
             body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)
             required = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment['assignment'], 'unit': unit,
                         'reviewer': role['identity'], 'source': assignment['source']['commit'],

@@ -159,6 +159,11 @@ _FILES = [
     ".veldo/control_dispatch.py",
     ".veldo/control_launch.py",
     ".veldo/control_launch_work.py",
+    ".veldo/dispatch.py",
+    ".veldo/work.py",
+    ".veldo/lander.py",
+    ".veldo/frontier.py",
+
     # VELDO-0040: worker profiles, containment groups, caps and group stop the receiver calls; a
     # runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_containment.py",

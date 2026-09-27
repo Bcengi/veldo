@@ -117,7 +117,9 @@ def _v49_suite():
         (work / '.veldo' / 'policy.yaml').write_text(
             'schema: veldo.policy/v1\nversion: 1\nrisk_tiers:\n' + ''.join(
                 '  %s: {reviews: %d}\n' % (name, tier['reviews']) for name, tier in tiers.items()))
-        (work / 'scripts' / 'verify.sh').write_text('#!/bin/sh\nexec python3 -B check.py\n')
+        (work / 'scripts' / 'verify.sh').write_text('#!/bin/sh\nCHECK_unit="required:python3 -B check.py"\nORDER="unit"\n'
+            'echo "== unit"\npython3 -B check.py || exit 1\necho "   unit: pass"\n'
+            'echo "GATE: GREEN ($(git rev-parse HEAD))"\n')
         (work / 'check.py').write_text(
             'import pathlib, sys\n'
             "bad = [p.name for p in sorted(pathlib.Path('src').glob('*.py')) if 'OK = True' not in p.read_text()]\n"
@@ -212,7 +214,7 @@ def _v49_suite():
         markers = base / 'markers'
         markers.mkdir()
         builder = base / 'builder.py'
-        builder.write_text('''import json, os, sys, importlib.util
+        builder.write_text('''import hashlib, json, os, sys, importlib.util
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('engine_git', sys.argv[1])
 _git_process = importlib.util.module_from_spec(spec)
@@ -231,9 +233,10 @@ source.write_text('OK = %s\\nATTEMPT = %d\\n' % ('False' if mode == 'red' else '
 git('add', '-A')
 git('commit', '-q', '-m', 'Implement ' + unit)
 implementation = git('rev-parse', 'HEAD')
-manifest = {'schema': 'veldo.proof/v1', 'spec_id': unit, 'producer': 'builder-a',
+manifest = {'schema': 'veldo.proof/v1', 'spec_id': unit, 'producer': payload['producer'],
+            'spec_revision': 'sha256:' + hashlib.sha256(next((work / 'specs').glob(unit + '*.md')).read_bytes()).hexdigest(),
             'commit': before if mode == 'stale-proof' else implementation,
-            'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [] if mode == 'bad-proof' else ['src/' + source.name]}],
+            'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [] if mode == 'bad-proof' else [{'type': 'unit', 'path': 'src/' + source.name, 'digest': 'sha256:' + hashlib.sha256(source.read_bytes()).hexdigest()}]}],
             'checks': [{'name': 'unit', 'status': 'passed'}], 'rollback': 'git revert'}
 proof = work / 'proof' / unit / 'manifest.json'
 proof.parent.mkdir(parents=True, exist_ok=True)
@@ -337,6 +340,19 @@ sys.stdout.flush()
             through the VELDO-0039 runner, the gate is the repository's own script, the proof is the
             committed file and validate.py judges it."""
 
+            def accept_proof(self, spec, build, gate, proof, context=None):
+                CP = DSP.EX.proof_organ()
+                service = CP.ProofService(S, writer, domain=DOMAIN, repository=REPOSITORY, repo=work,
+                                          principal='floor-service', signer='floor-service', sign=sign)
+                reference = service.record_observation(gate['observation'])
+                try:
+                    accepted = service.accept(spec['id'], commit=build['commit'], base=spec['base'],
+                                              spec_path=spec['spec_path'], manifest=proof, observation=reference,
+                                              builder=self.holder)
+                    return dict(accepted, ok=True, problems=[])
+                except CP.Refused as error:
+                    return {"ok": False, "problems": error.codes}
+
             def __init__(self, mode, generation, attempt=1, holder=BUILDER):
                 self.mode, self.generation, self.attempt, self.root = mode, generation, attempt, str(work)
                 self.holder = holder
@@ -346,14 +362,15 @@ sys.stdout.flush()
                 path = spec_files[sid]
                 fm = DSP._Y.front_matter(path.read_text()) or {}
                 return {'id': fm.get('id', sid), 'status': fm.get('status'), 'lane': fm.get('lane'),
-                        'criteria_ids': ['AC1'], 'path': str(path)}
+                        'criteria_ids': ['AC1'], 'path': str(path), 'base': git('rev-parse', 'HEAD'),
+                        'spec_path': path.relative_to(work).as_posix()}
 
             def run_check(self, spec):
                 return True, 'standalone'
 
             def build(self, spec, calls=None):
                 launch = runner.submit(spec['id'], 'build', holder=self.holder, source=str(work), revision='HEAD',
-                                       payload={'unit': spec['id'], 'mode': self.mode, 'attempt': self.attempt},
+                                       payload={'unit': spec['id'], 'mode': self.mode, 'attempt': self.attempt, 'producer': self.holder},
                                        adapter='builder-engine', configuration=CONFIG, deadline=time.time() + 90,
                                        context={'generation': self.generation})
                 record = runner.wait(launch) or {}
@@ -365,7 +382,12 @@ sys.stdout.flush()
             def gate(self):
                 r = subprocess.run(['bash', str(work / 'scripts' / 'verify.sh')], cwd=str(work), capture_output=True,
                                    text=True, timeout=60)
-                return {'green': r.returncode == 0, 'detail': r.stdout.strip() or 'exit %d' % r.returncode}
+                CP = DSP.EX.proof_organ()
+                observation = {'schema': CP.OBSERVATION_SCHEMA, 'command': list(CP.GATE_COMMAND),
+                               'commit': git('rev-parse', 'HEAD'), 'exit': r.returncode, 'stdout': r.stdout,
+                               'stdout_digest': CP.digest(r.stdout.encode()),
+                               'gate': {'digest': CP.digest((work / 'scripts/verify.sh').read_bytes())}}
+                return {'green': r.returncode == 0, 'detail': r.stdout.strip(), 'observation': observation}
 
             def assemble_proof(self, spec, build):
                 r = GP.run(['git', '-C', str(work), 'cat-file', 'blob',
@@ -670,8 +692,8 @@ sys.stdout.flush()
                       and again.get('launched') == [] and again.get('tip') == good['tip']
                       and bad_proof.get('ok') is False and bad_proof.get('halted_at') == 'proof'
                       and direct_bad == ('refused', 'missing_evidence:proof/criterion:AC1')
-                      and stale.get('ok') is False and stale.get('halted_at') == 'build_acceptance'
-                      and stale.get('reason') == 'stale_proof:changed_after_proof'
+                      and stale.get('ok') is False and stale.get('halted_at') == 'proof'
+                      and 'stale_subject:commit/changed_after_implementation' in stale.get('reason', '')
                       and red.get('ok') is False and red.get('halted_at') == 'gate'
                       and direct == {'red_gate': ('refused', 'missing_evidence:gate'),
                                      'other_holder': ('refused', 'missing_authority:claim'),
@@ -747,7 +769,7 @@ sys.stdout.flush()
                       and review_dispatch['contract']['input']['context'].get('reviewer') == 'reviewer-b'
                       and (packet.get('packet') or {}).get('payload') == assignment
                       and packet.get('pid') == (review_dispatch.get('process') or {}).get('pid')
-                      and set(assignment) == {'schema', 'assignment', 'unit', 'reviewer', 'attempt', 'source', 'proof'}
+                      and set(assignment) == {'schema', 'assignment', 'unit', 'reviewer', 'attempt', 'source', 'proof', 'context'}
                       and assignment.get('source') == {'commit': built2['tip']}
                       and trunk_tip() == trunk_before and lander.lands == [])
 

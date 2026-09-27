@@ -200,7 +200,7 @@ class LoopSteps:
         spec, the installed catalog, Git and the gate's observation, and its storage as accepted
         immutable evidence, before the unit is offered as built or for review. Return {ok, problems,
         bundle}: ok False halts the run at proof with the named problems. A control-logic seam that
-        keeps no proof service returns None and the run records no bundle; LiveLoop never does."""
+        keeps no proof service returns None, which refuses an enrolled run."""
         return None
 
     # VELDO-0052: who reviews. The review station decides reviewer independence over this identity
@@ -239,8 +239,8 @@ class LiveLoop(LoopSteps):
     hermetic (gate over the canonical verify command, proof validation over the
     contract validator, events over the event emitter, spec resolution over the
     spec files, plan enforcement over the plan ops). The agent and human steps
-    fail LOUD, so an adopting runtime must inject an agent-backed build and
-    review and a human-backed approve: a loop that silently no-ops a build or a
+    use the installed worker configuration for build and review and require
+    a human-backed approve: a loop that silently no-ops a build or a
     review is more dangerous than one that refuses to run.
 
     VELDO-0050: `proofs` is the control_proof.ProofService the proof is accepted into. With one wired,
@@ -254,12 +254,14 @@ class LiveLoop(LoopSteps):
         self.configuration, self.runtime = configuration, runtime
         self.work_root = self.root
         self.built = None
+        self.spec_id = None
         # VELDO-0058: a directory holding the trusted scripts/verify.sh; by default the verifier of
         # the base commit resolve() found, laid down from Git objects outside the workspace.
         self.installation = str(installation) if installation is not None else None
         self.base = None
 
     def resolve(self, spec_id):
+        self.spec_id = spec_id
         V = _load_module("veldo_validate_exec", ".veldo/validate.py")
         specs = self.root / "specs"
         matches = sorted(specs.glob("%s*.md" % spec_id)) if specs.exists() else []
@@ -293,6 +295,17 @@ class LiveLoop(LoopSteps):
              str(spec.get("plan")), str(spec.get("id"))],
             capture_output=True, text=True, cwd=str(self.root))
         return (r.returncode == 0, (r.stdout + r.stderr).strip())
+
+    @property
+    def reviewer_identity(self):
+        if self.runtime is None or self.spec_id is None:
+            return None
+        return self.runtime.reviewer(self.spec_id)["identity"]
+
+    def close(self):
+        if self.runtime is not None:
+            self.runtime.close()
+            self.runtime = None
 
     def worker(self):
         if self.runtime is None:
@@ -400,6 +413,12 @@ class LiveLoop(LoopSteps):
                                               manifest=proof, observation=observation, builder=builder)
             except CP.Refused as error:
                 return {"ok": False, "problems": list(error.codes), "bundle": None}
+            if self.runtime is not None:
+                try:
+                    self.runtime.accept_build(spec, build)
+                except Exception as error:
+                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],
+                            "bundle": accepted["bundle"]}
             return dict(accepted, ok=True, problems=[])
         # The floor is enabled (the executor asks only then) and no proof service is wired: a proof
         # that cannot be stored is not accepted.
@@ -512,6 +531,13 @@ class Executor:
     def __init__(self, hooks, observer=None, eligibility=None, calls=None, station="direct_execution",
                  context=None, ticket=None):
         self.hooks = hooks
+        if isinstance(hooks, LiveLoop) and (hooks.runtime is not None or hooks.configuration is not None
+                or (hooks.root / ".veldo" / "worker.json").is_file()):
+            runtime = hooks.worker()
+            eligibility = eligibility or runtime.gate
+            calls = calls or runtime
+            context = dict(context or {})
+            context.setdefault("holder", runtime.role("build")["identity"])
         self.observer = observer
         # VELDO-0052: the shared eligibility Gate and the runner's StationCalls. With the floor
         # enabled (a Gate, or an enrolled repository, which stops by name without one) every build

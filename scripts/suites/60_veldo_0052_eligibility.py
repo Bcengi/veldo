@@ -255,6 +255,10 @@ def _v52_suite():
             reservations.reserve_worker('slot-' + sid, 'd-' + sid, account, project, sid, now=tick())
 
         class Hooks(EX.LoopSteps):
+            def accept_proof(self, spec, build, gate, proof, context=None):
+                # This fixture owns eligibility/floor control logic. Proof-service behavior is suite 64.
+                return {"ok": True, "bundle": "fixture-proof", "problems": []}
+
             def __init__(self):
                 self.builds, self.root = [], str(base)
 

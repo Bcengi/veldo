@@ -31,6 +31,8 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/suites/60_veldo_0052_eligibility.py"
+  - "scripts/suites/63_veldo_0049_floor.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0129-live-build-review-adapter-wiring.md"
@@ -207,4 +209,18 @@ The runtime constructs the proof service and floor authority. Engine reviews use
 bound to the dispatch, with the exact accepted spec, source diff and proof as their fresh input.
 The footprint adds init_scaffold.py and its copies because AC1 installs the new runtime module,
 and scripts/check_teeth_mutations.py to register AC1 to AC3 falsifiers as finding 129.
-The factory loop remains VELDO-0154. Status unchanged; proof collection is in progress.
+The factory loop remains VELDO-0154. Status unchanged; proof is in proof/VELDO-0129.
+
+2026-09-27, installation and regression coverage: the scaffolder also registers the existing
+dispatch, work, lander and frontier modules required by the installed floor. AC1's suite now
+uses the real scaffolder. The footprint adds suites 60 and 63 to make their control-logic hooks
+return explicit proof acceptance under AC3. Suite 63 now stores real contextually validated proof
+bundles, and stale proof stops at that earlier boundary. Their existing checks remain; the production empty-acceptance refusal
+has its own 0129 row and mutation.
+
+2026-09-27, proof: suite 82 drives 18 named rows through the installed entry points, including
+both engines and both review entry points, both build and review accounting failures, and the
+stored-proof floor. All rows are red by assertion against a4769f68. Finding 129 carries eight
+mutations, including each declared falsifier, with exact edits and named assertion failures.
+Selected regression suites and the validator are recorded in the proof directory. No real
+model call, remote host, repository gate, independent approval or landing is claimed.

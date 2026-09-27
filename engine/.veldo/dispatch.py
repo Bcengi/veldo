@@ -212,7 +212,8 @@ class Dispatcher(WK.Dispatcher):
             calls = calls or self._runtime
         self._reviewer = reviewer or LiveReviewer(root=self.repo_root, runtime=self._runtime)
         self._lander = lander
-        self.worker_id = worker_id or ("dispatcher-" + uuid.uuid4().hex[:12])
+        self.worker_id = worker_id or (self._runtime.role("build")["identity"] if self._runtime else
+                                       "dispatcher-" + uuid.uuid4().hex[:12])
         self.claims_root = claims_root
         self.fail_status = fail_status
         # VELDO-0052: the shared eligibility Gate and the StationCalls that reserve every
@@ -399,8 +400,12 @@ class Dispatcher(WK.Dispatcher):
         observation = {"green": gate_step.get("ok") is True, "detail": gate_step.get("detail")}
         context = self._context(unit)
         try:
-            floor.accept_build(sid, commit=(steps.get("build") or {}).get("commit"), gate=observation,
-                               holder=context["holder"], generation=context["generation"])
+            commit = (steps.get("build") or {}).get("commit")
+            current = floor.record(sid) or {}
+            if not (current.get("state") == "review" and current.get("source", {}).get("commit") == commit
+                    and current.get("builder") == context["holder"] and current.get("proof_bundle")):
+                floor.accept_build(sid, commit=commit, gate=observation,
+                                   holder=context["holder"], generation=context["generation"])
         except FloorRefused as error:
             return self._floor_refused("build", sid, error, "build_acceptance", reviewed=False, result=result)
         projection = floor.publish(sid)
@@ -879,16 +884,22 @@ def _accept_build(conn, params, before, record, unit_data):
     if not isinstance(gate, dict) or gate.get("green") is not True:
         raise FloorRefused("missing_evidence:gate", "the gate did not pass on the built commit")
     build = _build_dispatch(conn, params, holder, generation)
-    bundle = None
-    if build.get("artifact") is not None:
-        P = _floor_organ("control_proof")
-        try:
-            bundle = P.resolve(store, conn, domain=domain, repository=repository, unit=unit, commit=commit)
-        except P.Refused as error:
-            raise FloorRefused(error.code, error.detail, error.codes) from error
-        if bundle.get("builder") != holder:
-            raise FloorRefused("binding_mismatch:proof_builder")
     path, body, implementation = _accepted_proof(repo, commit, unit)
+    P = _floor_organ("control_proof")
+    try:
+        bundle = P.resolve(store, conn, domain=domain, repository=repository, unit=unit, commit=commit)
+    except P.Refused as error:
+        raise FloorRefused(error.code, error.detail, error.codes) from error
+    if bundle.get("builder") != holder:
+        raise FloorRefused("binding_mismatch:proof_builder")
+    if build.get("artifact") is not None:
+        W = _floor_organ("control_launch_work")
+        try:
+            returned = json.loads(W.answer(W.artifact(build, params.get("artifact"))))
+        except (W.Refused, ValueError, TypeError):
+            raise FloorRefused("missing_evidence:build_artifact")
+        if returned.get("commit") != commit or returned.get("proof") != bundle["manifest"]["body"]:
+            raise FloorRefused("binding_mismatch:build_artifact")
     record = record or {"schema": FLOOR_SCHEMA, "unit": unit, "domain": domain, "repository": repository,
                         "attempt": 0, "assignments": {}, "reviews": [], "findings": {}, "dispositions": []}
     record.update(state="review", attempt=record["attempt"] + 1,
@@ -1208,10 +1219,10 @@ class FloorAuthority:
         self.observe(dict(event, outcome="accepted", watermark=result["seq"], state=record["state"]))
         return record
 
-    def accept_build(self, unit, *, commit, gate, holder, generation):
+    def accept_build(self, unit, *, commit, gate, holder, generation, artifact=None):
         """The build handed to review: accepted proof at `commit`, a green `gate`, the current claim."""
         return self._run("accept_build", unit, {"commit": commit, "gate": gate, "holder": holder,
-                                                "generation": generation})
+                                                "generation": generation, "artifact": artifact})
 
     def assign_review(self, unit, reviewer):
         """One review position for `reviewer`; returns the assignment payload the reviewer is launched with."""

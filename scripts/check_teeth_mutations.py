@@ -3362,9 +3362,9 @@ def cases():
           '            return self._accept_build(floor, unit, result)\n',
           'authority-to-projection', also=[(guard, unguarded)])
     floor('floor-projection-before-acceptance',
-          '        try:\n            floor.accept_build(sid, commit=',
+          '        try:\n            commit = (steps.get("build") or {}).get("commit")',
           '        floor.publish(sid)  # defect: published before the authority accepted the build\n'
-          '        try:\n            floor.accept_build(sid, commit=',
+          '        try:\n            commit = (steps.get("build") or {}).get("commit")',
           'authority-to-projection',
           also=[('        projection = floor.publish(sid)\n        return {"ok": True, "kind": "build"',
                  '        projection = {}\n        return {"ok": True, "kind": "build"')])
@@ -3416,8 +3416,8 @@ def cases():
           '    if body.get("proof") != record["proof"]["digest"]:\n',
           '    if False:  # defect: the receipt may review another proof\n', 'review-binding')
     floor('floor-review-output-unbound',
-          '    if (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):\n',
-          '    if False:  # defect: the receipt need not be what the review dispatch printed\n', 'review-binding')
+          '    elif (dispatch.get("termination") or {}).get("output_digest") != _digest(printed):\n',
+          '    elif False:  # defect: the receipt need not be what the review dispatch printed\n', 'review-binding')
     floor('floor-review-context-unbound', '    if given.get("payload") != payload:\n',
           '    if False:  # defect: the reviewer may be launched with more than its assignment\n', 'review-binding')
     floor('floor-review-dispatch-source-unbound',
@@ -3510,13 +3510,7 @@ def cases():
     def proof(name, old, new, row, also=(), module='control_proof.py'):
         add(50, name, '64_veldo_0050_proof.py', module, old, new, ['proof/' + row], also)
 
-    accept_block = ('        if self.proofs is not None:\n'
-                    '            try:\n'
-                    '                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n'
-                    '                                              manifest=proof, observation=observation, builder=builder)\n'
-                    '            except CP.Refused as error:\n'
-                    '                return {"ok": False, "problems": list(error.codes), "bundle": None}\n'
-                    '            return dict(accepted, ok=True, problems=[])\n')
+    accept_block = '        if self.proofs is not None:\n            try:\n                accepted = self.proofs.accept(sid, commit=commit, base=spec.get("base"), spec_path=spec.get("spec_path"),\n                                              manifest=proof, observation=observation, builder=builder)\n            except CP.Refused as error:\n                return {"ok": False, "problems": list(error.codes), "bundle": None}\n            if self.runtime is not None:\n                try:\n                    self.runtime.accept_build(spec, build)\n                except Exception as error:\n                    return {"ok": False, "problems": [getattr(error, "code", "unknown_outcome:build_acceptance")],\n                            "bundle": accepted["bundle"]}\n            return dict(accepted, ok=True, problems=[])\n'
     # AC1, declared: the manifest is kept only in temporary validation storage, so no fresh reviewer resolves it.
     proof('proof-kept-in-temporary-storage', accept_block,
           '        if self.proofs is not None:\n'
@@ -7440,6 +7434,34 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    add(129, 'worker129-build-unwired', '82_veldo_0129_worker_wiring.py', 'executor.py',
+        '        result = self.worker().build(spec, calls)',
+        '        raise ExecutorError("build requires an injected callable")',
+        ['build/claude', 'build/codex'])
+    add(129, 'worker129-builder-context-reused', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "payload=payload, adapter=role['adapter']",
+        "payload=dict(payload, builder_conversation=['builder narrative']) if station == 'review' else payload, adapter=role['adapter']",
+        ['review/loop-claude', 'review/loop-codex', 'review/reviewer-claude', 'review/reviewer-codex'])
+    add(129, 'worker129-exit-manufactures-review', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "            body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)",
+        "            try:\n                body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)\n"
+        "            except Refused:\n                return {'verdict': 'pass', 'findings': []}",
+        ['outcome/missing-review'])
+    add(129, 'worker129-review-subject-unchecked', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
+        "                raise Refused('missing_evidence:review_verdict')",
+        "                return dict(body, verdict='pass')",
+        ['outcome/malformed-review'])
+    add(129, 'worker129-empty-proof-accepted', '82_veldo_0129_worker_wiring.py', 'executor.py',
+        '            if gate is not None and not accepted:', '            if False and not accepted:',
+        ['proof/empty-acceptance'])
+    add(129, 'worker129-clone-group-unrecorded', '82_veldo_0129_worker_wiring.py', 'control_launch.py',
+        '                            provisioner.record_group(dispatch_id, group.report())',
+        '                            pass', ['build/claude', 'build/codex'])
+    add(129, 'worker129-runtime-not-installed', '82_veldo_0129_worker_wiring.py', 'init_scaffold.py',
+        '    ".veldo/control_launch_work.py",', '', ['installation/assets'])
+    add(129, 'worker129-proof-store-optional', '82_veldo_0129_worker_wiring.py', 'dispatch.py',
+        '        raise FloorRefused(error.code, error.detail, error.codes) from error',
+        '        return {"state": "review"}, unit_data', ['proof/authority'])
     return result
 
 
