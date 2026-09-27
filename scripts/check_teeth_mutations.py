@@ -7231,8 +7231,8 @@ def cases():
     # The lead's decision: a call that starts an agent outside the run (any RemoteTrigger call, a durable CronCreate)
     # asks first, whatever the configuration; both tools are rule 2's constructs too.
     pool('remote-agent-skipped', 'control_account_limit.py',
-         "    if started:\n",
-         "    if False:  # defect: an agent started outside the run is not asked about\n",
+         "    started = outside(record, provider)\n",
+         "    started = []  # defect: an agent started outside the run is not asked about\n",
          ['decision/remote-agent-asks'])
     pool('remote-agent-text-lines-unread', 'control_account_limit.py',
          "        shown = _event(line['payload']) if line['stream'] == 'engine' else None\n",
@@ -7273,6 +7273,67 @@ def cases():
          "                'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),\n",
          "                'remote': ('RemoteTrigger',),  # defect: a CronCreate is not nested work\n",
          ['decision/nested-constructs', 'decision/remote-agent-asks', 'format/tool-forms'])
+    # The lead's allowlist (rule A, fail closed): a call of a built-in tool the allowlist does not show staying inside
+    # the run asks first, whatever the configuration; declared: rule A skipped, SendMessage allowlisted, an unknown tool
+    # allowed, Agent's remote isolation unchecked.
+    pool('outward-rule-skipped', 'control_account_limit.py',
+         "    leaving = [found for found in outward(record, provider) if (found['sequence'], found['form']) not in named_started]\n",
+         "    leaving = []  # defect: a call the allowlist does not show staying in the run is not asked about\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-sendmessage-allowlisted', 'control_engine_claude.py',
+         "                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write'))\n",
+         "                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write',"
+         " 'SendMessage'))  # defect: SendMessage is taken to stay in the run\n",
+         ['decision/outward-tool-asks', 'format/tool-forms'])
+    pool('outward-unknown-tool-allowed', 'control_engine_claude.py',
+         "        if name not in IN_RUN:\n            found.append('tool:' + name)\n            continue\n",
+         "        if name not in IN_RUN and name in BUILTIN:  # defect: a tool the binary's list does not name is allowed\n"
+         "            found.append('tool:' + name)\n            continue\n        if name not in IN_RUN:\n            continue\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-agent-remote-unchecked', 'control_engine_claude.py',
+         "        if isolation is not None and isolation not in local:\n",
+         "        if False:  # defect: the Agent tool's remote isolation is not read\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-agent-input-assumed', 'control_engine_claude.py',
+         "        if not values and name in IN_RUN_AGENT['tools']:\n",
+         "        if False:  # defect: an Agent call whose input is not shown is taken to be local\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-agent-definition-trusted', 'control_engine_claude.py',
+         "        if kind is not None and kind not in IN_RUN_AGENT['builtin_types']:\n",
+         "        if False:  # defect: an agent definition that is not built in is taken to be local\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-task-type-ignored', 'control_engine_claude.py',
+         "        if task_type not in IN_RUN_TASKS['in_run']:\n",
+         "        if False:  # defect: a remote agent's task is not read\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-host-ignored', 'control_engine_claude.py',
+         "    if name in IN_RUN_HOST['tools'] and isinstance(host, str) and host.strip() not in IN_RUN_HOST['local']:\n",
+         "    if False:  # defect: a call naming another machine is taken to run here\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-server-block-ignored', 'control_engine_claude.py',
+         "        if name.startswith('block:'):\n            found.append(name)\n            continue\n",
+         "        if name.startswith('block:'):\n            continue  # defect: an API server tool block is taken to stay in the run\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-workflow-remote-ignored', 'control_engine_claude.py',
+         "        if isinstance(entry, dict) and entry.get(IN_RUN_AGENT['field']) == IN_RUN_AGENT['outside']:\n",
+         "        if False:  # defect: a workflow agent launched remote is not read\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-task-input-unresolved', 'control_engine_claude.py',
+         "            if isinstance(parent, str) and isinstance(block.get('name'), str):\n",
+         "            if False:  # defect: a sub-agent's shown call does not give its task's last tool its input\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-workflow-label-read', 'control_engine_claude.py',
+         "        if workflow and isinstance(ident, tuple) and ident[0] == 'task':\n",
+         "        if False:  # defect: a workflow task's agent label is read as a tool\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-codex-unknown-item-allowed', 'control_engine_codex.py',
+         "    if kind not in IN_RUN_ITEMS:\n        return ['item:' + kind]\n",
+         "    if kind not in IN_RUN_ITEMS:\n        return []  # defect: an item exec's tables do not list is taken to stay in the run\n",
+         ['decision/outward-tool-asks'])
+    pool('outward-codex-collab-tool-unchecked', 'control_engine_codex.py',
+         "    if kind == IN_RUN_COLLAB['item'] and tool not in IN_RUN_COLLAB['tools']:\n",
+         "    if False:  # defect: a collab tool exec's enum does not list is taken to stay in the run\n",
+         ['decision/outward-tool-asks'])
     pool('decision-rule1-skipped', 'control_account_limit.py',
          "    if not write_capable(servers, marks):\n",
          "    if False:  # defect: a run with no write-capable server is decided by its stream\n",
