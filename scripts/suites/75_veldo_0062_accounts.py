@@ -1393,7 +1393,7 @@ sys.exit(payload.get('code', 0))
                            CODEX_HOME=profiles['acct-x2'])
             journey = {}
             for account, adapter, script in (
-                    ('acct-c1', 'claude', [c_init(), c_rate('allowed', time.time() + 3600, 'seven_day', 0.25),
+                    ('acct-c1', 'claude', [c_init(), {'line': json.loads('{"type": "rate_limit_event", "rate_limit_info": {"status": "allowed_warning", "resetsAt": 1790960400, "rateLimitType": "seven_day", "utilization": 0.7, "isUsingOverage": false, "unifiedWindows": {"five_hour": {"utilization": 0.3, "resetsAt": 1790487000}, "seven_day": {"utilization": 0.7, "resetsAt": 1790960400}}}, "uuid": "531e8e6b-8253-4b0a-92dc-255c5111efee", "session_id": "918dd621-97a8-44cf-ab38-4d3e1b9e588e"}')},
                                            c_msg('j1', 11, 7), c_result(11, 7, 1)]),
                     ('acct-c2', 'claude', [c_init(), c_rate('allowed_warning', time.time() + 3600, 'seven_day', 0.5),
                                            c_msg('j2', 13, 5), c_result(13, 5, 1)]),

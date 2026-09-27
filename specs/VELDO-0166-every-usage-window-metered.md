@@ -14,6 +14,9 @@ depends_on: [VELDO-0060, VELDO-0062, VELDO-0160]
 placement: [fleet, engine, metrics, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_accounts.py"
+  - ".veldo/control_accounts.py"
+  - "scripts/drive.py"
   - "engine/.veldo/control_engine_claude*.py"
   - ".veldo/control_engine_claude*.py"
   - "engine/.veldo/control_launch*.py"
@@ -134,3 +137,9 @@ They share the live run that found them and the account they touch, and each kee
 falsifier. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27: implementation on build-veldo-0166 records every unified window, with no status
+invented for a companion window, and preserves existing profile directories. AC1 needs the
+footprint addition of control_accounts.py and its engine copy: the writer must accept an absent
+window status. The footprint also adds scripts/drive.py for the requested reproducible red and
+mutation records; that driver did not previously exist. Status unchanged.

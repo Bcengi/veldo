@@ -152,7 +152,7 @@ def account_add(name, config_dir=None, root=None, provider="claude_code", **meta
 
     Creates the profile directory (default veldo/accounts/profiles/<name> beside the registry,
     mode 0700 because a login will persist .credentials.json there) and records name to that
-    directory. It does NOT log in: the one-time `CLAUDE_CONFIG_DIR=<dir> claude` then /login into
+    directory, leaving an existing directory unchanged. It does NOT log in: the one-time `CLAUDE_CONFIG_DIR=<dir> claude` then /login into
     the directory is a documented human step, run once per account, and the saved credentials
     then persist there for every future worker. Returns the stored record. Raises
     DuplicateAccountError if the name is already registered, so an existing login is never
@@ -167,12 +167,12 @@ def account_add(name, config_dir=None, root=None, provider="claude_code", **meta
                 "account %r already registered (resolve it, or add under a different name)" % (name,))
         cdir = os.path.abspath(config_dir) if config_dir else os.path.join(
             accounts_root(root), "profiles", _safe(name))
-        os.makedirs(cdir, exist_ok=True)
-        try:
-            os.chmod(cdir, 0o700)  # credentials will live here; keep the profile private
-        except OSError:
-            pass
-        rec = {"name": name, "config_dir": cdir, "provider": provider, "added_at": _now()}
+        existing = os.path.isdir(cdir)
+        os.makedirs(cdir, mode=0o700, exist_ok=True)
+        if not existing:
+            os.chmod(cdir, 0o700)  # Only the profile we created belongs to this helper.
+        rec = {"name": name, "config_dir": cdir, "provider": provider, "added_at": _now(),
+               "directory_state": "existing" if existing else "created"}
         rec.update({k: v for k, v in meta.items() if v is not None})
         data["accounts"][name] = rec
         _save(data, root)

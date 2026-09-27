@@ -1,0 +1,71 @@
+{
+ "by_assertion": true,
+ "commit": "582cc9615f08e13a83086e6bc4cf50f230fbe846",
+ "details": [
+  "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+  "VELDO-0166 detail: windows/five-hour: each raw receipt retained and attributed to its invocation and account",
+  "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
+  "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+  "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+  "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
+  "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained",
+  "VELDO-0166 detail: profiles/existing: claude_code existing mode, contents and registration preserved",
+  "VELDO-0166 detail: profiles/existing: codex existing mode, contents and registration preserved",
+  "VELDO-0166 detail: profiles/created: claude_code new directory created exactly 0700 and recorded as created",
+  "VELDO-0166 detail: profiles/created: codex new directory created exactly 0700 and recorded as created"
+ ],
+ "failed_rows": [
+  "VELDO-0166 windows/five-hour",
+  "VELDO-0166 windows/qualified-set",
+  "VELDO-0166 windows/status-only-named",
+  "VELDO-0166 windows/missing-reset-receipts",
+  "VELDO-0166 profiles/existing",
+  "VELDO-0166 profiles/created"
+ ],
+ "modules": {
+  ".veldo/accounts.py": {
+   "at_commit": "766155d634d8cae2fa6d55f45790bc195b091572656a7e0d3ee486846c97243e",
+   "now": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c"
+  },
+  ".veldo/control_accounts.py": {
+   "at_commit": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1",
+   "now": "37a637238d73a150bd7ad55532aee954c6130460fcffb6e93de7b8f84c5e8b6f"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "6cd199382a3b3a0faa3038f99c70af73649da97db19e06fe41d3440e93266a84",
+   "now": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0166 windows/five-hour",
+   false
+  ],
+  [
+   "VELDO-0166 windows/qualified-set",
+   false
+  ],
+  [
+   "VELDO-0166 windows/status-only-named",
+   false
+  ],
+  [
+   "VELDO-0166 windows/missing-reset-receipts",
+   false
+  ],
+  [
+   "VELDO-0166 profiles/existing",
+   false
+  ],
+  [
+   "VELDO-0166 profiles/created",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.252,
+ "spec_id": "VELDO-0166",
+ "suite": "scripts/suites/83_veldo_0166_usage_windows.py",
+ "tree": "git archive 582cc9615f08e13a83086e6bc4cf50f230fbe846, unchanged; the current suite file run against it"
+}

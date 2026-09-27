@@ -1076,10 +1076,22 @@ class Meter:
             elif (self.limited or {}).get('signal') == 'stream' and self.limited['window'] == str(
                     info.get('rateLimitType') or LIMIT_WINDOW):
                 self.limited = None  # The same window reported open again: the run is no longer at its limit.
-            return [dict(seen, kind='window', window_id=str(info.get('rateLimitType') or 'unified'),
-                         status='rejected' if status == 'rejected' else 'allowed',
-                         reset_at=reset if _number(reset) else None,
-                         utilization=utilization if _number(utilization) and utilization >= 0 else None)]
+            named = str(info.get('rateLimitType') or 'unified')
+            windows = info.get('unifiedWindows')
+            windows = dict(windows) if isinstance(windows, dict) else {}
+            # One observation per window. The named window also exists on older events
+            # without unifiedWindows; its event status belongs to that window alone.
+            windows.setdefault(named, info)
+            found = []
+            for window, values in windows.items():
+                if not isinstance(values, dict):
+                    continue  # Unreadable entry, unlike a readable window with no reset.
+                reset, utilization = values.get('resetsAt'), values.get('utilization')
+                found.append(dict(seen, kind='window', window_id=window,
+                                  status=('rejected' if status == 'rejected' else 'allowed') if window == named else None,
+                                  reset_at=reset if _number(reset) else None,
+                                  utilization=utilization if _number(utilization) and utilization >= 0 else None))
+            return found
         return []
 
 

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1084 +1084 @@
+-            windows.setdefault(named, info)
++            windows[named + '_duplicate'] = info; windows.setdefault(named, info)

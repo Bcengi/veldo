@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1086 +1086 @@
+-            for window, values in windows.items():
++            for window, values in {named: info}.items():

@@ -8098,6 +8098,37 @@ def cases():
     add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
         "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
         "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
+    # VELDO-0166: each declared falsifier and the reported values carried beside it.
+    def windows166(name, module, old, new, rows):
+        add(166, 'windows166-' + name, '83_veldo_0166_usage_windows.py', module, old, new, rows)
+
+    windows166('named-only', 'control_engine_claude.py',
+               "for window, values in windows.items():", "for window, values in {named: info}.items():",
+               ['windows/five-hour', 'windows/qualified-set'])
+    windows166('status-spills', 'control_engine_claude.py',
+               "if window == named else None,", "if True else None,", ['windows/status-only-named'])
+    windows166('allowed-invented', 'control_engine_claude.py',
+               "if window == named else None,", "if window == named else 'allowed',",
+               ['windows/status-only-named'])
+    windows166('reset-borrowed', 'control_engine_claude.py',
+               "reset, utilization = values.get('resetsAt'), values.get('utilization')",
+               "reset, utilization = info.get('resetsAt'), values.get('utilization')",
+               ['windows/missing-reset-receipts', 'windows/qualified-set'])
+    windows166('utilization-borrowed', 'control_engine_claude.py',
+               "reset, utilization = values.get('resetsAt'), values.get('utilization')",
+               "reset, utilization = values.get('resetsAt'), info.get('utilization')",
+               ['windows/five-hour', 'windows/qualified-set'])
+    windows166('named-duplicated', 'control_engine_claude.py',
+               "windows.setdefault(named, info)", "windows[named + '_duplicate'] = info; windows.setdefault(named, info)",
+               ['windows/qualified-set'])
+    windows166('absent-status-refused', 'control_accounts.py',
+               "WINDOW_STATUSES = ('allowed', 'rejected', None)", "WINDOW_STATUSES = ('allowed', 'rejected')",
+               ['windows/five-hour', 'windows/status-only-named'])
+    windows166('existing-chmod', 'accounts.py',
+               "if not existing:\n            os.chmod(cdir, 0o700)", "if True:\n            os.chmod(cdir, 0o700)",
+               ['profiles/existing'])
+    windows166('new-profile-public', 'accounts.py',
+               "os.chmod(cdir, 0o700)", "os.chmod(cdir, 0o755)", ['profiles/created'])
     return result
 
 

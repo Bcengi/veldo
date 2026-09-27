@@ -1,0 +1,631 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0166 windows/five-hour",
+    true
+   ],
+   [
+    "VELDO-0166 windows/qualified-set",
+    true
+   ],
+   [
+    "VELDO-0166 windows/status-only-named",
+    true
+   ],
+   [
+    "VELDO-0166 windows/missing-reset-receipts",
+    true
+   ],
+   [
+    "VELDO-0166 profiles/existing",
+    true
+   ],
+   [
+    "VELDO-0166 profiles/created",
+    true
+   ]
+  ],
+  "seconds": 0.277
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/five-hour: each raw receipt retained and attributed to its invocation and account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
+    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained"
+   ],
+   "diff": "proof/VELDO-0166/windows166-named-only.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set",
+    "VELDO-0166 windows/status-only-named",
+    "VELDO-0166 windows/missing-reset-receipts"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "5962afd7d32f56324f894a78478cf263461e6f2f11d83a00c6f5d5a487805fc3",
+   "name": "windows166-named-only",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/five-hour",
+    "windows/qualified-set"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.21,
+   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day"
+   ],
+   "diff": "proof/VELDO-0166/windows166-status-spills.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/status-only-named"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "ba71cc323eb281cf345601d42b1893a03b58d11a5820065e0cb1a2a30df95733",
+   "name": "windows166-status-spills",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/status-only-named"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.28,
+   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day"
+   ],
+   "diff": "proof/VELDO-0166/windows166-allowed-invented.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/status-only-named"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "507ca684a5b2b350b7ab09e942c60402b814f9e0016bafebc980acaf8da4c0df",
+   "name": "windows166-allowed-invented",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/status-only-named"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.283,
+   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
+    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained"
+   ],
+   "diff": "proof/VELDO-0166/windows166-reset-borrowed.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set",
+    "VELDO-0166 windows/missing-reset-receipts"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "a6373e45298e6e5b9d8aaa108b38667349626a38fa7ce4b2b6c66ca4ae22b827",
+   "name": "windows166-reset-borrowed",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/missing-reset-receipts",
+    "windows/qualified-set"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.28,
+   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values"
+   ],
+   "diff": "proof/VELDO-0166/windows166-utilization-borrowed.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "e31dab9ac509b20fcf5930c31751971dd231315a4b976f9ac738ff0e6765829d",
+   "name": "windows166-utilization-borrowed",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/five-hour",
+    "windows/qualified-set"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.286,
+   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/five-hour: each raw receipt retained and attributed to its invocation and account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
+    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained"
+   ],
+   "diff": "proof/VELDO-0166/windows166-named-duplicated.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set",
+    "VELDO-0166 windows/status-only-named",
+    "VELDO-0166 windows/missing-reset-receipts"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "2a47ce6b7bb7460d8dfdfd9e0c39e3d0eb6f0396f3fc2593a25289f15e81ed52",
+   "name": "windows166-named-duplicated",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/qualified-set"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.3,
+   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
+    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained"
+   ],
+   "diff": "proof/VELDO-0166/windows166-absent-status-refused.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set",
+    "VELDO-0166 windows/status-only-named",
+    "VELDO-0166 windows/missing-reset-receipts"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "a11b4e229fca7f337792fd6b1656dce656d5ef38bfd140373294c6c31186f482",
+   "name": "windows166-absent-status-refused",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/five-hour",
+    "windows/status-only-named"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.215,
+   "source_sha256": "37a637238d73a150bd7ad55532aee954c6130460fcffb6e93de7b8f84c5e8b6f"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: profiles/existing: claude_code existing mode, contents and registration preserved",
+    "VELDO-0166 detail: profiles/existing: codex existing mode, contents and registration preserved"
+   ],
+   "diff": "proof/VELDO-0166/windows166-existing-chmod.diff",
+   "failed_rows": [
+    "VELDO-0166 profiles/existing"
+   ],
+   "module": ".veldo/accounts.py",
+   "mutant_sha256": "628addfdc69d01960c1e2879ee761cd8881b646c84622b3ad724a02adbd63bd2",
+   "name": "windows166-existing-chmod",
+   "named_row_red": true,
+   "named_rows": [
+    "profiles/existing"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.278,
+   "source_sha256": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: profiles/created: claude_code new directory created exactly 0700 and recorded as created",
+    "VELDO-0166 detail: profiles/created: codex new directory created exactly 0700 and recorded as created"
+   ],
+   "diff": "proof/VELDO-0166/windows166-new-profile-public.diff",
+   "failed_rows": [
+    "VELDO-0166 profiles/created"
+   ],
+   "module": ".veldo/accounts.py",
+   "mutant_sha256": "c388e38e4e6baad6864a8469eeee3394ec5fff5643df3ca3b27d16e5e886d6de",
+   "name": "windows166-new-profile-public",
+   "named_row_red": true,
+   "named_rows": [
+    "profiles/created"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     false
+    ]
+   ],
+   "seconds": 0.268,
+   "source_sha256": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c"
+  }
+ ],
+ "mutations_per_row": {
+  "profiles/created": [
+   "windows166-new-profile-public"
+  ],
+  "profiles/existing": [
+   "windows166-existing-chmod"
+  ],
+  "windows/five-hour": [
+   "windows166-named-only",
+   "windows166-utilization-borrowed",
+   "windows166-absent-status-refused"
+  ],
+  "windows/missing-reset-receipts": [
+   "windows166-reset-borrowed"
+  ],
+  "windows/qualified-set": [
+   "windows166-named-only",
+   "windows166-reset-borrowed",
+   "windows166-utilization-borrowed",
+   "windows166-named-duplicated"
+  ],
+  "windows/status-only-named": [
+   "windows166-status-spills",
+   "windows166-allowed-invented",
+   "windows166-absent-status-refused"
+  ]
+ },
+ "noop": {
+  "accounts.py": {
+   "copy_sha256": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.284,
+   "source_sha256": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c"
+  },
+  "control_accounts.py": {
+   "copy_sha256": "37a637238d73a150bd7ad55532aee954c6130460fcffb6e93de7b8f84c5e8b6f",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.288,
+   "source_sha256": "37a637238d73a150bd7ad55532aee954c6130460fcffb6e93de7b8f84c5e8b6f"
+  },
+  "control_engine_claude.py": {
+   "copy_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.286,
+   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 166",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 3.535,
+ "spec_id": "VELDO-0166",
+ "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
+}

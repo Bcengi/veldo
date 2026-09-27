@@ -1049,6 +1049,15 @@
    ],
    "regions": "Installed build and independent review through qualified engine adapters, Runner, reservations and proof authority.",
    "requires_note": "Only shared ROOT and expect. Real contained processes, isolated Git clones, signed SQLite authority records. Fake engines use recorded binary formats. No live credentials or model calls."
+  },
+  {
+   "name": "83_veldo_0166_usage_windows",
+   "file": "83_veldo_0166_usage_windows.py",
+   "requires": [
+    "83_veldo_0166_usage_windows"
+   ],
+   "regions": "All qualified Claude Code windows through Metering and the account writer; existing and new profile directories.",
+   "requires_note": "Only shared ROOT and expect. Real signed SQLite store, Metering receipts and account_add over generated profiles. No engine or login runs."
   }
  ]
 }

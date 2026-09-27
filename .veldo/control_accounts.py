@@ -80,7 +80,8 @@ PROFILES = dict(_helper().PROFILE_ENV)
 STRIP_PREFIXES = ('ANTHROPIC_', 'OPENAI_', 'CODEX_', 'CLAUDE_CODE_USE_')
 REFUSED_PREFIXES = ('CLAUDE_CODE_USE_',)
 STATUSES = ('active', 'paused', 'disabled')
-WINDOW_STATUSES = ('allowed', 'rejected')
+# None means this window was reported without a status (VELDO-0166).
+WINDOW_STATUSES = ('allowed', 'rejected', None)
 # Who may register or change an account (the owner) and who records what a CLI reported (the
 # trusted launch receiver's service membership).
 OWNER_ROLES = ('project_owner', 'operations_authority')
