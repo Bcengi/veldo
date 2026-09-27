@@ -1,0 +1,408 @@
+{
+ "claude_code": {
+  "binary": "/home/dmitry/.local/share/claude/versions/2.1.281",
+  "events": {
+   "stream_event": {
+    "fields": {
+     "event": {
+      "ref": "tK",
+      "type": "any"
+     },
+     "parent_tool_use_id": {
+      "nullable": true,
+      "type": "string"
+     },
+     "resume_reason": {
+      "optional": true,
+      "type": "string"
+     },
+     "session_id": {
+      "type": "string"
+     },
+     "ttft_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "type": {
+      "type": "literal",
+      "value": "stream_event"
+     },
+     "user_message_uuid": {
+      "optional": true,
+      "type": "string"
+     },
+     "user_message_uuids": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "uuid": {
+      "type": "string"
+     }
+    },
+    "type": "object"
+   },
+   "user": {
+    "fields": {
+     "client_composed": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "client_platform": {
+      "optional": true,
+      "type": "string"
+     },
+     "historical": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "image_paste_ids": {
+      "items": {
+       "int": true,
+       "type": "number"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "inbound_origin": {
+      "optional": true,
+      "type": "string"
+     },
+     "initiator": {
+      "optional": true,
+      "type": "string"
+     },
+     "interrupted_message_id": {
+      "optional": true,
+      "type": "string"
+     },
+     "isSynthetic": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "is_compact_summary": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "is_meta": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "is_virtual": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "is_visible_in_transcript_only": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "mcp_meta": {
+      "fields": {
+       "_meta": {
+        "optional": true,
+        "type": "record",
+        "values": {
+         "type": "any"
+        }
+       },
+       "resource_links": {
+        "items": {
+         "fields": {
+          "annotations": {
+           "optional": true,
+           "type": "record",
+           "values": {
+            "type": "any"
+           }
+          },
+          "description": {
+           "optional": true,
+           "type": "string"
+          },
+          "mimeType": {
+           "optional": true,
+           "type": "string"
+          },
+          "name": {
+           "type": "string"
+          },
+          "size": {
+           "optional": true,
+           "type": "number"
+          },
+          "title": {
+           "optional": true,
+           "type": "string"
+          },
+          "uri": {
+           "type": "string"
+          }
+         },
+         "ref": "$R",
+         "type": "object"
+        },
+        "optional": true,
+        "type": "array"
+       },
+       "structured_content": {
+        "optional": true,
+        "type": "record",
+        "values": {
+         "type": "any"
+        }
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "message": {
+      "fields": {
+       "content": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "items": {
+           "ref": "fq",
+           "type": "any"
+          },
+          "ref": "bq",
+          "type": "array"
+         }
+        ],
+        "ref": "xo",
+        "type": "union"
+       },
+       "role": {
+        "type": "literal",
+        "value": "user"
+       }
+      },
+      "ref": "J0",
+      "type": "object"
+     },
+     "origin": {
+      "optional": true,
+      "ref": "Xo",
+      "type": "any"
+     },
+     "parent_tool_use_id": {
+      "nullable": true,
+      "type": "string"
+     },
+     "permission_mode": {
+      "optional": true,
+      "ref": "ne",
+      "type": "any"
+     },
+     "plan_content": {
+      "optional": true,
+      "type": "string"
+     },
+     "priority": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "now",
+       "next",
+       "later"
+      ]
+     },
+     "seeded_summon": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "shouldQuery": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "source_tool_assistant_uuid": {
+      "optional": true,
+      "type": "string"
+     },
+     "source_tool_use_id": {
+      "optional": true,
+      "type": "string"
+     },
+     "summarize_metadata": {
+      "fields": {
+       "direction": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "from",
+         "up_to"
+        ]
+       },
+       "messages_summarized": {
+        "int": true,
+        "type": "number"
+       },
+       "user_context": {
+        "optional": true,
+        "type": "string"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "timestamp": {
+      "optional": true,
+      "type": "string"
+     },
+     "tool_result_meta": {
+      "items": {
+       "fields": {
+        "id": {
+         "type": "string"
+        },
+        "non_execution_kind": {
+         "optional": true,
+         "ref": "MR",
+         "type": "enum",
+         "values": [
+          "user-rejected",
+          "permission-rule",
+          "automode-blocked",
+          "automode-unavailable",
+          "automode-parsing-error",
+          "interrupted",
+          "cancelled"
+         ]
+        },
+        "remedy": {
+         "fields": {
+          "cause": {
+           "optional": true,
+           "ref": "avo",
+           "type": "enum",
+           "values": [
+            "managed_settings",
+            "org_policy",
+            "unavailable",
+            "user_setting"
+           ]
+          },
+          "feature": {
+           "optional": true,
+           "ref": "ivo",
+           "type": "enum",
+           "values": [
+            "workflows",
+            "artifacts"
+           ]
+          },
+          "kind": {
+           "ref": "ovo",
+           "type": "enum",
+           "values": [
+            "mcp_needs_auth",
+            "mcp_disabled",
+            "mcp_required_missing",
+            "auth_expired",
+            "auth_overridden",
+            "auth_missing_scope",
+            "design_needs_authorization",
+            "sandbox_violation",
+            "outside_reads_blocked",
+            "memory_paused",
+            "feature_disabled",
+            "policy_denied",
+            "spawn_arg_limit",
+            "staged_for_review"
+           ]
+          },
+          "managed": {
+           "optional": true,
+           "type": "boolean"
+          },
+          "path": {
+           "optional": true,
+           "type": "string"
+          },
+          "policy_kind": {
+           "optional": true,
+           "ref": "lvo",
+           "type": "enum",
+           "values": [
+            "org_denied",
+            "latched"
+           ]
+          },
+          "provider": {
+           "optional": true,
+           "ref": "svo",
+           "type": "enum",
+           "values": [
+            "claude_ai",
+            "claude_design"
+           ]
+          },
+          "servers": {
+           "items": {
+            "type": "string"
+           },
+           "optional": true,
+           "type": "array"
+          }
+         },
+         "optional": true,
+         "ref": "rK",
+         "type": "object"
+        },
+        "user_feedback": {
+         "optional": true,
+         "type": "string"
+        }
+       },
+       "type": "object"
+      },
+      "optional": true,
+      "type": "array"
+     },
+     "tool_use_result": {
+      "optional": true,
+      "type": "any"
+     },
+     "type": {
+      "type": "literal",
+      "value": "user"
+     }
+    },
+    "type": "object"
+   }
+  },
+  "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+  "stderr": {
+   "extra_certs": {
+    "anchor": "process.stderr.write(`Warning: Ignoring extra certs from \\`${extraPath}\\`, load failed: ${err?.code === \"ENOENT\" ? \"No such file or directory\" : err?.message}\n`);",
+    "environment": "NODE_EXTRA_CA_CERTS",
+    "text": "Warning: Ignoring extra certs from `{path}`, load failed: No such file or directory"
+   }
+  },
+  "version": "2.1.281"
+ },
+ "codex": {
+  "binary": "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+  "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+  "stderr": {
+   "prompt_from_stdin": {
+    "text": "Reading prompt from stdin..."
+   }
+  },
+  "version": "0.154.0"
+ },
+ "generated_by": "proof/VELDO-0141/extract_stream.py (reads the binaries' bytes only)",
+ "schema": "veldo.stream-formats/v1",
+ "spec_id": "VELDO-0141"
+}
