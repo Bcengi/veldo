@@ -118,7 +118,7 @@
     true
    ]
   ],
-  "seconds": 12.429
+  "seconds": 14.543
  },
  "controls_green": true,
  "mutants": [
@@ -252,7 +252,7 @@
      true
     ]
    ],
-   "seconds": 12.547,
+   "seconds": 14.343,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -385,7 +385,7 @@
      true
     ]
    ],
-   "seconds": 12.343,
+   "seconds": 13.823,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -520,7 +520,7 @@
      true
     ]
    ],
-   "seconds": 12.389,
+   "seconds": 16.405,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -666,7 +666,7 @@
      true
     ]
    ],
-   "seconds": 12.676,
+   "seconds": 15.513,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -810,7 +810,7 @@
      true
     ]
    ],
-   "seconds": 12.463,
+   "seconds": 15.853,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -954,7 +954,7 @@
      true
     ]
    ],
-   "seconds": 12.584,
+   "seconds": 15.725,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -1092,7 +1092,7 @@
      true
     ]
    ],
-   "seconds": 12.393,
+   "seconds": 15.18,
    "source_sha256": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   {
@@ -1228,7 +1228,7 @@
      true
     ]
    ],
-   "seconds": 11.991,
+   "seconds": 15.105,
    "source_sha256": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   {
@@ -1367,7 +1367,7 @@
      false
     ]
    ],
-   "seconds": 12.391,
+   "seconds": 14.989,
    "source_sha256": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   {
@@ -1500,7 +1500,7 @@
      true
     ]
    ],
-   "seconds": 12.388,
+   "seconds": 15.241,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -1633,7 +1633,7 @@
      true
     ]
    ],
-   "seconds": 12.407,
+   "seconds": 15.756,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -1655,7 +1655,7 @@
     "VELDO-0169 guard/resume-again"
    ],
    "module": ".veldo/control_store.py",
-   "mutant_sha256": "443b4b9932cd95a8927fa38a52505dd461a1ecb846cb5169c2f0c259a6e8bb1a",
+   "mutant_sha256": "6550aa321e74736d6296a48ff3a587ec51e23a623f5ab7f27d0d46644ff75b48",
    "name": "handout-store-invariant-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -1774,8 +1774,8 @@
      true
     ]
    ],
-   "seconds": 11.115,
-   "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
+   "seconds": 15.526,
+   "source_sha256": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6"
   },
   {
    "by_assertion": true,
@@ -1792,7 +1792,7 @@
     "VELDO-0169 store/invariant"
    ],
    "module": ".veldo/control_store.py",
-   "mutant_sha256": "1c13d13b53f282a16bc635f124d642dd4e3cdb0db990577bf0ef4d99030052bc",
+   "mutant_sha256": "1d1c9f84480b115d136c41799d0979ad216000dd7da9906537c9b873848041d4",
    "name": "handout-store-invariant-ignores-resumes",
    "named_row_red": true,
    "named_rows": [
@@ -1910,8 +1910,8 @@
      true
     ]
    ],
-   "seconds": 11.992,
-   "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
+   "seconds": 15.384,
+   "source_sha256": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6"
   },
   {
    "by_assertion": true,
@@ -1926,7 +1926,7 @@
     "VELDO-0169 store/invariant"
    ],
    "module": ".veldo/control_store.py",
-   "mutant_sha256": "d26e5afe76d97368cb82b246425f36acc4714d96a6a69965da08c07d54cee166",
+   "mutant_sha256": "1ddc00df579ac9142c064ead43ea9cfda6ba5563a10d665f1fb4f669f604b676",
    "name": "handout-store-reads-outside-transaction",
    "named_row_red": true,
    "named_rows": [
@@ -2043,8 +2043,8 @@
      true
     ]
    ],
-   "seconds": 12.157,
-   "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
+   "seconds": 13.861,
+   "source_sha256": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6"
   },
   {
    "by_assertion": true,
@@ -2061,7 +2061,7 @@
     "VELDO-0169 guard/resume-again"
    ],
    "module": ".veldo/control_store.py",
-   "mutant_sha256": "d305d741c337e228630435977bfd246de811cc3a6789bedae20b3c7939a569f5",
+   "mutant_sha256": "6c6ea53cd8fe1384ba405feffaf116f33d7f3ef6b91c01d7082dbe988e01339a",
    "name": "handout-store-id-unit-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -2178,8 +2178,8 @@
      true
     ]
    ],
-   "seconds": 12.33,
-   "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
+   "seconds": 13.733,
+   "source_sha256": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6"
   },
   {
    "by_assertion": true,
@@ -2314,7 +2314,7 @@
      true
     ]
    ],
-   "seconds": 12.393,
+   "seconds": 13.11,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -2450,7 +2450,7 @@
      true
     ]
    ],
-   "seconds": 12.504,
+   "seconds": 13.747,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   {
@@ -2583,7 +2583,7 @@
      true
     ]
    ],
-   "seconds": 12.409,
+   "seconds": 14.797,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -2716,7 +2716,7 @@
      true
     ]
    ],
-   "seconds": 12.586,
+   "seconds": 13.747,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -2849,7 +2849,7 @@
      true
     ]
    ],
-   "seconds": 12.341,
+   "seconds": 13.023,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   {
@@ -2982,7 +2982,7 @@
      true
     ]
    ],
-   "seconds": 12.651,
+   "seconds": 12.639,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   }
  ],
@@ -3168,7 +3168,7 @@
      true
     ]
    ],
-   "seconds": 12.486,
+   "seconds": 14.462,
    "source_sha256": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64"
   },
   "control_assignment.py": {
@@ -3289,7 +3289,7 @@
      true
     ]
    ],
-   "seconds": 12.28,
+   "seconds": 14.995,
    "source_sha256": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2"
   },
   "control_claim.py": {
@@ -3410,14 +3410,14 @@
      true
     ]
    ],
-   "seconds": 12.394,
+   "seconds": 14.296,
    "source_sha256": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d"
   },
   "control_store.py": {
    "census": [
     "VELDO-0169 census: {\"counts\": {\"handout\": 4, \"not the claim organ\": 15, \"nothing\": 3}, \"failures\": [], \"writers\": [{\"classification\": \"not the claim organ\", \"function\": \"Andon._transition\", \"line\": 366, \"module\": \"control_andon\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Andon._transition\", \"line\": 392, \"module\": \"control_andon\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"built_at\": [\"control_andon.Andon.resume:796\"], \"classification\": \"handout\", \"function\": \"Andon._transition\", \"line\": 398, \"module\": \"control_andon\", \"reason\": \"a fresh station contract\", \"writer\": \"issue_station_contract\"}, {\"actions\": [\"resume\"], \"built_at\": [\"control_assignment.Inbox._resume:606\"], \"classification\": \"handout\", \"function\": \"Inbox._transition\", \"line\": 895, \"module\": \"control_assignment\", \"reason\": \"its action can be resume\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 910, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 923, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._dispose_changes\", \"line\": 981, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"actions\": [\"unpark\"], \"built_at\": [\"control_assignment.Inbox._dispose:839\"], \"classification\": \"handout\", \"function\": \"Inbox._dispose_changes\", \"line\": 986, \"module\": \"control_assignment\", \"reason\": \"its action can be unpark\", \"writer\": \"transition\"}, {\"actions\": [\"park\"], \"built_at\": [\"control_assignment.Inbox._claim_to_park:562\"], \"classification\": \"nothing\", \"function\": \"Inbox._transition\", \"line\": 889, \"module\": \"control_assignment\", \"reason\": \"it can only park a claim already held or parked\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Inbox._transition\", \"line\": 930, \"module\": \"control_assignment\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Backlog._edge\", \"line\": 1020, \"module\": \"control_backlog\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"actions\": [\"claim\"], \"built_at\": [\"control_claim.Receiver._apply:314\"], \"classification\": \"handout\", \"function\": \"Receiver._in_transaction\", \"line\": 256, \"module\": \"control_claim\", \"reason\": \"its action can be claim\", \"writer\": \"transition\"}, {\"actions\": [\"release\", \"renew\", \"use\"], \"built_at\": [\"control_claim.Receiver._apply:319\"], \"classification\": \"nothing\", \"function\": \"Receiver._in_transaction\", \"line\": 256, \"module\": \"control_claim\", \"reason\": \"it can only release, renew, use a claim already held or parked\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"transition\", \"line\": 342, \"module\": \"control_dispatch\", \"reason\": \"the module's own function transition, which its own name refers to\", \"writer\": \"defined\"}, {\"actions\": [\"renew\"], \"built_at\": [\"control_heartbeat.Renewals._transition:247\"], \"classification\": \"nothing\", \"function\": \"Renewals._transition\", \"line\": 247, \"module\": \"control_heartbeat\", \"reason\": \"it can only renew a claim already held or parked\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"transition\", \"line\": 169, \"module\": \"control_mcp_catalog\", \"reason\": \"the module's own function transition, which its own name refers to\", \"writer\": \"defined\"}, {\"classification\": \"not the claim organ\", \"function\": \"Objectives._edge\", \"line\": 806, \"module\": \"control_objective\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Projects._edge\", \"line\": 614, \"module\": \"control_project\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"attach_revisions\", \"line\": 411, \"module\": \"control_readset\", \"reason\": \"Revisions.transition, a method of this module's own class\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"Settlement._settle_transition\", \"line\": 395, \"module\": \"control_request_settlement\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}, {\"classification\": \"not the claim organ\", \"function\": \"transition\", \"line\": 384, \"module\": \"entity_contract\", \"reason\": \"the module's own function transition, which its own name refers to\", \"writer\": \"defined\"}, {\"classification\": \"not the claim organ\", \"function\": \"accept_release_execution\", \"line\": 286, \"module\": \"release_floor_contract\", \"reason\": \"4 arguments cannot bind transition(conn, params, before)\", \"writer\": \"transition\"}]}"
    ],
-   "copy_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28",
+   "copy_sha256": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -3531,13 +3531,13 @@
      true
     ]
    ],
-   "seconds": 12.177,
-   "source_sha256": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
+   "seconds": 15.537,
+   "source_sha256": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 169",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 320.816,
+ "serial_seconds": 381.333,
  "spec_id": "VELDO-0169",
  "suite": "scripts/suites/84_veldo_0169_project_handouts.py"
 }

@@ -1,5 +1,5 @@
 --- a/.veldo/control_store.py
 +++ b/.veldo/control_store.py
-@@ -170 +170 @@
--    return _ELIGIBILITY[0].Gate(records, conn, domain_uuid=None, repository_uuid=None)
-+    return _ELIGIBILITY[0].Gate(records, sqlite3.connect(conn.execute('PRAGMA database_list').fetchone()[2]), domain_uuid=None, repository_uuid=None)  # defect: the project is read outside the transaction
+@@ -174 +174 @@
+-    return _ELIGIBILITY[0].Gate(_Records(), conn, domain_uuid=None, repository_uuid=None)
++    return _ELIGIBILITY[0].Gate(_Records(), sqlite3.connect(conn.execute('PRAGMA database_list').fetchone()[2]), domain_uuid=None, repository_uuid=None)  # defect: the project is read outside the transaction

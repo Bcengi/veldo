@@ -45,7 +45,7 @@
   },
   ".veldo/control_store.py": {
    "at_commit": "b39d2061b76fcbdfdc97cc09905e27fc9686ca5c89b95da192db9a302f25658b",
-   "now": "1d6cf093fb8b57b1dbb02d923206934646e9a663e9c70bf1f485df04810ccb28"
+   "now": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6"
   }
  },
  "preamble_rows": 26,
@@ -160,7 +160,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 11.699,
+ "seconds": 11.575,
  "spec_id": "VELDO-0169",
  "suite": "scripts/suites/84_veldo_0169_project_handouts.py",
  "tree": "git archive d22c687e9d9c36e93e87409cc2bac95999bd35c9, unchanged; the current suite file and its apparatus run against it"
