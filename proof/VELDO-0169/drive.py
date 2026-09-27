@@ -27,7 +27,7 @@ FINDING = 169
 MODULES = ('control_assignment.py', 'control_claim.py', 'control_andon.py', 'control_eligibility.py', 'control_store.py',
            'control_heartbeat.py')
 # The suite's own apparatus, which a red run brings to the archived tree with the suite itself.
-APPARATUS = ('scripts/suites/support/v169_census.py',)
+APPARATUS = ('scripts/suites/support/v169_census.py', 'scripts/suites/support/v169_rows.py')
 
 
 def _load(name, path):

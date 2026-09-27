@@ -1,5 +1,0 @@
---- a/.veldo/control_store.py
-+++ b/.veldo/control_store.py
-@@ -833 +833 @@
--    if problem is not None:
-+    if False:

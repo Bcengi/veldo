@@ -1,5 +1,0 @@
---- a/.veldo/control_store.py
-+++ b/.veldo/control_store.py
-@@ -538 +538 @@
--            for kind in sorted(k for k in kinds if k in organs):
-+            for kind in ():  # defect: no kind is decided by its organ

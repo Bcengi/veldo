@@ -1,5 +1,0 @@
---- a/.veldo/control_store.py
-+++ b/.veldo/control_store.py
-@@ -539 +539 @@
--                if conn.organ_writes.get(eid) != digest_of({"kind": new["kind"], "data": new["data"]}):
-+                if eid not in conn.organ_writes:

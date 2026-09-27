@@ -8567,9 +8567,10 @@ def cases():
         "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
         "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
     # VELDO-0169: every path that hands out work asks the Gate's one project check; the claim organ and the
-    # station contract writer ask it themselves inside the write transaction, and the store writes a claim
-    # only as the claim organ returned it there. Each criterion's declared falsifier first (AC1 to AC4),
-    # then the lead's decisions of the second review-fix round, then the seams they rest on.
+    # station contract writer ask it themselves inside the write transaction, and the store's commit path
+    # refuses every claim record that hands out work of a stopped project, whoever built it. Each criterion's
+    # declared falsifier first (AC1 to AC4), then the lead's decisions of the review-fix rounds, then the
+    # seams they rest on.
     def handout(name, module, old, new, rows, also=()):
         add(169, 'handout-' + name, '84_veldo_0169_project_handouts.py', module, old, new, rows, also)
 
@@ -8616,22 +8617,19 @@ def cases():
             "        if command['operation'] == 'claim':",
             "        if command['operation'] == 'claim' and u['data'].get('project') is not None:",
             ['claim/absent', 'claim/null'])
-    # Lead decision 1: the claim organ asks the check itself, inside the write transaction. It skips it; it
-    # reuses a check made in an earlier transaction (a check outside this write's transaction); and the
-    # store lets an organ decide outside any command transaction.
+    # Lead decision 1 (second round): the claim organ asks the check itself, inside the write transaction,
+    # before any other reason. It skips it; it reuses a check made in an earlier transaction (a check
+    # outside this write's transaction). The store's commit path refuses the same claims, so the rows read
+    # the organ's precedence: a unit the worker may not hold is refused by the project's name, not not_authorized.
     handout('organ-check-skipped', 'control_claim.py',
             "        if refusals:\n            raise S.StoreRefused(refusals[0], 'the unit\\'s project takes no new assignment')\n    return _changes(",
             "        if False:\n            raise S.StoreRefused(refusals[0], 'the unit\\'s project takes no new assignment')\n    return _changes(",
-            ['organ/stopped', 'guard/forge', 'guard/resume-again'])
+            ['organ/stopped', 'organ/race'])
     handout('organ-check-outside-transaction', 'control_claim.py',
             "        refusals, _read = _project_gate(conn).project_problems(params['unit_id'])\n",
-            "        refusals, _read = _decide.__dict__.setdefault(params['unit_id'], _project_gate(conn).project_problems(params['unit_id']))"
+            "        refusals, _read = transition.__dict__.setdefault(params['unit_id'], _project_gate(conn).project_problems(params['unit_id']))"
             "  # defect: a check made in an earlier transaction decides this one\n",
             ['organ/race'])
-    handout('organ-write-outside-transaction', 'control_store.py',
-            '    if not getattr(conn, "command_transaction", False) or not conn.in_transaction or getattr(conn, "organ_writes", None) is None:\n'
-            '        raise StoreRefused("outside_transaction"',
-            '    if False:\n        raise StoreRefused("outside_transaction"', ['organ/outside'])
     # The station contract writer, the same: it skips its check, and it issues outside a command transaction.
     handout('contract-check-skipped', 'control_andon.py',
             "        refusals, _read = self.project_gate.project_problems(contract['unit'])\n        if refusals:",
@@ -8640,17 +8638,27 @@ def cases():
     handout('contract-outside-transaction', 'control_andon.py',
             "        if not self.conn.in_transaction or not getattr(self.conn, 'command_transaction', False):\n",
             "        if False:\n", ['organ/outside'])
-    # Lead decision 2: the store's ownership of the claim kind. It drops it; it keeps only the presence of an
-    # organ decision, not its content; and it takes another function as the organ.
-    handout('store-claim-ownership-dropped', 'control_store.py',
-            "            for kind in sorted(k for k in kinds if k in organs):\n",
-            "            for kind in ():  # defect: no kind is decided by its organ\n", ['organ/ownership', 'guard/forge'])
-    handout('store-organ-content-ignored', 'control_store.py',
-            '                if conn.organ_writes.get(eid) != digest_of({"kind": new["kind"], "data": new["data"]}):\n',
-            '                if eid not in conn.organ_writes:\n', ['organ/ownership'])
-    handout('store-organ-origin-unchecked', 'control_store.py',
-            '    if problem is not None:\n        raise StoreRefused("foreign_transition", "kind %r is decided by',
-            '    if False:\n        raise StoreRefused("foreign_transition", "kind %r is decided by', ['organ/ownership'])
+    # Lead decision of the third round: the store's commit path holds the invariant for every writer of a
+    # claim record. It skips it; it takes a resume for a write that hands nothing out; it reads the project
+    # outside the transaction (a second connection, which sees the committed state, not the one this
+    # transaction commits); it checks only the unit a record's fields name, never the one its id names.
+    handout('store-invariant-skipped', 'control_store.py',
+            "        stopped = handout_problem(conn, changes, before)\n",
+            "        stopped = None  # defect: the store hands out whatever a transition writes\n",
+            ['store/invariant', 'guard/forge', 'organ/stopped'])
+    handout('store-invariant-ignores-resumes', 'control_store.py',
+            '        return "resume" if was.get("parked_on") else "claim"\n',
+            '        return None if was.get("parked_on") else "claim"  # defect: a parked unit taken again hands nothing out\n',
+            ['store/invariant', 'organ/stopped'])
+    handout('store-reads-outside-transaction', 'control_store.py',
+            "    return _ELIGIBILITY[0].Gate(records, conn, domain_uuid=None, repository_uuid=None)\n",
+            "    return _ELIGIBILITY[0].Gate(records, sqlite3.connect(conn.execute('PRAGMA database_list').fetchone()[2]),"
+            " domain_uuid=None, repository_uuid=None)  # defect: the project is read outside the transaction\n",
+            ['store/invariant'])
+    handout('store-id-unit-unchecked', 'control_store.py',
+            "    for i, c in enumerate(eid):\n",
+            "    for i, c in ():  # defect: the unit a claim's id names is never checked\n",
+            ['store/invariant'])
     # The project and owner records the check read, pinned through the commit.
     handout('assignment-project-unpinned', 'control_assignment.py',
             "        versions.update(observation.get('project_versions', {}))",
