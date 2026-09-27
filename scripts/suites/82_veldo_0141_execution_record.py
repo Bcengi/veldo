@@ -23,7 +23,9 @@ clone, and keeps its own copy of every line it printed on each stream, which the
 Code fake prints partial messages only with --include-partial-messages and a subagent's text only with
 --forward-subagent-text, as the binary does. The planted resolver of AC4 is a function the receiver process adds to
 control_launch.RESOLVERS before it runs (a driver that loads the installed module and calls its main). The fake's
-handshake answer names an email and an organization as the binary's does; the path and URL rows judge the live
+handshake answer names an email, and an organization when its profile's login has one, as the binary's does
+(`organization:ie?.organization`); the lines are completed on VELDO-0172's shared constructors to the shapes the live
+runs of 2026-09-26 printed, and Codex's login status goes to stderr; the path and URL rows judge the live
 run's own init and tool lines and typical real paths through the production redact. No real engine
 runs, nothing logs in and no credential exists (every value is assembled at run time). Each row is reported once.
 """
@@ -110,6 +112,10 @@ def _v141_suite():
 
     def file_sha(path):
         return 'sha256:' + hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
 
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
@@ -237,6 +243,10 @@ def _v141_suite():
                                   fields['profiles'], now=time.time())
         if profiles.get('acct-141c'):
             (Path(profiles['acct-141c']) / 'auth.json').write_text(json.dumps({'auth_mode': 'chatgpt'}))
+        # The Claude Code logins belong to an organization, so the handshake answer names one, as the binary's does.
+        for account in ('acct-141a', 'acct-141t'):
+            if profiles.get(account):
+                (Path(profiles[account]) / 'v141-login.json').write_text(json.dumps({'organization': True}))
         reservations = RES.Reservations(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                         authorize=RES.service_authority, signer='runner', sign=sign)
         BIG = dict(capacity=50, invocations=200, wall_seconds=10 ** 7)
@@ -301,7 +311,7 @@ out = open(markers / ('%d.out' % pid), 'w')
 err = open(markers / ('%d.err' % pid), 'w')
 pace = [0.05]
 def emit(event):
-    text = json.dumps(event)
+    text = json.dumps(complete_event(event))
     out.write(text + chr(10))
     out.flush()
     sys.stdout.write(text + chr(10))
@@ -324,12 +334,17 @@ if option('--input-format') == 'stream-json':
             break
         message = json.loads(line)
         if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
-            account = {'apiProvider': 'firstParty', 'email': 'owner.%s@example.invalid' % uuid.uuid4().hex[:8],
-                       'organization': str(uuid.uuid4())}
+            account = {'apiProvider': 'firstParty', 'email': 'owner.%s@example.invalid' % uuid.uuid4().hex[:8]}
+            try:
+                login = json.loads((Path(env.get('CLAUDE_CONFIG_DIR') or '/nonexistent') / 'v141-login.json').read_text())
+            except (OSError, ValueError):
+                login = {}
+            if login.get('organization'):
+                account['organization'] = str(uuid.uuid4())
             if env.get('CLAUDE_CODE_OAUTH_TOKEN'):
                 account['tokenSource'] = 'CLAUDE_CODE_OAUTH_TOKEN'
             else:
-                account['subscriptionType'] = 'Claude Max'
+                account['subscriptionType'] = 'Claude Team'
             emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
                                                            'response': {'account': account, 'pid': pid}}})
         elif message.get('type') == 'user':
@@ -348,7 +363,8 @@ def fill(text):
     return text
 partial, forward = '--include-partial-messages' in argv, '--forward-subagent-text' in argv
 session = str(uuid.uuid4())
-usage = {'input_tokens': 3, 'output_tokens': 2, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0}
+# The live run streamed a lower output count (3) than its result reported (4).
+usage = {'input_tokens': 3, 'output_tokens': 3, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0}
 emit({'type': 'system', 'subtype': 'init', 'cwd': str(cwd), 'session_id': session, 'tools': ['Bash', 'Edit', 'Task'],
       'mcp_servers': [], 'model': 'configured-model', 'permissionMode': 'default', 'slash_commands': [],
       'apiKeySource': 'none', 'claude_code_version': TABLE['version'], 'output_style': 'default', 'agents': [],
@@ -406,9 +422,10 @@ if payload.get('subagent'):
     result_of(task, 'the subagent is done', False, {'status': 'completed'})
 for text in payload.get('say') or []:
     assistant([{'type': 'text', 'text': fill(text)}])
+usage['output_tokens'] = 4
 emit({'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4, 'is_error': False, 'num_turns': 1,
       'result': 'done', 'stop_reason': 'end_turn', 'total_cost_usd': 0, 'usage': usage,
-      'modelUsage': {'configured-model': {'inputTokens': 3, 'outputTokens': 2, 'cacheReadInputTokens': 0,
+      'modelUsage': {'configured-model': {'inputTokens': 3, 'outputTokens': 4, 'cacheReadInputTokens': 0,
                                           'cacheCreationInputTokens': 0, 'webSearchRequests': 0, 'costUSD': 0,
                                           'contextWindow': 200000, 'maxOutputTokens': 32000}},
       'permission_denials': [], 'uuid': str(uuid.uuid4()), 'session_id': session})
@@ -416,6 +433,7 @@ out.close()
 err.close()
 '''.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
             '@@TABLE@@', repr(json.dumps(claude_table)))
+        fake_claude = fake_formats.embed(fake_claude)
         versions = base / 'home' / '.local' / 'share' / 'claude' / 'versions'
         versions.mkdir(parents=True)
         (versions / VERSION).write_text(fake_claude)
@@ -451,7 +469,8 @@ def login():
         return None
 if argv[:2] == ['login', 'status']:
     if login() == 'chatgpt':
-        print(TABLE['logged_in'])
+        # The 0.154.0 binary prints its login status on stderr.
+        print(TABLE['logged_in'], file=sys.stderr)
         sys.exit(0)
     sys.exit(1)
 pid = os.getpid()
@@ -461,7 +480,7 @@ own = {'pid': pid, 'dispatch': env.get('VELDO_DISPATCH_ID', ''), 'argv': sys.arg
 out = open(markers / ('%d.out' % pid), 'w')
 err = open(markers / ('%d.err' % pid), 'w')
 def emit(event):
-    text = json.dumps(event)
+    text = json.dumps(complete_event(event))
     out.write(text + chr(10))
     out.flush()
     sys.stdout.write(text + chr(10))
@@ -502,6 +521,11 @@ out.close()
 err.close()
 '''.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
             '@@TABLE@@', repr(json.dumps(codex_table)))
+        fake_codex = fake_formats.embed(fake_codex)
+
+        def fake_engine(name):
+            # Each engine's generated executable, as VELDO-0172's census reads it back.
+            return fake_claude if name == 'claude' else fake_codex
         package = base / 'packages' / 'codex'
         CODEX_BIN = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         CODEX_BIN.parent.mkdir(parents=True)
@@ -2008,7 +2032,9 @@ err.close()
                     bad.append((event.get('type'), sorted(set(event) - set(table))))
                 item_ = event.get('item')
                 if isinstance(item_, dict):
-                    fields_ = ((CODEX_ITEMS['items'].get(item_.get('type')) or {}).get('fields')) or {}
+                    # The item table as VELDO-0172 reconciled it with the live capture (agent_message has its text).
+                    kinds_ = dict(CODEX_ITEMS['items'], **FORMATS['codex']['items'])
+                    fields_ = ((kinds_.get(item_.get('type')) or {}).get('fields')) or {}
                     if not fields_ or set(item_) - set(fields_):
                         bad.append(('item/' + str(item_.get('type')), sorted(set(item_) - set(fields_))))
             stderr_text = STREAM['claude_code']['stderr']['extra_certs']['text'].replace('{path}', missing_certs)
@@ -2019,6 +2045,8 @@ err.close()
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        if globals().get('__engine_observer__'):
+            __engine_observer__(locals())
         for close in reversed(closers):
             with contextlib.suppress(Exception):
                 close()

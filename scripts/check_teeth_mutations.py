@@ -8499,6 +8499,9 @@ def cases():
     formats172('emitter-required', 'proof/VELDO-0062', 'extract_formats.py',
                "            if field is not None and not field.get('optional'):",
                "            if False:  # defect: a field its emitter writes under a condition stays required", 'table/capture')
+    formats172('hygiene-answer-drops-provider', 'scripts/suites', '82_veldo_0165_launch_hygiene.py',
+               "'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},",
+               "'response': {'account': {'subscriptionType': 'Claude Team'},  # defect: required field dropped", 'fake/capture')
     return result
 
 

@@ -31,7 +31,7 @@ fields and login status goes to stderr.
 | Criterion | Row | Observation |
 |---|---|---|
 | AC1 | `table/capture` | Every captured event conforms, capture digest matches, and the reconciliation writer rebuilds the table from its binary-only fields. Missing fields and required omissions are named. |
-| AC2 | `fake/capture` | A census of protocol-bearing executable literals finds six suites. Each runs its actual launch tests and, before teardown, the observer drives its generated executable and existing line constructors using the production Guard and Terminal. Captured variants have equal recursive field paths; model-name records share one key. Existing format rows check all scripted events, including uncaptured tool and error variants. Login streams, subscription label and streamed/final output counts are read back. |
+| AC2 | `fake/capture` | A census of protocol-bearing executable literals finds nine suites on batch-0165-0172 (six at the build, plus 0129, 0141 and 0165 from the integration). Each runs its actual launch tests and, before teardown, the observer drives its generated executable and existing line constructors using the production Guard and Terminal. Captured variants have equal recursive field paths; model-name records share one key. Existing format rows check all scripted events, including uncaptured tool and error variants. Login streams, subscription label and streamed/final output counts are read back. |
 | AC3 | `capture/allowlist` | The committed capture is unchanged by the allowlist scrub, holds exactly the two selected tap answers and passes the repository secret scanner. |
 | AC3 | `capture/planted` | The actual scrubber removes a planted host, pid, home path, arbitrary prose and non-token fraction, preserving token counts and value types. |
 
@@ -42,13 +42,14 @@ against the binary table. No raw source value appears in a comparison diagnostic
 The proof driver is `proof/VELDO-0172/drive.py`, added to the footprint because that requested path did not
 exist. It uses the existing mutation registry and Git process boundary, archives the unchanged base
 for the red replay, and runs mutation and no-op copies with at most two jobs. Finding 0172 has a scoped
-300-second worker timeout because each trial drives the six discovered launch suites.
+300-second worker timeout because each trial drives every discovered launch suite.
 
 ## Verification
 
 `verification.json` records nine normal selectors and the same nine selectors in the specified clean
 environment: the six modified fake suites, the new comparison suite, the mutation registry suite and
-the scope suite. All passed. The comparison observes six suites and 41 emitted fake lines. Fresh binary
+the scope suite. All passed. The comparison observed six suites and 41 emitted fake lines at the build; after the
+integration port it observes nine suites and 61 lines. Fresh binary
 extraction matches the table; validation, Git boundary, footprint and anchor checks pass. The secret
 inventory has zero outstanding findings, and the captured content has zero scanner findings.
 
@@ -70,3 +71,14 @@ All 198 corresponding Python engine copies are byte-identical. The configuration
 `architecture.yaml` and `policy.yaml` differ between the engine template and this repository, as they
 did at the base commit; all four files are unchanged.
 The canonical gate was not run, as instructed.
+
+## Integration port (batch-0165-0172)
+
+Suites 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record and 82_veldo_0165_launch_hygiene were
+written after this change was built. Their fakes now carry the shared constructor (`embed`), complete
+their lines with `complete_event` or `live_step`, print `Claude Team`, stream 3 output tokens and report 4,
+print Codex usage with five fields and Codex login status on stderr. Each calls `__engine_observer__`
+before teardown and has a `format/` row. The observer takes each engine's source from `fake_engine(name)`
+or `fake`, names the executable after its engine, uses a suite's `readback_packet` when it has one, and
+reports an unreadable source as a named problem. Mutation `formats172-hygiene-answer-drops-provider`
+removes `apiProvider` from 0165's handshake answer and reds `fake/capture` on that field.

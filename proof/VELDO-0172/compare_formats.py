@@ -120,11 +120,24 @@ def observe_fake(local, suite, table, capture):
     profile.mkdir()
     markers = base / 'markers'
     markers.mkdir()
-    executable = base / 'fake'
-    source = local.get('fake', '')
-    if 'fake_engine' in local:
-        source = local['fake_engine']('claude')
-    executable.write_text(source)
+    problems, printed = [], []
+
+    def source_of(engine):
+        # A suite names each engine's generated executable through fake_engine(name), else one `fake` source
+        # serves both. Anything that is not source text is a named problem of this suite, never a raise.
+        maker = local.get('fake_engine')
+        try:
+            value = maker(engine) if callable(maker) else local.get('fake', '')
+        except Exception as error:  # noqa: BLE001 - reported as the suite's own problem
+            return None, engine + ':fake:source-unreadable:' + type(error).__name__
+        if not isinstance(value, str):
+            return None, engine + ':fake:source-unreadable:' + type(value).__name__
+        return value, None
+    sources = {}
+    for engine in ('claude', 'codex'):
+        sources[engine], problem = source_of(engine)
+        if problem:
+            problems.append(problem)
     env = {'PATH': str(Path(sys.executable).parent) + ':/usr/bin:/bin', 'HOME': str(base),
            'CLAUDE_CONFIG_DIR': str(profile), 'CODEX_HOME': str(profile), 'XDG_RUNTIME_DIR': str(base),
            'PYTHONDONTWRITEBYTECODE': '1', 'LANG': 'C.UTF-8',
@@ -133,24 +146,30 @@ def observe_fake(local, suite, table, capture):
     # These generated files are the baseline fake's subscription-kind fixtures, not credential stores.
     if 'LOGIN' in local:
         (profile / local['LOGIN']).write_text(json.dumps({'subscriber': True}))
-    problems, printed = [], []
-    suffix = [str(base / 'empty.db'), str(markers), 'fixture-domain'] if 'store, markers, domain = sys.argv' in source else []
-    if 'markers = sys.argv[-1]' in source:
-        suffix = [str(markers)]
-    has_claude = "'control_request'" in source
-    has_codex = "'login', 'status'" in source
-    for engine in (['claude'] if has_claude else []) + (['codex'] if has_codex else []):
+    protocol = {'claude': "'control_request'", 'codex': "'login', 'status'"}
+    for engine in [name for name in ('claude', 'codex') if sources[name] is not None and protocol[name] in sources[name]]:
+        source = sources[engine]
+        # Named as the engine's own binary, so an executable that tells its engine by its path reads it.
+        executable = base / engine / engine
+        executable.parent.mkdir()
+        executable.write_text(source)
+        suffix = [str(base / 'empty.db'), str(markers), 'fixture-domain'] if 'store, markers, domain = sys.argv' in source else []
+        if 'markers = sys.argv[-1]' in source:
+            suffix = [str(markers)]
         script = []
         if engine == 'claude' and 'c_msg' in local:
-            script = [local['c_init'](), local['c_msg']('fixture-message', 2, 3),
-                      local['c_rate']('allowed', 2000000000), local['c_result'](2, 4, 1)]
+            # A fake that prints its own init line has no scripted one.
+            script = ([local['c_init']()] if 'c_init' in local else []) + [
+                local['c_msg']('fixture-message', 2, 3), local['c_rate']('allowed', 2000000000), local['c_result'](2, 4, 1)]
         elif engine == 'codex' and 'x_done' in local:
             script = [local['x_thread'](), local['x_started'](), local['x_done'](2, 4)]
         elif engine == 'codex' and 'x_normal' in local:
             script = local['x_normal']('fixture-thread', 2, 4)
         elif engine == 'codex' and callable(local.get('normal')):
             script = [{'line': line} for line in local['normal']('fixture-thread', 2, 4)]
-        packet = json.dumps({'payload': {'script': script}})
+        # A fake that reads more of its packet than the script is given the suite's own normal packet.
+        packet = local['readback_packet'](engine, script) if callable(local.get('readback_packet')) else None
+        packet = json.dumps(packet or {'payload': {'script': script}})
         args = [sys.executable, str(executable)]
         if engine == 'claude':
             args += ['--input-format', 'stream-json', '--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands']

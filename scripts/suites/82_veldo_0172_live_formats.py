@@ -21,6 +21,9 @@ def _v172_suite():
     EXTRACTOR = ROOT / "proof/VELDO-0062" / "extract_formats.py"
     SCRUBBER = ROOT / "proof/VELDO-0172" / "scrub.py"
     SUITE79 = ROOT / "scripts/suites" / "79_veldo_0061_codex_adapter.py"
+    SUITE165 = ROOT / "scripts/suites" / "82_veldo_0165_launch_hygiene.py"
+    # A mutated copy of a census suite is read in its place; its name is the suite's own.
+    COPIES = {path.name: path for path in (SUITE79, SUITE165)}
     TABLE = ROOT / 'proof/VELDO-0062/cli-formats.json'
     CAPTURE = ROOT / 'proof/VELDO-0172/capture.json'
     rows = {name: [] for name in ('table/capture', 'fake/capture', 'capture/allowlist', 'capture/planted')}
@@ -130,7 +133,7 @@ def _v172_suite():
         inner_rows = []
         namespace = {'ROOT': ROOT, '__file__': str(suite), '__suite_file__': str(suite),
                      'expect': lambda name, ok: inner_rows.append((name, bool(ok))), '__engine_observer__': observer}
-        source = (SUITE79 if suite.name == SUITE79.name else suite).read_text()
+        source = COPIES.get(suite.name, suite).read_text()
         # The red archive predates the observer hook. Instrument only teardown, leaving its writers intact.
         if '__engine_observer__' not in source:
             source = re.sub(r'^    finally:\n', "    finally:\n        __engine_observer__(locals())\n", source, count=1, flags=re.M)

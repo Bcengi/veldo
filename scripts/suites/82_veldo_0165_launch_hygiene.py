@@ -31,7 +31,8 @@ def _v165_suite():
             'refuse/claude', 'refuse/codex', 'mcp/prefixed-tools', 'evidence/qualified',
             'fixture/extraction', 'fixture/mcp-control', 'strip/configured', 'strip/unprefixed',
             'evidence/empty', 'evidence/completeness', 'evidence/prefixes', 'report/removed', 'report/refused',
-            'strip/child-environment', 'mcp/configured-refused', 'evidence/not-a-list', 'evidence/outside-scan')
+            'strip/child-environment', 'mcp/configured-refused', 'evidence/not-a-list', 'evidence/outside-scan',
+            'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -54,6 +55,11 @@ def _v165_suite():
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
+
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    live_step = fake_formats.live_step
 
     started = time.monotonic()
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
@@ -196,6 +202,12 @@ own = {'engine': ENGINE, 'pid': os.getpid(), 'dispatch': dispatch, 'started': ti
        'env': dict(os.environ)}
 (markers / ('%%d.tmp' %% os.getpid())).write_text(json.dumps(own))
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
+def emit(event):
+    text = json.dumps(event)
+    with open(markers / ('%%d.out' %% os.getpid()), 'a') as out:
+        out.write(text + chr(10))
+    sys.stdout.write(text + chr(10))
+    sys.stdout.flush()
 def stream_input():
     # VELDO-0155: stream JSON input (--input-format stream-json) as the 2.1.281 binary reads it: the initialize
     # control request is answered with the login (the binary's Kfe(), a claude.ai subscription here), the user
@@ -211,17 +223,17 @@ def stream_input():
         message = json.loads(line)
         if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
             answer = {'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
-                      'response': {'account': {'subscriptionType': 'Claude Max', 'apiProvider': 'firstParty'},
+                      'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},
                                    'pid': os.getpid()}}}
-            sys.stdout.write(json.dumps(answer) + chr(10))
-            sys.stdout.flush()
+            emit(complete_event(answer))
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             return json.loads(content) if isinstance(content, str) and content.strip() else {}
 packet = stream_input()
 if own['engine'] == 'claude':
     server_config = (packet.get('configuration') or {}).get('mcp_servers') or {}
-    tools = []
+    # The binary's built-in tools come first, as the live init listed them, then each MCP server's.
+    tools = ['Read', 'Bash']
     for name, config in server_config.items():
         request = json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': 'tools/list'}) + chr(10)
         answer = subprocess.run([config['command']] + config['args'], input=request,
@@ -230,19 +242,18 @@ if own['engine'] == 'claude':
             # Exact gate in the binary: only SDK servers can opt out of Fa(server, tool).
             plain = config['type'] == 'sdk' and os.environ.get('CLAUDE_AGENT_SDK_MCP_NO_PREFIX')
             tools.append(tool['name'] if plain else 'mcp__' + name + '__' + tool['name'])
-    own['init'] = {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'tools': tools,
+    own['init'] = complete_event({'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'tools': tools,
                    'claude_code_version': '2.1.281', 'cwd': str(Path.cwd()),
                    'mcp_servers': [{'name': n, 'status': 'connected'} for n in server_config],
                    'model': 'fixture-model', 'permissionMode': 'default', 'slash_commands': [],
                    'output_style': 'default', 'skills': [], 'plugins': [],
-                   'uuid': 'fixture-init', 'session_id': 'fixture-session'}
+                   'uuid': 'fixture-init', 'session_id': 'fixture-session'})
     (markers / ('%%d.json' %% os.getpid())).write_text(json.dumps(own))
-    print(json.dumps(own['init']), flush=True)
+    emit(own['init'])
 payload = packet.get('payload') or {}
 for step in payload.get('script') or []:
     if 'line' in step:
-        sys.stdout.write(json.dumps(step['line']) + chr(10))
-        sys.stdout.flush()
+        emit(step['line'])
     elif 'sleep' in step:
         time.sleep(step['sleep'])
     elif 'wait' in step:
@@ -252,6 +263,7 @@ for step in payload.get('script') or []:
 (markers / ('%%d.done' %% os.getpid())).write_text(json.dumps({'ended': time.time()}))
 sys.exit(payload.get('code', 0))
 ''' % (sys.executable,)
+        fake = fake_formats.embed(fake)
 
         def fake_engine(name):
             # The markers directory and the engine's name are written into the fake: a pinned engine's argv
@@ -359,9 +371,66 @@ sys.exit(payload.get('code', 0))
                 explicit[account] = L.Runner(gate, reservations, dispatches, invoke, account=account)
             return explicit[account]
 
+        # Stream lines in the shapes the installed CLIs print, on VELDO-0172's shared constructors: the fake
+        # prints its own handshake answer and init, then these (the format row checks every printed line).
+        SESSION = 'session-165-' + os.urandom(4).hex()
+
+        def c_usage(inp, out):
+            return {'input_tokens': inp, 'output_tokens': out, 'cache_creation_input_tokens': 0,
+                    'cache_read_input_tokens': 0,
+                    'cache_creation': {'ephemeral_5m_input_tokens': 0, 'ephemeral_1h_input_tokens': 0},
+                    'service_tier': 'standard'}
+
+        @live_step
+        def c_msg(mid, inp, out):
+            return {'line': {'type': 'assistant', 'parent_tool_use_id': None, 'uuid': 'uuid-' + os.urandom(6).hex(),
+                             'session_id': SESSION,
+                             'message': {'id': mid, 'type': 'message', 'role': 'assistant', 'model': 'fixture-model',
+                                         'content': [], 'stop_reason': None, 'stop_sequence': None,
+                                         'usage': c_usage(inp, out)}}}
+
+        @live_step
+        def c_rate(status, reset, kind='five_hour'):
+            return {'line': {'type': 'rate_limit_event', 'uuid': 'uuid-' + os.urandom(6).hex(), 'session_id': SESSION,
+                             'rate_limit_info': {'status': status, 'rateLimitType': kind, 'resetsAt': int(reset)}}}
+
+        @live_step
+        def c_result(inp, out, turns=1, text='done'):
+            return {'line': {'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4,
+                             'is_error': False, 'num_turns': turns, 'result': text, 'stop_reason': 'end_turn',
+                             'total_cost_usd': 0, 'usage': c_usage(inp, out),
+                             'modelUsage': {'fixture-model': {'inputTokens': inp, 'outputTokens': out,
+                                                              'cacheReadInputTokens': 0, 'cacheCreationInputTokens': 0,
+                                                              'webSearchRequests': 0, 'costUSD': 0,
+                                                              'contextWindow': 200000, 'maxOutputTokens': 32000}},
+                             'permission_denials': [], 'uuid': 'uuid-' + os.urandom(6).hex(), 'session_id': SESSION}}
+
+        @live_step
+        def x_thread():
+            return {'line': {'type': 'thread.started', 'thread_id': 'thread-165'}}
+
+        @live_step
+        def x_started():
+            return {'line': {'type': 'turn.started'}}
+
+        @live_step
+        def x_message(text='done'):
+            return {'line': {'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'agent_message', 'text': text}}}
+
+        @live_step
+        def x_done(inp, out):
+            return {'line': {'type': 'turn.completed', 'usage': {
+                'input_tokens': inp, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0, 'output_tokens': out,
+                'reasoning_output_tokens': 0}}}
+
+        # A whole normal turn of each engine, as the live runs printed it: the streamed output count is
+        # lower than the final one.
+        STREAMS = {'claude': lambda: [c_msg('msg-165', 3, 3), c_rate('allowed', 2000000000), c_result(3, 4)],
+                   'codex': lambda: [x_started(), x_message(), x_done(3, 4)]}
+
         def job(adapter, script, code_=0, deadline=40):
             if adapter == 'codex':
-                script = [{'line': {'type': 'thread.started', 'thread_id': 'thread-165'}}] + list(script)
+                script = [x_thread()] + list(script)
             return dict(holder=HOLDER, source=str(src), revision='HEAD',
                         payload={'task': 'work the unit', 'script': script, 'code': code_}, adapter=adapter,
                         configuration=CONFIGURATION, deadline=time.time() + deadline)
@@ -389,7 +458,7 @@ sys.exit(payload.get('code', 0))
 
         launches = {}
         for engine, account in (('claude', 'acct-c1'), ('codex', 'acct-x1')):
-            launch, error = submit('unit-' + engine, engine, [], via=account)
+            launch, error = submit('unit-' + engine, engine, STREAMS[engine](), via=account)
             record = finish(launch, via=account)
             observed = markers_of(launch.dispatch_id) if launch else []
             own = observed[0] if len(observed) == 1 else {}
@@ -432,7 +501,7 @@ sys.exit(payload.get('code', 0))
                       and env.get('CLAUDE_CODE_OAUTH_TOKEN') == own_token)
 
         check('mcp/prefixed-tools', 'configured SDK server tools retain their names in the init event',
-              launches['claude'][2].get('init', {}).get('tools') == ['mcp__tracker__read', 'mcp__tracker__write'])
+              launches['claude'][2].get('init', {}).get('tools') == ['Read', 'Bash', 'mcp__tracker__read', 'mcp__tracker__write'])
         launch, error = submit('renamed-claude', 'claude-renamed', [], via='acct-c1')
         record = finish(launch, via='acct-c1')
         check('mcp/configured-refused', 'an adapter configuring the MCP naming switch is refused by name before spawn',
@@ -566,13 +635,66 @@ sys.exit(payload.get('code', 0))
         control = markers_of('control')
         check('fixture/mcp-control', 'SDK gate is supported by binary bytes and reacts to inherited override',
               done.returncode == 0 and len(control) == 1
-              and control[0]['init']['tools'] == ['read', 'write']
+              and control[0]['init']['tools'] == ['Read', 'Bash', 'read', 'write']
               and 'e.config.type==="sdk"&&a.CLAUDE_AGENT_SDK_MCP_NO_PREFIX' in
               json.loads((TREE / 'proof' / 'VELDO-0165' / 'claude-environment.json').read_text())['mcp_naming']['text'])
+
+        # Every line any fake printed, its handshake answer and init among them, is an event of the binaries'
+        # own table, every field known, every required one present, each value of its type.
+        formats = json.loads((TREE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())
+
+        def conforms(value, schema):
+            kind = schema.get('type')
+            if value is None:
+                return bool(schema.get('nullable')) or kind == 'any'
+            if kind == 'any':
+                return True
+            if kind == 'object':
+                fields = schema.get('fields') or {}
+                return (isinstance(value, dict) and not set(value) - set(fields)
+                        and all(conforms(value[k], f) if k in value else bool(f.get('optional'))
+                                for k, f in fields.items()))
+            if kind == 'record':
+                return isinstance(value, dict) and all(conforms(v, schema['values']) for v in value.values())
+            if kind == 'array':
+                return isinstance(value, list) and all(conforms(v, schema.get('items') or {'type': 'any'}) for v in value)
+            if kind == 'literal':
+                return value == schema.get('value')
+            if kind == 'enum':
+                return value in (schema.get('values') or [])
+            if kind == 'number':
+                return type(value) in (int, float) and (not schema.get('int') or type(value) is int)
+            if kind == 'boolean':
+                return type(value) is bool
+            if kind == 'string':
+                return isinstance(value, str)
+            return False
+        printed, bad = {'claude': set(), 'codex': set()}, []
+        for out in sorted(markers.glob('*.out')):
+            engine_of = json.loads(out.with_suffix('.json').read_text()).get('engine')
+            section = formats['claude_code' if engine_of == 'claude' else 'codex']
+            for raw in out.read_text().splitlines():
+                event = json.loads(raw)
+                kind = event.get('type')
+                name = kind + '/' + event.get('subtype', '') if kind in ('system', 'result') else kind
+                schema = section['events'].get(name)
+                item = event.get('item') if engine_of == 'codex' else None
+                item_schema = formats['codex']['items'].get((item or {}).get('type')) if isinstance(item, dict) else None
+                if schema is None or not conforms(event, schema) or (item is not None and not (
+                        item_schema and conforms(item, item_schema))):
+                    bad.append(name)
+                printed.setdefault(engine_of, set()).add(name)
+        check('format/fake-lines', 'every line the fakes printed is an event of the binaries\' own table [%s %s]'
+              % ({k: sorted(v) for k, v in printed.items()}, bad[:4]),
+              not bad and {'control_response', 'system/init', 'assistant', 'rate_limit_event', 'result/success'}
+              <= printed['claude'] and {'thread.started', 'turn.started', 'item.completed', 'turn.completed'}
+              <= printed['codex'])
     except Exception as exc:
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        if globals().get('__engine_observer__'):
+            __engine_observer__(locals())
         for connection in connections:
             connection.close()
         shutil.rmtree(base)
