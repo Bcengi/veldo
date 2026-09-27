@@ -93,7 +93,8 @@ own configuration directory (control_launch). On 2.1.281 the setting-sources res
 profile's and the clone's MCP servers, skills, instruction files and hooks out (the binary gates each by
 its source); the other switches keep out what no source covers: the claude.ai connectors of the account's
 login, the bundled skills, the managed instruction files and the flag, plugin and session hooks
-(proof/VELDO-0155/README.md). A version is also qualified with stream JSON input (INPUT_FLAGS among its
+(proof/VELDO-0155/README.md). The baseline's `stream_options` (VELDO-0141) add partial messages and forwarded
+subagent text to the stream, which the execution record keeps. A version is also qualified with stream JSON input (INPUT_FLAGS among its
 flags, else `missing_evidence:engine_input_protocol:<version>` before acceptance), so nothing reaches the
 model until the receiver writes the prompt. `Guard` is the handshake and the stream check: the receiver
 writes the initialize control request first and the prompt only once the binary's answer names a
@@ -477,8 +478,13 @@ def environment(bound, record=None):
 # file, `--disable-slash-commands` (no skill is listed until VELDO-0127), CLAUDE_CODE_DISABLE_CLAUDE_MDS
 # and CLAUDE_CODE_DISABLE_AUTO_MEMORY, and `disableAllHooks` in the generated settings. Neither bare
 # mode (it refuses subscription logins) nor safe mode (it ignores the `--mcp-config` servers) is used.
+# VELDO-0141: the stream options every run also adds, read from the same bytes (boolean, each honored only with
+# --print and stream JSON output, which the qualified flags carry): `--include-partial-messages` (partial message
+# chunks as they arrive) and `--forward-subagent-text` (a subagent's text and thinking forwarded as messages with
+# parent_tool_use_id set), so the execution record holds a subagent's work too; `--verbose` is a qualified flag.
 BASELINE = {
     'options': ['--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands'],
+    'stream_options': ['--include-partial-messages', '--forward-subagent-text'],
     'settings_option': '--settings',
     'mcp_option': '--mcp-config',
     'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},
@@ -533,7 +539,8 @@ def baseline(bound, run, environment=None, record=None):
     files = {SETTINGS_FILE: (json.dumps(base['settings'], sort_keys=True) + '\n').encode(),
              MCP_FILE: (json.dumps(base['mcp_config'], sort_keys=True) + '\n').encode()}
     argv = (list(base['options'][:2]) + [base['settings_option'], str(config / SETTINGS_FILE),
-                                         base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:]))
+                                         base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:])
+            + list(base['stream_options']))
     return {'argv': argv, 'environment': dict(base['environment']), 'files': files}
 
 
