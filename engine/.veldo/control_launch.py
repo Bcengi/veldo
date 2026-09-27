@@ -147,6 +147,16 @@ it execs, removes EXEC_STRIPPED and that name and makes the directory the engine
 (`engine_environment`). The receiver reports each launch's baseline, the names it removed and never a
 value (`baseline` event).
 
+THE EXECUTION RECORD (VELDO-0141). Every run's output is kept, as it is read and in order, as its execution
+record (control_execution_record): the engine's standard output line by line (its structured events), the
+worker's error stream (piped to this receiver, never discarded) and the trusted wrapper's identity line, each
+redacted before it is kept, first of every value in the run's set of resolved credential values (`Resolved`,
+filled by RESOLVERS when the worker is spawned: the account's subscription token, and whatever a resolver adds),
+then by the secret scanner. After each batch the API is hinted with the last sequence (the configuration's
+`record_hints`), the exit record commits the record's line count, byte count and digest, and once the end is
+recorded a last hint marks it ended, before the runner is told. The record lives under the configuration's
+`records`, else the factory state root's `records`.
+
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
 """
@@ -182,6 +192,7 @@ S = D.S
 C = _organ('control_containment')
 HB = _organ('control_heartbeat')
 RT = _organ('control_retirement')
+ER = _organ('control_execution_record')
 # VELDO-0062: the account records (the instance the reservations module reads windows through), the
 # invocation seam and each subscription engine's login and usage reports.
 ACC = D.RES.ACC
@@ -201,6 +212,18 @@ RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
 ACCEPT_SECONDS = 30
 WRAPPER_SCHEMA = 'veldo.launch_identity/v1'
+
+
+def subscription_token(receiver, contract, adapter, environment):
+    """The subscription token the receiver resolved for this run's account (VELDO-0155 AC2), if any."""
+    return [('subscription_token', receiver.token)] if receiver.token else []
+
+
+# VELDO-0141: the credential resolvers of a run, each `resolver(receiver, contract, adapter, environment)` ->
+# [(kind, value)], called once as the worker is spawned (it may deliver its value into the engine's
+# `environment`); every value one returns enters the run's set of resolved values, which the execution
+# record replaces before the secret scanner runs. VELDO-0158 AC3 adds the keystore's.
+RESOLVERS = [subscription_token]
 
 
 # OS process identity.
@@ -646,9 +669,39 @@ class Receiver:
         self.binding = None
         self.token = None
         self.run = None
+        # VELDO-0141: the contract launched, the run's resolved values and its execution record.
+        self.contract = None
+        self.resolved = None
+        self.recorder = None
+        self.committed = None
 
     def close(self):
+        if self.recorder is not None:
+            self.recorder.close()
         self.conn.close()
+
+    def _ended(self):
+        """The dispatch's end is recorded: the execution record's last hint, marked ended, and its account in
+        the log (VELDO-0141), before the runner is told."""
+        if self.recorder is not None:
+            self.committed = self.recorder.close()
+            self.recorder.hint(True)
+            self.emit({'event': 'record', 'record': self.recorder.summary()})
+
+    def _record(self, adapter, environment):
+        """The run's set of resolved credential values, from every resolver (VELDO-0141), and its execution
+        record, opened before the worker exists and bound to its dispatch."""
+        contract = self.contract
+        self.resolved = ER.Resolved()
+        for resolver in RESOLVERS:
+            for kind, value in resolver(self, contract, adapter, environment) or ():
+                self.resolved.add(kind, value)
+        header = {'dispatch_id': contract['dispatch_id'], 'contract_digest': D.digest(contract),
+                  'unit': contract['unit'], 'station': contract['station'],
+                  'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
+                  'host': self.host}
+        self.recorder = ER.Recorder(ER.directory(self.config), header, self.resolved,
+                                    hints=self.config.get('record_hints') or ())
 
     def _remove_run(self):
         """The run's own directories are removed once its engine has ended (or never started), before its end is
@@ -687,6 +740,7 @@ class Receiver:
 
     def launch(self, contract):
         dispatch_id = contract['dispatch_id']
+        self.contract = contract
         record = self.dispatches.record(dispatch_id)
         if record is None or record['state'] != 'prepared':
             # Not this receiver's to launch: another attempt of it was accepted, refused, ended or is
@@ -793,6 +847,7 @@ class Receiver:
             # outcome is unknown, and the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running')
+            self._ended()
             self.emit({'event': 'unknown'})
             return
         supervision = self.supervision
@@ -800,23 +855,29 @@ class Receiver:
             # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running')
+            self._ended()
             self.emit({'event': 'unknown', 'supervision': supervision})
             return
         if remote and supervision['cause'] in ('requested', 'usage_cap'):
             # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running')
+            self._ended()
             self.emit({'event': 'unknown', 'supervision': supervision})
             return
         if supervision['empty'] is False:
             # Something of the worker's group is still running: never recorded as ended.
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
                                     expected_state='running')
+            self._ended()
             self.emit({'event': 'unknown', 'supervision': supervision})
             return
         report = self.metering.report if self.metering is not None else None
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
-        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)
+        # VELDO-0141: the exit commits the execution record's line count, byte count and digest.
+        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,
+                             execution_record=self.committed)
+        self._ended()
         self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision})
 
     def _login(self, contract, adapter):
@@ -1065,10 +1126,13 @@ class Receiver:
                                                adapter.get('identity', 'local') == 'reported')
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
+        # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
+        # stream comes to this receiver, which keeps it in the record.
+        self._record(adapter, environment)
         if adapter.get('identity', 'local') != 'reported':
             return self._contained(dispatch_id, argv, environment)
         return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.DEVNULL, env=environment, start_new_session=True, close_fds=True)
+                                stderr=subprocess.PIPE, env=environment, start_new_session=True, close_fds=True)
 
     def _contained(self, dispatch_id, argv, environment):
         """Start the trusted wrapper inside the dispatch's own containment group with every declared cap
@@ -1089,7 +1153,7 @@ class Receiver:
             with group.admission():
                 try:
                     worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                              stderr=subprocess.DEVNULL, env=group.environment, start_new_session=True,
+                                              stderr=subprocess.PIPE, env=group.environment, start_new_session=True,
                                               close_fds=True, pass_fds=(beat,))
                 finally:
                     os.close(beat)
@@ -1137,6 +1201,8 @@ class Receiver:
                 raise ValueError('no identity line')
             pending += chunk
         line, _, carry = pending.partition(b'\n')
+        # VELDO-0141: the wrapper's line is the first line of the run's execution record.
+        worker.identity_line = line
         message = json.loads(line)
         if not isinstance(message, dict) or message.get('schema') != WRAPPER_SCHEMA:
             raise ValueError('not an identity line')
@@ -1243,9 +1309,14 @@ class Receiver:
         hasher, size, stopped, cause, code, empty = hashlib.sha256(carry), len(carry), False, None, None, None
         settle, emptied = None, (None, None)
         output, pidfd = worker.stdout.fileno(), os.pidfd_open(worker.pid)
+        # VELDO-0141: the worker's error stream, read here like its output, and the run's execution record.
+        errors = worker.stderr.fileno() if getattr(worker, 'stderr', None) is not None else None
+        recorder = self.recorder
         poller = select.poll()
         poller.register(output, select.POLLIN)
         poller.register(pidfd, select.POLLIN)
+        if errors is not None:
+            poller.register(errors, select.POLLIN)
         if group is not None:
             poller.register(group.events, select.POLLPRI | select.POLLERR)
         if watch is not None:
@@ -1276,6 +1347,12 @@ class Receiver:
             # VELDO-0062: a cap the CLI's own report reached stops the worker.
             if metering is not None and metering.feed(chunk):
                 begin('usage_cap')
+        if recorder is not None:
+            # The wrapper's identity line first, then what the engine printed after it.
+            if getattr(worker, 'identity_line', None) is not None:
+                recorder.line('wrapper', worker.identity_line)
+            recorder.feed('engine', carry)
+            recorder.batch()
         take(carry)
         try:
             if self._stop_asked():
@@ -1301,7 +1378,15 @@ class Receiver:
                             poller.unregister(output)
                         size += len(chunk)
                         hasher.update(chunk)
+                        if recorder is not None:
+                            recorder.feed('engine', chunk)
                         take(chunk)
+                    elif fd == errors:
+                        chunk = os.read(errors, 65536)
+                        if not chunk:
+                            poller.unregister(errors)
+                        elif recorder is not None:
+                            recorder.feed('stderr', chunk)
                     elif fd == pidfd:
                         poller.unregister(pidfd)
                         code = worker.wait()
@@ -1320,6 +1405,8 @@ class Receiver:
                             poller.unregister(watch.fd)
                     elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):
                         begin('requested')
+                if recorder is not None:
+                    recorder.batch()
                 now = time.monotonic()
                 if cause is None and code is None and time.time() >= contract['deadline']:
                     begin('deadline')
@@ -1345,8 +1432,19 @@ class Receiver:
             for chunk in iter(lambda: os.read(output, 65536), b''):
                 size += len(chunk)
                 hasher.update(chunk)
+                if recorder is not None:
+                    recorder.feed('engine', chunk)
                 if metering is not None:
                     metering.feed(chunk)
+        if errors is not None:
+            os.set_blocking(errors, False)
+            with contextlib.suppress(OSError):
+                for chunk in iter(lambda: os.read(errors, 65536), b''):
+                    if recorder is not None:
+                        recorder.feed('stderr', chunk)
+        if recorder is not None:
+            # The record's last lines, and what the exit commits of it.
+            self.committed = recorder.close()
         code = worker.poll() if code is None else code
         result = group.conclude() if group is not None and empty else None
         if cause is None and result in ('timeout', 'oom-kill'):
@@ -1364,6 +1462,8 @@ class Receiver:
             group.close()
         feeder.join(timeout=5)
         worker.stdout.close()
+        if errors is not None:
+            worker.stderr.close()
         return {'returncode': code if code is not None and code >= 0 else None,
                 'signal': -code if code is not None and code < 0 else None,
                 'output_digest': 'sha256:' + hasher.hexdigest(), 'output_bytes': size, 'deadline_stop': stopped}

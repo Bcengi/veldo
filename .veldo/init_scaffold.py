@@ -158,6 +158,9 @@ _FILES = [
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
     ".veldo/control_launch.py",
+    # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
+    # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_execution_record.py",
     # VELDO-0040: worker profiles, containment groups, caps and group stop the receiver calls; a
     # runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_containment.py",

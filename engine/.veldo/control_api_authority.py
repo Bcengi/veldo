@@ -23,6 +23,17 @@ control_api_credentials.revoke_as_member, whose journal actor is the member. Eve
 with the operation, domain, principal, credential id, session handle, request id and the assertion
 digest, never the assertion's text or a signature.
 
+THE EXECUTION RECORD (VELDO-0141). `record` serves one run's execution record (control_execution_record) for a
+principal who is a current person member whose scope covers THAT run's project, the project its dispatch's
+contract reserved (else unauthorized:out_of_scope): the kept lines after a cursor, at most a page, each with
+its sequence, receive time, stream, redaction kinds and payload as kept (the receiver redacted every line
+before keeping it; nothing unredacted exists to serve), with the run's identity (dispatch, unit, station,
+project, account, host, state, process) and, once the dispatch has ended, its end and the line count, byte
+count and digest its exit committed, which the file must match or the read is refused by name. An unknown
+run is missing_evidence:unknown_run, a cursor past the end invalid_input:cursor_past_end, a record bound to
+another dispatch or not matching its commitment unknown_outcome:record_binding or :record_digest; none is
+served as an empty record. The records are read from `records`, the receivers' records directory.
+
 A workflow save (AC4) is VELDO-0132's Workflows.save, the only writer of workflow revisions, for the
 verified principal with the base version the assertion carries: its own transaction judges the editor
 (an active person member holding project_owner or technical_authority scoped to the repository) and
@@ -75,6 +86,11 @@ CR = organ('control_api_credentials')
 MO = organ('control_api_models')
 WF = MO.WF
 E = organ('control_channel_enrollment')
+ER = organ('control_execution_record')
+RECORD_SCHEMA = 'veldo.api_execution_record/v1'
+RECORD_LIMIT = 512
+# A dispatch's states once its run has ended (control_dispatch.STATES): its record grows no more.
+ENDED = ('exited', 'refused', 'unknown')
 CM, AC = CR.CM, CR.AC
 SCHEMA = 'veldo.api_authority_observation/v1'
 HINT_SCHEMA = 'veldo.control_notification/v1'  # control_notify.SCHEMA, the VELDO-0046 hint
@@ -139,8 +155,11 @@ class ApiAuthority:
     descriptor holding the authority's lock (authority_problem)."""
 
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
-                 workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None):
+                 workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None,
+                 records=None):
         self.S, self.CM, self.conn = store, membership, conn
+        # VELDO-0141: the launch receivers' records directory (control_execution_record.directory).
+        self.records = records
         self.authority_lock = authority_lock
         self.ids = {f: ids.get(f) for f in AS.IDS}
         self.domain, self.edge = domain, edge
@@ -216,6 +235,38 @@ class ApiAuthority:
     def events(self, principal, after, limit=256):
         """The committed journal records after `after`, oldest first, at most `limit`, for `principal`."""
         return self._answer(principal, lambda: self._feed(after, limit))
+
+    def record(self, principal, dispatch_id, after, limit=RECORD_LIMIT):
+        """One run's execution record after `after`, at most `limit` lines, for `principal` (VELDO-0141)."""
+        def produce():
+            self._authority()
+            if not isinstance(dispatch_id, str) or not dispatch_id or type(after) is not int or after < 0:
+                raise ER.Refused('invalid_input:record', 'a dispatch and a cursor')
+            row = self.conn.execute('SELECT kind, data FROM entities WHERE id=?', ('dispatch:' + dispatch_id,)).fetchone()
+            dispatch = json.loads(row[1]) if row and row[0] == 'dispatch' else None
+            if dispatch is None:
+                raise ER.Refused('missing_evidence:unknown_run', 'no such run')
+            contract = dispatch.get('contract') or {}
+            reservation = contract.get('reservation') or {}
+            member = AC.membership_entry(self.CM.authority_state(self.S, self.conn)['membership'], principal)
+            if not self.CM.scope_covers(member.get('scope'), reservation.get('project')):
+                raise ER.Refused('unauthorized:out_of_scope', 'the run\'s project is outside the member\'s scope')
+            if self.records is None:
+                raise ER.Refused('unavailable_service:records', 'no records directory on this authority')
+            ended = dispatch.get('state') in ENDED
+            committed = dispatch.get('execution_record') if ended else None
+            kept = ER.read(self.records, dispatch_id, after, max(1, min(int(limit), RECORD_LIMIT)), committed)
+            header = kept['header']
+            if header.get('contract_digest') != dispatch.get('contract_digest'):
+                raise ER.Refused('unknown_outcome:record_binding', 'the record is bound to another run')
+            lines = kept['lines']
+            return {'schema': RECORD_SCHEMA, 'dispatch_id': dispatch_id, 'after': after,
+                    'run': {'unit': contract.get('unit'), 'station': contract.get('station'),
+                            'project': reservation.get('project'), 'account': reservation.get('account'),
+                            'host': header.get('host'), 'state': dispatch.get('state'), 'process': dispatch.get('process')},
+                    'lines': lines, 'cursor': lines[-1]['seq'] if lines else after, 'total': kept['total'],
+                    'ended': ended, 'committed': committed}
+        return self._answer(principal, produce)
 
     def feed(self, after, limit=256):
         """The same records for the API edge's own journal follow (ending sessions a record revokes); the
