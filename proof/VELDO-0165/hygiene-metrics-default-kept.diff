@@ -1,0 +1,4 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -247 +246,0 @@
+-                 'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE',

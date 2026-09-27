@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -262 +262 @@
+@@ -269 +269 @@
 -    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))
 +    environment.pop(ENGINE_OVERRIDES, None)

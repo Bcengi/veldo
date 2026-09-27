@@ -1,5 +1,5 @@
 --- a/proof/VELDO-0165/extract_environment.py
 +++ b/proof/VELDO-0165/extract_environment.py
-@@ -110 +110 @@
+@@ -225 +225 @@
 -    parents, structures = parent_environment(engine, data, names)
 +    parents, structures = [n for n in ('CLAUDECODE', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_SESSION_ATTENDED', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_PID', 'CLAUDE_EFFORT', 'AI_AGENT', 'CODEX_THREAD_ID', 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED') if n in names], []

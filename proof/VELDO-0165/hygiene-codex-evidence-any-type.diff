@@ -2,4 +2,4 @@
 +++ b/.veldo/control_engine_codex.py
 @@ -666 +666 @@
 -    if not isinstance(record.get('session_environment'), list):
-+    if not record.get('session_environment'):
++    if record.get('session_environment') is None:
