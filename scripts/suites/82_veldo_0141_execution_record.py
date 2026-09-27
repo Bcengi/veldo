@@ -49,6 +49,7 @@ def _v141_suite():
     import threading
     import time
     import uuid
+    from unittest import mock
 
     TREE = Path(globals().get('__suite_file__', str(ROOT / 'scripts' / 'suites' / 'x.py'))).resolve().parents[2]
     FORMATS = json.loads((TREE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())
@@ -79,7 +80,7 @@ def _v141_suite():
             'redaction/partial-blocks', 'redaction/clone-relative-paths', 'redaction/encoded-values',
             'api/scope-before-existence', 'api/registration-race', 'api/slow-reader', 'route/unknown-committed',
             'redaction/thinking-and-unknown', 'redaction/live-paths', 'redaction/offset-encodings',
-            'redaction/clone-leaf-candidates', 'redaction/uppercase-hex',
+            'redaction/clone-leaf-candidates', 'redaction/uppercase-hex', 'redaction/clone-without-git',
             'api/byte-pages', 'api/fast-catchup', 'route/runner-unknown')
     rows = {name: [] for name in ROWS}
 
@@ -1463,14 +1464,14 @@ err.close()
                 (clone / extra_path).parent.mkdir()
                 (clone / extra_path).touch()
                 paths = ER.Resolved()
-                paths.paths = ER.clone_paths(clone)
+                paths.paths = ER.clone_paths(clone, root=clone)
                 outputs = [GP.run(['git', '-C', str(clone), *args], capture_output=True, text=True).stdout
                            for args in (['diff', '--stat', '--stat-width=240'], ['status', '--short'])]
                 outputs += ['  File "%s", line 1024, in receive\n' % name for name in names]
                 outputs += ['\n'.join(names), extra_path]
                 check('redaction/clone-relative-paths', 'git stat, status and every traceback keep clone file names',
                       len(names) > 1000 and all(ER.redact(out, paths)[0] == out for out in outputs))
-                paths.paths = ER.clone_paths(clone / 'scripts')
+                paths.paths = ER.clone_paths(clone / 'scripts', root=clone)
                 check('redaction/clone-relative-paths', 'cwd and root relative names both resolve',
                       'suites/82_veldo_0141_execution_record.py' in paths.paths
                       and 'scripts/suites/82_veldo_0141_execution_record.py' in paths.paths)
@@ -1480,6 +1481,68 @@ err.close()
                     request_id = 'veldo-initialize-' + os.urandom(8).hex()
                 check('redaction/clone-relative-paths', 'slash-bearing opaque value goes and handshake id stays',
                       ER.redact(opaque, paths)[0] == ENTROPY and ER.redact(request_id, paths)[0] == request_id)
+
+        with region('redaction/clone-without-git'):
+            row = 'redaction/clone-without-git'
+            for layout in ('gitfile', 'fsmonitor'):
+                clone = base / ('hostile-' + layout)
+                cwd = clone / 'nested'
+                cwd.mkdir(parents=True)
+                root_name = fresh() + '.py'
+                cwd_name = fresh() + '.py'
+                (clone / root_name).touch()
+                (cwd / cwd_name).touch()
+                marker = base / ('marker-' + uuid.uuid4().hex)
+                hook = base / ('monitor-' + uuid.uuid4().hex)
+                hook.write_text('#!/bin/sh\ntouch ' + str(marker) + '\n')
+                hook.chmod(0o700)
+                metadata = base / ('elsewhere-' + uuid.uuid4().hex) if layout == 'gitfile' else clone / '.git'
+                metadata.mkdir()
+                (metadata / 'objects').mkdir()
+                (metadata / 'refs').mkdir()
+                (metadata / 'HEAD').write_text('ref: refs/heads/fixture\n')
+                (metadata / 'config').write_text('[core]\nrepositoryformatversion = 0\nfsmonitor = ' + str(hook) + '\n')
+                if layout == 'gitfile':
+                    (clone / '.git').write_text('gitdir: ' + str(metadata) + '\n')
+                calls = []
+
+                def spy_run(argv, **kwargs):
+                    calls.append(argv)
+                    return subprocess.CompletedProcess(argv, 1, stdout='', stderr='')
+
+                def spy_popen(*args, **kwargs):
+                    calls.append(args)
+                    raise AssertionError('recorder attempted to start a process')
+
+                with mock.patch.object(subprocess, 'run', spy_run), mock.patch.object(subprocess, 'Popen', spy_popen):
+                    resolved = ER.Resolved()
+                    resolved.paths = ER.clone_paths(cwd, root=clone)
+                    payload = root_name + ' nested/' + cwd_name + ' ' + cwd_name
+                    recorder = ER.Recorder(base / ('records-' + layout), {'dispatch_id': layout}, resolved)
+                    recorder.line('engine', payload.encode())
+                    committed = recorder.close()
+                    lines = ER.read(base / ('records-' + layout), layout, 0, 100, committed=committed)['lines']
+                    check(row, layout + ' keeps root and cwd paths readable',
+                          len(lines) == 1 and lines[0]['payload'] == payload)
+                    fallback = ER.Resolved()
+                    fallback.paths = ER.clone_paths(cwd)
+                    check(row, layout + ' without a supplied root falls back only to cwd',
+                          fallback.paths.root == str(cwd) and ER.redact(cwd_name, fallback)[0] == cwd_name
+                          and ER.redact(root_name, fallback)[0] != root_name)
+                    check(row, 'absent cwd supplies no membership', ER.clone_paths(None, root=clone) == ())
+                    receiver = object.__new__(L.Receiver)
+                    receiver.contract = main_launch.contract
+                    receiver.host, receiver.binding = HOST, None
+                    receiver.config = {'clone_root': str(clone), 'records': str(base / ('receiver-' + layout))}
+                    receiver._engine_cwd = lambda *args: str(cwd)
+                    with mock.patch.object(L, 'RESOLVERS', []):
+                        receiver._record({'argv': []}, {})
+                    receiver.recorder.line('engine', payload.encode())
+                    receiver.recorder.close()
+                    check(row, layout + ' receiver passes its configured clone root',
+                          receiver.resolved.paths.root == str(clone)
+                          and L.ER.redact(payload, receiver.resolved)[0] == payload)
+                check(row, layout + ' never starts a process or triggers fsmonitor', not calls and not marker.exists())
 
         with region('redaction/encoded-values'):
             import base64
@@ -1675,7 +1738,7 @@ err.close()
                 old = 'src/components/ReviewExecutionRecordPanelView.tsx'
                 (clone / old).touch()
                 resolved = ER.Resolved()
-                resolved.paths = ER.clone_paths(clone)
+                resolved.paths = ER.clone_paths(clone, root=clone)
                 new = 'src/components/NewlyCreatedDuringTheRunPanelView.tsx'
                 (clone / new).touch()
                 dash = chr(45) * 2
@@ -1703,7 +1766,7 @@ err.close()
             clone = base / 'candidate-leaf-clone'
             clone.mkdir()
             resolved = ER.Resolved()
-            resolved.paths = ER.clone_paths(clone)
+            resolved.paths = ER.clone_paths(clone, root=clone)
             while True:
                 candidate = ''.join(pick.choice(string.ascii_letters + string.digits) for _ in range(36))
                 leaf = candidate + '.' * 30

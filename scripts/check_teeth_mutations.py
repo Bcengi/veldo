@@ -8190,9 +8190,17 @@ def cases():
               "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=None)\n",
               ['route/unknown-committed'])
     record141('record141-receiver-clone-unlisted', 'control_launch.py',
-              "        self.resolved.paths = ER.clone_paths(self._engine_cwd(argv, contract['dispatch_id'],\n                                                               adapter.get('identity') == 'reported'))\n",
+              "        self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))\n",
               '        self.resolved.paths = ()  # defect: receiver never snapshots its clone\n',
               ['redaction/clone-relative-paths'])
+    record141('record141d-clone-git-discovery-restored', 'control_execution_record.py',
+              '    root = Path(root if root is not None else cwd).absolute()\n',
+              "    spec = importlib.util.spec_from_file_location('record_git', Path(__file__).with_name('git_process.py'))\n"
+              "    gp = importlib.util.module_from_spec(spec)\n"
+              "    spec.loader.exec_module(gp)\n"
+              "    found = gp.run(['git', '-C', str(cwd), 'rev-parse', '--show-toplevel'], capture_output=True, text=True)\n"
+              "    root = Path(found.stdout.strip()) if found.returncode == 0 else Path(cwd).absolute()\n",
+              ['redaction/clone-without-git'])
     record141('record141-concurrent-fills-interleave', 'control_api.py',
               '        with stream._fill_lock:\n            self._fill_record_locked(stream, answer, always)\n',
               '        self._fill_record_locked(stream, answer, always)  # defect: overlapping fills interleave frames\n',

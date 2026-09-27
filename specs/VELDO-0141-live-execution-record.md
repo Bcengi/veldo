@@ -279,3 +279,5 @@ records. Exact resolved forms cover embedded base64 and lowercase hex. Six regre
 finding-141 mutations cover these changes. Acceptance criteria and ready status unchanged.
 
 2026-09-27, review regression fixes: score both whole missing clone leaves and each scanner candidate within them; redact uppercase hex resolved values alongside lowercase hex. Two assertion rows and two finding-141 mutations cover both regressions while keeping real clone file leaves readable.
+
+2026-09-27, Git boundary review fix: the receiver passes its known clone work root and run cwd into path membership; absent a supplied root, membership uses cwd without Git discovery or configuration reads. The hostile gitfile and fsmonitor row spies on subprocess launches, keeps clone paths readable, and rejects the finding-141 mutation that restores rev-parse.

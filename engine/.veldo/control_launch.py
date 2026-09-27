@@ -675,7 +675,8 @@ class Receiver:
     environment?, identity?}}}. `host_trust` is this host's installed trust file, whose settlement
     signers the recheck's Gate verifies governing decisions with (VELDO-0069), exactly as the front
     door's Gate does. `profile` is this host's worker profile (control_containment); `control` is the
-    runner's channel after its request line (fd, what was already read of it), where it asks for a stop."""
+    runner's channel after its request line (fd, what was already read of it), where it asks for a stop.
+    Optional `clone_root` names the launcher's known work root for execution record path membership."""
 
     def __init__(self, config, emit, control=None):
         self.config, self.emit = config, emit
@@ -731,8 +732,10 @@ class Receiver:
                   'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
                   'host': self.host}
         argv = (self.binding or {}).get('argv', adapter['argv'])
-        self.resolved.paths = ER.clone_paths(self._engine_cwd(argv, contract['dispatch_id'],
-                                                               adapter.get('identity') == 'reported'))
+        cwd = self._engine_cwd(argv, contract['dispatch_id'], adapter.get('identity') == 'reported')
+        # The clone entrance's dispatch record supplies its work root. Direct launches may name a
+        # containing root in trusted receiver config when their cwd is a subdirectory.
+        self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))
         self.recorder = ER.Recorder(ER.directory(self.config), header, self.resolved,
                                     hints=self.config.get('record_hints') or ())
 

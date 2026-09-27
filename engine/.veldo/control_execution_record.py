@@ -335,15 +335,11 @@ class ClonePaths:
         return False
 
 
-def clone_paths(cwd):
-    """Locate the clone once; membership observes files created during the run without a tree walk."""
+def clone_paths(cwd, root=None):
+    """Use the launcher's known clone root, or cwd; never discover it through worker Git metadata."""
     if not cwd:
         return ()
-    spec = importlib.util.spec_from_file_location('record_git', Path(__file__).with_name('git_process.py'))
-    gp = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(gp)
-    root = gp.run(['git', '-C', str(cwd), 'rev-parse', '--show-toplevel'], capture_output=True, text=True)
-    root = Path(root.stdout.strip()) if root.returncode == 0 else Path(cwd).absolute()
+    root = Path(root if root is not None else cwd).absolute()
     return ClonePaths(root, Path(cwd).absolute())
 
 
