@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0171
 title: Factory setup writes the API configuration, enrolls the API edge and installs the API behind Tailscale Serve, so the owner enrolls his first passkey on a fresh host, and a second run changes nothing
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -274,3 +274,5 @@ background persistence against the suite-owned invocation log after setup exits.
 2026-09-27, build: the three read-only commands cannot show the operator setting or `--bg` support, so the
 builder stopped before writing code. AC2 adds two read-only sources: `tailscale debug prefs` (OperatorUser) and
 `tailscale serve --help` (lists `--bg`). Back to draft for the owner's re-mark.
+
+2026-09-27: marked ready again by the owner (Telegram 29237, "Ok" after the explanation in 29235 and 29236).
