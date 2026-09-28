@@ -163,9 +163,11 @@ def _v75_checks(base):
                       dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=who,
                            chat_id=5560075 + n, revoked_at=None))
 
+        A.fixture('project:project-a', 'project', dict(name='project-a', state='ACTIVE', owner='owner'))
+
         def unit(uid, state):
             A.fixture(uid, 'execution_unit', {'unit_id': uid, 'state': state, 'repository_uuid': ids['repository_uuid'],
-                                              'station_contract': None})
+                                              'station_contract': None, 'project': 'project-a'})
             return uid
 
         def entity(eid):

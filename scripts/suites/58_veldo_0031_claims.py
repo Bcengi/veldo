@@ -33,6 +33,9 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_shutil.copyfile(ROOT / '.veldo' / (_v31_name + '.py'), _v31_modules / (_v31_name + '.py'))
     _v31_shutil.copyfile(ROOT / ".veldo" / "control_claim.py", _v31_modules / 'control_claim.py')
     _v31_shutil.copyfile(ROOT / ".veldo" / "control_claim_client.py", _v31_modules / 'control_claim_client.py')
+    for _v31_source in (ROOT / '.veldo').glob('*.py'):
+        if not (_v31_modules / _v31_source.name).exists():
+            _v31_shutil.copyfile(_v31_source, _v31_modules / _v31_source.name)
     _v31_C = _v31_load('claims31', _v31_modules / 'control_claim.py')
     _v31_CC = _v31_load('client31', _v31_modules / 'control_claim_client.py')
     _v31_G = _v31_load('git31', _v31_modules / 'git_process.py')
@@ -92,10 +95,12 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_write(_v31_w, 'membership', dict(principal_type='agent_run', roles=[], scope='*'))
         _v31_write('key-' + _v31_w, 'verification_key', dict(principal=_v31_w,
                     public_key=_v31_public[_v31_w], effective_at=0))
+    _v31_write('owner', 'membership', dict(principal_type='person', roles=['project_owner'], scope='*'))
+    _v31_write('project:claims', 'project', dict(name='claims', state='ACTIVE', owner='owner'))
     _v31_write('backlog', 'backlog_item', dict(state='PRIORITIZED', repository_uuid=_v31_ids['repository_uuid']))
     for _v31_unit in ('unit', '__land_lock__', 'capability-unit'):
         _v31_write(_v31_unit, 'execution_unit', dict(state='READY', repository_uuid=_v31_ids['repository_uuid'],
-                    backlog_item_uuid='backlog', requirements=['mac'] if _v31_unit == 'capability-unit' else [],
+                    project='claims', backlog_item_uuid='backlog', requirements=['mac'] if _v31_unit == 'capability-unit' else [],
                     eligible_holders=['worker-a', 'worker-b']))
     _v31_ctx = _v31_mp.get_context('fork')
     _v31_stop, _v31_ready = _v31_ctx.Event(), _v31_ctx.Event()

@@ -352,7 +352,7 @@ expect("VELDO-0023 AC3 journal/replay-determinism: seven records of every transi
        "and the store imports only the standard library (no execution runtime); in-process replay agrees and compare_with_live matches",
        _v23_rp.returncode == 0 and _v23_rp_out.get("state_digest") == CS23.state_digest(_v23_live) and _v23_rp_out.get("records") == 7
        and _v23_rp_out.get("head") == _v23_hist[-1]["record_digest"] and _v23_rp_out.get("sqlite_loaded") is False
-       and _v23_replay_imports == ["hashlib", "json"] and set(_v23_store_imports) <= {"hashlib", "json", "os", "signal", "sqlite3", "subprocess", "time"}
+       and _v23_replay_imports == ["hashlib", "json"] and set(_v23_store_imports) <= {"hashlib", "importlib", "json", "os", "signal", "sqlite3", "subprocess", "time"}
        and CR23.compare_with_live(CR23.replay(_v23_hist, _v23_stub_verify), _v23_live)["matches"] is True
        and CR23.compare_with_live(CR23.replay(_v23_hist, _v23_stub_verify), dict(_v23_live, entities=dict(_v23_live["entities"], E9={"kind": "k", "version": 1, "digest": "d", "data": {}})))["matches"] is False)
 # THE REVIEW'S FOUR FINDINGS, each pinned (review-20260917-220917).

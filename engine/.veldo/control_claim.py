@@ -20,12 +20,25 @@ claim stays released with no holder and loses `parked_on`, so the unit is claima
 ordinary `claim` with its own eligibility, capability and activation checks. Like `park` and
 `resume`, it is not an IPC operation of the Receiver.
 
-Project lifecycle (VELDO-0076). A claim of a unit that names a project is refused by name when the
+Project lifecycle (VELDO-0076). Every claim of a unit is refused by name when the
 shared eligibility Gate's own project check refuses it (project_not_active:PAUSED, :CANCELED,
 :COMPLETED, :owner_not_current, :not_a_project, or missing_authority:project): a stopped project
 takes no new assignment. The project and owner records that check read are pinned in the claim's
 transaction. Renew, release and use of an existing claim are not new assignments; running work
 follows the host stop policy.
+
+The claim organ (VELDO-0169). Every claim record is decided by one function of this module,
+`transition(conn, params, before)`, which every service calls inside its own store transaction
+and which is itself a store transaction transition. For every transition that hands work
+out (HANDOUTS: a claim, a resume, and the unpark of a disposition's backlog outcome) the organ asks
+the shared eligibility Gate's project check (control_eligibility.Gate.project_problems) for the
+unit, on the transaction's own connection while that transaction holds the write lock, and refuses
+by the Gate's own name with nothing written when it finds any problem, before any other reason.
+The store holds the same invariant in its commit path for every writer of a claim record
+(control_store.handout_problem), whoever built the record; the organ's check refuses earlier, by
+the same name. The callers ask the same check before they build the command, to name a refusal
+early and to pin the records it read. Park, release, renew and use hand nothing out and are not
+checked.
 
 Receiver.apply plugs into control_client.Authority. Its inner command signature
 identifies an active stored member independently of the transport credential.
@@ -49,6 +62,10 @@ CM = organ('control_membership')
 AC = CM.AC
 CL = organ('claim')
 OPERATIONS = ('claim', 'renew', 'release', 'use', 'inspect')
+# The record kind the claim organ decides (VELDO-0169).
+KIND = 'claim'
+# The transitions that hand work out (VELDO-0169): the organ asks the Gate's project check for each.
+HANDOUTS = ('claim', 'resume', 'unpark')
 # Rereads of one command whose pinned versions kept moving; past this the conflict is the answer.
 ATTEMPTS = 16
 
@@ -91,7 +108,34 @@ def ownership(data, unit, backlog, action='inspect'):
     return 'owned' if live == 'live' else 'ownership_uncertain'
 
 
-def transition(params, before):
+_ELIGIBILITY = []
+
+
+def _project_gate(conn):
+    """The shared eligibility Gate over `conn`, for its project check alone, which reads the unit, its
+    project record and the owner's membership and no domain or repository coordinate. Kept on the
+    connection it reads, so it lives exactly as long as that handle."""
+    gate = getattr(conn, 'claim_project_gate', None)
+    if gate is None or gate.conn is not conn:
+        if not _ELIGIBILITY:
+            _ELIGIBILITY.append(organ('control_eligibility'))
+        gate = conn.claim_project_gate = _ELIGIBILITY[0].Gate(S, conn, domain_uuid=None, repository_uuid=None)
+    return gate
+
+
+def transition(conn, params, before):
+    """The claim organ, as a store transaction transition: every claim record's one decision, for
+    `params` over the command's `before`, inside the command transaction open on `conn`. A handout
+    first asks the Gate's project check of its unit on that connection, and is refused by the Gate's
+    own name when the check finds a problem."""
+    if params['action'] in HANDOUTS:
+        refusals, _read = _project_gate(conn).project_problems(params['unit_id'])
+        if refusals:
+            raise S.StoreRefused(refusals[0], 'the unit\'s project takes no new assignment')
+    return _changes(params, before)
+
+
+def _changes(params, before):
     unit, backlog, cid = params['unit_id'], params['backlog_item_uuid'], params['claim_id']
     u, b = before[unit]['data'], before[backlog]['data']
     current = before.get(cid, {}).get('data', {})
@@ -162,8 +206,9 @@ class Receiver:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self.gate = None
-        S.COMMAND_REGISTRY['claim_operation'] = {
-            'transition': transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
+        # VELDO-0169: the claim organ decides every claim record, on this receiver's own connection.
+        conn.command_registry['claim_operation'] = {
+            'transaction_transition': self._in_transaction, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 
     def apply(self, packet):
         command = packet.get('command', {}) if isinstance(packet, dict) else {}
@@ -187,6 +232,9 @@ class Receiver:
             break
         observation.update(outcome='accepted' if result['ok'] else 'refused', reason=result.get('reason'))
         self.counts[observation['outcome']] += 1
+        if not result['ok']:
+            reasons = self.counts.setdefault('refused_by_reason', {})
+            reasons[result['reason']] = reasons.get(result['reason'], 0) + 1
         self.observations.append(observation)
         return result
 
@@ -199,6 +247,13 @@ class Receiver:
                                 repository_uuid=self.ids['repository_uuid'],
                                 authority_generation=self.authority_generation)
         return self.gate.project_problems(unit)
+
+    def _in_transaction(self, conn, params, before):
+        """claim_operation inside its store transaction, on this receiver's connection: the claim organ
+        decides it there (and asks the Gate's project check of a claim itself)."""
+        if conn is not self.conn or not conn.in_transaction:
+            raise S.StoreRefused('wrong_connection', 'the claim is written in this receiver\'s store transaction')
+        return transition(conn, params, before)
 
     def _pins_moved(self, pinned):
         entities = S.materialized_state(self.conn)['entities']
@@ -247,18 +302,24 @@ class Receiver:
         # Bind every authorization and activation input to the store transaction.
         touched = {unit, backlog, cid, principal, key['key_id'], CM.VERSIONS_ENTITY}
         versions = {eid: entities.get(eid, {}).get('version', 0) for eid in touched}
-        if command['operation'] == 'claim' and u['data'].get('project') is not None:
+        if command['operation'] == 'claim':
             # VELDO-0076: a paused, canceled or completed project takes no new assignment. The check is the
             # one every station makes; the project and owner records it read are pinned with the rest, so
             # a pause committed before this claim refuses it by name, never after it.
             refusals, read = self._project_problems(unit)
+            versions.update(read)
+            observation.update(project=u['data'].get('project'), accepted_versions=dict(versions))
             if refusals:
                 raise S.StoreRefused(refusals[0], 'the unit\'s project takes no new assignment')
-            versions.update(read)
+            params = dict(action='claim', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
+                          holder=principal, generation=command['generation'], capabilities=command['capabilities'],
+                          repository_uuid=self.ids['repository_uuid'])
+        else:
+            # Renew, release and use of a claim already held hand nothing out.
+            params = dict(action=command['operation'], unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
+                          holder=principal, generation=command['generation'], capabilities=command['capabilities'],
+                          repository_uuid=self.ids['repository_uuid'])
         observation['accepted_versions'] = versions
-        params = dict(action=command['operation'], unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
-                      holder=principal, generation=command['generation'], capabilities=command['capabilities'],
-                      repository_uuid=self.ids['repository_uuid'])
         stored = dict(command_id=command['command_id'], principal=principal, operation='claim_operation',
                       parameters=params, expected_versions=versions, artifact_digests=[], nonce=command['nonce'])
         result = S.execute(self.conn, stored, self.journal_signer, self.sign, self.authority_generation)

@@ -151,7 +151,7 @@ def _v155_suite():
         member('runner', 'service', ['reservation_service'])
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         # The owner's Claude Code accounts: a plain one, one configured with a subscription token, one whose

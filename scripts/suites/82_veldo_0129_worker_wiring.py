@@ -184,7 +184,7 @@ def _v129_suite():
             accounts.register('register/' + account, fields['account'], fields['provider'], fields['label'],
                               fields['profiles'], now=time.time())
             res.configure('policy/' + account, 'account', account, ceiling, now=time.time())
-        writer.command_registry['claim_operation'] = {'transition': L.D.CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': L.D.CLM.transition,
                                                        'writes': ('entities', 'journal', 'commands', 'nonces')}
         def admit(unit, risk='standard'):
             put(unit, 'execution_unit', dict(state='READY', repository_uuid=repository, backlog_item_uuid='backlog:' + unit,

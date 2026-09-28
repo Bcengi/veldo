@@ -101,7 +101,7 @@ def _v40_suite():
             put(principal, 'membership', dict(principal_type='service', roles=['reservation_service'],
                                               scope=[REPOSITORY], revoked_at=None, expires_at=None))
         put('project:p1', 'project', dict(name='containment'))
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         def authority(conn, command):
