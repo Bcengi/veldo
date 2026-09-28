@@ -749,6 +749,83 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
     Returns what it laid down."""
     runner = runner or Systemctl()
+    laid = layout(workspaces, host_trust=host_trust, key_directory=key_directory, install_root=install_root,
+                  unit_dir=unit_dir, profile=profile, adapters=adapters, writable=writable, principal=principal,
+                  receiver_principal=receiver_principal, python=python, channel_ingress=channel_ingress,
+                  api_service=api_service, work=work)
+    first, root, home, unit_dir, unit_path = laid['first'], laid['root'], laid['home'], laid['unit_dir'], laid['unit_path']
+    service, unit, journal, keys, config = laid['service'], laid['unit'], laid['journal'], laid['keys'], laid['config']
+    bin_dir, config_dir, state_dir, config_path = laid['bin'], laid['config_dir'], laid['state'], laid['config_path']
+    fixed, text, values, repositories = laid['fixed'], laid['text'], laid['values'], laid['repositories']
+    ingress, api, lines = laid['ingress'], laid['api'], laid['lines']
+
+    created, generated = [], False
+    try:
+        os.makedirs(os.path.dirname(first['store_path']), mode=0o700, exist_ok=True)
+        os.makedirs(root, exist_ok=True)
+        os.mkdir(home, 0o700)
+        created.append(home)
+        for directory in (bin_dir, config_dir, state_dir):
+            os.mkdir(directory, 0o700)
+        for name, data in fixed.items():
+            _write(os.path.join(bin_dir, name), data, fixed_mode(name))
+        os.chmod(bin_dir, BIN_MODE)
+        if not os.path.lexists(journal):
+            subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,
+                            '-f', journal], check=True, capture_output=True, timeout=30, stdin=subprocess.DEVNULL)
+            generated = True
+            os.chmod(journal, 0o600)
+        _write(os.path.join(config_dir, 'enrollment_signers'), laid['signers'], 0o600)
+        if ingress is not None:
+            _write(os.path.join(config_dir, CHANNEL_INGRESS), ingress, 0o600)
+        if api is not None:
+            _write(os.path.join(config_dir, API_SERVICE), api, 0o600)
+        if lines is not None:
+            _write(os.path.join(config_dir, WORK), lines, 0o600)
+        for path, record in laid['receivers'].items():
+            _write(path, _json(record), 0o600)
+        _write(config_path, _json(config), 0o600)
+        os.makedirs(unit_dir, exist_ok=True)
+        _write(unit_path, text, 0o644)
+        created.append(unit_path)
+    except BaseException:
+        for path in reversed(created):
+            with contextlib.suppress(OSError):
+                if os.path.isdir(path):
+                    _remove_tree(path)
+                else:
+                    os.unlink(path)
+        if generated:
+            for path in (journal, journal + '.pub'):
+                with contextlib.suppress(OSError):
+                    os.unlink(path)
+        raise
+    reload_rc, _out, _err = runner.run(['daemon-reload'])
+    return {'service': service, 'unit': unit, 'unit_path': unit_path, 'home': home, 'config': config_path,
+            'executable': values['EXECUTABLE'], 'closure': sorted(fixed), 'receiver': config['receiver'], 'key_directory': keys,
+            'journal_key': journal, 'journal_key_generated': generated, 'profile': laid['qualification'],
+            'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
+            'channel_ingress': config['channel_ingress'], 'api_service': config['api_service'], 'work': config['work'],
+            'daemon_reload_rc': reload_rc, 'started': False}
+
+
+# The installer's modes: the fixed executable's entry points run, every other module is only read, and
+# the engine directory itself is read-only.
+BIN_MODE = 0o500
+
+
+def fixed_mode(name):
+    return 0o500 if name in ENTRY_POINTS else 0o400
+
+
+def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None, profile=None,
+           adapters=None, writable=None, principal='authority', receiver_principal='launch-receiver', python=None,
+           channel_ingress=None, api_service=None, work=None, existing=False):
+    """Everything install() writes for these arguments, checked and rendered, nothing written: the fixed
+    executable's files (closure()), the unit text, the installation's service configuration and every
+    receiver configuration. install() writes exactly this; a re-run of factory setup (VELDO-0189) renders it
+    for an installation laid down before (`existing`, so an installed home is expected, not refused) and
+    takes from it the current engine and the keys an earlier installer did not write."""
     python = os.path.realpath(python or sys.executable)
     trust_path = host_trust or EL.host_trust_path()
     try:
@@ -803,7 +880,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     if not isinstance(adapters, dict) or not all(isinstance(v, dict) and isinstance(v.get('argv'), list)
                                                  for v in adapters.values()):
         raise Refused('invalid_input:adapters', 'adapters map each name to {argv: [...]}')
-    for path in (home, unit_path):
+    for path in (() if existing else (home, unit_path)):
         if os.path.lexists(path):
             raise Refused('invalid_input:already_installed', path,
                           'stop and uninstall it first: python3 control_service.py uninstall %s' % unit)
@@ -836,77 +913,35 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
               'PYTHON': python, 'EXECUTABLE': os.path.join(bin_dir, 'control_service.py'), 'CONFIG': config_path}
     text = unit_text(values)
     fixed = {name: (HERE / name).read_bytes() for name in closure()}
-
-    created, generated = [], False
-    try:
-        os.makedirs(os.path.dirname(first['store_path']), mode=0o700, exist_ok=True)
-        os.makedirs(root, exist_ok=True)
-        os.mkdir(home, 0o700)
-        created.append(home)
-        for directory in (bin_dir, config_dir, state_dir):
-            os.mkdir(directory, 0o700)
-        for name, data in fixed.items():
-            _write(os.path.join(bin_dir, name), data, 0o500 if name in ENTRY_POINTS else 0o400)
-        os.chmod(bin_dir, 0o500)
-        if not os.path.lexists(journal):
-            subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,
-                            '-f', journal], check=True, capture_output=True, timeout=30, stdin=subprocess.DEVNULL)
-            generated = True
-            os.chmod(journal, 0o600)
-        _write(os.path.join(config_dir, 'enrollment_signers'), signers, 0o600)
-        if ingress is not None:
-            _write(os.path.join(config_dir, CHANNEL_INGRESS), ingress, 0o600)
-        if api is not None:
-            _write(os.path.join(config_dir, API_SERVICE), api, 0o600)
-        if lines is not None:
-            _write(os.path.join(config_dir, WORK), lines, 0o600)
-        receivers = {}
-        for repository, members in sorted(repositories.items()):
-            path = os.path.join(config_dir, 'receiver-%s.json' % hashlib.sha256(repository.encode()).hexdigest()[:16])
-            _write(path, _json({'store': first['store_path'], 'journal_key': journal, 'principal': receiver_principal,
+    receivers = {}
+    for repository, members in sorted(repositories.items()):
+        path = os.path.join(config_dir, 'receiver-%s.json' % hashlib.sha256(repository.encode()).hexdigest()[:16])
+        receivers[path] = dict({'store': first['store_path'], 'journal_key': journal, 'principal': receiver_principal,
                                 'domain': first['domain_uuid'], 'repository': repository,
                                 'authority_generation': first['authority_generation'], 'workspace': members[0],
                                 'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,
-                                'adapters': adapters}), 0o600)
-            receivers[repository] = path
-        config = {'schema': SCHEMA, 'service': service, 'unit': unit, 'domain_uuid': first['domain_uuid'],
-                  'store_uuid': first['store_uuid'], 'store_path': first['store_path'],
-                  'socket': CC.socket_path_for(first), 'lock': os.path.join(os.path.dirname(first['store_path']), LOCK_NAME),
-                  'host_identity': trust.host_identity, 'authority_generation': first['authority_generation'],
-                  'repositories': repositories, 'enrollments': {w: E.binding_digest(b) for w, b in bindings.items()},
-                  'enrollment_signers': os.path.join(config_dir, 'enrollment_signers'), 'principal': principal,
-                  'journal_key': journal, 'key_directory': keys,
-                  'observations': os.path.join(state_dir, 'observations.jsonl'),
-                  'executable': values['EXECUTABLE'], 'python': python,
-                  'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': receivers},
-                  'closure': {name: _digest(data) for name, data in fixed.items()},
-                  'template': _digest(TEMPLATE.read_bytes()),
-                  'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None,
-                  'api_service': os.path.join(config_dir, API_SERVICE) if api is not None else None,
-                  'work': os.path.join(config_dir, WORK) if lines is not None else None}
-        _write(config_path, _json(config), 0o600)
-        os.makedirs(unit_dir, exist_ok=True)
-        _write(unit_path, text, 0o644)
-        created.append(unit_path)
-    except BaseException:
-        for path in reversed(created):
-            with contextlib.suppress(OSError):
-                if os.path.isdir(path):
-                    _remove_tree(path)
-                else:
-                    os.unlink(path)
-        if generated:
-            for path in (journal, journal + '.pub'):
-                with contextlib.suppress(OSError):
-                    os.unlink(path)
-        raise
-    reload_rc, _out, _err = runner.run(['daemon-reload'])
-    return {'service': service, 'unit': unit, 'unit_path': unit_path, 'home': home, 'config': config_path,
-            'executable': values['EXECUTABLE'], 'closure': sorted(fixed), 'receiver': config['receiver'], 'key_directory': keys,
-            'journal_key': journal, 'journal_key_generated': generated, 'profile': qualification,
-            'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
-            'channel_ingress': config['channel_ingress'], 'api_service': config['api_service'], 'work': config['work'],
-            'daemon_reload_rc': reload_rc, 'started': False}
+                                'adapters': adapters})
+    config = {'schema': SCHEMA, 'service': service, 'unit': unit, 'domain_uuid': first['domain_uuid'],
+              'store_uuid': first['store_uuid'], 'store_path': first['store_path'],
+              'socket': CC.socket_path_for(first), 'lock': os.path.join(os.path.dirname(first['store_path']), LOCK_NAME),
+              'host_identity': trust.host_identity, 'authority_generation': first['authority_generation'],
+              'repositories': repositories, 'enrollments': {w: E.binding_digest(b) for w, b in bindings.items()},
+              'enrollment_signers': os.path.join(config_dir, 'enrollment_signers'), 'principal': principal,
+              'journal_key': journal, 'key_directory': keys,
+              'observations': os.path.join(state_dir, 'observations.jsonl'),
+              'executable': values['EXECUTABLE'], 'python': python,
+              'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': {
+                  record['repository']: path for path, record in receivers.items()}},
+              'closure': {name: _digest(data) for name, data in fixed.items()},
+              'template': _digest(TEMPLATE.read_bytes()),
+              'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None,
+              'api_service': os.path.join(config_dir, API_SERVICE) if api is not None else None,
+              'work': os.path.join(config_dir, WORK) if lines is not None else None}
+    return {'first': first, 'root': root, 'home': home, 'unit_dir': unit_dir, 'unit_path': unit_path, 'service': service,
+            'unit': unit, 'journal': journal, 'keys': keys, 'qualification': qualification, 'bin': bin_dir,
+            'config_dir': config_dir, 'state': state_dir, 'config_path': config_path, 'values': values, 'text': text,
+            'fixed': fixed, 'signers': signers, 'ingress': ingress, 'api': api, 'lines': lines,
+            'receivers': receivers, 'config': config, 'repositories': repositories}
 
 
 def uninstall(unit, *, install_root=None, unit_dir=None, runner=None):

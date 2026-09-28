@@ -54,6 +54,7 @@ import platform
 import re
 import stat
 import subprocess
+import sys
 import time
 import uuid
 
@@ -785,16 +786,22 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     service_text = api_service_text(plan, ids, name)
     unit_body = _api(lambda: API.unit_text(authority_unit, installed.get('python') or '', api['executable'],
                                            api['process_config']))
+    # VELDO-0189: the installed engine against the current one, from the installation's record, read only
+    # here; the upgrade is the first step this run writes.
+    engine = inspect_engine(plan, installed, home, unit_dir, (api['unit_path'], unit_body)
+                            if os.path.lexists(api['unit_path']) else None)
     states = {'service_config': API.file_state(api['service_config'], service_text, 0o600, _differs),
               'installed_service_config': API.file_state(api['installed_service_config'], service_text, 0o600, _differs),
               'process_config': API.file_state(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600,
                                                _differs),
-              'unit': API.file_state(api['unit_path'], unit_body, 0o644, _differs),
+              # An API unit the upgrade renders again from the current template is judged as that rendering.
+              'unit': ('equal' if engine['state'] != 'current' and os.path.lexists(api['unit_path'])
+                       else API.file_state(api['unit_path'], unit_body, 0o644, _differs)),
               'wants': API.link_state(api['wants'], api['unit'], _differs)}
     named = installed.get('api_service')
     if named is not None and named != api['installed_service_config']:
         raise _differs(api['service_json'])
-    if not os.path.isfile(api['executable']):
+    if not os.path.isfile(api['executable']) and API.API_EXECUTABLE not in engine['current']:
         raise Refused('unavailable_service:api:not_installed', 'the installed engine has no API process (%s)'
                       % api['executable'])
     lock = take_lock(root, create=False)
@@ -805,7 +812,10 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 raise Refused('invalid_input:state_root:service_running:' + missing[0],
                               'the running service takes no command for this store write')
             raise Refused('invalid_input:state_root:holds_store', 'a store setup did not complete (%s)' % missing[0])
-        outcomes = [{'step': step, 'outcome': 'already_done'} for step in BASE_STEPS[:8]]
+        # VELDO-0189: an earlier engine is replaced by the current one before any other step writes.
+        upgraded = upgrade_engine(plan, engine, runner, running)
+        installed = json.loads(Path(api['service_json']).read_text())
+        outcomes = [upgraded] + [{'step': step, 'outcome': 'already_done'} for step in BASE_STEPS[:8]]
 
         def mark(step, wrote, **extra):
             outcomes.append(dict({'step': step, 'outcome': 'done' if wrote else 'already_done'}, **extra))
@@ -913,7 +923,56 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'workspace': workspace, 'ingress': os.path.join(host, 'ingress.json'), 'token_file': plan['token_file'],
             'unit': authority_unit, 'unit_path': os.path.join(unit_dir, authority_unit), 'home': home,
             'started': started, 'service_running': running, 'steps': outcomes,
-            'api': api_report(name, port, api, through), 'next': next_step}
+            'api': api_report(name, port, api, through), 'next': next_step or upgraded.get('next')}
+
+
+# ---------------------------------------------------------------------------------------------
+# The engine upgrade (VELDO-0189), the first step of a re-run
+# ---------------------------------------------------------------------------------------------
+
+def inspect_engine(plan, installed, home, unit_dir, api_unit):
+    """What the installed engine needs, read only: the current installer's rendering for this installation's
+    arguments (control_service.layout) compared with the installation's record (control_factory_setup_upgrade)."""
+    CS, UP = organ('control_service'), organ('control_factory_setup_upgrade')
+    try:
+        laid = CS.layout([plan['workspace']], host_trust=plan['host_trust'], key_directory=plan['keys'],
+                         install_root=plan['install_root'], unit_dir=unit_dir, profile=plan['profile'],
+                         writable=plan['writable'], principal=installed.get('principal') or JOURNAL_PRINCIPAL,
+                         python=installed.get('python'),
+                         channel_ingress=os.path.join(plan['root'], HOST_DIR, 'ingress.json'), existing=True)
+    except CS.Refused as exc:
+        raise Refused(exc.code, exc.detail) from None
+    if laid['home'] != home:
+        raise Refused('invalid_input:state_root:holds_install_root', 'the installation is not where its record is')
+    engine = _api(lambda: UP.inspect(laid, installed, os.path.join(home, 'config', 'service.json'), api_unit))
+    engine['module'] = UP
+    return engine
+
+
+def service_answers(plan):
+    """A check that the running authority service answers an inspect over its socket, signed by the owner."""
+    CC, CE, EL, ACT = organ('control_client'), organ('control_enrollment'), organ('control_eligibility'), organ(
+        'control_channel_activation')
+    workspace, owner_sign = plan['workspace'], ACT.ssh_signer(plan['owner_key'])
+    trust, binding = EL.load_host_trust(plan['host_trust']), CE.read_binding(workspace)
+    verify = trust.verifier(binding.get('enrolled_by'), workspace)
+
+    def answers():
+        try:
+            answer = CC.send(workspace, {'operation': 'inspect', 'entity_ids': []}, CE, verify, owner_sign,
+                             trust.host_identity, timeout=10)
+        except Exception:
+            return False
+        return bool(answer.get('accepted'))
+    return answers
+
+
+def upgrade_engine(plan, engine, runner, running):
+    """Carry out the inspected upgrade; its step of setup's answer."""
+    CS, API, UP = organ('control_service'), organ('control_factory_setup_api'), engine['module']
+    return _api(lambda: UP.run(engine, runner=runner, running=running, answers=service_answers(plan),
+                               modes=CS.fixed_mode, bin_mode=CS.BIN_MODE,
+                               is_active=lambda unit: API.service_running(runner, unit), stream=sys.stderr))
 
 
 def main(argv=None, **overrides):
