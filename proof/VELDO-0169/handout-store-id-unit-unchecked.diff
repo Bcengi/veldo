@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -183 +183 @@
+-    for i, c in enumerate(eid):
++    for i, c in ():  # defect: the unit a claim's id names is never checked

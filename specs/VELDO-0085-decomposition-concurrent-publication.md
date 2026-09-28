@@ -36,11 +36,20 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0085_*.py"
+  - "scripts/suites/59_veldo_0037_aliases.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0085-decomposition-concurrent-publication.md"
   - "specs/index.md"
   - "proof/VELDO-0085/*"
+  - "engine/.veldo/control_backlog.py"
+  - ".veldo/control_backlog.py"
+  - "packs/*/.veldo/control_backlog.py"
+  - "engine/.veldo/control_eligibility.py"
+  - ".veldo/control_eligibility.py"
+  - "packs/*/.veldo/control_eligibility.py"
+  - "scripts/check_teeth_mutations.py"
+  - "scripts/drive.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -104,6 +113,26 @@ implementation or historical evidence. Risk and approval requirements remain unc
 The deferred obligations in History are not part of this Release 1 criterion or evidence universe.
 No automatic recovery, extra channel activation or broader host qualification is implied.
 
+## What the reviewer judges
+
+In normal use, a signed decomposition publishes complete specifications for one
+backlog item's proposed units. Authority allocation preserves source identity and historical
+aliases. Each unit has one current specification: accepting a new source revision supersedes
+the earlier specification in the same authority transaction, including when publishers race.
+Dependencies resolve to current unit specifications, and preparation refuses a specification
+whose declared dependency aliases disagree with those current specifications. Ordinary
+backlog refusals return named outcomes with observations and counts by reason.
+
+The threat model includes invalid unit fields, scope and ownership conflicts, repeated unit
+IDs, stale or unpublished bytes, competing source revisions, and dependency bindings that
+became obsolete between publication and preparation. The reviewer judges real authority
+transactions, materialized bytes and the production admission and eligibility paths using
+the declared criteria and their driven negative controls.
+
+Recovery after interrupted publication, broader concurrent-author matrices, extra channel
+activation and the filed integration limitations in History remain out of scope. These
+checks confer no independent review, human approval or landing authority.
+
 ## Notes
 
 0037 owns the only alias counter and source mapping. This consumer publishes the PM
@@ -132,3 +161,50 @@ specification status or historical proof was changed.
 2026-09-25, PLAN-0019 revision 4 review: the Notes no longer name VELDO-0092 as a consumer of the
 published decomposition's dependencies, since revision 4 moved it to Release 2; the PM's proposals take
 effect one owning command at a time (VELDO-0088). Notes only: criteria and status are unchanged.
+
+2026-09-27, build: publish a signed decomposition proposal through
+`control_decomposition.py`, using VELDO-0037's authority counter, source tuple and exact
+materializer. Its alias renderer binds the document's ID to the authority allocation,
+including on retry and reuse. The required unit fields are unit, scope, requirements,
+eligible holders, source, role, front matter, body and dependencies. Published entries
+carry their alias, revision, digest, source, role, path, unit and owning backlog item.
+The backlog binds these accepted revisions when preparing or appending units, checks
+them again at admission and prioritization, and passes their dependencies to eligibility.
+The shared eligibility service refuses stale or unpublished specification input. Existing
+file-only specifications keep their prior admission path and historical identities.
+
+The footprint gains `control_backlog.py` and `control_eligibility.py` with their copies:
+AC1 needs the real unit writer's ownership binding and AC3 needs the real consumer's
+publication and dependency checks. It also gains the mutation registry and
+`scripts/drive.py` for the required falsifiers and assertion red record. Both new
+modules are scaffolded; every changed engine module has an identical installed copy.
+Suite `82_veldo_0085_decomposition` and proof in `proof/VELDO-0085/` cover the three
+criteria. Status stays ready; no independent approval, merge or full gate is claimed.
+
+2026-09-27, review fixes: publication reuses the passed backlog service's module and refusal
+class, returning and observing all ordinary refusals with counts by reason. The allocator
+supersedes earlier specifications for the same unit in its authority transaction; concurrent
+allocations serialize through its counter and compare-and-swap retry. Dependency publication
+resolves only the current specification, and the production unit validator refuses obsolete
+dependency aliases as `binding_mismatch:dependency_specification` during prepare. Four new
+rows cover the refusal paths, twin specifications, stale dependency preparation and two
+concurrent publications. Four unique finding 85 mutations exercise these checks. The reviewer
+judgment section adds normal use, threat model and scope prose; criteria text is unchanged.
+
+Filed for later, not fixed here: decomposition is not yet wired to Telegram or the API;
+a dependency on a prepared unit in another item is accepted; a Gate with no workspace refuses
+every bound unit as `stale_subject:specification_bytes`; eligibility reads the binding from
+the live connection rather than its snapshot; the same unit ID in two items is refused only
+at prepare. These remain outside this review-fix scope.
+
+The alias regression fixture now installs the binding reader and document parser consumed
+by allocation, so its isolated module directory exercises the complete production dependency set.
+
+Review-fix verification: all twelve decomposition rows pass, all sixteen finding 85
+mutations fail their named rows by assertion, and both red records are regenerated.
+The alias and backlog regression suites pass. Git boundary checking reports no violations;
+all 233 engine pairs are byte-identical; repository validation passes. The whole selftest
+completed once with no failing row. `proof/VELDO-0085/review-checks.json` and its logs retain
+the exact results. No repository gate, independent approval or push is claimed.
+
+2026-09-27, blocking review fix: the allocator transaction refuses superseding prepared or admitted units as `invalid_transition:supersede_prepared_unit`, other owning items as `binding_mismatch:supersede_other_item`, and another specification role as `binding_mismatch:supersede_role`; ordinary republication before prepare still supersedes. Three assertion rows and three globally unique finding 85 mutations cover these checks, and the concurrency row now uses two processes. This resolves the earlier same-unit cross-item publication limitation. Filed, not fixed: admission does not recheck a dependency superseded from another item after prepare, and `unit_heads` scans every accepted head per lookup.

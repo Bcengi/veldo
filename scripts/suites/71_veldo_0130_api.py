@@ -575,6 +575,11 @@ def _v130_checks(base):
     if here and 'workflows' in _v130_inspect.signature(AUTH.ApiAuthority).parameters:
         phase2 = dict(workflows=workflows, publication=publication,
                       notify=lambda hint: api[0].deliver(hint) if api and hasattr(api[0], 'deliver') else None)
+    # VELDO-0144 adds three actions to the published contract, on the same authority connection.
+    if here and hasattr(AUTH, 'MC'):
+        common = dict(domain=ids['domain_uuid'], repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
+        phase2.update(catalog=AUTH.MC.Catalog(S, conn, **common),
+                      mcp_credentials=AUTH.CV.Credentials(S, conn, **common))
     # Phase 3: the judge runs only in the process holding the authority's lock beside the store; this
     # fixture is that authority for its own store, so it takes the lock as the service would.
     lock_held = _v130_os.open(str(base / 'authority' / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
@@ -1176,6 +1181,11 @@ def _v130_checks(base):
         bodies = {'auth.sign_out': {}, 'auth.sign_out_everywhere': {}, 'auth.revoke_credential': {'credential_id': 'x'},
                   'messages.send': {'text': 'hello'}, 'decisions.answer': answer_body(receipt_f),
                   'workflows.save': save_body('bodies-flow', 0)}
+        if 'save_mcp_server' in getattr(AS, 'OPERATIONS', {}):
+            bodies.update({'mcp.save': {'definition': {}, 'base': 0},
+                           'mcp.credential_set': {'id': 'fixture', 'label': 'Fixture', 'base': 0,
+                                                  'value': _v130_os.urandom(24).hex()},
+                           'mcp.credential_delete': {'id': 'fixture', 'base': 0}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)

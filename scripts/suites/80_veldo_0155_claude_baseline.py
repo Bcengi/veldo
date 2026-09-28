@@ -90,6 +90,15 @@ def _v155_suite():
     def file_sha(path):
         return 'sha256:' + hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engines against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     base = Path(tempfile.mkdtemp(prefix='v155-', dir=runtime if os.path.isdir(runtime) else None))
@@ -151,7 +160,7 @@ def _v155_suite():
         member('runner', 'service', ['reservation_service'])
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         # The owner's Claude Code accounts: a plain one, one configured with a subscription token, one whose
@@ -259,7 +268,7 @@ def _v155_suite():
         fake_table = {'bundled': list(TABLE['bundled_skills'][:2]), 'connectors': CONNECTORS, 'login': LOGIN,
                       'profile_types': list(TABLE['profile']['types']['values']), 'version': VERSION,
                       'subscription_provider': INPUT['providers']['subscription'],
-                      'subscription': INPUT['subscriptions']['values'][2]}
+                      'subscription': 'Claude Team'}
         fake = '''#!@@PYTHON@@ -B
 import json, os, sys, time, uuid
 from pathlib import Path
@@ -385,7 +394,7 @@ own = {'pid': os.getpid(), 'start': start(os.getpid()), 'dispatch': env.get('VEL
 (markers / ('%d.tmp' % os.getpid())).rename(markers / ('%d.json' % os.getpid()))
 out = open(markers / ('%d.out' % os.getpid()), 'w')
 def emit(event):
-    text = json.dumps(event)
+    text = json.dumps(complete_event(event))
     out.write(text + chr(10))
     out.flush()
     sys.stdout.write(text + chr(10))
@@ -420,7 +429,7 @@ else:
     packet = json.loads(raw) if raw.strip() else {}
 payload = packet.get('payload') or {}
 session = 'session-155-' + uuid.uuid4().hex[:8]
-usage = {'input_tokens': 3, 'output_tokens': 2, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0}
+usage = {'input_tokens': 3, 'output_tokens': 3, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0}
 # One init event per turn, each with the apiKeySource the packet scripts, else the one the login makes.
 turns = 0
 for scripted in payload.get('inits') or [api_key_source]:
@@ -441,6 +450,7 @@ for scripted in payload.get('inits') or [api_key_source]:
           'message': {'id': 'msg-' + uuid.uuid4().hex[:8], 'type': 'message', 'role': 'assistant',
                       'model': 'configured-model', 'content': [], 'stop_reason': None, 'stop_sequence': None,
                       'usage': usage}})
+usage['output_tokens'] = 4
 emit({'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4, 'is_error': False, 'num_turns': turns,
       'result': 'done', 'stop_reason': 'end_turn', 'total_cost_usd': 0, 'usage': usage,
       'modelUsage': {'configured-model': {'inputTokens': 3 * turns, 'outputTokens': 2 * turns, 'cacheReadInputTokens': 0,
@@ -451,6 +461,7 @@ out.close()
 (markers / ('%d.done' % os.getpid())).write_text('done')
 '''.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
             '@@TABLE@@', repr(json.dumps(fake_table)))
+        fake = fake_formats.embed(fake)
         versions = base / 'home' / '.local' / 'share' / 'claude' / 'versions'
         versions.mkdir(parents=True)
         (versions / VERSION).write_text(fake)
@@ -460,6 +471,8 @@ out.close()
             VERSION: {'sha256': FAKE_SHA, 'flags': list(FLAGS), 'environment': {'DISABLE_AUTOUPDATER': '1'}}}}
         if getattr(E, 'BASELINE', None) is not None:
             test_record['versions'][VERSION]['baseline'] = E.BASELINE
+            if hasattr(E, 'session_environment'):
+                test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
         (mods / 'runtime').mkdir()
         record_path = mods / 'runtime' / 'claude-qualification.json'
         record_path.write_text(json.dumps(test_record, indent=1))
@@ -706,10 +719,14 @@ out.close()
             switches = TABLE['switches']
             expected = (FLAGS + [switches['setting_sources']['name'], switches['setting_sources']['value'],
                                  '--settings', '%s/settings.json' % config_dir, '--mcp-config', '%s/mcp.json' % config_dir,
-                                 switches['strict_mcp_config']['name'], switches['disable_slash_commands']['name']])
+                                 switches['strict_mcp_config']['name'], switches['disable_slash_commands']['name']]
+                        # VELDO-0141: the stream options, partial messages and forwarded subagent text, last.
+                        + [switches[name]['name'] for name in ('include_partial_messages', 'forward_subagent_text')
+                           if name in switches])
             check('baseline/qualified', 'the run started from the pinned copy with the qualified flags and then exactly '
                   'the baseline, every option one the binary declares: no setting source, the run\'s --settings and '
-                  '--mcp-config files, strict MCP and slash commands off [%s]' % argv[1:],
+                  '--mcp-config files, strict MCP and slash commands off, partial messages and subagent text on [%s]'
+                  % argv[1:],
                   normal_record.get('state') == 'exited' and argv[:1] == [str(pinned)] and argv[1:] == expected
                   and all(a in OPTIONS['options'] for a in argv[1:] if a.startswith('--'))
                   and config_dir is not None and '--bare' not in argv and '--safe-mode' not in argv)
@@ -725,12 +742,15 @@ out.close()
                   and env.get(switches['disable_auto_memory']['name']) == '1')
             shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-qualification.json').read_text())
             entry = (shipped.get('versions') or {}).get(VERSION) or {}
-            named = set((entry.get('baseline') or {}).get('options') or []) | set(((entry.get('baseline') or {})
-                                                                                  .get('environment') or {}))
+            named = (set((entry.get('baseline') or {}).get('options') or [])
+                     | set((entry.get('baseline') or {}).get('stream_options') or [])
+                     | set(((entry.get('baseline') or {}).get('environment') or {})))
             check('baseline/qualified', 'the shipped 2.1.281 record qualifies the version with the module\'s baseline, '
                   'every switch in it one the binary\'s own table reads [%s]' % sorted(named),
                   entry.get('baseline') == getattr(E, 'BASELINE', None) and entry.get('baseline') is not None
-                  and named - {''} <= {s['name'] for s in switches.values()}
+                  # VELDO-0165: LANG and TERM are the configured locale and terminal, set after the wrapper's strip,
+                  # not switches of the binary's table.
+                  and named - {'', 'LANG', 'TERM'} <= {s['name'] for s in switches.values()}
                   and (entry.get('baseline') or {}).get('settings') == {'disableAllHooks': True})
             check('baseline/qualified', 'a version whose record does not list the baseline is refused by name before '
                   'acceptance, nothing spawned [%s]' % unqualified_record.get('refusal'),
@@ -967,6 +987,7 @@ out.close()
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        fake_capture = conform_formats.conform_fake(locals(), '0155_claude_baseline')
         with contextlib.suppress(Exception):
             subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,
                            stdin=subprocess.DEVNULL)
@@ -1000,6 +1021,9 @@ out.close()
             if not observed:
                 print('  VELDO-0155 %s detail: no check ran' % name)
         expect('VELDO-0155 ' + name, ok)
+    for line in conform_formats.describe('0155_claude_baseline', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0155_claude_baseline', bool(fake_capture[1]) and not fake_capture[0])
     print('VELDO-0155 suite seconds: %.3f' % (time.monotonic() - started))
 
 

@@ -244,7 +244,7 @@ sys.exit(4)
                 fixture('channel-enrollment:telegram_chat:' + who, 'channel_enrollment',
                         dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=who, chat_id=chat,
                              revoked_at=None))
-            fixture('project:proj-a', 'project', dict(name='proj-a', state='ACTIVE'))
+            fixture('project:proj-a', 'project', dict(name='proj-a', state='ACTIVE', owner='olga'))
             fixture('objective:a1', 'objective', dict(project_uuid='project:proj-a', state='ACTIVE'))
             fixture('project:proj-z', 'project', dict(name='proj-z', state='ACTIVE'))
             fixture('objective:z1', 'objective', dict(project_uuid='project:proj-z', state='ACTIVE'))
@@ -281,7 +281,7 @@ sys.exit(4)
                 fixture(case['backlog'], 'backlog_item', dict(dict(state='PRIORITIZED', repository_uuid=REPO),
                                                               **({'objective_uuid': chain} if chain else {})))
                 fixture(case['unit'], 'execution_unit', dict(state='READY', repository_uuid=REPO, backlog_item_uuid=case['backlog'],
-                                                             requirements=[], eligible_holders=['worker', 'svc']))
+                                                             project='proj-a', requirements=[], eligible_holders=['worker', 'svc']))
             fixture('unit-c2-sibling', 'execution_unit', dict(state='READY', repository_uuid=REPO, backlog_item_uuid='backlog:c2',
                                                               requirements=[], eligible_holders=['worker']))
 
@@ -870,7 +870,7 @@ sys.exit(4)
                     fixture(case['backlog'], 'backlog_item', dict(dict(state='PRIORITIZED', repository_uuid=REPO),
                                                                   **({'objective_uuid': chain} if chain else {})))
                     fixture(case['unit'], 'execution_unit', dict(state='READY', repository_uuid=REPO, backlog_item_uuid=case['backlog'],
-                                                                 requirements=[], eligible_holders=['worker', 'svc']))
+                                                                 project='proj-a', requirements=[], eligible_holders=['worker', 'svc']))
                     case['parked'], case['exit'] = park(case)
                     case['ended'] = command(owner, 'decline', case['alias'], request_version=1)
                     case['question'] = question(case)

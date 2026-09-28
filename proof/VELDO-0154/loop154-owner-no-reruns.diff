@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1589 +1589 @@
+-        if ruling == ASK_CHOICES[0]:
++        if ruling in ASK_CHOICES:  # defect: his stop re-runs the unit too

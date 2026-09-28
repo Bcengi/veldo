@@ -1,0 +1,5 @@
+--- a/.veldo/control_account_pool.py
++++ b/.veldo/control_account_pool.py
+@@ -73 +73 @@
+-            active += int(not record.get('retired') and not record.get('account_released'))
++            active += int(not record.get('retired'))

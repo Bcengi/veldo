@@ -1,0 +1,1023 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0154 install/assets",
+    true
+   ],
+   [
+    "VELDO-0154 loop/runner-in-service",
+    true
+   ],
+   [
+    "VELDO-0154 loop/journal-wake-offers",
+    true
+   ],
+   [
+    "VELDO-0154 loop/review-offered",
+    true
+   ],
+   [
+    "VELDO-0154 loop/receiver-death",
+    true
+   ],
+   [
+    "VELDO-0154 loop/rerun-another-account",
+    true
+   ],
+   [
+    "VELDO-0154 loop/ask-before-rerun",
+    true
+   ],
+   [
+    "VELDO-0154 loop/owner-yes-reruns",
+    true
+   ],
+   [
+    "VELDO-0154 loop/owner-no-stops",
+    true
+   ],
+   [
+    "VELDO-0154 loop/reset-timer-wake",
+    true
+   ],
+   [
+    "VELDO-0154 loop/no-other-timer",
+    true
+   ]
+  ],
+  "seconds": 63.826
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/review-offered detail: the build's end on its launch pipe started a pass whose only source is the run's end, and nothing else ran between [None, []]",
+    "VELDO-0154 loop/review-offered detail: the pass settled the build as exited and offered its review, following that build, from its commit, to an independent reviewer [[], []]",
+    "VELDO-0154 loop/review-offered detail: the review is a dispatch in the store [[]]",
+    "VELDO-0154 loop/receiver-death detail: with every other account busy, the waiting unit waits for an account [[('VELDO-9154-B1', 'acct-x3'), ('VELDO-9154-B2', 'acct-x4')], [{'follows': None, 'identity': 'builder-154', 'refusal': 'no_account', 'repository': 'repo154e64f50c5', 'rerun_of': None, 'station': 'build', 'unit': 'VELDO-9154-W', 'until': None}]]",
+    "VELDO-0154 loop/receiver-death detail: killing the receiver mid-run started exactly one pass, whose only source is the run's end [True, []]",
+    "VELDO-0154 loop/receiver-death detail: the run is recorded outcome_unknown under its original dispatch, its receiver lost [('running', None), []]",
+    "VELDO-0154 loop/receiver-death detail: its account slot is freed once its worker is gone, and the next dispatch, in that same pass, takes it [False, None, []]",
+    "VELDO-0154 loop/rerun-another-account detail: the run ended account_limit with its account's window and reset, and VELDO-0160's decision over its execution record is re-run [None, []]",
+    "VELDO-0154 loop/rerun-another-account detail: one new dispatch of the same station, under a new dispatch identity, on another account of the role's engine, from the same accepted commit [[]]",
+    "VELDO-0154 loop/rerun-another-account detail: nothing is sent to the exhausted account before its reported reset [None, []]",
+    "VELDO-0154 loop/ask-before-rerun detail: L2: a run whose record shows a call to an MCP tool not marked read-only raised one ordinary decision request to the project's owner, naming the call [[], (None, None, None)]",
+    "VELDO-0154 loop/ask-before-rerun detail: L3: a run whose record shows a call to an MCP tool not marked read-only raised one ordinary decision request to the project's owner, naming the call [[], (None, None, None)]",
+    "VELDO-0154 loop/ask-before-rerun detail: no dispatch until he answers: another pass leaves both units awaiting him and asks nothing again [[], [0, 0]]",
+    "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store154e64f50c5', 'store_path': '/dev/shm/v154-cxi8bi1g/authority/control.sqlite3', 'watermark': 110, 'result': {'ok': False, 'reason': 'invalid_input'}}, None, []]",
+    "VELDO-0154 loop/owner-no-stops detail: his stop leaves the unit stopped, in that pass and the next [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store154e64f50c5', 'store_path': '/dev/shm/v154-cxi8bi1g/authority/control.sqlite3', 'watermark': 110, 'result': {'ok': False, 'reason': 'invalid_input'}}, [], [0]]",
+    "VELDO-0154 loop/reset-timer-wake detail: the unit waits for the account's reported reset, and the pass set its timer to that earliest reset [[], None, 1790549880]",
+    "VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [None, []]",
+    "VELDO-0154 loop/no-other-timer detail: with the unit waiting, no journal advance and no run ending, no pass started for 0.0 s, longer than every interval the service uses, while its accept timeout kept waking it [[], 0 switches]",
+    "VELDO-0154 loop/no-other-timer detail: exactly one pass started at the reset, and none between the unit's wait and it [[], []]",
+    "VELDO-0154 loop/no-other-timer detail: across the whole run every pass came from a wake source, the service's start included none, and the reset timer started only that one [[('journal',)]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-pipe-not-polled.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/review-offered",
+    "VELDO-0154 loop/receiver-death",
+    "VELDO-0154 loop/rerun-another-account",
+    "VELDO-0154 loop/ask-before-rerun",
+    "VELDO-0154 loop/owner-yes-reruns",
+    "VELDO-0154 loop/owner-no-stops",
+    "VELDO-0154 loop/reset-timer-wake",
+    "VELDO-0154 loop/no-other-timer"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "714c7164f2f8549b402b050de532f6459ccab84ef431fea5eddee45a3f688d47",
+   "name": "loop154-pipe-not-polled",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/review-offered"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     false
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     false
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     false
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     false
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     false
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     false
+    ]
+   ],
+   "seconds": 303.067,
+   "source_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/receiver-death detail: killing the receiver mid-run started exactly one pass, whose only source is the run's end [True, []]",
+    "VELDO-0154 loop/receiver-death detail: the run is recorded outcome_unknown under its original dispatch, its receiver lost [('running', None), []]",
+    "VELDO-0154 loop/receiver-death detail: its account slot is freed once its worker is gone, and the next dispatch, in that same pass, takes it [True, None, []]",
+    "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store1546ea7c0c0', 'store_path': '/dev/shm/v154-gc568tz8/authority/control.sqlite3', 'watermark': 186, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo1546ea7c0c0:account-limit-a9b022034ca3a9ce2083e373', 'assignment': {'actor_kind': 'person', 'alias': 'account-limit-a9b022034ca3a9ce2083e373', 'answer': {'accepted_at': 1790549651.319007, 'command': {'alias': 'account-limit-a9b022034ca3a9ce2083e373', 'command_id': 'answer-6ea7c0c0-75', 'domain_uuid': 'dom1546ea7c0c0', 'nonce': 'an-6ea7c0c0-76', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo1546ea7c0c0', 'request_version': 1, 'ruling': 'rerun', 'store_uuid': 'store1546ea7c0c0'}, 'command_id': 'answer-6ea7c0c0-75', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'rerun', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgbacVqh02zplELEBYrTRQ1cRAhi\\nuZhAiYXQXqzmPXV98AAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAEARDZaaOtIaxV0vV75bp3fOdD1U2uCfIhL5QHaksexemzY6vkIAri\\nYSDxy8VyRHgCVsnMqcnCqutNQbNS5bYfMA\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Run dispatch/VELDO-9154-L2/32ec2bb5a4b14a239acec91a457535e7 of unit VELDO-9154-L2 at build stopped at the limit of account acct-x3 (window usage_limit, reset 2026-09-28 01:55 UTC). Its execution record shows calls that may already have written: line 4 tracker/add_comment (unconfigured_call). Re-run it on another account from commit 0f4d14f8d06f56eec1a13d209eeb0c81f43a4dcf, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['rerun', 'stop'], 'deadline': '2026-10-04T22:54:11Z', 'disposition': None, 'domain_uuid': 'dom1546ea7c0c0', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo1546ea7c0c0', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo1546ea7c0c0'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:32755649b3850915218a2b0b83d3c8ebd399f5c0aa564488e30b798e5299d50f', 'kind': 'account_limit_rerun', 'ref': 'dispatch/VELDO-9154-L2/32ec2bb5a4b14a239acec91a457535e7'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-6ea7c0c0-75', 'seq': 186, 'record_digest': 'sha256:9791a657425f6e4174ad222da58db95a58e7abbed39fce89a3cb77a465863124', 'after_versions': {'assignment:repo1546ea7c0c0:account-limit-a9b022034ca3a9ce2083e373': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:496140f84eefbf4a2cb3b43db006cebd504faf849eec1e583b0ad5ced2d3fda4', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, None, []]",
+    "VELDO-0154 loop/reset-timer-wake detail: the unit waits for the account's reported reset, and the pass set its timer to that earliest reset [[{'follows': None, 'identity': 'builder-154', 'refusal': 'no_account_until:1790560500', 'repository': 'repo1546ea7c0c0', 'rerun_of': None, 'station': 'build', 'unit': 'VELDO-9154-L4', 'until': 1790560500}], 1790560500, 1790549820]",
+    "VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [None, []]",
+    "VELDO-0154 loop/no-other-timer detail: with the unit waiting, no journal advance and no run ending, no pass started for 47.4 s, longer than every interval the service uses, while its accept timeout kept waking it [[], 0 switches]",
+    "VELDO-0154 loop/no-other-timer detail: exactly one pass started at the reset, and none between the unit's wait and it [[], []]",
+    "VELDO-0154 loop/no-other-timer detail: across the whole run every pass came from a wake source, the service's start included none, and the reset timer started only that one [[('journal',), ('run_end',)]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-eof-ignored.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/receiver-death",
+    "VELDO-0154 loop/owner-yes-reruns",
+    "VELDO-0154 loop/reset-timer-wake",
+    "VELDO-0154 loop/no-other-timer"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "110fdf1fc8a18d65593184193a70d72f9a8d4acbb45e494a9cdc1a1b9a579bf0",
+   "name": "loop154-eof-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/receiver-death"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     false
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     false
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     false
+    ]
+   ],
+   "seconds": 302.35,
+   "source_sha256": "f6779d15537f3de3f92877f35d4b25c2ccc5b09d48804d998c650665fc5ccd24"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/ask-before-rerun detail: L2: a run whose record shows a call to an MCP tool not marked read-only raised one ordinary decision request to the project's owner, naming the call [[], (None, None, None)]",
+    "VELDO-0154 loop/ask-before-rerun detail: L3: a run whose record shows a call to an MCP tool not marked read-only raised one ordinary decision request to the project's owner, naming the call [[], (None, None, None)]",
+    "VELDO-0154 loop/ask-before-rerun detail: no dispatch until he answers: another pass leaves both units awaiting him and asks nothing again [[], [3, 3]]",
+    "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store15421b810cc', 'store_path': '/dev/shm/v154-ckl49qr_/authority/control.sqlite3', 'watermark': 221, 'result': {'ok': False, 'reason': 'invalid_input'}}, None, []]",
+    "VELDO-0154 loop/owner-no-stops detail: his stop leaves the unit stopped, in that pass and the next [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store15421b810cc', 'store_path': '/dev/shm/v154-ckl49qr_/authority/control.sqlite3', 'watermark': 221, 'result': {'ok': False, 'reason': 'invalid_input'}}, [], [3]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-ask-reruns.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/ask-before-rerun",
+    "VELDO-0154 loop/owner-yes-reruns",
+    "VELDO-0154 loop/owner-no-stops"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "910bbdb938a6bcadeb6523d5b02b125a714d592cf8eda00b61ad0ef686329b5d",
+   "name": "loop154-ask-reruns",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/ask-before-rerun"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     true
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     false
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     true
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     true
+    ]
+   ],
+   "seconds": 236.872,
+   "source_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/journal-wake-offers detail: the signed packet that advanced the journal started one pass, with the journal as its only source [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store1542d0493c0', 'store_path': '/dev/shm/v154-y_ijt7lx/authority/control.sqlite3', 'watermark': 72, 'result': {'ok': True, 'reason': 'upsert_entity', 'receipt': {'committed': True, 'command_id': 'cmd-2d0493c0-54', 'seq': 72, 'record_digest': 'sha256:5139b355b2a8f68881c2b5682383dd37a040208c7bf2a0dc2cbcd9cb7bf867ef', 'after_versions': {'note:154-2d0493c0-53': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:728871fa34b27f5af5daef9e4b289d0de5b9eca0ead863bfd5fddf3950e0b57e', 'replayed': False}}}, ['account_reset', 'journal']]",
+    "VELDO-0154 loop/journal-wake-offers detail: an unassigned unit is neither offered nor refused, and nothing ran before the packet [[(1, ['account_reset']), (2, ['account_reset']), (3, ['account_reset']), (4, ['account_reset']), (5, ['account_reset']), (6, ['account_reset'])]]",
+    "VELDO-0154 loop/review-offered detail: the build's end on its launch pipe started a pass whose only source is the run's end, and nothing else ran between [['account_reset', 'run_end'], [(8, ['account_reset']), (9, ['account_reset']), (10, ['account_reset', 'run_end']), (11, ['account_reset']), (12, ['account_reset', 'run_end'])]]",
+    "VELDO-0154 loop/receiver-death detail: killing the receiver mid-run started exactly one pass, whose only source is the run's end [True, [(14, ['account_reset', 'run_end']), (15, ['account_reset']), (16, ['account_reset']), (17, ['account_reset']), (18, ['account_reset']), (19, ['account_reset']), (20, ['account_reset']), (21, ['account_reset']), (22, ['account_reset'])]]",
+    "VELDO-0154 loop/rerun-another-account detail: the run ended account_limit with its account's window and reset, and VELDO-0160's decision over its execution record is re-run [account_limit, [{'account': 'acct-x4', 'basis': 'no_write_capable_server', 'calls': [], 'decision': 'rerun', 'dispatch_id': 'dispatch/VELDO-9154-L1/93bc54b58bf04675b4ad5678e398549e', 'limit': {'reset_at': 1790560740.0, 'signal': 'result', 'window': 'usage_limit'}, 'repository': 'repo1542d0493c0', 'station': 'build', 'unit': 'VELDO-9154-L1'}]]",
+    "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store1542d0493c0', 'store_path': '/dev/shm/v154-y_ijt7lx/authority/control.sqlite3', 'watermark': 188, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo1542d0493c0:account-limit-c347c218373b2343cbac5786', 'assignment': {'actor_kind': 'person', 'alias': 'account-limit-c347c218373b2343cbac5786', 'answer': {'accepted_at': 1790549893.6601093, 'command': {'alias': 'account-limit-c347c218373b2343cbac5786', 'command_id': 'answer-2d0493c0-75', 'domain_uuid': 'dom1542d0493c0', 'nonce': 'an-2d0493c0-76', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo1542d0493c0', 'request_version': 1, 'ruling': 'rerun', 'store_uuid': 'store1542d0493c0'}, 'command_id': 'answer-2d0493c0-75', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'rerun', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgDTIRqna1zK+APj6/QYwsyfBqm+\\nvQd9cN3ov80ihk2ssAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAEABk0YglpRP7K8a2mIxNqvQhfo0UlpDP/FzZiCw/Yjm5GrEr37VQJ\\nIG2BJmNrexpbSUOhlDJVMSKklXRWyOSRQE\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Run dispatch/VELDO-9154-L2/15359514d7744e879f2224d45283b338 of unit VELDO-9154-L2 at build stopped at the limit of account acct-x2 (window usage_limit, reset 2026-09-28 01:59 UTC). Its execution record shows calls that may already have written: line 4 tracker/add_comment (unconfigured_call). Re-run it on another account from commit a21ba03b19d50da87ccd1fd1d9b226e2e9d1bc70, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['rerun', 'stop'], 'deadline': '2026-10-04T22:58:13Z', 'disposition': None, 'domain_uuid': 'dom1542d0493c0', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo1542d0493c0', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo1542d0493c0'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:32755649b3850915218a2b0b83d3c8ebd399f5c0aa564488e30b798e5299d50f', 'kind': 'account_limit_rerun', 'ref': 'dispatch/VELDO-9154-L2/15359514d7744e879f2224d45283b338'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-2d0493c0-75', 'seq': 188, 'record_digest': 'sha256:033cb3e1454451cb044155960b26c2193139ad4b6b69dad7888930367685d6ec', 'after_versions': {'assignment:repo1542d0493c0:account-limit-c347c218373b2343cbac5786': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:8648b4ed6e6b399ceb3d759e27097d34c14b7b155ef481b2eceb59878a4f8d41', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, ['account_reset', 'journal'], [(2, 'acct-x3', 'dispatch/VELDO-9154-L2/15359514d7744e879f2224d45283b338')]]",
+    "VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [['account_reset'], []]",
+    "VELDO-0154 loop/no-other-timer detail: with the unit waiting, no journal advance and no run ending, no pass started for 44.1 s, longer than every interval the service uses, while its accept timeout kept waking it [[(52, ['account_reset']), (53, ['account_reset']), (54, ['account_reset']), (55, ['account_reset']), (56, ['account_reset']), (57, ['account_reset']), (58, ['account_reset']), (59, ['account_reset']), (60, ['account_reset']), (61, ['account_reset']), (62, ['account_reset']), (63, ['account_reset']), (64, ['account_reset']), (65, ['account_reset']), (66, ['account_reset']), (67, ['account_reset']), (68, ['account_reset']), (69, ['account_reset']), (70, ['account_reset']), (71, ['account_reset']), (72, ['account_reset']), (73, ['account_reset']), (74, ['account_reset']), (75, ['account_reset']), (76, ['account_reset']), (77, ['account_reset']), (78, ['account_reset']), (79, ['account_reset']), (80, ['account_reset']), (81, ['account_reset']), (82, ['account_reset']), (83, ['account_reset']), (84, ['account_reset']), (85, ['account_reset']), (86, ['account_reset']), (87, ['account_reset']), (88, ['account_reset']), (89, ['account_reset']), (90, ['account_reset']), (91, ['account_reset']), (92, ['account_reset']), (93, ['account_reset']), (94, ['account_reset']), (95, ['account_reset']), (96, ['account_reset']), (97, ['account_reset']), (98, ['account_reset']), (99, ['account_reset']), (100, ['account_reset']), (101, ['account_reset']), (102, ['account_reset']), (103, ['account_reset']), (104, ['account_reset']), (105, ['account_reset']), (106, ['account_reset']), (107, ['account_reset']), (108, ['account_reset']), (109, ['account_reset']), (110, ['account_reset']), (111, ['account_reset']), (112, ['account_reset']), (113, ['account_reset']), (114, ['account_reset']), (115, ['account_reset']), (116, ['account_reset']), (117, ['account_reset']), (118, ['account_reset']), (119, ['account_reset']), (120, ['account_reset']), (121, ['account_reset']), (122, ['account_reset']), (123, ['account_reset']), (124, ['account_reset']), (125, ['account_reset']), (126, ['account_reset']), (127, ['account_reset']), (128, ['account_reset']), (129, ['account_reset']), (130, ['account_reset']), (131, ['account_reset']), (132, ['account_reset']), (133, ['account_reset']), (134, ['account_reset']), (135, ['account_reset']), (136, ['account_reset']), (137, ['account_reset']), (138, ['account_reset']), (139, ['account_reset']), (140, ['account_reset']), (141, ['account_reset']), (142, ['account_reset']), (143, ['account_reset']), (144, ['account_reset']), (145, ['account_reset']), (146, ['account_reset']), (147, ['account_reset']), (148, ['account_reset']), (149, ['account_reset']), (150, ['account_reset']), (151, ['account_reset']), (152, ['account_reset']), (153, ['account_reset']), (154, ['account_reset']), (155, ['account_reset']), (156, ['account_reset']), (157, ['account_reset']), (158, ['account_reset']), (159, ['account_reset']), (160, ['account_reset']), (161, ['account_reset']), (162, ['account_reset']), (163, ['account_reset']), (164, ['account_reset']), (165, ['account_reset']), (166, ['account_reset']), (167, ['account_reset']), (168, ['account_reset']), (169, ['account_reset']), (170, ['account_reset']), (171, ['account_reset']), (172, ['account_reset']), (173, ['account_reset']), (174, ['account_reset']), (175, ['account_reset']), (176, ['account_reset']), (177, ['account_reset']), (178, ['account_reset']), (179, ['account_reset']), (180, ['account_reset']), (181, ['account_reset']), (182, ['account_reset']), (183, ['account_reset']), (184, ['account_reset']), (185, ['account_reset']), (186, ['account_reset']), (187, ['account_reset']), (188, ['account_reset']), (189, ['account_reset']), (190, ['account_reset']), (191, ['account_reset']), (192, ['account_reset']), (193, ['account_reset']), (194, ['account_reset']), (195, ['account_reset']), (196, ['account_reset']), (197, ['account_reset']), (198, ['account_reset']), (199, ['account_reset']), (200, ['account_reset']), (201, ['account_reset']), (202, ['account_reset']), (203, ['account_reset']), (204, ['account_reset']), (205, ['account_reset']), (206, ['account_reset']), (207, ['account_reset']), (208, ['account_reset']), (209, ['account_reset']), (210, ['account_reset']), (211, ['account_reset']), (212, ['account_reset']), (213, ['account_reset']), (214, ['account_reset']), (215, ['account_reset']), (216, ['account_reset']), (217, ['account_reset']), (218, ['account_reset']), (219, ['account_reset']), (220, ['account_reset'])], 640 switches]",
+    "VELDO-0154 loop/no-other-timer detail: exactly one pass started at the reset, and none between the unit's wait and it [[(52, ['account_reset'], -44.886), (53, ['account_reset'], -44.626), (54, ['account_reset'], -44.367), (55, ['account_reset'], -44.107), (56, ['account_reset'], -43.843), (57, ['account_reset'], -43.583), (58, ['account_reset'], -43.323), (59, ['account_reset'], -43.063), (60, ['account_reset'], -42.803), (61, ['account_reset'], -42.544), (62, ['account_reset'], -42.284), (63, ['account_reset'], -42.024), (64, ['account_reset'], -41.765), (65, ['account_reset'], -41.505), (66, ['account_reset'], -41.235), (67, ['account_reset'], -40.975), (68, ['account_reset'], -40.715), (69, ['account_reset'], -40.455), (70, ['account_reset'], -40.195), (71, ['account_reset'], -39.935), (72, ['account_reset'], -39.675), (73, ['account_reset'], -39.415), (74, ['account_reset'], -39.155), (75, ['account_reset'], -38.895), (76, ['account_reset'], -38.635), (77, ['account_reset'], -38.374), (78, ['account_reset'], -38.115), (79, ['account_reset'], -37.855), (80, ['account_reset'], -37.594), (81, ['account_reset'], -37.333), (82, ['account_reset'], -37.073), (83, ['account_reset'], -36.814), (84, ['account_reset'], -36.555), (85, ['account_reset'], -36.295), (86, ['account_reset'], -36.035), (87, ['account_reset'], -35.775), (88, ['account_reset'], -35.515), (89, ['account_reset'], -35.256), (90, ['account_reset'], -34.997), (91, ['account_reset'], -34.738), (92, ['account_reset'], -34.474), (93, ['account_reset'], -34.215), (94, ['account_reset'], -33.957), (95, ['account_reset'], -33.698), (96, ['account_reset'], -33.438), (97, ['account_reset'], -33.179), (98, ['account_reset'], -32.921), (99, ['account_reset'], -32.66), (100, ['account_reset'], -32.4), (101, ['account_reset'], -32.141), (102, ['account_reset'], -31.881), (103, ['account_reset'], -31.621), (104, ['account_reset'], -31.362), (105, ['account_reset'], -31.103), (106, ['account_reset'], -30.843), (107, ['account_reset'], -30.584), (108, ['account_reset'], -30.325), (109, ['account_reset'], -30.067), (110, ['account_reset'], -29.808), (111, ['account_reset'], -29.549), (112, ['account_reset'], -29.289), (113, ['account_reset'], -29.029), (114, ['account_reset'], -28.77), (115, ['account_reset'], -28.51), (116, ['account_reset'], -28.25), (117, ['account_reset'], -27.99), (118, ['account_reset'], -27.731), (119, ['account_reset'], -27.471), (120, ['account_reset'], -27.212), (121, ['account_reset'], -26.952), (122, ['account_reset'], -26.692), (123, ['account_reset'], -26.432), (124, ['account_reset'], -26.172), (125, ['account_reset'], -25.912), (126, ['account_reset'], -25.652), (127, ['account_reset'], -25.393), (128, ['account_reset'], -25.135), (129, ['account_reset'], -24.871), (130, ['account_reset'], -24.611), (131, ['account_reset'], -24.352), (132, ['account_reset'], -24.092), (133, ['account_reset'], -23.832), (134, ['account_reset'], -23.573), (135, ['account_reset'], -23.313), (136, ['account_reset'], -23.053), (137, ['account_reset'], -22.794), (138, ['account_reset'], -22.535), (139, ['account_reset'], -22.275), (140, ['account_reset'], -22.015), (141, ['account_reset'], -21.756), (142, ['account_reset'], -21.496), (143, ['account_reset'], -21.236), (144, ['account_reset'], -20.976), (145, ['account_reset'], -20.717), (146, ['account_reset'], -20.457), (147, ['account_reset'], -20.197), (148, ['account_reset'], -19.937), (149, ['account_reset'], -19.676), (150, ['account_reset'], -19.416), (151, ['account_reset'], -19.156), (152, ['account_reset'], -18.896), (153, ['account_reset'], -18.637), (154, ['account_reset'], -18.378), (155, ['account_reset'], -18.118), (156, ['account_reset'], -17.858), (157, ['account_reset'], -17.599), (158, ['account_reset'], -17.34), (159, ['account_reset'], -17.08), (160, ['account_reset'], -16.82), (161, ['account_reset'], -16.561), (162, ['account_reset'], -16.302), (163, ['account_reset'], -16.042), (164, ['account_reset'], -15.783), (165, ['account_reset'], -15.523), (166, ['account_reset'], -15.259), (167, ['account_reset'], -15.0), (168, ['account_reset'], -14.74), (169, ['account_reset'], -14.481), (170, ['account_reset'], -14.222), (171, ['account_reset'], -13.962), (172, ['account_reset'], -13.703), (173, ['account_reset'], -13.443), (174, ['account_reset'], -13.184), (175, ['account_reset'], -12.924), (176, ['account_reset'], -12.664), (177, ['account_reset'], -12.404), (178, ['account_reset'], -12.144), (179, ['account_reset'], -11.885), (180, ['account_reset'], -11.625), (181, ['account_reset'], -11.365), (182, ['account_reset'], -11.106), (183, ['account_reset'], -10.846), (184, ['account_reset'], -10.586), (185, ['account_reset'], -10.327), (186, ['account_reset'], -10.067), (187, ['account_reset'], -9.807), (188, ['account_reset'], -9.548), (189, ['account_reset'], -9.288), (190, ['account_reset'], -9.029), (191, ['account_reset'], -8.769), (192, ['account_reset'], -8.51), (193, ['account_reset'], -8.25), (194, ['account_reset'], -7.991), (195, ['account_reset'], -7.731), (196, ['account_reset'], -7.471), (197, ['account_reset'], -7.211), (198, ['account_reset'], -6.951), (199, ['account_reset'], -6.691), (200, ['account_reset'], -6.432), (201, ['account_reset'], -6.171), (202, ['account_reset'], -5.902), (203, ['account_reset'], -5.637), (204, ['account_reset'], -5.377), (205, ['account_reset'], -5.118), (206, ['account_reset'], -4.858), (207, ['account_reset'], -4.598), (208, ['account_reset'], -4.338), (209, ['account_reset'], -4.078), (210, ['account_reset'], -3.818), (211, ['account_reset'], -3.558), (212, ['account_reset'], -3.299), (213, ['account_reset'], -3.039), (214, ['account_reset'], -2.78), (215, ['account_reset'], -2.52), (216, ['account_reset'], -2.261), (217, ['account_reset'], -2.001), (218, ['account_reset'], -1.742), (219, ['account_reset'], -1.482), (220, ['account_reset'], -1.222), (221, ['account_reset'], -0.962), (222, ['account_reset'], -0.702)], []]",
+    "VELDO-0154 loop/no-other-timer detail: across the whole run every pass came from a wake source, the service's start included none, and the reset timer started only that one [[('account_reset',), ('account_reset', 'journal'), ('account_reset', 'run_end')]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-periodic-pass.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/journal-wake-offers",
+    "VELDO-0154 loop/review-offered",
+    "VELDO-0154 loop/receiver-death",
+    "VELDO-0154 loop/rerun-another-account",
+    "VELDO-0154 loop/owner-yes-reruns",
+    "VELDO-0154 loop/reset-timer-wake",
+    "VELDO-0154 loop/no-other-timer"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "3d5fc92d03a5f5c8175fbed157a9a05b731d7843faa8a7a59f917cdb12f01506",
+   "name": "loop154-periodic-pass",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/no-other-timer"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     false
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     false
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     false
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     false
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     false
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     false
+    ]
+   ],
+   "seconds": 57.371,
+   "source_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/runner-in-service detail: the installed service process holds the authority lock, its log holds the pass, its principal prepared the dispatch and the launch receiver is its child process [2523867, 2523867, [], None]",
+    "VELDO-0154 loop/runner-in-service detail: the service reports its factory loop available with the passes it ran [{'available': True, 'passes': 0, 'timer': None, 'counts': {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0}, 'running': [], 'orphans': [], 'last_sources': None, 'configured': True}]",
+    "VELDO-0154 loop/journal-wake-offers detail: the signed packet that advanced the journal started one pass, with the journal as its only source [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store154e4c06ad9', 'store_path': '/dev/shm/v154-zb_20io4/authority/control.sqlite3', 'watermark': 72, 'result': {'ok': True, 'reason': 'upsert_entity', 'receipt': {'committed': True, 'command_id': 'cmd-e4c06ad9-54', 'seq': 72, 'record_digest': 'sha256:83bf1226829521941959af614f833d25168cdeb9626c815c41371a04b537d8f1', 'after_versions': {'note:154-e4c06ad9-53': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:08a913a779db748e85db9dabb3fa8d23f3fbf96f5b9f079a5b23437184686beb', 'replayed': False}}}, None]",
+    "VELDO-0154 loop/journal-wake-offers detail: the pass offered every assigned eligible unit, and only those, each to the Runner with this host and one of the owner's accounts [[]]",
+    "VELDO-0154 loop/journal-wake-offers detail: each offer is a prepared dispatch in the store on the account the pass names [{'VELDO-9154-U2': [], 'VELDO-9154-U1': []}]",
+    "VELDO-0154 loop/journal-wake-offers detail: the paused project's assigned unit is not offered: the Gate refuses it project_not_active:PAUSED [True, []]",
+    "VELDO-0154 loop/review-offered detail: the build's end on its launch pipe started a pass whose only source is the run's end, and nothing else ran between [None, []]",
+    "VELDO-0154 loop/review-offered detail: the pass settled the build as exited and offered its review, following that build, from its commit, to an independent reviewer [[], []]",
+    "VELDO-0154 loop/review-offered detail: the review is a dispatch in the store [[]]",
+    "VELDO-0154 loop/receiver-death detail: with every other account busy, the waiting unit waits for an account [[], []]",
+    "VELDO-0154 loop/receiver-death detail: killing the receiver mid-run started exactly one pass, whose only source is the run's end [False, []]",
+    "VELDO-0154 loop/receiver-death detail: the run is recorded outcome_unknown under its original dispatch, its receiver lost [(None, None), []]",
+    "VELDO-0154 loop/receiver-death detail: its usage reservation is retained: the worker slot is not retired and the invocation keeps its reserved charge, unsettled [None, None, None]",
+    "VELDO-0154 loop/receiver-death detail: its account slot is freed once its worker is gone, and the next dispatch, in that same pass, takes it [False, None, []]",
+    "VELDO-0154 loop/rerun-another-account detail: the run ended account_limit with its account's window and reset, and VELDO-0160's decision over its execution record is re-run [None, []]",
+    "VELDO-0154 loop/rerun-another-account detail: one new dispatch of the same station, under a new dispatch identity, on another account of the role's engine, from the same accepted commit [[]]",
+    "VELDO-0154 loop/rerun-another-account detail: nothing is sent to the exhausted account before its reported reset [None, []]",
+    "VELDO-0154 loop/ask-before-rerun detail: L2: a run whose record shows a call to an MCP tool not marked read-only raised one ordinary decision request to the project's owner, naming the call [[], (None, None, None)]",
+    "VELDO-0154 loop/ask-before-rerun detail: L3: a run whose record shows a call to an MCP tool not marked read-only raised one ordinary decision request to the project's owner, naming the call [[], (None, None, None)]",
+    "VELDO-0154 loop/ask-before-rerun detail: no dispatch until he answers: another pass leaves both units awaiting him and asks nothing again [None, [0, 0]]",
+    "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store154e4c06ad9', 'store_path': '/dev/shm/v154-zb_20io4/authority/control.sqlite3', 'watermark': 83, 'result': {'ok': False, 'reason': 'invalid_input'}}, None, []]",
+    "VELDO-0154 loop/owner-no-stops detail: his stop leaves the unit stopped, in that pass and the next [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store154e4c06ad9', 'store_path': '/dev/shm/v154-zb_20io4/authority/control.sqlite3', 'watermark': 83, 'result': {'ok': False, 'reason': 'invalid_input'}}, [], [0]]",
+    "VELDO-0154 loop/reset-timer-wake detail: the unit waits for the account's reported reset, and the pass set its timer to that earliest reset [[], None, 1790550300]",
+    "VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [None, []]",
+    "VELDO-0154 loop/no-other-timer detail: with the unit waiting, no journal advance and no run ending, no pass started for 0.0 s, longer than every interval the service uses, while its accept timeout kept waking it [[], 0 switches]",
+    "VELDO-0154 loop/no-other-timer detail: exactly one pass started at the reset, and none between the unit's wait and it [[], []]",
+    "VELDO-0154 loop/no-other-timer detail: across the whole run every pass came from a wake source, the service's start included none, and the reset timer started only that one [[]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-journal-wake-dropped.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/runner-in-service",
+    "VELDO-0154 loop/journal-wake-offers",
+    "VELDO-0154 loop/review-offered",
+    "VELDO-0154 loop/receiver-death",
+    "VELDO-0154 loop/rerun-another-account",
+    "VELDO-0154 loop/ask-before-rerun",
+    "VELDO-0154 loop/owner-yes-reruns",
+    "VELDO-0154 loop/owner-no-stops",
+    "VELDO-0154 loop/reset-timer-wake",
+    "VELDO-0154 loop/no-other-timer"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "d841448062c3035ba2e01b45059b137fffe75b46c95214a7f9751b777eb5a9bd",
+   "name": "loop154-journal-wake-dropped",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/journal-wake-offers"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     false
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     false
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     false
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     false
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     false
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     false
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     false
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     false
+    ]
+   ],
+   "seconds": 305.288,
+   "source_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/receiver-death detail: its account slot is freed once its worker is gone, and the next dispatch, in that same pass, takes it [False, [{'dispatch_id': 'dispatch/VELDO-9154-U2/94571f2eb7cf4d3e8d42aa3225ae5312', 'repository': 'repo154b601b937'}], []]",
+    "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store154b601b937', 'store_path': '/dev/shm/v154-n6alh3gx/authority/control.sqlite3', 'watermark': 188, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo154b601b937:account-limit-67b6a4a064f19a2ff08ee309', 'assignment': {'actor_kind': 'person', 'alias': 'account-limit-67b6a4a064f19a2ff08ee309', 'answer': {'accepted_at': 1790550071.4281933, 'command': {'alias': 'account-limit-67b6a4a064f19a2ff08ee309', 'command_id': 'answer-b601b937-75', 'domain_uuid': 'dom154b601b937', 'nonce': 'an-b601b937-76', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo154b601b937', 'request_version': 1, 'ruling': 'rerun', 'store_uuid': 'store154b601b937'}, 'command_id': 'answer-b601b937-75', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'rerun', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgZeQCqFgnsnEnPgGXi3/bSFIYZq\\n+ppNuuYBX3WZtZjjoAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAEAjHjdEW0DzpqyAgl8pMvtjk2LC2CBcp4IlMuoSLByOZUfkeXL7m6\\ny8bDX+CYUsrLpHIIqDSMcv3kVJHm32vlsC\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Run dispatch/VELDO-9154-L2/af36330c49d04810a9dfa0a9b50c443b of unit VELDO-9154-L2 at build stopped at the limit of account acct-x3 (window usage_limit, reset 2026-09-28 02:02 UTC). Its execution record shows calls that may already have written: line 4 tracker/add_comment (unconfigured_call). Re-run it on another account from commit df15b667763d3fb6eef59f60d82d0b1e18740d08, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['rerun', 'stop'], 'deadline': '2026-10-04T23:01:11Z', 'disposition': None, 'domain_uuid': 'dom154b601b937', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo154b601b937', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo154b601b937'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:32755649b3850915218a2b0b83d3c8ebd399f5c0aa564488e30b798e5299d50f', 'kind': 'account_limit_rerun', 'ref': 'dispatch/VELDO-9154-L2/af36330c49d04810a9dfa0a9b50c443b'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-b601b937-75', 'seq': 188, 'record_digest': 'sha256:eb3837f9f47fcad88e2df4fa8f83a6067fca16a3245a6fbedc2f5ea48bff4598', 'after_versions': {'assignment:repo154b601b937:account-limit-67b6a4a064f19a2ff08ee309': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:03c148dce5099e9393a48f0cde2bf0384faaecfa06ae6381c3ad18daed708eaf', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, None, []]",
+    "VELDO-0154 loop/reset-timer-wake detail: the unit waits for the account's reported reset, and the pass set its timer to that earliest reset [[{'follows': None, 'identity': 'builder-154', 'refusal': 'no_account_until:1790560920', 'repository': 'repo154b601b937', 'rerun_of': None, 'station': 'build', 'unit': 'VELDO-9154-L4', 'until': 1790560920}], 1790560920, 1790550240]",
+    "VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [None, []]",
+    "VELDO-0154 loop/no-other-timer detail: exactly one pass started at the reset, and none between the unit's wait and it [[], []]",
+    "VELDO-0154 loop/no-other-timer detail: across the whole run every pass came from a wake source, the service's start included none, and the reset timer started only that one [[('journal',), ('run_end',)]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-account-slot-kept.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/receiver-death",
+    "VELDO-0154 loop/owner-yes-reruns",
+    "VELDO-0154 loop/reset-timer-wake",
+    "VELDO-0154 loop/no-other-timer"
+   ],
+   "module": ".veldo/control_account_pool.py",
+   "mutant_sha256": "a9a61606fe30fdf8c673b775ee3e0ab6f11edfcf5fe91887d8590a0167d6a28e",
+   "name": "loop154-account-slot-kept",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/receiver-death"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     false
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     false
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     false
+    ]
+   ],
+   "seconds": 268.772,
+   "source_sha256": "bdd0f2b1f5db82a7e3ca38aa04a6d32d8e33cce0b38bf83ced121641aff92fba"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/receiver-death detail: its account slot is freed once its worker is gone, and the next dispatch, in that same pass, takes it [True, [], []]",
+    "VELDO-0154 loop/owner-yes-reruns detail: his answer arrived as a signed packet through the service and its pass dispatched the same station on another account from the same commit [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store15459e214cb', 'store_path': '/dev/shm/v154-2fwuukih/authority/control.sqlite3', 'watermark': 187, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo15459e214cb:account-limit-6f5318ff5384086fd3086550', 'assignment': {'actor_kind': 'person', 'alias': 'account-limit-6f5318ff5384086fd3086550', 'answer': {'accepted_at': 1790550311.3051143, 'command': {'alias': 'account-limit-6f5318ff5384086fd3086550', 'command_id': 'answer-59e214cb-75', 'domain_uuid': 'dom15459e214cb', 'nonce': 'an-59e214cb-76', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo15459e214cb', 'request_version': 1, 'ruling': 'rerun', 'store_uuid': 'store15459e214cb'}, 'command_id': 'answer-59e214cb-75', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'rerun', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgvIFlz1I6WvUSxrGwMW6SPlYBJ4\\nGZRSdX8OHjTwNXjZsAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAEAG+0Ih5kpvr9vpq4mjJe41s+1Aq53O3fEWMGGME2yKSs8TllTN15\\nu4WVsUuqCHaTP+I/3A79uEFF4j50QLY14D\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Run dispatch/VELDO-9154-L2/79d1710c3bfa44339206ca60fc0e7fd0 of unit VELDO-9154-L2 at build stopped at the limit of account acct-x3 (window usage_limit, reset 2026-09-28 02:05 UTC). Its execution record shows calls that may already have written: line 4 tracker/add_comment (unconfigured_call). Re-run it on another account from commit b96e8506fb67d882805b05a946c449aae0098ba5, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['rerun', 'stop'], 'deadline': '2026-10-04T23:05:01Z', 'disposition': None, 'domain_uuid': 'dom15459e214cb', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo15459e214cb', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo15459e214cb'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:32755649b3850915218a2b0b83d3c8ebd399f5c0aa564488e30b798e5299d50f', 'kind': 'account_limit_rerun', 'ref': 'dispatch/VELDO-9154-L2/79d1710c3bfa44339206ca60fc0e7fd0'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-59e214cb-75', 'seq': 187, 'record_digest': 'sha256:fae5aabaf64c299cf86414b2ba766b29c36ae1bbac6033d4c578e1386eecd945', 'after_versions': {'assignment:repo15459e214cb:account-limit-6f5318ff5384086fd3086550': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:8a8482b2017081e65651fdd5e4027e0677e37b2fe64bc090f3ac2b6fe17f2134', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, None, []]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-orphan-not-stopped.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/receiver-death",
+    "VELDO-0154 loop/owner-yes-reruns"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "6552ac2ba6a9e7bc02924176c9c1429d65b91cf18235794861041440a5d412da",
+   "name": "loop154-orphan-not-stopped",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/receiver-death"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     false
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     false
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     true
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     true
+    ]
+   ],
+   "seconds": 235.041,
+   "source_sha256": "f6779d15537f3de3f92877f35d4b25c2ccc5b09d48804d998c650665fc5ccd24"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/rerun-another-account detail: one new dispatch of the same station, under a new dispatch identity, on another account of the role's engine, from the same accepted commit [[(2, 'acct-x1', 'dispatch/VELDO-9154-L1/fe02cdcd9104443f8b9858510aa4e74d', '30ca9036c456c332593e1afda5fd0044fbd66c61')]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-rerun-from-head.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/rerun-another-account"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "f1ec2da0360683be6427f74b695026519d206cc3ee7bcddedd6ff5f62765142b",
+   "name": "loop154-rerun-from-head",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/rerun-another-account"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     true
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     false
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     true
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     true
+    ]
+   ],
+   "seconds": 31.249,
+   "source_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/owner-no-stops detail: his stop leaves the unit stopped, in that pass and the next [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store1540b379fb4', 'store_path': '/dev/shm/v154-27fjzoi5/authority/control.sqlite3', 'watermark': 207, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo1540b379fb4:account-limit-ebfd7d53fe6cec0dc9463967', 'assignment': {'actor_kind': 'person', 'alias': 'account-limit-ebfd7d53fe6cec0dc9463967', 'answer': {'accepted_at': 1790550372.1147957, 'command': {'alias': 'account-limit-ebfd7d53fe6cec0dc9463967', 'command_id': 'answer-0b379fb4-77', 'domain_uuid': 'dom1540b379fb4', 'nonce': 'an-0b379fb4-78', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo1540b379fb4', 'request_version': 1, 'ruling': 'stop', 'store_uuid': 'store1540b379fb4'}, 'command_id': 'answer-0b379fb4-77', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'stop', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg8rDRZTlP4oRDup6wyp3CP7A203\\n9ZMxUVpuWf74s+ttwAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAECXE+7HSLmQTtxS31OLKbSkuuUPXpcTpQL/fFHL4bBRQD/NBvncjp\\nXGUZqT+jHpweIwW4w9ZVly7KMzG6XDy5kH\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Run dispatch/VELDO-9154-L3/fc99d9a11cb740b8a431729a7487e386 of unit VELDO-9154-L3 at build stopped at the limit of account acct-x1 (window usage_limit, reset 2026-09-28 02:07 UTC). Its execution record shows calls that may already have written: line 4 tracker/add_comment (unconfigured_call). Re-run it on another account from commit b30380dc623920a9ce7438a00065a63a27272fe0, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['rerun', 'stop'], 'deadline': '2026-10-04T23:06:11Z', 'disposition': None, 'domain_uuid': 'dom1540b379fb4', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo1540b379fb4', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo1540b379fb4'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:32755649b3850915218a2b0b83d3c8ebd399f5c0aa564488e30b798e5299d50f', 'kind': 'account_limit_rerun', 'ref': 'dispatch/VELDO-9154-L3/fc99d9a11cb740b8a431729a7487e386'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-0b379fb4-77', 'seq': 207, 'record_digest': 'sha256:79cfdf8de3b7c842e0a60fbbda699a15761c5f42dc0a0c140b793429d37f3374', 'after_versions': {'assignment:repo1540b379fb4:account-limit-ebfd7d53fe6cec0dc9463967': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:43e4fb1df8fc4993a921dfdd1085ab460f65137d86213559d274580a87b65b3a', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, [], [3]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-owner-no-reruns.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/owner-no-stops"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "f5e9667e0a5fa2dbf636b97a936980b3f47644be6c92e876d4167be3de0df486",
+   "name": "loop154-owner-no-reruns",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/owner-no-stops"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     true
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     false
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     true
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     true
+    ]
+   ],
+   "seconds": 60.005,
+   "source_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0154 loop/reset-timer-wake detail: the unit waits for the account's reported reset, and the pass set its timer to that earliest reset [[{'follows': None, 'identity': 'builder-154', 'refusal': 'no_account_until:1790550480', 'repository': 'repo154bd95d68e', 'rerun_of': 'dispatch/VELDO-9154-L4/80e66663e76d44e28019199a2366d086', 'station': 'build', 'unit': 'VELDO-9154-L4', 'until': 1790550480}], None, 1790550480]",
+    "VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [None, []]",
+    "VELDO-0154 loop/no-other-timer detail: exactly one pass started at the reset, and none between the unit's wait and it [[], []]",
+    "VELDO-0154 loop/no-other-timer detail: across the whole run every pass came from a wake source, the service's start included none, and the reset timer started only that one [[('journal',), ('run_end',)]]"
+   ],
+   "diff": "proof/VELDO-0154/loop154-reset-timer-unset.diff",
+   "failed_rows": [
+    "VELDO-0154 loop/reset-timer-wake",
+    "VELDO-0154 loop/no-other-timer"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "bdbf0b362dc29b4900eaee633edfcddfab45436cec2b9e2de70c5c8cf8944021",
+   "name": "loop154-reset-timer-unset",
+   "named_row_red": true,
+   "named_rows": [
+    "loop/reset-timer-wake"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     true
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     false
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     false
+    ]
+   ],
+   "seconds": 148.771,
+   "source_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  }
+ ],
+ "mutations_per_row": {
+  "loop/ask-before-rerun": [
+   "loop154-ask-reruns"
+  ],
+  "loop/journal-wake-offers": [
+   "loop154-journal-wake-dropped"
+  ],
+  "loop/no-other-timer": [
+   "loop154-periodic-pass"
+  ],
+  "loop/owner-no-stops": [
+   "loop154-owner-no-reruns"
+  ],
+  "loop/receiver-death": [
+   "loop154-eof-ignored",
+   "loop154-account-slot-kept",
+   "loop154-orphan-not-stopped"
+  ],
+  "loop/rerun-another-account": [
+   "loop154-rerun-from-head"
+  ],
+  "loop/reset-timer-wake": [
+   "loop154-reset-timer-unset"
+  ],
+  "loop/review-offered": [
+   "loop154-pipe-not-polled"
+  ]
+ },
+ "noop": {
+  "control_account_pool.py": {
+   "copy_sha256": "bdd0f2b1f5db82a7e3ca38aa04a6d32d8e33cce0b38bf83ced121641aff92fba",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     true
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     true
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     true
+    ]
+   ],
+   "seconds": 59.978,
+   "source_sha256": "bdd0f2b1f5db82a7e3ca38aa04a6d32d8e33cce0b38bf83ced121641aff92fba"
+  },
+  "control_launch.py": {
+   "copy_sha256": "f6779d15537f3de3f92877f35d4b25c2ccc5b09d48804d998c650665fc5ccd24",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     true
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     true
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     true
+    ]
+   ],
+   "seconds": 59.956,
+   "source_sha256": "f6779d15537f3de3f92877f35d4b25c2ccc5b09d48804d998c650665fc5ccd24"
+  },
+  "control_service.py": {
+   "copy_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0154 install/assets",
+     true
+    ],
+    [
+     "VELDO-0154 loop/runner-in-service",
+     true
+    ],
+    [
+     "VELDO-0154 loop/journal-wake-offers",
+     true
+    ],
+    [
+     "VELDO-0154 loop/review-offered",
+     true
+    ],
+    [
+     "VELDO-0154 loop/receiver-death",
+     true
+    ],
+    [
+     "VELDO-0154 loop/rerun-another-account",
+     true
+    ],
+    [
+     "VELDO-0154 loop/ask-before-rerun",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-yes-reruns",
+     true
+    ],
+    [
+     "VELDO-0154 loop/owner-no-stops",
+     true
+    ],
+    [
+     "VELDO-0154 loop/reset-timer-wake",
+     true
+    ],
+    [
+     "VELDO-0154 loop/no-other-timer",
+     true
+    ]
+   ],
+   "seconds": 59.979,
+   "source_sha256": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 154",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 2192.525,
+ "spec_id": "VELDO-0154",
+ "suite": "scripts/suites/83_veldo_0154_factory_loop.py"
+}

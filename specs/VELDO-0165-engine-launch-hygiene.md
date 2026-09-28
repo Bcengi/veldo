@@ -27,14 +27,19 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0165_*.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/suites/78_veldo_0160_account_pool.py"
+  - "proof/VELDO-0165/drive.py"
   - "scripts/suites/78_veldo_0060_claude_adapter.py"
   - "scripts/suites/79_veldo_0061_codex_adapter.py"
   - "scripts/suites/80_veldo_0155_claude_baseline.py"
   - "scripts/suites/81_veldo_0156_codex_baseline.py"
+  - "scripts/suites/82_veldo_0129_worker_wiring.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0165-engine-launch-hygiene.md"
+  - "specs/VELDO-0062-provider-credentials-and-usage.md"
   - "specs/index.md"
   - "proof/VELDO-0165/*"
 behavior_bearing: true
@@ -150,3 +155,47 @@ The bound role's PushNotification grant row moves to VELDO-0127 AC4, whose depen
 VELDO-0173. Only the owner marks a specification ready.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27: implemented the wrapper's prefix strip, then restored only the qualified baseline and
+registered account's own profile and optional subscription token. Both qualification records carry
+the prefixes and extracted session names; missing evidence refuses before spawn. The baseline names
+the MCP override explicitly. The committed byte extractor records identifier candidates with offsets
+and the SDK naming expression from both pinned binaries, without executing either. Suite
+82_veldo_0165_launch_hygiene has eight behavior rows and two fixture controls; all eight behavior rows
+are red by assertion at 65125030, and all nine finding 165 mutations are rejected. The new suite and
+VELDO-0160's account pool suite pass normally and in the empty gate environment. The footprint adds
+proof/VELDO-0165/drive.py for the requested red entry point, and the VELDO-0062 and VELDO-0160 suites for their
+fake qualification writers. The whole selftest and contained-launch suites are pending because their
+real user service manager access conflicts with this task's safety restriction. No gate or real engine
+run was performed. Status unchanged; evidence and remaining checks are in proof/VELDO-0165/README.md.
+
+2026-09-27, review fixes: empty extracted evidence is present; missing or null evidence refuses.
+The adapter's checked configuration is carried through the trusted wrapper after the inherited
+strip. Approval of VELDO-0165 (Telegram 29229) supersedes VELDO-0062's inherited non-login setting
+exception: CLAUDE_CODE_MAX_OUTPUT_TOKENS reaches the engine only when configured. Existing login
+checks remain. The byte extractor locates Claude Code's child-environment array and unconditional
+startup assignments by content; their unprefixed names join AC4's wrapper list. New rows cover
+configured values, unprefixed parent names, empty evidence, extraction completeness, matching
+prefixes, accurate removed-name reports and the refused-baseline metric.
+
+2026-09-27, review-fix validation complete: the whole selftest ran once with no checkout edits while
+it ran, 6,877 rows passed and zero failed. VELDO-0061 passes 20/20 with unchanged assertions;
+VELDO-0062 passes 22/22 and VELDO-0165 passes 17/17. Finding 165 rejects all 15 mutations, finding 62
+all 50, finding 61 all 30 and finding 155 all 25, each with two jobs. Both base red records were
+regenerated and fail by assertion. Proof records and exact diffs are in proof/VELDO-0165.
+No canonical gate, real engine run or push was performed. Status remains ready for independent review.
+
+2026-09-27, second review fixes: on the lead's decision that a worker's environment is configured and
+never ambient, the extractor decodes Codex 0.154.0's unified exec pairs by content (NO_COLOR, TERM,
+LANG, LC_CTYPE, LC_ALL, COLORTERM, PAGER, GIT_PAGER, GH_PAGER and CODEX_CI) and Claude Code's
+default OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE assignment; every unprefixed one joins
+AC4's wrapper list, and both baselines set LANG=C.UTF-8 and TERM=dumb after the strip. Session names
+are now read as GNU strings reads them, outside executable sections, and a row compares them with
+an independent strings and readelf scan. An adapter configuring CLAUDE_AGENT_SDK_MCP_NO_PREFIX is
+refused by name, and session names that are not a list refuse as missing evidence. The footprint
+adds the merged VELDO-0129 suite for its fake qualification writer.
+On 8cc010bf the whole selftest passes 6,908 rows with none failing and VELDO-0165 passes 21/21.
+Finding 165 rejects all 23 mutations, finding 62 all 50, finding 61 all 30 and finding 155 all 25,
+each with two jobs; both red records were regenerated and fail by assertion. The Git boundary check
+and the repository validator pass. No canonical gate, real engine run or push was performed. Status
+remains ready for independent review.

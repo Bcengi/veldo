@@ -1,0 +1,5 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -160 +160 @@
+-            forms.add(value.encode().hex())
++            pass

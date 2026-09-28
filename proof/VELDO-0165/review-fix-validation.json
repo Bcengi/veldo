@@ -1,0 +1,1315 @@
+{
+ "checks": {
+  "extraction": {
+   "command": "python3 proof/VELDO-0165/extract_environment.py --check",
+   "exit_code": 0
+  },
+  "git_boundary": {
+   "command": "python3 scripts/check_git_boundary.py",
+   "exit_code": 0,
+   "violations": 0
+  },
+  "mutation_names": {
+   "duplicates": 0,
+   "registered": 1877
+  },
+  "template_sync": {
+   "command": "bash scripts/check_template_sync.sh",
+   "exit_code": 0,
+   "pairs": 231
+  },
+  "validator": {
+   "command": "python3 .veldo/validate.py all",
+   "exit_code": 0
+  }
+ },
+ "gate_run": false,
+ "mutations": {
+  "155": {
+   "command": "python3 scripts/check_teeth_mutations.py --finding 155 --jobs 2",
+   "exit_code": 0,
+   "green_suites": {
+    "80_veldo_0155_claude_baseline.py": 43
+   },
+   "log_sha256": "ca9aae002a4823f8913d5654edd2694a0d6f7b8417e1f9fe5dec10a1edee4bd3",
+   "mutations_rejected": 25,
+   "results": [
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-baseline-sources-kept",
+     "red_rows": [
+      "VELDO-0155 baseline/qualified",
+      "VELDO-0155 baseline/planted-settings"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-baseline-strict-mcp-dropped",
+     "red_rows": [
+      "VELDO-0155 baseline/qualified",
+      "VELDO-0155 baseline/planted-server"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-baseline-slash-commands-kept",
+     "red_rows": [
+      "VELDO-0155 baseline/qualified",
+      "VELDO-0155 baseline/planted-skill"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-baseline-claude-mds-unset",
+     "red_rows": [
+      "VELDO-0155 baseline/qualified"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-baseline-hooks-kept",
+     "red_rows": [
+      "VELDO-0155 baseline/qualified"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-baseline-auto-memory-kept",
+     "red_rows": [
+      "VELDO-0155 baseline/qualified",
+      "VELDO-0155 baseline/planted-memory"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-paid-api-key-left",
+     "red_rows": [
+      "VELDO-0155 baseline/planted-settings",
+      "VELDO-0155 baseline/planted-server",
+      "VELDO-0155 baseline/planted-skill",
+      "VELDO-0155 baseline/planted-memory",
+      "VELDO-0155 paid-api/read-back",
+      "VELDO-0155 paid-api/stop",
+      "VELDO-0155 paid-api/every-init"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-paid-api-stop-skipped",
+     "red_rows": [
+      "VELDO-0155 paid-api/stop"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-strip-agent-left",
+     "red_rows": [
+      "VELDO-0155 strip/read-back"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-runtime-receivers",
+     "red_rows": [
+      "VELDO-0155 strip/private-runtime-directory"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-runtime-config-directory",
+     "red_rows": [
+      "VELDO-0155 strip/private-runtime-directory"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-strip-receiver-side",
+     "red_rows": [
+      "VELDO-0155 baseline/qualified",
+      "VELDO-0155 baseline/planted-settings",
+      "VELDO-0155 baseline/planted-server",
+      "VELDO-0155 baseline/planted-skill",
+      "VELDO-0155 baseline/planted-instructions",
+      "VELDO-0155 baseline/planted-memory",
+      "VELDO-0155 baseline/planted-hook",
+      "VELDO-0155 paid-api/read-back",
+      "VELDO-0155 paid-api/stop",
+      "VELDO-0155 paid-api/every-init",
+      "VELDO-0155 strip/read-back",
+      "VELDO-0155 strip/private-runtime-directory",
+      "VELDO-0155 strip/user-manager"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-profile-login-unchecked",
+     "red_rows": [
+      "VELDO-0155 paid-api/profile-login"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-token-file-unchecked",
+     "red_rows": [
+      "VELDO-0155 paid-api/token-file"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-token-not-delivered",
+     "red_rows": [
+      "VELDO-0155 paid-api/read-back"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-baseline-unqualified-accepted",
+     "red_rows": [
+      "VELDO-0155 baseline/qualified"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-prompt-before-login-check",
+     "red_rows": [
+      "VELDO-0155 paid-api/stop"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-backend-unchecked",
+     "red_rows": [
+      "VELDO-0155 paid-api/stop"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-token-source-unchecked",
+     "red_rows": [
+      "VELDO-0155 paid-api/stop"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-subscription-unchecked",
+     "red_rows": [
+      "VELDO-0155 paid-api/stop"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-subscription-label-unchecked",
+     "red_rows": [
+      "VELDO-0155 paid-api/stop"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-input-protocol-unqualified-accepted",
+     "red_rows": [
+      "VELDO-0155 paid-api/stop"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-stream-first-init-only",
+     "red_rows": [
+      "VELDO-0155 paid-api/every-init"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-profile-relative-receiver-cwd",
+     "red_rows": [
+      "VELDO-0155 paid-api/profile-login"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 155,
+     "mutation": "claude-engine-cwd-receivers",
+     "red_rows": [
+      "VELDO-0155 paid-api/profile-login"
+     ]
+    }
+   ]
+  },
+  "165": {
+   "command": "python3 scripts/check_teeth_mutations.py --finding 165 --jobs 2",
+   "exit_code": 0,
+   "green_suites": {
+    "82_veldo_0165_launch_hygiene.py": 43
+   },
+   "log_sha256": "111d5de7d002a19a051ac7b9ddd87539452b5f223e87af1c520935ec18f70145",
+   "mutations_rejected": 15,
+   "results": [
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-listed-names-only",
+     "red_rows": [
+      "VELDO-0165 strip/claude",
+      "VELDO-0165 strip/codex",
+      "VELDO-0165 strip/future-names",
+      "VELDO-0165 strip/own-values",
+      "VELDO-0165 report/removed"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-codex-strip-unqualified",
+     "red_rows": [
+      "VELDO-0165 refuse/codex",
+      "VELDO-0165 report/refused"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-mcp-override-kept",
+     "red_rows": [
+      "VELDO-0165 strip/claude",
+      "VELDO-0165 strip/codex",
+      "VELDO-0165 strip/own-values",
+      "VELDO-0165 mcp/prefixed-tools",
+      "VELDO-0165 report/removed"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-claude-strip-unqualified",
+     "red_rows": [
+      "VELDO-0165 refuse/claude",
+      "VELDO-0165 report/refused"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-claude-names-unqualified",
+     "red_rows": [
+      "VELDO-0165 refuse/claude",
+      "VELDO-0165 report/refused"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-codex-names-unqualified",
+     "red_rows": [
+      "VELDO-0165 refuse/codex",
+      "VELDO-0165 report/refused"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-own-values-lost",
+     "red_rows": [
+      "VELDO-0165 strip/own-values",
+      "VELDO-0165 strip/configured"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-strip-not-applied",
+     "red_rows": [
+      "VELDO-0165 strip/claude",
+      "VELDO-0165 strip/codex",
+      "VELDO-0165 strip/future-names",
+      "VELDO-0165 strip/own-values",
+      "VELDO-0165 mcp/prefixed-tools",
+      "VELDO-0165 strip/configured",
+      "VELDO-0165 strip/unprefixed",
+      "VELDO-0165 report/removed"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-removed-names-unreported",
+     "red_rows": [
+      "VELDO-0165 strip/claude",
+      "VELDO-0165 strip/codex"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-claude-empty-is-missing",
+     "red_rows": [
+      "VELDO-0165 evidence/empty"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-codex-empty-is-missing",
+     "red_rows": [
+      "VELDO-0165 evidence/empty"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-configured-not-restored",
+     "red_rows": [
+      "VELDO-0165 strip/configured"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-unprefixed-parent-kept",
+     "red_rows": [
+      "VELDO-0165 strip/claude",
+      "VELDO-0165 strip/codex",
+      "VELDO-0165 strip/own-values",
+      "VELDO-0165 evidence/qualified",
+      "VELDO-0165 strip/unprefixed",
+      "VELDO-0165 evidence/completeness"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-parent-hand-list",
+     "red_rows": [
+      "VELDO-0165 evidence/completeness"
+     ]
+    },
+    {
+     "assertions": 43,
+     "baseline": "green",
+     "finding": 165,
+     "mutation": "hygiene-refused-not-counted",
+     "red_rows": [
+      "VELDO-0165 report/refused"
+     ]
+    }
+   ]
+  },
+  "61": {
+   "command": "python3 scripts/check_teeth_mutations.py --finding 61 --jobs 2",
+   "exit_code": 0,
+   "green_suites": {
+    "79_veldo_0061_codex_adapter.py": 46
+   },
+   "log_sha256": "b9b057c674b0e13d057a379286ef77e365dc6283229808e6ba51e32c991cf54c",
+   "mutations_rejected": 30,
+   "results": [
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-digest-unbound",
+     "red_rows": [
+      "VELDO-0061 pin/unexpected-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-pin-skipped",
+     "red_rows": [
+      "VELDO-0061 lifecycle/normal-run",
+      "VELDO-0061 lifecycle/actual-binary",
+      "VELDO-0061 pin/unexpected-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-version-unbound",
+     "red_rows": [
+      "VELDO-0061 pin/unexpected-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-link-accepted",
+     "red_rows": [
+      "VELDO-0061 pin/unexpected-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-flags-unbound",
+     "red_rows": [
+      "VELDO-0061 pin/unexpected-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-autoupdater-unset",
+     "red_rows": [
+      "VELDO-0061 lifecycle/normal-run",
+      "VELDO-0061 pin/qualified-record"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-engine-environment-ignored",
+     "red_rows": [
+      "VELDO-0061 lifecycle/normal-run"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-stop-unregistered",
+     "red_rows": [
+      "VELDO-0061 lifecycle/registered"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-artifacts-unreported",
+     "red_rows": [
+      "VELDO-0061 lifecycle/registered",
+      "VELDO-0061 lifecycle/normal-run",
+      "VELDO-0061 lifecycle/actual-binary",
+      "VELDO-0061 artifacts/normal-exit",
+      "VELDO-0061 artifacts/missing-result",
+      "VELDO-0061 artifacts/malformed-output",
+      "VELDO-0061 artifacts/missing-usage",
+      "VELDO-0061 artifacts/nonzero-and-signal",
+      "VELDO-0061 stop/cooperative",
+      "VELDO-0061 stop/forced",
+      "VELDO-0061 stop/termination",
+      "VELDO-0061 stop/stopped-not-complete",
+      "VELDO-0061 caps/boundaries",
+      "VELDO-0061 caps/refused-before-launch",
+      "VELDO-0061 caps/stop-at-cap",
+      "VELDO-0061 caps/observed"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-missing-result-accepted",
+     "red_rows": [
+      "VELDO-0061 artifacts/missing-result",
+      "VELDO-0061 caps/refused-before-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-exit-code-completes",
+     "red_rows": [
+      "VELDO-0061 lifecycle/actual-binary",
+      "VELDO-0061 artifacts/missing-result",
+      "VELDO-0061 artifacts/malformed-output"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-runner-exit-completes",
+     "red_rows": [
+      "VELDO-0061 lifecycle/actual-binary",
+      "VELDO-0061 artifacts/missing-result"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-malformed-accepted",
+     "red_rows": [
+      "VELDO-0061 lifecycle/actual-binary",
+      "VELDO-0061 artifacts/malformed-output"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-undeclared-event-accepted",
+     "red_rows": [
+      "VELDO-0061 artifacts/malformed-output"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-missing-usage-zero",
+     "red_rows": [
+      "VELDO-0061 artifacts/missing-usage"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-failed-turn-unnamed",
+     "red_rows": [
+      "VELDO-0061 artifacts/nonzero-and-signal",
+      "VELDO-0061 caps/refused-before-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-signal-unnamed",
+     "red_rows": [
+      "VELDO-0061 artifacts/nonzero-and-signal"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-nonzero-exit-result",
+     "red_rows": [
+      "VELDO-0061 artifacts/nonzero-and-signal"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-artifacts-unverified",
+     "red_rows": [
+      "VELDO-0061 artifacts/normal-exit"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-stop-leaves-descendant",
+     "red_rows": [
+      "VELDO-0061 stop/termination"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-stop-graces-ignored",
+     "red_rows": [
+      "VELDO-0061 stop/forced"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-stop-outcome-lost",
+     "red_rows": [
+      "VELDO-0061 stop/cooperative",
+      "VELDO-0061 stop/forced",
+      "VELDO-0061 stop/termination",
+      "VELDO-0061 stop/stopped-not-complete",
+      "VELDO-0061 caps/stop-at-cap"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-cap-checked-after-launch",
+     "red_rows": [
+      "VELDO-0061 caps/refused-before-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-cap-stop-ignored",
+     "red_rows": [
+      "VELDO-0061 caps/stop-at-cap"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-window-unchecked",
+     "red_rows": [
+      "VELDO-0061 caps/refused-before-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-argv-position-unchecked",
+     "red_rows": [
+      "VELDO-0061 pin/unexpected-launch"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-update-check-left-on",
+     "red_rows": [
+      "VELDO-0061 lifecycle/registered",
+      "VELDO-0061 lifecycle/normal-run",
+      "VELDO-0061 lifecycle/actual-binary",
+      "VELDO-0061 pin/qualified-record"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-qualification-not-scaffolded",
+     "red_rows": [
+      "VELDO-0061 pin/qualified-record"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-stop-cause-ignored",
+     "red_rows": [
+      "VELDO-0061 stop/cooperative",
+      "VELDO-0061 stop/forced",
+      "VELDO-0061 stop/termination",
+      "VELDO-0061 stop/stopped-not-complete"
+     ]
+    },
+    {
+     "assertions": 46,
+     "baseline": "green",
+     "finding": 61,
+     "mutation": "adapter-engine-protocol-unchecked",
+     "red_rows": [
+      "VELDO-0061 lifecycle/engine-protocol"
+     ]
+    }
+   ]
+  },
+  "62": {
+   "command": "python3 scripts/check_teeth_mutations.py --finding 62 --jobs 2",
+   "exit_code": 0,
+   "green_suites": {
+    "75_veldo_0062_accounts.py": 48
+   },
+   "log_sha256": "f09c6eeaa85268a480914308fff4267d908ae33983b0370ec12e2215a4c33947",
+   "mutations_rejected": 50,
+   "results": [
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-profile-from-caller",
+     "red_rows": [
+      "VELDO-0062 login/recorded-account-profile"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-login-fixed-list",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-login-families-ignored",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-credential-tables-ignored",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-lists-ignored",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api",
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-securestorage-redirect-passes",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api",
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-host-creds-passes",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api",
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-session-tokens-path-passes",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api",
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-settings-inherited",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-token-word-strips",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-old-tables",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api",
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-old-tables",
+     "red_rows": [
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-sensitive-list-dropped",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api",
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-configured-login-accepted",
+     "red_rows": [
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-lists-ignored",
+     "red_rows": [
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-configured-stripped",
+     "red_rows": [
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-configured-model-dropped",
+     "red_rows": [
+      "VELDO-0062 login/no-paid-api",
+      "VELDO-0062 login/configured-environment"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-fleet-codex-to-claude",
+     "red_rows": [
+      "VELDO-0062 login/fleet-provider"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-status-unchecked",
+     "red_rows": [
+      "VELDO-0062 login/substitution-refused"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-follow-on-checked-after-launch",
+     "red_rows": [
+      "VELDO-0062 usage/reserved-before-launch",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-boundary-always-initial",
+     "red_rows": [
+      "VELDO-0062 usage/reserved-before-launch"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-invocation-unreserved",
+     "red_rows": [
+      "VELDO-0062 usage/reserved-before-launch",
+      "VELDO-0062 usage/allowance-states",
+      "VELDO-0062 usage/competing-remainder",
+      "VELDO-0062 usage/cap-stops-worker",
+      "VELDO-0062 usage/rate-limit-reset",
+      "VELDO-0062 settle/once",
+      "VELDO-0062 settle/model-usage",
+      "VELDO-0062 settle/resumed-delta",
+      "VELDO-0062 settle/resumed-other-session",
+      "VELDO-0062 settle/missing-retained",
+      "VELDO-0062 settle/timeout-retained",
+      "VELDO-0062 settle/cancel-retained",
+      "VELDO-0062 attribution/stored-account",
+      "VELDO-0062 attribution/measurement-removed",
+      "VELDO-0062 attribution/watermark"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-cap-stop-ignored",
+     "red_rows": [
+      "VELDO-0062 usage/cap-stops-worker"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-rate-window-unchecked",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-timeout-releases",
+     "red_rows": [
+      "VELDO-0062 settle/timeout-retained",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-cancel-releases",
+     "red_rows": [
+      "VELDO-0062 usage/cap-stops-worker",
+      "VELDO-0062 settle/cancel-retained",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-missing-result-conclusive",
+     "red_rows": [
+      "VELDO-0062 usage/allowance-states",
+      "VELDO-0062 settle/missing-retained",
+      "VELDO-0062 settle/timeout-retained",
+      "VELDO-0062 settle/cancel-retained",
+      "VELDO-0062 attribution/measurement-removed"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-main-loop-usage",
+     "red_rows": [
+      "VELDO-0062 settle/model-usage",
+      "VELDO-0062 settle/resumed-delta",
+      "VELDO-0062 settle/resumed-other-session",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-missing-model-usage-main-loop",
+     "red_rows": [
+      "VELDO-0062 settle/model-usage"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-limit-unobserved",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-workspace-unobserved",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-spend-cap-unobserved",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-exhaustion-reset-invented",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-window-reopens-early",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-window-reopens-late",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-unstated-reset-invented",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-reset-at-minute-start",
+     "red_rows": [
+      "VELDO-0062 usage/rate-limit-reset"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-open-turn-conclusive",
+     "red_rows": [
+      "VELDO-0062 usage/allowance-states",
+      "VELDO-0062 settle/missing-retained",
+      "VELDO-0062 settle/timeout-retained",
+      "VELDO-0062 settle/cancel-retained"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-resume-whole-total",
+     "red_rows": [
+      "VELDO-0062 settle/resumed-delta",
+      "VELDO-0062 settle/resumed-other-session",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-resume-by-contract-id",
+     "red_rows": [
+      "VELDO-0062 settle/resumed-other-session",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-resume-case-unrecorded",
+     "red_rows": [
+      "VELDO-0062 settle/resumed-other-session"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-resume-unknown-prior-whole",
+     "red_rows": [
+      "VELDO-0062 settle/resumed-delta",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-resume-prior-unread",
+     "red_rows": [
+      "VELDO-0062 settle/resumed-delta",
+      "VELDO-0062 settle/resumed-other-session",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-session-unsettled",
+     "red_rows": [
+      "VELDO-0062 settle/resumed-delta",
+      "VELDO-0062 settle/resumed-other-session",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-resume-subtracted",
+     "red_rows": [
+      "VELDO-0062 settle/resumed-delta",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-claude-repeat-counted",
+     "red_rows": [
+      "VELDO-0062 settle/once",
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-codex-repeat-counted",
+     "red_rows": [
+      "VELDO-0062 settle/once"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-caller-label-attributed",
+     "red_rows": [
+      "VELDO-0062 attribution/stored-account"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-unknown-remaining-counted",
+     "red_rows": [
+      "VELDO-0062 attribution/measurement-removed"
+     ]
+    },
+    {
+     "assertions": 48,
+     "baseline": "green",
+     "finding": 62,
+     "mutation": "account-watermark-from-reservation",
+     "red_rows": [
+      "VELDO-0062 attribution/watermark"
+     ]
+    }
+   ]
+  }
+ },
+ "pushed": false,
+ "red_records": [
+  "red-at-65125030.json",
+  "red-at-fd81afc0.json"
+ ],
+ "rows": {
+  "VELDO-0061": {
+   "assertions_unchanged": true,
+   "failed": 0,
+   "passed": 20
+  },
+  "VELDO-0062": {
+   "failed": 0,
+   "passed": 22
+  },
+  "VELDO-0155": {
+   "failed": 0,
+   "passed": 17
+  },
+  "VELDO-0165": {
+   "failed": 0,
+   "passed": 17
+  }
+ },
+ "schema": "veldo.review-fix-validation/v1",
+ "selftest": {
+  "command": "python3 scripts/selftest.py",
+  "exit_code": 0,
+  "failed": 0,
+  "log_sha256": "a028fb543657bdbd0372c40482c1f0ae6dc5cffb83f35050a6157dbc54f22d96",
+  "passed": 6877,
+  "runs": 1
+ },
+ "spec_id": "VELDO-0165",
+ "tested_commit": "e381030a57bab391f73566685a70ef657c3266a0"
+}

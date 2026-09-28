@@ -97,7 +97,7 @@ def _v39_suite():
         member('revoked-service', revoked_at=1)
         member('elsewhere-service', scope=['another-repository'])
         put('project:p1', 'project', dict(name='dispatch'))
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         def authority(conn, command):

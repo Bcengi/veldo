@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -428 +428 @@
+-        record.update(execution_record=params.get('execution_record'))
++        record.update(execution_record=None)  # defect: unknown ends carry no commitment

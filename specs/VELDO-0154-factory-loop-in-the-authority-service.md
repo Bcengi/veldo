@@ -20,6 +20,13 @@ footprint:
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
+  - "engine/.veldo/control_reservations.py"
+  - ".veldo/control_reservations.py"
+  - "packs/*/.veldo/control_reservations.py"
+  - "engine/.veldo/control_account_pool.py"
+  - ".veldo/control_account_pool.py"
+  - "packs/*/.veldo/control_account_pool.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0154_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -194,3 +201,30 @@ meaning unchanged.
 specification after which a dispatch's configuration names catalog revisions, because the configuration
 a dispatch records is VELDO-0127's; the catalog alone names no revision on a dispatch. Criterion meaning
 unchanged.
+
+2026-09-27: built on branch build-veldo-0154 from main a684f73b. The factory loop is class FactoryLoop in
+`control_service.py`, built at `serve` from the work configuration an installation copies (`--work`,
+veldo.factory_work/v1: each served repository's builder and reviewers); one Line per repository holds the
+VELDO-0039 Runner over the repository's installed launch receiver, the Gate, the dispatch records, the VELDO-0036
+reservation service and the VELDO-0160 account pool, on the service's own connection and principal. Its passes
+start only from `hint_after` (a packet or channel pass that advanced the journal), a run's end on a launch pipe the
+service loop's poll set now watches (`Launch.fileno` and `Launch.pump` in `control_launch.py`, the pipe's end of
+file included), and the reset timer each pass sets to the earliest reset a waiting unit needs. The service now
+serves VELDO-0064's inbox commands too, so the owner's answer to a loop question arrives as a packet. AC2's freed
+account slot needed a seam outside the drafted footprint, added here: `release_account` in
+`control_reservations.py` marks the worker slot's account released (the slot itself stays held, VELDO-0041's
+unknown outcome) over the Runner's kernel observation that the orphaned worker is gone, after the Runner makes the
+stop the dead receiver owed, and `control_account_pool.py` stops counting such a slot among the account's runs;
+`scripts/check_teeth_mutations.py` is added for the finding 154 mutations. Proof in proof/VELDO-0154/.
+
+2026-09-27, integration with VELDO-0169 on main: the suite registers the claim organ as a transaction transition (the store passes it the command transaction), the form VELDO-0169 introduced; no criterion changes.
+
+2026-09-27, gate timing: the mutation stage gives each case 120 s, and `loop154-pipe-not-polled` ran suite 83 to
+that deadline, because every wait ran to its full bound once the loop stopped and the reset row waited on the real
+clock for a minute boundary after every other row. Suite 83 now runs the reset row in a second installation of its
+own (clone, store, one account, service), begun before the other rows and closed after them, so its minute passes
+while the first installation runs the rest; each wait has its own bound (8 s) inside a 100 s suite budget, the
+first installation's rows have a 45 s deadline, and once a wait for a needed pass comes back empty every later
+wait of that installation returns at once, so its rows red by assertion. Every assertion is unchanged, and AC4's
+quiet interval is still watched in full, up to a second before the reset. The per-case `seconds` bound this branch
+had added to `scripts/check_teeth_mutations.py` is removed, since the gate never honors it. No criterion changes.
