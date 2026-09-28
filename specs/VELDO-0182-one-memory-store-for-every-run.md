@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0182
-title: The factory keeps one memory store record naming where each part of Ava's memory lives, none containing an account profile, and hands the same locations to every run on every account
+title: The factory keeps one memory store record naming where each part of Ava's memory lives, none containing an account profile, hands the same locations to every run on every account, and checks no memory is lost when a store is switched
 status: ready
 risk: critical
 owner: dmitry
@@ -40,10 +40,11 @@ behavior_bearing: true
 observability:
   logs: >
     Record the memory step of each setup run (done, already done or refused) with each part's code
-    directory, its fixed data path and the digest of its manifest entry, each memory record revision with
+    directory, its fixed data path and the digest of its manifest entry, each part's copy with its path and
+    each check with its count and sample size, each memory record revision with
     the owner's signed command, and each launch's handed memory locations; never memory content.
   metrics: >
-    Count memory record revisions, setup memory steps by outcome, and account registrations refused for a
+    Count memory record revisions, setup memory steps by outcome, memory checks by outcome, and account registrations refused for a
     profile inside a memory location.
   traces: >
     Join each run's handed memory locations to the memory record revision it read.
@@ -52,7 +53,8 @@ observability:
     owner's own (invalid_input:memory:<part>:<reason>), a memory location that contains a registered
     account profile (invalid_input:memory:contains_account_profile:<part>), an account whose profile lies
     inside a memory location (invalid_input:account_profile:inside_memory:<part>) and a re-run whose
-    manifest differs (invalid_input:state_root:differs:memory).
+    manifest differs (invalid_input:state_root:differs:memory) and a switch after which a store holds fewer memories
+    or misses a sampled one (missing_evidence:memory:<part>:lost).
 acceptance_criteria:
   - id: AC1
     text: >
@@ -71,8 +73,8 @@ acceptance_criteria:
       under each: mem0_memory's `data` directory (config.py DATA_DIR, holding `chromadb` and `history.db`),
       knowledge_graph's `knowledge_graph.db` (db.py DB_PATH) and memory_kb's `data/chromadb` (kb/config.py
       DB_PATH). Setup checks each location exists, is the owner's own and is not a link, and writes the memory
-      record by the owner's signed command; only another signed command revises it. Nothing is copied, because
-      a copy would be a second memory: the record points at the bytes the owner's assistant reads and writes
+      record by the owner's signed command; only another signed command revises it. Nothing is copied for use,
+      because a copy would be a second memory (AC4's one copy is a safety copy no run is handed): the record points at the bytes the owner's assistant reads and writes
       today. Each launch that hands memory reads the record's current revision and records it. The suite
       launches turns on two accounts of each engine and compares their handed locations, and sets up a
       manifest whose knowledge_graph directory lacks `knowledge_graph.db`. Falsifier: Derive the file memory
@@ -111,6 +113,31 @@ acceptance_criteria:
     falsified_by: >
       Write a new record revision on every run, and the second-run row must fail on the changed journal
       head.
+  - id: AC4
+    text: >
+      Claim: Before a memory store is first switched, it is copied aside once, and after each switch a
+      light check finds the store still holds its memories, so a switch that loses memory stops and names
+      the store and its copy. Set and completeness: `veldo memory check <part> before` copies the part's
+      data location to `<state root>/memory/copies/<part>` (0700, the owner's own, never named in the
+      memory record and never handed to a run) the first time it runs for that part and never again, a
+      SQLite database through SQLite's online backup so the copy is whole while the owner's assistant runs;
+      it then counts the part's memories and picks 20 at random (all of them when fewer) and saves the count
+      and the sample beside the copy. `veldo memory check <part> after` requires at least the count `before` saved and each
+      sampled memory found by its id and by a search for its own text, through the part's own functions:
+      mem0_memory's memory_store get and search, knowledge_graph's db get_entity and search_entities,
+      memory_kb's kb store collection get by document id and kb search, claude-mem's search server, and for the file memory
+      the file by name and a search of the directory for its text. Otherwise it refuses by name
+      (missing_evidence:memory:<part>:lost), naming the store and the copy's path, and the step that switched
+      it stops. The switches that run it around themselves are this memory step for each part it first
+      names, VELDO-0183 AC4's first start of each store server and its rewrite of the assistant's MCP
+      entries, and the owner's assistant's own switch in the myday change VELDO-0183's Notes file. One row
+      sets up memory over fixture stores of all five parts, finds each part's copy holding its memories,
+      then for each of the five parts removes one sampled memory and adds another between `before` and
+      `after`, the count unchanged, and requires the refusal naming that part and its copy. Falsifier: Have `after` count the memories in the copy in
+      place of the switched store, and the removed-memories row must fail on a check that passes.
+    falsified_by: >
+      Have `after` count the memories in the copy in place of the switched store, and the removed-memories
+      row must fail on a check that passes.
 required_evidence: [unit, integration]
 rollback: >
   Stop handing memory to runs while keeping the memory record; the memory itself is the owner's and is
@@ -150,7 +177,8 @@ several owners' memories (Release 3); how the stores serialize concurrent writer
 - Threat model: a run handed a different memory than the record names; a memory location that holds an
   account profile, so a run with memory access reaches that account's login; memory copied, so two
   memories drift; the record revised without the owner's signed command; a re-run that rewrites the
-  record; a manifest whose data path is not where the server's code reads it.
+  record; a manifest whose data path is not where the server's code reads it; a switch that loses
+  memories and nobody notices, or a store switched with no copy to go back to.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962), such as the
   owner moving a memory directory by hand after setup (the launch refuses the missing location by name);
   forged rows in our own store.
@@ -159,6 +187,10 @@ several owners' memories (Release 3); how the stores serialize concurrent writer
 
 The factory owns the record and the handing in; the bytes stay shared with the owner's assistant, which
 is what "the same memory" means.
+
+AC4 is deliberately light (owner, Telegram 29310): one copy per part and a count with a sample of 20, not a
+census of every memory. The count is taken just before and just after a switch; running the step again
+takes a fresh `before` while the first copy stays.
 
 ## History
 
@@ -175,3 +207,12 @@ VELDO-0183 AC4 points at the store servers that serialize concurrent writers; Ou
 Criterion meaning otherwise unchanged. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-09-28: the owner asked that no memory be lost when memory moves (Telegram 29306), and then that the
+check stay light (29310, "Don't need overkill for memory, just a light check is fine that it's still
+there"). New AC4: before a store's first switch it is copied aside once, and after each switch `veldo
+memory check` finds at least the number of memories it saved and a random sample of 20 by id and by search, or stops
+and names the store and the copy; VELDO-0183 AC4's switch and the owner's assistant's myday switch run the
+same check. The title names it. Asked by the owner; back to draft: the owner must re-mark it ready.
+
+2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.

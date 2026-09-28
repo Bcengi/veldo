@@ -127,7 +127,10 @@ acceptance_criteria:
       memory_store; control_memory_kb over memory_kb's kb package), holds an exclusive lock on a lock file in
       the part's data directory for its whole life, and serves those tools one call at a time over a Unix
       socket under the state root that only the owner's account can open. Before it opens the store it refuses
-      by name a store another process holds open (conflict:memory_store_open:<part>:<pid>). AC1's `ava-memory`
+      by name a store another process holds open (conflict:memory_store_open:<part>:<pid>). The first start
+      of each store server and the rewrite of the owner's assistant's MCP entries below each run VELDO-0182 AC4's check
+      around them (`veldo memory check <part> before` and `after`), so the part is copied aside once before
+      its first switch and a switch that loses memories stops by name. AC1's `ava-memory`
       and `memory-kb` records launch the factory's stdio bridge (`veldo memory bridge <part>`), which lists
       the server's tools and forwards each call; setup writes the same bridge as the `ava-memory` and
       `memory-kb` entries of the owner's assistant MCP configuration the memory manifest names (VELDO-0182
@@ -200,7 +203,8 @@ memory_kb/cli.py; save-session.sh (cron at 04:00) and sync_confluence.sh (cron a
 `memory_kb/cli.py index-file`; index_telegram.py, index_report.py and memory_kb/confluence_sync.py;
 hooks/pre_action_check.py, which calls the mem0 command line on each action; the session-end step myday's
 CLAUDE.md runs; and backup.sh, which copies the chromadb directory with tar and must copy through the
-store server instead. Until then the store server's start refuses a store one of them holds open, by name.
+store server instead. The myday change runs `veldo memory check <part> before` and `after` around its
+switch of each part, the same light check VELDO-0182 AC4 ships (owner, Telegram 29306 and 29310). Until then the store server's start refuses a store one of them holds open, by name.
 The memory_kb server the factory ships does not offer the `setup-passphrase` tool: a passphrase given as
 tool input would be kept in the run's record; the owner sets it with `veldo memory kb` on the host.
 
@@ -227,3 +231,10 @@ concurrent writers is withdrawn. Still a draft.
 2026-09-27, recheck: AC4 now claims serialization for the writers the factory controls (conversations, the assistant's MCP entries and `veldo memory kb`); the Notes list every myday program that opens a ChromaDB store directly, moved to the bridge in a myday change before the first conversation; the shipped memory_kb server does not offer setup-passphrase.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-09-28: the owner asked that no memory be lost when memory moves (Telegram 29306), with a light check
+(29310). AC4's first start of each store server and its rewrite of the assistant's entries run VELDO-0182
+AC4's copy and check around them, and the Notes' myday change runs the same check around its switch.
+depends_on already names VELDO-0182. Asked by the owner; back to draft: the owner must re-mark it ready.
+
+2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.

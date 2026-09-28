@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W131
 plan_revision: 4
-depends_on: [VELDO-0130, VELDO-0139]
+depends_on: [VELDO-0130, VELDO-0139, VELDO-0189]
 placement: [engine, distribution]
 protected_paths: []
 footprint:
@@ -164,11 +164,13 @@ acceptance_criteria:
       would differ is refused by name (invalid_input:state_root:differs:<path>) and never overwritten; the
       only change to an existing file is a step adding its own keys that the file lacks or holds as null.
       The store is written only under AC1's lock rule. An update of Veldo changes only what its new steps
-      add: the installed engine files under the install root are never replaced by a re-run (the engine
-      upgrade VELDO-0139 filed for Release 2). After a second run over a complete host, every file under
+      add: the installed engine files under the install root are replaced only by VELDO-0189's upgrade,
+      which runs first on a re-run over an older engine. After a second run over a complete host, every file under
       the state root, install root, unit directory, host trust and workspace binding is byte for byte the
       same, the journal head and the Serve status are unchanged, and no key is generated. Over a host set
-      up by VELDO-0139 alone, only the API steps write, and every earlier file is unchanged but for the
+      up by VELDO-0139 alone, laid down by the whole `.veldo` of commit 7fefdb9a (taken with `git archive`,
+      never that commit's setup module alone over the current engine), only VELDO-0189's upgrade and the
+      API steps write, and every earlier file outside the installed engine is unchanged but for the
       installation's service configuration naming the API configuration. Falsifier: Generate a new api
       edge key on every run, and the second-run row must fail on the changed key and the second
       enrollment in the journal.
@@ -213,7 +215,7 @@ implementation proof nor operational activation.
 The UI shell and its screens (VELDO-0145, VELDO-0131); other transports (the owner chose Tailscale);
 enrolling a second person's passkey (Release 3); sessions that survive a restart (Release 2); the execution
 record keys (VELDO-0167) and the receiver host trust key (VELDO-0170), which add their own steps to this
-re-run; replacing the installed engine files after an update (Release 2, VELDO-0139's Notes).
+re-run; replacing the installed engine files after an update (VELDO-0189, which this re-run runs first).
 
 ## What the reviewer judges
 
@@ -308,3 +310,13 @@ scripts/suites/support/v171_tailscale.py: suites 73 and 74 run setup too and now
 stand-in, so no suite reaches the host's real CLI; and scripts/suites/66_veldo_0047_authority.py, whose list
 of the programs an installation runs by path (installed 0500) now names the API process. Proof in suite 85_veldo_0171_setup_api and
 proof/VELDO-0171/. The live Serve leg remains the lead's with the owner.
+
+2026-09-28: the owner asked for the engine upgrade in Release 1 (Telegram 29307, "For 0171, ok to add"),
+alongside his memory requirement of the same day (29306), which VELDO-0182 and VELDO-0183 take. AC4 now
+says the installed engine files are replaced only by VELDO-0189's upgrade, depends_on adds VELDO-0189, and
+the rows over a VELDO-0139 host lay that host down from the whole `.veldo` of commit 7fefdb9a with `git
+archive`, not only its setup module, so the host holds the older engine and the re-run's refusal
+`unavailable_service:api:not_installed` gives way to the upgrade. The text is the one on build-veldo-0171 at
+1dbf0b88, with these changes. Back to draft: the owner must re-mark it ready.
+
+2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
