@@ -14,6 +14,8 @@ depends_on: [VELDO-0139, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0
 placement: [engine, fleet, distribution]
 protected_paths: []
 footprint:
+  - "engine/runtime/claude-qualification*.json"
+  - ".veldo/runtime/claude-qualification*.json"
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
   - "engine/.veldo/control_service.py"
@@ -122,7 +124,8 @@ acceptance_criteria:
       build and review work to both engines on every registered account, and an account not yet logged in
       takes no work while the others carry on. Set and completeness: Setup's account step runs each
       registered account's engine's own login status in that account's profile environment (control_accounts
-      `login_environment`): Claude Code's `auth status`, whose JSON must report `loggedIn` true, and Codex's
+      `login_environment`): Claude Code's `auth status`, whose JSON output must report `loggedIn` true with the claude.ai subscription as its `authMethod`, the
+      command and both fields read from 2.1.281 and recorded in its qualification record, and Codex's
       `login status`, which control_engine_codex `login_status` must read as `chatgpt`, as VELDO-0156 AC3's
       `login_problem` reads it. Each account that fails is named in setup's answer with its login step
       (VELDO-0160 AC1) and refused by name (missing_authority:account_login:<account>); the launch receiver
@@ -202,3 +205,5 @@ an account not logged in (each engine's own login status); AC1 also saves the de
 reviewer come from; AC2 writes the state root into every receiver configuration, the conversation
 receiver's included. depends_on adds VELDO-0155, VELDO-0156, VELDO-0162, VELDO-0172 and VELDO-0186. Still
 a draft.
+
+2026-09-27, recheck: AC4 reads the subscription login from `claude auth status`: `loggedIn` true with the claude.ai subscription as its `authMethod`, both fields recorded in the 2.1.281 qualification record (an API-key login also reports loggedIn); the footprint adds the qualification records.

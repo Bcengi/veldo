@@ -113,7 +113,8 @@ acceptance_criteria:
       on B's empty search.
   - id: AC4
     text: >
-      Claim: Every write to mem0_memory's and memory_kb's ChromaDB stores is serialized across processes,
+      Claim: Every write to mem0_memory's and memory_kb's ChromaDB stores made by a conversation, by the
+      owner's assistant's MCP entries or by `veldo memory kb` is serialized across processes,
       because one store server per store is the only process that opens it and every conversation and the
       owner's assistant reach that server over a local socket, while the knowledge graph's SQLite store
       already serializes its writers. Set and completeness: Setup installs, by the owner's signed command, one
@@ -182,16 +183,20 @@ Code hooks that the everything-off baseline keeps off (VELDO-0155).
   reachable by another account; a paid model API key handed to a server; a server pointed at another store
   than the record; a memory call missing from the record; a memory tool taken away from a role.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); faults inside
-  the memory servers' own code, which is the owner's assistant's; a direct open of a ChromaDB store by
-  a myday command line that starts while its store server runs (see Notes); claude-mem's search
+  the memory servers' own code, which is the owner's assistant's; claude-mem's search
   server answers only while claude-mem's own worker runs, which setup neither starts nor checks (filed).
 
 ## Notes
 
-myday's own command lines that open a ChromaDB store directly (mem0_memory/cli.py, memory_kb/cli.py and
-the session-end step myday's CLAUDE.md runs) are pointed at `veldo memory kb` and the bridge in myday, a
-change filed with the owner outside this repository; the store server's start refuses a store one of them
-holds open, by name.
+myday's own programs that open a ChromaDB store directly are moved to `veldo memory kb` and the bridge in a
+myday change filed with the owner, needed before his first conversation: mem0_memory/cli.py and
+memory_kb/cli.py; save-session.sh (cron at 04:00) and sync_confluence.sh (cron at 04:30), which call
+`memory_kb/cli.py index-file`; index_telegram.py, index_report.py and memory_kb/confluence_sync.py;
+hooks/pre_action_check.py, which calls the mem0 command line on each action; the session-end step myday's
+CLAUDE.md runs; and backup.sh, which copies the chromadb directory with tar and must copy through the
+store server instead. Until then the store server's start refuses a store one of them holds open, by name.
+The memory_kb server the factory ships does not offer the `setup-passphrase` tool: a passphrase given as
+tool input would be kept in the run's record; the owner sets it with `veldo memory kb` on the host.
 
 The paid-API rule is checked where a catalog record is saved, so it holds for every server a role can
 select, and the receiver's environment strip still holds for the engines.
@@ -212,3 +217,5 @@ owner's assistant both reach, with a two-writer falsifier, and states that the k
 store already locks; AC1's `ava-memory` and `memory-kb` records launch AC4's bridge, and memory_kb's tools
 are answered inside its store server rather than by a cli.py process per call; the filed note on
 concurrent writers is withdrawn. Still a draft.
+
+2026-09-27, recheck: AC4 now claims serialization for the writers the factory controls (conversations, the assistant's MCP entries and `veldo memory kb`); the Notes list every myday program that opens a ChromaDB store directly, moved to the bridge in a myday change before the first conversation; the shipped memory_kb server does not offer setup-passphrase.
