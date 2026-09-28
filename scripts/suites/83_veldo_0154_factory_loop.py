@@ -22,6 +22,12 @@ message with its reset minute, and its MCP tool-call item) that a script file of
 station and attempt, waiting on a file where the script says, and exits with the scripted code. Worker launches
 go through the wrapper without a containment group (`identity: reported`). No real engine runs, nothing logs in
 and no credential exists. Each row is reported once.
+
+Two installations run side by side, each with its own clone, store, accounts and service. The reset row's unit
+runs in the second, begun before every other row and closed after them, so the minute its reset waits for passes
+while the first installation runs the rest (Codex states a reset to the minute). Each wait has a bound of its own
+inside the suite's budget of 100 s, and once a wait for a pass the scenario needs comes back empty, every later
+wait of that installation returns at once, so a defect that stops the loop reds its rows by assertion promptly.
 """
 
 
@@ -78,14 +84,18 @@ def _v154_suite():
         return module
 
     started = time.monotonic()
-    # THE BUDGET. Every wait of the suite draws on one deadline and has a bound of its own, and once a wait for a
-    # pass the scenario needs returns nothing, every later wait of that instance returns at once: a defect that
-    # stops the loop reds its rows by assertion within seconds, never by raising and never by running to a bound.
-    BUDGET, WAIT = 100.0, 15.0
+    # THE BUDGET. Every wait of the suite has a bound of its own and draws on its instance's deadline, inside the
+    # suite's, and once a wait for a pass the scenario needs returns nothing, every later wait of that instance
+    # returns at once: a defect that stops the loop reds its rows by assertion within seconds, never by raising
+    # and never by running to a bound; one that only slows the service reds them at the rows' deadline.
+    # The first instance's rows take about 12 s, so their own deadline, 45 s in, leaves them more than three times
+    # that; the second instance's reset comes at most about 67 s in (the first minute end LEAD after its run starts).
+    # A pass the rows wait for comes within about a second, so each wait's own bound, WAIT, is eight times that.
+    BUDGET, ROWS_BUDGET, WAIT = 100.0, 45.0, 8.0
     deadline = time.time() + BUDGET
     # The reset row states the first minute that ends at least this far after its run starts, so the unit waits
     # longer than every interval the service uses before the reset (Codex states its reset to the minute).
-    LEAD = 7.0
+    LEAD = 5.0
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='v154-', dir=fast))
     run_id = os.urandom(4).hex()
@@ -224,8 +234,9 @@ sys.exit(chosen['code'])
             the second while the first runs every other row, and they share no store, account pool, journal or
             pass log, so neither's passes, accounts or quiet interval are the other's."""
 
-            def __init__(self, tag, accounts, units, paused=None):
+            def __init__(self, tag, accounts, units, paused=None, until=None):
                 self.tag, self.accounts, self.stalled, self.proc, self.pid, self.booted = tag, tuple(accounts), False, None, None, None
+                self.deadline = deadline if until is None else min(deadline, until)
                 self.DOMAIN, self.STORE, self.REPO = ('dom154' + tag + run_id, 'store154' + tag + run_id,
                                                       'repo154' + tag + run_id)
                 workspace = self.workspace = base / ('clone-' + tag)
@@ -276,7 +287,7 @@ sys.exit(chosen['code'])
                 for name, project in units:
                     self.unit(name, project)
 
-            # -- the owner's setup writes ----------------------------------------------------------------------
+            # The owner's setup writes.
             def version_of(self, identity):
                 row = self.setup.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
                 return row[0] if row else 0
@@ -319,7 +330,7 @@ sys.exit(chosen['code'])
                                                            repository_uuid=self.REPO)), BUILDER, journal_sign, 1)
                 return name
 
-            # -- the installation: its fixed executable, its receiver configuration and the work configuration --
+            # The installation: its fixed executable, its receiver configuration and the work configuration.
             def install(self):
                 self.install_root, self.unit_dir = base / ('install-' + self.tag), base / ('units-' + self.tag)
                 installed_bin = self.installed_bin = self.install_root / CS.CC.service_id(self.binding) / 'bin'
@@ -371,7 +382,7 @@ sys.exit(chosen['code'])
                     self.wait_until(lambda: os.path.exists(self.config['socket']))
                 self.booted = time.time()
 
-            # -- what the suite reads back, each through a connection or file of its own ----------------------
+            # What the suite reads back, each through a connection or file of its own.
             def independent(self, sql, *params):
                 conn = sqlite3.connect('file:%s?mode=ro' % self.store_path, uri=True, timeout=10)
                 try:
@@ -421,11 +432,11 @@ sys.exit(chosen['code'])
                 return self.proc is not None and self.proc.poll() is None
 
             def bounded(self, timeout):
-                """How long a wait may take: its own bound within the suite's deadline, and nothing once a wait
-                of this instance came back empty or while no service runs."""
+                """How long a wait may take: its own bound within this instance's deadline, and nothing once a
+                wait of this instance came back empty or while no service runs."""
                 if self.stalled or not self.live():
                     return 0.0
-                return max(0.0, min(timeout, deadline - time.time()))
+                return max(0.0, min(timeout, self.deadline - time.time()))
 
             def wait_pass(self, predicate, after, timeout=WAIT):
                 """The first pass numbered after `after` for which `predicate` holds, or None; at once when no
@@ -455,7 +466,7 @@ sys.exit(chosen['code'])
             def send(self, payload):
                 try:
                     return CC.send(str(self.workspace), payload, E, self.verify, owner_sign, HOST_ID,
-                                   timeout=max(1.0, min(30.0, deadline - time.time())))
+                                   timeout=max(1.0, min(30.0, self.deadline - time.time())))
                 except Exception as error:  # noqa: BLE001 - a refused request is data for the row
                     return {'refused': getattr(error, 'reason', type(error).__name__)}
 
@@ -573,28 +584,9 @@ sys.exit(chosen['code'])
         instances.append(B)
         B.install()
         B.boot()
-        # The first instance: every other row, with the owner's four accounts and one project paused.
-        A = Instance('a', ('acct-x1', 'acct-x2', 'acct-x3', 'acct-x4'),
-                     [(name, 'halted' if key == 'UP' else 'journey') for key, name in sorted(U.items()) if key != 'L4'],
-                     paused='halted')
-        instances.append(A)
-        # The paused project's unit was assigned before its project was paused.
-        A.claim(U['UP'])
-        paused = A.project_command('pause', 'halted', reason='owner review', project_version=A.version_of('project:halted'))
-        A.install()
-        # The rows of the first instance read it through these names.
-        ACCOUNTS, REPO, workspace, setup = A.accounts, A.REPO, A.workspace, A.setup
-        installed, install_error, config, installed_bin, systemd, WORK = (
-            A.installed, A.install_error, A.config, A.installed_bin, A.systemd, A.WORK)
-        claim, dispatches, worker_slot, invocation, assignments, independent = (
-            A.claim, A.dispatches, A.worker_slot, A.invocation, A.assignments, A.independent)
-        passes, last_pass, wait_pass, wait_until, send, note, answer = (
-            A.passes, A.last_pass, A.wait_pass, A.wait_until, A.send, A.note, A.answer)
-
-        # AC1 and AC4, begun first in the second instance so its minute passes while the first runs every other
-        # row: a unit waiting for an account's reported reset wakes a pass at that reset and at no other time.
-        # Nothing starts a pass there while nothing woke its loop, its own start included.
-        time.sleep(max(0.0, B.booted + 1.5 - time.time()))
+        # AC1 and AC4, begun first in the second instance so its minute passes while the first builds and runs
+        # every other row: a unit waiting for an account's reported reset wakes a pass at that reset and at no
+        # other time. Nothing ran there before its first packet (the first instance's rows watch a start for longer).
         quiet_start_b = B.passes()
         # The reset is the end of a minute (Codex states its reset to the minute): the first far enough ahead to
         # watch the service for longer than every interval it uses.
@@ -633,6 +625,24 @@ sys.exit(chosen['code'])
                 watch['error'] = '%s: %s' % (type(exc).__name__, str(exc)[:300])
         watcher[0] = threading.Thread(target=watch_reset, name='v154-reset-watch', daemon=True)
         watcher[0].start()
+        # The first instance: every other row, with the owner's four accounts and one project paused.
+        A = Instance('a', ('acct-x1', 'acct-x2', 'acct-x3', 'acct-x4'),
+                     [(name, 'halted' if key == 'UP' else 'journey') for key, name in sorted(U.items()) if key != 'L4'],
+                     paused='halted', until=deadline - BUDGET + ROWS_BUDGET)
+        instances.append(A)
+        # The paused project's unit was assigned before its project was paused.
+        A.claim(U['UP'])
+        paused = A.project_command('pause', 'halted', reason='owner review', project_version=A.version_of('project:halted'))
+        A.install()
+        # The rows of the first instance read it through these names.
+        ACCOUNTS, REPO, workspace, setup = A.accounts, A.REPO, A.workspace, A.setup
+        installed, install_error, config, installed_bin, systemd, WORK = (
+            A.installed, A.install_error, A.config, A.installed_bin, A.systemd, A.WORK)
+        claim, dispatches, worker_slot, invocation, assignments, independent = (
+            A.claim, A.dispatches, A.worker_slot, A.invocation, A.assignments, A.independent)
+        passes, last_pass, wait_pass, wait_until, send, note, answer = (
+            A.passes, A.last_pass, A.wait_pass, A.wait_until, A.send, A.note, A.answer)
+
 
         A.boot()
         service_pid = A.pid
