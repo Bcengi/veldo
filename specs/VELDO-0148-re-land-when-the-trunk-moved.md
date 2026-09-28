@@ -199,3 +199,12 @@ declares its `_policy_main`, which loads the trusted installation's policy_check
 validate.py loads its organs from a repository tree and the CandidatePolicy asks the proof reader about the
 candidate. Suite 86, the red record against ad916989, finding 148 and proof/VELDO-0148/ carry the evidence. No
 criterion or status changes.
+
+2026-09-28, completion after main moved: merged local main at 9f1a0445 without conflicts and
+reconciled the suite registry as main's entries plus suite 86, preserving main's order; regenerated
+requires.json. Audited all 12 finding-148 registrations against the saved mutations.json: every
+record names its registered assertion failures, every diff exactly applies the registered old/new
+text (including the forced-push mutation's second replacement), and all source and mutant digests
+match the merged production modules. No records are missing or stale; mutation names are unique
+across the registry. The saved baseline and four no-op controls are green. This was a static audit
+of the previous builder's evidence, not a new mutation run; the reviewer runs the mutation checker.
