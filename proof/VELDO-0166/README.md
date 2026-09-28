@@ -1,6 +1,7 @@
 # VELDO-0166 proof
 
-Implementation commit `2c4f250c` on `build-veldo-0166`, after merging local main `9f1a0445` at `3544d4c4`.
+Implementation commit `7f54fdfe` on `build-veldo-0166`, fixing the re-check at `1b7d225e`.
+The earlier implementation was `2c4f250c`, after the local main merge at `3544d4c4`.
 Veldo records every reported Claude Code usage window against the account and preserves an
 existing profile directory when registering it. All fixtures are generated locally; no engine,
 login, real credential, network or user service manager is used.
@@ -10,11 +11,16 @@ login, real credential, network or user service manager is used.
 The named window takes each top-level reset and utilization when present, otherwise its own
 unifiedWindows value. Each companion keeps its own values and no invented status. An unnamed
 allowed event records only its map and clears a stream rejection; it never creates a `unified`
-window. The raw line and digest remain the receipt for each observation.
+window. An unnamed rejection is stored as rejected under `unified`, the window reported by
+`limit()`. The pool passes that account over until its reset, or indefinitely if none was reported.
+The raw line and digest remain the receipt for each observation.
 
-A companion preserves an active rejection. If that rejection had no reset, a later numeric reset
+An ordinary companion preserves an active rejection. If that rejection had no reset, a later numeric reset
 fills it in while preserving the rejected status. The account is blocked only until that time,
-including when the newly learned reset already passed.
+including when the newly learned reset already passed. An unnamed allowed clear instead carries
+`clear_rejection` through Metering to the signed account writer. Its reported companions replace
+active rejections, including those with no reset, keeping their status absent. Both Meter and store
+then agree that the rejection was cleared.
 
 Account registration changes the mode only of a directory it creates, to 0700. The helper counts
 successful additions in `ADDED_COUNTS` by created or existing and emits a structured stderr log
@@ -42,6 +48,8 @@ writer, production membership authorization and `accounts.account_add`. Each row
 | AC1 | `windows/named-precedence` | Explicit fields win independently over the map, including zero utilization. |
 | AC1 | `windows/rejection-reset-filled` | Later companions fill unknown resets, with both past and future resets; blocking expires. |
 | AC1 | `windows/clear` | A real unnamed clear updates both windows, stores no unified window and clears the stream limit. |
+| AC1 | `windows/unnamed-rejection` | An unnamed rejection stores unified, its reset and receipt; the real pool blocks until the reset or indefinitely without one. |
+| AC1 | `windows/clear-active-rejection` | A clear event lifts both no-reset and future-reset rejections in Meter and the real pool, without inventing statuses or a unified observation. |
 | Observability | `observability/counts-and-log` | Counts separate names, statuses and directory states; structured logs carry required attribution and omit private metadata and contents. |
 | AC2 | `profiles/existing` | Both providers preserve mode 0755, file bytes, mtime and entries and record existing. |
 | AC2 | `profiles/created` | Both providers create mode 0700 under umask 022 and record created. |
@@ -52,15 +60,19 @@ writer, production membership authorization and `accounts.account_add`. Each row
 against its real production modules. `red-at-582cc961.json` records all 12 rows red by assertion
 on the original pre-0166 implementation. `red-at-3544d4c4.json` records all five new review rows
 red by assertion on the merged commit immediately before these fixes, with the seven existing
-rows green. Neither record contains an exception in place of an assertion.
+rows green. `red-at-1b7d225e.json` records both re-check rows red by assertion on the commit immediately
+before this repair, with the 12 existing rows green. Every new behavior row is red on its
+pre-change implementation. None of these records contains an exception in place of an assertion.
 
 ## Mutations
 
-`mutations.json` registers 21 finding-166 mutations and their exact diffs and module digests.
+`mutations.json` registers 25 finding-166 mutations and their exact diffs and module digests.
 The original 12 include both declared falsifiers and the existing suite-75 journey mutation.
 The nine additions pin top-level fallback, map precedence, missing-reset repair, unnamed clear
 window handling, stream clearing, both counters, window logging and account directory logging.
-The VELDO-0160 reopening mutation's comment anchor was refreshed without changing its defect.
+Four re-check additions drop the unnamed rejection, drop the Meter's clear signal, omit its
+forwarding in Metering, or ignore it in the store. Each targets its corresponding new row.
+Changed mutation anchors were refreshed without changing the existing defects.
 
 The driver's register-only option refreshes this inventory and parses every mutant without
 executing suites. Mutation execution is reserved for the reviewer under this run's instructions.
@@ -69,11 +81,21 @@ for a reviewer authorized to run it, including its existing suite-75 journey cas
 
 ## Verification
 
-The ordinary and isolated gate-environment runs of suite 0166 each passed: 12 behavior rows,
-38 assertions including the shared preamble, zero failures. These are partial suite runs,
-not gate or landing evidence. requires.json was regenerated and was already current after the
-clean merge. The anchor check reports 0 bad anchors. Validation of all specifications passes.
-On implementation commit `2c4f250c`, the footprint check reports 40 changed files, none outside
-the footprint; all four production modules match their engine copies. All registered mutation names
-are unique across findings. The working tree was clean after the implementation commit.
-The gate, whole selftest, other suites and mutation checks were not run, as instructed.
+The ordinary and isolated gate-environment runs of suite 0166 each passed: 14 behavior rows,
+40 assertions including the shared preamble, zero failures. The isolated run used Python's
+`/usr/bin` directory first on PATH, an empty environment, HOME and TMPDIR in /dev/shm, UTC,
+C.UTF-8 and the requested Python and Git isolation settings. Selftest returns exit 2 for a
+successful partial run; these are partial suite results, not gate or landing evidence.
+
+requires.json was regenerated and remained current. The anchor check reports 0 bad anchors.
+Validation of all specifications exits 0. On implementation commit `7f54fdfe`, the footprint
+check reports 40 changed files, none outside the footprint. All four production modules match
+their engine copies. All mutation names are unique across findings. The existing suite manifest
+registration and proof driver were reused. Searches covered the Meter observation producers,
+Metering forwarding, account observation writer, blocking readers in the reservation service
+and pool, and their suite callers. No footprint expansion was needed.
+
+The gate, whole selftest, other suites and mutation execution were not run, as instructed.
+Mutation registration parsed all 25 mutant sources; no mutation rejection is claimed for this
+revision. The spec History names VELDO-0160 as the follow-up ticket for expiring no-reset
+rejections; implementing that expiry remains outside this repair.

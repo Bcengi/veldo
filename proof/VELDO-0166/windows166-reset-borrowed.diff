@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -1108 +1108 @@
+@@ -1109 +1109 @@
 -                reset, utilization = values.get('resetsAt'), values.get('utilization')
 +                reset, utilization = info.get('resetsAt'), values.get('utilization')

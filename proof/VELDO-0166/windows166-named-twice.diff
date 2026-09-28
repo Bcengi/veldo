@@ -1,5 +1,5 @@
 --- a/.veldo/control_engine_claude.py
 +++ b/.veldo/control_engine_claude.py
-@@ -1103 +1103 @@
--            windows = ([(named, values)] if named else []) + [(window, values) for window, values in companions.items() if window != named]
-+            windows = ([(named, values)] if named else []) + [(window, values) for window, values in companions.items()]
+@@ -1104 +1104 @@
+-            windows = ([(rated_window, values)] if rated_window else []) + [(window, values) for window, values in companions.items() if window != rated_window]
++            windows = ([(rated_window, values)] if rated_window else []) + [(window, values) for window, values in companions.items()]
