@@ -9,11 +9,12 @@ every run. Writes proof/VELDO-0189/mutations.json and one exact applied diff per
 
     python3 -B proof/VELDO-0189/drive.py
 
-With `--red COMMIT` it instead runs the current suite once against the whole tree of COMMIT,
-extracted read-only with `git archive` into a temporary directory, and writes
-proof/VELDO-0189/red-at-COMMIT.json. Nothing in that tree is changed: it has no engine upgrade module
-(.veldo/control_factory_setup_upgrade.py) and its installer has no layout, so every row fails by its own
-assertion (the suite records that against each row rather than raising).
+With `--red COMMIT` it instead runs the current suite once against the whole tree of COMMIT, a local
+clone checked out at COMMIT in a temporary directory, and writes
+proof/VELDO-0189/red-at-COMMIT.json. Nothing in that tree is changed. At the commit before VELDO-0189 it
+has no engine upgrade module (.veldo/control_factory_setup_upgrade.py) and its installer has no layout, so
+every row fails by its own assertion; at the commit before the review fix the rows that fix added fail by
+their own assertions (the suite records that against each row rather than raising).
 
     python3 -B proof/VELDO-0189/drive.py --red <pre-change commit>
     python3 -B proof/VELDO-0189/drive.py --cache <directory> [--budget <seconds>]   (resumable)
@@ -120,18 +121,20 @@ def _raised(observed):
 
 
 def red(commit):
-    """Run the current suite once against the whole tree of COMMIT, extracted with git archive."""
+    """Run the current suite once against the whole tree of COMMIT, in a local clone checked out at it."""
     resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                                 capture_output=True, text=True, check=True).stdout.strip()
     with tempfile.TemporaryDirectory(prefix='v189-red-') as directory:
+        # A local clone checked out at COMMIT, so the suite finds the older engines and the history its census
+        # reads (a bare archive has no repository, and the rows over the older hosts would raise instead).
         tree = Path(directory) / 'tree'
-        tree.mkdir()
-        archive = _git_process.run(['git', '-C', str(ROOT), 'archive', resolved], capture_output=True, check=True).stdout
-        subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
+        _git_process.run(['git', 'clone', '-q', '--no-checkout', str(ROOT), str(tree)], capture_output=True, check=True)
+        _git_process.run(['git', '-C', str(tree), 'checkout', '-q', '--detach', resolved], capture_output=True,
+                         check=True)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
         observed = run({}, tree)
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0189', suite='scripts/suites/' + SUITE, commit=resolved,
-                  tree='git archive %s, unchanged; the current suite file run against it' % resolved, modules=modules,
+                  tree='a local clone checked out at %s, unchanged; the current suite file run against it' % resolved, modules=modules,
                   by_assertion=not _raised(observed), **observed)
     name = 'red-at-%s.json' % commit
     (HERE / name).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
