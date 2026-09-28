@@ -256,3 +256,10 @@ The follow-up red run completed with 22 rows: the four defect rows above failed 
 other rows passed. The ordinary suite run completed with 48 assertions passed and zero failed (22
 VELDO-0189 rows plus the shared preamble). Validation passes, mutation anchors report zero bad anchors,
 and the acceptance-criteria block is byte-identical to the pre-fix commit.
+
+
+The suite also passed under the requested empty environment with its generated HOME and TMPDIR in
+/dev/shm: 48 reported checks passed, zero failed, all 22 behavior rows green. Both selected-suite runs
+exit 2 by the harness's partial-run contract; neither is an aggregate gate stamp. `verification.json`
+records the two runs, source digests, environment and check results. The gate and mutation executions
+were not run, as instructed; mutation rejection remains for the reviewer.
