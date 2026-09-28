@@ -1,11 +1,9 @@
 --- a/.veldo/control_engine_codex.py
 +++ b/.veldo/control_engine_codex.py
-@@ -422,7 +422,7 @@
- QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
+@@ -423,5 +423,5 @@
  QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
  # Exact direct call signatures; Code Mode wrappers are not aliases for these capabilities.
 -NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan']}
 +NATIVE_TOOL_MAPPING = {'shell': ['exec_command'], 'update_plan': ['update_plan']}
  # Pinned 0.154.0 debug models under an empty profile; absent tool_mode is JSON null.
  MODEL_TOOL_MODES = {'gpt-6-astra': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'gpt-5.4': None, 'gpt-5.4-mini': None, 'gpt-5.2': None, 'codex-auto-review': 'code_mode_only'}
- 
