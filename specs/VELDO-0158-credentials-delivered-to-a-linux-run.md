@@ -186,3 +186,14 @@ Suite 85_veldo_0158_credential_delivery sets credentials and saves servers throu
 drives real contained launches with a generated fake secret-tool; the red record at 7851ae9b, finding 158's six
 mutations and the proof are in proof/VELDO-0158. The footprint's `init_scaffold` installs the new module; no path
 outside the footprint was needed. Criteria and ready status unchanged.
+
+2026-09-28, review fixes on build-veldo-0158: a run directory its receiver left (the receiver died, or the run's group
+could not be emptied), with Claude Code's generated MCP configuration and its values in it, is removed by the Runner
+once the kernel shows the run gone, after VELDO-0154's orphan release and at every sweep, and the authority service's
+start sweeps every run directory whose dispatch is settled and whose run is gone, keeping a live run's until a later
+pass. The Runner takes the receiver's runs root and worker profile, which the service's line passes, so the footprint
+adds control_service. Every engine's run set holds an Authorization-style header's credentials without the scheme, so
+a Claude Code run printing its bearer token alone is redacted. A Codex credential named for a variable the engine
+already has (PATH, HOME, LANG, TERM, or any name the receiver, the adapter, the baseline or the account sets) is refused
+as `invalid_input:mcp_delivery:env_collision:<name>`, never replaces it. Suite 85 adds five rows and finding 158 five
+mutations; the red record at 7851ae9b is regenerated. Criteria and ready status unchanged.

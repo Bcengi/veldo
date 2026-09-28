@@ -17,16 +17,28 @@ table carries only the command, arguments, literals and names: a stdio credentia
 under the name its definition gives it and the table lists it in `env_vars`; an http server's bearer
 Authorization header reaches it through `bearer_token_env_var` (any other header through `env_http_headers`, the
 same route, since the catalog's headers are all references). The receiver installs those values with the
-engine's own overrides, after the wrapper's strip. A name two servers claim with different values, or a name the
-receiver already sets, is refused by name as delivery failed, never overridden.
+engine's own overrides, after the wrapper's strip. A name two servers claim with different values is refused by name
+as delivery failed; a name the engine already has (PATH, HOME, LANG, TERM and the rest of `ENGINE_RESERVED`, or any
+name the receiver's environment, the adapter, the baseline or the account sets, such as CODEX_HOME) is refused as
+`invalid_input:mcp_delivery:env_collision:<name>`, never replaces it.
 
 A selection whose credential does not resolve (keystore locked, keystore unreachable, a reference whose record is
 gone or whose keystore item holds nothing) raises `Undeliverable`, and the receiver refuses the accepted dispatch
 as `credential_unavailable:<id>` before any engine process starts, attesting the reserved invocation not
 executed. A selection on an adapter with no engine, or on another host's (the Mac leg is VELDO-0147), is refused
 as `invalid_input:mcp_delivery:<adapter>`. The new resolver `keystore_credentials` in `control_launch.RESOLVERS`
-adds every resolved value, and the bearer token as delivered, to the run's set of resolved values, so VELDO-0141's
-receiver replaces them as `[REDACTED:mcp_credential]` before the scanner runs.
+adds every resolved value, and for an Authorization-style header also its credentials without the scheme (for every
+engine, `control_credential_delivery.values`), to the run's set of resolved values, so VELDO-0141's receiver replaces
+them as `[REDACTED:mcp_credential]` before the scanner runs.
+
+A run's directory is removed by its receiver when the run is reaped. When the receiver cannot remove it (it died, or
+the run's group could not be emptied), the Runner does: the dispatch becomes a leftover when its record is unknown or
+its orphan is taken (VELDO-0154), and `Runner.clear_runs` removes the directory once the kernel shows the run gone (its
+recorded process ended, its reported group empty or gone, and no live group of the profile's slice its scope), after
+each orphan release and at every sweep. The authority service's start (`FactoryLoop.start`, from `open_loop`) makes
+each line's Runner sweep its runs root (`Runner.sweep_runs`): every directory whose dispatch is settled (exited,
+refused or unknown) and whose run is gone goes; one whose run is still alive stays until a later pass. The service's
+line passes the Runner the receiver's runs root and worker profile.
 
 The receiver reports a `credentials` event per launch (catalog revisions, credential ids, the route each took and
 counts) and puts the same account, with the credential, the reason and the selected revisions, on a refusal. No
@@ -64,6 +76,18 @@ of the account from /proc. Each row reports once.
   occurrence is the `mcp_credential` marker, no line holds any word of either value, and each line names the kind.
 - AC3, `redaction/per-run-set`: a run selecting only another server has its own value replaced, while the tracker
   value it prints from a suite file is kept as printed, since it was never resolved for that run.
+- AC3, `redaction/claude-bare-bearer`: the Claude Code run prints the Atlassian bearer token without its scheme alone,
+  inside a command's output and on its error stream; every occurrence is the marker and no line holds any word of it.
+- AC1, `refusal/env-collision`: Codex servers naming PATH (inherited) and CODEX_HOME (the account's) for a credential
+  are refused as `invalid_input:mcp_delivery:env_collision:<name>` after resolving it, with no engine process and no
+  run directory left, the refusal naming the credential and no value.
+- Threat model, `orphan/run-directory-removed`: a Claude Code run's receiver is sent SIGKILL by its exact pid once
+  the run holds with its MCP configuration (values included) written; the run is recorded outcome_unknown and keeps
+  its directory while alive; after `Runner.orphaned` the run, its directory and the configuration file are gone.
+- Threat model, `orphan/live-run-kept`: a Codex run's receiver is killed and its orphan never released; the service's
+  start (open_loop over the receiver's configuration) keeps the settled dispatch's directory while its run is alive.
+- Threat model, `orphan/start-sweep`: once that run ends, nothing had removed its directory; the service's next start
+  removes it and names its dispatch.
 - Controls: `fixture/route-set` (route writes and store metadata), `fixture/control-word` (a word no credential
   names is kept), `format/fake-lines` (every fake line against the binaries' tables) and VELDO-0172's
   `fake/capture:0158_credential_delivery`.
@@ -73,9 +97,9 @@ of the account from /proc. Each row reports once.
 `red-at-7851ae9b.json`: the current suite against the unchanged tree of the commit before this change. All 14
 behavior rows (and `format/fake-lines`) fail by assertion; only the two fixture rows hold.
 
-`mutations.json` (`python3 -B proof/VELDO-0158/drive.py`): a green baseline, green no-op copies of the three
-mutated modules, and six finding-158 mutations, each red on its named rows by assertion, with its diff beside it.
-`python3 scripts/check_teeth_mutations.py --finding 158 --jobs 2` rejects all six.
+`mutations.json` (`python3 -B proof/VELDO-0158/drive.py`): a green baseline, green no-op copies of the five
+mutated modules, and eleven finding-158 mutations, each red on its named rows by assertion, with its diff beside it.
+`python3 scripts/check_teeth_mutations.py --finding 158 --jobs 2` rejects all eleven.
 
 | Mutation | Named rows |
 |---|---|
@@ -85,6 +109,11 @@ mutated modules, and six finding-158 mutations, each red on its named rows by as
 | `delivery158-claude-value-in-environment` | `delivery/claude-private-file` |
 | `delivery158-every-server-variable` | `delivery/own-server-only` |
 | `delivery158-run-directory-kept` | `delivery/private-dir-removed` |
+| `delivery158-orphan-run-kept` (the orphan release leaves the directory) | `orphan/run-directory-removed` |
+| `delivery158-start-unswept` (the service starts without the sweep) | `orphan/start-sweep` |
+| `delivery158-live-run-removed` (the sweep removes without the kernel check) | `orphan/live-run-kept` |
+| `delivery158-bearer-scheme-kept` (only the schemed value in the set) | `redaction/claude-bare-bearer` |
+| `delivery158-env-collision-inherited` (the collision check before the fix) | `refusal/env-collision` |
 
 No real engine, login, keyring or credential is used: the Secret Service is a generated `secret-tool` first on
 PATH, and every value is assembled at run time.

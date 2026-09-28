@@ -1287,8 +1287,9 @@ err.close()
             check('orphan/live-run-kept', 'the service\'s start, its dispatch settled but its run alive, keeps the run\'s '
                   'directory [%s, alive %s, dir %s]' % (restart['first'], restart['alive_at_first'],
                                                         restart['dir_after_first']),
-                  restart['first']['loop'] and restart['alive_at_first'] and restart['dir_after_first']
-                  and restart['first']['swept'] == [])
+                  restart['launch'] is not None and restart['first']['loop'] and restart['alive_at_first']
+                  and restart['dir_after_first'] and isinstance(restart['first']['swept'], list)
+                  and restart['launch'].dispatch_id not in restart['first']['swept'])
 
         with region('orphan/start-sweep'):
             check('orphan/start-sweep', 'once the run ended, nothing had removed its directory before the next start '
