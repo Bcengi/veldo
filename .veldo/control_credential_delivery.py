@@ -17,6 +17,7 @@ taxonomy distinguishes, so the launch is refused and the run never starts withou
 import importlib.util
 import json
 from pathlib import Path
+import re
 
 
 def organ(name):
@@ -35,6 +36,9 @@ SELECTIONS = 'mcp'
 KIND = 'mcp_credential'
 ROUTES = ('private_file', 'engine_environment')
 REASONS = ('keystore_locked', 'keystore_unreachable', 'reference_not_found', 'delivery_failed')
+# Headers whose value is `<scheme> <credentials>` (RFC 9110 section 11): the credentials alone are a value too.
+AUTHORIZATION_HEADERS = ('authorization', 'proxy-authorization')
+SCHEMED = re.compile(r'[!#$%&\'*+.^_`|~0-9A-Za-z-]+ +(\S.*)\Z', re.S)
 
 
 class Undeliverable(Exception):
@@ -116,13 +120,20 @@ def resolve(conn, domain, configuration, keystore=None):
 
 
 def values(servers):
-    """Every resolved value of a run's servers, as the engine receives it, for the run's set (VELDO-0141)."""
+    """Every resolved value of a run's servers, for the run's set (VELDO-0141): each as the keystore holds it and, for
+    an Authorization-style header, also its credentials without the scheme, whatever the engine, since a run may
+    print the token alone."""
     out = []
     for server in servers or ():
         for field in ('environment', 'headers'):
-            for item in server[field].values():
-                if 'handle' in item:
-                    out.append(item['handle'].reveal())
+            for name, item in server[field].items():
+                if 'handle' not in item:
+                    continue
+                value = item['handle'].reveal()
+                out.append(value)
+                schemed = SCHEMED.match(value) if field == 'headers' and name.lower() in AUTHORIZATION_HEADERS else None
+                if schemed:
+                    out.append(schemed.group(1))
     return out
 
 
@@ -140,5 +151,6 @@ def report(dispatch_id, servers, routes=None, refusal=None, selected=()):
     event['metrics'] = {'launch_with_credentials': int(bool(credentials) and refusal is None),
                         'credentials_resolved': len(credentials) if refusal is None else 0,
                         'credential_unavailable': ({refusal.credential: 1}
-                                                   if refusal is not None and refusal.credential else {})}
+                                                   if refusal is not None and refusal.credential
+                                                   and refusal.code.startswith('credential_unavailable:') else {})}
     return json.loads(json.dumps(event))

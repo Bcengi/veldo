@@ -38,7 +38,7 @@ SUITE = '85_veldo_0158_credential_delivery.py'
 PREFIX = 'VELDO-0158 '
 FINDING = 158
 MODULES = ('control_launch.py', 'control_credential_delivery.py', 'control_engine_claude.py', 'control_engine_codex.py',
-           'control_credential.py', 'control_credential_keystore.py', 'secretref.py')
+           'control_credential.py', 'control_credential_keystore.py', 'secretref.py', 'control_service.py')
 
 
 def _load(name, path):

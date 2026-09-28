@@ -34,15 +34,18 @@ def _v158_suite():
     import fcntl
     import hashlib
     import importlib.util
+    import inspect
     import json
     import os
     from pathlib import Path
     import random
     import shutil
+    import signal
     import subprocess
     import sys
     import tempfile
     import time
+    import types
 
     TREE = Path(globals().get('__suite_file__', str(ROOT / 'scripts' / 'suites' / 'x.py'))).resolve().parents[2]
     FORMATS = json.loads((TREE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())
@@ -59,6 +62,7 @@ def _v158_suite():
         'control_credential.py': ROOT / ".veldo" / "control_credential.py",
         'control_credential_keystore.py': ROOT / ".veldo" / "control_credential_keystore.py",
         'secretref.py': ROOT / ".veldo" / "secretref.py",
+        'control_service.py': ROOT / ".veldo" / "control_service.py",
     }
     ROWS = ('delivery/claude-private-file', 'delivery/codex-environment', 'delivery/command-lines',
             'delivery/own-server-only', 'delivery/not-in-packet-contract-journal', 'delivery/private-dir-removed',
@@ -66,6 +70,8 @@ def _v158_suite():
             'refusal/keystore-locked', 'refusal/keystore-unreachable', 'refusal/reference-not-found',
             'refusal/no-credential-launches',
             'redaction/claude-keystore-value', 'redaction/codex-keystore-value', 'redaction/per-run-set',
+            'redaction/claude-bare-bearer', 'refusal/env-collision',
+            'orphan/run-directory-removed', 'orphan/start-sweep', 'orphan/live-run-kept',
             'fixture/route-set', 'fixture/control-word', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
@@ -141,6 +147,7 @@ def _v158_suite():
         AUTH = load('v158_authority', mods / 'control_api_authority.py')
         CHE = load('v158_enrollment', mods / 'control_channel_enrollment.py')
         KS = load('v158_keystore', mods / 'control_credential_keystore.py')
+        SV = load('v158_service', mods / 'control_service.py')
         CR, IN, MC, CV = AUTH.CR, AUTH.AS.IN, AUTH.MC, AUTH.CV
         CLM = D.CLM
         CM.attach(S)
@@ -443,7 +450,10 @@ for name in sorted(got):
     tool = 'toolu_' + uuid.uuid4().hex[:20]
     assistant([{'type': 'tool_use', 'id': tool, 'name': 'mcp__%s__credential' % name, 'input': {}}])
     result_of(tool, got[name], [{'type': 'text', 'text': got[name]}])
-for value in printed(got, payload):
+# The credentials of each named http server's Authorization header, without the scheme, as a run may print them.
+bare = [((servers.get(n) or {}).get('headers') or {}).get('Authorization', '').partition(' ')[2]
+        for n in payload.get('bare') or []]
+for value in printed(got, payload) + [b for b in bare if b]:
     assistant([{'type': 'text', 'text': value}])
     tool = 'toolu_' + uuid.uuid4().hex[:20]
     command = "printf 'held %s in output' '" + value + "'"
@@ -608,7 +618,11 @@ err.close()
 
         def runner(account):
             if account not in runners:
-                runners[account] = L.Runner(gate, reservations, dispatches, invoke, account=account)
+                # The receiver's runs root and this host's worker profile, as the service's line passes them; a Runner
+                # that takes neither (the tree before VELDO-0158's fix) is built without, so its rows red by assertion.
+                known = inspect.signature(L.Runner).parameters
+                where = {k: v for k, v in (('runs', str(runs_dir)), ('profile', profile)) if k in known}
+                runners[account] = L.Runner(gate, reservations, dispatches, invoke, account=account, **where)
             return runners[account]
 
         # THE API (VELDO-0130, VELDO-0144): the authority's judge on this store holding its lock, with the catalog and
@@ -704,7 +718,8 @@ err.close()
                   'notes-token': planted(('cedar', 'meadow', 'pebble')),
                   'atlassian-token': 'Bearer ' + planted(('willow', 'copper', 'summit')),
                   'other-token': planted(('violet', 'canyon', 'ember')),
-                  'gone-token': planted(('maple', 'river', 'stone'))}
+                  'gone-token': planted(('maple', 'river', 'stone')),
+                  'clash-token': planted(('hazel', 'orchard', 'tide'))}
         BEARER = VALUES['atlassian-token'].split(' ', 1)[1]
         control_word = 'plain.control.' + ''.join(pick.choice('bcdfghjkm') for _ in range(4))
         REFS, set_answers = {}, {}
@@ -729,6 +744,9 @@ err.close()
             'plain': stdio('plain', ['MODE'], {'MODE': {'literal': 'owner-selected'}}),
             'other': stdio('other', ['OTHER_TOKEN'], {'OTHER_TOKEN': {'reference': REFS['other-token']}}),
             'gone': stdio('gone', ['GONE_TOKEN'], {'GONE_TOKEN': {'reference': REFS['gone-token']}}),
+            # A credential named for a variable the Codex engine already has: inherited, and set by its account.
+            'clash-path': stdio('clash-path', ['PATH'], {'PATH': {'reference': REFS['clash-token']}}),
+            'clash-home': stdio('clash-home', ['CODEX_HOME'], {'CODEX_HOME': {'reference': REFS['clash-token']}}),
         }
         saves = {name: call('POST', MCP + 'catalog/save', {'definition': d, 'base': 0}, cookie=owner_cookie,
                             token=owner_token) for name, d in DEFINITIONS.items()}
@@ -839,7 +857,7 @@ err.close()
         for engine, account in (('claude', 'acct-158c'), ('codex', 'acct-158x')):
             holder, during = holding(engine)
             payload = {'task': 'work the unit', 'hold': holder['hold'], 'print': ['tracker', 'notes'],
-                       'control': control_word}
+                       'bare': ['atlassian'], 'control': control_word}
             launch, record, error, seen = dispatch(account, engine, MAIN, payload, during)
             runs[engine] = dict(launch=launch, record=record, error=error, census=seen or {},
                                 own=own_of(launch.dispatch_id) if launch else {},
@@ -877,6 +895,96 @@ err.close()
                                               own=own_of(launch.dispatch_id) if launch else {},
                                               servers=servers_of(launch.dispatch_id) if launch else {})
         (keystore / 'mode').write_text('')
+
+        # A Codex credential named for a variable the engine already has, refused by name before any engine exists.
+        collided = {}
+        for name_, server_ in (('PATH', 'clash-path'), ('CODEX_HOME', 'clash-home')):
+            before = len(calls())
+            launch, record, error, _ = dispatch('acct-158x', 'codex', selected(server_), {'task': 'work the unit'})
+            collided[name_] = dict(launch=launch, record=record, error=error, calls=calls()[before:],
+                                   own=own_of(launch.dispatch_id) if launch else {}, runs_after=run_dirs())
+
+        # A DEAD RECEIVER (VELDO-0154's orphan path): once the run holds, its configuration written, the receiver is
+        # sent SIGKILL by its exact pid, checked against the identity it recorded at acceptance.
+        def run_dir_of(launch):
+            return runs_dir / hashlib.sha256(launch.dispatch_id.encode()).hexdigest()[:32] if launch else None
+
+        def killing(launch):
+            seen = {'ready': False, 'killed': False}
+            end = time.time() + 30
+            while time.time() < end:
+                owned = own_of(launch.dispatch_id)
+                if owned and (markers / ('%s.ready' % owned.get('pid'))).exists():
+                    seen['ready'] = True
+                    break
+                time.sleep(0.02)
+            owned = own_of(launch.dispatch_id)
+            config_path = (owned.get('mcp_file') or {}).get('path')
+            with contextlib.suppress(OSError):
+                seen['config_text'] = Path(config_path).read_text() if config_path else None
+            seen['config_path'] = config_path
+            seen['dir_before'] = run_dir_of(launch).is_dir()
+            receiver = (dispatches.record(launch.dispatch_id) or {}).get('receiver') or {}
+            child = launch.child
+            if child is not None and child.poll() is None and receiver.get('pid') == child.pid:
+                identity, _ = attempt(lambda: L.process_identity(child.pid))
+                if identity and identity.get('start') == receiver.get('start'):
+                    os.kill(child.pid, signal.SIGKILL)
+                    seen['killed'] = True
+            return seen
+
+        def group_gone(launch):
+            group = (launch.group or {}) if launch else {}
+            return bool(group.get('cgroup')) and CT.populated(CT.CGROUP / group['cgroup'].lstrip('/')) is not True
+
+        # Claude Code, its receiver killed: its orphan release removes the run directory once the run is gone.
+        orphan = {}
+        holder, _unused = holding('orphan')
+        launch, record, error, seen = dispatch('acct-158c', 'claude', selected('tracker'),
+                                               {'task': 'work the unit', 'hold': holder['hold']}, killing)
+        orphan.update(launch=launch, record=record, error=error, seen=seen or {},
+                      dir_after_wait=bool(launch) and run_dir_of(launch).is_dir(),
+                      alive_after_wait=bool(launch) and not group_gone(launch))
+        released, orphan['release_error'] = attempt(lambda: runner('acct-158c').orphaned(launch)) if launch else ([], None)
+        orphan.update(released=released or [], dir_after=bool(launch) and run_dir_of(launch).exists(),
+                      config_after=bool((seen or {}).get('config_path')) and Path(seen['config_path']).exists(),
+                      gone_after=group_gone(launch))
+
+        # Codex, its receiver killed and its orphan never released: the service's start keeps the directory while the
+        # run is alive and removes it at the start after the run has ended.
+        work_path = base / 'work.json'
+        work_path.write_text(json.dumps({'schema': SV.WORK_SCHEMA, 'repositories': {REPOSITORY: {}}}))
+        work_path.chmod(0o600)
+        service_conn = SV.S.open_store(str(db))
+        connections.append(service_conn)
+
+        def service_start():
+            logged = []
+            service = types.SimpleNamespace(config={'receiver': {'configs': {REPOSITORY: str(config)}}},
+                                            conn=service_conn, domain=DOMAIN, principal='runner', sign=sign, generation=1,
+                                            _log=logged.append)
+            loop, refusal = SV.open_loop({'work': str(work_path)}, service)
+            swept = [x for x in logged if x.get('operation') == 'runs_swept']
+            return {'loop': loop is not None, 'refusal': refusal,
+                    'swept': ((swept[-1].get('swept') or {}).get(REPOSITORY) if swept else None)}
+        restart = {}
+        holder_b, _unused = holding('restart')
+        launch_b, record_b, error_b, seen_b = dispatch('acct-158x', 'codex', selected('tracker'),
+                                                       {'task': 'work the unit', 'hold': holder_b['hold']}, killing)
+        restart.update(launch=launch_b, record=record_b, error=error_b, seen=seen_b or {},
+                       dir_after_wait=bool(launch_b) and run_dir_of(launch_b).is_dir())
+        restart['alive_at_first'] = bool(launch_b) and not group_gone(launch_b)
+        restart['first'] = service_start()
+        restart['dir_after_first'] = bool(launch_b) and run_dir_of(launch_b).is_dir()
+        # The run ends: released, it writes to its dead receiver's pipe and exits, and its group empties.
+        Path(holder_b['hold']).write_text('go')
+        end = time.time() + 20
+        while launch_b and not group_gone(launch_b) and time.time() < end:
+            time.sleep(0.05)
+        restart['gone_before_second'] = group_gone(launch_b)
+        restart['dir_before_second'] = bool(launch_b) and run_dir_of(launch_b).is_dir()
+        restart['second'] = service_start()
+        restart['dir_after_second'] = bool(launch_b) and run_dir_of(launch_b).exists()
 
         claude, codex = runs['claude'], runs['codex']
         engine_pids = {name: r['own'].get('pid') for name, r in runs.items()}
@@ -1109,6 +1217,87 @@ err.close()
                   'this run, it is kept as printed',
                   VALUES['tracker-token'] in everything
                   and VALUES['tracker-token'] in '\n'.join((other_own.get('lines') or {}).get('stderr') or []))
+
+        # The bearer token Claude Code's generated configuration holds, printed without its scheme.
+        with region('redaction/claude-bare-bearer'):
+            own = claude['own']
+            _header, lines = claude['header_lines']
+            everything = '\n'.join(x.get('payload', '') for x in lines)
+            printed_engine = (own.get('lines') or {}).get('engine') or []
+            printed_err = (own.get('lines') or {}).get('stderr') or []
+            places = {'alone': any(json.dumps(BEARER) in p for p in printed_engine),
+                      'command output': any('held %s in output' % BEARER in p for p in printed_engine),
+                      'error stream': BEARER in printed_err}
+            pairs = list(zip([x.get('payload', '') for x in lines if x.get('stream') == 'engine'], printed_engine)) + \
+                list(zip([x.get('payload', '') for x in lines if x.get('stream') == 'stderr'], printed_err))
+            bare_pairs = [(k, p) for k, p in pairs if BEARER in p]
+            leaked = [w for w in words(BEARER) if w in everything]
+            check('redaction/claude-bare-bearer', 'the Claude Code run printed the bearer token without its scheme alone, '
+                  'inside a command\'s output and on its error stream [%s]' % places,
+                  claude['record'].get('state') == 'exited' and all(places.values())
+                  and not any(VALUES['atlassian-token'] in p for p in printed_engine + printed_err))
+            check('redaction/claude-bare-bearer', 'every occurrence is replaced by the marker naming its kind and no line '
+                  'holds any part of the token [%s, %d lines]' % (leaked, len(bare_pairs)),
+                  len(pairs) == len(printed_engine) + len(printed_err) and len(bare_pairs) >= 3
+                  and all(k.count(MARKER) >= p.count(BEARER) for k, p in bare_pairs) and not leaked)
+
+        # A Codex credential never replaces a variable the engine already has.
+        with region('refusal/env-collision'):
+            for name_, got in sorted(collided.items()):
+                event = report_of(got['launch'], 'refused')
+                check('refusal/env-collision', '%s: the dispatch is refused as invalid_input:mcp_delivery:env_collision:%s '
+                      '[%s %s]' % (name_, name_, got['record'].get('state'), got['record'].get('refusal')),
+                      got['error'] is None and got['record'].get('state') == 'refused'
+                      and got['record'].get('refusal') == 'invalid_input:mcp_delivery:env_collision:' + name_)
+                check('refusal/env-collision', '%s: the credential was resolved, no engine process started and no run '
+                      'directory is left [%s]' % (name_, got['runs_after']),
+                      any(c['action'] == 'lookup' for c in got['calls']) and not got['own']
+                      and not [m for m in (got['launch'].messages if got['launch'] else []) if m.get('event') == 'running']
+                      and not got['runs_after'])
+                check('refusal/env-collision', '%s: the refusal names the credential and never its value' % name_,
+                      (event.get('credentials') or {}).get('credential') == 'clash-token'
+                      and not [v for v in SECRETS if v in json.dumps(event)])
+
+        # A dead receiver removes no run directory: its orphan release does, once the run is gone.
+        with region('orphan/run-directory-removed'):
+            seen = orphan['seen']
+            check('orphan/run-directory-removed', 'the receiver was sent SIGKILL while the run held, its generated MCP '
+                  'configuration holding the value in the run directory [%s]'
+                  % {k: v for k, v in seen.items() if k != 'config_text'},
+                  seen.get('ready') and seen.get('killed') and seen.get('dir_before')
+                  and VALUES['tracker-token'] in (seen.get('config_text') or '')
+                  and str(seen.get('config_path') or '').startswith(str(run_dir_of(orphan['launch'])) + os.sep))
+            check('orphan/run-directory-removed', 'the run is recorded outcome_unknown and, still alive, keeps its '
+                  'directory [%s, dir %s, alive %s]' % (orphan['record'].get('state'), orphan['dir_after_wait'],
+                                                        orphan['alive_after_wait']),
+                  orphan['record'].get('state') == 'unknown' and orphan['dir_after_wait'] and orphan['alive_after_wait'])
+            check('orphan/run-directory-removed', 'after the orphan release the run is gone and so are its directory and '
+                  'the configuration file holding the value [%s %s, dir %s, file %s]'
+                  % (orphan['released'], orphan['release_error'], orphan['dir_after'], orphan['config_after']),
+                  orphan['launch'] is not None and orphan['released'] == [orphan['launch'].dispatch_id]
+                  and orphan['gone_after'] and not orphan['dir_after'] and not orphan['config_after'])
+
+        with region('orphan/live-run-kept'):
+            seen = restart['seen']
+            check('orphan/live-run-kept', 'the Codex run\'s receiver was sent SIGKILL while the run held and the run is '
+                  'recorded outcome_unknown [%s %s]' % ({k: v for k, v in seen.items() if k != 'config_text'},
+                                                         restart['record'].get('state')),
+                  seen.get('ready') and seen.get('killed') and seen.get('dir_before')
+                  and restart['record'].get('state') == 'unknown' and restart['dir_after_wait'])
+            check('orphan/live-run-kept', 'the service\'s start, its dispatch settled but its run alive, keeps the run\'s '
+                  'directory [%s, alive %s, dir %s]' % (restart['first'], restart['alive_at_first'],
+                                                        restart['dir_after_first']),
+                  restart['first']['loop'] and restart['alive_at_first'] and restart['dir_after_first']
+                  and restart['first']['swept'] == [])
+
+        with region('orphan/start-sweep'):
+            check('orphan/start-sweep', 'once the run ended, nothing had removed its directory before the next start '
+                  '[gone %s, dir %s]' % (restart['gone_before_second'], restart['dir_before_second']),
+                  restart['gone_before_second'] and restart['dir_before_second'])
+            check('orphan/start-sweep', 'the service\'s next start removes the directory left from before and names its '
+                  'dispatch [%s, dir %s]' % (restart['second'], restart['dir_after_second']),
+                  restart['launch'] is not None and restart['second']['loop']
+                  and restart['second']['swept'] == [restart['launch'].dispatch_id] and not restart['dir_after_second'])
 
         with region('fixture/control-word'):
             for engine in ('claude', 'codex'):

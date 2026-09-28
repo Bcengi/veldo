@@ -169,8 +169,13 @@ Codex, the engine environment under the name the server definition gives each, w
 table names through `env_vars` or `bearer_token_env_var`. No value is on a command line, in the packet, the contract
 or the journal. A credential that does not resolve (keystore locked or unreachable, a reference naming nothing)
 refuses the launch as `credential_unavailable:<id>` before anything is spawned, and every value resolved enters the
-run's set of resolved values (`keystore_credentials`). The receiver reports the revisions, credential ids and routes
-(`credentials` event), never a value.
+run's set of resolved values (`keystore_credentials`), a bearer token also without its scheme. A credential named for the
+Codex engine environment that collides with a name the engine already has is refused by name
+(`invalid_input:mcp_delivery:env_collision:<name>`), never replaces it. The receiver reports the revisions, credential
+ids and routes (`credentials` event), never a value. A run directory its receiver could not remove (the receiver died,
+or the run's group could not be emptied) is removed by the Runner once the kernel shows the run gone
+(`Runner.clear_runs`, after an orphan's release and at every sweep), and the authority service's start sweeps every
+directory whose dispatch is settled (`Runner.sweep_runs`); a run still alive keeps its directory until a later pass.
 
 THE LAUNCH PIPE (VELDO-0154). The factory loop in the authority service (control_service.FactoryLoop) owns a
 Runner and registers each running dispatch's receiver output, `Launch.fileno()`, in its service loop's poll set.
@@ -248,7 +253,8 @@ def subscription_token(receiver, contract, adapter, environment):
 
 def keystore_credentials(receiver, contract, adapter, environment):
     """VELDO-0158 AC3: every value the receiver resolved from the keystore for this run's selected MCP servers,
-    as resolved and as delivered (a bearer token without its scheme), all of the one kind."""
+    as resolved (an Authorization-style header's also without its scheme, for every engine) and as delivered, all
+    of the one kind."""
     delivered = list(DL.values(receiver.credentials)) + list((receiver.delivered or {}).values())
     return [(DL.KIND, value) for value in delivered]
 
@@ -303,9 +309,25 @@ EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', '
                  'NO_COLOR', 'TERM', 'LANG', 'LC_CTYPE', 'LC_ALL', 'COLORTERM', 'PAGER', 'GIT_PAGER', 'GH_PAGER')
 ENGINE_RUNTIME = 'VELDO_ENGINE_RUNTIME_DIR'
 RUN_CONFIG, RUN_RUNTIME = 'config', 'runtime'
+# VELDO-0158: the names of the engine's own environment a credential delivered into it never takes, besides every
+# name the receiver's environment, the adapter, the baseline and the account set: a collision is refused by name.
+ENGINE_RESERVED = frozenset(('PATH', 'HOME', 'LANG', 'TERM', 'USER', 'LOGNAME', 'SHELL', 'TMPDIR', 'TZ',
+                             'XDG_RUNTIME_DIR', 'VELDO_DISPATCH_ID'))
 TOKEN_VARIABLE = 'CLAUDE_CODE_OAUTH_TOKEN'
 SESSION_PREFIXES = ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')
 ENGINE_OVERRIDES = 'VELDO_ENGINE_ENVIRONMENT'
+
+
+def runs_root(config):
+    """Where a receiver configuration keeps its runs' own directories (VELDO-0155, VELDO-0156): its `runs`, else the
+    factory state root's runs, else beside the store."""
+    return config.get('runs') or (os.path.join(config['state_root'], 'runs') if config.get('state_root')
+                                  else os.path.join(os.path.dirname(config['store']), 'runs'))
+
+
+def run_directory(runs, dispatch_id):
+    """The one directory of a dispatch's run under `runs`, derived from its dispatch identity."""
+    return os.path.join(runs, hashlib.sha256(dispatch_id.encode()).hexdigest()[:32])
 
 
 def engine_environment(environment):
@@ -417,9 +439,13 @@ class Runner:
     VELDO-0042's clone provisioner when dispatches use clones (its teardown retires their files).
     Every slot is returned through `retirements` (VELDO-0041): a refused retirement is kept pending
     and retried when what it waits on is completed, and `sweep()` retries every pending one that is
-    due, before each preparation and after each wait."""
+    due, before each preparation and after each wait. `runs` is where the receiver keeps each run's own
+    directories (runs_root of its configuration) and `profile` this host's worker profile: a run whose receiver
+    could not remove its directory (it died, or the run's group could not be emptied) has it removed here once
+    the kernel shows nothing of the run left (VELDO-0158)."""
 
-    def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None):
+    def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None, runs=None,
+                 profile=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         self.receiver, self.account = receiver, account
         self.clock = clock or time.time
@@ -427,6 +453,9 @@ class Runner:
         self.launches = {}
         # VELDO-0154: dispatches whose receiver died, whose account slot waits for their worker to be gone.
         self.orphans = {}
+        # VELDO-0158: settled dispatches whose run directory is left, by dispatch: {group, process}.
+        self.runs, self.profile = runs, profile
+        self.leftovers = {}
         self.retirements = RT.Retirements(reservations, dispatches, clones=clones, clock=self.clock,
                                           observations=self.observations)
 
@@ -454,8 +483,63 @@ class Runner:
     def sweep(self):
         """Retry every pending retirement whose obligations have changed since its last attempt, or whose
         clone can now be removed (VELDO-0041); the dispatches whose slots it released. Each preparation
-        and each wait makes one, and a scheduler may make one at any time."""
+        and each wait makes one, and a scheduler may make one at any time. It also removes each run directory left
+        behind whose run the kernel now shows gone (clear_runs)."""
+        self.clear_runs()
         return self.retirements.sweep()
+
+    def _left(self, dispatch_id, group=None, process=None):
+        """A settled dispatch whose run directory its receiver may have left: removed once its run is gone."""
+        if self.runs and os.path.lexists(run_directory(self.runs, dispatch_id)):
+            self.leftovers[dispatch_id] = {'group': group, 'process': process}
+
+    def clear_runs(self):
+        """VELDO-0158: remove the run directory of every leftover dispatch whose run the kernel shows gone: its
+        recorded process ended, its reported group empty or gone, and no live group of this profile's slice its
+        scope. A run still alive, or one whose groups cannot be read, keeps its directory until a later call. The
+        dispatches whose directories were removed, in order."""
+        removed, live = [], None
+        for dispatch_id, entry in sorted(self.leftovers.items()):
+            seen = C.retirement(entry['group'], entry['process'])
+            if not (seen['terminated'] and seen['cleaned']):
+                continue
+            if self.profile is not None:
+                if live is None:
+                    try:
+                        status = C.status(self.profile)
+                    except Exception:  # noqa: BLE001 - groups that cannot be read keep every directory
+                        status = {'qualified': False}
+                    live = {g['unit'] for g in status['groups']} if status['qualified'] else False
+                if live is False or C.unit_name(dispatch_id) in live:
+                    continue
+            place = run_directory(self.runs, dispatch_id)
+            shutil.rmtree(place, ignore_errors=True)
+            if os.path.lexists(place):
+                self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused'})
+                continue
+            del self.leftovers[dispatch_id]
+            self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'removed'})
+            removed.append(dispatch_id)
+        return removed
+
+    def sweep_runs(self):
+        """VELDO-0158: the start sweep. Every run directory under `runs` whose dispatch, of this Runner's domain and
+        repository, is settled (exited, refused or unknown) is a leftover, and each whose run the kernel shows gone
+        is removed now (clear_runs); one whose run is still alive is kept until a later sweep finds it gone. The
+        dispatches whose directories were removed."""
+        if not self.runs or not os.path.isdir(self.runs):
+            return []
+        present = set(os.listdir(self.runs))
+        for (data,) in self.dispatches.conn.execute('SELECT data FROM entities WHERE kind=?', (D.RECORD_KIND,)):
+            record = json.loads(data)
+            contract = record.get('contract') or {}
+            if (contract.get('domain') != self.dispatches.domain or contract.get('repository') != self.dispatches.repository
+                    or record.get('state') not in ('exited', 'refused', 'unknown')
+                    or not isinstance(record.get('dispatch_id'), str)):
+                continue
+            if os.path.basename(run_directory(self.runs, record['dispatch_id'])) in present:
+                self._left(record['dispatch_id'], process=record.get('process'))
+        return self.clear_runs()
 
     def prepare(self, unit, station, *, holder, source, revision, payload, adapter, configuration,
                 deadline, context=None):
@@ -529,7 +613,9 @@ class Runner:
             clean = D.completed(record)
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
         elif record and record['state'] == 'unknown':
-            # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known.
+            # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known. Its run
+            # directory, which a receiver keeps while the run's group is not empty, goes once the run is gone.
+            self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
             self._retire(record['dispatch_id'], 'unknown', 'outcome_unknown')
         self.launches.pop(launch.dispatch_id, None)
         # This dispatch's end may have completed another's obligation (a group the kernel emptied).
@@ -550,6 +636,7 @@ class Runner:
             entry = self.retirements.entries.get(launch.dispatch_id) or {}
             self.orphans[launch.dispatch_id] = {'group': getattr(launch, 'group', None) or entry.get('group'),
                                                 'process': record.get('process'), 'stopped': False}
+            self._left(launch.dispatch_id, self.orphans[launch.dispatch_id]['group'], record.get('process'))
         return self.release_orphans()
 
     def release_orphans(self):
@@ -580,6 +667,8 @@ class Runner:
             del self.orphans[dispatch_id]
             self.observations.append(dict(event, outcome='released'))
             released.append(dispatch_id)
+        # VELDO-0158: a dead receiver removed no run directory; each goes once the kernel shows its run gone.
+        self.clear_runs()
         return released
 
 
@@ -1246,10 +1335,9 @@ class Receiver:
         """The run's own directories (VELDO-0155, VELDO-0156), fresh and 0700, outside every clone: `config`
         holds its generated configuration, `runtime` is the engine's empty XDG_RUNTIME_DIR. Under the
         config's `runs`, else the factory state root's runs, else beside the store."""
-        runs = self.config.get('runs') or (os.path.join(self.config['state_root'], 'runs') if self.config.get('state_root')
-                                          else os.path.join(os.path.dirname(self.config['store']), 'runs'))
+        runs = runs_root(self.config)
         os.makedirs(runs, mode=0o700, exist_ok=True)
-        run = os.path.join(runs, hashlib.sha256(dispatch_id.encode()).hexdigest()[:32])
+        run = run_directory(runs, dispatch_id)
         os.mkdir(run, 0o700)
         self.run = run
         for name in (RUN_CONFIG, RUN_RUNTIME):
@@ -1287,12 +1375,13 @@ class Receiver:
         if token is not None:
             own[TOKEN_VARIABLE] = token
         # VELDO-0158 AC1: a credential the engine environment carries (Codex's), under the name its server's
-        # definition gives it; one naming a variable the receiver already sets is refused, never overridden.
+        # definition gives it; one naming a variable the engine already has (ENGINE_RESERVED, or any name the
+        # receiver's environment, the adapter, the baseline or the account sets) is refused by name, never replaces it.
         secrets = extra.get('secrets') or {}
-        taken = sorted(set(secrets) & (set(own) | set(environment) - set(os.environ)))
+        taken = sorted(set(secrets) & (ENGINE_RESERVED | set(own) | set(environment)))
         if taken:
             credential = next(r['credential'] for r in extra['routes'] if r.get('variable') == taken[0])
-            raise DL.Undeliverable('credential_unavailable:' + credential, credential, 'delivery_failed')
+            raise DL.Undeliverable('invalid_input:mcp_delivery:env_collision:' + taken[0], credential, 'delivery_failed')
         own.update(secrets)
         self.delivered = dict(secrets)
         environment[ENGINE_OVERRIDES] = json.dumps(own, sort_keys=True)

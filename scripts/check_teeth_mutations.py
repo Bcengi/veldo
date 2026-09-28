@@ -8879,6 +8879,34 @@ def cases():
              '            shutil.rmtree(run, ignore_errors=True)\n',
              '            pass  # defect: the run directory and its generated configuration stay\n',
              ['delivery/private-dir-removed'])
+    # The review fixes. A dead receiver's run directory left behind by its orphan release.
+    delivery('orphan-run-kept', 'control_launch.py',
+             "        # VELDO-0158: a dead receiver removed no run directory; each goes once the kernel shows its run gone.\n"
+             "        self.clear_runs()\n",
+             "        pass  # defect: the orphan release leaves the run directory\n",
+             ['orphan/run-directory-removed'])
+    # A directory left from before a restart never swept: the service starts without the sweep.
+    delivery('start-unswept', 'control_service.py',
+             "        loop.start()\n",
+             "        pass  # defect: the service starts without sweeping the run directories\n",
+             ['orphan/start-sweep'])
+    # A live run's directory removed by the start sweep, without the kernel showing the run gone.
+    delivery('live-run-removed', 'control_launch.py',
+             "        return self.clear_runs()\n",
+             "        for dispatch_id in sorted(self.leftovers):\n"
+             "            shutil.rmtree(run_directory(self.runs, dispatch_id), ignore_errors=True)  # defect: never checked\n"
+             "        return sorted(self.leftovers)\n",
+             ['orphan/live-run-kept'])
+    # AC3: a Claude run's bearer token without its scheme never enters the run's set.
+    delivery('bearer-scheme-kept', 'control_credential_delivery.py',
+             "                if schemed:\n                    out.append(schemed.group(1))\n",
+             "                if schemed:\n                    pass  # defect: only the value with its scheme is in the set\n",
+             ['redaction/claude-bare-bearer'])
+    # A Codex credential replacing an inherited variable of the engine (PATH), as before the fix.
+    delivery('env-collision-inherited', 'control_launch.py',
+             "        taken = sorted(set(secrets) & (ENGINE_RESERVED | set(own) | set(environment)))\n",
+             "        taken = sorted(set(secrets) & (set(own) | set(environment) - set(os.environ)))\n",
+             ['refusal/env-collision'])
     return result
 
 
