@@ -317,3 +317,20 @@ loopback tool observation beside each run. Falsifiers: erase the qualified modes
 bypass the model refusal, or omit the recorded loopback tool observation. No footprint
 addition is needed for these existing production and proof files. Direct-tool switch
 qualification is still incomplete; no role model is silently changed.
+
+2026-09-28, item 1 catalog repair (owner Telegram 29393, 29398): preserve the accepted
+model and its default Code Mode. At qualification, capture the pinned binary's bundled
+catalog offline with empty HOME and CODEX_HOME and retain its digest. A role handoff
+copies its model entry into the run configuration, removing multi_agent_version unless
+sub_agents is granted, nulling apply_patch_tool_type unless patching is granted,
+filtering experimental_supported_tools to granted capabilities, and disabling
+supports_search_tool unless tool_search is granted. No other entry field changes.
+The native role vocabulary includes sub_agents. The old Code Mode refusal remains
+only for an unusable catalog override. AC2 compares the runner and its nested
+declarations in Code Mode, or direct definitions otherwise, after normalizing
+functions prefixes and MCP names, in both directions. Its falsifiers retain each of
+the four ungranted catalog fields, discard a granted field, or omit normalization.
+The resource readers remain a named fail-closed case (c) pending owner decision;
+they reach only resources of configured role MCP servers. The lead capture uses
+gpt-6-astra with this generated catalog. Earlier Code Mode case (c) entries are history.
+The existing footprint covers this repair; no paths were added.

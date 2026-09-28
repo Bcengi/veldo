@@ -22,6 +22,8 @@ Refused = MC.Refused
 KINDS = ('agent_configuration', 'agent_skill')
 SAVE = 'save_agent_configuration'
 MODES = ('always', 'when assigned')
+CODEX_CAPABILITIES = {'shell', 'update_plan', 'apply_patch', 'view_image', 'multi_agent', 'sub_agents',
+                      'web_search', 'tool_search', 'clock', 'request_user_input_async'}
 FIELDS = {'role', 'engine', 'native_tools', 'mcp', 'skills', 'instructions', 'settings'}
 
 
@@ -74,6 +76,8 @@ def validate(definition, kind=KINDS[0]):
                 valid = item['source'] in ('project', 'factory') and path_ok(item['path'])
             else:
                 valid = MC.identifier(item[key])
+            if field == 'native_tools' and definition['engine'] == 'codex':
+                valid = valid and item[key] in CODEX_CAPABILITIES
             if 'revision' in keys:
                 valid = valid and type(item['revision']) is int and item['revision'] > 0
             if 'tools' in keys:

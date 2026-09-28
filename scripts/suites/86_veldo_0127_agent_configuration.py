@@ -22,7 +22,8 @@ def _v127_suite():
     ROWS = ('revision/history', 'handoff/claude', 'handoff/codex', 'dispatch/binding', 'dispatch/refusal',
             'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines',
             'review/skill-commit', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
-            'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture')
+            'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture',
+            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources')
     rows = {name: [] for name in ROWS}
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -70,6 +71,9 @@ for i, arg in enumerate(args):
                 if isinstance(v,dict): merge(a.setdefault(k,{}),v)
                 else: a[k]=v
         merge(config, parsed)
+if args[:3] == ['debug', 'models', P + 'bundled']:
+    print(Path(CATALOG_FIXTURE).read_text())
+    sys.exit(0)
 if args[:2] == ['login', 'status']:
     print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
@@ -188,10 +192,33 @@ else:
     own['wire']['tools'] += [{'type':'namespace', 'name':'mcp__' + n,
                               'tools':[{'type':'function', 'name':t, 'parameters':{}} for t in ts]}
                              for n,ts in own['mcp_tools'].items()]
-    # Pinned direct-tool binary: the current feature settings do not suppress these definitions.
-    own['wire']['tools'] = [t for t in own['wire']['tools'] if t.get('type') != 'namespace']
-    own['wire']['tools'] += [{'type':'function', 'name':n, 'parameters':{}} for n in
-                            ('apply_patch','list_mcp_resource_templates','list_mcp_resources','read_mcp_resource','tool_search')]
+    path = config.get('model_catalog_json')
+    catalog = json.loads(Path(path).read_text()) if path else {'models': []}
+    entry = next((m for m in catalog['models'] if m['slug'] == config.get('model')), {})
+    own['model_catalog'] = catalog
+    nested = list(native)
+    if entry.get('apply_patch_tool_type', 'freeform'):
+        nested.append('apply_patch')
+    nested += ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
+    if entry.get('supports_search_tool', True):
+        nested.append('tool_search')
+    else:
+        nested += ['mcp__' + n + '__' + t for n, ts in own['mcp_tools'].items() for t in ts]
+    if 'clock' in entry.get('experimental_supported_tools', []): nested.append('clock__curr_time')
+    tools = []
+    if entry.get('tool_mode') == 'code_mode_only':
+        tools = [{'type':'namespace', 'name':'functions', 'tools':[
+            {'type':'function', 'name':'exec', 'description':chr(10).join('### `' + n + '`' for n in nested)},
+            {'type':'function', 'name':'wait'}]}]
+    else:
+        tools = [{'type':'function', 'function':{'name':n.replace('__jira__', '__jira.'), 'parameters':{}}} for n in nested]
+    if entry.get('multi_agent_version'):
+        tools.append({'type':'namespace','name':'collaboration','tools':[{'type':'function','name':n}
+                     for n in ('followup_task','interrupt_agent','list_agents','send_message','spawn_agent','wait_agent')]})
+    if 'send_user_message_async' in entry.get('experimental_supported_tools', []):
+        tools.append({'type':'function','name':'functions.request_user_input_async'})
+    if 'clock' in entry.get('experimental_supported_tools', []): tools.append({'type':'function','name':'clock.sleep'})
+    own['wire'] = {'tools': tools}
     if config.get('model_provider') == 'loopback':
         import urllib.request
         target = config['model_providers']['loopback']['base_url'] + '/responses'
@@ -215,7 +242,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
 '''
     fake = ff.embed(fake.replace('PYTHON', sys.executable))
     def fake_engine(name):
-        return fake.replace('MARKERS', repr(str(markers))).replace('ENGINE', repr(name))
+        return fake.replace('CATALOG_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/catalog-fixture.json'))).replace('MARKERS', repr(str(markers))).replace('ENGINE', repr(name))
     @live_step
     def c_msg(mid, inp, out):
         return {'line': {'type': 'assistant', 'message': {'id': mid, 'usage': {'input_tokens': inp, 'output_tokens': out}}}}
@@ -338,29 +365,33 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     wire = own.get('wire', {'tools':[]})
                     wanted = L.HANDOFF.expected({'revision':bound, 'skills':[]}, {'jira':{'tools':['jira_search']}})
                     compare = getattr(L.HANDOFF, 'codex_tool_difference', None)
-                    good = compare(wire, wanted) if compare else 'absent comparison'
-                    extra = copy.deepcopy(wire); extra['tools'].append({'type':'function','name':'ungranted','parameters':{}})
-                    missing = {'tools':[t for t in wire['tools'] if t.get('name') in ('exec_command', 'update_plan')]}
-                    check('review/codex-tools', 'wire fixture matches both directions and detects missing or additional tools',
-                          compare is not None and good is None
-                          and compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool'
-                          and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
                     evidence = load('v127_wire_evidence', EVIDENCE_PATH)
                     observe = getattr(evidence, 'wire_observation', None)
-                    observed = observe(wire, wanted, L.HANDOFF) if observe else {}
-                    check('review/codex-tools', 'qualification writer and comparator share exact shell and plan vocabulary',
-                          observed.get('native_tool_mapping') == {'shell':['exec_command','write_stdin'], 'update_plan':['update_plan']}
+                    observed, obs_error = attempt(lambda: observe(wire, wanted, L.HANDOFF))
+                    observed = observed or {}
+                    resources = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
+                    granted = dict(wanted, tools=wanted['tools'] + resources)
+                    good = compare(wire, granted) if compare else 'absent comparison'
+                    extra = copy.deepcopy(wire); extra['tools'].append({'type':'function','name':'ungranted'})
+                    missing = {'tools':[{'type':'function','name':'exec_command'}, {'type':'function','name':'update_plan'}]}
+                    check('review/codex-tools', 'both directions compare effective definitions with mapped grants',
+                          compare is not None and good is None
+                          and compare(extra, granted) == 'configuration_stop:codex_unexpected_tool'
+                          and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
+                    check('review/codex-tools', 'qualification writer and comparator share the shell and plan vocabulary',
+                          observed.get('native_tool_mapping', {}).get('shell') == ['exec_command','write_stdin']
                           and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
-                          and observed.get('missing') == ['mcp__jira.jira_search']
-                          and observed.get('unexpected') == ['apply_patch','list_mcp_resource_templates','list_mcp_resources','read_mcp_resource','tool_search']
-                          and observe({}, wanted, L.HANDOFF).get('stop') == 'missing_evidence:codex_request_tools')
-                    capture = json.loads((TREE / 'proof/VELDO-0127/codex-loopback.json').read_text())
-                    captured_wire = capture['requests'][0]['body']
-                    facts = observe(captured_wire, wanted, L.HANDOFF) if observe else {}
-                    owners = json.loads((TREE / 'proof/VELDO-0127/codex-owner-decisions.json').read_text())
-                    check('review/codex-tools', 'real Code Mode extras stay named and never hide missing grants',
-                          facts.get('unexpected') == sorted(owners) and facts.get('missing') == observed.get('expected')
-                          and facts.get('stop') == 'configuration_stop:codex_unexpected_tool')
+                          and observed.get('missing') == [] and observed.get('unexpected') == resources
+                          and observe(missing, wanted, L.HANDOFF).get('missing') == ['mcp__jira__jira_search', 'write_stdin'])
+                    check('wire/resources', 'ungranted readers remain visible and fail closed',
+                          observed.get('unexpected') == resources and observed.get('stop') == 'configuration_stop:codex_unexpected_tool'
+                          and good is None)
+                    aliases = copy.deepcopy(wire)
+                    for tool in aliases['tools']:
+                        if 'function' in tool:
+                            tool['function']['name'] = 'functions.' + tool['function']['name'].replace('mcp__jira.', 'mcp__jira__')
+                    check('wire/normalization', 'direct namespaces and MCP spellings compare to the same grants',
+                          good is None and compare(aliases, granted) is None)
                     cfg = own.get('configuration', {})
                     check('handoff/codex', 'generated settings, native features and filtered MCP list match',
                           own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == 'gpt-5.5'
@@ -371,6 +402,13 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           listings == [[{'name': 'jira', 'enabled': True, 'enabled_tools': ['jira_search']}]])
                     check('launch/instructions', 'Codex gets both sources through developer instructions',
                           'project role instruction' in cfg.get('developer_instructions',''))
+            for mode, model in [('code', 'gpt-6-astra'), ('direct', 'gpt-5.5')]:
+                body = json.loads((TREE / ('proof/VELDO-0127/request-' + mode + '.json')).read_text())
+                wanted = {'model':model, 'tools':['shell','update_plan','mcp__jira__jira_search']}
+                facts, _ = attempt(lambda: evidence.wire_observation(body, wanted, L.HANDOFF))
+                check('wire/resources', mode + ': retained binary request exposes only configured-server readers beyond grants',
+                      facts is not None and facts.get('missing') == [] and facts.get('unexpected') == resources
+                      and facts.get('stop') == 'configuration_stop:codex_unexpected_tool')
             qualified = json.loads((base / 'codex-qualification.json').read_text())
             modes = json.loads((TREE / 'proof/VELDO-0127/codex-tool-investigation.json').read_text()).get('qualified_model_tool_modes')
             check('review/codex-mode', 'qualification writer retains the empty-profile binary model modes',
@@ -379,14 +417,62 @@ for step in (packet.get('payload') or {}).get('script',[]):
             _, absent_stop = attempt(lambda: L.HANDOFF.X.qualified_baseline(None, absent_modes))
             check('review/codex-mode', 'a qualification without model modes cannot bind',
                   absent_stop == 'missing_evidence:codex_model_tool_modes')
+            catalog = qualified.get('model_catalog') or {}
+            check('catalog/integrity', 'qualification captures the fake binary bundled catalog with its digest',
+                  catalog == json.loads((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())
+                  and qualified.get('model_catalog_digest') == f.config_api.digest(catalog))
+            role_model = getattr(L.HANDOFF, 'codex_model', None)
             for model in ('gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'):
                 definition = f.role('codex', 'restricted-' + model)
                 definition['settings']['model'] = model
                 accepted = f.save(definition)
                 work, rec, own, error = run('codex', 'mode-' + model, {'role':definition['role']})
-                check('review/codex-mode', model + ': named refusal before the worker sees a prompt, model preserved',
-                      rec.get('refusal') == 'configuration_stop:codex_code_mode_model' and not own
-                      and accepted['settings']['model'] == model)
+                check('review/codex-mode', model + ': Code Mode runs with unchanged model and generated catalog',
+                      rec.get('state') == 'exited' and f.D.completed(rec) and bool(own.get('model_catalog'))
+                      and own.get('configuration', {}).get('model') == accepted['settings']['model'] == model)
+                original = next((m for m in catalog.get('models', []) if m['slug'] == model), {})
+                expected_entry = copy.deepcopy(original)
+                expected_entry.pop('multi_agent_version', None)
+                expected_entry.update(experimental_supported_tools=[], apply_patch_tool_type=None, supports_search_tool=False)
+                check('catalog/fields', model + ': exactly four permitted fields change',
+                      bool(original) and own.get('model_catalog') == dict(catalog, models=[expected_entry]))
+                wanted = L.HANDOFF.expected({'revision':rec.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision',
+                                                 dict(native_tools=['shell','update_plan'], settings={'model':model})), 'skills':[]},
+                                          {'jira':{'tools':['jira_search']}})
+                obs, _ = attempt(lambda: evidence.wire_observation(own.get('wire', {}), wanted, L.HANDOFF))
+                check('wire/normalization', model + ': runner and nested declarations expose every grant',
+                      obs is not None and obs.get('missing') == [] and obs.get('unexpected') == resources
+                      and set(obs.get('actual', [])) == {'exec','wait','exec_command','write_stdin','update_plan','mcp__jira__jira_search', *resources})
+                if model == 'gpt-6-astra':
+                    granted_wire = dict(wanted, tools=wanted['tools'] + resources)
+                    check('review/codex-tools', 'Code Mode equality includes runner and nested declarations',
+                          compare(own.get('wire', {}), granted_wire) is None)
+                    bound_revision = dict(native_tools=['shell','update_plan'], settings={'model':model})
+                    for label, altered in [('absent', dict(qualified, model_catalog=None)),
+                                           ('digest', dict(qualified, model_catalog_digest='changed'))]:
+                        _, stop = attempt(lambda: role_model(altered, bound_revision))
+                        check('catalog/integrity', label + ': unusable override retains named Code Mode stop',
+                              stop == 'configuration_stop:codex_code_mode_model')
+                        check('review/codex-mode', label + ': override failure stops closed',
+                              stop == 'configuration_stop:codex_code_mode_model')
+            for grants in (['sub_agents'], ['apply_patch'], ['clock'], ['request_user_input_async'], ['tool_search'],
+                           ['sub_agents','apply_patch','clock','request_user_input_async','tool_search']):
+                name = 'grants-' + '-'.join(grants)
+                definition = f.role('codex', name)
+                definition['settings']['model'] = 'gpt-6-astra'
+                definition['native_tools'] += [{'name':n, 'load':'always'} for n in grants]
+                _, save_error = attempt(lambda: f.save(definition))
+                _, rec, own, _ = run('codex', name, {'role':name}) if save_error is None else (None, {}, {}, None)
+                entry = next(iter(own.get('model_catalog', {}).get('models', [])), {})
+                original = next((m for m in catalog.get('models', []) if m['slug'] == 'gpt-6-astra'), {})
+                wanted_entry = copy.deepcopy(original)
+                if 'sub_agents' not in grants: wanted_entry.pop('multi_agent_version', None)
+                if 'apply_patch' not in grants: wanted_entry['apply_patch_tool_type'] = None
+                if 'tool_search' not in grants: wanted_entry['supports_search_tool'] = False
+                wanted_entry['experimental_supported_tools'] = [n for n in original.get('experimental_supported_tools', [])
+                    if {'send_user_message_async':'request_user_input_async','clock':'clock'}.get(n,n) in grants]
+                check('catalog/grants', name + ': accepted grants preserve only the requested catalog fields',
+                      rec.get('state') == 'exited' and f.D.completed(rec) and entry == wanted_entry and bool(original))
             # A prepared A is launched after B has been saved, so the receiver must not reread the head.
             pending = f.prepare('claude', 'bound-a', {'role':'claude','revision':1}, payload('claude'))
             updated = f.role('claude'); updated['native_tools'] = [{'name':'Read','load':'always'}]
@@ -477,24 +563,31 @@ for step in (packet.get('payload') or {}).get('script',[]):
             evidence = load('v127_live_evidence', EVIDENCE_PATH)
             live = load('v127_live_driver', LIVE_PATH)
             capture_role = f.role('codex', 'codex-always')
-            capture_role['settings']['model'] = 'gpt-5.5'
+            capture_role['settings']['model'] = 'gpt-6-astra'
             f.save(capture_role)
             direct, error = attempt(lambda: live.capture(f, 'codex', 'always', False, evidence))
             check('review/codex-capture', 'lead driver records the loopback tools beside its production run',
                   direct is not None and bool(direct.get('wire_tools'))
                   and direct.get('wire_tools') == [evidence.wire_observation(r['body'], direct['expected'], L.HANDOFF)
                                                  for r in direct.get('wire_capture', {}).get('requests', [])]
-                  and direct['configuration']['model'] == direct['revision']['settings']['model'] == 'gpt-5.5')
+                  and direct['configuration']['model'] == direct['revision']['settings']['model'] == 'gpt-6-astra'
+                  and direct.get('model_catalog', {}).get('models', [{}])[0].get('tool_mode') == 'code_mode_only')
             select_model = getattr(live, 'codex_model', None)
-            refused_models = []
+            accepted_models = []
             for model in ('gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'):
                 try:
                     if select_model: select_model(model, L.HANDOFF.X)
-                    refused_models.append(False)
+                    accepted_models.append(True)
                 except SystemExit:
-                    refused_models.append(True)
-            check('review/codex-capture', 'lead explicitly supplies a qualified direct model without substitution',
-                  select_model is not None and select_model('gpt-5.5', L.HANDOFF.X) == 'gpt-5.5' and all(refused_models))
+                    accepted_models.append(False)
+            check('review/codex-capture', 'lead accepts Code Mode models without substitution and rejects unknown models',
+                  select_model is not None and select_model('gpt-5.5', L.HANDOFF.X) == 'gpt-5.5' and all(accepted_models))
+            try:
+                if select_model: select_model('unknown-model', L.HANDOFF.X)
+                unknown_refused = False
+            except SystemExit:
+                unknown_refused = True
+            check('review/codex-capture', 'unknown model is refused', unknown_refused)
             # The driver reads the same real writer's fake-engine execution record.
             f.save(f.role('claude', 'claude-always'))
             captured, error = attempt(lambda: live.capture(f, 'claude', 'always', True, evidence)) if not claude_blocked else (None, None)

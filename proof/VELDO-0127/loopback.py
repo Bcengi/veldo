@@ -22,7 +22,7 @@ def load(name, path):
     return module
 
 
-def capture(binary, configuration, *, models=False):
+def capture(binary, configuration, *, models=False, catalog=None):
     """Only transport and temporary MCP/skill paths differ from the generated role input."""
     X = load('loopback_codex', ROOT / '.veldo/control_engine_codex.py')
     sys.path.insert(0, str(ROOT / 'proof/VELDO-0156'))
@@ -66,6 +66,10 @@ def capture(binary, configuration, *, models=False):
         home, profile, clone = [root / n for n in ('home', 'profile', 'clone')]
         for path in (home, profile, clone): path.mkdir()
         cfg = copy.deepcopy(configuration)
+        if catalog is not None:
+            catalog_path = root / 'model-catalog.json'
+            catalog_path.write_text(json.dumps(catalog))
+            cfg['model_catalog_json'] = str(catalog_path)
         # A credential-free MCP stand-in with exactly the selected tool names.
         mcp = root / 'mcp.py'
         mcp.write_text('import json,sys\nfor raw in sys.stdin:\n r=json.loads(raw)\n'
@@ -77,7 +81,8 @@ def capture(binary, configuration, *, models=False):
                        ' print(json.dumps({"jsonrpc":"2.0","id":r["id"],"result":result}),flush=True)\n')
         for name, entry in cfg.get('mcp_servers', {}).items():
             cfg['mcp_servers'][name] = dict(command=sys.executable, args=[str(mcp)] + entry['enabled_tools'],
-                                           enabled_tools=entry['enabled_tools'], required=True)
+                                           enabled_tools=entry['enabled_tools'], required=True,
+                                           **{k: entry[k] for k in ('disabled_tools', 'omit_tools_from') if k in entry})
         # Keep selected skill content on the real discovery path, with no expired capture paths.
         skills = cfg.pop('skills.config', cfg.get('skills', {}).pop('config', []))
         if skills:
@@ -109,7 +114,7 @@ def capture(binary, configuration, *, models=False):
         for key, value in flattened(cfg):
             args += ['-c', key + '=' + X._toml(value)]
         if models:
-            args = [str(binary), 'debug', 'models']
+            args = [str(binary), 'debug', 'models', P + 'bundled']
         try:
             done = subprocess.run(args, input='Reply ready without tools.', text=True, capture_output=True,
                                   cwd=clone, env=env, timeout=45, preexec_fn=lambda: deny_network(port))

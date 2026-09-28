@@ -153,6 +153,7 @@ import re
 import struct
 import subprocess
 import time
+import tempfile
 import zoneinfo
 
 PROVIDER = 'codex'
@@ -422,7 +423,11 @@ ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}
 QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 # Exact direct call signatures; Code Mode wrappers are not aliases for these capabilities.
-NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan']}
+NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan'],
+    'sub_agents': ['collaboration.' + n for n in ('followup_task', 'interrupt_agent', 'list_agents',
+                                               'send_message', 'spawn_agent', 'wait_agent')],
+    'request_user_input_async': ['request_user_input_async'], 'clock': ['clock__curr_time', 'clock.sleep']}
+NATIVE_TOOL_MAPPING['multi_agent'] = NATIVE_TOOL_MAPPING['sub_agents']
 # Pinned 0.154.0 debug models under an empty profile; absent tool_mode is JSON null.
 MODEL_TOOL_MODES = {'gpt-6-astra': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'gpt-5.4': None, 'gpt-5.4-mini': None, 'gpt-5.2': None, 'codex-auto-review': 'code_mode_only'}
 
@@ -494,14 +499,37 @@ def _package(executable):
     return None, None
 
 
-def qualification(executable, flags=FLAGS):
+def catalog_digest(catalog):
+    return 'sha256:' + hashlib.sha256(json.dumps(catalog, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
+def bundled_catalog(executable):
+    """Offline qualification only, with no inherited profile or credentials."""
+    with tempfile.TemporaryDirectory(prefix='veldo-catalog-') as temp:
+        root = Path(temp)
+        home, profile = root / 'home', root / 'profile'
+        home.mkdir(); profile.mkdir()
+        try:
+            done = subprocess.run([str(executable), 'debug', 'models', '-' * 2 + 'bundled'],
+                cwd=root, env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'CODEX_HOME': str(profile),
+                              'TMPDIR': temp, 'LANG': 'C.UTF-8'},
+                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30, check=True)
+            catalog = json.loads(done.stdout)
+            if not isinstance(catalog.get('models'), list) or not catalog['models']:
+                raise ValueError('missing models')
+            return catalog
+        except (OSError, ValueError, subprocess.SubprocessError):
+            raise Refused('missing_evidence:codex_bundled_catalog') from None
+
+
+def qualification(executable, flags=FLAGS, *, catalog=False):
     """The qualification record of one installed vendor binary. Reads its package manifest and its bytes;
-    nothing is executed."""
+    catalog=True also captures its bundled model catalog offline."""
     root, manifest = _package(executable)
     if root is None or manifest is None or manifest.get('name') != PACKAGE:
         raise Refused('invalid_input:engine_package')
     version = str(manifest.get('version') or '')
-    return {'schema': QUALIFICATION_SCHEMA, 'engine': PROVIDER, 'package': PACKAGE, 'package_version': version,
+    record = {'schema': QUALIFICATION_SCHEMA, 'engine': PROVIDER, 'package': PACKAGE, 'package_version': version,
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
@@ -511,6 +539,11 @@ def qualification(executable, flags=FLAGS):
             'authentication': 'the subscription login of the account profile CODEX_HOME names',
             'usage_units': ['invocations', 'wall_seconds', 'tokens', 'messages'],
             'rate_limit_windows': sorted({LIMIT_WINDOW} | {window for _, window in EXHAUSTED})}
+    if catalog:
+        bundled = bundled_catalog(executable)
+        record.update(model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
+                      model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']})
+    return record
 
 
 def load_qualification(path=None):
@@ -552,7 +585,8 @@ def bind(adapter, state_root=None):
     base = qualified_baseline(None, record)
     return {'engine': PROVIDER, 'path': executable, 'version': record['version'],
             'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags']),
-            'baseline': base, 'model_tool_modes': record['model_tool_modes']}
+            'baseline': base, 'model_tool_modes': record['model_tool_modes'],
+            'model_catalog': record.get('model_catalog'), 'model_catalog_digest': record.get('model_catalog_digest')}
 
 
 def command(bound, adapter):
@@ -706,9 +740,9 @@ def baseline(bound, run, environment=None, record=None, servers=()):
     if run.get('capability'):
         helper = _capability_handoff()
         try:
-            helper.codex_model(bound.get('model_tool_modes', {}), run['capability']['revision'])
+            catalog = helper.codex_model(bound, run['capability']['revision'])
             listing = helper.inventory(run['capability'], servers)
-            files = helper.codex(configuration, run['capability'], listing, Path(run['config']))
+            files = helper.codex(configuration, run['capability'], listing, Path(run['config']), catalog=catalog)
             wanted = helper.expected(run['capability'], listing)
         except helper.Refused as error:
             raise Refused(error.code) from None
@@ -975,7 +1009,7 @@ def main(argv=None):
     if len(args) != 2 or args[0] != 'qualify':
         sys.stderr.write('usage: control_engine_codex.py qualify <vendor binary>\n')
         return 2
-    sys.stdout.write(json.dumps(qualification(args[1]), indent=1, sort_keys=True) + '\n')
+    sys.stdout.write(json.dumps(qualification(args[1], catalog=True), indent=1, sort_keys=True) + '\n')
     return 0
 
 

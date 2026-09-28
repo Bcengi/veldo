@@ -28,15 +28,9 @@ def debug_problems(run, control):
 
 
 def wire_observation(body, expected, handoff):
-    """Keep every mismatch by name. Nested declarations do not establish wire equality."""
+    """Keep normalized runner, nested and direct definitions, and every mismatch by name."""
     mapping = handoff.X.NATIVE_TOOL_MAPPING
-    wanted = []
-    for name in expected['tools']:
-        if name.startswith('mcp__'):
-            server, tool = name[5:].split('__', 1)
-            wanted.append('mcp__' + server + '.' + tool)
-        else:
-            wanted.extend(mapping.get(name, [name]))
+    wanted = handoff.codex_expected_tools(expected, body)
     try:
         actual = handoff.codex_tool_names(handoff.codex_request_tools(body))
     except handoff.Refused:

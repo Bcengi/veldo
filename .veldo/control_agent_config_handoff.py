@@ -1,4 +1,5 @@
 """Compile a bound role into engine inputs and compare the observed launch set."""
+import copy
 import json
 import os
 from pathlib import Path
@@ -48,7 +49,7 @@ def materialize(conn, domain, repository, revision, roots):
     allowed = {'model'} if revision['engine'] == 'claude_code' else {'model', 'sandbox_mode', 'model_reasoning_effort'}
     if set(settings) - allowed or any(not isinstance(v, str) or not v for v in settings.values()):
         raise Refused('unsupported_configuration:engine_settings')
-    if revision['engine'] == 'codex' and (set(revision['native_tools']) - set(CODEX_NATIVE) - {'update_plan', 'web_search'}
+    if revision['engine'] == 'codex' and (set(revision['native_tools']) - C.CODEX_CAPABILITIES
                                         or 'update_plan' not in revision['native_tools']):
         raise Refused('unsupported_configuration:native_tools')
     skills = []
@@ -255,18 +256,32 @@ def claude(extra, capability, inventory, config):
     return extra
 
 
-# The Code Mode observation includes these native capabilities beyond the configurable families.
-CODEX_ALL_NATIVE = set(CODEX_NATIVE) | {'update_plan', 'web_search', 'list_mcp_resources',
-    'list_mcp_resource_templates', 'read_mcp_resource', 'tool_search', 'clock', 'request_user_input_async'}
+def codex_model(bound, revision):
+    """Use only the digest-bound bundled entry; never substitute a model."""
+    model = revision['settings'].get('model')
+    catalog = bound.get('model_catalog')
+    entries = catalog.get('models', []) if isinstance(catalog, dict) else []
+    entry = next((m for m in entries if m.get('slug') == model), None)
+    if (not entry or bound.get('model_catalog_digest') != X.catalog_digest(catalog)
+            or not all(k in entry for k in ('experimental_supported_tools', 'apply_patch_tool_type', 'supports_search_tool'))):
+        if bound.get('model_tool_modes', {}).get(model) == 'code_mode_only':
+            raise Refused('configuration_stop:codex_code_mode_model')
+        raise Refused('configuration_stop:codex_model_catalog')
+    selected = copy.deepcopy(entry)
+    grants = set(revision['native_tools'])
+    if not grants.intersection({'sub_agents', 'multi_agent'}):
+        selected.pop('multi_agent_version', None)
+    if 'apply_patch' not in grants:
+        selected['apply_patch_tool_type'] = None
+    experimental = {'send_user_message_async': 'request_user_input_async', 'clock': 'clock'}
+    selected['experimental_supported_tools'] = [n for n in entry['experimental_supported_tools']
+                                                if experimental.get(n, n) in grants]
+    if 'tool_search' not in grants:
+        selected['supports_search_tool'] = False
+    return dict(copy.deepcopy(catalog), models=[selected])
 
 
-def codex_model(modes, revision):
-    if (modes.get(revision['settings'].get('model')) == 'code_mode_only'
-            and set(revision['native_tools']) != CODEX_ALL_NATIVE):
-        raise Refused('configuration_stop:codex_code_mode_model')
-
-
-def codex(configuration, capability, inventory, config):
+def codex(configuration, capability, inventory, config, *, catalog=None):
     revision = capability['revision']
     configuration.update(revision['settings'])
     for name, feature in CODEX_NATIVE.items():
@@ -275,16 +290,17 @@ def codex(configuration, capability, inventory, config):
     configuration['tools.experimental_request_user_input'] = {'enabled': False}
     configuration['features.sleep_tool'] = {'enabled': False}
     configuration['features.goals'] = False
-    configuration['features.code_mode'] = {'enabled': False}
-    configuration['features.code_mode_only'] = False
-    configuration['features.multi_agent_v2'] = {'enabled': 'multi_agent' in revision['native_tools']}
+    configuration['features.multi_agent_v2'] = {'enabled': bool(set(revision['native_tools']) & {'multi_agent', 'sub_agents'})}
     configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'
     configuration['developer_instructions'] = capability['instructions']
     for server, entry in inventory.items():
         configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']
         configuration['mcp_servers'][server]['required'] = True
     # The receiver stages only these generated skills in the clone's discovery directory.
-    files = {}
+    if catalog is None:
+        catalog = codex_model(X.load_qualification(), revision)
+    configuration['model_catalog_json'] = str(config / 'model-catalog.json')
+    files = {'model-catalog.json': json.dumps(catalog, sort_keys=True).encode()}
     if capability['skills']:
         configuration['skills.include_instructions'] = True
         configuration['skills.config'] = [
@@ -308,36 +324,47 @@ def codex_request_tools(body):
     return [tool for array in arrays for tool in array]
 
 
+def codex_name(name):
+    name = name.removeprefix('functions.')
+    if name.startswith('mcp__'):
+        name = name[:5] + name[5:].replace('.', '__', 1)
+    return name
+
+
 def codex_tool_names(tools, namespace=''):
+    """Effective definitions: Code Mode runner plus its nested declarations, or direct tools."""
     names = []
     for tool in tools:
         if tool.get('type') == 'namespace':
             names.extend(codex_tool_names(tool['tools'], tool['name'] + '.'))
-        elif tool.get('type') == 'function' and isinstance(tool.get('function'), dict):
-            names.append(namespace + tool['function']['name'])
-        else:
-            names.append(namespace + tool.get('name', tool['type']))
+            continue
+        definition = tool.get('function') if isinstance(tool.get('function'), dict) else tool
+        name = codex_name(namespace + definition.get('name', tool.get('type', '')))
+        names.append(name)
+        if name == 'exec':
+            names.extend(codex_name(n) for n in re.findall(r'^### `([^`]+)`\s*$',
+                                                         definition.get('description', ''), re.M))
     return sorted(names)
 
 
+def codex_expected_tools(wanted, body):
+    names = [codex_name(n) for name in wanted['tools'] for n in X.NATIVE_TOOL_MAPPING.get(name, [name])]
+    # Runner presence is determined by the accepted model, not by an untrusted tool list.
+    if X.MODEL_TOOL_MODES.get(wanted.get('model')) == 'code_mode_only':
+        names.extend(['exec', 'wait'])
+    return sorted(set(names))
+
+
 def codex_tool_difference(body, wanted):
-    """Exact wire names, with only the qualified shell family and MCP namespace spelling expanded."""
-    expected_names = []
-    for name in wanted['tools']:
-        if name in X.NATIVE_TOOL_MAPPING:
-            expected_names.extend(X.NATIVE_TOOL_MAPPING[name])
-        elif name.startswith('mcp__'):
-            server, tool = name[5:].split('__', 1)
-            expected_names.append('mcp__' + server + '.' + tool)
-        else:
-            expected_names.append(name)
+    """Exact equality after expanding native grants and normalizing wire spellings."""
+    expected_names = codex_expected_tools(wanted, body)
     try:
         actual = codex_tool_names(codex_request_tools(body))
     except Refused as error:
         return error.code
     if set(actual) - set(expected_names):
         return 'configuration_stop:codex_unexpected_tool'
-    if sorted(actual) != sorted(expected_names):
+    if set(actual) != set(expected_names):
         return 'configuration_stop:codex_missing_tool'
     return None
 

@@ -215,7 +215,7 @@ for raw in sys.stdin:
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o700)
     codex_qualification = base / 'codex-qualification.json'
-    codex_qualification.write_text(json.dumps(X.qualification(str(vendored))))
+    codex_qualification.write_text(json.dumps(X.qualification(str(vendored), **({'catalog': True} if hasattr(X, 'bundled_catalog') else {}))))
     config = base / 'receiver.json'
     wrapper = []
     slice_name = 'veldo0127-' + str(os.getpid()) + '.slice'
@@ -251,7 +251,7 @@ for raw in sys.stdin:
                     skills=[{'skill': 'inspect', 'revision': 1, 'load': 'always'}],
                     instructions=[{'source': 'factory', 'path': 'listed.md', 'load': 'always'},
                                   {'source': 'project', 'path': 'project.md', 'load': 'always'}],
-                    settings={'model': 'fixture-model'} if not live else {'model': live[engine + '_model']})
+                    settings={'model': 'fixture-model' if engine == 'claude' else 'gpt-5.5'} if not live else {'model': live[engine + '_model']})
     def save(definition, base_revision=0, principal='owner'):
         serial[0] += 1
         return configurations.save(definition, principal=principal, base=base_revision,

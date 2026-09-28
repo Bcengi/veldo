@@ -49,8 +49,8 @@ def diagnose(path, label, work, record, page):
 
 def codex_model(model, engine):
     modes = engine.MODEL_TOOL_MODES
-    if model not in modes or modes[model] is not None:
-        raise SystemExit('A qualified direct-tool codex-model is required: ' + model)
+    if model not in modes:
+        raise SystemExit('A qualified codex-model is required: ' + model)
     return model
 
 
@@ -121,12 +121,15 @@ def capture(f, engine, mode, marker, evidence, diagnostics=None):
     wire_tools = []
     if engine == 'codex':
         loopback = load('role_loopback', HERE / 'loopback.py')
-        wire = loopback.capture(document['executable']['path'], configuration)
+        qualified = json.loads(f.codex_qualification.read_text())
+        catalog = helper.codex_model(qualified, revision)
+        wire = loopback.capture(document['executable']['path'], configuration, catalog=catalog)
         wire_tools = [evidence.wire_observation(r['body'], expected, helper) for r in wire['requests']]
     return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
             'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
             'builtin_commands':builtin, 'probe':document.get('probe'),
             'disallowed':disallowed, 'configuration':configuration, 'listing':listing, 'wire_capture':wire, 'wire_tools':wire_tools,
+            'model_catalog':catalog if engine == 'codex' else None,
             'first_turn_context':document.get('first_turn_context'), 'context_events':context_events,
             'credential_sources':cred.get('credentials'), 'record_commitment':record.get('execution_record'),
             'marker_present':'VELDO0127_UNLISTED_MARKER' in text,
