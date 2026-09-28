@@ -1,0 +1,8 @@
+--- a/.veldo/control_factory_setup_upgrade.py
++++ b/.veldo/control_factory_setup_upgrade.py
+@@ -259,0 +260,2 @@
++    for name in plan['removed']:  # defect: a file the current engine no longer ships stays installed
++        __import__('shutil').copy2(os.path.join(plan['bin'], name), os.path.join(directory, name))
+@@ -261 +263 @@
+-    if installed_files(directory) != plan['current']:
++    if {n: d for n, d in installed_files(directory).items() if n not in plan['removed']} != plan['current']:

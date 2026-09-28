@@ -1,0 +1,6 @@
+--- a/.veldo/control_factory_setup_upgrade.py
++++ b/.veldo/control_factory_setup_upgrade.py
+@@ -150 +150,2 @@
+-        for name in sorted(set(found) | set(recorded)):
++        installed = 'recorded'  # defect: an engine file edited by hand is overwritten without notice
++        for name in []:
