@@ -71,7 +71,8 @@ acceptance_criteria:
       code); `claude-mem` (its search server's command from the manifest); and `memory-kb` (AC4's bridge to
       the memory_kb store server, which serves the tools of control_memory_kb, shipped by the factory since
       memory_kb is a command-line tool with no server of its own), whose tools are its cli.py subcommands
-      (search, index-file, index-dir, index-telegram, stats, list, delete, clear and setup-passphrase), each
+      (search, index-file, index-dir, index-telegram, stats, list, delete and clear; setup-passphrase is left
+      out, since a passphrase given as tool input would be kept in the run's record), each
       answered by the store server calling the kb package functions that subcommand calls, never by a
       second process opening the store, with
       memory_kb's `JARVIS_PASSPHRASE` (kb/crypto.py) as the record's credential reference when the owner has
@@ -133,10 +134,11 @@ acceptance_criteria:
       knowledge graph needs no server: db.py opens every connection in WAL mode, so SQLite's own file locks
       admit one writer at a time and a writer that waits past Python's five second default gets "database is
       locked" as its tool's error, never a lost or torn write; claude-mem's store is written only by its own
-      worker (VELDO-0187). The suite runs two writer processes at once, one through a conversation's catalog
-      bridge and one through the assistant's configuration entry, each adding 200 memories to each ChromaDB
-      store, and after both end requires all 400 found by id and by search from a fresh process, the store's
-      files held open by exactly one process throughout. Falsifier: Launch AC1's `ava-memory` record as
+      worker (VELDO-0187). The suite runs writer processes at once, one through a conversation's catalog
+      bridge and one through the assistant's configuration entry on each ChromaDB store, plus one through
+      `veldo memory kb` on memory_kb's store, each adding 200 memories, and after all end requires every
+      memory written (400 in mem0_memory's store, 600 in memory_kb's) found by id and by search from a fresh
+      process, each store's files held open by exactly one process throughout. Falsifier: Launch AC1's `ava-memory` record as
       mcp_server.py opening the store itself, as myday's `.mcp.json` does today, and the one-opener row must
       fail on the second process holding the store's files open.
     falsified_by: >
