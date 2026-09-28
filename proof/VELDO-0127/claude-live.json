@@ -1,0 +1,1202 @@
+{
+ "engine": "claude",
+ "problems": [],
+ "production": {
+  "control_agent_config.py": "7cd69a365291279326138b0af551ea5038829e4c046da01f8a6c52590b3aeab0",
+  "control_agent_config_handoff.py": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
+  "control_engine_claude.py": "9fa63d36d23c6dca7ab72b091c51f6a353aa6031f8d1792fa1d214a832e4dca6",
+  "control_engine_codex.py": "665cff65666ad6d30315a16e7422784465e0b8e8b41ab92734fa60a9bb0c9f5b",
+  "control_launch.py": "58bf7835dcb0d685828ebb24e2b5dc351f0c1e65dfe80be6cb37570bc3b78ff4"
+ },
+ "runs": [
+  {
+   "builtin_commands": [
+    "__remote-workflow",
+    "advisor",
+    "agents",
+    "auto-mode-setup",
+    "autocompact",
+    "clear",
+    "color",
+    "compact",
+    "config",
+    "context",
+    "design-consent",
+    "design-revoke",
+    "effort",
+    "extra-usage",
+    "fast",
+    "focus",
+    "goal",
+    "import",
+    "init",
+    "list-agents",
+    "mcp",
+    "model",
+    "output-style",
+    "recap",
+    "reload-plugins",
+    "reload-skills",
+    "rename",
+    "security-review",
+    "skill-doctor",
+    "usage",
+    "usage-credits",
+    "workflow-launch-exec"
+   ],
+   "completed": true,
+   "configuration": {},
+   "context_events": [
+    {
+     "message": {
+      "usage": {
+       "cache_creation": {
+        "ephemeral_1h_input_tokens": 1270,
+        "ephemeral_5m_input_tokens": 0
+       },
+       "cache_creation_input_tokens": 1270,
+       "cache_read_input_tokens": 4932,
+       "inference_geo": "not_available",
+       "input_tokens": 10,
+       "output_tokens": 4,
+       "service_tier": "standard"
+      }
+     },
+     "type": "assistant"
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 31479,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "ed6da48550dc60b856b1f43f85d4185678f43899c9fcfba735f2ac89dcc50a6b",
+   "disallowed": [
+    "Agent",
+    "AppifactRepl",
+    "Artifact",
+    "ArtifactCheck",
+    "ArtifactComments",
+    "ArtifactData",
+    "AskUserQuestion",
+    "Bash",
+    "ClaudeDesign",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EndConversation",
+    "EnterPlanMode",
+    "EnterWorktree",
+    "ExitPlanMode",
+    "ExitWorktree",
+    "FetchInboxMessage",
+    "Glob",
+    "Grep",
+    "LSP",
+    "ListAgents",
+    "ListConnectors",
+    "ListMcpResourcesTool",
+    "ListPlugins",
+    "ListSkills",
+    "Monitor",
+    "NotebookEdit",
+    "Poll",
+    "PowerShell",
+    "Projects",
+    "ProposeGoal",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "ReadNotifications",
+    "RefreshMcpTools",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SearchMcpRegistry",
+    "SearchPlugins",
+    "SearchSkills",
+    "SendFeedback",
+    "SendFile",
+    "SendMessage",
+    "SendUserFile",
+    "SendUserMessage",
+    "ShareOnboardingGuide",
+    "ShowOnboardingRolePicker",
+    "SuggestConnectors",
+    "SuggestPluginInstall",
+    "SuggestSkills",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskStop",
+    "TaskUpdate",
+    "TodoWrite",
+    "ToolSearch",
+    "WaitForMcpServers",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+    "enable__mcp__claude-in-chrome",
+    "enable__mcp__remote-devices__Claude_Browser",
+    "enable__mcp__remote-devices__computer",
+    "memory_list",
+    "memory_read",
+    "memory_write",
+    "propose_skills",
+    "request_computer",
+    "self_hosted_runner_get_pool",
+    "self_hosted_runner_list_runners",
+    "self_hosted_runner_list_secrets",
+    "self_hosted_runner_list_sessions",
+    "self_hosted_runner_read_health",
+    "self_hosted_runner_read_metrics",
+    "self_hosted_runner_requeue_session",
+    "self_hosted_runner_spawn_local",
+    "self_hosted_runner_tail_log",
+    "mcp__jira__jira_write"
+   ],
+   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "first_turn_context": 6212,
+   "init": {
+    "mcp_servers": [
+     {
+      "name": "jira",
+      "source": "dynamic",
+      "status": "connected"
+     }
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     {
+      "name": "veldo-role",
+      "path": "/run/user/1000/veldo0127-live-34527tzp/factory/runs/3ce7be38ca34e6ce25cf04fb1bff7e1b/config/role-plugin",
+      "source": "veldo-role@inline"
+     }
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect",
+     "advisor",
+     "agents",
+     "auto-mode-setup",
+     "autocompact",
+     "clear",
+     "color",
+     "compact",
+     "config",
+     "output-style",
+     "context",
+     "effort",
+     "fast",
+     "focus",
+     "init",
+     "mcp",
+     "import",
+     "model",
+     "__remote-workflow",
+     "workflow-launch-exec",
+     "reload-plugins",
+     "reload-skills",
+     "rename",
+     "security-review",
+     "usage-credits",
+     "extra-usage",
+     "usage",
+     "recap",
+     "skill-doctor",
+     "goal",
+     "design-consent",
+     "design-revoke",
+     "list-agents"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "listing": [],
+   "marker": false,
+   "marker_present": false,
+   "mode": "always",
+   "record_commitment": {
+    "bytes": 104289,
+    "digest": "sha256:975b561dda1b7d36a6df93169d5de5d6c2241f8b22443919e3e6c919dc56d8bf",
+    "lines": 314
+   },
+   "revision": {
+    "digest": "sha256:a98bd73b1466eba4e84e08dd7bdee0a79aaa97650efdfdfea38f3119ff0a9daf",
+    "engine": "claude_code",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     }
+    ],
+    "native_tools": [
+     "Read",
+     "PushNotification",
+     "Skill"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "claude-always",
+    "settings": {
+     "model": "claude-haiku-4-5-20251001"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   }
+  },
+  {
+   "builtin_commands": [
+    "__remote-workflow",
+    "advisor",
+    "agents",
+    "auto-mode-setup",
+    "autocompact",
+    "clear",
+    "color",
+    "compact",
+    "config",
+    "context",
+    "design-consent",
+    "design-revoke",
+    "effort",
+    "extra-usage",
+    "fast",
+    "focus",
+    "goal",
+    "heapdump",
+    "import",
+    "init",
+    "insights",
+    "list-agents",
+    "mcp",
+    "model",
+    "output-style",
+    "recap",
+    "reload-plugins",
+    "reload-skills",
+    "rename",
+    "security-review",
+    "skill-doctor",
+    "team-onboarding",
+    "usage",
+    "usage-credits",
+    "workflow-launch-exec"
+   ],
+   "completed": true,
+   "configuration": {},
+   "context_events": [
+    {
+     "message": {
+      "usage": {
+       "cache_creation": {
+        "ephemeral_1h_input_tokens": 1349,
+        "ephemeral_5m_input_tokens": 0
+       },
+       "cache_creation_input_tokens": 1349,
+       "cache_read_input_tokens": 4932,
+       "inference_geo": "not_available",
+       "input_tokens": 10,
+       "output_tokens": 1,
+       "service_tier": "standard"
+      }
+     },
+     "type": "assistant"
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 20080,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "43f3b701ce5ec93e85d391b03b2107944f854bfc1ce1d3cbb05e6a887cbcb02b",
+   "disallowed": [
+    "Agent",
+    "AppifactRepl",
+    "Artifact",
+    "ArtifactCheck",
+    "ArtifactComments",
+    "ArtifactData",
+    "AskUserQuestion",
+    "Bash",
+    "ClaudeDesign",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EndConversation",
+    "EnterPlanMode",
+    "EnterWorktree",
+    "ExitPlanMode",
+    "ExitWorktree",
+    "FetchInboxMessage",
+    "Glob",
+    "Grep",
+    "LSP",
+    "ListAgents",
+    "ListConnectors",
+    "ListMcpResourcesTool",
+    "ListPlugins",
+    "ListSkills",
+    "Monitor",
+    "NotebookEdit",
+    "Poll",
+    "PowerShell",
+    "Projects",
+    "ProposeGoal",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "ReadNotifications",
+    "RefreshMcpTools",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SearchMcpRegistry",
+    "SearchPlugins",
+    "SearchSkills",
+    "SendFeedback",
+    "SendFile",
+    "SendMessage",
+    "SendUserFile",
+    "SendUserMessage",
+    "ShareOnboardingGuide",
+    "ShowOnboardingRolePicker",
+    "SuggestConnectors",
+    "SuggestPluginInstall",
+    "SuggestSkills",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskStop",
+    "TaskUpdate",
+    "TodoWrite",
+    "ToolSearch",
+    "WaitForMcpServers",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+    "enable__mcp__claude-in-chrome",
+    "enable__mcp__remote-devices__Claude_Browser",
+    "enable__mcp__remote-devices__computer",
+    "memory_list",
+    "memory_read",
+    "memory_write",
+    "propose_skills",
+    "request_computer",
+    "self_hosted_runner_get_pool",
+    "self_hosted_runner_list_runners",
+    "self_hosted_runner_list_secrets",
+    "self_hosted_runner_list_sessions",
+    "self_hosted_runner_read_health",
+    "self_hosted_runner_read_metrics",
+    "self_hosted_runner_requeue_session",
+    "self_hosted_runner_spawn_local",
+    "self_hosted_runner_tail_log",
+    "mcp__jira__jira_write"
+   ],
+   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "first_turn_context": 6291,
+   "init": {
+    "mcp_servers": [
+     {
+      "name": "jira",
+      "source": "dynamic",
+      "status": "connected"
+     }
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     {
+      "name": "veldo-role",
+      "path": "/run/user/1000/veldo0127-live-34527tzp/factory/runs/d483672fedac7fc59fb1c8a9638c7c78/config/role-plugin",
+      "source": "veldo-role@inline"
+     }
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect",
+     "advisor",
+     "agents",
+     "auto-mode-setup",
+     "autocompact",
+     "clear",
+     "color",
+     "compact",
+     "config",
+     "output-style",
+     "context",
+     "effort",
+     "fast",
+     "focus",
+     "heapdump",
+     "init",
+     "mcp",
+     "import",
+     "model",
+     "__remote-workflow",
+     "workflow-launch-exec",
+     "reload-plugins",
+     "reload-skills",
+     "rename",
+     "security-review",
+     "usage-credits",
+     "extra-usage",
+     "usage",
+     "insights",
+     "recap",
+     "skill-doctor",
+     "goal",
+     "design-consent",
+     "design-revoke",
+     "list-agents",
+     "team-onboarding"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "listing": [],
+   "marker": true,
+   "marker_present": false,
+   "mode": "always",
+   "record_commitment": {
+    "bytes": 63692,
+    "digest": "sha256:ecd80336a83d165d9b2db896158a894ad734f53a346f94c066d97c7f942c1218",
+    "lines": 215
+   },
+   "revision": {
+    "digest": "sha256:a98bd73b1466eba4e84e08dd7bdee0a79aaa97650efdfdfea38f3119ff0a9daf",
+    "engine": "claude_code",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     }
+    ],
+    "native_tools": [
+     "Read",
+     "PushNotification",
+     "Skill"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "claude-always",
+    "settings": {
+     "model": "claude-haiku-4-5-20251001"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   }
+  },
+  {
+   "builtin_commands": [
+    "__remote-workflow",
+    "advisor",
+    "agents",
+    "auto-mode-setup",
+    "autocompact",
+    "clear",
+    "color",
+    "compact",
+    "config",
+    "context",
+    "design-consent",
+    "design-revoke",
+    "effort",
+    "extra-usage",
+    "fast",
+    "focus",
+    "goal",
+    "heapdump",
+    "import",
+    "init",
+    "insights",
+    "list-agents",
+    "mcp",
+    "model",
+    "output-style",
+    "recap",
+    "reload-plugins",
+    "reload-skills",
+    "rename",
+    "security-review",
+    "skill-doctor",
+    "team-onboarding",
+    "usage",
+    "usage-credits",
+    "workflow-launch-exec"
+   ],
+   "completed": true,
+   "configuration": {},
+   "context_events": [
+    {
+     "message": {
+      "usage": {
+       "cache_creation": {
+        "ephemeral_1h_input_tokens": 1388,
+        "ephemeral_5m_input_tokens": 0
+       },
+       "cache_creation_input_tokens": 1388,
+       "cache_read_input_tokens": 4994,
+       "inference_geo": "not_available",
+       "input_tokens": 10,
+       "output_tokens": 3,
+       "service_tier": "standard"
+      }
+     },
+     "type": "assistant"
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 20454,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "a912d89098254d220fc6290aae633c51fa127c7832f9a35dc866c44e187c064e",
+   "disallowed": [
+    "Agent",
+    "AppifactRepl",
+    "Artifact",
+    "ArtifactCheck",
+    "ArtifactComments",
+    "ArtifactData",
+    "AskUserQuestion",
+    "Bash",
+    "ClaudeDesign",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EndConversation",
+    "EnterPlanMode",
+    "EnterWorktree",
+    "ExitPlanMode",
+    "ExitWorktree",
+    "FetchInboxMessage",
+    "Glob",
+    "Grep",
+    "LSP",
+    "ListAgents",
+    "ListConnectors",
+    "ListMcpResourcesTool",
+    "ListPlugins",
+    "ListSkills",
+    "Monitor",
+    "NotebookEdit",
+    "Poll",
+    "PowerShell",
+    "Projects",
+    "ProposeGoal",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "ReadNotifications",
+    "RefreshMcpTools",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SearchMcpRegistry",
+    "SearchPlugins",
+    "SearchSkills",
+    "SendFeedback",
+    "SendFile",
+    "SendMessage",
+    "SendUserFile",
+    "SendUserMessage",
+    "ShareOnboardingGuide",
+    "ShowOnboardingRolePicker",
+    "SuggestConnectors",
+    "SuggestPluginInstall",
+    "SuggestSkills",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskStop",
+    "TaskUpdate",
+    "TodoWrite",
+    "ToolSearch",
+    "WaitForMcpServers",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+    "enable__mcp__claude-in-chrome",
+    "enable__mcp__remote-devices__Claude_Browser",
+    "enable__mcp__remote-devices__computer",
+    "memory_list",
+    "memory_read",
+    "memory_write",
+    "propose_skills",
+    "request_computer",
+    "self_hosted_runner_get_pool",
+    "self_hosted_runner_list_runners",
+    "self_hosted_runner_list_secrets",
+    "self_hosted_runner_list_sessions",
+    "self_hosted_runner_read_health",
+    "self_hosted_runner_read_metrics",
+    "self_hosted_runner_requeue_session",
+    "self_hosted_runner_spawn_local",
+    "self_hosted_runner_tail_log",
+    "mcp__jira__jira_write"
+   ],
+   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "first_turn_context": 6392,
+   "init": {
+    "mcp_servers": [
+     {
+      "name": "jira",
+      "source": "dynamic",
+      "status": "connected"
+     }
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     {
+      "name": "veldo-role",
+      "path": "/run/user/1000/veldo0127-live-34527tzp/factory/runs/5c7f772fff05e6935de5aba3470d1755/config/role-plugin",
+      "source": "veldo-role@inline"
+     }
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect",
+     "advisor",
+     "agents",
+     "auto-mode-setup",
+     "autocompact",
+     "clear",
+     "color",
+     "compact",
+     "config",
+     "output-style",
+     "context",
+     "effort",
+     "fast",
+     "focus",
+     "heapdump",
+     "init",
+     "mcp",
+     "import",
+     "model",
+     "__remote-workflow",
+     "workflow-launch-exec",
+     "reload-plugins",
+     "reload-skills",
+     "rename",
+     "security-review",
+     "usage-credits",
+     "extra-usage",
+     "usage",
+     "insights",
+     "recap",
+     "skill-doctor",
+     "goal",
+     "design-consent",
+     "design-revoke",
+     "list-agents",
+     "team-onboarding"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "listing": [],
+   "marker": false,
+   "marker_present": false,
+   "mode": "deferred",
+   "record_commitment": {
+    "bytes": 64440,
+    "digest": "sha256:a45e1caeec4fef5f4f68ff7ef5ded46e81ec842cd67d64c26e6943dfa008ca9b",
+    "lines": 219
+   },
+   "revision": {
+    "digest": "sha256:720ac7f279f7b46696172cd9f3afc1cdf7d598834cca5b2786ec491a17f8c329",
+    "engine": "claude_code",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     },
+     {
+      "load": "when assigned",
+      "path": "unassigned.md",
+      "source": "factory"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     },
+     {
+      "load": "when assigned",
+      "revision": 1,
+      "server": "other",
+      "tools": "all"
+     }
+    ],
+    "native_tools": [
+     "Read",
+     "PushNotification",
+     "Skill"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "claude-deferred",
+    "settings": {
+     "model": "claude-haiku-4-5-20251001"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   }
+  },
+  {
+   "builtin_commands": [
+    "__remote-workflow",
+    "advisor",
+    "agents",
+    "auto-mode-setup",
+    "autocompact",
+    "clear",
+    "color",
+    "compact",
+    "config",
+    "context",
+    "design-consent",
+    "design-revoke",
+    "effort",
+    "extra-usage",
+    "fast",
+    "focus",
+    "goal",
+    "heapdump",
+    "import",
+    "init",
+    "insights",
+    "list-agents",
+    "mcp",
+    "model",
+    "output-style",
+    "recap",
+    "reload-plugins",
+    "reload-skills",
+    "rename",
+    "security-review",
+    "skill-doctor",
+    "team-onboarding",
+    "usage",
+    "usage-credits",
+    "workflow-launch-exec"
+   ],
+   "completed": true,
+   "configuration": {},
+   "context_events": [
+    {
+     "message": {
+      "usage": {
+       "cache_creation": {
+        "ephemeral_1h_input_tokens": 1401,
+        "ephemeral_5m_input_tokens": 0
+       },
+       "cache_creation_input_tokens": 1401,
+       "cache_read_input_tokens": 4994,
+       "inference_geo": "not_available",
+       "input_tokens": 10,
+       "output_tokens": 4,
+       "service_tier": "standard"
+      }
+     },
+     "type": "assistant"
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 20217,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "6f66c1faf7a8b1a4ad721c16e186fce91918f15c98117b8e5538a198c0b1a584",
+   "disallowed": [
+    "Agent",
+    "AppifactRepl",
+    "Artifact",
+    "ArtifactCheck",
+    "ArtifactComments",
+    "ArtifactData",
+    "AskUserQuestion",
+    "Bash",
+    "ClaudeDesign",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EndConversation",
+    "EnterPlanMode",
+    "EnterWorktree",
+    "ExitPlanMode",
+    "ExitWorktree",
+    "FetchInboxMessage",
+    "Glob",
+    "Grep",
+    "LSP",
+    "ListAgents",
+    "ListConnectors",
+    "ListMcpResourcesTool",
+    "ListPlugins",
+    "ListSkills",
+    "Monitor",
+    "NotebookEdit",
+    "Poll",
+    "PowerShell",
+    "Projects",
+    "ProposeGoal",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "ReadNotifications",
+    "RefreshMcpTools",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SearchMcpRegistry",
+    "SearchPlugins",
+    "SearchSkills",
+    "SendFeedback",
+    "SendFile",
+    "SendMessage",
+    "SendUserFile",
+    "SendUserMessage",
+    "ShareOnboardingGuide",
+    "ShowOnboardingRolePicker",
+    "SuggestConnectors",
+    "SuggestPluginInstall",
+    "SuggestSkills",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskStop",
+    "TaskUpdate",
+    "TodoWrite",
+    "ToolSearch",
+    "WaitForMcpServers",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+    "enable__mcp__claude-in-chrome",
+    "enable__mcp__remote-devices__Claude_Browser",
+    "enable__mcp__remote-devices__computer",
+    "memory_list",
+    "memory_read",
+    "memory_write",
+    "propose_skills",
+    "request_computer",
+    "self_hosted_runner_get_pool",
+    "self_hosted_runner_list_runners",
+    "self_hosted_runner_list_secrets",
+    "self_hosted_runner_list_sessions",
+    "self_hosted_runner_read_health",
+    "self_hosted_runner_read_metrics",
+    "self_hosted_runner_requeue_session",
+    "self_hosted_runner_spawn_local",
+    "self_hosted_runner_tail_log",
+    "mcp__jira__jira_write"
+   ],
+   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "first_turn_context": 6405,
+   "init": {
+    "mcp_servers": [
+     {
+      "name": "jira",
+      "source": "dynamic",
+      "status": "connected"
+     }
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     {
+      "name": "veldo-role",
+      "path": "/run/user/1000/veldo0127-live-34527tzp/factory/runs/5275690a76b72b6459d3907dd610724d/config/role-plugin",
+      "source": "veldo-role@inline"
+     }
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect",
+     "advisor",
+     "agents",
+     "auto-mode-setup",
+     "autocompact",
+     "clear",
+     "color",
+     "compact",
+     "config",
+     "output-style",
+     "context",
+     "effort",
+     "fast",
+     "focus",
+     "heapdump",
+     "init",
+     "mcp",
+     "import",
+     "model",
+     "__remote-workflow",
+     "workflow-launch-exec",
+     "reload-plugins",
+     "reload-skills",
+     "rename",
+     "security-review",
+     "usage-credits",
+     "extra-usage",
+     "usage",
+     "insights",
+     "recap",
+     "skill-doctor",
+     "goal",
+     "design-consent",
+     "design-revoke",
+     "list-agents",
+     "team-onboarding"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "listing": [],
+   "marker": true,
+   "marker_present": false,
+   "mode": "deferred",
+   "record_commitment": {
+    "bytes": 63958,
+    "digest": "sha256:fc4e3c51b4c469726e3702a1a3665cb65954f50d17fe94a42148d1ce1f4a9ed5",
+    "lines": 216
+   },
+   "revision": {
+    "digest": "sha256:720ac7f279f7b46696172cd9f3afc1cdf7d598834cca5b2786ec491a17f8c329",
+    "engine": "claude_code",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     },
+     {
+      "load": "when assigned",
+      "path": "unassigned.md",
+      "source": "factory"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     },
+     {
+      "load": "when assigned",
+      "revision": 1,
+      "server": "other",
+      "tools": "all"
+     }
+    ],
+    "native_tools": [
+     "Read",
+     "PushNotification",
+     "Skill"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "claude-deferred",
+    "settings": {
+     "model": "claude-haiku-4-5-20251001"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   }
+  }
+ ],
+ "schema": "veldo.role-live/v1"
+}

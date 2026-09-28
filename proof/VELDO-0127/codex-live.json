@@ -1,0 +1,628 @@
+{
+ "engine": "codex",
+ "problems": [],
+ "production": {
+  "control_agent_config.py": "7cd69a365291279326138b0af551ea5038829e4c046da01f8a6c52590b3aeab0",
+  "control_agent_config_handoff.py": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
+  "control_engine_claude.py": "9fa63d36d23c6dca7ab72b091c51f6a353aa6031f8d1792fa1d214a832e4dca6",
+  "control_engine_codex.py": "665cff65666ad6d30315a16e7422784465e0b8e8b41ab92734fa60a9bb0c9f5b",
+  "control_launch.py": "58bf7835dcb0d685828ebb24e2b5dc351f0c1e65dfe80be6cb37570bc3b78ff4"
+ },
+ "runs": [
+  {
+   "completed": true,
+   "configuration": {
+    "cli_auth_credentials_store": "file",
+    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
+    "features": {
+     "apply_patch_freeform": false,
+     "multi_agent": false,
+     "shell_tool": true,
+     "view_image": false
+    },
+    "forced_login_method": "chatgpt",
+    "mcp_servers": {
+     "jira": {
+      "args": [
+       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
+       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
+      ],
+      "command": "/usr/bin/python3",
+      "enabled_tools": [
+       "jira_search"
+      ],
+      "env_vars": [
+       "ROLE_CREDENTIAL"
+      ],
+      "required": true
+     }
+    },
+    "model": "gpt-6-astra",
+    "project_doc_max_bytes": 0,
+    "skills": {
+     "bundled": {
+      "enabled": false
+     },
+     "config": [
+      {
+       "enabled": true,
+       "path": "/run/user/1000/veldo0127-live-6ec4tdcg/source/.agents/skills/inspect/SKILL.md"
+      }
+     ],
+     "include_instructions": true
+    },
+    "web_search": "disabled"
+   },
+   "context_events": [
+    {
+     "type": "turn.completed",
+     "usage": {
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 0,
+      "input_tokens": 10983,
+      "output_tokens": 5,
+      "reasoning_output_tokens": 0
+     }
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 28,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "8533e1a46699471830b345b585700b17e9ec17ebb0479ac7e0c7f171f9665654",
+   "disallowed": [],
+   "executable_digest": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "gpt-6-astra",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "mcp__jira__jira_search",
+     "shell",
+     "update_plan"
+    ]
+   },
+   "first_turn_context": 10983,
+   "init": {},
+   "listing": [
+    {
+     "enabled": true,
+     "enabled_tools": [
+      "jira_search"
+     ],
+     "name": "jira"
+    }
+   ],
+   "marker": false,
+   "marker_present": false,
+   "mode": "always",
+   "record_commitment": {
+    "bytes": 2096,
+    "digest": "sha256:278a912e0fe5e445391004da2a9ea740f11f728836a74ea252f98b1554371c83",
+    "lines": 8
+   },
+   "revision": {
+    "digest": "sha256:bf67218b3969037705d06569e9e5ca46d5573408c7bc5f80347b4236fa3f2041",
+    "engine": "codex",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     }
+    ],
+    "native_tools": [
+     "update_plan",
+     "shell"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "codex-always",
+    "settings": {
+     "model": "gpt-6-astra"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   }
+  },
+  {
+   "completed": true,
+   "configuration": {
+    "cli_auth_credentials_store": "file",
+    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
+    "features": {
+     "apply_patch_freeform": false,
+     "multi_agent": false,
+     "shell_tool": true,
+     "view_image": false
+    },
+    "forced_login_method": "chatgpt",
+    "mcp_servers": {
+     "jira": {
+      "args": [
+       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
+       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
+      ],
+      "command": "/usr/bin/python3",
+      "enabled_tools": [
+       "jira_search"
+      ],
+      "env_vars": [
+       "ROLE_CREDENTIAL"
+      ],
+      "required": true
+     }
+    },
+    "model": "gpt-6-astra",
+    "project_doc_max_bytes": 0,
+    "skills": {
+     "bundled": {
+      "enabled": false
+     },
+     "config": [
+      {
+       "enabled": true,
+       "path": "/run/user/1000/veldo0127-live-6ec4tdcg/source/.agents/skills/inspect/SKILL.md"
+      }
+     ],
+     "include_instructions": true
+    },
+    "web_search": "disabled"
+   },
+   "context_events": [
+    {
+     "type": "turn.completed",
+     "usage": {
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 0,
+      "input_tokens": 10978,
+      "output_tokens": 5,
+      "reasoning_output_tokens": 0
+     }
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 28,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "8533e1a46699471830b345b585700b17e9ec17ebb0479ac7e0c7f171f9665654",
+   "disallowed": [],
+   "executable_digest": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "gpt-6-astra",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "mcp__jira__jira_search",
+     "shell",
+     "update_plan"
+    ]
+   },
+   "first_turn_context": 10978,
+   "init": {},
+   "listing": [
+    {
+     "enabled": true,
+     "enabled_tools": [
+      "jira_search"
+     ],
+     "name": "jira"
+    }
+   ],
+   "marker": true,
+   "marker_present": false,
+   "mode": "always",
+   "record_commitment": {
+    "bytes": 2095,
+    "digest": "sha256:de29549786f6a2ae5d121bc5fe1c5882322826bda99b704ad01eb0df0e78659c",
+    "lines": 8
+   },
+   "revision": {
+    "digest": "sha256:bf67218b3969037705d06569e9e5ca46d5573408c7bc5f80347b4236fa3f2041",
+    "engine": "codex",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     }
+    ],
+    "native_tools": [
+     "update_plan",
+     "shell"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "codex-always",
+    "settings": {
+     "model": "gpt-6-astra"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   }
+  },
+  {
+   "completed": true,
+   "configuration": {
+    "cli_auth_credentials_store": "file",
+    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
+    "features": {
+     "apply_patch_freeform": false,
+     "multi_agent": false,
+     "shell_tool": true,
+     "view_image": false
+    },
+    "forced_login_method": "chatgpt",
+    "mcp_servers": {
+     "jira": {
+      "args": [
+       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
+       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
+      ],
+      "command": "/usr/bin/python3",
+      "enabled_tools": [
+       "jira_search"
+      ],
+      "env_vars": [
+       "ROLE_CREDENTIAL"
+      ],
+      "required": true
+     }
+    },
+    "model": "gpt-6-astra",
+    "project_doc_max_bytes": 0,
+    "skills": {
+     "bundled": {
+      "enabled": false
+     },
+     "config": [
+      {
+       "enabled": true,
+       "path": "/run/user/1000/veldo0127-live-6ec4tdcg/source/.agents/skills/inspect/SKILL.md"
+      }
+     ],
+     "include_instructions": true
+    },
+    "web_search": "disabled"
+   },
+   "context_events": [
+    {
+     "type": "turn.completed",
+     "usage": {
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 0,
+      "input_tokens": 11027,
+      "output_tokens": 5,
+      "reasoning_output_tokens": 0
+     }
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 28,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "8533e1a46699471830b345b585700b17e9ec17ebb0479ac7e0c7f171f9665654",
+   "disallowed": [],
+   "executable_digest": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "gpt-6-astra",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "mcp__jira__jira_search",
+     "shell",
+     "update_plan"
+    ]
+   },
+   "first_turn_context": 11027,
+   "init": {},
+   "listing": [
+    {
+     "enabled": true,
+     "enabled_tools": [
+      "jira_search"
+     ],
+     "name": "jira"
+    }
+   ],
+   "marker": false,
+   "marker_present": false,
+   "mode": "deferred",
+   "record_commitment": {
+    "bytes": 2098,
+    "digest": "sha256:f8cfbb3874d9fc5dbb9b712b61f8e4175083e07eeed8d20d8bfddc39c0cf64a1",
+    "lines": 8
+   },
+   "revision": {
+    "digest": "sha256:466b0824b501d2bb97ba1b41331b1d5743d2f473be2cd63ec8b674068b10edd2",
+    "engine": "codex",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     },
+     {
+      "load": "when assigned",
+      "path": "unassigned.md",
+      "source": "factory"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     },
+     {
+      "load": "when assigned",
+      "revision": 1,
+      "server": "other",
+      "tools": "all"
+     }
+    ],
+    "native_tools": [
+     "update_plan",
+     "shell"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "codex-deferred",
+    "settings": {
+     "model": "gpt-6-astra"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   }
+  },
+  {
+   "completed": true,
+   "configuration": {
+    "cli_auth_credentials_store": "file",
+    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
+    "features": {
+     "apply_patch_freeform": false,
+     "multi_agent": false,
+     "shell_tool": true,
+     "view_image": false
+    },
+    "forced_login_method": "chatgpt",
+    "mcp_servers": {
+     "jira": {
+      "args": [
+       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
+       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
+      ],
+      "command": "/usr/bin/python3",
+      "enabled_tools": [
+       "jira_search"
+      ],
+      "env_vars": [
+       "ROLE_CREDENTIAL"
+      ],
+      "required": true
+     }
+    },
+    "model": "gpt-6-astra",
+    "project_doc_max_bytes": 0,
+    "skills": {
+     "bundled": {
+      "enabled": false
+     },
+     "config": [
+      {
+       "enabled": true,
+       "path": "/run/user/1000/veldo0127-live-6ec4tdcg/source/.agents/skills/inspect/SKILL.md"
+      }
+     ],
+     "include_instructions": true
+    },
+    "web_search": "disabled"
+   },
+   "context_events": [
+    {
+     "type": "turn.completed",
+     "usage": {
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 0,
+      "input_tokens": 11027,
+      "output_tokens": 5,
+      "reasoning_output_tokens": 0
+     }
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 28,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "8533e1a46699471830b345b585700b17e9ec17ebb0479ac7e0c7f171f9665654",
+   "disallowed": [],
+   "executable_digest": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "gpt-6-astra",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "mcp__jira__jira_search",
+     "shell",
+     "update_plan"
+    ]
+   },
+   "first_turn_context": 11027,
+   "init": {},
+   "listing": [
+    {
+     "enabled": true,
+     "enabled_tools": [
+      "jira_search"
+     ],
+     "name": "jira"
+    }
+   ],
+   "marker": true,
+   "marker_present": false,
+   "mode": "deferred",
+   "record_commitment": {
+    "bytes": 2095,
+    "digest": "sha256:072e614a3f62e633af8a58630a9d4f2b14e0eccb819c72e7a19b9124191e15ac",
+    "lines": 8
+   },
+   "revision": {
+    "digest": "sha256:466b0824b501d2bb97ba1b41331b1d5743d2f473be2cd63ec8b674068b10edd2",
+    "engine": "codex",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     },
+     {
+      "load": "when assigned",
+      "path": "unassigned.md",
+      "source": "factory"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     },
+     {
+      "load": "when assigned",
+      "revision": 1,
+      "server": "other",
+      "tools": "all"
+     }
+    ],
+    "native_tools": [
+     "update_plan",
+     "shell"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "codex-deferred",
+    "settings": {
+     "model": "gpt-6-astra"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   }
+  }
+ ],
+ "schema": "veldo.role-live/v1"
+}
