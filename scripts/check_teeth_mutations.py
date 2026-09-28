@@ -28,6 +28,11 @@ FIELDS = ('schema', 'workspace', 'domain_uuid', 'store_uuid', 'command',
           'binding_digest', 'authority_generation')
 
 
+RENDERER_LOADERS = ('control_channel_presentation.py', 'control_channel_projection.py', 'control_intake.py',
+                    'control_telegram_report.py')
+RENDERER_COMPANIONS = ('control_channel_presentation_text.py', 'control_channel_presentation_v1.py')
+
+
 def cases():
     result = []
 
@@ -2149,7 +2154,7 @@ def cases():
                  "BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',\n",
                  "BOUND_FIELDS = ('subject_digests', 'risk_statement',\n", 'presentation/revision-identity')
     presentation('render-omits-risk',
-                 "             'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),\n", "",
+                 "             'Risk (stated by %s): %s' % (record['framed_by'], record['risk_statement']),\n", "",
                  'presentation/receipt-binds-shown-content')
     presentation('framing-signature-unchecked',
                  "                or not self._framing_signed(request, framing, state, c)):\n",
@@ -4181,7 +4186,7 @@ def cases():
           'hint/answer-without-reply-one-reply')
     # Intake's project question and the note go out as two replies.
     hints('question-and-note-apart', 'control_intake.py',
-          "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
+          "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)\n",
           "        hinted = dict(self._hint(where.get('evidence_id'), 'proposed'), attempted=False)  # defect: two replies\n",
           'hint/two-projects-one-reply')
     # A clarification and a Reply to intake's own question are hinted as if intake had not taken them.
@@ -9068,6 +9073,12 @@ def cases():
             "DIRECT = 'https://api.telegram.org/bot%s/sendMessage'  # defect: a send the inventory does not name\n"
             "SCHEMA = 'veldo.telegram_report/v1'\n",
             ['inventory/sends-and-assets'])
+    # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
+    # renderer 1) next to themselves by path, so a mutant copy of one runs beside copies of those two.
+    for case in result:
+        if (case['module'] in RENDERER_LOADERS and case.get('dir', '.veldo') == '.veldo'
+                and not case.get('fixture') and not case.get('siblings')):
+            case['companions'] = list(RENDERER_COMPANIONS)
     return result
 
 
@@ -9121,6 +9132,9 @@ def materialize(case, mode, directory, root=ROOT):
             mutant = destination / 'veldo' / case['module']
         target = mutant / case['module'] if fixture else mutant
         target.parent.mkdir(parents=True, exist_ok=True)
+        for name in case.get('companions', ()):
+            # A module that loads a named sibling by its own path runs beside an unchanged copy of it.
+            shutil.copyfile(base / name, target.parent / name)
         target.write_bytes(before if mode == 'noop' else mutated)
         after = target.read_bytes()
     return dict(source=source, mutant=mutant, replacement_count=count,
