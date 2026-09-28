@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1272 +1272 @@
+-            'tools': extra.get('tools'),
++            'tools': None,

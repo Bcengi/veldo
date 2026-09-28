@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1409 +1409 @@
+-            + list(base['stream_options']) + list(options['argv']))
++            + list(base['stream_options']))
