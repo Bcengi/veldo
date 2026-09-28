@@ -9083,6 +9083,11 @@ def cases():
         "        except (engine.Refused, HANDOFF.Refused) as error:", ['handoff/codex'],
         also=(("        try:\n            if extra.get('expected') and engine.PROVIDER == 'codex':\n",
                "        try:\n            if False:  # defect: the listing ran before the files it loads were written\n"),))
+    # Staged role skills were unlinked only in the receiver's close(), which the runner's stop at the end races.
+    add(127, 'role127-staged-skill-outlives-run', suite127, 'control_launch.py',
+        "            self._unstage_skills()\n            shutil.rmtree(run, ignore_errors=True)\n",
+        "            shutil.rmtree(run, ignore_errors=True)  # defect: links left for close() alone\n",
+        ['review/skill-commit'])
     add(127, 'role127-context-line-every-run', '82_veldo_0141_execution_record.py', 'control_launch.py',
         "            if (metering is not None and metering.first_turn_context is not None\n"
         "                    and (self.binding or {}).get('capability')):\n",

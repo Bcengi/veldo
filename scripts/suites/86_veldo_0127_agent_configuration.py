@@ -549,6 +549,17 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   and own.get('init',{}).get('skills') == []
                   and own.get('init',{}).get('plugins') == []
                   and own.get('init',{}).get('mcp_servers') == [{'name':'jira','status':'connected'}])
+            # The runner stops the receiver once it reads the end, so staged links go with the run directory,
+            # before the end is reported, never in close() alone (a race that left a dangling link in the clone).
+            unstage_run = base / 'unstage-run'
+            (unstage_run / 'config/role-skills/inspect').mkdir(parents=True)
+            unstage_link = base / 'unstage-link'
+            unstage_link.symlink_to(unstage_run / 'config/role-skills/inspect', target_is_directory=True)
+            receiver = object.__new__(f.L.Receiver)
+            receiver.run, receiver.supervision, receiver.role_skills = str(unstage_run), {'empty': True}, [unstage_link]
+            receiver._remove_run()
+            check('review/skill-commit', 'staged role skills are removed with the run, before its end is reported',
+                  not unstage_link.is_symlink() and not unstage_run.exists() and receiver.role_skills == [])
             source_skill = f.src / '.agents/skills/inspect/SKILL.md'
             source_skill.parent.mkdir(parents=True, exist_ok=True)
             source_skill.write_text((base / 'SKILL.md').read_text())

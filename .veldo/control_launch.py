@@ -978,10 +978,16 @@ class Receiver:
         self.recorder = None
         self.committed = None
 
-    def close(self):
-        for path in self.role_skills:
+    def _unstage_skills(self):
+        """The role skills staged into the clone's discovery directory are links into the run's own configuration:
+        each is removed with the run, so none outlives its target or reaches a later run of the same clone."""
+        skills, self.role_skills = self.role_skills, []
+        for path in skills:
             if path.is_symlink():
                 path.unlink()
+
+    def close(self):
+        self._unstage_skills()
         if self.recorder is not None:
             self.recorder.close()
         self.conn.close()
@@ -1020,6 +1026,9 @@ class Receiver:
         recorded; a group that could not be emptied keeps them, since what is left of the run may still use them."""
         run, self.run = self.run, None
         if run is not None and (self.supervision or {}).get('empty') is not False:
+            # Before the end is reported: the runner stops this receiver once it reads the end, so a link left
+            # for close() alone could survive into the clone (VELDO-0127).
+            self._unstage_skills()
             shutil.rmtree(run, ignore_errors=True)
 
     def _settlement_trust(self, EL):
