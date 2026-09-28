@@ -27,7 +27,7 @@ file is current too. Then, when the authority unit is active, the service restar
 for it to answer an inspect over its socket; only then is the previous engine removed.
 
 WHEN IT FAILS OR IS KILLED. Any failure seen after the exchange exchanges the directories back, puts back
-every file this run replaced and refuses by name; a failed restart also stops the unit, runs the current
+the original record and every unit any run replaced, plus configurations replaced this run, and refuses by name; a failed restart also stops the unit, runs the current
 engine's own restore-owners from its directory beside bin (a current engine that came up rebound the store's
 ownership declarations to its bytes; the restore binds them to the previous engine's again, the store
 checking each file's bytes, and setup never opens the store) and restarts the service once on the previous
@@ -38,7 +38,7 @@ when the step log shows the exchange with no restart after it.
 
 THE STEP LOG. `<home>/state/engine-upgrade.jsonl`, 0600, one line per write after it is made (each is a
 write point): the begin with the installed and current engine digests and the files changed, added and
-removed, the staged engine, the exchange, each unit and configuration write, the record, the restart and
+removed, the staged engine, the prepared original record and units, the exchange, each unit and configuration write, the record, the restart and
 its outcome, a switch back with its reason and its ownership restore, the removal of the previous engine and
 the commit (the running service asked to drop its record of the previous ownership bindings). Never a key,
 a token or a store row. Standard library only.
@@ -314,9 +314,6 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
               'changed': plan['changed'], 'added': plan['added'], 'removed': plan['removed']}
     pending = recovery(plan['log'])
     active = is_active(unit)
-    if pending['back']:
-        finish_switch_back(plan, runner, answers)
-        active = is_active(unit)
     active = active or (plan['restart_due'] and pending['active'])
     if plan['state'] == 'current' and not plan['restart_due'] and not plan['stage_left']:
         return dict(report, outcome='already_done', changed=[], added=[], removed=[], previous=plan['current_digest'])
@@ -332,6 +329,9 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
     point(log, {'point': 'begin', 'state': plan['state'], 'installed': plan['previous_digest'],
                 'current_engine': plan['current_digest'], 'changed': plan['changed'], 'added': plan['added'],
                 'removed': plan['removed']})
+    if pending['back']:
+        finish_switch_back(plan, runner, answers)
+        active = is_active(unit)
     if plan['state'] == 'upgrade':
         if plan['stage_left']:
             # A staged engine an interrupted run left: removed, and the upgrade starts again.

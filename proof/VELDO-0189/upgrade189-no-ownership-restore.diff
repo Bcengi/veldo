@@ -1,5 +1,5 @@
 --- a/.veldo/control_factory_setup_upgrade.py
 +++ b/.veldo/control_factory_setup_upgrade.py
-@@ -395 +395 @@
--        point(plan['log'], {'point': 'ownership_restore', 'outcome': restore_ownership(plan)})
-+        point(plan['log'], {'point': 'ownership_restore', 'outcome': 'restored'})  # defect: the switch back skips the restore
+@@ -428 +428 @@
+-    outcome = restore_ownership(plan)
++    outcome = 'restored'  # defect: the switch back skips the restore

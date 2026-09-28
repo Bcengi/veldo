@@ -1,5 +1,5 @@
 --- a/.veldo/control_factory_setup_upgrade.py
 +++ b/.veldo/control_factory_setup_upgrade.py
-@@ -350 +350 @@
+@@ -377 +377 @@
 -        if switched:
 +        if False:  # defect: a failure after the exchange leaves the current engine installed

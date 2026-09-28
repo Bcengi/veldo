@@ -1,5 +1,5 @@
 --- a/.veldo/control_factory_setup_upgrade.py
 +++ b/.veldo/control_factory_setup_upgrade.py
-@@ -307 +307 @@
+@@ -325 +325 @@
 -        probe(plan['home'])
 +        pass  # defect: the filesystem is not probed before the first write

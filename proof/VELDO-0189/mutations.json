@@ -1,1740 +1,295 @@
 {
- "all_by_assertion": true,
- "all_named_rows_red": true,
- "baseline": {
-  "details": [],
-  "failed_rows": [],
-  "preamble_rows": 26,
-  "rows": [
-   [
-    "VELDO-0189 install/assets",
-    true
-   ],
-   [
-    "VELDO-0189 upgrade/from-8bc34e94",
-    true
-   ],
-   [
-    "VELDO-0189 upgrade/from-971186ac",
-    true
-   ],
-   [
-    "VELDO-0189 upgrade/removed-module",
-    true
-   ],
-   [
-    "VELDO-0189 upgrade/census",
-    true
-   ],
-   [
-    "VELDO-0189 upgrade/refused-by-name",
-    true
-   ],
-   [
-    "VELDO-0189 switch/kill-points",
-    true
-   ],
-   [
-    "VELDO-0189 switch/failed-restart",
-    true
-   ],
-   [
-    "VELDO-0189 kept/owner-data",
-    true
-   ],
-   [
-    "VELDO-0189 announce/before-first-write",
-    true
-   ],
-   [
-    "VELDO-0189 restart/rules",
-    true
-   ],
-   [
-    "VELDO-0189 second-run/changes-nothing",
-    true
-   ],
-   [
-    "VELDO-0189 switch/failed-after-start",
-    true
-   ],
-   [
-    "VELDO-0189 ownership/restore-differs",
-    true
-   ],
-   [
-    "VELDO-0189 ownership/committed",
-    true
-   ]
-  ],
-  "seconds": 129.059
- },
- "controls_green": true,
+ "finding": 189,
  "mutants": [
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 upgrade/from-8bc34e94 detail: the upgraded engine directory holds control_client_api.py, the API process the older engine lacked",
-    "VELDO-0189 upgrade/from-8bc34e94 detail: 8bc34e94: the installed engine directory equals the fresh one in names, bytes and modes [missing ['accounts.py', 'control_account_limit.py', 'control_account_pool.py', 'control_accounts.py'], extra [], differing []]",
-    "VELDO-0189 upgrade/from-971186ac detail: the re-run with the same arguments over the 971186ac host is accepted and upgrades its engine [refused unavailable_service:authority:upgrade_start]",
-    "VELDO-0189 upgrade/from-971186ac detail: the upgraded engine directory holds control_client_api.py, the API process the older engine lacked",
-    "VELDO-0189 upgrade/from-971186ac detail: 971186ac: the installed engine directory equals the fresh one in names, bytes and modes [missing ['control_account_limit.py', 'control_account_pool.py', 'control_api.py', 'control_client_api.py'], extra [], differing ['control_accounts.py', 'control_api_assertion.py', 'control_api_authority.py', 'control_api_models.py']]",
-    "VELDO-0189 upgrade/from-971186ac detail: 971186ac: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/receiver-@RECEIVER@.json: ['host_trust']\"]]",
-    "VELDO-0189 upgrade/from-971186ac detail: the record names the current engine: its closure and template are the fresh host's",
-    "VELDO-0189 upgrade/from-971186ac detail: nothing of the switch is left beside the engine directory [['bin', 'bin.upgrade', 'config', 'state']]",
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'switched_back', 'ownership_restore', 'restart']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused unavailable_service:authority:upgrade_start; the service's channel {'available': True}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the installed engine directory equals the fresh one in names, bytes and modes [missing ['accounts.py', 'control_account_limit.py', 'control_account_pool.py', 'control_accounts.py'], extra [], differing ['control_api_assertion.py', 'control_api_authority.py', 'control_api_models.py', 'control_assignment.py']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/receiver-@RECEIVER@.json: ['host_trust']\"]]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): the service was restarted once across the killed run and the second [2]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
-    "VELDO-0189 announce/before-first-write detail: 971186ac: the engine_upgrade step names the previous and current engine digests and the files changed, added and removed [0 0 0]",
-    "VELDO-0189 restart/rules detail: with the authority unit active, setup restarted it once through systemctl and nothing else [[['restart', 'veldo-authority-01475007edf240fa.service'], ['stop', 'veldo-authority-01475007edf240fa.service'], ['restart', 'veldo-authority-01475007edf240fa.service']]]",
-    "VELDO-0189 second-run/changes-nothing detail: the second run is accepted, its engine_upgrade already done [refused None]",
-    "VELDO-0189 second-run/changes-nothing detail: the invocation log shows no restart, start or stop [[['restart', 'veldo-authority-01475007edf240fa.service'], ['stop', 'veldo-authority-01475007edf240fa.service'], ['restart', 'veldo-authority-01475007edf240fa.service']]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: setup refused by name after the restart came up and failed [1 unavailable_service:authority:upgrade_start; came up [None]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the current engine came up and rebound the 2 declarations of the owning modules it changed, and the switch back restored exactly those [[] []]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the step log records the switch back and the restore before the previous engine's restart [[('record', None), ('switched_back', None), ('ownership_restore', 'failed:exit_1'), ('restart', 'previous_engine_restarted')]]",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: setup refused by name after the restart came up and failed [1 unavailable_service:authority:upgrade_start; came up [None]]",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the step log records the switch back and the restore before the previous engine's restart [[('record', None), ('switched_back', None), ('ownership_restore', 'failed:exit_1'), ('restart', 'previous_engine_restarted')]]",
-    "VELDO-0189 ownership/committed detail: the upgraded service rebound the declarations of the owning modules the upgrade changed [[]]",
-    "VELDO-0189 ownership/committed detail: the commit dropped exactly the previous bindings that rebinding recorded [[]]",
-    "VELDO-0189 ownership/committed detail: the step log records the commit after the previous engine was removed [['record', 'switched_back', 'ownership_restore', 'restart']]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-only-recorded-names.diff",
-   "failed_rows": [
-    "VELDO-0189 upgrade/from-8bc34e94",
-    "VELDO-0189 upgrade/from-971186ac",
-    "VELDO-0189 switch/kill-points",
-    "VELDO-0189 announce/before-first-write",
-    "VELDO-0189 restart/rules",
-    "VELDO-0189 second-run/changes-nothing",
-    "VELDO-0189 switch/failed-after-start",
-    "VELDO-0189 ownership/committed"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "0f093185a90f6ee39352ae52443cce8bc563b8b781af2dbb90af78eb064dde3f",
+   "mutant_sha256": "471463d94d8beaa2e700948d70797640dc098d1097a699c8d24abb637a6b27f0",
    "name": "upgrade189-only-recorded-names",
-   "named_row_red": true,
    "named_rows": [
     "upgrade/from-8bc34e94"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     false
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     false
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     false
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     false
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     false
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     false
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     false
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     false
-    ]
-   ],
-   "seconds": 60.07,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote): the installed engine directory equals exactly one engine's digests [neither (68 files)]",
-    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote): a second run is accepted [refused invalid_input:install_root:unrecorded:/dev/shm/b189-o6k1paop/install-kill/0b48e465f7961e12/bin/accounts.py; the service's channel {'available': True}]",
-    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote), then run again: the installed engine directory equals the fresh one in names, bytes and modes [missing ['control_account_limit.py', 'control_account_pool.py', 'control_accounts.py', 'control_api.py'], extra [], differing ['control_api_assertion.py', 'control_api_authority.py', 'control_api_models.py', 'control_assignment.py']]",
-    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/receiver-@RECEIVER@.json: ['host_trust']\"]]",
-    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote): the service was restarted once across the killed run and the second [0]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 3",
-    "VELDO-0189 switch/kill-points detail: a kill row ran at every point, at least begin, staged, exchanged, record and restart [['begin', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'exchanged', 'configuration', 'record', 'restart', 'done']]",
-    "VELDO-0189 switch/failed-restart detail: the previous engine is back in bin",
-    "VELDO-0189 switch/failed-restart detail: its record is restored byte for byte",
-    "VELDO-0189 switch/failed-restart detail: the service was restarted once more, on the previous engine, and answers [[['restart', 'veldo-authority-0b48e465f7961e12.service']]]",
-    "VELDO-0189 switch/failed-restart detail: the step log records the switch back with its reason [[]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the previous engine is back in bin and its record restored byte for byte",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the current engine came up and rebound the 2 declarations of the owning modules it changed, and the switch back restored exactly those [[2] []]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the step log records the switch back and the restore before the previous engine's restart [[('wrote', None), ('exchanged', None), ('configuration', None), ('record', None)]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the service was restarted once more, on the previous engine [[['restart', 'veldo-authority-0b48e465f7961e12.service']]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the previous engine's channel is available [{'answer': 'routing:authority_unavailable'}]",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the previous engine is back in bin and its record restored byte for byte",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the step log records the switch back and the restore before the previous engine's restart [[('wrote', None), ('exchanged', None), ('configuration', None), ('record', None)]]",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the service was restarted once more, on the previous engine [[['restart', 'veldo-authority-792b181b43ce2e52.service']]]",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the previous engine's channel is available [{'answer': 'routing:authority_unavailable'}]",
-    "VELDO-0189 ownership/committed detail: the commit dropped exactly the previous bindings that rebinding recorded [[]]",
-    "VELDO-0189 ownership/committed detail: the step log records the commit after the previous engine was removed [['configuration', 'record', 'restart', 'done']]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-in-place-writes.diff",
-   "failed_rows": [
-    "VELDO-0189 switch/kill-points",
-    "VELDO-0189 switch/failed-restart",
-    "VELDO-0189 switch/failed-after-start",
-    "VELDO-0189 ownership/committed"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "4f25d90da932ee5e5a0a871a44500ffe433ca977ab122affa1b076900bdc6b4f",
+   "mutant_sha256": "1aa6298acd67a9a07abba0d6a8490eb47d162b893d6c3a6938980729aff3f136",
    "name": "upgrade189-in-place-writes",
-   "named_row_red": true,
    "named_rows": [
     "switch/kill-points"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     false
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     false
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     false
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     false
-    ]
-   ],
-   "seconds": 65.29,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 upgrade/from-8bc34e94 detail: 8bc34e94: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['adapters']\"]]",
-    "VELDO-0189 upgrade/from-971186ac detail: 971186ac: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['adapters']\"]]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['adapters']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
-    "VELDO-0189 kept/owner-data detail: 8bc34e94: every value in every configuration file under the installation's config directory keeps what was there, the only changes a key the file lacked or held as null and the record's engine keys [['receiver-7e90195525a1c2e0.json:adapters']]",
-    "VELDO-0189 kept/owner-data detail: 8bc34e94: the receiver configuration keeps the owner-set adapters [{}]",
-    "VELDO-0189 kept/owner-data detail: 971186ac: every value in every configuration file under the installation's config directory keeps what was there, the only changes a key the file lacked or held as null and the record's engine keys [['receiver-3ad81cbce869ad3e.json:adapters']]",
-    "VELDO-0189 kept/owner-data detail: 971186ac: the receiver configuration keeps the owner-set adapters [{}]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-configs-written-fresh.diff",
-   "failed_rows": [
-    "VELDO-0189 upgrade/from-8bc34e94",
-    "VELDO-0189 upgrade/from-971186ac",
-    "VELDO-0189 switch/kill-points",
-    "VELDO-0189 kept/owner-data"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "530961109aa1963385eddd0a36f293cf5641cb3562bb269276801a7cb7978689",
+   "mutant_sha256": "af9d6d467adb598126b846d7a1d78a06bca0820c9a1d52939c493d6dce6bbb90",
    "name": "upgrade189-configs-written-fresh",
-   "named_row_red": true,
    "named_rows": [
     "kept/owner-data"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     false
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     false
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     false
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     false
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 62.137,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 switch/kill-points detail: killed at 7 (removed_previous): the service was restarted once across the killed run and the second [2]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 8",
-    "VELDO-0189 second-run/changes-nothing detail: the invocation log shows no restart, start or stop [[['restart', 'veldo-authority-4db07e135b320832.service']]]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-restart-every-run.diff",
-   "failed_rows": [
-    "VELDO-0189 switch/kill-points",
-    "VELDO-0189 second-run/changes-nothing"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "a73266702d350cd6b5db16d701bcd6ad05713fa1b838445b8269cd28920a773c",
+   "mutant_sha256": "85649065078421be89d4ad8ffda1f9aa3d6106d761d1859996a9999ce8d7c408",
    "name": "upgrade189-restart-every-run",
-   "named_row_red": true,
    "named_rows": [
     "second-run/changes-nothing"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     false
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     false
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 113.362,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 upgrade/refused-by-name detail: an installed engine file edited by hand is refused as invalid_input:install_root:differs:/dev/shm/b189-4ti0qjox/install-kill/bf979d82d839c201/bin/control_store.py, writing nothing and printing nothing [0 None ['/dev/shm/b189-4ti0qjox/install-kill/bf979d82d839c201/bin/control_api_assertion.py', '/dev/shm/b189-4ti0qjox/install-kill/bf979d82d839c201/bin/control_api_authority.py', '/dev/shm/b189-4ti0qjox/install-kill/bf979d82d839c201/bin/control_api_models.py']]",
-    "VELDO-0189 upgrade/refused-by-name detail: a file the record does not name is refused as invalid_input:install_root:unrecorded:/dev/shm/b189-4ti0qjox/install-kill/bf979d82d839c201/bin/planted.py, writing nothing and printing nothing [0 None ['/dev/shm/b189-4ti0qjox/install-kill/bf979d82d839c201/bin/control_api_assertion.py', '/dev/shm/b189-4ti0qjox/install-kill/bf979d82d839c201/bin/control_api_authority.py', '/dev/shm/b189-4ti0qjox/install-kill/bf979d82d839c201/bin/control_api_models.py']]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-edited-file-overwritten.diff",
-   "failed_rows": [
-    "VELDO-0189 upgrade/refused-by-name"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "ea22f0b5cfae84e8b2b8adcb308ee0f42c0cb1d481b6faf62ee5309e76e52183",
+   "mutant_sha256": "66c4f5ca42476c2f9955c959939652bced2031f8b633f992255b06c6e8857424",
    "name": "upgrade189-edited-file-overwritten",
-   "named_row_red": true,
    "named_rows": [
     "upgrade/refused-by-name"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     false
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 132.42,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 upgrade/removed-module detail: the removed module is gone from the installed engine and from the record, and the upgrade names it removed [['control_keys_custody.py']]",
-    "VELDO-0189 upgrade/removed-module detail: the installed engine is exactly the fixture engine's files"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-removed-file-kept.diff",
-   "failed_rows": [
-    "VELDO-0189 upgrade/removed-module"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "fb4b526150efba570ba493d54bfb68281897cb848cdd070949ac1d518b157ad4",
+   "mutant_sha256": "219291977b2a0c2a01edbe2df1ca5bb460764f4d33e7eede5d78657d5c6442b8",
    "name": "upgrade189-removed-file-kept",
-   "named_row_red": true,
    "named_rows": [
     "upgrade/removed-module"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     false
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 129.278,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 switch/failed-restart detail: the previous engine is back in bin",
-    "VELDO-0189 switch/failed-restart detail: its record is restored byte for byte",
-    "VELDO-0189 switch/failed-restart detail: the service was restarted once more, on the previous engine, and answers [[['restart', 'veldo-authority-164d27e45bab2c88.service']]]",
-    "VELDO-0189 switch/failed-restart detail: the step log records the switch back with its reason [[]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the previous engine is back in bin and its record restored byte for byte",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the current engine came up and rebound the 2 declarations of the owning modules it changed, and the switch back restored exactly those [[2] []]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the step log records the switch back and the restore before the previous engine's restart [[('staged', None), ('exchanged', None), ('configuration', None), ('record', None)]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the service was restarted once more, on the previous engine [[['restart', 'veldo-authority-164d27e45bab2c88.service']]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the previous engine's channel is available [{'answer': 'routing:authority_unavailable'}]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: no previous binding is left recorded [[('kind', 'channel_activation', '/dev/shm/b189-s24wr3jc/install-kill/164d27e45bab2c88/bin/control_channel_activation.py', 'sha256:0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e'), ('kind', 'channel_qualification', '/dev/shm/b189-s24wr3jc/install-kill/164d27e45bab2c88/bin/control_channel_activation.py', 'sha256:0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e')]]",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the previous engine is back in bin and its record restored byte for byte",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the step log records the switch back and the restore before the previous engine's restart [[('staged', None), ('exchanged', None), ('configuration', None), ('record', None)]]",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the service was restarted once more, on the previous engine [[['restart', 'veldo-authority-752cc8019de31e3e.service']]]",
-    "VELDO-0189 switch/failed-after-start detail: 971186ac: the previous engine's channel is available [{'answer': 'routing:authority_unavailable'}]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-no-switch-back.diff",
-   "failed_rows": [
-    "VELDO-0189 switch/failed-restart",
-    "VELDO-0189 switch/failed-after-start"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "bf5e60bcec951eacd8499faefae7227fdc41c5de2cc4489767b14b8e3d783633",
+   "mutant_sha256": "0c758b68441a7f05c90d7fff6736a892e63171b036bcf4ca2e0072dcbcd77e60",
    "name": "upgrade189-no-switch-back",
-   "named_row_red": true,
    "named_rows": [
     "switch/failed-restart"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     false
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     false
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 127.335,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 upgrade/refused-by-name detail: an install root whose filesystem cannot exchange two directories is refused as unavailable_service:install_root:exchange, writing nothing and printing nothing [1 setup_incomplete:engine_upgrade:OSError ['/dev/shm/b189-xclvfveu/install-kill/7a4e5409ed76ba54/bin.upgrade', '/dev/shm/b189-xclvfveu/install-kill/7a4e5409ed76ba54/bin.upgrade/accounts.py', '/dev/shm/b189-xclvfveu/install-kill/7a4e5409ed76ba54/bin.upgrade/arch.py']]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-no-exchange-probe.diff",
-   "failed_rows": [
-    "VELDO-0189 upgrade/refused-by-name"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "69a5cc273d297f49211bddb44376a6d2d4bac48201667ddfa1cb7d151a0ab61e",
+   "mutant_sha256": "afe244881534be6fe1621864d13507a58d112e3490d76ba208c18467bb449988",
    "name": "upgrade189-no-exchange-probe",
-   "named_row_red": true,
    "named_rows": [
     "upgrade/refused-by-name"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     false
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 127.991,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 install/assets detail: .veldo/control_factory_setup_upgrade.py installed by the scaffold, not claimed as validator substrate"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-module-not-scaffolded.diff",
-   "failed_rows": [
-    "VELDO-0189 install/assets"
-   ],
    "module": ".veldo/init_scaffold.py",
    "mutant_sha256": "a75d208363f825bfff993a5187c9f1ffd951dad9f964651974557663ff7fdcb8",
    "name": "upgrade189-module-not-scaffolded",
-   "named_row_red": true,
    "named_rows": [
     "install/assets"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     false
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 136.882,
-   "source_sha256": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb"
+   "source_sha256": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'committed', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
-    "VELDO-0189 switch/kill-points detail: after the upgrades every ownership declaration naming an installed engine file names the digest the record holds [8 of 8 declarations name one; stale [('channel_activation', 'control_channel_activation.py'), ('channel_qualification', 'control_channel_activation.py')]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the current engine came up and rebound the 2 declarations of the owning modules it changed, and the switch back restored exactly those [[] []]",
-    "VELDO-0189 ownership/committed detail: the upgraded service rebound the declarations of the owning modules the upgrade changed [[]]",
-    "VELDO-0189 ownership/committed detail: the commit dropped exactly the previous bindings that rebinding recorded [[]]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-ownership-not-carried.diff",
-   "failed_rows": [
-    "VELDO-0189 switch/kill-points",
-    "VELDO-0189 switch/failed-after-start",
-    "VELDO-0189 ownership/committed"
-   ],
    "module": ".veldo/control_service.py",
    "mutant_sha256": "3d19bd6e86bd660f1b453971c75eb210a32073bfe79d64187750e9de78fe6eb8",
    "name": "upgrade189-ownership-not-carried",
-   "named_row_red": true,
    "named_rows": [
     "switch/kill-points"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     false
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     false
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     false
-    ]
-   ],
-   "seconds": 65.556,
-   "source_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502"
+   "source_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 switch/kill-points detail: a declaration is not rebound to a digest its file's bytes do not have [[('kind', 'channel_activation', '/dev/shm/b189-g_ywxnsr/install-kill/95ac73e10cc5b01c/bin/control_channel_activation.py', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e', 'sha256:db81b3104e8532b3d8d71b9dfb6bbf8dd1e2a8636d95e7e81db93eb8a8e585cf'), ('kind', 'channel_qualification', '/dev/shm/b189-g_ywxnsr/install-kill/95ac73e10cc5b01c/bin/control_channel_activation.py', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e', 'sha256:db81b3104e8532b3d8d71b9dfb6bbf8dd1e2a8636d95e7e81db93eb8a8e585cf')]]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-rebind-any-digest.diff",
-   "failed_rows": [
-    "VELDO-0189 switch/kill-points"
-   ],
    "module": ".veldo/control_store.py",
-   "mutant_sha256": "1cec4136afd9e54c28bb3cdafb7d862c34ab60c1b7b04118f6e237d3750aa987",
+   "mutant_sha256": "3c55fc7f20678391ecffd3d820103845a9dee0b0ae52b2909c47c97ceec84501",
    "name": "upgrade189-rebind-any-digest",
-   "named_row_red": true,
    "named_rows": [
     "switch/kill-points"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     false
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 136.367,
-   "source_sha256": "c5def9584609ac4700e0587e02df13bda48b9e3d31783620931deabdb307fa77"
+   "source_sha256": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the current engine came up and rebound the 2 declarations of the owning modules it changed, and the switch back restored exactly those [[2] []]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the previous engine's channel is available [{'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: every owned command is available: each of the 8 declarations binds the bytes its file has now, the previous engine's [[('channel_activation', 'control_channel_activation.py'), ('channel_qualification', 'control_channel_activation.py')]]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: no previous binding is left recorded [[('kind', 'channel_activation', '/dev/shm/b189-k3hp855q/install-kill/836504a6343856b4/bin/control_channel_activation.py', 'sha256:0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e'), ('kind', 'channel_qualification', '/dev/shm/b189-k3hp855q/install-kill/836504a6343856b4/bin/control_channel_activation.py', 'sha256:0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e')]]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-no-ownership-restore.diff",
-   "failed_rows": [
-    "VELDO-0189 switch/failed-after-start"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "82404d11ede38a433d26bd73f26c36dd9a755de6fbd1bad99505fcacd9c18afb",
+   "mutant_sha256": "ee20510e87255e27783f8c183b16e13327a1ffa5b2d338dd79737b469c70eebe",
    "name": "upgrade189-no-ownership-restore",
-   "named_row_red": true,
    "named_rows": [
     "switch/failed-after-start"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     false
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 133.44,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the current engine came up and rebound the 2 declarations of the owning modules it changed, and the switch back restored exactly those [[2] []]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the previous engine's channel is available [{'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/failed-after-start detail: 8bc34e94: every owned command is available: each of the 8 declarations binds the bytes its file has now, the previous engine's [[('channel_activation', 'control_channel_activation.py'), ('channel_qualification', 'control_channel_activation.py')]]",
-    "VELDO-0189 ownership/restore-differs detail: the rebinding recorded the previous binding in its transaction and was observed before its commit [[] ['sha256:4b3c595c92af7b611485d99741024e06eb631974213979e84ecba44a84995d4e']]",
-    "VELDO-0189 ownership/restore-differs detail: a restore whose file does not have the previous bytes is refused by name [None]",
-    "VELDO-0189 ownership/restore-differs detail: with the previous bytes back the restore binds the previous digest, clears the record and is observed before its commit [[] ['sha256:4b3c595c92af7b611485d99741024e06eb631974213979e84ecba44a84995d4e']]",
-    "VELDO-0189 ownership/committed detail: the commit dropped exactly the previous bindings that rebinding recorded [[]]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-rebind-not-recorded.diff",
-   "failed_rows": [
-    "VELDO-0189 switch/failed-after-start",
-    "VELDO-0189 ownership/restore-differs",
-    "VELDO-0189 ownership/committed"
-   ],
    "module": ".veldo/control_store.py",
-   "mutant_sha256": "e89b08602ebffbac6d40733cd4f5fa2981ffe83568ad3819f1de0b66381e239a",
+   "mutant_sha256": "84a2a5c1a409355c7d0cf21cefcaf4ec0c39a987e21c20706bbd18b3c348c01a",
    "name": "upgrade189-rebind-not-recorded",
-   "named_row_red": true,
    "named_rows": [
     "switch/failed-after-start"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     false
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     false
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     false
-    ]
-   ],
-   "seconds": 134.32,
-   "source_sha256": "c5def9584609ac4700e0587e02df13bda48b9e3d31783620931deabdb307fa77"
+   "source_sha256": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 ownership/restore-differs detail: a restore whose file does not have the previous bytes is refused by name [None]",
-    "VELDO-0189 ownership/restore-differs detail: the refused restore leaves the new bindings and the record [[]]",
-    "VELDO-0189 ownership/restore-differs detail: with the previous bytes back the restore binds the previous digest, clears the record and is observed before its commit [[] ['sha256:4b3c595c92af7b611485d99741024e06eb631974213979e84ecba44a84995d4e', 'sha256:f80a09ccf51359ccbd2bade8a8dec71434a0da3b4ec302992752a4144aaa5279']]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-restore-any-bytes.diff",
-   "failed_rows": [
-    "VELDO-0189 ownership/restore-differs"
-   ],
    "module": ".veldo/control_store.py",
-   "mutant_sha256": "617bac9c75e829eda2459a2083f30237e2abe63d3619f6eaf1bf6db9a2ba9689",
+   "mutant_sha256": "8ffc4ed338a28db480db83d7a676dca18c2787f67c2a74a9b13bc9b430c8b381",
    "name": "upgrade189-restore-any-bytes",
-   "named_row_red": true,
    "named_rows": [
     "ownership/restore-differs"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     false
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 135.209,
-   "source_sha256": "c5def9584609ac4700e0587e02df13bda48b9e3d31783620931deabdb307fa77"
+   "source_sha256": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
+   "status": "reviewer_pending"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0189 ownership/committed detail: the commit dropped exactly the previous bindings that rebinding recorded [[]]",
-    "VELDO-0189 ownership/committed detail: the step log records the commit after the previous engine was removed [['record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 ownership/committed detail: a committed upgrade has no recorded previous bindings [[('kind', 'channel_activation', '/dev/shm/b189-51kaarcn/install-kill/1696f6cd7af3887d/bin/control_channel_activation.py', 'sha256:0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e'), ('kind', 'channel_qualification', '/dev/shm/b189-51kaarcn/install-kill/1696f6cd7af3887d/bin/control_channel_activation.py', 'sha256:0805be0df736c6a6a410ce78fbb93bc2247fc4ba4a2939becc4cc1cbfaba292e', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e')]]"
-   ],
    "diff": "proof/VELDO-0189/upgrade189-commit-not-sent.diff",
-   "failed_rows": [
-    "VELDO-0189 ownership/committed"
-   ],
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "04e47f42345063e2c84f8a7c33fb601671f37384d0010342f7730543d81ef575",
+   "mutant_sha256": "54809dac9cbf358966c6765819dcd268290584735748c4b351de91360b1b689f",
    "name": "upgrade189-commit-not-sent",
-   "named_row_red": true,
    "named_rows": [
     "ownership/committed"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     false
-    ]
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-last-begin-only.diff",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "mutant_sha256": "07d10198414048372bbdfb9a3a0a5761002dadaaee0bc761396ba669a7ad22d0",
+   "name": "upgrade189-last-begin-only",
+   "named_rows": [
+    "switch/resumed-failure"
    ],
-   "seconds": 128.234,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-resumed-not-switched.diff",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "mutant_sha256": "b4c8db3c7e1752b5f473b1898f05a930ae10afeca0df5f2139baf02f493f35a4",
+   "name": "upgrade189-resumed-not-switched",
+   "named_rows": [
+    "switch/resumed-failure"
+   ],
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-resumed-units-forgotten.diff",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "mutant_sha256": "c2e62eb8da33482b17653648f669ad62483254dd7835a6977579c78ffccbb159",
+   "name": "upgrade189-resumed-units-forgotten",
+   "named_rows": [
+    "switch/resumed-failure"
+   ],
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-switch-back-not-due.diff",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "mutant_sha256": "ecb2240accefead67b07f7e7e9f54ce42eaa98d1434c2ff9b152c63acce6545f",
+   "name": "upgrade189-switch-back-not-due",
+   "named_rows": [
+    "switch/rollback-kills"
+   ],
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-recovery-holds-lock.diff",
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "afd702e74e0591c6fddc4231d3308b8aa6f21ab3ad1df9cdde524f758f82e6e2",
+   "name": "upgrade189-recovery-holds-lock",
+   "named_rows": [
+    "switch/rollback-kills"
+   ],
+   "source_sha256": "fe64f27f643f3bd9874fbe3f24f0b81d8831f3f880967a07ed482cbafb2a3733",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-stop-exit-ignored.diff",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "mutant_sha256": "bbdbb5deab63c988160c1849f7d2b6472e61c054f04338c88153024de26940f1",
+   "name": "upgrade189-stop-exit-ignored",
+   "named_rows": [
+    "switch/stop-refused"
+   ],
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-restore-refusal-unreported.diff",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "mutant_sha256": "2d9de076e024664cff3eb0e8c226b2a625fc5c3e55983ebaa9bd4f03956dab3c",
+   "name": "upgrade189-restore-refusal-unreported",
+   "named_rows": [
+    "ownership/restore-reported"
+   ],
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-restore-only-first-blocker.diff",
+   "module": ".veldo/control_store.py",
+   "mutant_sha256": "6ededa3abe396402de26bad76e4b3fab7d951619a85a04e98b3b44babbec158e",
+   "name": "upgrade189-restore-only-first-blocker",
+   "named_rows": [
+    "ownership/restore-reported"
+   ],
+   "source_sha256": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-serve-keeps-previous-bindings.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "c9d1902e2792ce9207bb7cc58e61676f2e02efa79d1175a3ba4f9d236b710be8",
+   "name": "upgrade189-serve-keeps-previous-bindings",
+   "named_rows": [
+    "ownership/start-drops"
+   ],
+   "source_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-commit-with-previous-engine.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "9599f3110c608a44c0b047f970cf96667e0b0954acd4e59974c0993b788107de",
+   "name": "upgrade189-commit-with-previous-engine",
+   "named_rows": [
+    "ownership/commit-refused"
+   ],
+   "source_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
+   "status": "reviewer_pending"
+  },
+  {
+   "diff": "proof/VELDO-0189/upgrade189-restore-without-stop.diff",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "mutant_sha256": "9262b2f21d05a02470634baec3a475a53ed74e44b09c12b5dee41eb90b5a5c4d",
+   "name": "upgrade189-restore-without-stop",
+   "named_rows": [
+    "switch/stop-before-restore"
+   ],
+   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "status": "reviewer_pending"
   }
  ],
- "mutations_per_row": {
-  "install/assets": [
-   "upgrade189-module-not-scaffolded"
-  ],
-  "kept/owner-data": [
-   "upgrade189-configs-written-fresh"
-  ],
-  "ownership/committed": [
-   "upgrade189-commit-not-sent"
-  ],
-  "ownership/restore-differs": [
-   "upgrade189-restore-any-bytes"
-  ],
-  "second-run/changes-nothing": [
-   "upgrade189-restart-every-run"
-  ],
-  "switch/failed-after-start": [
-   "upgrade189-no-ownership-restore",
-   "upgrade189-rebind-not-recorded"
-  ],
-  "switch/failed-restart": [
-   "upgrade189-no-switch-back"
-  ],
-  "switch/kill-points": [
-   "upgrade189-in-place-writes",
-   "upgrade189-ownership-not-carried",
-   "upgrade189-rebind-any-digest"
-  ],
-  "upgrade/from-8bc34e94": [
-   "upgrade189-only-recorded-names"
-  ],
-  "upgrade/refused-by-name": [
-   "upgrade189-edited-file-overwritten",
-   "upgrade189-no-exchange-probe"
-  ],
-  "upgrade/removed-module": [
-   "upgrade189-removed-file-kept"
-  ]
- },
- "noop": {
-  "control_factory_setup_upgrade.py": {
-   "copy_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 129.765,
-   "source_sha256": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
-  },
-  "control_service.py": {
-   "copy_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 128.859,
-   "source_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502"
-  },
-  "control_store.py": {
-   "copy_sha256": "c5def9584609ac4700e0587e02df13bda48b9e3d31783620931deabdb307fa77",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 129.378,
-   "source_sha256": "c5def9584609ac4700e0587e02df13bda48b9e3d31783620931deabdb307fa77"
-  },
-  "init_scaffold.py": {
-   "copy_sha256": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0189 install/assets",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-8bc34e94",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/from-971186ac",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/removed-module",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/census",
-     true
-    ],
-    [
-     "VELDO-0189 upgrade/refused-by-name",
-     true
-    ],
-    [
-     "VELDO-0189 switch/kill-points",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-restart",
-     true
-    ],
-    [
-     "VELDO-0189 kept/owner-data",
-     true
-    ],
-    [
-     "VELDO-0189 announce/before-first-write",
-     true
-    ],
-    [
-     "VELDO-0189 restart/rules",
-     true
-    ],
-    [
-     "VELDO-0189 second-run/changes-nothing",
-     true
-    ],
-    [
-     "VELDO-0189 switch/failed-after-start",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/restore-differs",
-     true
-    ],
-    [
-     "VELDO-0189 ownership/committed",
-     true
-    ]
-   ],
-   "seconds": 129.437,
-   "source_sha256": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb"
-  }
- },
- "registry": "scripts/check_teeth_mutations.py --finding 189",
- "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 2334.389,
+ "previous_evidence": "proof/VELDO-0189/mutations-before-followup.json",
+ "reason": "The owner reserves mutation execution to the reviewer. Anchors and mutant syntax checked only.",
  "spec_id": "VELDO-0189",
- "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py"
+ "status": "reviewer_pending"
 }

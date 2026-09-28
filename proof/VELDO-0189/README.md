@@ -39,7 +39,7 @@ previous engine, removed.
 every record and unit any run replaced (their original bytes and modes are kept in the prepared step-log entry), plus configurations replaced by this run and refuses by name; a
 failed restart (`unavailable_service:authority:upgrade_start`) also restarts the service once on the
 previous engine, after stopping it and running the current engine's own restore of the ownership
-declarations (below), so a current engine that came up and then failed leaves nothing bound to its bytes. A re-run finds its state from the files alone: `bin` equal to the record with
+declarations (below), so a current engine that came up and then failed leaves nothing bound to its bytes. A re-run finds its state from the files and the step log across every begin: `bin` equal to the record with
 `bin.upgrade` beside it is a staged engine left by an interrupted run, removed before starting again; `bin`
 equal to the current engine with the record not yet rewritten is an upgrade killed after its switch, whose
 writes are finished and whose restart is due; `bin` and the record both current with the step log showing
@@ -239,3 +239,9 @@ The new defect rows are red against the merged pre-fix tree in `red-at-ed93984c.
 already-existing defenses (serve drop, commit refusal and stop before restore) are expected green there;
 their named finding 189 mutations remove those defenses. Mutation execution is reserved to the reviewer
 in this job; new mutation results are marked pending, never inferred from anchor checks.
+
+
+The footprint checker compares this stacked branch with origin/main. VELDO-0189 alone therefore lists
+inherited VELDO-0171 paths; the check with both VELDO-0189 and VELDO-0171 reports none outside. The follow-up
+changes themselves remain entirely within VELDO-0189. `mutations-before-followup.json` retains the earlier
+executed evidence; `mutations.json` lists the current registered mutants as reviewer_pending.

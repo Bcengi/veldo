@@ -1010,6 +1010,10 @@ def _v189_suite():
         # AC2: kill setup at each write point its upgrade's step log names, over the 8bc34e94 host.
         old8 = load('v189_setup_kill', base / ('engine-' + OLDER[0]) / '.veldo' / 'control_factory_setup.py') \
             if (base / ('engine-' + OLDER[0])).is_dir() else None
+        if old8 is not None:
+            # The older installer's real writer lays down a unit whose template differs today.
+            template = base / ('engine-' + OLDER[0]) / '.veldo' / 'services' / 'veldo-authority.service'
+            template.write_text(template.read_text() + '\n# earlier installation template\n')
         kill = Host('kill')
         code, laid = kill.setup(module=old8) if old8 else (None, {})
         if code != 0:
@@ -1304,8 +1308,8 @@ def _v189_suite():
             check(CR, 'setup killed after current service answered', at is not None and killed(at) == -signal.SIGKILL)
             before = recorded_previous(kill)
             reply = kill.send({'operation': CS.OWNERSHIP_COMMIT})
-            check(CR, 'commit refuses while previous engine is installed and keeps all records',
-                  reply.get('accepted') is False and 'previous_engine_installed' in json.dumps(reply)
+            check(CR, 'commit refuses while previous engine is installed and keeps all records [%s]' % reply,
+                  (reply.get('accepted') is False or (reply.get('result') or {}).get('ok') is False) and 'previous_engine_installed' in json.dumps(reply)
                   and before and recorded_previous(kill) == before)
             kill.manager.stop_all()
             # Exercise serve's crash recovery after the real setup writer removed the previous engine.

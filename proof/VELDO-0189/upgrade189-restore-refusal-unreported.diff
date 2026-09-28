@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_upgrade.py
++++ b/.veldo/control_factory_setup_upgrade.py
+@@ -430 +430 @@
+-    if outcome != 'restored':
++    if False:

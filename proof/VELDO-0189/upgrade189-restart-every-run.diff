@@ -1,5 +1,5 @@
 --- a/.veldo/control_factory_setup_upgrade.py
 +++ b/.veldo/control_factory_setup_upgrade.py
-@@ -300,0 +301,2 @@
+@@ -318,0 +319,2 @@
 +        if active:
 +            runner.run(['restart', unit])  # defect: the authority unit restarts on every run

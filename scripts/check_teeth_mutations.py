@@ -9067,6 +9067,9 @@ def cases():
     upgrade('upgrade189-switch-back-not-due', 'control_factory_setup_upgrade.py',
             "            held.update(switched=False, due=True, back=True)\n",
             "            held.update(switched=False, due=False, back=False)\n", 'switch/rollback-kills')
+    upgrade('upgrade189-recovery-holds-lock', 'control_factory_setup.py',
+            "        released = lock is not None and lock != -1 and engine['restart_due']\n",
+            "        released = False\n", 'switch/rollback-kills')
     upgrade('upgrade189-stop-exit-ignored', 'control_factory_setup_upgrade.py',
             "    if code:\n        raise Refused('unavailable_service:authority:upgrade_stop',\n",
             "    if False:\n        raise Refused('unavailable_service:authority:upgrade_stop',\n", 'switch/stop-refused')
