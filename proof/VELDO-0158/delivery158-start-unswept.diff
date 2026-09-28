@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1740 +1740 @@
+-        loop.start()
++        pass  # defect: the service starts without sweeping the run directories

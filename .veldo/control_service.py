@@ -1445,7 +1445,9 @@ class Line:
         # each of its passes (activate), so a second line never writes through the first one's.
         self.registration = S.COMMAND_REGISTRY['subscription_reservation']
         pool = L.D.RES.POOL.Pool({name: {'engine': engine, 'host': host} for name, engine in self.engines.items()})
-        self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool)
+        # VELDO-0158: the Runner removes a run directory its receiver left once the run is gone.
+        self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool,
+                               runs=L.runs_root(receiver), profile=receiver.get('profile'))
 
     def invoke(self, contract):
         """The Runner's receiver: the installed launch receiver of this repository, a separate process."""
@@ -1709,6 +1711,21 @@ class FactoryLoop:
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0}
 
+    def start(self):
+        """The service's start (VELDO-0158): each line's Runner sweeps the run directories left from before, removing
+        every one whose dispatch is settled and whose run the kernel shows gone; one still alive stays until a later
+        pass. Logged (kind `loop`, operation `runs_swept`) with the dispatches whose directories went, never a value."""
+        swept = {}
+        for repository, line in sorted(self.lines.items()):
+            try:
+                swept[repository] = line.runner.sweep_runs()
+            except Exception as error:  # noqa: BLE001 - a sweep that fails keeps the directories, by name
+                swept[repository] = {'refusal': 'unknown_outcome:' + type(error).__name__}
+        with contextlib.suppress(OSError):
+            self.service._log({'kind': 'loop', 'operation': 'runs_swept', 'at': time.time(),
+                               'domain_uuid': self.service.domain, 'swept': swept})
+        return swept
+
     def wake(self, source, detail=None):
         self.wakes.append({'source': source, 'detail': detail, 'at': time.time()})
 
@@ -1780,7 +1797,9 @@ def open_loop(config, service):
     if not config.get('work'):
         return None, None
     try:
-        return FactoryLoop(service, load_work(config['work'])), None
+        loop = FactoryLoop(service, load_work(config['work']))
+        loop.start()
+        return loop, None
     except Refused as error:
         return None, error.code
     except EL.Stopped as error:

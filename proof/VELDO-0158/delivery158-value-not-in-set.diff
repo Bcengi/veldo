@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -266 +266 @@
+-RESOLVERS = [subscription_token, keystore_credentials]
++RESOLVERS = [subscription_token]

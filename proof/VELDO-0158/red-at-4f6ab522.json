@@ -1,0 +1,153 @@
+{
+ "by_assertion": true,
+ "commit": "4f6ab522ef4a14175a7d59733a74a7af6e31066a",
+ "details": [
+  "VELDO-0158 delivery/private-dir-removed detail: a refused launch leaves no run directory [['18e624d3cd68a8cbb4368a678f3365d5', '960d160e106ff3a3144f65d74d8d6541']]",
+  "VELDO-0158 redaction/claude-bare-bearer detail: every occurrence is replaced by the marker naming its kind and no line holds any part of the token [['willowqpm', 'copperqpb', 'summithjr'], 4 lines]",
+  "VELDO-0158 refusal/env-collision detail: CODEX_HOME: the dispatch is refused as invalid_input:mcp_delivery:env_collision:CODEX_HOME [refused credential_unavailable:clash-token]",
+  "VELDO-0158 refusal/env-collision detail: PATH: the dispatch is refused as invalid_input:mcp_delivery:env_collision:PATH [exited None]",
+  "VELDO-0158 refusal/env-collision detail: PATH: the credential was resolved, no engine process started and no run directory is left [[]]",
+  "VELDO-0158 refusal/env-collision detail: PATH: the refusal names the credential and never its value",
+  "VELDO-0158 orphan/run-directory-removed detail: after the orphan release the run is gone and so are its directory and the configuration file holding the value [['dispatch/VELDO-15810/8230c8a644144ee79485493b1dea16c3'] None, dir True, file True]",
+  "VELDO-0158 orphan/start-sweep detail: the service's next start removes the directory left from before and names its dispatch [{'loop': True, 'refusal': None, 'swept': None}, dir True]",
+  "VELDO-0158 orphan/live-run-kept detail: the service's start, its dispatch settled but its run alive, keeps the run's directory [{'loop': True, 'refusal': None, 'swept': None}, alive True, dir True]"
+ ],
+ "failed_rows": [
+  "VELDO-0158 delivery/private-dir-removed",
+  "VELDO-0158 redaction/claude-bare-bearer",
+  "VELDO-0158 refusal/env-collision",
+  "VELDO-0158 orphan/run-directory-removed",
+  "VELDO-0158 orphan/start-sweep",
+  "VELDO-0158 orphan/live-run-kept"
+ ],
+ "modules": {
+  ".veldo/control_credential.py": {
+   "at_commit": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95",
+   "now": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95"
+  },
+  ".veldo/control_credential_delivery.py": {
+   "at_commit": "874e652cad42f95dda5ee3f3a5927630203463a22ea7708d4437aca4e3788b0e",
+   "now": "069ce48a3e56c00d89457b8b0116b68266f64e3db5d080c19a6f6c3c18952849"
+  },
+  ".veldo/control_credential_keystore.py": {
+   "at_commit": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294",
+   "now": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "17d82ed47515637855c80aeb1fa748932811495032a10a414eb79abf926b24a7",
+   "now": "17d82ed47515637855c80aeb1fa748932811495032a10a414eb79abf926b24a7"
+  },
+  ".veldo/control_engine_codex.py": {
+   "at_commit": "fd7e0b0680beec7e19bea812539412310c291548451802772be271c0dd39f12b",
+   "now": "fd7e0b0680beec7e19bea812539412310c291548451802772be271c0dd39f12b"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "584dda8751a398fde887840b5a170812bb1176024b47f25dcad643045a5c74a3",
+   "now": "93b685e89f3acd78f178137457c7b6de634c3574f58b1c22b6de46fe7fc8ddde"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a",
+   "now": "d6e33fa41fb7fbb0599a5bd9bf573854e77fc487658a79e635a55c3eb78e607c"
+  },
+  ".veldo/secretref.py": {
+   "at_commit": "9557b11754c3f24bfd4ebbc6b09f27c702e1f475ba7540018f3a966e3cf82af3",
+   "now": "9557b11754c3f24bfd4ebbc6b09f27c702e1f475ba7540018f3a966e3cf82af3"
+  }
+ },
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0158 delivery/claude-private-file",
+   true
+  ],
+  [
+   "VELDO-0158 delivery/codex-environment",
+   true
+  ],
+  [
+   "VELDO-0158 delivery/command-lines",
+   true
+  ],
+  [
+   "VELDO-0158 delivery/own-server-only",
+   true
+  ],
+  [
+   "VELDO-0158 delivery/not-in-packet-contract-journal",
+   true
+  ],
+  [
+   "VELDO-0158 delivery/private-dir-removed",
+   false
+  ],
+  [
+   "VELDO-0158 delivery/report",
+   true
+  ],
+  [
+   "VELDO-0158 refusal/keystore-locked",
+   true
+  ],
+  [
+   "VELDO-0158 refusal/keystore-unreachable",
+   true
+  ],
+  [
+   "VELDO-0158 refusal/reference-not-found",
+   true
+  ],
+  [
+   "VELDO-0158 refusal/no-credential-launches",
+   true
+  ],
+  [
+   "VELDO-0158 redaction/claude-keystore-value",
+   true
+  ],
+  [
+   "VELDO-0158 redaction/codex-keystore-value",
+   true
+  ],
+  [
+   "VELDO-0158 redaction/per-run-set",
+   true
+  ],
+  [
+   "VELDO-0158 redaction/claude-bare-bearer",
+   false
+  ],
+  [
+   "VELDO-0158 refusal/env-collision",
+   false
+  ],
+  [
+   "VELDO-0158 orphan/run-directory-removed",
+   false
+  ],
+  [
+   "VELDO-0158 orphan/start-sweep",
+   false
+  ],
+  [
+   "VELDO-0158 orphan/live-run-kept",
+   false
+  ],
+  [
+   "VELDO-0158 fixture/route-set",
+   true
+  ],
+  [
+   "VELDO-0158 fixture/control-word",
+   true
+  ],
+  [
+   "VELDO-0158 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 6.44,
+ "spec_id": "VELDO-0158",
+ "suite": "scripts/suites/85_veldo_0158_credential_delivery.py",
+ "tree": "git archive 4f6ab522ef4a14175a7d59733a74a7af6e31066a, unchanged; the current suite file run against it"
+}

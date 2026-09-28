@@ -26,6 +26,9 @@ footprint:
   - "engine/.veldo/control_engine*.py"
   - ".veldo/control_engine*.py"
   - "packs/*/.veldo/control_engine*.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "packs/*/.veldo/control_service.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -170,3 +173,29 @@ have made five criteria. A draft: only the owner marks a specification ready.
 baselines generate the MCP configuration and engine environment AC1 delivers into and whose AC4 gives
 the engine its own runtime directory, and the Notes state the form of the dispatch configuration the
 resolver reads, since VELDO-0127 is built after this specification. Criteria unchanged. A draft.
+
+2026-09-28, implementation on build-veldo-0158: the new control_credential_delivery resolves exactly the
+credential references of the dispatch configuration's `mcp` selections through secretref's keychain scheme,
+immediately before the spawn; the engines' baselines take the resolved servers, Claude Code's generated MCP
+configuration carrying the values in the run's private directory and Codex's `mcp_servers` table naming them
+through `env_vars` and `bearer_token_env_var` (another header through `env_http_headers`) while the engine
+environment carries them. An unresolvable credential refuses the launch as `credential_unavailable:<id>` before
+any engine process; the new `keystore_credentials` resolver adds every resolved value to the run's set. A
+selection on an adapter without an engine or on another host is refused by name (the Mac leg is VELDO-0147).
+Suite 85_veldo_0158_credential_delivery sets credentials and saves servers through the VELDO-0144 API routes and
+drives real contained launches with a generated fake secret-tool; the red record at 7851ae9b, finding 158's six
+mutations and the proof are in proof/VELDO-0158. The footprint's `init_scaffold` installs the new module; no path
+outside the footprint was needed. Criteria and ready status unchanged.
+
+2026-09-28, review fixes on build-veldo-0158: a run directory its receiver left (the receiver died, or the run's group
+could not be emptied), with Claude Code's generated MCP configuration and its values in it, is removed by the Runner
+once the kernel shows the run gone, after VELDO-0154's orphan release and at every sweep, and the authority service's
+start sweeps every run directory whose dispatch is settled and whose run is gone, keeping a live run's until a later
+pass. The Runner takes the receiver's runs root and worker profile, which the service's line passes, so the footprint
+adds control_service. Every engine's run set holds an Authorization-style header's credentials without the scheme, so
+a Claude Code run printing its bearer token alone is redacted. A Codex credential named for a variable the engine
+already has (PATH, HOME, LANG, TERM, or any name the receiver, the adapter, the baseline or the account sets) is refused
+as `invalid_input:mcp_delivery:env_collision:<name>`, never replaces it. Suite 85 adds five rows and finding 158 five
+mutations; the red record at 7851ae9b is regenerated. Criteria and ready status unchanged.
+
+2026-09-28, fix check: a Codex credential named for a VELDO_ variable the launch sets after the baseline (VELDO_DISPATCH_ACCEPTANCE) replaced it. Every VELDO_ name is now the factory's and refused as env_collision, except the engine module's own delivery names (VELDO_MCP_); row case and mutation env-collision-factory-names (finding 158, 12/12).

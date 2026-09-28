@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1006 +1006 @@
+-            shutil.rmtree(run, ignore_errors=True)
++            pass  # defect: the run directory and its generated configuration stay
