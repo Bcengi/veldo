@@ -1324,20 +1324,43 @@ def qualified_baseline(bound, record=None):
     return BASELINE
 
 
-def baseline(bound, run, environment=None, record=None):
-    """{argv, environment, files}: what the run adds after its qualified flags. `run` names the run's own
-    `config` directory, where `files` ({name: bytes}) are written before the spawn and which the
-    generated `--settings` and `--mcp-config` options name."""
+def baseline(bound, run, environment=None, record=None, servers=()):
+    """{argv, environment, files, secrets, routes}: what the run adds after its qualified flags. `run` names the
+    run's own `config` directory, where `files` ({name: bytes}) are written before the spawn and which the
+    generated `--settings` and `--mcp-config` options name. VELDO-0158: `servers` are the dispatch's selected
+    catalog servers with their credentials resolved (control_credential_delivery.resolve); each is an entry of
+    the generated MCP configuration, its credentials' values included, so every value reaches the run through
+    that private file alone (`routes`), never its command line or environment (`secrets` stays empty)."""
     base = bound.get('baseline') if record is None else qualified_baseline(bound, record)
     if base != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
     config = Path(run['config'])
+    mcp = json.loads(json.dumps(base['mcp_config']))
+    routes = []
+    for server in servers or ():
+        mcp['mcpServers'][server['id']] = _mcp_entry(server, routes)
     files = {SETTINGS_FILE: (json.dumps(base['settings'], sort_keys=True) + '\n').encode(),
-             MCP_FILE: (json.dumps(base['mcp_config'], sort_keys=True) + '\n').encode()}
+             MCP_FILE: (json.dumps(mcp, sort_keys=True) + '\n').encode()}
     argv = (list(base['options'][:2]) + [base['settings_option'], str(config / SETTINGS_FILE),
                                          base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:])
             + list(base['stream_options']))
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': files}
+    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'secrets': {}, 'routes': routes}
+
+
+def _mcp_entry(server, routes):
+    """One selected server as the binary's MCP configuration names it (stdio: command, args and env; http:
+    url and headers), each credential's value revealed into it and its route recorded."""
+    def value(field, name, item):
+        if 'literal' in item:
+            return item['literal']
+        routes.append({'credential': item['credential'], 'server': server['id'], 'field': field, 'name': name,
+                       'route': 'private_file'})
+        return item['handle'].reveal()
+    if server['transport'] == 'stdio':
+        return {'type': 'stdio', 'command': server['command'], 'args': list(server['arguments']),
+                'env': {name: value('environment', name, item) for name, item in sorted(server['environment'].items())}}
+    return {'type': 'http', 'url': server['url'],
+            'headers': {name: value('headers', name, item) for name, item in sorted(server['headers'].items())}}
 
 
 class Unresolved(Exception):

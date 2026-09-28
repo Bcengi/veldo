@@ -159,6 +159,18 @@ then by the secret scanner. After each batch the API is hinted with the last seq
 recorded a last hint marks it ended, before the runner is told. The record lives under the configuration's
 `records`, else the factory state root's `records`.
 
+THE CREDENTIALS OF A LINUX RUN (VELDO-0158). A dispatch configuration's `mcp` lists the catalog servers it uses
+(server id and revision, VELDO-0144). Immediately before the spawn the receiver reads each listed revision and
+resolves exactly the credential references its environment and headers hold from the keystore, through secretref's
+keychain scheme (control_credential_delivery); the engine's baseline then delivers them: Claude Code's generated MCP
+configuration, values included, in the run's private configuration directory (0700, removed with the run), or, for
+Codex, the engine environment under the name the server definition gives each, which the generated `mcp_servers`
+table names through `env_vars` or `bearer_token_env_var`. No value is on a command line, in the packet, the contract
+or the journal. A credential that does not resolve (keystore locked or unreachable, a reference naming nothing)
+refuses the launch as `credential_unavailable:<id>` before anything is spawned, and every value resolved enters the
+run's set of resolved values (`keystore_credentials`). The receiver reports the revisions, credential ids and routes
+(`credentials` event), never a value.
+
 THE LAUNCH PIPE (VELDO-0154). The factory loop in the authority service (control_service.FactoryLoop) owns a
 Runner and registers each running dispatch's receiver output, `Launch.fileno()`, in its service loop's poll set.
 `Launch.pump()` takes what the pipe holds without waiting and is true once the run's end is seen: the receiver's
@@ -204,6 +216,7 @@ C = _organ('control_containment')
 HB = _organ('control_heartbeat')
 RT = _organ('control_retirement')
 ER = _organ('control_execution_record')
+DL = _organ('control_credential_delivery')
 # VELDO-0062: the account records (the instance the reservations module reads windows through), the
 # invocation seam and each subscription engine's login and usage reports.
 ACC = D.RES.ACC
@@ -232,11 +245,18 @@ def subscription_token(receiver, contract, adapter, environment):
     return [('subscription_token', receiver.token)] if receiver.token else []
 
 
+def keystore_credentials(receiver, contract, adapter, environment):
+    """VELDO-0158 AC3: every value the receiver resolved from the keystore for this run's selected MCP servers,
+    as resolved and as delivered (a bearer token without its scheme), all of the one kind."""
+    delivered = list(DL.values(receiver.credentials)) + list((receiver.delivered or {}).values())
+    return [(DL.KIND, value) for value in delivered]
+
+
 # VELDO-0141: the credential resolvers of a run, each `resolver(receiver, contract, adapter, environment)` ->
 # [(kind, value)], called once as the worker is spawned (it may deliver its value into the engine's
 # `environment`); every value one returns enters the run's set of resolved values, which the execution
 # record replaces before the secret scanner runs. VELDO-0158 AC3 adds the keystore's.
-RESOLVERS = [subscription_token]
+RESOLVERS = [subscription_token, keystore_credentials]
 
 
 # OS process identity.
@@ -843,6 +863,10 @@ class Receiver:
         self.binding = None
         self.token = None
         self.run = None
+        # VELDO-0158: the selected MCP servers with their credentials resolved just before the spawn, and the
+        # values delivered into the engine environment, by name.
+        self.credentials = None
+        self.delivered = None
         # VELDO-0141: the contract launched, the run's resolved values and its execution record.
         self.contract = None
         self.resolved = None
@@ -992,6 +1016,14 @@ class Receiver:
             if error.settled:
                 self._not_executed()
             self._uncontained(dispatch_id, contract_digest, error)
+            return
+        except DL.Undeliverable as error:
+            # VELDO-0158 AC2: a credential that does not resolve refuses the launch by name before its spawn; the
+            # run never starts without its server.
+            self._not_executed()
+            self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self.emit({'event': 'refused', 'refusal': error.code,
+                       'credentials': DL.report(dispatch_id, self.credentials, refusal=error)})
             return
         except OSError as error:
             self._not_executed()
@@ -1228,7 +1260,12 @@ class Receiver:
         named for the wrapper's strip, and the subscription token of an account configured with one. The
         receiver reports what it added and the names removed, never a value."""
         run = self._run_directories(dispatch_id)
-        extra = self.login['engine'].baseline(self.binding, run, environment)
+        engine = self.login['engine']
+        try:
+            extra = engine.baseline(self.binding, run, environment, servers=self.credentials or ())
+        except engine.Refused as error:
+            # VELDO-0158: a credential the engine cannot be handed (a name two servers claim) is never dropped.
+            raise DL.Undeliverable(error.code, error.code.split(':', 1)[1], 'delivery_failed') from None
         for name, data in sorted(extra['files'].items()):
             with os.fdopen(os.open(os.path.join(run['config'], name), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600),
                            'wb') as handle:
@@ -1247,6 +1284,15 @@ class Receiver:
         own[profile_name] = profile_directory
         if token is not None:
             own[TOKEN_VARIABLE] = token
+        # VELDO-0158 AC1: a credential the engine environment carries (Codex's), under the name its server's
+        # definition gives it; one naming a variable the receiver already sets is refused, never overridden.
+        secrets = extra.get('secrets') or {}
+        taken = sorted(set(secrets) & (set(own) | set(environment) - set(os.environ)))
+        if taken:
+            credential = next(r['credential'] for r in extra['routes'] if r.get('variable') == taken[0])
+            raise DL.Undeliverable('credential_unavailable:' + credential, credential, 'delivery_failed')
+        own.update(secrets)
+        self.delivered = dict(secrets)
         environment[ENGINE_OVERRIDES] = json.dumps(own, sort_keys=True)
         environment[ENGINE_RUNTIME] = run['runtime']
         self.emit({'event': 'baseline', 'baseline': {
@@ -1258,6 +1304,9 @@ class Receiver:
             'removed': sorted((set(n for n in os.environ if n not in environment)
                               | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
                               - set(own))}})
+        if self.credentials:
+            # VELDO-0158: each launch's catalog revisions, resolved credential ids and the route each took.
+            self.emit({'event': 'credentials', 'credentials': DL.report(dispatch_id, self.credentials, extra['routes'])})
         return argv, environment
 
     def _invoke(self, contract, acceptance, adapter):
@@ -1319,6 +1368,8 @@ class Receiver:
         accepted, were recorded before the worker existed. A local adapter's worker is started inside
         its dispatch's own containment group (VELDO-0040); a transport to another host is started as
         configured, and that host's profile contains the engine there."""
+        # VELDO-0158: the dispatch's selected MCP servers and their credentials, resolved immediately before the spawn.
+        self._resolve_credentials(adapter)
         environment = dict(os.environ)
         if self.login is not None:
             # VELDO-0062: the recorded account's own profile, no other profile and no other login in what
@@ -1346,6 +1397,19 @@ class Receiver:
             return self._contained(dispatch_id, argv, environment)
         return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, env=environment, start_new_session=True, close_fds=True)
+
+    def _resolve_credentials(self, adapter):
+        """VELDO-0158 AC1, AC2: the catalog servers the dispatch configuration selects, with their credentials
+        resolved from the keystore through secretref's keychain scheme (control_credential_delivery), just before
+        the spawn. They are delivered only to a Linux engine run, through THE ENGINE PROTOCOL's baseline; a
+        selection for any other adapter, or a credential that does not resolve, is Undeliverable by name."""
+        self.credentials, self.delivered = [], {}
+        configuration = self.contract['capability']['configuration']
+        if not DL.selections(configuration):
+            return
+        if self.binding is None or adapter.get('identity', 'local') == 'reported':
+            raise DL.Undeliverable('invalid_input:mcp_delivery:' + str(self.contract['capability']['adapter']))
+        self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)
 
     def _contained(self, dispatch_id, argv, environment):
         """Start the trusted wrapper inside the dispatch's own containment group with every declared cap

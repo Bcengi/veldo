@@ -250,6 +250,8 @@ _FILES = [
     ".veldo/control_mcp_catalog.py",
     ".veldo/control_credential.py",
     ".veldo/control_credential_keystore.py",
+    # VELDO-0158: each Linux run's credentials, resolved from the keystore by the launch receiver.
+    ".veldo/control_credential_delivery.py",
     ".veldo/secretref.py",
     ".veldo/control_api.py",
     ".veldo/control_api_assertion.py",
