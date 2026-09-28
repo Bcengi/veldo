@@ -1,5 +1,5 @@
 {
- "all_by_assertion": false,
+ "all_by_assertion": true,
  "all_named_rows_red": true,
  "baseline": {
   "details": [],
@@ -79,12 +79,12 @@
     true
    ]
   ],
-  "seconds": 27.069
+  "seconds": 27.592
  },
  "controls_green": true,
  "mutants": [
   {
-   "by_assertion": false,
+   "by_assertion": true,
    "details": [
     "VELDO-0171 api-edge/enrolled-by-owner detail: the enrolled record is those keys, for the api edge principal the ingress names [None]",
     "VELDO-0171 api-edge/enrolled-by-owner detail: enrolled by the owner, its possession proof the edge key's own signature over the envelope",
@@ -93,12 +93,12 @@
     "VELDO-0171 api-edge/enrolled-by-owner detail: the key projection is republished with the api edge key",
     "VELDO-0171 api/unit detail: starting the authority unit starts the API unit it wants [active False]",
     "VELDO-0171 rerun/changes-nothing detail: a second run with the same arguments is accepted and reports every step already done [set_up None]",
-    "VELDO-0171 rerun/changes-nothing detail: every file under the state root, install root, unit directory, host trust and workspace binding is byte for byte the same [['/dev/shm/b171-ez__jx6s/state-a/authority/control.sqlite3', '/dev/shm/b171-ez__jx6s/state-a/host/allowed_signers', '/dev/shm/b171-ez__jx6s/state-a/authority/control.sqlite3-shm', '/dev/shm/b171-ez__jx6s/state-a/authority/control.sqlite3-wal']]",
+    "VELDO-0171 rerun/changes-nothing detail: every file under the state root, install root, unit directory, host trust and workspace binding is byte for byte the same [['/dev/shm/b171-1z8x12z8/state-a/authority/control.sqlite3', '/dev/shm/b171-1z8x12z8/state-a/host/allowed_signers', '/dev/shm/b171-1z8x12z8/state-a/authority/control.sqlite3-shm', '/dev/shm/b171-1z8x12z8/state-a/authority/control.sqlite3-wal']]",
     "VELDO-0171 rerun/changes-nothing detail: the journal head is unchanged and it still holds one api edge enrollment [5 6]",
     "VELDO-0171 api-edge/installed-api-call detail: the service runs the API and the installed API process subscribed with a call signed through the protected signer's api purpose [{'available': True, 'subscribers': 0, 'refusal': None}]",
     "VELDO-0171 api-edge/installed-api-call detail: the service accepted the API process's calls [[]]",
     "VELDO-0171 api-edge/installed-api-call detail: a call signed with the enrolled api edge key in the API request namespace is accepted [command_signature_invalid]",
-    "VELDO-0171 api/loopback-only detail: the API process listens on 127.0.0.1:35839 and nowhere else [[]]",
+    "VELDO-0171 api/loopback-only detail: the API process listens on 127.0.0.1:52185 and nowhere else [[]]",
     "VELDO-0171 passkey/first-enrollment detail: two passkeys register through the API with the tailnet name as Host and Origin [no_answer:ConnectionRefusedError no_answer:ConnectionRefusedError]",
     "VELDO-0171 passkey/first-enrollment detail: each registration shows the fingerprint of the key its phone holds",
     "VELDO-0171 passkey/first-enrollment detail: veldo factory passkey lists both, each with its label, fingerprint and principal [[]]",
@@ -108,7 +108,7 @@
     "VELDO-0171 passkey/first-enrollment detail: the other registration cannot sign in [0 no_answer:ConnectionRefusedError]",
     "VELDO-0171 passkey/first-enrollment detail: and it is still the one pending registration [[]]",
     "VELDO-0171 api/content-security-policy detail: every one of the 6 API responses, the 6 ceremony ones among them, carries the policy once [[('POST', '/api/v1/auth/registration/begin', 0), ('POST', '/api/v1/auth/registration/begin', 0), ('POST', '/api/v1/auth/challenge', 0)]]",
-    "VELDO-0171 api/content-security-policy detail: the section ran to its end (it raised ConnectionRefusedError: [Errno 111] Connection refused)"
+    "VELDO-0171 api/content-security-policy detail: the responses http.server writes itself (an unsupported method, a malformed request line) carry it too"
    ],
    "diff": "proof/VELDO-0171/api171-edge-not-enrolled.diff",
    "failed_rows": [
@@ -202,15 +202,15 @@
      true
     ]
    ],
-   "seconds": 45.985,
+   "seconds": 46.577,
    "source_sha256": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0171 tailscale/serve-bg detail: the invocation log shows exactly one `serve --bg --https=443 http://127.0.0.1:54433` [[]]",
-    "VELDO-0171 tailscale/serve-bg detail: no `funnel` invocation [[['funnel', '--bg', '--https=443', 'http://127.0.0.1:54433']]]",
-    "VELDO-0171 tailscale/serve-bg detail: every other invocation is one of the read-only commands [[['funnel', '--bg', '--https=443', 'http://127.0.0.1:54433']]]"
+    "VELDO-0171 tailscale/serve-bg detail: the invocation log shows exactly one `serve --bg --https=443 http://127.0.0.1:36141` [[]]",
+    "VELDO-0171 tailscale/serve-bg detail: no `funnel` invocation [[['funnel', '--bg', '--https=443', 'http://127.0.0.1:36141']]]",
+    "VELDO-0171 tailscale/serve-bg detail: every other invocation is one of the read-only commands [[['funnel', '--bg', '--https=443', 'http://127.0.0.1:36141']]]"
    ],
    "diff": "proof/VELDO-0171/api171-funnel-in-place-of-serve.diff",
    "failed_rows": [
@@ -298,7 +298,7 @@
      true
     ]
    ],
-   "seconds": 27.541,
+   "seconds": 27.037,
    "source_sha256": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
   },
   {
@@ -404,17 +404,17 @@
      true
     ]
    ],
-   "seconds": 26.608,
+   "seconds": 26.553,
    "source_sha256": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0171 rerun/changes-nothing detail: every file under the state root, install root, unit directory, host trust and workspace binding is byte for byte the same [['/dev/shm/b171-lrpd8qkz/state-a/edge/api-auth', '/dev/shm/b171-lrpd8qkz/state-a/edge/api-auth.pub', '/dev/shm/b171-lrpd8qkz/state-a/keys/edge-api', '/dev/shm/b171-lrpd8qkz/state-a/keys/edge-api.pub']]",
+    "VELDO-0171 rerun/changes-nothing detail: every file under the state root, install root, unit directory, host trust and workspace binding is byte for byte the same [['/dev/shm/b171-eely_s_9/state-a/edge/api-auth', '/dev/shm/b171-eely_s_9/state-a/edge/api-auth.pub', '/dev/shm/b171-eely_s_9/state-a/keys/edge-api', '/dev/shm/b171-eely_s_9/state-a/keys/edge-api.pub']]",
     "VELDO-0171 rerun/changes-nothing detail: no key was generated and none changed",
-    "VELDO-0171 rerun/differs-refused detail: api-process.json differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing written [invalid_input:state_root:differs:/dev/shm/b171-lrpd8qkz/state-a/keys/edge-api []]",
-    "VELDO-0171 rerun/differs-refused detail: veldo-api-44e72eaa32e2518a.service differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing written [invalid_input:state_root:differs:/dev/shm/b171-lrpd8qkz/state-a/keys/edge-api []]",
-    "VELDO-0171 api-edge/running-service detail: with the Telegram edge retired and the service running, the edge enrollment setup would write is refused as invalid_input:state_root:service_running:edge_enrollment, writing nothing [accepted invalid_input:state_root:differs:/dev/shm/b171-lrpd8qkz/state-a/keys/edge-api []]",
+    "VELDO-0171 rerun/differs-refused detail: api-process.json differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing written [invalid_input:state_root:differs:/dev/shm/b171-eely_s_9/state-a/keys/edge-api []]",
+    "VELDO-0171 rerun/differs-refused detail: veldo-api-aa5fccbeade470d1.service differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing written [invalid_input:state_root:differs:/dev/shm/b171-eely_s_9/state-a/keys/edge-api []]",
+    "VELDO-0171 api-edge/running-service detail: with the Telegram edge retired and the service running, the edge enrollment setup would write is refused as invalid_input:state_root:service_running:edge_enrollment, writing nothing [accepted invalid_input:state_root:differs:/dev/shm/b171-eely_s_9/state-a/keys/edge-api []]",
     "VELDO-0171 api/start-rules detail: with the installation naming the API and the authority running, setup starts the API unit itself [None done ['show', 'start', 'show']]"
    ],
    "diff": "proof/VELDO-0171/api171-new-key-every-run.diff",
@@ -506,7 +506,7 @@
      false
     ]
    ],
-   "seconds": 47.091,
+   "seconds": 46.552,
    "source_sha256": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e"
   },
   {
@@ -515,8 +515,8 @@
     "VELDO-0171 api-edge/running-service detail: with the Telegram edge retired and the service running, the edge enrollment setup would write is refused as invalid_input:state_root:service_running:edge_enrollment, writing nothing [accepted invalid_input:state_root:holds_store []]",
     "VELDO-0171 api-edge/running-service detail: the api edge enrollment went through the running service [{'outcome': 'done', 'step': 'api_edge_enrollment', 'through_service': False}]",
     "VELDO-0171 api-edge/running-service detail: setup opened no store connection for writing: every one it opened was read-only [['control.sqlite3?mode=ro', 'control.sqlite3']]",
-    "VELDO-0171 api-edge/running-service detail: the journal shows the service committed the enrollment the service accepted [[] ['setup-api-edge-8c0863e8-94fad33e-1']]",
-    "VELDO-0171 api/start-rules detail: it names the one restart command [start it explicitly: systemctl --user start veldo-authority-e8060292a9aea166.service (the API unit veldo-api-e8060292a9aea166.service starts with it)]",
+    "VELDO-0171 api-edge/running-service detail: the journal shows the service committed the enrollment the service accepted [[] ['setup-api-edge-99fd59ec-995899ae-1']]",
+    "VELDO-0171 api/start-rules detail: it names the one restart command [start it explicitly: systemctl --user start veldo-authority-12abb6ffeb843eed.service (the API unit veldo-api-12abb6ffeb843eed.service starts with it)]",
     "VELDO-0171 api/start-rules detail: with the installation naming the API and the authority running, setup starts the API unit itself [None deferred []]"
    ],
    "diff": "proof/VELDO-0171/api171-store-written-while-running.diff",
@@ -606,14 +606,14 @@
      false
     ]
    ],
-   "seconds": 47.017,
+   "seconds": 46.075,
    "source_sha256": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0171 api-edge/running-service detail: setup republished the key projection from the committed store",
-    "VELDO-0171 rerun/over-0139-host detail: the earlier files that changed are only the service configuration and the key projection [['/dev/shm/b171-_8ruxdb6/install-b/e930587d66a83a57/config/service.json']]",
+    "VELDO-0171 rerun/over-0139-host detail: the earlier files that changed are only the service configuration and the key projection [['/dev/shm/b171-4yu9ujaj/install-b/db52d2336cc80604/config/service.json']]",
     "VELDO-0171 api/start-rules detail: after that restart the API unit runs with the authority service [[]]",
     "VELDO-0171 api/start-rules detail: with the installation naming the API and the authority running, setup starts the API unit itself [None done ['show', 'start', 'show']]"
    ],
@@ -705,15 +705,15 @@
      false
     ]
    ],
-   "seconds": 67.005,
+   "seconds": 67.126,
    "source_sha256": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e"
   },
   {
-   "by_assertion": false,
+   "by_assertion": true,
    "details": [
-    "VELDO-0171 api/service-configuration detail: the 0600 veldo.api_process/v1 listens on loopback at the API port [{'host': '0.0.0.0', 'port': 55273}]",
+    "VELDO-0171 api/service-configuration detail: the 0600 veldo.api_process/v1 listens on loopback at the API port [{'host': '0.0.0.0', 'port': 33937}]",
     "VELDO-0171 api/unit detail: starting the authority unit starts the API unit it wants [active False]",
-    "VELDO-0171 api/loopback-only detail: the API process listens on 127.0.0.1:55273 and nowhere else [[]]",
+    "VELDO-0171 api/loopback-only detail: the API process listens on 127.0.0.1:33937 and nowhere else [[]]",
     "VELDO-0171 passkey/first-enrollment detail: two passkeys register through the API with the tailnet name as Host and Origin [no_answer:ConnectionRefusedError no_answer:ConnectionRefusedError]",
     "VELDO-0171 passkey/first-enrollment detail: each registration shows the fingerprint of the key its phone holds",
     "VELDO-0171 passkey/first-enrollment detail: veldo factory passkey lists both, each with its label, fingerprint and principal [[]]",
@@ -723,7 +723,7 @@
     "VELDO-0171 passkey/first-enrollment detail: the other registration cannot sign in [0 no_answer:ConnectionRefusedError]",
     "VELDO-0171 passkey/first-enrollment detail: and it is still the one pending registration [[]]",
     "VELDO-0171 api/content-security-policy detail: every one of the 6 API responses, the 6 ceremony ones among them, carries the policy once [[('POST', '/api/v1/auth/registration/begin', 0), ('POST', '/api/v1/auth/registration/begin', 0), ('POST', '/api/v1/auth/challenge', 0)]]",
-    "VELDO-0171 api/content-security-policy detail: the section ran to its end (it raised ConnectionRefusedError: [Errno 111] Connection refused)",
+    "VELDO-0171 api/content-security-policy detail: the responses http.server writes itself (an unsupported method, a malformed request line) carry it too",
     "VELDO-0171 api/start-rules detail: after that restart the API unit runs with the authority service [[]]",
     "VELDO-0171 api/start-rules detail: with the installation naming the API and the authority running, setup starts the API unit itself [None done ['show', 'start', 'show']]"
    ],
@@ -818,14 +818,14 @@
      false
     ]
    ],
-   "seconds": 85.567,
+   "seconds": 86.585,
    "source_sha256": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0171 tailscale/refusals detail: operator: refused as unavailable_service:tailscale:operator, writing nothing [setup_incomplete:tailscale_serve:unavailable_service:tailscale ['/dev/shm/b171-0v27or2j/clone-t/.git/veldo', '/dev/shm/b171-0v27or2j/clone-t/.git/veldo/control', '/dev/shm/b171-0v27or2j/clone-t/.git/veldo/control/clone_uuid']]",
-    "VELDO-0171 tailscale/refusals detail: operator: only read-only commands ran [[['status', '--json'], ['debug', 'prefs'], ['serve', '--help'], ['serve', 'status', '--json'], ['serve', '--bg', '--https=443', 'http://127.0.0.1:34993']]]",
+    "VELDO-0171 tailscale/refusals detail: operator: refused as unavailable_service:tailscale:operator, writing nothing [setup_incomplete:tailscale_serve:unavailable_service:tailscale ['/dev/shm/b171-gji892kx/clone-t/.git/veldo', '/dev/shm/b171-gji892kx/clone-t/.git/veldo/control', '/dev/shm/b171-gji892kx/clone-t/.git/veldo/control/clone_uuid']]",
+    "VELDO-0171 tailscale/refusals detail: operator: only read-only commands ran [[['status', '--json'], ['debug', 'prefs'], ['serve', '--help'], ['serve', 'status', '--json'], ['serve', '--bg', '--https=443', 'http://127.0.0.1:56769']]]",
     "VELDO-0171 tailscale/refusals detail: https: refused as unavailable_service:tailscale:https, writing nothing [invalid_input:host_trust:exists []]",
     "VELDO-0171 tailscale/refusals detail: https: only read-only commands ran [[]]",
     "VELDO-0171 tailscale/refusals detail: persistence: refused as unavailable_service:tailscale:persistence, writing nothing [invalid_input:host_trust:exists []]",
@@ -922,7 +922,7 @@
      true
     ]
    ],
-   "seconds": 29.068,
+   "seconds": 29.587,
    "source_sha256": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
   },
   {
@@ -1016,19 +1016,19 @@
      true
     ]
    ],
-   "seconds": 27.085,
+   "seconds": 27.579,
    "source_sha256": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
   },
   {
-   "by_assertion": false,
+   "by_assertion": true,
    "details": [
     "VELDO-0171 install/assets detail: the API process is an entry point of the installed fixed executable",
-    "VELDO-0171 api/unit detail: the section ran to its end (it raised FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/b171-1tngqxl7/install-a/1fe96cf9591e8ad5/bin/control_client_api.py')",
+    "VELDO-0171 api/unit detail: it runs the installation's own API process on its configuration [/usr/bin/python3.12 -B /dev/shm/b171-odfa38ty/install-a/86908e4b7560a27b/bin/control_client_api.py serve /dev/shm/b171-odfa38ty/install-a/86908e4b7560a27b/config/api-process.json]",
     "VELDO-0171 api/unit detail: starting the authority unit starts the API unit it wants [active False]",
     "VELDO-0171 rerun/changes-nothing detail: a second run with the same arguments is accepted and reports every step already done [refused unavailable_service:api:not_installed]",
     "VELDO-0171 api-edge/installed-api-call detail: the service runs the API and the installed API process subscribed with a call signed through the protected signer's api purpose [{'available': True, 'subscribers': 0, 'refusal': None}]",
     "VELDO-0171 api-edge/installed-api-call detail: the service accepted the API process's calls [[]]",
-    "VELDO-0171 api/loopback-only detail: the API process listens on 127.0.0.1:34573 and nowhere else [[]]",
+    "VELDO-0171 api/loopback-only detail: the API process listens on 127.0.0.1:53251 and nowhere else [[]]",
     "VELDO-0171 passkey/first-enrollment detail: two passkeys register through the API with the tailnet name as Host and Origin [no_answer:ConnectionRefusedError no_answer:ConnectionRefusedError]",
     "VELDO-0171 passkey/first-enrollment detail: each registration shows the fingerprint of the key its phone holds",
     "VELDO-0171 passkey/first-enrollment detail: veldo factory passkey lists both, each with its label, fingerprint and principal [[]]",
@@ -1038,7 +1038,7 @@
     "VELDO-0171 passkey/first-enrollment detail: the other registration cannot sign in [0 no_answer:ConnectionRefusedError]",
     "VELDO-0171 passkey/first-enrollment detail: and it is still the one pending registration [[]]",
     "VELDO-0171 api/content-security-policy detail: every one of the 6 API responses, the 6 ceremony ones among them, carries the policy once [[('POST', '/api/v1/auth/registration/begin', 0), ('POST', '/api/v1/auth/registration/begin', 0), ('POST', '/api/v1/auth/challenge', 0)]]",
-    "VELDO-0171 api/content-security-policy detail: the section ran to its end (it raised ConnectionRefusedError: [Errno 111] Connection refused)",
+    "VELDO-0171 api/content-security-policy detail: the responses http.server writes itself (an unsupported method, a malformed request line) carry it too",
     "VELDO-0171 api-edge/running-service detail: with the Telegram edge retired and the service running, the edge enrollment setup would write is refused as invalid_input:state_root:service_running:edge_enrollment, writing nothing [accepted unavailable_service:api:not_installed []]",
     "VELDO-0171 api-edge/running-service detail: the run over the running host is accepted [refused unavailable_service:api:not_installed]",
     "VELDO-0171 api-edge/running-service detail: the api edge enrollment went through the running service [None]",
@@ -1046,7 +1046,7 @@
     "VELDO-0171 api-edge/running-service detail: the enrolled api edge is the owner's enrollment of the key setup generated",
     "VELDO-0171 rerun/over-0139-host detail: the earlier files that changed are only the service configuration and the key projection [[]]",
     "VELDO-0171 rerun/over-0139-host detail: the service configuration gained only the api_service key it held as null [None]",
-    "VELDO-0171 rerun/over-0139-host detail: the files it added are exactly the API steps' [['/dev/shm/b171-1tngqxl7/install-b/3c27cbaca3de4e63/config/api-process.json', '/dev/shm/b171-1tngqxl7/install-b/3c27cbaca3de4e63/config/api-service.json', '/dev/shm/b171-1tngqxl7/state-b/edge/api-auth', '/dev/shm/b171-1tngqxl7/state-b/edge/api-auth.pub']]",
+    "VELDO-0171 rerun/over-0139-host detail: the files it added are exactly the API steps' [['/dev/shm/b171-odfa38ty/install-b/48a18d23230f953d/config/api-process.json', '/dev/shm/b171-odfa38ty/install-b/48a18d23230f953d/config/api-service.json', '/dev/shm/b171-odfa38ty/state-b/edge/api-auth', '/dev/shm/b171-odfa38ty/state-b/edge/api-auth.pub']]",
     "VELDO-0171 rerun/over-0139-host detail: every earlier step is reported already done and every API step done [{}]",
     "VELDO-0171 api/start-rules detail: setup started, stopped and restarted nothing [[]]",
     "VELDO-0171 api/start-rules detail: it names the one restart command [None]",
@@ -1148,13 +1148,13 @@
      false
     ]
    ],
-   "seconds": 83.057,
+   "seconds": 83.087,
    "source_sha256": "7172af58e53dedbfa27d4c36837a1d612c8bfff37dba6e2aeceba050a41dab89"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0171 rerun/over-0139-host detail: the files it added are exactly the API steps' [['/dev/shm/b171-1uhs3emr/state-b/api', '/dev/shm/b171-1uhs3emr/state-b/api/hints.sock', '/dev/shm/b171-1uhs3emr/state-b/api/pending']]",
+    "VELDO-0171 rerun/over-0139-host detail: the files it added are exactly the API steps' [['/dev/shm/b171-wachw_kv/state-b/api', '/dev/shm/b171-wachw_kv/state-b/api/hints.sock', '/dev/shm/b171-wachw_kv/state-b/api/pending']]",
     "VELDO-0171 api/start-rules detail: setup started, stopped and restarted nothing [['daemon-reload', 'show', 'start', 'show']]",
     "VELDO-0171 api/start-rules detail: it names the one restart command [None]"
    ],
@@ -1245,7 +1245,7 @@
      false
     ]
    ],
-   "seconds": 27.59,
+   "seconds": 27.574,
    "source_sha256": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e"
   },
   {
@@ -1255,7 +1255,7 @@
     "VELDO-0171 passkey/first-enrollment detail: the owner signs the ONE registration he names, and the running service admits it [refused invalid_input:passkey:ambiguous]",
     "VELDO-0171 passkey/first-enrollment detail: exactly one credential enrollment was committed [0]",
     "VELDO-0171 passkey/first-enrollment detail: he signs in with it and the session names him [401 None]",
-    "VELDO-0171 passkey/first-enrollment detail: and it is still the one pending registration [['tablet', 'phone']]"
+    "VELDO-0171 passkey/first-enrollment detail: and it is still the one pending registration [['phone', 'tablet']]"
    ],
    "diff": "proof/VELDO-0171/api171-fingerprint-ignored.diff",
    "failed_rows": [
@@ -1343,7 +1343,7 @@
      true
     ]
    ],
-   "seconds": 26.942,
+   "seconds": 26.557,
    "source_sha256": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
   },
   {
@@ -1438,7 +1438,7 @@
      true
     ]
    ],
-   "seconds": 27.02,
+   "seconds": 27.528,
    "source_sha256": "d85b6fb7d853247a5a1e2b036691ed71d9fa72af3b41fc32143d678afe268200"
   },
   {
@@ -1532,7 +1532,7 @@
      true
     ]
    ],
-   "seconds": 27.488,
+   "seconds": 27.537,
    "source_sha256": "d85b6fb7d853247a5a1e2b036691ed71d9fa72af3b41fc32143d678afe268200"
   },
   {
@@ -1627,14 +1627,14 @@
      true
     ]
    ],
-   "seconds": 27.991,
+   "seconds": 27.656,
    "source_sha256": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0171 rerun/differs-refused detail: api-process.json differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing written [None []]",
-    "VELDO-0171 rerun/differs-refused detail: veldo-api-f9ebaf6c3465a11e.service differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing written [None []]",
+    "VELDO-0171 rerun/differs-refused detail: veldo-api-8c188f3efb486386.service differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing written [None []]",
     "VELDO-0171 rerun/differs-refused detail: signer.json differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing written [None []]"
    ],
    "diff": "proof/VELDO-0171/api171-differing-file-accepted.diff",
@@ -1723,7 +1723,7 @@
      true
     ]
    ],
-   "seconds": 28.173,
+   "seconds": 27.586,
    "source_sha256": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
   },
   {
@@ -1817,7 +1817,7 @@
      true
     ]
    ],
-   "seconds": 27.472,
+   "seconds": 27.077,
    "source_sha256": "8ec86452cd9799f454db8e46a274c21fb942e03de136cb748fd6cb969d32a833"
   }
  ],
@@ -1948,7 +1948,7 @@
      true
     ]
    ],
-   "seconds": 27.006,
+   "seconds": 28.078,
    "source_sha256": "d85b6fb7d853247a5a1e2b036691ed71d9fa72af3b41fc32143d678afe268200"
   },
   "control_factory_setup.py": {
@@ -2030,7 +2030,7 @@
      true
     ]
    ],
-   "seconds": 26.962,
+   "seconds": 27.952,
    "source_sha256": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e"
   },
   "control_factory_setup_api.py": {
@@ -2112,7 +2112,7 @@
      true
     ]
    ],
-   "seconds": 26.895,
+   "seconds": 28.033,
    "source_sha256": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
   },
   "control_service.py": {
@@ -2194,7 +2194,7 @@
      true
     ]
    ],
-   "seconds": 27.557,
+   "seconds": 28.002,
    "source_sha256": "7172af58e53dedbfa27d4c36837a1d612c8bfff37dba6e2aeceba050a41dab89"
   },
   "init_scaffold.py": {
@@ -2276,13 +2276,13 @@
      true
     ]
    ],
-   "seconds": 27.464,
+   "seconds": 27.609,
    "source_sha256": "8ec86452cd9799f454db8e46a274c21fb942e03de136cb748fd6cb969d32a833"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 171",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 841.653,
+ "serial_seconds": 845.539,
  "spec_id": "VELDO-0171",
  "suite": "scripts/suites/85_veldo_0171_setup_api.py"
 }
