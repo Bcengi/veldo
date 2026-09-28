@@ -40,6 +40,7 @@ def _v154_suite():
     import subprocess
     import sys
     import tempfile
+    import threading
     import time
 
     FORMATS_PATH = Path(globals().get('__suite_file__', str(ROOT / 'scripts' / 'suites' / 'x.py'))).resolve().parents[2] \
@@ -77,11 +78,21 @@ def _v154_suite():
         return module
 
     started = time.monotonic()
+    # THE BUDGET. Every wait of the suite draws on one deadline and has a bound of its own, and once a wait for a
+    # pass the scenario needs returns nothing, every later wait of that instance returns at once: a defect that
+    # stops the loop reds its rows by assertion within seconds, never by raising and never by running to a bound.
+    BUDGET, WAIT = 100.0, 15.0
+    deadline = time.time() + BUDGET
+    # The reset row states the first minute that ends at least this far after its run starts, so the unit waits
+    # longer than every interval the service uses before the reset (Codex states its reset to the minute).
+    LEAD = 7.0
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='v154-', dir=fast))
     run_id = os.urandom(4).hex()
-    service_proc = [None]
+    instances = []
     connections = []
+    watching, watcher = threading.Event(), [None]
+    timing = {}
     try:
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)
@@ -109,7 +120,6 @@ def _v154_suite():
         CODEX = load('v154_codex', mods / 'control_engine_codex.py')
         HOST_ID = 'host-154'
         HOST = socket.gethostname()
-        DOMAIN, STORE, REPO = 'dom154' + run_id, 'store154' + run_id, 'repo154' + run_id
         BUILDER, REVIEWER = 'builder-154', 'reviewer-154'
 
         private = base / 'private'
@@ -142,101 +152,11 @@ def _v154_suite():
         trust_file = trust_dir / 'host_trust.json'
         trust_file.write_text(json.dumps({'schema': EL.HOST_TRUST_SCHEMA, 'host_identity': HOST_ID,
                                           'enrollment_signers': str(signers_file)}))
-        workspace = base / 'clone-a'
-        GP.run(['git', 'init', '-q', str(workspace)], check=True, capture_output=True)
-        (workspace / 'README').write_text('factory loop source\n')
-        GP.run(['git', '-C', str(workspace), 'add', 'README'], check=True, capture_output=True)
-        GP.run(['git', '-C', str(workspace), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'], check=True,
-               capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
-        store_path = base / 'authority' / 'control.sqlite3'
-        binding = E.enroll(str(workspace), DOMAIN, STORE, str(store_path), HOST_ID, 1,
-                           signer(private / 'owner', EL.ENROLLMENT_NAMESPACE), 'owner', 'enrolled', repository_uuid=REPO)
-        verify = EL.HostTrust(HOST_ID, str(signers_file)).verifier('owner', str(workspace))
-        ids = {'domain_uuid': DOMAIN, 'repository_uuid': REPO, 'store_uuid': STORE}
-
-        # The store the service is configured with, set up by the owner before installation.
-        setup = S.open_store(str(store_path))
-        connections.append(setup)
-        setup.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
-                                                     'writes': ('entities', 'journal', 'commands', 'nonces')}
         serial = [0]
 
         def next_id(prefix):
             serial[0] += 1
             return '%s-%s-%d' % (prefix, run_id, serial[0])
-
-        def version_of(identity):
-            row = setup.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
-            return row[0] if row else 0
-
-        def put(identity, kind, data):
-            command = next_id('setup')
-            S.execute(setup, dict(command_id=command, principal='setup', operation='upsert_entity', nonce=command,
-                                  artifact_digests=[], expected_versions={identity: version_of(identity)},
-                                  parameters=dict(entity_id=identity, kind=kind, data=data)), 'setup', journal_sign, 1)
-
-        for who, kind, roles in (('owner', 'person', ['project_owner']), ('authority', 'service', ['reservation_service']),
-                                 ('launch-receiver', 'service', ['reservation_service']), (BUILDER, 'agent_run', []),
-                                 (REVIEWER, 'agent_run', [])):
-            put(who, 'membership', dict(principal_type=kind, roles=roles, scope='*', revoked_at=None, expires_at=None))
-        for who in ('owner', 'authority'):
-            put('key:%s:1' % who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
-
-        # The owner's projects, through VELDO-0076's project service: one active, one paused.
-        projects = PJ.Projects(S, CM, setup, ids, 'setup', journal_sign, stop=lambda dispatch_id, reason: False)
-
-        def project_command(operation, name, **fields):
-            body = dict(ids, operation=operation, project=name, principal='owner', command_id=next_id('pc'),
-                        nonce=next_id('pn'), **fields)
-            return projects.apply({'command': body, 'signature': owner_sign(S.canonical_bytes(body))})
-        activations = {}
-        for name in ('journey', 'halted'):
-            activations[name] = project_command(
-                'activate', name, owner='owner', charter={'purpose': 'Deliver the %s work.' % name, 'exclusions': []},
-                execution_repository=REPO, authority_policy={'grooming': ['project_owner']},
-                coordination_budget={'capacity': 20, 'invocations': 200, 'wall_seconds': 10 ** 6, 'owner_minutes': 60})
-
-        # The owner's Codex accounts, each with its own profile on this host, and the reservation ceilings.
-        reserving = RES.Reservations(S, setup, domain=DOMAIN, repository=REPO, principal='authority',
-                                     authorize=RES.service_authority, signer='authority', sign=journal_sign)
-        BIG = dict(capacity=50, invocations=500, wall_seconds=10 ** 7)
-        helper_root = base / 'helper'
-        ACCOUNTS = ('acct-x1', 'acct-x2', 'acct-x3', 'acct-x4')
-        for account in ACCOUNTS:
-            reserving.configure('policy/' + account, 'account', account, dict(BIG), now=time.time())
-        for name in ('journey', 'halted'):
-            reserving.configure('policy/' + name, 'project', name, dict(BIG), now=time.time())
-
-        def unit(name, project='journey'):
-            put(name, 'execution_unit', dict(state='READY', repository_uuid=REPO, backlog_item_uuid='backlog:' + name,
-                                             requirements=[], eligible_holders=[BUILDER], project=project,
-                                             scope_digest='sha256:scope-' + name, revision=1, depends_on=[],
-                                             producer=BUILDER))
-            put('backlog:' + name, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPO))
-            put('admission:' + name, 'admission', dict(unit=name, state='accepted', scope_digest='sha256:scope-' + name))
-            reserving.configure('policy/' + name, 'unit', name, dict(capacity=10, invocations=50, wall_seconds=10 ** 6),
-                                now=time.time())
-            return name
-
-        def claim(name):
-            """The unit's assignment to the builder: its claim (VELDO-0031), written as the builder holds it."""
-            cid = CLM.claim_id(REPO, name)
-            command = next_id('claim')
-            S.execute(setup, dict(command_id=command, principal=BUILDER, operation='claim_operation', nonce=command,
-                                  artifact_digests=[], expected_versions={name: version_of(name),
-                                                                          'backlog:' + name: version_of('backlog:' + name),
-                                                                          cid: version_of(cid)},
-                                  parameters=dict(action='claim', unit_id=name, backlog_item_uuid='backlog:' + name,
-                                                  claim_id=cid, holder=BUILDER, generation=0, capabilities=[],
-                                                  repository_uuid=REPO)), BUILDER, journal_sign, 1)
-            return name
-
-        U = {key: 'VELDO-9154-' + key for key in ('U1', 'U2', 'UP', 'UX', 'B1', 'B2', 'B3', 'W', 'L1', 'L2', 'L3', 'L4')}
-        for key, name in sorted(U.items()):
-            unit(name, 'halted' if key == 'UP' else 'journey')
-        # The paused project's unit was assigned before its project was paused.
-        claim(U['UP'])
-        paused = project_command('pause', 'halted', reason='owner review', project_version=version_of('project:halted'))
 
         # The fake Codex, laid out as the vendor package and qualified by the production writer.
         markers, gates, scripts = base / 'markers', base / 'gates', base / 'scripts'
@@ -282,20 +202,9 @@ sys.exit(chosen['code'])
         qualification = base / 'codex-qualification.json'
         qualification.write_text(json.dumps(CODEX.qualification(str(vendored))))
 
-        # The installation: its fixed executable, its receiver configuration and the work configuration.
-        install_root, unit_dir = base / 'install', base / 'units'
-        service_id = CS.CC.service_id(binding)
-        installed_bin = install_root / service_id / 'bin'
-        wrapper = [sys.executable, '-B', str(installed_bin / 'control_launch.py'), 'exec']
-        ADAPTERS = {'codex': {'identity': 'reported', 'engine': 'codex', 'environment': {'TZ': 'UTC'},
-                              'executable': str(vendored), 'qualification': str(qualification),
-                              'argv': wrapper + [str(vendored)] + list(CODEX.FLAGS)}}
+        BIG = dict(capacity=50, invocations=500, wall_seconds=10 ** 7)
+        helper_root = base / 'helper'
         ROLE = dict(adapter='codex', configuration={'tools': ['Read', 'Edit']}, seconds=240)
-        WORK = {'schema': 'veldo.factory_work/v1', 'repositories': {REPO: {
-            'builder': dict(ROLE, identity=BUILDER, payload={'task': 'build the unit'}),
-            'reviewers': [dict(ROLE, identity=REVIEWER, payload={'task': 'review the unit'})]}}}
-        work_file = base / 'work.json'
-        work_file.write_text(json.dumps(WORK))
         PROFILE = {'kind': 'linux-systemd', 'slice': 'v154%s.slice' % run_id, 'lock': str(base / 'workers.lock'),
                    'concurrency': 4, 'runtime_seconds': 600, 'memory_bytes': 256 << 20, 'cpu_percent': 100,
                    'file_bytes': 64 << 20, 'tasks_max': 256, 'stop_grace_seconds': 1, 'kill_grace_seconds': 1}
@@ -308,104 +217,262 @@ sys.exit(chosen['code'])
             def run(self, args):
                 self.calls.append(list(args))
                 return 0, '', ''
-        systemd = Recording()
-        installed, install_error = None, None
-        try:
-            installed = CS.install([str(workspace)], host_trust=str(trust_file), key_directory=str(keys),
-                                   install_root=str(install_root), unit_dir=str(unit_dir), profile=PROFILE,
-                                   adapters=ADAPTERS, writable=[str(base / 'work')], runner=systemd,
-                                   work=str(work_file))
-        except Exception as error:  # noqa: BLE001 - a refused installation reds every row by assertion
-            install_error = '%s %s' % (getattr(error, 'code', type(error).__name__), getattr(error, 'detail', error))
-        config = json.loads(Path(installed['config']).read_text()) if installed else {}
-        # The owner registers his accounts with the installed code, which owns the account records from then on
-        # (control_accounts declares them its own, bound to the file that declares them).
-        registered = []
-        if installed is not None:
-            accounts = load('v154_installed_accounts', installed_bin / 'control_accounts.py').Accounts(
-                S, setup, principal='owner', signer='owner', sign=journal_sign)
-            for account in ACCOUNTS:
-                HELPER.account_add(account, root=str(helper_root), provider='codex')
-                fields = HELPER.registration(account, host=HOST, root=str(helper_root))
-                registered.append(accounts.register('register/' + account, fields['account'], fields['provider'],
-                                                    fields['label'], fields['profiles'], concurrency=1, now=time.time()))
-        observations = Path(config.get('observations') or base / 'no-observations.jsonl')
 
-        # -- what the suite reads back, each through a connection or file of its own --------------------------
-        def independent(sql, *params):
-            conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=10)
-            try:
-                return conn.execute(sql, params).fetchall()
-            finally:
-                conn.close()
+        class Instance:
+            """One enrolled clone and the installed authority service over a store of its own, with the owner's
+            projects, his Codex accounts and the units. Two run side by side: the reset row's minute passes in
+            the second while the first runs every other row, and they share no store, account pool, journal or
+            pass log, so neither's passes, accounts or quiet interval are the other's."""
 
-        def entity(identity):
-            found = independent('SELECT kind, data FROM entities WHERE id=?', identity)
-            return {'kind': found[0][0], 'data': json.loads(found[0][1])} if found else None
+            def __init__(self, tag, accounts, units, paused=None):
+                self.tag, self.accounts, self.stalled, self.proc, self.pid, self.booted = tag, tuple(accounts), False, None, None, None
+                self.DOMAIN, self.STORE, self.REPO = ('dom154' + tag + run_id, 'store154' + tag + run_id,
+                                                      'repo154' + tag + run_id)
+                workspace = self.workspace = base / ('clone-' + tag)
+                GP.run(['git', 'init', '-q', str(workspace)], check=True, capture_output=True)
+                (workspace / 'README').write_text('factory loop source\n')
+                GP.run(['git', '-C', str(workspace), 'add', 'README'], check=True, capture_output=True)
+                GP.run(['git', '-C', str(workspace), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'],
+                       check=True, capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+                self.store_path = base / ('authority-' + tag) / 'control.sqlite3'
+                self.binding = E.enroll(str(workspace), self.DOMAIN, self.STORE, str(self.store_path), HOST_ID, 1,
+                                        signer(private / 'owner', EL.ENROLLMENT_NAMESPACE), 'owner', 'enrolled',
+                                        repository_uuid=self.REPO)
+                self.verify = EL.HostTrust(HOST_ID, str(signers_file)).verifier('owner', str(workspace))
+                self.ids = {'domain_uuid': self.DOMAIN, 'repository_uuid': self.REPO, 'store_uuid': self.STORE}
 
-        def dispatches(name=None, station=None):
-            found = [json.loads(data) for (data,) in independent("SELECT data FROM entities WHERE kind='dispatch'")]
-            found = [r for r in found if (name is None or r['contract']['unit'] == name)
-                     and (station is None or r['contract']['station'] == station)]
-            return sorted(found, key=lambda r: (r['contract']['unit'], r['contract']['station'], r['contract']['attempt']))
+                # The store the service is configured with, set up by the owner before installation.
+                setup = self.setup = S.open_store(str(self.store_path))
+                connections.append(setup)
+                setup.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
+                                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
+                for who, kind, roles in (('owner', 'person', ['project_owner']),
+                                         ('authority', 'service', ['reservation_service']),
+                                         ('launch-receiver', 'service', ['reservation_service']),
+                                         (BUILDER, 'agent_run', []), (REVIEWER, 'agent_run', [])):
+                    self.put(who, 'membership', dict(principal_type=kind, roles=roles, scope='*', revoked_at=None,
+                                                     expires_at=None))
+                for who in ('owner', 'authority'):
+                    self.put('key:%s:1' % who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
 
-        def worker_slot(dispatch_id):
-            return (entity(RES.entity('worker', [DOMAIN, dispatch_id])) or {}).get('data') or {}
+                # The owner's projects, through VELDO-0076's project service.
+                self.projects = PJ.Projects(S, CM, setup, self.ids, 'setup', journal_sign,
+                                            stop=lambda dispatch_id, reason: False)
+                names = ['journey'] + ([paused] if paused else [])
+                self.activations = {}
+                for name in names:
+                    self.activations[name] = self.project_command(
+                        'activate', name, owner='owner', charter={'purpose': 'Deliver the %s work.' % name, 'exclusions': []},
+                        execution_repository=self.REPO, authority_policy={'grooming': ['project_owner']},
+                        coordination_budget={'capacity': 20, 'invocations': 200, 'wall_seconds': 10 ** 6, 'owner_minutes': 60})
 
-        def invocation(dispatch_id):
-            return (entity(RES.entity('invocation', [DOMAIN, 'invocation/' + dispatch_id])) or {}).get('data') or {}
+                # The owner's Codex accounts, each with its own profile on this host, and the reservation ceilings.
+                self.reserving = RES.Reservations(S, setup, domain=self.DOMAIN, repository=self.REPO, principal='authority',
+                                                  authorize=RES.service_authority, signer='authority', sign=journal_sign)
+                for account in self.accounts:
+                    self.reserving.configure('policy/' + account, 'account', account, dict(BIG), now=time.time())
+                for name in names:
+                    self.reserving.configure('policy/' + name, 'project', name, dict(BIG), now=time.time())
+                for name, project in units:
+                    self.unit(name, project)
 
-        def assignments():
-            return [json.loads(data) for (data,) in independent("SELECT data FROM entities WHERE kind='assignment'")]
+            # -- the owner's setup writes ----------------------------------------------------------------------
+            def version_of(self, identity):
+                row = self.setup.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+                return row[0] if row else 0
 
-        def passes():
-            found = []
-            try:
-                text = observations.read_text()
-            except OSError:
-                return found
-            for line in text.splitlines():
+            def put(self, identity, kind, data):
+                command = next_id('setup')
+                S.execute(self.setup, dict(command_id=command, principal='setup', operation='upsert_entity', nonce=command,
+                                           artifact_digests=[], expected_versions={identity: self.version_of(identity)},
+                                           parameters=dict(entity_id=identity, kind=kind, data=data)), 'setup', journal_sign, 1)
+
+            def project_command(self, operation, name, **fields):
+                body = dict(self.ids, operation=operation, project=name, principal='owner', command_id=next_id('pc'),
+                            nonce=next_id('pn'), **fields)
+                return self.projects.apply({'command': body, 'signature': owner_sign(S.canonical_bytes(body))})
+
+            def unit(self, name, project='journey'):
+                self.put(name, 'execution_unit', dict(state='READY', repository_uuid=self.REPO,
+                                                      backlog_item_uuid='backlog:' + name, requirements=[],
+                                                      eligible_holders=[BUILDER], project=project,
+                                                      scope_digest='sha256:scope-' + name, revision=1, depends_on=[],
+                                                      producer=BUILDER))
+                self.put('backlog:' + name, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=self.REPO))
+                self.put('admission:' + name, 'admission', dict(unit=name, state='accepted',
+                                                                scope_digest='sha256:scope-' + name))
+                self.reserving.configure('policy/' + name, 'unit', name,
+                                         dict(capacity=10, invocations=50, wall_seconds=10 ** 6), now=time.time())
+                return name
+
+            def claim(self, name):
+                """The unit's assignment to the builder: its claim (VELDO-0031), written as the builder holds it."""
+                cid = CLM.claim_id(self.REPO, name)
+                command = next_id('claim')
+                S.execute(self.setup, dict(command_id=command, principal=BUILDER, operation='claim_operation', nonce=command,
+                                           artifact_digests=[],
+                                           expected_versions={name: self.version_of(name),
+                                                              'backlog:' + name: self.version_of('backlog:' + name),
+                                                              cid: self.version_of(cid)},
+                                           parameters=dict(action='claim', unit_id=name, backlog_item_uuid='backlog:' + name,
+                                                           claim_id=cid, holder=BUILDER, generation=0, capabilities=[],
+                                                           repository_uuid=self.REPO)), BUILDER, journal_sign, 1)
+                return name
+
+            # -- the installation: its fixed executable, its receiver configuration and the work configuration --
+            def install(self):
+                self.install_root, self.unit_dir = base / ('install-' + self.tag), base / ('units-' + self.tag)
+                installed_bin = self.installed_bin = self.install_root / CS.CC.service_id(self.binding) / 'bin'
+                wrapper = [sys.executable, '-B', str(installed_bin / 'control_launch.py'), 'exec']
+                self.ADAPTERS = {'codex': {'identity': 'reported', 'engine': 'codex', 'environment': {'TZ': 'UTC'},
+                                           'executable': str(vendored), 'qualification': str(qualification),
+                                           'argv': wrapper + [str(vendored)] + list(CODEX.FLAGS)}}
+                self.WORK = {'schema': 'veldo.factory_work/v1', 'repositories': {self.REPO: {
+                    'builder': dict(ROLE, identity=BUILDER, payload={'task': 'build the unit'}),
+                    'reviewers': [dict(ROLE, identity=REVIEWER, payload={'task': 'review the unit'})]}}}
+                work_file = base / ('work-%s.json' % self.tag)
+                work_file.write_text(json.dumps(self.WORK))
+                self.PROFILE = dict(PROFILE, slice='v154%s%s.slice' % (self.tag, run_id),
+                                    lock=str(base / ('workers-%s.lock' % self.tag)))
+                self.systemd = Recording()
+                self.installed, self.install_error = None, None
                 try:
-                    seen = json.loads(line)
-                except ValueError:
-                    continue
-                if isinstance(seen, dict) and seen.get('kind') == 'loop' and seen.get('operation') == 'loop_pass':
-                    found.append(seen)
-            return found
+                    self.installed = CS.install([str(self.workspace)], host_trust=str(trust_file), key_directory=str(keys),
+                                                install_root=str(self.install_root), unit_dir=str(self.unit_dir),
+                                                profile=self.PROFILE, adapters=self.ADAPTERS, writable=[str(base / 'work')],
+                                                runner=self.systemd, work=str(work_file))
+                except Exception as error:  # noqa: BLE001 - a refused installation reds every row by assertion
+                    self.install_error = '%s %s' % (getattr(error, 'code', type(error).__name__),
+                                                    getattr(error, 'detail', error))
+                self.config = json.loads(Path(self.installed['config']).read_text()) if self.installed else {}
+                # The owner registers his accounts with the installed code, which owns the account records from
+                # then on (control_accounts declares them its own, bound to the file that declares them).
+                self.registered = []
+                if self.installed is not None:
+                    accounts = load('v154_installed_accounts_' + self.tag, installed_bin / 'control_accounts.py').Accounts(
+                        S, self.setup, principal='owner', signer='owner', sign=journal_sign)
+                    for account in self.accounts:
+                        HELPER.account_add(account, root=str(helper_root), provider='codex')
+                        fields = HELPER.registration(account, host=HOST, root=str(helper_root))
+                        self.registered.append(accounts.register('register/' + account, fields['account'],
+                                                                 fields['provider'], fields['label'], fields['profiles'],
+                                                                 concurrency=1, now=time.time()))
+                self.observations = Path(self.config.get('observations') or base / ('no-observations-%s.jsonl' % self.tag))
 
-        def last_pass():
-            found = passes()
-            return found[-1]['pass'] if found else 0
+            def boot(self):
+                """The installed service: the unit's ExecStart, run on its installed configuration."""
+                if self.installed is not None:
+                    environment = {k: v for k, v in os.environ.items() if k != 'NOTIFY_SOCKET'}
+                    with open(str(base / ('service-%s.err' % self.tag)), 'wb') as err:
+                        self.proc = subprocess.Popen([self.config['python'], self.config['executable'], 'serve',
+                                                      self.installed['config']], stdin=subprocess.DEVNULL,
+                                                     stdout=subprocess.DEVNULL, stderr=err, env=environment)
+                    self.pid = self.proc.pid
+                    self.wait_until(lambda: os.path.exists(self.config['socket']))
+                self.booted = time.time()
 
-        def live():
-            proc = service_proc[0]
-            return proc is not None and proc.poll() is None
+            # -- what the suite reads back, each through a connection or file of its own ----------------------
+            def independent(self, sql, *params):
+                conn = sqlite3.connect('file:%s?mode=ro' % self.store_path, uri=True, timeout=10)
+                try:
+                    return conn.execute(sql, params).fetchall()
+                finally:
+                    conn.close()
 
-        # Every wait of the suite draws on one budget, so a defect that stops the loop ends the run promptly.
-        budget = time.monotonic() + 300
+            def entity(self, identity):
+                found = self.independent('SELECT kind, data FROM entities WHERE id=?', identity)
+                return {'kind': found[0][0], 'data': json.loads(found[0][1])} if found else None
 
-        def bounded(timeout):
-            return max(0.0, min(timeout, budget - time.monotonic())) if live() else 0
+            def dispatches(self, name=None, station=None):
+                found = [json.loads(data) for (data,) in self.independent("SELECT data FROM entities WHERE kind='dispatch'")]
+                found = [r for r in found if (name is None or r['contract']['unit'] == name)
+                         and (station is None or r['contract']['station'] == station)]
+                return sorted(found, key=lambda r: (r['contract']['unit'], r['contract']['station'], r['contract']['attempt']))
 
-        def wait_pass(predicate, after, timeout=30.0):
-            """The first pass numbered after `after` for which `predicate` holds, or None; at once when no service
-            runs, so a tree without this work fails its rows by their assertions, promptly."""
-            end = time.time() + bounded(timeout)
-            while True:
-                for seen in passes():
-                    if seen['pass'] > after and predicate(seen):
-                        return seen
-                if time.time() >= end or not live():
-                    return None
-                time.sleep(0.05)
+            def worker_slot(self, dispatch_id):
+                return (self.entity(RES.entity('worker', [self.DOMAIN, dispatch_id])) or {}).get('data') or {}
 
-        def wait_until(predicate, timeout=30.0):
-            end = time.time() + bounded(timeout)
-            while time.time() < end and live():
+            def invocation(self, dispatch_id):
+                return (self.entity(RES.entity('invocation', [self.DOMAIN, 'invocation/' + dispatch_id])) or {}).get('data') or {}
+
+            def assignments(self):
+                return [json.loads(data) for (data,) in self.independent("SELECT data FROM entities WHERE kind='assignment'")]
+
+            def passes(self):
+                found = []
+                try:
+                    text = self.observations.read_text()
+                except OSError:
+                    return found
+                for line in text.splitlines():
+                    try:
+                        seen = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(seen, dict) and seen.get('kind') == 'loop' and seen.get('operation') == 'loop_pass':
+                        found.append(seen)
+                return found
+
+            def last_pass(self):
+                found = self.passes()
+                return found[-1]['pass'] if found else 0
+
+            def live(self):
+                return self.proc is not None and self.proc.poll() is None
+
+            def bounded(self, timeout):
+                """How long a wait may take: its own bound within the suite's deadline, and nothing once a wait
+                of this instance came back empty or while no service runs."""
+                if self.stalled or not self.live():
+                    return 0.0
+                return max(0.0, min(timeout, deadline - time.time()))
+
+            def wait_pass(self, predicate, after, timeout=WAIT):
+                """The first pass numbered after `after` for which `predicate` holds, or None; at once when no
+                service runs or an earlier wait of this instance came back empty, so a tree without this work
+                fails its rows by their assertions, promptly."""
+                end = time.time() + self.bounded(timeout)
+                while True:
+                    for seen in self.passes():
+                        if seen['pass'] > after and predicate(seen):
+                            return seen
+                    if time.time() >= end or not self.live():
+                        self.stalled = True
+                        return None
+                    time.sleep(0.05)
+
+            def wait_until(self, predicate, timeout=WAIT):
+                end = time.time() + self.bounded(timeout)
+                while time.time() < end and self.live():
+                    if predicate():
+                        return True
+                    time.sleep(0.05)
                 if predicate():
                     return True
-                time.sleep(0.05)
-            return predicate()
+                self.stalled = True
+                return False
+
+            def send(self, payload):
+                try:
+                    return CC.send(str(self.workspace), payload, E, self.verify, owner_sign, HOST_ID,
+                                   timeout=max(1.0, min(30.0, deadline - time.time())))
+                except Exception as error:  # noqa: BLE001 - a refused request is data for the row
+                    return {'refused': getattr(error, 'reason', type(error).__name__)}
+
+            def note(self):
+                """A signed store command through the service that advances the journal: the journal wake."""
+                eid = next_id('note:154')
+                body = dict(command_id=next_id('cmd'), principal='owner', operation='upsert_entity', nonce=next_id('nonce'),
+                            artifact_digests=[], expected_versions={eid: 0},
+                            parameters=dict(entity_id=eid, kind='note', data={'n': serial[0]}), **self.ids)
+                return self.send({'command': body, 'signature': owner_sign(S.canonical_bytes(body))})
+
+            def answer(self, record, ruling):
+                """The owner's signed answer to a loop question, sent through the service (VELDO-0064)."""
+                body = dict(self.ids, operation='answer', alias=record.get('alias'), principal='owner',
+                            command_id=next_id('answer'), nonce=next_id('an'),
+                            request_version=record.get('request_version'), ruling=ruling)
+                return self.send({'command': body, 'signature': owner_sign(S.canonical_bytes(body))})
 
         def dig(value, *keys):
             for key in keys:
@@ -442,26 +509,6 @@ sys.exit(chosen['code'])
             except (OSError, ValueError):
                 return None
             return None
-
-        def send(payload):
-            try:
-                return CC.send(str(workspace), payload, E, verify, owner_sign, HOST_ID, timeout=90)
-            except Exception as error:  # noqa: BLE001 - a refused request is data for the row
-                return {'refused': getattr(error, 'reason', type(error).__name__)}
-
-        def note():
-            """A signed store command through the service that advances the journal: the journal wake."""
-            eid = next_id('note:154')
-            body = dict(command_id=next_id('cmd'), principal='owner', operation='upsert_entity', nonce=next_id('nonce'),
-                        artifact_digests=[], expected_versions={eid: 0},
-                        parameters=dict(entity_id=eid, kind='note', data={'n': serial[0]}), **ids)
-            return send({'command': body, 'signature': owner_sign(S.canonical_bytes(body))})
-
-        def answer(record, ruling):
-            """The owner's signed answer to a loop question, sent through the service (VELDO-0064)."""
-            body = dict(ids, operation='answer', alias=record.get('alias'), principal='owner', command_id=next_id('answer'),
-                        nonce=next_id('an'), request_version=record.get('request_version'), ruling=ruling)
-            return send({'command': body, 'signature': owner_sign(S.canonical_bytes(body))})
 
         def script(name, station, attempts):
             (scripts / ('%s.%s.json' % (name, station))).write_text(json.dumps(attempts))
@@ -520,6 +567,76 @@ sys.exit(chosen['code'])
         def held(name):
             return {'script': [thread(), turn(), {'wait': gate(name)}, done()], 'code': 0}
 
+        U = {key: 'VELDO-9154-' + key for key in ('U1', 'U2', 'UP', 'UX', 'B1', 'B2', 'B3', 'W', 'L1', 'L2', 'L3', 'L4')}
+        # The second instance, built and started first: its one account and the reset row's unit.
+        B = Instance('b', ('acct-y1',), [(U['L4'], 'journey')])
+        instances.append(B)
+        B.install()
+        B.boot()
+        # The first instance: every other row, with the owner's four accounts and one project paused.
+        A = Instance('a', ('acct-x1', 'acct-x2', 'acct-x3', 'acct-x4'),
+                     [(name, 'halted' if key == 'UP' else 'journey') for key, name in sorted(U.items()) if key != 'L4'],
+                     paused='halted')
+        instances.append(A)
+        # The paused project's unit was assigned before its project was paused.
+        A.claim(U['UP'])
+        paused = A.project_command('pause', 'halted', reason='owner review', project_version=A.version_of('project:halted'))
+        A.install()
+        # The rows of the first instance read it through these names.
+        ACCOUNTS, REPO, workspace, setup = A.accounts, A.REPO, A.workspace, A.setup
+        installed, install_error, config, installed_bin, systemd, WORK = (
+            A.installed, A.install_error, A.config, A.installed_bin, A.systemd, A.WORK)
+        claim, dispatches, worker_slot, invocation, assignments, independent = (
+            A.claim, A.dispatches, A.worker_slot, A.invocation, A.assignments, A.independent)
+        passes, last_pass, wait_pass, wait_until, send, note, answer = (
+            A.passes, A.last_pass, A.wait_pass, A.wait_until, A.send, A.note, A.answer)
+
+        # AC1 and AC4, begun first in the second instance so its minute passes while the first runs every other
+        # row: a unit waiting for an account's reported reset wakes a pass at that reset and at no other time.
+        # Nothing starts a pass there while nothing woke its loop, its own start included.
+        time.sleep(max(0.0, B.booted + 1.5 - time.time()))
+        quiet_start_b = B.passes()
+        # The reset is the end of a minute (Codex states its reset to the minute): the first far enough ahead to
+        # watch the service for longer than every interval it uses.
+        reset = end_of_minute(time.time() + LEAD)
+        timing['reset'] = reset - (deadline - BUDGET)
+        script(U['L4'], 'build', [limited(reset - 30), SUCCESS])
+        script(U['L4'], 'review', [SUCCESS])
+        B.claim(U['L4'])
+        mark_b = B.last_pass()
+        B.note()
+        watch = {}
+
+        def watch_reset():
+            """The unit's wait, then the quiet interval up to the reset, watched in full beside the first
+            instance's rows: every pass of this instance, and the service's wakes, until a second before it."""
+            try:
+                waiting = watch['waiting'] = B.wait_pass(
+                    lambda p: bool([w for w in p.get('waiting') or [] if w['unit'] == U['L4']]), mark_b)
+                watch['first_run'] = (B.dispatches(U['L4'], 'build') or [{}])[0]
+                quiet_from = watch['quiet_from'] = B.last_pass()
+                if waiting is None or waiting.get('timer') != reset:
+                    # The quiet interval ends at the wake this pass's timer sets for the reset; with none set there,
+                    # the wait for that wake, and the watch it closes, depend on a pass that cannot come.
+                    B.stalled = True
+                    return
+                switched = switches(B.pid)
+                watched_from = time.time()
+                while time.time() < min(reset - 1.0, deadline) and B.live() and not watching.is_set():
+                    if any(p['pass'] > quiet_from for p in B.passes()):
+                        break  # a pass inside the quiet interval: its check is decided
+                    time.sleep(0.05)
+                watch['quiet'] = [p for p in B.passes() if p['pass'] > quiet_from]
+                watch['watched'] = time.time() - watched_from
+                watch['switched'] = (switches(B.pid) or 0) - (switched or 0)
+            except Exception as exc:  # noqa: BLE001 - reported against the reset rows, never raised
+                watch['error'] = '%s: %s' % (type(exc).__name__, str(exc)[:300])
+        watcher[0] = threading.Thread(target=watch_reset, name='v154-reset-watch', daemon=True)
+        watcher[0].start()
+
+        A.boot()
+        service_pid = A.pid
+
         for key in ('UP', 'UX'):
             script(U[key], 'build', [SUCCESS])
 
@@ -545,20 +662,8 @@ sys.exit(chosen['code'])
                   and [c[0] for c in systemd.calls] == ['daemon-reload'])
             check('install/assets', 'a work configuration naming a repository this instance does not serve is refused '
                   'by name before anything is written',
-                  _refused_install(CS, base, workspace, trust_file, keys, PROFILE, ADAPTERS, WORK, REPO, Recording)
+                  _refused_install(CS, base, workspace, trust_file, keys, A.PROFILE, A.ADAPTERS, WORK, REPO, Recording)
                   == 'invalid_input:work:repository')
-
-        # The installed service: the unit's ExecStart, run on its installed configuration.
-        service_err = base / 'service.err'
-        if installed is not None:
-            environment = {k: v for k, v in os.environ.items() if k != 'NOTIFY_SOCKET'}
-            with open(str(service_err), 'wb') as err:
-                service_proc[0] = subprocess.Popen([config['python'], config['executable'], 'serve', installed['config']],
-                                                   stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=err,
-                                                   env=environment)
-            wait_until(lambda: os.path.exists(config['socket']), 30)
-        service_pid = service_proc[0].pid if service_proc[0] is not None else None
-        booted = time.time()
 
         # AC1: a packet that advanced the journal wakes one pass, which offers every assigned eligible unit.
         phase1 = {}
@@ -567,13 +672,13 @@ sys.exit(chosen['code'])
             script(U['U1'], 'review', [SUCCESS])
             script(U['U2'], 'build', [held('u2-never')])
             # Nothing starts a pass while nothing woke the loop, the service's own start included.
-            time.sleep(1.5)
+            time.sleep(max(0.0, A.booted + 1.5 - time.time()))
             phase1['quiet_start'] = passes()
             claim(U['U1'])
             claim(U['U2'])
             before = last_pass()
             phase1['note'] = note()
-            first = wait_pass(lambda p: True, before, 60)
+            first = wait_pass(lambda p: True, before)
             phase1['first'] = first
             both = offered(first, station='build')
             wanted = {U['U1'], U['U2']}
@@ -603,7 +708,7 @@ sys.exit(chosen['code'])
 
             # The Runner is inside the installed service: its pass log, its principal, its receiver processes.
             u1 = (stored.get(U['U1']) or [{}])[0]
-            wait_until(lambda: (dispatches(U['U1'], 'build') or [{}])[0].get('state') == 'running', 30)
+            wait_until(lambda: (dispatches(U['U1'], 'build') or [{}])[0].get('state') == 'running')
             u1 = (dispatches(U['U1'], 'build') or [{}])[0]
             receiver = u1.get('receiver') or {}
             prepared_by = independent("SELECT principal FROM journal WHERE substr(command_id, 1, ?) = ?",
@@ -626,7 +731,7 @@ sys.exit(chosen['code'])
             # AC1: a build ending on its launch pipe leads to its review being offered with no other input.
             mark = last_pass()
             release('u1')
-            ending = wait_pass(lambda p: bool(ended(p, U['U1'])), mark, 60)
+            ending = wait_pass(lambda p: bool(ended(p, U['U1'])), mark)
             phase1['ending'] = ending
             review = offered(ending, U['U1'], 'review')
             build_record = (dispatches(U['U1'], 'build') or [{}])[0]
@@ -644,7 +749,7 @@ sys.exit(chosen['code'])
             check('loop/review-offered', 'the review is a dispatch in the store [%s]' % [(r['state'], r['contract']['attempt'])
                                                                                        for r in reviews],
                   len(reviews) == 1 and reviews[0]['dispatch_id'] == review[0]['dispatch_id'] if review else False)
-            wait_pass(lambda p: bool([e for e in ended(p, U['U1']) if e['station'] == 'review']), mark, 60)
+            wait_pass(lambda p: bool([e for e in ended(p, U['U1']) if e['station'] == 'review']), mark)
 
         # AC2: a receiver that dies mid-run still wakes the loop; its run is outcome_unknown, its account slot free.
         with region('loop/receiver-death'):
@@ -657,7 +762,7 @@ sys.exit(chosen['code'])
             claim(U['W'])
             mark = last_pass()
             note()
-            filled = wait_pass(lambda p: 'journal' in p['sources'], mark, 60)
+            filled = wait_pass(lambda p: 'journal' in p['sources'], mark)
             victim = (dispatches(U['U2'], 'build') or [{}])[0]
             account = victim.get('contract', {}).get('reservation', {}).get('account')
             waiting = [w for w in (filled or {}).get('waiting') or [] if w['unit'] == U['W']]
@@ -672,7 +777,7 @@ sys.exit(chosen['code'])
                 mark = last_pass()
                 os.kill(receiver['pid'], signal.SIGKILL)
                 killed = True
-            death = wait_pass(lambda p: bool(ended(p, U['U2'])), mark, 60)
+            death = wait_pass(lambda p: bool(ended(p, U['U2'])), mark)
             time.sleep(2.0)
             after = [p for p in passes() if p['pass'] > mark]
             record = (dispatches(U['U2'], 'build') or [{}])[0]
@@ -706,8 +811,8 @@ sys.exit(chosen['code'])
             release('blockers')
             release('w')
             wait_until(lambda: all((dispatches(U[k], 'build') or [{}])[0].get('state') == 'exited'
-                                   for k in ('B1', 'B2', 'B3', 'W')), 60)
-            wait_until(lambda: sum(len(ended(p)) for p in passes() if p['pass'] > mark) >= 4, 30)
+                                   for k in ('B1', 'B2', 'B3', 'W')))
+            wait_until(lambda: sum(len(ended(p)) for p in passes() if p['pass'] > mark) >= 4)
 
         # AC3: a run that ended account_limit is dispatched again on another account, or put to the owner.
         far = time.time() + 3 * 3600
@@ -719,7 +824,7 @@ sys.exit(chosen['code'])
             mark = last_pass()
             note()
             # While the run works, the workspace moves on: a re-run is from the run's own accepted commit, not HEAD.
-            wait_until(lambda: (dispatches(U['L1'], 'build') or [{}])[0].get('state') == 'running', 30)
+            wait_until(lambda: (dispatches(U['L1'], 'build') or [{}])[0].get('state') == 'running')
             (workspace / 'NEWS').write_text('moved on\n')
             GP.run(['git', '-C', str(workspace), 'add', 'NEWS'], check=True, capture_output=True)
             GP.run(['git', '-C', str(workspace), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'moved on'],
@@ -728,7 +833,7 @@ sys.exit(chosen['code'])
                           text=True).stdout.strip()
             mark = last_pass()
             release('l1')
-            decided = wait_pass(lambda p: bool([d for d in p.get('decisions') or [] if d['unit'] == U['L1']]), mark, 60)
+            decided = wait_pass(lambda p: bool([d for d in p.get('decisions') or [] if d['unit'] == U['L1']]), mark)
             first_run = (dispatches(U['L1'], 'build') or [{}])[0]
             first_account = first_run.get('contract', {}).get('reservation', {}).get('account')
             exhausted.append(first_account)
@@ -748,7 +853,7 @@ sys.exit(chosen['code'])
                   and again[0]['account'] in ACCOUNTS and again[0]['account'] != first_account
                   and again[0]['adapter'] == 'codex' and again[0]['commit'] == dig(first_run, 'contract', 'source', 'commit')
                   and again[0]['commit'] != head)
-            wait_until(lambda: [r['state'] for r in dispatches(U['L1'])] == ['exited', 'exited', 'exited'], 60)
+            wait_until(lambda: [r['state'] for r in dispatches(U['L1'])] == ['exited', 'exited', 'exited'])
             reset_at = dig(ACC.read(setup, first_account) if first_account else None, 'windows', 'usage_limit', 'reset_at')
             ended_at = next((h['at'] for h in first_run.get('history') or [] if h.get('state') == 'exited'), None)
             onto = [r for r in dispatches() if r['contract']['reservation']['account'] == first_account
@@ -764,7 +869,7 @@ sys.exit(chosen['code'])
                 claim(U[key])
             mark = last_pass()
             note()
-            wait_until(lambda: len([a for p in passes() if p['pass'] > mark for a in p.get('asked') or []]) >= 2, 60)
+            wait_until(lambda: len([a for p in passes() if p['pass'] > mark for a in p.get('asked') or []]) >= 2)
             asked = [a for p in passes() if p['pass'] > mark for a in p.get('asked') or []]
             runs = {key: (dispatches(U[key], 'build') or [{}])[0] for key in ('L2', 'L3')}
             exhausted += [r.get('contract', {}).get('reservation', {}).get('account') for r in runs.values()]
@@ -786,7 +891,7 @@ sys.exit(chosen['code'])
             # Another wake: still nothing dispatched, and no second question, while he has not answered.
             mark = last_pass()
             note()
-            idle = wait_pass(lambda p: 'journal' in p['sources'], mark, 60)
+            idle = wait_pass(lambda p: 'journal' in p['sources'], mark)
             check('loop/ask-before-rerun', 'no dispatch until he answers: another pass leaves both units awaiting him and '
                   'asks nothing again [%s, %s]' % ((idle or {}).get('awaiting'), [len(dispatches(U[k])) for k in ('L2', 'L3')]),
                   idle is not None and sorted(a['unit'] for a in idle.get('awaiting') or []) == sorted([U['L2'], U['L3']])
@@ -796,7 +901,7 @@ sys.exit(chosen['code'])
             # His yes dispatches it as a re-run would.
             mark = last_pass()
             yes = answer(questions.get(runs['L2'].get('dispatch_id')) or {}, 'rerun')
-            rerun = wait_pass(lambda p: bool(offered(p, U['L2'], 'build')), mark, 60)
+            rerun = wait_pass(lambda p: bool(offered(p, U['L2'], 'build')), mark)
             again = offered(rerun, U['L2'], 'build')
             check('loop/owner-yes-reruns', 'his answer arrived as a signed packet through the service and its pass '
                   'dispatched the same station on another account from the same commit [%s, %s, %s]'
@@ -805,45 +910,35 @@ sys.exit(chosen['code'])
                   and again[0]['rerun_of'] == runs['L2'].get('dispatch_id') and again[0]['attempt'] == 2
                   and again[0]['account'] not in exhausted
                   and again[0]['commit'] == dig(runs['L2'], 'contract', 'source', 'commit'))
-            wait_until(lambda: [r['state'] for r in dispatches(U['L2'])] == ['exited', 'exited', 'exited'], 60)
+            wait_until(lambda: [r['state'] for r in dispatches(U['L2'])] == ['exited', 'exited', 'exited'])
 
             # His no leaves the unit stopped.
             mark = last_pass()
             no = answer(questions.get(runs['L3'].get('dispatch_id')) or {}, 'stop')
-            stop = wait_pass(lambda p: 'journal' in p['sources'], mark, 60)
+            stop = wait_pass(lambda p: 'journal' in p['sources'], mark)
             mark = last_pass()
             note()
-            later = wait_pass(lambda p: 'journal' in p['sources'], mark, 60)
+            later = wait_pass(lambda p: 'journal' in p['sources'], mark)
             check('loop/owner-no-stops', 'his stop leaves the unit stopped, in that pass and the next [%s, %s, %s]'
                   % (no, [s['unit'] for s in (stop or {}).get('stopped') or []], [len(dispatches(U['L3']))]),
                   stop is not None and [s['unit'] for s in stop.get('stopped') or []] == [U['L3']]
                   and later is not None and [s['unit'] for s in later.get('stopped') or []] == [U['L3']]
                   and len(dispatches(U['L3'])) == 1 and not offered(stop, U['L3']) and not offered(later, U['L3']))
 
-        # AC1 and AC4: a unit waiting for an account's reported reset wakes a pass at that reset and at no other time.
+        timing['rows'] = time.monotonic() - started
+        # AC1 and AC4, closed at the end: the second instance's reset wake, and the quiet interval before it.
         with region('loop/reset-timer-wake', 'loop/no-other-timer'):
-            # The reset is the end of a minute (Codex states its reset to the minute): wait for one far enough ahead
-            # to watch the service for longer than every interval it uses.
-            wait_until(lambda: 15 <= end_of_minute(time.time()) - time.time() <= 50, 70)
-            reset = end_of_minute(time.time())
-            script(U['L4'], 'build', [limited(reset - 30), SUCCESS])
-            script(U['L4'], 'review', [SUCCESS])
-            claim(U['L4'])
-            mark = last_pass()
-            note()
-            waiting = wait_pass(lambda p: bool([w for w in p.get('waiting') or [] if w['unit'] == U['L4']]), mark, 60)
-            first_run = (dispatches(U['L4'], 'build') or [{}])[0]
-            quiet_from = last_pass()
-            switched = switches(service_pid) if service_pid else None
-            watched_from = time.time()
-            wait_until(lambda: time.time() >= reset - 1.0, 70)
-            quiet = [p for p in passes() if p['pass'] > quiet_from]
-            watched = time.time() - watched_from
-            switched = (switches(service_pid) or 0) - (switched or 0)
-            woke = wait_pass(lambda p: 'account_reset' in p['sources'], quiet_from, 30)
+            watcher[0].join(max(0.0, deadline - time.time()))
+            if 'error' in watch:
+                raise RuntimeError(watch['error'])
+            waiting, first_run = watch.get('waiting'), watch.get('first_run') or {}
+            quiet_from = watch.get('quiet_from', B.last_pass())
+            quiet, watched, switched = watch.get('quiet', []), watch.get('watched', 0.0), watch.get('switched', 0)
+            woke = B.wait_pass(lambda p: 'account_reset' in p['sources'], quiet_from,
+                               max(0.0, reset - time.time()) + WAIT)
             time.sleep(0.5)
-            resets = [p for p in passes() if p['pass'] > quiet_from and 'account_reset' in p['sources']]
-            between = [p for p in passes() if woke is not None and quiet_from < p['pass'] < woke['pass']]
+            resets = [p for p in B.passes() if p['pass'] > quiet_from and 'account_reset' in p['sources']]
+            between = [p for p in B.passes() if woke is not None and quiet_from < p['pass'] < woke['pass']]
             intervals = (getattr(CS, 'ACCEPT_SECONDS', 0.25), getattr(getattr(CS, 'CH', None), 'POLL_SECONDS', 1.0))
             entry = [w for w in (waiting or {}).get('waiting') or [] if w['unit'] == U['L4']]
             check('loop/reset-timer-wake', 'the unit waits for the account\'s reported reset, and the pass set its timer to '
@@ -864,32 +959,39 @@ sys.exit(chosen['code'])
                   'it [%s, %s]' % ([(p['pass'], p['sources'], round(p['at'] - reset, 3)) for p in resets],
                                    [(p['pass'], p['sources']) for p in between]),
                   woke is not None and resets == [woke] and between == [])
-            check('loop/no-other-timer', 'across the whole run every pass came from a wake source, the service\'s start '
-                  'included none, and the reset timer started only that one [%s]'
-                  % sorted({tuple(p['sources']) for p in passes()}),
-                  phase1.get('quiet_start') == [] and bool(passes())
-                  and all(set(p['sources']) <= {'journal', 'run_end', 'account_reset'} and p['sources'] for p in passes())
-                  and len([p for p in passes() if 'account_reset' in p['sources']]) == 1)
-            wait_until(lambda: [r['state'] for r in dispatches(U['L4'])] == ['exited', 'exited', 'exited'], 60)
+            everything = passes() + B.passes()
+            check('loop/no-other-timer', 'across the whole run of both services every pass came from a wake source, '
+                  'neither service\'s start included, and the reset timer started only that one [%s]'
+                  % sorted({tuple(p['sources']) for p in everything}),
+                  phase1.get('quiet_start') == [] and quiet_start_b == [] and bool(passes()) and bool(B.passes())
+                  and all(set(p['sources']) <= {'journal', 'run_end', 'account_reset'} and p['sources'] for p in everything)
+                  and len([p for p in everything if 'account_reset' in p['sources']]) == 1)
+            B.wait_until(lambda: [r['state'] for r in B.dispatches(U['L4'])] == ['exited', 'exited', 'exited'])
     except Exception as exc:  # noqa: BLE001 - recorded against every row, never raised past the suite
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        watching.set()
         with contextlib.suppress(Exception):
             for name in ('u1', 'u2-never', 'blockers', 'w', 'l1'):
                 (base / 'gates' / name).write_text('go')
-        proc = service_proc[0]
-        if proc is not None and proc.poll() is None:
-            proc.send_signal(signal.SIGTERM)
-            try:
-                proc.wait(timeout=30)
-            except subprocess.TimeoutExpired:
-                proc.kill()
-                proc.wait(timeout=10)
-        with contextlib.suppress(Exception):
-            text = (base / 'service.err').read_text()[-1500:]
-            if text.strip():
-                print('  VELDO-0154 service stderr: %s' % text.replace('\n', ' | '))
+        if watcher[0] is not None:
+            watcher[0].join(10)
+        for one in instances:
+            if one.proc is not None and one.proc.poll() is None:
+                one.proc.send_signal(signal.SIGTERM)
+        for one in instances:
+            proc = one.proc
+            if proc is not None and proc.poll() is None:
+                try:
+                    proc.wait(timeout=30)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait(timeout=10)
+            with contextlib.suppress(Exception):
+                text = (base / ('service-%s.err' % one.tag)).read_text()[-1500:]
+                if text.strip():
+                    print('  VELDO-0154 service %s stderr: %s' % (one.tag, text.replace('\n', ' | ')))
         for conn in connections:
             with contextlib.suppress(Exception):
                 conn.close()
@@ -908,7 +1010,8 @@ sys.exit(chosen['code'])
             if not observed:
                 print('  VELDO-0154 %s detail: no check ran' % name)
         expect('VELDO-0154 ' + name, ok)
-    print('VELDO-0154 suite seconds: %.3f' % (time.monotonic() - started))
+    print('VELDO-0154 suite seconds: %.3f (the first instance\'s rows ended at %s s, the reset came at %s s)'
+          % (time.monotonic() - started, round(timing.get('rows', -1), 1), round(timing.get('reset', -1), 1)))
 
 
 def _refused_install(CS, base, workspace, trust_file, keys, profile, adapters, work, repository, recording):
