@@ -1,0 +1,355 @@
+{
+ "schema": "veldo.codex-tool-investigation/v1",
+ "binary_sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "network": "Each probe used loopback.capture, empty temporary HOME and CODEX_HOME, generated MCP fixture and Landlock TCP restriction.",
+ "model_defaults": {
+  "slug": "gpt-6-astra",
+  "shell_type": "unified_exec",
+  "tool_mode": "code_mode_only",
+  "multi_agent_version": "v2",
+  "experimental_supported_tools": [
+   "send_user_message_async",
+   "clock"
+  ]
+ },
+ "probes": [
+  {
+   "name": "code-mode",
+   "overrides": {
+    "features.code_mode": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "0f85c835ebf773d9ab2efd13360188d919951db76f28bf657f9b10f8db419cc3"
+  },
+  {
+   "name": "multi-bool",
+   "overrides": {
+    "features.multi_agent_v2": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "a33c308b3713de3ea50d96a8b53e6044e13951c7b103fc27fb1bc65fc1f5b98c"
+  },
+  {
+   "name": "code-top",
+   "overrides": {
+    "code_mode": {
+     "enabled": false
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "342f46c2cad7820fbcc7b025c3ba464ed6dbba2434d51aef77489c2d34937e58"
+  },
+  {
+   "name": "multi-top",
+   "overrides": {
+    "code_mode": {
+     "enabled": false
+    },
+    "multi_agent_v2": {
+     "enabled": false
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "ea0e371daf680332a6fe6c28d8c5ffecf7718824c0d7538ff2e8c57d5baf55fc"
+  },
+  {
+   "name": "async-off",
+   "overrides": {
+    "features.default_mode_request_user_input": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "b9360f8d639c7b6b0ccf3e2e533807573765d12546a706252b0aef53b6967085"
+  },
+  {
+   "name": "mode-off",
+   "overrides": {
+    "features.multi_agent_mode": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "8bf1386d9570c6c81f3b729a20db0341490104f5d0827ff52099222feb3c7cec"
+  },
+  {
+   "name": "host-off",
+   "overrides": {
+    "features.code_mode_host": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "8d0ee5cb46abcf76898f04ab7c9531e013306999f770327300a5e98d7a5343ca"
+  },
+  {
+   "name": "orchestrator",
+   "overrides": {
+    "orchestrator": {
+     "enabled": false
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "b3bd358678d287689c34878a9fd7e4cdff558da6e933fb7995eb78192b7993a7"
+  },
+  {
+   "name": "search-off",
+   "overrides": {
+    "features.tool_search": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "13cffa2798d859260b39156475631ee97dd3c68cb8daaf177df7679238d72647"
+  },
+  {
+   "name": "multi-direct-only",
+   "overrides": {
+    "features.multi_agent_v2": {
+     "enabled": false,
+     "non_code_mode_only": true
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "84ee6cdf22f3dc254b0ac744d8bd381099e95df43462ef79d5a102bcbf74b788"
+  },
+  {
+   "name": "orchestrator-tools",
+   "overrides": {
+    "orchestrator": {
+     "enabled_tools": [
+      "exec_command",
+      "write_stdin",
+      "update_plan",
+      "mcp__jira__jira_search"
+     ]
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "7cd274d133e9084bb05e2344413608d015873d09650b1bd1363162b658bfc070"
+  }
+ ]
+}
