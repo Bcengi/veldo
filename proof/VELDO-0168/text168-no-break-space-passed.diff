@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation_text.py
 +++ b/.veldo/control_channel_presentation_text.py
-@@ -21 +21 @@
+@@ -27 +27 @@
 -                     or category == 'Zs' and ch != ' ')
 +                     or category == 'Zs' and ch not in ' \u00a0')  # defect

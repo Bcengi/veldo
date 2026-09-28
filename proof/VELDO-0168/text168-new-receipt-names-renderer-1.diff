@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1082 +1082 @@
+@@ -1091 +1091 @@
 -            record['renderer_version'] = TEXT.VERSION
 +            record['renderer_version'] = 1  # defect: a new receipt names the old renderer

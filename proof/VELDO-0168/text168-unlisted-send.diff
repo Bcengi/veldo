@@ -1,6 +1,6 @@
---- a/.veldo/control_intake.py
-+++ b/.veldo/control_intake.py
-@@ -657,0 +658,3 @@
-+    def _ask_raw(self, where, question):
-+        return self.asker.send(where['chat_id'], question['prompt'])  # defect: an unrendered send
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -507,0 +508,3 @@
++    def raw_notice(self, presenter, chat, text):
++        return presenter.edge.send(chat, text)  # defect: unlisted edge send
 +

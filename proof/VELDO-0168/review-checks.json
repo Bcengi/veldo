@@ -1,0 +1,96 @@
+{
+ "anchor_check": {
+  "bad_anchors": 0,
+  "command": "python3 /tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/anchor_check.py",
+  "duplicate_mutation_names": 0,
+  "exit_code": 0
+ },
+ "engine_copies": {
+  "byte_identical": true,
+  "sha256": {
+   "engine/.veldo/control_channel_presentation.py": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "engine/.veldo/control_channel_presentation_text.py": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "engine/.veldo/control_channel_presentation_v1.py": "78ef4ccfdcc5975d6ae6facb4501eed72e8a080cefca5e9773a4e2cc96db1cb7",
+   "engine/.veldo/control_channel_projection.py": "87d836af10ee4ba4396f66c1007ce59922cf0adec290f726f7ebb79c86036b5d",
+   "engine/.veldo/control_intake.py": "4425070c899af3cf00f0973b29942e8ccd29b32e3d745d23316bfad6cb519435",
+   "engine/.veldo/control_service_channel.py": "95efd332387f282aa74e0d5435cf07dc8ea54e1222712d1b4204e517d879bdae",
+   "engine/.veldo/control_telegram_report.py": "32f2948341677fe15b748bd809b92c6448290ed4062ae9269795d77d8c253839",
+   "engine/.veldo/init_scaffold.py": "41f2d2cb996b68ef63a13902a39e798fb03e9e3761656d36d8e759af61cf2593"
+  }
+ },
+ "footprint": {
+  "command": [
+   "python3",
+   "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+   "VELDO-0168"
+  ],
+  "exit_code": 0,
+  "summary": "changed 59, outside the footprint: none"
+ },
+ "implementation_commit": "5ed6f1b0dbc47ca38551ab877266b634acfc76c7",
+ "mutations": {
+  "executed_in_this_job": 0,
+  "registered": 44,
+  "status": "reserved_for_reviewer"
+ },
+ "red": {
+  "ad916989": {
+   "by_assertion": true,
+   "failed": 26,
+   "rows": 26
+  },
+  "b0dca892": {
+   "by_assertion": true,
+   "failed": 7,
+   "rows": 26
+  }
+ },
+ "requires": {
+  "command": [
+   "python3",
+   "scripts/run_scope.py",
+   "--emit-requires"
+  ],
+  "exit_code": 0,
+  "summary": "run_scope: wrote scripts/suites/requires.json (132 suites)"
+ },
+ "suites": [
+  {
+   "command": "python3 scripts/selftest.py --suite 86_veldo_0168_text",
+   "failed": 0,
+   "log_sha256": "86cf54e9aa0723c055a34bd2b4a50ad813a27159198a389ab30981ac116b13bf",
+   "mode": "normal",
+   "shared_assertions_passed": 26,
+   "spec_rows_passed": 26,
+   "status": "passed_partial"
+  },
+  {
+   "command": "python3 scripts/selftest.py --suite 86_veldo_0168_text",
+   "environment": {
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/dev/shm/veldo-0168-home",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0",
+    "PYTHONNOUSERSITE": "1",
+    "TMPDIR": "/dev/shm",
+    "TZ": "UTC"
+   },
+   "exit_code": 2,
+   "failed": 0,
+   "log_sha256": "2daa69fd3046f909e571cc211b536662087617a397ff6d7f3b52c380c0c8fed9",
+   "mode": "gate_environment",
+   "shared_assertions_passed": 26,
+   "spec_rows_passed": 26,
+   "status": "passed_partial"
+  }
+ ],
+ "validation": {
+  "command": "python3 .veldo/validate.py all",
+  "exit_code": 0
+ }
+}

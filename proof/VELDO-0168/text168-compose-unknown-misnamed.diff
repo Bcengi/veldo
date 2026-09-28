@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1072 +1072 @@
+-                reason = 'unknown_renderer_version' if 'unknown_renderer_version' in problems else 'presentation_mismatch'
++                reason = 'presentation_mismatch'  # defect: unknown version mislabeled

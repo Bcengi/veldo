@@ -1,34 +1,55 @@
 # VELDO-0168 proof
 
-`scripts/suites/86_veldo_0168_text.py` reports nineteen rows through the real signed inbox, framing,
-presentation, report and intake writers, a loopback Bot API stand-in and a signed SQLite authority. No
-row reads a network host other than 127.0.0.1, and no real credential is used.
+The suite `86_veldo_0168_text` reports 26 rows, once each, through the signed inbox, framing,
+presentation, report and intake writers, a loopback Bot API stand-in and a signed SQLite authority.
+Only generated fixtures and loopback networking are used. The renderer probes start from real writer
+snapshots. Unsupported choice text is supplied at renderer and waiting-reader seams; the refusal and
+hint rows still record and deliver through the production writers. The compose row substitutes a
+corrupted copy of a real receipt at its reader, then calls production compose.
 
-## The renderer 1 fixtures
+| Criterion | Rows and what they establish |
+| --- | --- |
+| AC1 | `lines/decision`, `lines/inbox`, `lines/report`, `lines/prompt`, `lines/edges`: line breaks and spaces survive the real send renderers, including Telegram's trimmed message ends. `replies/refused`, `replies/hint`, `intake/delivery`: refusal and hint sends render choices, request ids and merged question text once. `inventory/sends-and-assets`: every engine Python module's send and private send call is counted against explicit lists, and the Presenter send callers' text producers are traced. |
+| AC2 | `escape/zero-width`, `escape/direction`, `escape/whitespace`, `escape/literal`, `escape/categories`, `escape/fields`: distinct values remain distinct across the four renderers. `escape/markers`: a typed cut marker escapes its opener. `escape/field-crlf`: scope, choice and subject CRs remain visible while free text normalizes CRLF. |
+| AC3 | `cuts/long-token`, `cuts/words`: hard cuts carry both markers within the limit, soft cuts preserve spaces. `cuts/escape-boundary`: 600 zero-width characters remain 600 whole escapes across delivered parts. |
+| AC4 | `receipts/earlier`, `receipts/new`, `receipts/unknown`: old and new versions recheck their own bytes with distinct unknown-version errors. `receipts/compose-recheck`: an otherwise current receipt failing recheck is refused during compose, with the correct reason. `receipts/version-type`: bool and float versions are refused. |
 
-`renderer-1-receipt.json` (one message) and `renderer-1-parts-receipt.json` (three parts cut by the
-earlier chunker) are receipts recorded by the renderer before this change: the current suite file was
-run against `git archive` of main at ad91698948dd1d894c0f6af4702b8a4b93c9694e, whose presentation
-module is the one of the branch base, with `VELDO_0168_CAPTURE` and `VELDO_0168_CAPTURE_PARTS` naming
-where to write the first presentation receipt and the soft-cut one. Neither names a renderer version,
-and both are published receipts. The `receipts/earlier` row requires each to recheck cleanly under
-renderer 1 while the current renderer shows its bound fields differently.
+`observability/counters` checks renderer versions, escaped categories, hard cuts and part numbers on
+real observations and metrics. The inventory also found the service's delegation renewal notice;
+its text now uses the renderer. This required the documented two-file footprint addition.
 
-## Red and mutations
+## Renderer 1 fixtures
 
-`drive.py --red ad916989` ran the current suite once against that archive: all nineteen rows failed,
-each by assertion (`red-at-ad916989.json`). `drive.py` with no argument ran every finding 168 mutation
-registered in `scripts/check_teeth_mutations.py` beside a baseline and a no-op copy of each of the six
-modules: every mutation turned its named rows red by assertion and every control stayed green
-(`mutations.json`, one `.diff` per mutation).
+`renderer-1-receipt.json` and `renderer-1-parts-receipt.json` were recorded by the earlier renderer from
+an unchanged archive of ad91698948dd1d894c0f6af4702b8a4b93c9694e. Neither names a renderer version.
+The earlier-receipt row requires both to recheck under renderer 1 while current rendering differs.
 
-## A decision made while building
+## Red record
 
-Telegram trims the spaces and line breaks at both ends of a message, and the receipt binds the exact
-bytes shown, so a part ending in whitespace would come back from the platform as other bytes and be
-recorded as a presentation mismatch. The branch as Codex left it kept the whitespace at a soft cut at
-the end of the earlier part. A soft cut is now made at the start of the last whitespace run in reach, so
-the run opens the next part after its part line, and the whitespace that begins or ends a whole
-message (an inbox item whose brief ends in spaces, or a body part standing alone before the choices) is
-shown escaped like any other invisible character. The `lines/edges` row holds this, including that no
-message the stand-in received begins or ends with a space or a line break.
+The current proof driver run against ad916989 makes all 26 rows red by assertion, with no setup or
+section exception (`red-at-ad916989.json`). Against b0dca892, the merge commit immediately before
+these fixes, seven rows are red by assertion (`red-at-b0dca892.json`): the inventory, refusal reply,
+hint, escape boundary, literal markers, field CRLF and version type. The compose behavior already
+worked at that baseline; its new row is green there and red at the original baseline.
+
+## Mutations and checks
+
+`mutations.json` lists 44 finding 168 mutations, their exact diffs, source digests and named rows.
+It explicitly records that the revised mutations were not run: the owner reserves that execution,
+including the older companion mutations, for the reviewer. The old 32-mutation run is preserved as
+`mutations-before-review.json`; it is historical evidence, not a result for the revised code.
+Every mutation name from both merge parents is retained. The anchor check reports zero bad anchors
+and no duplicate names. Both new send mutants target the inventory: one adds an edge send outside
+the original four modules, the other adds a raw Presenter private send caller. Additional mutations
+cover both missed renderers, the renewal sender, merged intake text, escape boundaries, typed markers, both field CRLF
+renderers, both compose refusal reasons and renderer version types.
+
+The own suite passes normally and under the gate's clean environment: 26 specification rows and
+26 shared preamble assertions, zero failures in each run. The scoped runner intentionally exits 2 on success, reserving exit 0 for
+a full verification. `review-checks.json` records the checks.
+Requires were regenerated unchanged after the merge. The footprint check reports nothing outside;
+validation passes; engine and repository copies are byte-identical. These are scoped checks, not a
+gate or landing claim. The full suite and mutation runners were not run in this job.
+
+Splitting inbox items, reports and intake prompts exceeding 4096 after escaping remains the explicit
+History follow-up, outside this job.

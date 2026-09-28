@@ -2,4 +2,4 @@
 +++ b/.veldo/control_channel_presentation.py
 @@ -390 +390 @@
 -    body = TEXT.visible('\n'.join(head + ['', c['brief']]), stats)
-+    body = TEXT.visible('\n'.join(head + ['', ' '.join(c['brief'].split())]), stats)  # defect: brief collapsed
++    body = TEXT.visible(TEXT.lines('\n'.join(head + ['', c['brief']])), stats)  # defect: field CR lost

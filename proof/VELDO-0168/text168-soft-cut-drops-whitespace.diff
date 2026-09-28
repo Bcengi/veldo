@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -343 +343 @@
+@@ -349 +349 @@
 -        text = text[at:]
 +        text = text[at:].lstrip(' \n')  # defect: the whitespace at a cut is dropped

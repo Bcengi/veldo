@@ -2,4 +2,4 @@
 +++ b/.veldo/control_channel_presentation.py
 @@ -426 +426 @@
 -    if type(version) is not int or version not in (1, TEXT.VERSION):
-+    if False:  # defect: an unknown renderer version reads as a content mismatch
++    if version not in (1, TEXT.VERSION):  # defect: bool and float are version numbers

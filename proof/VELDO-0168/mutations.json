@@ -1,3954 +1,555 @@
 {
- "all_by_assertion": true,
- "all_named_rows_red": true,
- "baseline": {
-  "details": [],
-  "failed_rows": [],
-  "preamble_rows": 26,
-  "rows": [
-   [
-    "VELDO-0168 lines/decision",
-    true
-   ],
-   [
-    "VELDO-0168 lines/inbox",
-    true
-   ],
-   [
-    "VELDO-0168 lines/report",
-    true
-   ],
-   [
-    "VELDO-0168 lines/prompt",
-    true
-   ],
-   [
-    "VELDO-0168 escape/zero-width",
-    true
-   ],
-   [
-    "VELDO-0168 escape/direction",
-    true
-   ],
-   [
-    "VELDO-0168 escape/whitespace",
-    true
-   ],
-   [
-    "VELDO-0168 escape/literal",
-    true
-   ],
-   [
-    "VELDO-0168 escape/categories",
-    true
-   ],
-   [
-    "VELDO-0168 escape/fields",
-    true
-   ],
-   [
-    "VELDO-0168 cuts/long-token",
-    true
-   ],
-   [
-    "VELDO-0168 cuts/words",
-    true
-   ],
-   [
-    "VELDO-0168 receipts/earlier",
-    true
-   ],
-   [
-    "VELDO-0168 receipts/new",
-    true
-   ],
-   [
-    "VELDO-0168 receipts/unknown",
-    true
-   ],
-   [
-    "VELDO-0168 observability/counters",
-    true
-   ],
-   [
-    "VELDO-0168 intake/delivery",
-    true
-   ],
-   [
-    "VELDO-0168 inventory/sends-and-assets",
-    true
-   ],
-   [
-    "VELDO-0168 lines/edges",
-    true
-   ]
-  ],
-  "seconds": 4.239
+ "all_by_assertion": null,
+ "all_named_rows_red": null,
+ "anchor_check": {
+  "bad_anchors": 0,
+  "duplicate_names": 0
  },
- "controls_green": true,
+ "controls_green": null,
+ "implementation_commit": "5ed6f1b0dbc47ca38551ab877266b634acfc76c7",
  "mutants": [
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/decision: brief and signed risk preserve three lines and spacing",
-    "VELDO-0168 detail: escape/whitespace: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers",
-    "VELDO-0168 detail: cuts/words: soft cuts keep original spaces and carry no hard-cut marker",
-    "VELDO-0168 detail: receipts/earlier: renderer-1-receipt.json rechecks with its old bytes while the current rendering differs",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded",
-    "VELDO-0168 detail: lines/edges: a body part that ends its own message shows its final space escaped"
-   ],
    "diff": "proof/VELDO-0168/text168-decision-brief-collapsed.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/decision",
-    "VELDO-0168 escape/whitespace",
-    "VELDO-0168 escape/categories",
-    "VELDO-0168 cuts/words",
-    "VELDO-0168 receipts/earlier",
-    "VELDO-0168 observability/counters",
-    "VELDO-0168 lines/edges"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "965e477d7947c5528d807576440bf41448092c3fab174dba66f72055b461a08a",
+   "mutant_sha256": "d3f4a80204b1a191774740593f8c9b1adbe3e5b459fa480177c201cd23d770eb",
    "name": "text168-decision-brief-collapsed",
-   "named_row_red": true,
    "named_rows": [
     "lines/decision"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     false
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     false
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     false
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     false
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     false
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     false
-    ]
-   ],
-   "seconds": 4.25,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/decision: brief and signed risk preserve three lines and spacing",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-risk-collapsed-at-framing.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/decision",
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "c2c3aa4fa0670d68f173d0d8f086077b11c3210fc45f7a5d1019a7fb78467b96",
+   "mutant_sha256": "b0cccc79122e81ec920b70f34be01cbfdcbda655dbe4daad49e93fd774e0a578",
    "name": "text168-risk-collapsed-at-framing",
-   "named_row_red": true,
    "named_rows": [
     "lines/decision"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     false
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.08,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/inbox: actual inbox send preserves three lines",
-    "VELDO-0168 detail: escape/whitespace: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded",
-    "VELDO-0168 detail: lines/edges: an inbox item ending its message with whitespace shows it escaped"
-   ],
    "diff": "proof/VELDO-0168/text168-inbox-brief-collapsed.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/inbox",
-    "VELDO-0168 escape/whitespace",
-    "VELDO-0168 escape/categories",
-    "VELDO-0168 observability/counters",
-    "VELDO-0168 lines/edges"
-   ],
    "module": ".veldo/control_channel_projection.py",
-   "mutant_sha256": "3997c4b04391282436e40e464239b9ee2640fb5640ea60e9e1f5ff57b7524eda",
+   "mutant_sha256": "9ff8ec5f5e233cc47da1b0c8622402828206040c01e9144e2f2f49ffb69db3ca",
    "name": "text168-inbox-brief-collapsed",
-   "named_row_red": true,
    "named_rows": [
     "lines/inbox"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     false
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     false
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     false
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     false
-    ]
-   ],
-   "seconds": 3.048,
-   "source_sha256": "1bb90f059b4028588bf3f5ea94749c3535cff2cb9aebfcdfd7bfe42c61d2c2b0",
+   "source_sha256": "87d836af10ee4ba4396f66c1007ce59922cf0adec290f726f7ebb79c86036b5d",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/report: journal-derived report send preserves brief",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-report-brief-collapsed.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/report",
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_telegram_report.py",
    "mutant_sha256": "1d1dc18ff8e0a38271a9c37d7619ba8e4f6904d9be85f7286c0aebc211d1e24c",
    "name": "text168-report-brief-collapsed",
-   "named_row_red": true,
    "named_rows": [
     "lines/report"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     false
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 3.423,
    "source_sha256": "32f2948341677fe15b748bd809b92c6448290ed4062ae9269795d77d8c253839",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/prompt: the question send renderer preserves its input lines",
-    "VELDO-0168 detail: escape/zero-width: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/direction: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/whitespace: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/literal: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers",
-    "VELDO-0168 detail: intake/delivery: real question writer and send escape once, retaining original prompt"
-   ],
    "diff": "proof/VELDO-0168/text168-prompt-collapsed.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/prompt",
-    "VELDO-0168 escape/zero-width",
-    "VELDO-0168 escape/direction",
-    "VELDO-0168 escape/whitespace",
-    "VELDO-0168 escape/literal",
-    "VELDO-0168 escape/categories",
-    "VELDO-0168 intake/delivery"
-   ],
    "module": ".veldo/control_intake.py",
-   "mutant_sha256": "9d5066cd9e555815767fc5677f6f1d95423676a910a7d16cf74f4d0815402a70",
+   "mutant_sha256": "00be27fe6680fecf37a6b164dc26b2ef4806c6a144be789d6b8685741fba1095",
    "name": "text168-prompt-collapsed",
-   "named_row_red": true,
    "named_rows": [
     "lines/prompt",
     "intake/delivery"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     false
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     false
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     false
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     false
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     false
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     false
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     false
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 3.554,
-   "source_sha256": "c81fae66adf5837077a8b915547653f8c86d9f5ce501bcc286df4f04e11b8c58",
+   "source_sha256": "4425070c899af3cf00f0973b29942e8ccd29b32e3d745d23316bfad6cb519435",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/decision: brief and signed risk preserve three lines and spacing",
-    "VELDO-0168 detail: lines/inbox: actual inbox send preserves three lines",
-    "VELDO-0168 detail: lines/report: journal-derived report send preserves brief",
-    "VELDO-0168 detail: lines/prompt: the question send renderer preserves its input lines",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-crlf-not-one-break.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/decision",
-    "VELDO-0168 lines/inbox",
-    "VELDO-0168 lines/report",
-    "VELDO-0168 lines/prompt",
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "6b4c9ce70a39b168c894e2f7b827bd51de1344e6d00d1af09142fcec0a387fc8",
+   "mutant_sha256": "96b93795e48d6712af643c3523cfa090053f66330b24ba61c70473e91dc95bd4",
    "name": "text168-crlf-not-one-break",
-   "named_row_red": true,
    "named_rows": [
     "lines/decision",
     "lines/inbox",
     "lines/report",
     "lines/prompt"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     false
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     false
-    ],
-    [
-     "VELDO-0168 lines/report",
-     false
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     false
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.779,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: cuts/words: soft cuts keep original spaces and carry no hard-cut marker"
-   ],
    "diff": "proof/VELDO-0168/text168-soft-cut-drops-whitespace.diff",
-   "failed_rows": [
-    "VELDO-0168 cuts/words"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "69b21922b5def6fe3baa21590ba9d6fd55cfab1f6f0475c3fff4dbef1cf0e1b3",
+   "mutant_sha256": "cf49d7bf6800438399e6e83e9f2ec9e616ecb60154f7cf7c9b7f6dacdead4b0e",
    "name": "text168-soft-cut-drops-whitespace",
-   "named_row_red": true,
    "named_rows": [
     "cuts/words"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     false
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 3.196,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/edges: no message sent begins or ends with a space or line break"
-   ],
    "diff": "proof/VELDO-0168/text168-soft-cut-after-whitespace.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/edges"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "d0d6c4010edf78b77914f68f216fdbcc320247f49fe1f731f709dc3e9318a19a",
+   "mutant_sha256": "5809a1ea5ff8865c7afc1b92b39c7656fc35d7115e52fec9b9f866f1f698b047",
    "name": "text168-soft-cut-after-whitespace",
-   "named_row_red": true,
    "named_rows": [
     "lines/edges"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     false
-    ]
-   ],
-   "seconds": 2.52,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/edges: an inbox item ending its message with whitespace shows it escaped",
-    "VELDO-0168 detail: lines/edges: no message sent begins or ends with a space or line break"
-   ],
    "diff": "proof/VELDO-0168/text168-message-end-not-escaped.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/edges"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "a7d2cb2674060e39503ffaaa6bec8ea1984688dfe18d003ca40da8a7b3737169",
+   "mutant_sha256": "4de787dee334926bcaceb5b2b2ac06d4a7a2c3409c537c71bf6d654019a89262",
    "name": "text168-message-end-not-escaped",
-   "named_row_red": true,
    "named_rows": [
     "lines/edges"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     false
-    ]
-   ],
-   "seconds": 2.449,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/edges: a body part that ends its own message shows its final space escaped",
-    "VELDO-0168 detail: lines/edges: no message sent begins or ends with a space or line break"
-   ],
    "diff": "proof/VELDO-0168/text168-last-part-end-not-escaped.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/edges"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "807564afdae025e2331e811ee66197050be7115551ca7e13e66378b75b8c7e6d",
+   "mutant_sha256": "dd78cf672063df91524114c51de736894046bdb33ae87bd504e57c59b9bf9ee3",
    "name": "text168-last-part-end-not-escaped",
-   "named_row_red": true,
    "named_rows": [
     "lines/edges"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     false
-    ]
-   ],
-   "seconds": 2.471,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: escape/zero-width: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/literal: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers",
-    "VELDO-0168 detail: escape/fields: writer-accepted choices, scopes and subject references keep their distinctions"
-   ],
    "diff": "proof/VELDO-0168/text168-zero-width-passed.diff",
-   "failed_rows": [
-    "VELDO-0168 escape/zero-width",
-    "VELDO-0168 escape/literal",
-    "VELDO-0168 escape/categories",
-    "VELDO-0168 escape/fields"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "16ef1146499dfcec75c76b0d381ef225d6a90baf8c28242296dad239c969b1b6",
+   "mutant_sha256": "1a43addfcbc0c013a44c9dbb550615fd268ac9eb45a1028dfd7ccee4df48c9f5",
    "name": "text168-zero-width-passed",
-   "named_row_red": true,
    "named_rows": [
     "escape/zero-width"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     false
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     false
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     false
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.493,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: escape/direction: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers",
-    "VELDO-0168 detail: escape/fields: writer-accepted choices, scopes and subject references keep their distinctions"
-   ],
    "diff": "proof/VELDO-0168/text168-direction-passed.diff",
-   "failed_rows": [
-    "VELDO-0168 escape/direction",
-    "VELDO-0168 escape/categories",
-    "VELDO-0168 escape/fields"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "c69f676436e09bf4a9fbb1e1d9a11fca364e103c0b29c79c6f03152e14714bdf",
+   "mutant_sha256": "668b3e39175bcb426a2942b6005da8d6343e222ea3dfb1f30fd313f7a316d705",
    "name": "text168-direction-passed",
-   "named_row_red": true,
    "named_rows": [
     "escape/direction"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     false
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     false
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.481,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: escape/whitespace: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers",
-    "VELDO-0168 detail: escape/fields: writer-accepted choices, scopes and subject references keep their distinctions"
-   ],
    "diff": "proof/VELDO-0168/text168-no-break-space-passed.diff",
-   "failed_rows": [
-    "VELDO-0168 escape/whitespace",
-    "VELDO-0168 escape/categories",
-    "VELDO-0168 escape/fields"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "e55fc768f08c9a465f927dced7b678fda59322cdec1579e758d1d7d7731edff4",
+   "mutant_sha256": "107c85ee7f3bb98c1b7871c0324dc23fc93b5f8f942b233ffa7a66adc41253b5",
    "name": "text168-no-break-space-passed",
-   "named_row_red": true,
    "named_rows": [
     "escape/whitespace"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     false
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     false
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.512,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: lines/decision: brief and signed risk preserve three lines and spacing",
-    "VELDO-0168 detail: lines/inbox: actual inbox send preserves three lines",
-    "VELDO-0168 detail: lines/report: journal-derived report send preserves brief",
-    "VELDO-0168 detail: lines/prompt: the question send renderer preserves its input lines",
-    "VELDO-0168 detail: escape/whitespace: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers",
-    "VELDO-0168 detail: escape/fields: writer-accepted choices, scopes and subject references keep their distinctions",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-tab-passed.diff",
-   "failed_rows": [
-    "VELDO-0168 lines/decision",
-    "VELDO-0168 lines/inbox",
-    "VELDO-0168 lines/report",
-    "VELDO-0168 lines/prompt",
-    "VELDO-0168 escape/whitespace",
-    "VELDO-0168 escape/categories",
-    "VELDO-0168 escape/fields",
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "03c0616ee6a608b8c3fb615a8012a93832ce5f6ada1657453bb79f07e326f5e1",
+   "mutant_sha256": "a10a98094f59678a3e8fed756f04e9fa44ab92ce65f230d4fe0977f68461d0d8",
    "name": "text168-tab-passed",
-   "named_row_red": true,
    "named_rows": [
     "escape/whitespace",
     "lines/decision"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     false
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     false
-    ],
-    [
-     "VELDO-0168 lines/report",
-     false
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     false
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     false
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     false
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.494,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: escape/literal: all four renderers distinguish each invisible or literal escape",
-    "VELDO-0168 detail: escape/fields: writer-accepted choices, scopes and subject references keep their distinctions",
-    "VELDO-0168 detail: intake/delivery: real question writer and send escape once, retaining original prompt"
-   ],
    "diff": "proof/VELDO-0168/text168-literal-prefix-passed.diff",
-   "failed_rows": [
-    "VELDO-0168 escape/literal",
-    "VELDO-0168 escape/fields",
-    "VELDO-0168 intake/delivery"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "ba9c27b9b67a4f37f830540ab1059fa682dddf03a079cf0e132f531668d3f7b0",
+   "mutant_sha256": "696e2a0ae3aff7e3986923bd3acfbe968e3fcf9f4a9c85a4bea60a05e7781caf",
    "name": "text168-literal-prefix-passed",
-   "named_row_red": true,
    "named_rows": [
     "escape/literal",
     "intake/delivery"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     false
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     false
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.639,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers"
-   ],
    "diff": "proof/VELDO-0168/text168-hand-kept-list.diff",
-   "failed_rows": [
-    "VELDO-0168 escape/categories"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "7a801510d330c8a1c1b28b151de3155f70e46e9c68ae36b32d30b9f97c0fe43d",
+   "mutant_sha256": "197783c7d6770c8f12c50cbdd61ce754ee47a74a46c75f9f3af487e336e3b52c",
    "name": "text168-hand-kept-list",
-   "named_row_red": true,
    "named_rows": [
     "escape/categories"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     false
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.622,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: escape/fields: writer-accepted choices, scopes and subject references keep their distinctions"
-   ],
    "diff": "proof/VELDO-0168/text168-decision-choices-unescaped.diff",
-   "failed_rows": [
-    "VELDO-0168 escape/fields"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "40af4298b39e57e549903b3accfbd92cb449b34398952d24e1bd022c038b361e",
+   "mutant_sha256": "a763c4d49ee453435fa199dbd34e89011ca7ac2a82402791dd9f716371860ea5",
    "name": "text168-decision-choices-unescaped",
-   "named_row_red": true,
    "named_rows": [
     "escape/fields"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.153,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: escape/fields: writer-accepted choices, scopes and subject references keep their distinctions",
-    "VELDO-0168 detail: lines/edges: an inbox item ending its message with whitespace shows it escaped"
-   ],
    "diff": "proof/VELDO-0168/text168-inbox-fields-unescaped.diff",
-   "failed_rows": [
-    "VELDO-0168 escape/fields",
-    "VELDO-0168 lines/edges"
-   ],
    "module": ".veldo/control_channel_projection.py",
-   "mutant_sha256": "f43ab65f2b1a42e5a798e0fde6e528fec06083d38b51671ef8490a08ec4a4599",
+   "mutant_sha256": "f04622adbc8cd0746e8809334ea76b32dbd24e9d093d340b03cbec51674c7da9",
    "name": "text168-inbox-fields-unescaped",
-   "named_row_red": true,
    "named_rows": [
     "escape/fields"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     false
-    ]
-   ],
-   "seconds": 4.356,
-   "source_sha256": "1bb90f059b4028588bf3f5ea94749c3535cff2cb9aebfcdfd7bfe42c61d2c2b0",
+   "source_sha256": "87d836af10ee4ba4396f66c1007ce59922cf0adec290f726f7ebb79c86036b5d",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: cuts/long-token: every hard cut is marked on both sides within UTF-16 platform limits",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-hard-cut-unmarked.diff",
-   "failed_rows": [
-    "VELDO-0168 cuts/long-token",
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "83457125b87841c1e8f785ac14aec1992a3583958bba7cfd7e093dbdef1520ae",
+   "mutant_sha256": "3ee06bb588d33649433e13a7ddcf511d9be0a10b96dae9290205ebf9df41c3d4",
    "name": "text168-hard-cut-unmarked",
-   "named_row_red": true,
    "named_rows": [
     "cuts/long-token"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.237,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: cuts/long-token: every hard cut is marked on both sides within UTF-16 platform limits"
-   ],
    "diff": "proof/VELDO-0168/text168-continuation-unmarked.diff",
-   "failed_rows": [
-    "VELDO-0168 cuts/long-token"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "2d5bb312c70e85906dab10a1ba8253b63b50a0ade86f0727006575fdc1646ca9",
+   "mutant_sha256": "0c1584ca904023a524d3ca3a9cbb707f92e9383ca9120f8e91f62ab0efd2db1d",
    "name": "text168-continuation-unmarked",
-   "named_row_red": true,
    "named_rows": [
     "cuts/long-token"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.458,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: cuts/long-token: every hard cut is marked on both sides within UTF-16 platform limits"
-   ],
    "diff": "proof/VELDO-0168/text168-marker-room-not-kept.diff",
-   "failed_rows": [
-    "VELDO-0168 cuts/long-token"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "c267e1ec3d85077114c6878c6f0d6ea6e2b1cb145dbccc705ddfa8105a36b20d",
+   "mutant_sha256": "bde566e2ab4d3c5482b9211a6fa42d2305c16bd6d641fc3d35fe391c37204276",
    "name": "text168-marker-room-not-kept",
-   "named_row_red": true,
    "named_rows": [
     "cuts/long-token"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     false
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.467,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: cuts/words: soft cuts keep original spaces and carry no hard-cut marker",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-soft-cut-marked.diff",
-   "failed_rows": [
-    "VELDO-0168 cuts/words",
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "63df5a5ec97a8300a42055fb8202056e6416cea7e13a5ea73a11876d10e6e5ae",
+   "mutant_sha256": "f6e1de2569eb363ab06fb7a414d8b6842fc04bcc5de92bceddaf95cb60aa886e",
    "name": "text168-soft-cut-marked",
-   "named_row_red": true,
    "named_rows": [
     "cuts/words"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     false
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 3.773,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: receipts/earlier: renderer-1-receipt.json rechecks with its old bytes while the current rendering differs",
-    "VELDO-0168 detail: receipts/earlier: renderer-1-parts-receipt.json rechecks with its old bytes while the current rendering differs"
-   ],
    "diff": "proof/VELDO-0168/text168-recheck-with-new-renderer.diff",
-   "failed_rows": [
-    "VELDO-0168 receipts/earlier"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "07b16cc28c0babf44e62b6610e8691bfff5eb08a4ca325a8e137945e35bc31d9",
+   "mutant_sha256": "2b90c936a0211a409bbb34f458b573fa1c12755c95568bcf95b48510ec3a5e87",
    "name": "text168-recheck-with-new-renderer",
-   "named_row_red": true,
    "named_rows": [
     "receipts/earlier"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     false
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.442,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: receipts/earlier: renderer-1-receipt.json rechecks with its old bytes while the current rendering differs",
-    "VELDO-0168 detail: receipts/earlier: renderer-1-parts-receipt.json rechecks with its old bytes while the current rendering differs"
-   ],
    "diff": "proof/VELDO-0168/text168-legacy-version-renders-new.diff",
-   "failed_rows": [
-    "VELDO-0168 receipts/earlier"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "94d78e85747801e3ea08435c7457fe49fc8df8271b8cb0a8fa45817157d31687",
+   "mutant_sha256": "293979ff31dfbafb8df60698f22acdbf72dd925ca4ba8fae42a50bbc55104a07",
    "name": "text168-legacy-version-renders-new",
-   "named_row_red": true,
    "named_rows": [
     "receipts/earlier"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     false
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.286,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: receipts/earlier: renderer-1-parts-receipt.json rechecks with its old bytes while the current rendering differs"
-   ],
    "diff": "proof/VELDO-0168/text168-legacy-chunker-changed.diff",
-   "failed_rows": [
-    "VELDO-0168 receipts/earlier"
-   ],
    "module": ".veldo/control_channel_presentation_v1.py",
    "mutant_sha256": "2a81d31f248be7070f765977678fb0866fef0cf3988291d47eb18225e885ff11",
    "name": "text168-legacy-chunker-changed",
-   "named_row_red": true,
    "named_rows": [
     "receipts/earlier"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     false
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.246,
    "source_sha256": "78ef4ccfdcc5975d6ae6facb4501eed72e8a080cefca5e9773a4e2cc96db1cb7",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: receipts/unknown: unknown version is distinct from mismatched content"
-   ],
    "diff": "proof/VELDO-0168/text168-unknown-version-not-named.diff",
-   "failed_rows": [
-    "VELDO-0168 receipts/unknown"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "31e183a9b84a4095fe90192882098d76b69292b333de9efd2132a01d81724b65",
+   "mutant_sha256": "c75a9bebf7fa23af7c29f732a57c72a7732b0a74b567a0d8261d71db0847cdea",
    "name": "text168-unknown-version-not-named",
-   "named_row_red": true,
    "named_rows": [
     "receipts/unknown"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     false
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.345,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: receipts/new: new receipts name version 2 and bind retrieved platform bytes",
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-new-receipt-names-renderer-1.diff",
-   "failed_rows": [
-    "VELDO-0168 receipts/new",
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "7960f6790735bd00aa2d701007a14548b7eea43323bd17e77803eb8d2fabe22b",
+   "mutant_sha256": "1d30051df100ea623cb346bb855c859abb541ce951435a9bca854c0ef1997640",
    "name": "text168-new-receipt-names-renderer-1",
-   "named_row_red": true,
    "named_rows": [
     "receipts/new"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     false
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.196,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-hard-cuts-uncounted.diff",
-   "failed_rows": [
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "95c9830bb8d3c0dc4c6a692c18bfe9a2330e9855b1d8df196e3c66f9c5bc8dda",
+   "mutant_sha256": "fb49a5ce198cab5ee84fb91b9a4085001e232c049d6804a83531fdcb01af2a7f",
    "name": "text168-hard-cuts-uncounted",
-   "named_row_red": true,
    "named_rows": [
     "observability/counters"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.33,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-escapes-uncounted.diff",
-   "failed_rows": [
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation_text.py",
-   "mutant_sha256": "cede164b747c40085a9f102f1ebe475ca48684992e26aebb4b8ee4042043aa3f",
+   "mutant_sha256": "e75654494cc222765c689f3bed69d0bb045b6a17d43229e9fd4ba8fdd1749033",
    "name": "text168-escapes-uncounted",
-   "named_row_red": true,
    "named_rows": [
     "observability/counters"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 3.558,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded"
-   ],
    "diff": "proof/VELDO-0168/text168-observation-unversioned.diff",
-   "failed_rows": [
-    "VELDO-0168 observability/counters"
-   ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "b91053f688dcec258b99560eae94ddb92bd5357c4df697737bfa0b49366f893d",
+   "mutant_sha256": "a23a329e63aec268b2e94b7cc8a3f28d3e5954eaa9093f4997e10048212d67ac",
    "name": "text168-observation-unversioned",
-   "named_row_red": true,
    "named_rows": [
     "observability/counters"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     false
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 3.356,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: inventory/sends-and-assets: complete endpoint and send inventory; new renderer assets installed identically"
-   ],
    "diff": "proof/VELDO-0168/text168-unlisted-send.diff",
-   "failed_rows": [
-    "VELDO-0168 inventory/sends-and-assets"
-   ],
-   "module": ".veldo/control_intake.py",
-   "mutant_sha256": "e4c2c1dff58fca478f2f7139a3e4c7f16dd0a08ba8cd090523f7d120e5c22514",
+   "module": ".veldo/control_service_channel.py",
+   "mutant_sha256": "dcc4e5d71cdf6a3ae5b270c4ce5442596a38584ee39157b9c6b92b9f102feb55",
    "name": "text168-unlisted-send",
-   "named_row_red": true,
    "named_rows": [
     "inventory/sends-and-assets"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     false
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.792,
-   "source_sha256": "c81fae66adf5837077a8b915547653f8c86d9f5ce501bcc286df4f04e11b8c58",
+   "source_sha256": "95efd332387f282aa74e0d5435cf07dc8ea54e1222712d1b4204e517d879bdae",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0168 detail: inventory/sends-and-assets: complete endpoint and send inventory; new renderer assets installed identically"
+   "diff": "proof/VELDO-0168/text168-unlisted-presenter-send.diff",
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "414a8f1a89964bb7324a7752db24517ff0db0c1e44091b97e56e8293376946ff",
+   "name": "text168-unlisted-presenter-send",
+   "named_rows": [
+    "inventory/sends-and-assets"
    ],
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-refusal-unescaped.diff",
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "6286567be2564b5f2ad774ce5dc190cedc4360b4a838dd3bb4206c5586ffbd91",
+   "name": "text168-refusal-unescaped",
+   "named_rows": [
+    "replies/refused",
+    "inventory/sends-and-assets"
+   ],
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-hint-unescaped.diff",
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "7c846a1a314fa21bfc1ff43447420ca125e435a16d4f82b376bd0beacc4a256f",
+   "name": "text168-hint-unescaped",
+   "named_rows": [
+    "replies/hint",
+    "inventory/sends-and-assets"
+   ],
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-renewal-unescaped.diff",
+   "module": ".veldo/control_service_channel.py",
+   "mutant_sha256": "0533fb5558cc4246669476c0cfeab46a6007142020506a8811c55421c45dbb0e",
+   "name": "text168-renewal-unescaped",
+   "named_rows": [
+    "inventory/sends-and-assets"
+   ],
+   "source_sha256": "95efd332387f282aa74e0d5435cf07dc8ea54e1222712d1b4204e517d879bdae",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-hint-lead-double-escaped.diff",
+   "module": ".veldo/control_intake.py",
+   "mutant_sha256": "78cde463dda7115e22c5ec013f19ed78039d49c01a0e491f896a081071ad9d0e",
+   "name": "text168-hint-lead-double-escaped",
+   "named_rows": [
+    "intake/delivery"
+   ],
+   "source_sha256": "4425070c899af3cf00f0973b29942e8ccd29b32e3d745d23316bfad6cb519435",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-escape-split-at-cut.diff",
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "34e9ffdcbfaf98c9699cad7c2faadac71ea4126cf90a799be3312bc23081c7af",
+   "name": "text168-escape-split-at-cut",
+   "named_rows": [
+    "cuts/escape-boundary"
+   ],
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-typed-marker-unescaped.diff",
+   "module": ".veldo/control_channel_presentation_text.py",
+   "mutant_sha256": "5e694fb508f60fe34ffb4326646a3e5b733ded4755457aa4aeb10b5802b46928",
+   "name": "text168-typed-marker-unescaped",
+   "named_rows": [
+    "escape/markers"
+   ],
+   "source_sha256": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-decision-field-crlf-collapsed.diff",
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "59b41acd1cfd7297999b5891e2cb1b2918b9c91d40b13eb50627bd7629df3f1e",
+   "name": "text168-decision-field-crlf-collapsed",
+   "named_rows": [
+    "escape/field-crlf"
+   ],
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-inbox-field-crlf-collapsed.diff",
+   "module": ".veldo/control_channel_projection.py",
+   "mutant_sha256": "cc6ac17b3c4e2a34848908531429142712562d0cc5a3d000f306ec6ebc720f76",
+   "name": "text168-inbox-field-crlf-collapsed",
+   "named_rows": [
+    "escape/field-crlf"
+   ],
+   "source_sha256": "87d836af10ee4ba4396f66c1007ce59922cf0adec290f726f7ebb79c86036b5d",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-compose-recheck-ignored.diff",
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "cb40c0c5236d7cc60d912b66f1d743b75935c1199f5bd24726caccf7b223baec",
+   "name": "text168-compose-recheck-ignored",
+   "named_rows": [
+    "receipts/compose-recheck"
+   ],
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-compose-unknown-misnamed.diff",
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "7d5fb5acfc875d8e6f9c94e25d8850425daab828b36357f77c7ee36217ecc623",
+   "name": "text168-compose-unknown-misnamed",
+   "named_rows": [
+    "receipts/compose-recheck"
+   ],
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
+   "diff": "proof/VELDO-0168/text168-version-type-unchecked.diff",
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "15160dd1adeca885e1d28adbdba9bf4840e26496eaaf2f76fe68cf738ff1c811",
+   "name": "text168-version-type-unchecked",
+   "named_rows": [
+    "receipts/version-type"
+   ],
+   "source_sha256": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "status": "registered_not_run",
+   "suite": "scripts/suites/86_veldo_0168_text.py"
+  },
+  {
    "diff": "proof/VELDO-0168/text168-unlisted-endpoint.diff",
-   "failed_rows": [
-    "VELDO-0168 inventory/sends-and-assets"
-   ],
    "module": ".veldo/control_telegram_report.py",
    "mutant_sha256": "1745ba8c647d59bab7b81d29f39905074102c07a5ab26dd8898b57673d02d5a4",
    "name": "text168-unlisted-endpoint",
-   "named_row_red": true,
    "named_rows": [
     "inventory/sends-and-assets"
    ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     false
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 2.817,
    "source_sha256": "32f2948341677fe15b748bd809b92c6448290ed4062ae9269795d77d8c253839",
+   "status": "registered_not_run",
    "suite": "scripts/suites/86_veldo_0168_text.py"
   }
  ],
- "mutations_per_row": {
-  "cuts/long-token": [
-   "text168-hard-cut-unmarked",
-   "text168-continuation-unmarked",
-   "text168-marker-room-not-kept"
-  ],
-  "cuts/words": [
-   "text168-soft-cut-drops-whitespace",
-   "text168-soft-cut-marked"
-  ],
-  "escape/categories": [
-   "text168-hand-kept-list"
-  ],
-  "escape/direction": [
-   "text168-direction-passed"
-  ],
-  "escape/fields": [
-   "text168-decision-choices-unescaped",
-   "text168-inbox-fields-unescaped"
-  ],
-  "escape/literal": [
-   "text168-literal-prefix-passed"
-  ],
-  "escape/whitespace": [
-   "text168-no-break-space-passed",
-   "text168-tab-passed"
-  ],
-  "escape/zero-width": [
-   "text168-zero-width-passed"
-  ],
-  "intake/delivery": [
-   "text168-prompt-collapsed",
-   "text168-literal-prefix-passed"
-  ],
-  "inventory/sends-and-assets": [
-   "text168-unlisted-send",
-   "text168-unlisted-endpoint"
-  ],
-  "lines/decision": [
-   "text168-decision-brief-collapsed",
-   "text168-risk-collapsed-at-framing",
-   "text168-crlf-not-one-break",
-   "text168-tab-passed"
-  ],
-  "lines/edges": [
-   "text168-soft-cut-after-whitespace",
-   "text168-message-end-not-escaped",
-   "text168-last-part-end-not-escaped"
-  ],
-  "lines/inbox": [
-   "text168-inbox-brief-collapsed",
-   "text168-crlf-not-one-break"
-  ],
-  "lines/prompt": [
-   "text168-prompt-collapsed",
-   "text168-crlf-not-one-break"
-  ],
-  "lines/report": [
-   "text168-report-brief-collapsed",
-   "text168-crlf-not-one-break"
-  ],
-  "observability/counters": [
-   "text168-hard-cuts-uncounted",
-   "text168-escapes-uncounted",
-   "text168-observation-unversioned"
-  ],
-  "receipts/earlier": [
-   "text168-recheck-with-new-renderer",
-   "text168-legacy-version-renders-new",
-   "text168-legacy-chunker-changed"
-  ],
-  "receipts/new": [
-   "text168-new-receipt-names-renderer-1"
-  ],
-  "receipts/unknown": [
-   "text168-unknown-version-not-named"
-  ]
- },
- "noop": {
-  "control_channel_presentation.py in 86_veldo_0168_text.py": {
-   "copy_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.199,
-   "source_sha256": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef"
-  },
-  "control_channel_presentation_text.py in 86_veldo_0168_text.py": {
-   "copy_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.356,
-   "source_sha256": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221"
-  },
-  "control_channel_presentation_v1.py in 86_veldo_0168_text.py": {
-   "copy_sha256": "78ef4ccfdcc5975d6ae6facb4501eed72e8a080cefca5e9773a4e2cc96db1cb7",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.43,
-   "source_sha256": "78ef4ccfdcc5975d6ae6facb4501eed72e8a080cefca5e9773a4e2cc96db1cb7"
-  },
-  "control_channel_projection.py in 86_veldo_0168_text.py": {
-   "copy_sha256": "1bb90f059b4028588bf3f5ea94749c3535cff2cb9aebfcdfd7bfe42c61d2c2b0",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.163,
-   "source_sha256": "1bb90f059b4028588bf3f5ea94749c3535cff2cb9aebfcdfd7bfe42c61d2c2b0"
-  },
-  "control_intake.py in 86_veldo_0168_text.py": {
-   "copy_sha256": "c81fae66adf5837077a8b915547653f8c86d9f5ce501bcc286df4f04e11b8c58",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.283,
-   "source_sha256": "c81fae66adf5837077a8b915547653f8c86d9f5ce501bcc286df4f04e11b8c58"
-  },
-  "control_telegram_report.py in 86_veldo_0168_text.py": {
-   "copy_sha256": "32f2948341677fe15b748bd809b92c6448290ed4062ae9269795d77d8c253839",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0168 lines/decision",
-     true
-    ],
-    [
-     "VELDO-0168 lines/inbox",
-     true
-    ],
-    [
-     "VELDO-0168 lines/report",
-     true
-    ],
-    [
-     "VELDO-0168 lines/prompt",
-     true
-    ],
-    [
-     "VELDO-0168 escape/zero-width",
-     true
-    ],
-    [
-     "VELDO-0168 escape/direction",
-     true
-    ],
-    [
-     "VELDO-0168 escape/whitespace",
-     true
-    ],
-    [
-     "VELDO-0168 escape/literal",
-     true
-    ],
-    [
-     "VELDO-0168 escape/categories",
-     true
-    ],
-    [
-     "VELDO-0168 escape/fields",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/long-token",
-     true
-    ],
-    [
-     "VELDO-0168 cuts/words",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/earlier",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/new",
-     true
-    ],
-    [
-     "VELDO-0168 receipts/unknown",
-     true
-    ],
-    [
-     "VELDO-0168 observability/counters",
-     true
-    ],
-    [
-     "VELDO-0168 intake/delivery",
-     true
-    ],
-    [
-     "VELDO-0168 inventory/sends-and-assets",
-     true
-    ],
-    [
-     "VELDO-0168 lines/edges",
-     true
-    ]
-   ],
-   "seconds": 4.388,
-   "source_sha256": "32f2948341677fe15b748bd809b92c6448290ed4062ae9269795d77d8c253839"
-  }
- },
+ "previous_run": "proof/VELDO-0168/mutations-before-review.json",
+ "reason": "The owner reserves all mutation execution for the reviewer. No mutation runner was executed during this review-fix job.",
  "registry": "scripts/check_teeth_mutations.py",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 140.881,
  "spec_id": "VELDO-0168",
+ "status": "registered_not_run",
  "suite": "scripts/suites/86_veldo_0168_text.py"
 }

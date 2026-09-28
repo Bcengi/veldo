@@ -9118,6 +9118,10 @@ def cases():
             "            line = TEXT.visible(line)\n",
             "            line = line  # defect: hint choices and ids bypass rendering\n",
             ['replies/hint', 'inventory/sends-and-assets'])
+    text168('renewal-unescaped', 'control_service_channel.py',
+            "        text = V.TEXT.message(text, free_text=False)\n",
+            "        text = text  # defect: renewal text bypasses rendering\n",
+            ['inventory/sends-and-assets'])
     text168('hint-lead-double-escaped', 'control_intake.py',
             "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
             "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)  # defect: already rendered\n",

@@ -22,7 +22,14 @@
   "VELDO-0168 detail: intake/delivery: real question writer and send escape once, retaining original prompt",
   "VELDO-0168 detail: inventory/sends-and-assets: complete endpoint and send inventory; new renderer assets installed identically",
   "VELDO-0168 detail: lines/edges: an inbox item ending its message with whitespace shows it escaped",
-  "VELDO-0168 detail: lines/edges: a body part that ends its own message shows its final space escaped"
+  "VELDO-0168 detail: lines/edges: a body part that ends its own message shows its final space escaped",
+  "VELDO-0168 detail: replies/refused: refusal writer records and sends distinct escaped choices",
+  "VELDO-0168 detail: replies/hint: hint writer sends escaped choices and ids and renders raw lead once",
+  "VELDO-0168 detail: cuts/escape-boundary: 600 zero-width characters stay whole across every hard cut",
+  "VELDO-0168 detail: escape/markers: typed markers are distinct from inserted markers in every renderer",
+  "VELDO-0168 detail: escape/field-crlf: CRLF in choice scope and subject keeps the CR, free text normalizes it",
+  "VELDO-0168 detail: receipts/compose-recheck: compose refuses an otherwise current receipt failing its own recheck",
+  "VELDO-0168 detail: receipts/version-type: bool and float versions are unknown even when equal to integers"
  ],
  "failed_rows": [
   "VELDO-0168 lines/decision",
@@ -43,16 +50,23 @@
   "VELDO-0168 observability/counters",
   "VELDO-0168 intake/delivery",
   "VELDO-0168 inventory/sends-and-assets",
-  "VELDO-0168 lines/edges"
+  "VELDO-0168 lines/edges",
+  "VELDO-0168 replies/refused",
+  "VELDO-0168 replies/hint",
+  "VELDO-0168 cuts/escape-boundary",
+  "VELDO-0168 escape/markers",
+  "VELDO-0168 escape/field-crlf",
+  "VELDO-0168 receipts/compose-recheck",
+  "VELDO-0168 receipts/version-type"
  ],
  "modules": {
   ".veldo/control_channel_presentation.py": {
    "at_commit": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8",
-   "now": "0c056f92c1bb8a479cbc37878136e364649499fa733a8dd8ec3b179005f790ef"
+   "now": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af"
   },
   ".veldo/control_channel_presentation_text.py": {
    "at_commit": null,
-   "now": "58d351496096ddc9ff1be264ce49849b14d8d7de5066a32b71d14a86155e6221"
+   "now": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5"
   },
   ".veldo/control_channel_presentation_v1.py": {
    "at_commit": null,
@@ -60,11 +74,15 @@
   },
   ".veldo/control_channel_projection.py": {
    "at_commit": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a",
-   "now": "1bb90f059b4028588bf3f5ea94749c3535cff2cb9aebfcdfd7bfe42c61d2c2b0"
+   "now": "87d836af10ee4ba4396f66c1007ce59922cf0adec290f726f7ebb79c86036b5d"
   },
   ".veldo/control_intake.py": {
    "at_commit": "773999aa87976d31eeb4d696016f93e9cff5f8acbdef87cdb551023c0e48dcc4",
-   "now": "c81fae66adf5837077a8b915547653f8c86d9f5ce501bcc286df4f04e11b8c58"
+   "now": "4425070c899af3cf00f0973b29942e8ccd29b32e3d745d23316bfad6cb519435"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": "801c9b586f84bb0916630cbb20c310fb4ba8acf16b3f0ec0cc214f41412ea784",
+   "now": "95efd332387f282aa74e0d5435cf07dc8ea54e1222712d1b4204e517d879bdae"
   },
   ".veldo/control_telegram_report.py": {
    "at_commit": "d86d21566f47572f83e5c3c020ed08918ae53191ca6dea691d1c267f37e50eeb",
@@ -148,10 +166,38 @@
   [
    "VELDO-0168 lines/edges",
    false
+  ],
+  [
+   "VELDO-0168 replies/refused",
+   false
+  ],
+  [
+   "VELDO-0168 replies/hint",
+   false
+  ],
+  [
+   "VELDO-0168 cuts/escape-boundary",
+   false
+  ],
+  [
+   "VELDO-0168 escape/markers",
+   false
+  ],
+  [
+   "VELDO-0168 escape/field-crlf",
+   false
+  ],
+  [
+   "VELDO-0168 receipts/compose-recheck",
+   false
+  ],
+  [
+   "VELDO-0168 receipts/version-type",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 2.513,
+ "seconds": 3.169,
  "spec_id": "VELDO-0168",
  "suite": "scripts/suites/86_veldo_0168_text.py",
  "tree": "git archive ad91698948dd1d894c0f6af4702b8a4b93c9694e, unchanged; the current suite file run against it"
