@@ -1,0 +1,5 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -220 +220 @@
+-    settings.update(enabledPlugins={name: False for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,
++    settings.update(disableBundledSkills=True,

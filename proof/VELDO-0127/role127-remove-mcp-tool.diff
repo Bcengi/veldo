@@ -1,7 +1,7 @@
 --- a/.veldo/control_agent_config_handoff.py
 +++ b/.veldo/control_agent_config_handoff.py
-@@ -190,0 +191 @@
+@@ -215,0 +216 @@
 +    wanted['tools'] = [n for n in wanted['tools'] if n != 'mcp__jira__jira_search']
-@@ -205 +206 @@
+@@ -239 +240 @@
 -    denied = ['mcp__%s__%s' % (s, t) for s, e in inventory.items() for t in e['offered'] if t not in e['tools']]
 +    denied = ['mcp__jira__jira_search'] + ['mcp__%s__%s' % (s, t) for s, e in inventory.items() for t in e['offered'] if t not in e['tools']]

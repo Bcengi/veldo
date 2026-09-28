@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1994 +1994 @@
+@@ -2004 +2004 @@
 -                    self.first_turn_context = HANDOFF.context_size(event, self.engine.PROVIDER)
 +                    self.first_turn_context = None

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1287 +1287 @@
+-PROBE = {'type': 'user', 'message': {'role': 'user', 'content': []}, 'parent_tool_use_id': None, 'shouldQuery': False}
++PROBE = {'type': 'user', 'message': {'role': 'user', 'content': 'capability check'}, 'parent_tool_use_id': None, 'shouldQuery': False}

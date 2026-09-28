@@ -1,5 +1,5 @@
 --- a/.veldo/control_agent_config_handoff.py
 +++ b/.veldo/control_agent_config_handoff.py
-@@ -180 +180 @@
+@@ -195 +195 @@
 -            return 'configuration_stop:unexpected_tool'
 +            return None

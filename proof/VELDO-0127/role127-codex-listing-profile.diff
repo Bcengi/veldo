@@ -1,0 +1,5 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -282 +282 @@
+-    env['CODEX_HOME'] = str(home)
++    pass  # defect: the listing reads the account profile's config.toml

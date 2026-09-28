@@ -1,0 +1,5 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -229 +229 @@
+-    if capability['skills'] or 'Skill' in revision['native_tools']:
++    if capability['skills']:

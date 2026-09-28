@@ -1,0 +1,5 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -299 +299 @@
+-        server = ask(['get', item['name']])
++        server = dict(item)

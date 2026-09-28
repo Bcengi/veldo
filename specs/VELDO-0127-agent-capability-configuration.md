@@ -23,6 +23,9 @@ footprint:
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0127_*.py"
   - "scripts/suites/82_veldo_0173_tool_registry.py"
   - "scripts/check_teeth_mutations.py"
@@ -231,3 +234,17 @@ registry concern became VELDO-0173. Status is draft; only the owner marks it rea
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
 
 2026-09-28: live captures are pending the lead's run of proof/VELDO-0127/live.py.
+
+2026-09-28, live qualification: the first real runs showed three defects the fakes hid, all fixed in the
+handoff without changing a criterion. Claude Code 2.1.281 reports its init event only when a first user
+message arrives, so a prompt held for init was never written; the Guard now writes an empty message with
+shouldQuery false (no turn, and no content of its own), compares the init it draws and only then writes
+the prompt, so AC4's stop still comes before the first turn. The real init also lists the engine's
+built-in plugins, bundled and built-in skills and built-in commands: a role-bound run's generated settings
+turn the plugins and skills off, the Skill tool stays when the revision grants it, and the slash-command
+comparison leaves out only the commands the engine's own initialize answer marks built-in (typed, never
+offered to the model; every offered skill is still compared). Codex 0.154 `mcp list` rejects
+the ignore-user-config option and prints no enabled tools, so its listing runs `mcp list` and `mcp get` against an
+empty CODEX_HOME of the run's own. The marker qualification compares first-turn context within a stated
+bound, because two real runs of one role differ by a few dozen tokens. The footprint adds the scaffolder,
+whose file list must lay down both role modules. Status unchanged.

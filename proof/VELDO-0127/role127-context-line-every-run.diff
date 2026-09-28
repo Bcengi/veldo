@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1885,2 +1885 @@
+-            if (metering is not None and metering.first_turn_context is not None
+-                    and (self.binding or {}).get('capability')):
++            if metering is not None and metering.first_turn_context is not None:

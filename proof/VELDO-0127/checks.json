@@ -1,8 +1,4 @@
 {
- "anchors": {
-  "exit_code": 0,
-  "summary": "0 bad anchors"
- },
  "engine_sync": {
   "equal": true,
   "modules": [
@@ -10,21 +6,30 @@
    "control_agent_config_handoff.py",
    "control_engine_claude.py",
    "control_engine_codex.py",
-   "control_launch.py"
+   "control_launch.py",
+   "init_scaffold.py"
   ]
  },
- "footprint": {
-  "exit_code": 0,
-  "summary": "changed 18, outside the footprint: none"
- },
  "live_driver": {
-  "executed": false,
-  "parsed": true
+  "captures": {
+   "claude": "proof/VELDO-0127/claude-live.json",
+   "codex": "proof/VELDO-0127/codex-live.json"
+  },
+  "codex_rejudged": "judged again with the bounded context comparison, no new runs",
+  "executed": true,
+  "model_turns": 14,
+  "problems": {
+   "claude": [],
+   "codex": []
+  },
+  "real_workers": 19
  },
  "mutation_checks": {
+  "builder_drive": "each applied once by hand to the committed tree; every named row red by assertion, none raised",
+  "builder_driven": 11,
   "executed": false,
-  "registered": 7,
-  "static_audit": "7 unique mutations; every replacement occurs exactly once; every mutated module parses"
+  "registered": 18,
+  "static_audit": "18 unique mutations; every replacement occurs exactly once; every mutated module parses"
  },
  "red": {
   "by_assertion": true,
@@ -35,30 +40,23 @@
  "schema": "veldo.implementation-checks/v1",
  "spec_id": "VELDO-0127",
  "suites": {
-  "clean": {
-   "failed_rows": [
-    "VELDO-0127 live/claude",
-    "VELDO-0127 live/codex"
-   ],
-   "live_pending_only": true,
-   "selector": "86_veldo_0127_agent_configuration",
-   "summary": "selftest (PARTIAL, 1 of 132 suites): 36 passed, 2 failed in 7.14s"
+  "86_veldo_0127_agent_configuration": "selftest (PARTIAL, 1 of 132 suites): 38 passed, 0 failed",
+  "launch_neighbours": {
+   "78_veldo_0060_claude_adapter": "61 passed, 0 failed",
+   "79_veldo_0061_codex_adapter": "47 passed, 0 failed",
+   "80_veldo_0155_claude_baseline": "44 passed, 0 failed",
+   "81_veldo_0156_codex_baseline": "48 passed, 0 failed",
+   "82_veldo_0165_launch_hygiene": "49 passed, 0 failed",
+   "82_veldo_0172_live_formats": "30 passed, 0 failed",
+   "82_veldo_0173_tool_registry": "37 passed, 0 failed",
+   "85_veldo_0158_credential_delivery": "49 passed, 0 failed"
   },
-  "normal": {
-   "failed_rows": [
-    "VELDO-0127 live/claude",
-    "VELDO-0127 live/codex"
-   ],
-   "live_pending_only": true,
-   "selector": "86_veldo_0127_agent_configuration",
-   "summary": "selftest (PARTIAL, 1 of 132 suites): 36 passed, 2 failed in 4.23s"
+  "not_run": "the whole selftest, the mutation checker and scripts/verify.sh (the lead runs them)",
+  "regressions_fixed": {
+   "51_parser_boundary": "51 passed, 0 failed",
+   "66_veldo_0047_authority": "56 passed, 0 failed",
+   "82_veldo_0129_worker_wiring": "55 passed, 0 failed",
+   "82_veldo_0141_execution_record": "66 passed, 0 failed"
   }
- },
- "validate": {
-  "exit_code": 0
- },
- "whitespace": {
-  "exit_code": 0,
-  "summary": ""
  }
 }
