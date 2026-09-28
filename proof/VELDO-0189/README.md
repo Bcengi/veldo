@@ -91,7 +91,10 @@ process of their own whose systemctl calls reach that stand-in over a UNIX socke
   right after that point, the engine directory must equal exactly one engine's digests, the installed
   serve (started through the unit) must answer an inspect, a second run must be accepted and end as AC1
   requires, the service is restarted once across both runs, and a kill after the exchange and before its
-  restart must have the second run restart it.
+  restart must have the second run restart it (the second run is accepted only because the upgraded service
+  carried the ownership declarations, so its channel is available and the api edge enrollment goes through
+  it); afterwards every declaration naming an installed engine file names the digest the record holds, and
+  on a copy of the store a digest the file's bytes do not have rebinds nothing.
 - `switch/failed-restart` (AC2): the stand-in fails the restart once; setup refuses
   `unavailable_service:authority:upgrade_start`, the previous engine is back, the record restored byte for
   byte, the service restarted once more on the previous engine and answering, and the step log records
@@ -116,30 +119,38 @@ process of their own whose systemctl calls reach that stand-in over a UNIX socke
 - `install/assets`: the module is scaffolded (not substrate), engine copies identical, and no connection
   beyond loopback was attempted.
 
-## The blocker: store ownership bound to the previous engine's bytes
+## Ownership declarations across an upgrade
 
-`switch/kill-points` is red over the 8bc34e94 host, and it is red for a real defect, not a suite fault.
 control_store's ownership declarations (`entity_owners`) bind each owned command to one module file and
-its sha256 at the moment the service first attaches it. The 8bc34e94 authority service declares
+the sha256 of its bytes when the service first attached it. The 8bc34e94 service declares
 `channel_activation` and `channel_qualification` bound to `bin/control_channel_activation.py`, whose bytes
-changed at 7fefdb9a (VELDO-0140). After the upgrade the current engine's channel ingress re-declares them
-and the store refuses `ownership_conflict` (control_store's own stated limit: "an upgraded module ... is
-refused ownership_conflict at attach, and Release 1 has no re-declaration path (Release 2)"). The service
-starts and answers an inspect, but its Telegram channel is refused (`{'available': False, 'refusal':
-'ownership_conflict'}`), and VELDO-0171's enrollment of the api edge through the running service, which
-reads the authority versions from the channel status, is refused
-`invalid_input:state_root:service_running:api_edge_enrollment`. Every kill row's second run shows exactly
-this in its detail. Any installation whose service ran on an engine older than 7fefdb9a (the owner's own
-host laid down by VELDO-0139, if it predates it) hits it.
+changed at 7fefdb9a (VELDO-0140), so without a re-declaration path the upgraded service's channel ingress
+is refused `ownership_conflict` at attach, and VELDO-0171's enrollment of the api edge through the running
+service, which reads the authority versions from the channel status, is refused
+`invalid_input:state_root:service_running:api_edge_enrollment`. Any installation whose service ran on an
+engine older than an owning module's current bytes hits it, and a fresh installation's store would name
+the current bytes, so AC1 ("the host ends as a fresh installation of the current engine would be") needs
+the declarations carried.
 
-Fixing it means rebinding, during the upgrade, the ownership rows that name an installed engine file the
-upgrade replaces from the previous digest to the current one (with the switch back rebinding them back):
-a store write, which AC3's "the upgrade writes only the engine directory, ..." and the rollback's "the
-store ... never changed by the upgrade" rule out, and a control_store change outside this footprint. That
-is the owner's decision. With the kill host laid down by the 971186ac engine instead (whose owning modules
-equal the current ones), every row of this suite is green and `check_teeth_mutations.py --finding 189`
-rejects all nine mutants (`teeth-971186ac-kill-host.txt`), which shows the switch, the kill recovery and
-the restart rules work; the 8bc34e94 kill rows stay red until ownership is carried across an upgrade.
+They are carried where the store is written by the engine it binds, never by setup: `control_service.serve`,
+right after it opens the store and before anything attaches, passes `control_store.rebind_owners` the
+installed engine as its installation record's `closure` names it (each `bin` file's resolved path and
+digest), and only when the running module is the record's own `executable` (a checkout's copy serving an
+installed configuration rebinds nothing). The store rebinds a declaration only when it names one of those
+files by path, its digest differs, and the file's bytes have the recorded digest now; the selector, value,
+owner and commands never change, and a store with nothing to rebind is not written. So an installed file
+edited by hand (bytes not the record's), and a service started mid-upgrade on the new files with the old
+record, keep their declarations and are refused at attach as before; the next start after the record is
+written carries them. The service logs each rebinding to its observation log (`ownership_rebind`, the
+selector, value, module and both digests). Setup still writes only what AC3 lists; the journal and entity
+rows are untouched, and the declarations are not part of the journal (control_store's stated limit).
+
+**The limit this leaves.** An engine that predates rebind_owners (8bc34e94, 971186ac) cannot attach its
+owners to a store that a later engine rebound: its own declaration names the older bytes. A hand rollback
+(the spec's rollback) to such an engine after the current one has served leaves its owned commands refused
+`ownership_conflict`; a rollback to an engine that has rebind_owners carries them back from the restored
+record. The same holds for AC2's automatic switch back in the one case where the new service attached and
+then did not answer within the wait; the rows' failed restart never starts the new service.
 
 ## Evidence files
 
@@ -147,5 +158,7 @@ the restart rules work; the 8bc34e94 kill rows stay red until ownership is carri
   reason; the suite checks the file names exactly the placeholders it substitutes.
 - `drive.py`: `python3 -B proof/VELDO-0189/drive.py` drives every finding-189 mutation (mutations.json and
   one diff per mutation); `--red <commit>` runs the current suite against that commit's whole tree.
-- `red-at-faa11cfc.json`: the red record at the commit before this change.
+  `--cache <directory> [--budget <seconds>]` keeps each finished run, so a drive longer than one sitting is
+  finished by running it again.
+- `red-at-faa11cfc.json`: the red record at the commit before this change: every row red by assertion.
 - `mutations.json`, `*.diff`: the drive's record.

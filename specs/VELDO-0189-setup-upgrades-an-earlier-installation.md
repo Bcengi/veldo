@@ -18,6 +18,8 @@ footprint:
   - ".veldo/control_factory_setup*.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
   - "engine/.veldo/services/*"
   - ".veldo/services/*"
   - "engine/.veldo/init_scaffold.py"
@@ -235,3 +237,19 @@ service first attached (changed at 7fefdb9a), so the upgraded service's channel 
 ownership_conflict and the API edge enrollment through it is refused. Carrying ownership across an upgrade
 is a store write that AC3 and the rollback rule out, and a control_store change outside this footprint: the
 owner decides. Over a 971186ac kill host every row is green and every mutation is rejected.
+
+2026-09-28, build: the blocker fixed. A fresh installation's store names the current bytes of every owning
+module, so AC1 needs the ownership declarations carried to the upgraded engine; they are carried by the
+engine that holds them, not by setup, so AC3's list of what the upgrade writes stands. control_store gains
+rebind_owners, its one re-declaration path, and the footprint gains .veldo/control_store.py and its engine
+copy for it: a declaration naming an installed engine file by path is rebound to the digest the
+installation record holds, only when the file's bytes have that digest now; selector, value, owner and
+commands never change. control_service.serve calls it with the record's closure right after it opens the
+store and before anything attaches, only when the running module is the record's executable, and logs each
+rebinding (ownership_rebind). An edited file, or a service started on the new files before the record is
+rewritten, keeps its declaration and is refused at attach as before. switch/kill-points is green over the
+8bc34e94 host, and two mutations (the carry removed; a digest the file does not have taken) are rejected
+on it. The limit this leaves, stated in control_store: an engine that predates rebind_owners cannot attach
+its owners to a store a later engine rebound, so the rollback by hand to such an engine after the current
+one has served leaves its owned commands refused ownership_conflict (a rollback to an engine with
+rebind_owners carries them back from the restored record).

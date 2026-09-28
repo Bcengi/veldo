@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1834 +1834 @@
+-            rebound = S.rebind_owners(conn, installed_engine(config))
++            rebound = []  # defect: the declarations keep the previous engine's digests

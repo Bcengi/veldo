@@ -2,15 +2,8 @@
  "all_by_assertion": true,
  "all_named_rows_red": true,
  "baseline": {
-  "details": [
-   "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-   "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-   "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-   "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2"
-  ],
-  "failed_rows": [
-   "VELDO-0189 switch/kill-points"
-  ],
+  "details": [],
+  "failed_rows": [],
   "preamble_rows": 26,
   "rows": [
    [
@@ -39,7 +32,7 @@
    ],
    [
     "VELDO-0189 switch/kill-points",
-    false
+    true
    ],
    [
     "VELDO-0189 switch/failed-restart",
@@ -62,9 +55,9 @@
     true
    ]
   ],
-  "seconds": 51.418
+  "seconds": 102.904
  },
- "controls_green": false,
+ "controls_green": true,
  "mutants": [
   {
    "by_assertion": true,
@@ -84,9 +77,9 @@
     "VELDO-0189 switch/kill-points detail: killed at 1 (begin): the service was restarted once across the killed run and the second [2]",
     "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
     "VELDO-0189 announce/before-first-write detail: 971186ac: the engine_upgrade step names the previous and current engine digests and the files changed, added and removed [0 0 0]",
-    "VELDO-0189 restart/rules detail: with the authority unit active, setup restarted it once through systemctl and nothing else [[['restart', 'veldo-authority-50e128027b33d0a6.service'], ['restart', 'veldo-authority-50e128027b33d0a6.service']]]",
+    "VELDO-0189 restart/rules detail: with the authority unit active, setup restarted it once through systemctl and nothing else [[['restart', 'veldo-authority-9e29965d4001bf26.service'], ['restart', 'veldo-authority-9e29965d4001bf26.service']]]",
     "VELDO-0189 second-run/changes-nothing detail: the second run is accepted, its engine_upgrade already done [refused None]",
-    "VELDO-0189 second-run/changes-nothing detail: the invocation log shows no restart, start or stop [[['restart', 'veldo-authority-50e128027b33d0a6.service'], ['restart', 'veldo-authority-50e128027b33d0a6.service']]]"
+    "VELDO-0189 second-run/changes-nothing detail: the invocation log shows no restart, start or stop [[['restart', 'veldo-authority-9e29965d4001bf26.service'], ['restart', 'veldo-authority-9e29965d4001bf26.service']]]"
    ],
    "diff": "proof/VELDO-0189/upgrade189-only-recorded-names.diff",
    "failed_rows": [
@@ -155,20 +148,22 @@
      false
     ]
    ],
-   "seconds": 51.978,
+   "seconds": 47.563,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'exchanged', 'configuration', 'record', 'restart', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
-    "VELDO-0189 switch/kill-points detail: a kill row ran at every point, at least begin, staged, exchanged, record and restart [['begin', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'exchanged', 'configuration', 'record', 'restart', 'done']]",
+    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote): the installed engine directory equals exactly one engine's digests [neither (68 files)]",
+    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote): a second run is accepted [refused invalid_input:install_root:unrecorded:/dev/shm/b189-hg3mp52m/install-kill/316ef3d8fb1341e6/bin/accounts.py; the service's channel {'available': True}]",
+    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote), then run again: the installed engine directory equals the fresh one in names, bytes and modes [missing ['control_account_limit.py', 'control_account_pool.py', 'control_accounts.py', 'control_api.py'], extra [], differing ['control_api_assertion.py', 'control_api_authority.py', 'control_api_models.py', 'control_assignment.py']]",
+    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/receiver-@RECEIVER@.json: ['host_trust']\"]]",
+    "VELDO-0189 switch/kill-points detail: killed at 2 (wrote): the service was restarted once across the killed run and the second [0]",
+    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 3",
+    "VELDO-0189 switch/kill-points detail: a kill row ran at every point, at least begin, staged, exchanged, record and restart [['begin', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'wrote', 'exchanged', 'configuration', 'record', 'restart', 'done']]",
     "VELDO-0189 switch/failed-restart detail: the previous engine is back in bin",
     "VELDO-0189 switch/failed-restart detail: its record is restored byte for byte",
-    "VELDO-0189 switch/failed-restart detail: the service was restarted once more, on the previous engine, and answers [[['restart', 'veldo-authority-cb61866e6b8d3636.service']]]",
+    "VELDO-0189 switch/failed-restart detail: the service was restarted once more, on the previous engine, and answers [[['restart', 'veldo-authority-316ef3d8fb1341e6.service']]]",
     "VELDO-0189 switch/failed-restart detail: the step log records the switch back with its reason [[]]"
    ],
    "diff": "proof/VELDO-0189/upgrade189-in-place-writes.diff",
@@ -234,7 +229,7 @@
      true
     ]
    ],
-   "seconds": 50.168,
+   "seconds": 52.598,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
   {
@@ -242,13 +237,11 @@
    "details": [
     "VELDO-0189 upgrade/from-8bc34e94 detail: 8bc34e94: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['adapters']\"]]",
     "VELDO-0189 upgrade/from-971186ac detail: 971186ac: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['adapters']\"]]",
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/receiver-@RECEIVER@.json: ['adapters']\"]]",
+    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['adapters']\"]]",
     "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
-    "VELDO-0189 kept/owner-data detail: 8bc34e94: every value in every configuration file under the installation's config directory keeps what was there, the only changes a key the file lacked or held as null and the record's engine keys [['receiver-8210ad6ee6cf465d.json:adapters']]",
+    "VELDO-0189 kept/owner-data detail: 8bc34e94: every value in every configuration file under the installation's config directory keeps what was there, the only changes a key the file lacked or held as null and the record's engine keys [['receiver-938e88c35a3f2970.json:adapters']]",
     "VELDO-0189 kept/owner-data detail: 8bc34e94: the receiver configuration keeps the owner-set adapters [{}]",
-    "VELDO-0189 kept/owner-data detail: 971186ac: every value in every configuration file under the installation's config directory keeps what was there, the only changes a key the file lacked or held as null and the record's engine keys [['receiver-742978c14a0fc57a.json:adapters']]",
+    "VELDO-0189 kept/owner-data detail: 971186ac: every value in every configuration file under the installation's config directory keeps what was there, the only changes a key the file lacked or held as null and the record's engine keys [['receiver-a3d1d295fdde2e99.json:adapters']]",
     "VELDO-0189 kept/owner-data detail: 971186ac: the receiver configuration keeps the owner-set adapters [{}]"
    ],
    "diff": "proof/VELDO-0189/upgrade189-configs-written-fresh.diff",
@@ -316,17 +309,15 @@
      true
     ]
    ],
-   "seconds": 49.986,
+   "seconds": 46.641,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
-    "VELDO-0189 second-run/changes-nothing detail: the invocation log shows no restart, start or stop [[['restart', 'veldo-authority-a77cf677668dbee5.service']]]"
+    "VELDO-0189 switch/kill-points detail: killed at 7 (removed_previous): the service was restarted once across the killed run and the second [2]",
+    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 8",
+    "VELDO-0189 second-run/changes-nothing detail: the invocation log shows no restart, start or stop [[['restart', 'veldo-authority-2d9d0ee29eba1b32.service']]]"
    ],
    "diff": "proof/VELDO-0189/upgrade189-restart-every-run.diff",
    "failed_rows": [
@@ -391,23 +382,18 @@
      false
     ]
    ],
-   "seconds": 51.54,
+   "seconds": 95.391,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0189 upgrade/refused-by-name detail: an installed engine file edited by hand is refused as invalid_input:install_root:differs:/dev/shm/b189-kqnszrjk/install-kill/b26cb6c9024cedb0/bin/control_store.py, writing nothing and printing nothing [0 None ['/dev/shm/b189-kqnszrjk/install-kill/b26cb6c9024cedb0/bin/control_api_assertion.py', '/dev/shm/b189-kqnszrjk/install-kill/b26cb6c9024cedb0/bin/control_api_authority.py', '/dev/shm/b189-kqnszrjk/install-kill/b26cb6c9024cedb0/bin/control_api_models.py']]",
-    "VELDO-0189 upgrade/refused-by-name detail: a file the record does not name is refused as invalid_input:install_root:unrecorded:/dev/shm/b189-kqnszrjk/install-kill/b26cb6c9024cedb0/bin/planted.py, writing nothing and printing nothing [0 None ['/dev/shm/b189-kqnszrjk/install-kill/b26cb6c9024cedb0/bin/control_api_assertion.py', '/dev/shm/b189-kqnszrjk/install-kill/b26cb6c9024cedb0/bin/control_api_authority.py', '/dev/shm/b189-kqnszrjk/install-kill/b26cb6c9024cedb0/bin/control_api_models.py']]",
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2"
+    "VELDO-0189 upgrade/refused-by-name detail: an installed engine file edited by hand is refused as invalid_input:install_root:differs:/dev/shm/b189-vgocvk1m/install-kill/c5a08851b2933a0a/bin/control_store.py, writing nothing and printing nothing [0 None ['/dev/shm/b189-vgocvk1m/install-kill/c5a08851b2933a0a/bin/control_api_assertion.py', '/dev/shm/b189-vgocvk1m/install-kill/c5a08851b2933a0a/bin/control_api_authority.py', '/dev/shm/b189-vgocvk1m/install-kill/c5a08851b2933a0a/bin/control_api_models.py']]",
+    "VELDO-0189 upgrade/refused-by-name detail: a file the record does not name is refused as invalid_input:install_root:unrecorded:/dev/shm/b189-vgocvk1m/install-kill/c5a08851b2933a0a/bin/planted.py, writing nothing and printing nothing [0 None ['/dev/shm/b189-vgocvk1m/install-kill/c5a08851b2933a0a/bin/control_api_assertion.py', '/dev/shm/b189-vgocvk1m/install-kill/c5a08851b2933a0a/bin/control_api_authority.py', '/dev/shm/b189-vgocvk1m/install-kill/c5a08851b2933a0a/bin/control_api_models.py']]"
    ],
    "diff": "proof/VELDO-0189/upgrade189-edited-file-overwritten.diff",
    "failed_rows": [
-    "VELDO-0189 upgrade/refused-by-name",
-    "VELDO-0189 switch/kill-points"
+    "VELDO-0189 upgrade/refused-by-name"
    ],
    "module": ".veldo/control_factory_setup_upgrade.py",
    "mutant_sha256": "1256ae4a1604dbcb94169dd0943cee5120369a3b96fef1c1bc57df6f2e3dbebd",
@@ -444,7 +430,7 @@
     ],
     [
      "VELDO-0189 switch/kill-points",
-     false
+     true
     ],
     [
      "VELDO-0189 switch/failed-restart",
@@ -467,23 +453,18 @@
      true
     ]
    ],
-   "seconds": 51.894,
+   "seconds": 103.476,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0189 upgrade/removed-module detail: the removed module is gone from the installed engine and from the record, and the upgrade names it removed [['control_keys_custody.py']]",
-    "VELDO-0189 upgrade/removed-module detail: the installed engine is exactly the fixture engine's files",
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2"
+    "VELDO-0189 upgrade/removed-module detail: the installed engine is exactly the fixture engine's files"
    ],
    "diff": "proof/VELDO-0189/upgrade189-removed-file-kept.diff",
    "failed_rows": [
-    "VELDO-0189 upgrade/removed-module",
-    "VELDO-0189 switch/kill-points"
+    "VELDO-0189 upgrade/removed-module"
    ],
    "module": ".veldo/control_factory_setup_upgrade.py",
    "mutant_sha256": "2d2db57d80389518c2dbaf08677e1b58e6cca2214a6c7628b6285521616bdca5",
@@ -520,7 +501,7 @@
     ],
     [
      "VELDO-0189 switch/kill-points",
-     false
+     true
     ],
     [
      "VELDO-0189 switch/failed-restart",
@@ -543,24 +524,19 @@
      true
     ]
    ],
-   "seconds": 50.418,
+   "seconds": 101.373,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
     "VELDO-0189 switch/failed-restart detail: the previous engine is back in bin",
     "VELDO-0189 switch/failed-restart detail: its record is restored byte for byte",
-    "VELDO-0189 switch/failed-restart detail: the service was restarted once more, on the previous engine, and answers [[['restart', 'veldo-authority-77e1e73af3a94fc7.service']]]",
+    "VELDO-0189 switch/failed-restart detail: the service was restarted once more, on the previous engine, and answers [[['restart', 'veldo-authority-7709d7bb37b069b4.service']]]",
     "VELDO-0189 switch/failed-restart detail: the step log records the switch back with its reason [[]]"
    ],
    "diff": "proof/VELDO-0189/upgrade189-no-switch-back.diff",
    "failed_rows": [
-    "VELDO-0189 switch/kill-points",
     "VELDO-0189 switch/failed-restart"
    ],
    "module": ".veldo/control_factory_setup_upgrade.py",
@@ -598,7 +574,7 @@
     ],
     [
      "VELDO-0189 switch/kill-points",
-     false
+     true
     ],
     [
      "VELDO-0189 switch/failed-restart",
@@ -621,22 +597,17 @@
      true
     ]
    ],
-   "seconds": 49.387,
+   "seconds": 103.632,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0189 upgrade/refused-by-name detail: an install root whose filesystem cannot exchange two directories is refused as unavailable_service:install_root:exchange, writing nothing and printing nothing [1 setup_incomplete:engine_upgrade:OSError ['/dev/shm/b189-8k7tkpcz/install-kill/ffddee158cf7aaf1/bin.upgrade', '/dev/shm/b189-8k7tkpcz/install-kill/ffddee158cf7aaf1/bin.upgrade/accounts.py', '/dev/shm/b189-8k7tkpcz/install-kill/ffddee158cf7aaf1/bin.upgrade/arch.py']]",
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2"
+    "VELDO-0189 upgrade/refused-by-name detail: an install root whose filesystem cannot exchange two directories is refused as unavailable_service:install_root:exchange, writing nothing and printing nothing [1 setup_incomplete:engine_upgrade:OSError ['/dev/shm/b189-6tbnemiu/install-kill/eefb136d070008dd/bin.upgrade', '/dev/shm/b189-6tbnemiu/install-kill/eefb136d070008dd/bin.upgrade/accounts.py', '/dev/shm/b189-6tbnemiu/install-kill/eefb136d070008dd/bin.upgrade/arch.py']]"
    ],
    "diff": "proof/VELDO-0189/upgrade189-no-exchange-probe.diff",
    "failed_rows": [
-    "VELDO-0189 upgrade/refused-by-name",
-    "VELDO-0189 switch/kill-points"
+    "VELDO-0189 upgrade/refused-by-name"
    ],
    "module": ".veldo/control_factory_setup_upgrade.py",
    "mutant_sha256": "132ebe037a816a17bba4ee66d5b156ae8a394a06251bb004bc39e4ff023abfee",
@@ -673,7 +644,7 @@
     ],
     [
      "VELDO-0189 switch/kill-points",
-     false
+     true
     ],
     [
      "VELDO-0189 switch/failed-restart",
@@ -696,25 +667,20 @@
      true
     ]
    ],
-   "seconds": 50.468,
+   "seconds": 103.222,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0189 install/assets detail: .veldo/control_factory_setup_upgrade.py installed by the scaffold, not claimed as validator substrate",
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2"
+    "VELDO-0189 install/assets detail: .veldo/control_factory_setup_upgrade.py installed by the scaffold, not claimed as validator substrate"
    ],
    "diff": "proof/VELDO-0189/upgrade189-module-not-scaffolded.diff",
    "failed_rows": [
-    "VELDO-0189 install/assets",
-    "VELDO-0189 switch/kill-points"
+    "VELDO-0189 install/assets"
    ],
    "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "b3a6add26d084e61593be0734ef92e8e53055b7792758498493db6c960ccf3d1",
+   "mutant_sha256": "a75d208363f825bfff993a5187c9f1ffd951dad9f964651974557663ff7fdcb8",
    "name": "upgrade189-module-not-scaffolded",
    "named_row_red": true,
    "named_rows": [
@@ -748,6 +714,80 @@
     ],
     [
      "VELDO-0189 switch/kill-points",
+     true
+    ],
+    [
+     "VELDO-0189 switch/failed-restart",
+     true
+    ],
+    [
+     "VELDO-0189 kept/owner-data",
+     true
+    ],
+    [
+     "VELDO-0189 announce/before-first-write",
+     true
+    ],
+    [
+     "VELDO-0189 restart/rules",
+     true
+    ],
+    [
+     "VELDO-0189 second-run/changes-nothing",
+     true
+    ]
+   ],
+   "seconds": 103.02,
+   "source_sha256": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
+    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
+    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
+    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
+    "VELDO-0189 switch/kill-points detail: after the upgrades every ownership declaration naming an installed engine file names the digest the record holds [8 of 8 declarations name one; stale [('channel_activation', 'control_channel_activation.py'), ('channel_qualification', 'control_channel_activation.py')]]"
+   ],
+   "diff": "proof/VELDO-0189/upgrade189-ownership-not-carried.diff",
+   "failed_rows": [
+    "VELDO-0189 switch/kill-points"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "cd82dc563c94cb487bb0ba8f70741af48decc348214ef5ce4255c87ba3ff4648",
+   "name": "upgrade189-ownership-not-carried",
+   "named_row_red": true,
+   "named_rows": [
+    "switch/kill-points"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0189 install/assets",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/from-8bc34e94",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/from-971186ac",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/removed-module",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/census",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/refused-by-name",
+     true
+    ],
+    [
+     "VELDO-0189 switch/kill-points",
      false
     ],
     [
@@ -771,8 +811,78 @@
      true
     ]
    ],
-   "seconds": 49.923,
-   "source_sha256": "98cfc0647183588ba061c167d7e69be4c0f62436b2d1a95b6a79b29d1f56f027"
+   "seconds": 48.088,
+   "source_sha256": "167aeb508b22844df11d15eb30e2abbc487ba261f223fad4fc468aa20e1a3357"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0189 switch/kill-points detail: a declaration is not rebound to a digest its file's bytes do not have [[('kind', 'channel_activation', '/dev/shm/b189-ss2g9llq/install-kill/e883c7addef5cc83/bin/control_channel_activation.py', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e', 'sha256:db81b3104e8532b3d8d71b9dfb6bbf8dd1e2a8636d95e7e81db93eb8a8e585cf'), ('kind', 'channel_qualification', '/dev/shm/b189-ss2g9llq/install-kill/e883c7addef5cc83/bin/control_channel_activation.py', 'sha256:45d4f29c1b26913a14a25ed4016e739b1ebadf0c7e2bb2378ffeb94d64563f3e', 'sha256:db81b3104e8532b3d8d71b9dfb6bbf8dd1e2a8636d95e7e81db93eb8a8e585cf')]]"
+   ],
+   "diff": "proof/VELDO-0189/upgrade189-rebind-any-digest.diff",
+   "failed_rows": [
+    "VELDO-0189 switch/kill-points"
+   ],
+   "module": ".veldo/control_store.py",
+   "mutant_sha256": "9492414731a748d401e17d187a138a5a73a4cf3daadce1ebd51b2c357157ccb6",
+   "name": "upgrade189-rebind-any-digest",
+   "named_row_red": true,
+   "named_rows": [
+    "switch/kill-points"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0189 install/assets",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/from-8bc34e94",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/from-971186ac",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/removed-module",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/census",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/refused-by-name",
+     true
+    ],
+    [
+     "VELDO-0189 switch/kill-points",
+     false
+    ],
+    [
+     "VELDO-0189 switch/failed-restart",
+     true
+    ],
+    [
+     "VELDO-0189 kept/owner-data",
+     true
+    ],
+    [
+     "VELDO-0189 announce/before-first-write",
+     true
+    ],
+    [
+     "VELDO-0189 restart/rules",
+     true
+    ],
+    [
+     "VELDO-0189 second-run/changes-nothing",
+     true
+    ]
+   ],
+   "seconds": 105.407,
+   "source_sha256": "59671a934add15a58e7cfb6928c6a199a9a3c778195a457e7692e75445c5043c"
   }
  ],
  "mutations_per_row": {
@@ -789,7 +899,9 @@
    "upgrade189-no-switch-back"
   ],
   "switch/kill-points": [
-   "upgrade189-in-place-writes"
+   "upgrade189-in-place-writes",
+   "upgrade189-ownership-not-carried",
+   "upgrade189-rebind-any-digest"
   ],
   "upgrade/from-8bc34e94": [
    "upgrade189-only-recorded-names"
@@ -805,15 +917,8 @@
  "noop": {
   "control_factory_setup_upgrade.py": {
    "copy_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05",
-   "details": [
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2"
-   ],
-   "failed_rows": [
-    "VELDO-0189 switch/kill-points"
-   ],
+   "details": [],
+   "failed_rows": [],
    "preamble_rows": 26,
    "rows": [
     [
@@ -842,7 +947,7 @@
     ],
     [
      "VELDO-0189 switch/kill-points",
-     false
+     true
     ],
     [
      "VELDO-0189 switch/failed-restart",
@@ -865,20 +970,13 @@
      true
     ]
    ],
-   "seconds": 49.911,
+   "seconds": 101.99,
    "source_sha256": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
   },
-  "init_scaffold.py": {
-   "copy_sha256": "98cfc0647183588ba061c167d7e69be4c0f62436b2d1a95b6a79b29d1f56f027",
-   "details": [
-    "VELDO-0189 switch/kill-points detail: an upgrade run to its end names its write points in its step log [1 ['begin', 'staged', 'exchanged', 'configuration', 'record', 'restart', 'removed_previous', 'done']]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin): a second run is accepted [refused invalid_input:state_root:service_running:api_edge_enrollment; the service's channel {'available': False, 'refusal': 'ownership_conflict'}]",
-    "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [['config/api-process.json', 'config/api-service.json', \"config/service.json: ['api_service']\"]]",
-    "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2"
-   ],
-   "failed_rows": [
-    "VELDO-0189 switch/kill-points"
-   ],
+  "control_service.py": {
+   "copy_sha256": "167aeb508b22844df11d15eb30e2abbc487ba261f223fad4fc468aa20e1a3357",
+   "details": [],
+   "failed_rows": [],
    "preamble_rows": 26,
    "rows": [
     [
@@ -907,7 +1005,7 @@
     ],
     [
      "VELDO-0189 switch/kill-points",
-     false
+     true
     ],
     [
      "VELDO-0189 switch/failed-restart",
@@ -930,13 +1028,129 @@
      true
     ]
    ],
-   "seconds": 50.897,
-   "source_sha256": "98cfc0647183588ba061c167d7e69be4c0f62436b2d1a95b6a79b29d1f56f027"
+   "seconds": 103.708,
+   "source_sha256": "167aeb508b22844df11d15eb30e2abbc487ba261f223fad4fc468aa20e1a3357"
+  },
+  "control_store.py": {
+   "copy_sha256": "59671a934add15a58e7cfb6928c6a199a9a3c778195a457e7692e75445c5043c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0189 install/assets",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/from-8bc34e94",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/from-971186ac",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/removed-module",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/census",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/refused-by-name",
+     true
+    ],
+    [
+     "VELDO-0189 switch/kill-points",
+     true
+    ],
+    [
+     "VELDO-0189 switch/failed-restart",
+     true
+    ],
+    [
+     "VELDO-0189 kept/owner-data",
+     true
+    ],
+    [
+     "VELDO-0189 announce/before-first-write",
+     true
+    ],
+    [
+     "VELDO-0189 restart/rules",
+     true
+    ],
+    [
+     "VELDO-0189 second-run/changes-nothing",
+     true
+    ]
+   ],
+   "seconds": 104.51,
+   "source_sha256": "59671a934add15a58e7cfb6928c6a199a9a3c778195a457e7692e75445c5043c"
+  },
+  "init_scaffold.py": {
+   "copy_sha256": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0189 install/assets",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/from-8bc34e94",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/from-971186ac",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/removed-module",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/census",
+     true
+    ],
+    [
+     "VELDO-0189 upgrade/refused-by-name",
+     true
+    ],
+    [
+     "VELDO-0189 switch/kill-points",
+     true
+    ],
+    [
+     "VELDO-0189 switch/failed-restart",
+     true
+    ],
+    [
+     "VELDO-0189 kept/owner-data",
+     true
+    ],
+    [
+     "VELDO-0189 announce/before-first-write",
+     true
+    ],
+    [
+     "VELDO-0189 restart/rules",
+     true
+    ],
+    [
+     "VELDO-0189 second-run/changes-nothing",
+     true
+    ]
+   ],
+   "seconds": 102.85,
+   "source_sha256": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 189",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 607.988,
+ "serial_seconds": 1426.373,
  "spec_id": "VELDO-0189",
  "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py"
 }
