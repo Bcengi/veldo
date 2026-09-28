@@ -80,8 +80,7 @@ def capture(f, engine, mode, marker, evidence, diagnostics=None):
     # The engine's own built-in commands, as its initialize answer marks them (names only).
     answer = next((((e.get('response') or {}).get('response') or {}) for e in events if e.get('type') == 'control_response'
                    and isinstance(((e.get('response') or {}).get('response') or {}).get('commands'), list)), {})
-    builtin = sorted(c['name'] for c in answer.get('commands', []) if isinstance(c, dict) and c.get('builtin') is True
-                     and isinstance(c.get('name'), str))
+    builtin = list(f.L.HANDOFF.builtin_commands(answer.get('commands')))
     init = {k: init[k] for k in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins', 'model') if k in init}
     options = baseline.get('options') or []
     disallowed = next((a.split('=', 1)[1].split(',') for a in options if a.startswith(P + 'disallowedTools=')), [])
@@ -111,16 +110,38 @@ def capture(f, engine, mode, marker, evidence, diagnostics=None):
         else:
             context_events.append({'type':'turn.completed', 'usage':event['usage']})
         break
+    wire = None
+    if engine == 'codex':
+        loopback = load('role_loopback', HERE / 'loopback.py')
+        wire = loopback.capture(document['executable']['path'], configuration)
     return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
             'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
-            'builtin_commands':builtin,
-            'disallowed':disallowed, 'configuration':configuration, 'listing':listing,
+            'builtin_commands':builtin, 'probe':document.get('probe'),
+            'disallowed':disallowed, 'configuration':configuration, 'listing':listing, 'wire_capture':wire,
             'first_turn_context':document.get('first_turn_context'), 'context_events':context_events,
             'credential_sources':cred.get('credentials'), 'record_commitment':record.get('execution_record'),
             'marker_present':'VELDO0127_UNLISTED_MARKER' in text,
             'debug_bytes':len(debug_text.encode()), 'debug_sha256':hashlib.sha256(debug_text.encode()).hexdigest(),
             'debug_marker_present':'VELDO0127_UNLISTED_MARKER' in debug_text,
             'debug_lines':[s for s in debug if 'CLAUDE.md' in s or 'instruction' in s.lower()][:30]}
+
+
+def discovery_control(binary, profile, evidence):
+    """Lead-only positive control: explicitly enable instruction discovery in a scratch project."""
+    with tempfile.TemporaryDirectory(prefix='v127-debug-control-') as temp:
+        root = Path(temp)
+        (root / 'CLAUDE.md').write_text('VELDO0127_UNLISTED_MARKER ' * evidence.MARKER_REPETITIONS)
+        debug = root / 'debug.log'
+        env = {'PATH':'/usr/bin:/bin', 'HOME':temp, 'CLAUDE_CONFIG_DIR':str(profile),
+               'DISABLE_AUTOUPDATER':'1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY':'1'}
+        done = subprocess.run([str(binary), '-p', 'Reply ready without tools.', P + 'verbose',
+                               P + 'output-format', 'stream-json', P + 'debug-file', str(debug)],
+                              cwd=root, env=env, capture_output=True, text=True, timeout=90)
+        text = debug.read_text() if debug.is_file() else ''
+        lines = [line for line in text.splitlines() if 'CLAUDE.md' in line]
+        return {'ran':True, 'returncode':done.returncode, 'debug_bytes':len(text.encode()),
+                'debug_lines':lines, 'debug_sha256':hashlib.sha256(text.encode()).hexdigest(),
+                'qualification':'debug-and-context' if lines else 'context-size-only'}
 
 
 def main():
@@ -195,6 +216,8 @@ def main():
                         result['runs'].append(capture(f, engine, mode, True, evidence, diagnostics))
                     finally:
                         for path in marker_paths: path.unlink()
+                if engine == 'claude' and not only:
+                    result['debug_control'] = discovery_control(args['claude'], base / 'claude-login', evidence)
                 result['problems'] = evidence.problems(ROOT, engine, result, f.L.HANDOFF)
                 if only:
                     for run in result['runs']:

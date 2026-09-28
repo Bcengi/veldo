@@ -1,0 +1,30 @@
+{
+ "tools": [
+  {
+   "type": "function",
+   "name": "exec_command",
+   "parameters": {}
+  },
+  {
+   "type": "function",
+   "name": "write_stdin",
+   "parameters": {}
+  },
+  {
+   "type": "function",
+   "name": "update_plan",
+   "parameters": {}
+  },
+  {
+   "type": "namespace",
+   "name": "mcp__jira",
+   "tools": [
+    {
+     "type": "function",
+     "name": "jira_search",
+     "parameters": {}
+    }
+   ]
+  }
+ ]
+}

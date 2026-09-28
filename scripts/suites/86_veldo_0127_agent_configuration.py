@@ -17,8 +17,12 @@ def _v127_suite():
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
         'control_engine_codex.py': ROOT / ".veldo" / "control_engine_codex.py",
     }
+    EVIDENCE_PATH = ROOT / "." / "proof/VELDO-0127/evidence.py"
+    LIVE_PATH = ROOT / "." / "proof/VELDO-0127/live.py"
     ROWS = ('revision/history', 'handoff/claude', 'handoff/codex', 'dispatch/binding', 'dispatch/refusal',
-            'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines')
+            'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines',
+            'review/skill-commit', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
+            'review/marker-debug', 'review/codex-tools')
     rows = {name: [] for name in ROWS}
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -132,6 +136,7 @@ if engine == 'claude':
     init.update(tools=tools, mcp_servers=[{'name':n,'status':'connected'} for n in servers], skills=skills,
                 slash_commands=skills + commands, plugins=plugins)
     fault = (markers / 'fault').read_text() if (markers / 'fault').exists() else ''
+    if fault == 'slash': init['slash_commands'].append('collision')
     if fault == 'skill': init['skills'].append('unlisted')
     if fault == 'tool': init['tools'].append('UnlistedTool')
     if fault == 'missing': init['tools'] = [t for t in init['tools'] if t != 'mcp__jira__jira_search']
@@ -153,17 +158,21 @@ if engine == 'claude':
             listed = [{'name': n, 'description': n, 'argumentHint': ''} for n in skills if n.startswith('veldo-role:')]
             listed += [{'name': n, 'description': n, 'argumentHint': '', 'builtin': True}
                        for n in engine_skills + commands if not no_skills]
+            if fault == 'slash': listed += [{'name':'collision','builtin':True}, {'name':'collision','builtin':False}]
             emit({'type':'control_response','response':{'subtype':'success','request_id':message['request_id'],
                   'response':{'account':{'subscriptionType':'Claude Team','apiProvider':'firstParty'},'pid':os.getpid(),
                               'commands': listed}}})
         elif message.get('type') == 'user':
+            if fault == 'no-init': continue
             if not reported:
                 reported = True
                 with (markers / (str(os.getpid()) + '.out')).open('a') as out: out.write(json.dumps(init) + chr(10))
                 print(json.dumps(init), flush=True)
             if message.get('shouldQuery') is False:
+                if fault == 'probe-exit': os.close(0)
                 emit({'type':'result','subtype':'success','is_error':False,'num_turns':0,'result':'',
                       'usage':{'input_tokens':0,'output_tokens':0}})
+                if fault == 'probe-exit': sys.exit(0)
                 continue
             packet = json.loads(message['message']['content'])
             break
@@ -174,6 +183,14 @@ else:
                        for n,e in config.get('mcp_servers',{}).items()}
     (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
     packet = json.loads(sys.stdin.read())
+    if Path('.git').exists():
+        Path('delivered.txt').write_text('worker output')
+        subprocess.run(['git','add','-A'], check=True, capture_output=True)
+        subprocess.run(['git','-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+                        '-c','commit.gpgsign=false','commit',P+'allow-empty','-qm','Worker delivery'], check=True, capture_output=True)
+        own['committed_paths'] = subprocess.run(['git','ls-tree','-r',P+'name-only','HEAD'],
+                                               check=True,capture_output=True,text=True).stdout.splitlines()
+        (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
 (markers / (str(os.getpid()) + '.turn')).write_text('first turn')
 for step in (packet.get('payload') or {}).get('script',[]):
     if 'line' in step: emit(step['line'])
@@ -218,7 +235,10 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 script = [c_msg('role-message', 30, 3), c_rate('allowed', 2000000000), c_result(30, 4)] if engine == 'claude' else [
                     x_thread(), x_started(), x_message(), x_done(30, 4)]
                 return {'task': 'Read the role instructions', 'script': script}
+            claude_blocked = False
             def run(engine, unit, configuration):
+                if engine == 'claude' and claude_blocked:
+                    return None, {}, {}, 'configuration_stop:init_missing'
                 contract, error = attempt(lambda: f.prepare(engine, unit, configuration, payload(engine)))
                 if contract is None:
                     return None, {}, {}, error
@@ -285,12 +305,26 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           [m['type'] for m in received] == ['control_request', 'user', 'user']
                           and users[0] == {'type': 'user', 'shouldQuery': False, 'content': []}
                           and users[1].get('shouldQuery') is None and bool(users[1].get('content')))
+                    claude_blocked = not users
                     check('handoff/claude', 'engine plugins, bundled and built-in skills stay off; built-in commands only typed',
                           [p['name'] for p in init.get('plugins', [])] == ['veldo-role'] and init.get('skills') == ['veldo-role:inspect']
                           and set(init.get('slash_commands', [])) - {'veldo-role:inspect'} == {'clear', 'compact', 'init'})
                     check('launch/instructions', 'both listed instruction sources reach generated Claude file',
                           own.get('instructions') == 'Use the listed role instruction.\n\n\nUse the project role instruction.\n')
                 else:
+                    check('review/skill-commit', 'a commit of everything includes delivery and no staged skill link',
+                          'delivered.txt' in own.get('committed_paths', [])
+                          and not any(p.startswith('.agents/skills/') for p in own.get('committed_paths', [])))
+                    wire = json.loads((TREE / 'proof/VELDO-0127/request-fixture.json').read_text())
+                    wanted = L.HANDOFF.expected({'revision':bound, 'skills':[]}, {'jira':{'tools':['jira_search']}})
+                    compare = getattr(L.HANDOFF, 'codex_tool_difference', None)
+                    good = compare(wire, wanted) if compare else 'absent comparison'
+                    extra = copy.deepcopy(wire); extra['tools'].append({'type':'function','name':'ungranted','parameters':{}})
+                    missing = copy.deepcopy(wire); missing['tools'].pop()
+                    check('review/codex-tools', 'wire fixture matches both directions and detects missing or additional tools',
+                          compare is not None and good is None
+                          and compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool'
+                          and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
                     cfg = own.get('configuration', {})
                     check('handoff/codex', 'generated settings, native features and filtered MCP list match',
                           own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == 'fixture-model'
@@ -305,9 +339,10 @@ for step in (packet.get('payload') or {}).get('script',[]):
             pending = f.prepare('claude', 'bound-a', {'role':'claude','revision':1}, payload('claude'))
             updated = f.role('claude'); updated['native_tools'] = [{'name':'Read','load':'always'}]
             f.save(updated, 2)
-            work = f.launch('claude', pending); record = f.finish('claude', work)
+            work = f.launch('claude', pending) if not claude_blocked else None
+            record = f.finish('claude', work) if work else {}
             _, later, later_own, _ = run('claude', 'bound-b', {'role':'claude'})
-            earlier = record['contract']['capability']['configuration']['role_revision']
+            earlier = record.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision', {})
             next_revision = later.get('contract',{}).get('capability',{}).get('configuration',{}).get('role_revision',{})
             check('dispatch/binding', 'a launch stays on A after B is saved and next dispatch uses B',
                   earlier == pending['capability']['configuration']['role_revision'] and earlier['revision'] == 1
@@ -351,6 +386,20 @@ for step in (packet.get('payload') or {}).get('script',[]):
                       bool(work) and not f.D.completed(rec) and not turns
                       and any(m.get('supervision',{}).get('cause') == 'configuration_stop'
                               for m in work.messages))
+            for fault, row, stop in [('probe-exit', 'review/probe-terminal', 'configuration_stop:prompt_write_failed'),
+                                     ('no-init', 'review/init-bound', 'configuration_stop:init_missing'),
+                                     ('slash', 'review/slash-collision', 'configuration_stop:slash_commands')]:
+                (markers / 'fault').write_text(fault)
+                started = __import__('time').monotonic()
+                work, rec, own, _ = run('claude', 'review-' + fault, {'role':'claude','revision':1})
+                elapsed = __import__('time').monotonic() - started
+                artifact = next((m['artifact'] for m in (work.messages if work else []) if m.get('event') == 'artifact'), {})
+                document = json.loads(Path(artifact['path']).read_text()) if artifact.get('path') else {}
+                check(row, 'production run refuses by name within the init bound',
+                      bool(work) and not f.D.completed(rec) and document.get('login', {}).get('stop') == stop and elapsed < 15)
+                if fault == 'probe-exit':
+                    check(row, 'zero-turn probe never becomes the terminal record',
+                          document.get('terminal') is None and (document.get('probe', {}).get('result') or {}).get('num_turns') == 0)
             (markers / 'fault').unlink()
             for name, change in [('setting', lambda d: d['settings'].update(unsupported=True)),
                                  ('tool', lambda d: d['mcp'][0].update(tools=['absent']))]:
@@ -373,11 +422,27 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   all(v not in ordinary for v in f.values.values()))
             check('format/fake-lines', 'shared constructors produce both completed stream protocols',
                   bool(list(markers.glob('*.out'))))
+            evidence = load('v127_live_evidence', EVIDENCE_PATH)
+            live = load('v127_live_driver', LIVE_PATH)
+            # The driver reads the same real writer's fake-engine execution record.
+            f.save(f.role('claude', 'claude-always'))
+            captured, error = attempt(lambda: live.capture(f, 'claude', 'always', True, evidence)) if not claude_blocked else (None, None)
+            check('review/marker-debug', 'planted debug instruction loads are rejected, with a discovery control recorded',
+                  captured is not None and hasattr(evidence, 'debug_problems')
+                  and bool(evidence.debug_problems(captured, {'ran':True, 'returncode':0, 'debug_lines':['Loaded CLAUDE.md']})))
+            if captured is not None and hasattr(evidence, 'debug_problems'):
+                clean = dict(captured, debug_lines=[])
+                check('review/marker-debug', 'no positive debug control is explicitly context-size-only',
+                      not evidence.debug_problems(clean, {'ran':True, 'returncode':0, 'debug_lines':[], 'qualification':'context-size-only'})
+                      and bool(evidence.debug_problems(clean, {'ran':True, 'returncode':0, 'debug_lines':[]})))
+                check('review/probe-terminal', 'live capture retains zero-turn result and assistant count before prompt',
+                      ((captured.get('probe') or {}).get('result') or {}).get('num_turns') == 0
+                      and (captured.get('probe') or {}).get('assistants_before_prompt') == 0)
             for engine in ('claude','codex'):
                 path = TREE / ('proof/VELDO-0127/' + engine + '-live.json')
                 data, error = attempt(lambda: json.loads(path.read_text()))
                 data = data if isinstance(data, dict) else {}
-                evidence = load('v127_live_evidence', TREE / 'proof/VELDO-0127/evidence.py')
+                evidence = load('v127_live_evidence', EVIDENCE_PATH)
                 problems = evidence.problems(TREE, engine, data, f.L.HANDOFF)
                 check('live/' + engine, '; '.join(problems), not problems)
     except Exception as error:

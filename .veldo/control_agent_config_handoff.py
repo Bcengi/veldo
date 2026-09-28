@@ -257,6 +257,13 @@ def codex(configuration, capability, inventory, config):
     configuration.update(revision['settings'])
     for name, feature in CODEX_NATIVE.items():
         configuration['features.' + feature] = name in revision['native_tools']
+    configuration['tools.update_plan'] = {'enabled': 'update_plan' in revision['native_tools']}
+    configuration['tools.experimental_request_user_input'] = {'enabled': False}
+    configuration['features.sleep_tool'] = {'enabled': False}
+    configuration['features.goals'] = False
+    configuration['features.code_mode'] = {'enabled': False}
+    configuration['features.code_mode_only'] = False
+    configuration['features.multi_agent_v2'] = {'enabled': 'multi_agent' in revision['native_tools']}
     configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'
     configuration['developer_instructions'] = capability['instructions']
     for server, entry in inventory.items():
@@ -272,6 +279,53 @@ def codex(configuration, capability, inventory, config):
         for skill in capability['skills']:
             files['role-skills/' + skill['name'] + '/SKILL.md'] = skill['body'].encode()
     return files
+
+
+def codex_request_tools(body):
+    """Tool definitions from the pinned wire: Responses tools or additional_tools, or Chat tools."""
+    arrays = []
+    if isinstance(body.get('tools'), list):
+        arrays.append(body['tools'])
+    for item in body.get('input', []):
+        if isinstance(item, dict) and item.get('type') == 'additional_tools' and isinstance(item.get('tools'), list):
+            arrays.append(item['tools'])
+    if not arrays:
+        raise Refused('missing_evidence:codex_request_tools')
+    return [tool for array in arrays for tool in array]
+
+
+def codex_tool_names(tools, namespace=''):
+    names = []
+    for tool in tools:
+        if tool.get('type') == 'namespace':
+            names.extend(codex_tool_names(tool['tools'], tool['name'] + '.'))
+        elif tool.get('type') == 'function' and isinstance(tool.get('function'), dict):
+            names.append(namespace + tool['function']['name'])
+        else:
+            names.append(namespace + tool.get('name', tool['type']))
+    return sorted(names)
+
+
+def codex_tool_difference(body, wanted):
+    """Exact wire names, with only the qualified shell family and MCP namespace spelling expanded."""
+    expected_names = []
+    for name in wanted['tools']:
+        if name == 'shell':
+            expected_names.extend(['exec_command', 'write_stdin'])
+        elif name.startswith('mcp__'):
+            server, tool = name[5:].split('__', 1)
+            expected_names.append('mcp__' + server + '.' + tool)
+        else:
+            expected_names.append(name)
+    try:
+        actual = codex_tool_names(codex_request_tools(body))
+    except Refused as error:
+        return error.code
+    if set(actual) - set(expected_names):
+        return 'configuration_stop:codex_unexpected_tool'
+    if sorted(actual) != sorted(expected_names):
+        return 'configuration_stop:codex_missing_tool'
+    return None
 
 
 def codex_listing(bound, extra, environment, config):

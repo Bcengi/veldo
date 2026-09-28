@@ -1,0 +1,126 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 review/skill-commit",
+   false
+  ],
+  [
+   "VELDO-0127 review/probe-terminal",
+   false
+  ],
+  [
+   "VELDO-0127 review/init-bound",
+   false
+  ],
+  [
+   "VELDO-0127 review/slash-collision",
+   false
+  ],
+  [
+   "VELDO-0127 review/marker-debug",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-tools",
+   false
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "5a9a05d2c3f379d678b7809a18e043d1d1653dce",
+ "details": [
+  "VELDO-0127 live/claude detail: missing or stale live capture",
+  "VELDO-0127 live/codex detail: missing or stale live capture",
+  "VELDO-0127 review/skill-commit detail: a commit of everything includes delivery and no staged skill link",
+  "VELDO-0127 review/probe-terminal detail: production run refuses by name within the init bound",
+  "VELDO-0127 review/probe-terminal detail: zero-turn probe never becomes the terminal record",
+  "VELDO-0127 review/init-bound detail: production run refuses by name within the init bound",
+  "VELDO-0127 review/slash-collision detail: production run refuses by name within the init bound",
+  "VELDO-0127 review/marker-debug detail: planted debug instruction loads are rejected, with a discovery control recorded",
+  "VELDO-0127 review/codex-tools detail: wire fixture matches both directions and detects missing or additional tools"
+ ],
+ "every_review_row_red": true,
+ "failed_rows": [
+  "VELDO-0127 live/claude",
+  "VELDO-0127 live/codex",
+  "VELDO-0127 review/skill-commit",
+  "VELDO-0127 review/probe-terminal",
+  "VELDO-0127 review/init-bound",
+  "VELDO-0127 review/slash-collision",
+  "VELDO-0127 review/marker-debug",
+  "VELDO-0127 review/codex-tools"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 revision/history",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/claude",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/codex",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/binding",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/refusal",
+   true
+  ],
+  [
+   "VELDO-0127 launch/push",
+   true
+  ],
+  [
+   "VELDO-0127 launch/unlisted",
+   true
+  ],
+  [
+   "VELDO-0127 launch/instructions",
+   true
+  ],
+  [
+   "VELDO-0127 live/claude",
+   false
+  ],
+  [
+   "VELDO-0127 live/codex",
+   false
+  ],
+  [
+   "VELDO-0127 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0127 review/skill-commit",
+   false
+  ],
+  [
+   "VELDO-0127 review/probe-terminal",
+   false
+  ],
+  [
+   "VELDO-0127 review/init-bound",
+   false
+  ],
+  [
+   "VELDO-0127 review/slash-collision",
+   false
+  ],
+  [
+   "VELDO-0127 review/marker-debug",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-tools",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/86_veldo_0127_agent_configuration.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

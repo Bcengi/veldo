@@ -126,7 +126,18 @@ def capture(binary, configuration):
 if __name__ == '__main__':
     binary = sys.argv[1]
     record = json.loads((ROOT / 'proof/VELDO-0127/codex-live.json').read_text())
-    result = capture(binary, record['runs'][0]['configuration'])
+    run = record['runs'][0]
+    X = load('capture_engine', ROOT / '.veldo/control_engine_codex.py')
+    H = load('capture_handoff', ROOT / '.veldo/control_agent_config_handoff.py')
+    cfg = X.generated()
+    cfg['mcp_servers'] = run['configuration']['mcp_servers']
+    capability = {'revision':run['revision'], 'instructions':run['configuration']['developer_instructions'], 'skills':[]}
+    H.codex(cfg, capability, {'jira':{'tools':['jira_search']}}, Path('/unused'))
+    result = capture(binary, cfg)
+    result['expected'] = run['expected']
+    result['production'] = load('capture_evidence', ROOT / 'proof/VELDO-0127/evidence.py').production(ROOT)
+    result['problems'] = [H.codex_tool_difference(r['body'], run['expected']) for r in result['requests']]
+    result['problems'] = [p for p in result['problems'] if p]
     (ROOT / 'proof/VELDO-0127/codex-loopback.json').write_text(json.dumps(result, indent=1) + '\n')
     print(json.dumps({'returncode': result['returncode'], 'requests': len(result['requests']),
-                      'tools': [t.get('name', t.get('type')) for r in result['requests'] for t in r['body'].get('tools', [])]}))
+                      'tools': [H.codex_tool_names(H.codex_request_tools(r['body'])) for r in result['requests']], 'problems': result['problems']}))

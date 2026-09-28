@@ -1393,6 +1393,7 @@ class Receiver:
             self.binding['expected'] = extra.get('expected')
             if extra.get('expected') and engine.PROVIDER == 'claude_code' and self.metering:
                 self.metering.login_guard.expected = extra['expected']
+                self.metering.terminal.hold_prompt()
             if extra.get('expected') and engine.PROVIDER == 'codex':
                 listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])
                 self.emit({'event': 'capability_listing', 'listing': [

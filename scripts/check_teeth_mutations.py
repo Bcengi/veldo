@@ -9014,6 +9014,39 @@ def cases():
         '    ".veldo/control_agent_config.py",\n    ".veldo/control_agent_config_handoff.py",\n', '',
         ['authority/installed-assets'])
 
+    add(127, 'role127-staged-skill-committed', suite127, 'control_agent_config_handoff.py',
+        "                handle.write('\\n/.agents/skills/' + skill['name'] + '\\n')",
+        "                handle.write('\\n')", ['review/skill-commit'])
+    add(127, 'role127-probe-is-terminal', suite127, 'control_engine_claude.py',
+        "            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):",
+        "            if False:", ['review/probe-terminal'])
+    add(127, 'role127-prompt-write-failure-swallowed', suite127, 'control_launch.py',
+        "                and (input_failed.is_set() or not metering.terminal.prompt_written)):",
+        "                and False):", ['review/probe-terminal'])
+    add(127, 'role127-init-unbounded', suite127, 'control_engine_claude.py',
+        "                self.init_deadline = time.monotonic() + 5",
+        "                self.init_deadline = time.monotonic() + 90", ['review/init-bound'])
+    add(127, 'role127-slash-collision-hidden', suite127, 'control_agent_config_handoff.py',
+        "    return tuple(sorted(name for name, flags in entries.items() if all(flags)))",
+        "    return tuple(sorted(name for name, flags in entries.items() if any(flags)))", ['review/slash-collision'])
+    add(127, 'role127-planted-debug-ignored', suite127, 'proof/VELDO-0127/evidence.py',
+        "    if run.get('marker') and run.get('debug_lines') != []:",
+        "    if False:", ['review/marker-debug'])
+    result[-1]['dir'] = '.'
+    add(127, 'role127-debug-control-vacuous', suite127, 'proof/VELDO-0127/evidence.py',
+        "    elif not control.get('debug_lines') and control.get('qualification') != 'context-size-only':",
+        "    elif False:", ['review/marker-debug'])
+    result[-1]['dir'] = '.'
+    add(127, 'role127-wire-extra-ignored', suite127, 'control_agent_config_handoff.py',
+        "        return 'configuration_stop:codex_unexpected_tool'",
+        "        return None", ['review/codex-tools'])
+    add(127, 'role127-wire-missing-ignored', suite127, 'control_agent_config_handoff.py',
+        "        return 'configuration_stop:codex_missing_tool'",
+        "        return None", ['review/codex-tools'])
+    add(127, 'role127-probe-capture-omitted', suite127, 'proof/VELDO-0127/live.py',
+        "'probe':document.get('probe')", "'probe':None", ['review/probe-terminal'])
+    result[-1]['dir'] = '.'
+
     return result
 
 

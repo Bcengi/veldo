@@ -16,6 +16,17 @@ def production(root):
     return {n: hashlib.sha256((Path(root) / '.veldo' / n).read_bytes()).hexdigest() for n in MODULES}
 
 
+def debug_problems(run, control):
+    bad = []
+    if run.get('marker') and run.get('debug_lines') != []:
+        bad.append('planted debug log reports instruction discovery')
+    if not control.get('ran') or control.get('returncode') != 0:
+        bad.append('instruction discovery debug control missing')
+    elif not control.get('debug_lines') and control.get('qualification') != 'context-size-only':
+        bad.append('debug has no positive control; context-size-only must be explicit')
+    return bad
+
+
 def problems(root, engine, record, handoff):
     bad = []
     if (record.get('schema') != 'veldo.role-live/v1' or record.get('engine') != engine
@@ -40,9 +51,22 @@ def problems(root, engine, record, handoff):
             if ('PushNotification' not in expected.get('tools', [])
                     or 'PushNotification' in run.get('disallowed', [])):
                 bad.append('PushNotification grant lost')
+            bad.extend(debug_problems(run, record.get('debug_control') or {}))
+            probe = run.get('probe') or {}
+            if ((probe.get('result') or {}).get('num_turns') != 0
+                    or probe.get('assistants_before_prompt') != 0 or not probe.get('prompt_written')):
+                bad.append('pre-prompt probe evidence missing')
             if not run.get('debug_bytes') or run.get('debug_marker_present') is not False:
                 bad.append('debug marker qualification missing')
         else:
+            wire = run.get('wire_capture') or {}
+            requests = wire.get('requests') or []
+            if (wire.get('returncode') != 0 or wire.get('executable_digest') != pinned or not requests):
+                bad.append('Codex loopback request capture missing')
+            for request in requests:
+                difference = handoff.codex_tool_difference(request.get('body') or {}, expected)
+                if difference:
+                    bad.append(difference)
             tables = run.get('configuration', {}).get('mcp_servers', {})
             listing = run.get('listing') or []
             if sorted(tables) != sorted(expected.get('mcp_servers', [])) or sorted(i['name'] for i in listing) != sorted(tables):
