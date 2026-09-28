@@ -103,6 +103,8 @@ if engine == 'claude':
     if fault == 'missing': init['tools'] = [t for t in init['tools'] if t != 'mcp__jira__jira_search']
     own['init'] = init
     own['instructions'] = Path(value('append-system-prompt-file')).read_text() if value('append-system-prompt-file') else ''
+    if value('debug-file'):
+        Path(value('debug-file')).write_text('Role instruction discovery disabled' + chr(10))
     (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
     for raw in sys.stdin:
         message = json.loads(raw)
@@ -197,7 +199,17 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 reports = [m.get('credentials') for m in (work.messages if work else []) if m.get('event') == 'credentials']
                 check('handoff/' + engine, 'only selected catalog credential source reaches this run',
                       bool(reports) and reports[0].get('credentials') == ['jira'])
+                artifact = next((m['artifact'] for m in (work.messages if work else []) if m.get('event') == 'artifact'), {})
+                document = json.loads(Path(artifact['path']).read_text()) if artifact.get('path') else {}
+                page = f.L.ER.read(f.state / 'records', work.dispatch_id, 0, 10000, record.get('execution_record')) if work else {}
+                contexts = [json.loads(r['payload']).get('first_turn_context') for r in page.get('lines', [])
+                            if r['stream'] == 'wrapper' and 'first_turn_context' in r['payload']]
+                check('launch/instructions', engine + ': first turn context retained in the bound execution record',
+                      isinstance(document.get('first_turn_context'), int) and document['first_turn_context'] > 0 and contexts == [document.get('first_turn_context')])
                 if engine == 'claude':
+                    check('launch/instructions', 'Claude debug evidence survives run-directory teardown',
+                          any('Role instruction discovery disabled' in r['payload'] for r in page.get('lines',[])
+                              if r['stream'] == 'stderr'))
                     init = own.get('init', {})
                     check('handoff/claude', 'exact native and selected Jira MCP tools',
                           set(init.get('tools',[])) == {'Read','PushNotification','Skill','mcp__jira__jira_search'}
@@ -229,42 +241,71 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   and next_revision.get('revision') == 3 and later_own.get('init',{}).get('tools') == ['Read','mcp__jira__jira_search'])
             deferred = f.role('claude','deferred',True)
             deferred['skills'][0]['load'] = 'when assigned'
+            deferred['native_tools'].append({'name':'Bash', 'load':'when assigned'})
             deferred['instructions'].append({'source':'factory','path':'not-present.md','load':'when assigned'})
             f.save(deferred)
             _, rec, own, _ = run('claude','deferred',{'role':'deferred'})
             check('launch/unlisted', 'unassigned server, skill and instruction never load',
-                  rec.get('state') == 'exited' and own.get('init',{}).get('skills') == []
+                  rec.get('state') == 'exited' and 'Bash' not in own.get('init',{}).get('tools',[])
+                  and own.get('init',{}).get('skills') == []
                   and own.get('init',{}).get('plugins') == []
                   and own.get('init',{}).get('mcp_servers') == [{'name':'jira','status':'connected'}])
+            source_skill = f.src / '.agents/skills/inspect/SKILL.md'
+            source_skill.parent.mkdir(parents=True, exist_ok=True)
+            source_skill.write_text((base / 'SKILL.md').read_text())
+            f.configurations.save({'skill':'inspect','source':'project','path':'.agents/skills/inspect/SKILL.md'},
+                                  kind=C.KINDS[1], principal='owner', base=1, command_id='project-skill')
+            skill_role = f.role('codex', 'project-skill')
+            skill_role['skills'][0]['revision'] = 2
+            f.save(skill_role)
+            _, listed, _, _ = run('codex', 'listed-project-skill', {'role':'project-skill'})
+            check('launch/unlisted', 'a listed project skill is allowed and its source survives teardown',
+                  f.D.completed(listed) and source_skill.is_file())
+            no_skill = f.role('codex', 'no-project-skill'); no_skill['skills'] = []
+            f.save(no_skill)
+            _, rejected, _, _ = run('codex', 'unlisted-project-skill', {'role':'no-project-skill'})
+            check('launch/unlisted', 'an unlisted project skill is refused before the first turn',
+                  rejected.get('refusal','').startswith('invalid_input:engine_clone:'))
+            source_skill.unlink()
+            source_skill.parent.rmdir()
             for fault, row in [('skill','launch/unlisted'),('tool','dispatch/refusal'),('missing','handoff/claude')]:
                 (markers / 'fault').write_text(fault)
                 work, rec, own, _ = run('claude','fault-'+fault,{'role':'claude','revision':1})
                 turns = [p for p in markers.glob('*.turn') if (markers / (p.stem+'.json')).exists()
                          and json.loads((markers / (p.stem+'.json')).read_text()).get('dispatch') == (work.dispatch_id if work else '')]
                 check(row, fault + ': launch mismatch stops before prompt release',
-                      bool(work) and not f.D.completed(rec) and not turns)
+                      bool(work) and not f.D.completed(rec) and not turns
+                      and any(m.get('supervision',{}).get('cause') == 'configuration_stop'
+                              for m in work.messages))
             (markers / 'fault').unlink()
             for name, change in [('setting', lambda d: d['settings'].update(unsupported=True)),
                                  ('tool', lambda d: d['mcp'][0].update(tools=['absent']))]:
                 definition = f.role('claude',name); change(definition); f.save(definition)
                 work, rec, own, error = run('claude','refused-'+name,{'role':name})
                 check('dispatch/refusal', name + ': required unsupported capability has a named stop',
-                      rec.get('state') == 'refused' and bool(rec.get('refusal')) and not own)
-            ordinary = json.dumps(f.changes) + ''.join(r[0] for r in f.writer.execute('SELECT data FROM entities'))
+                      rec.get('state') == 'refused' and rec.get('refusal') == (
+                          'unsupported_configuration:engine_settings' if name == 'setting'
+                          else 'unavailable_service:mcp_tools:jira') and not own)
+            _, rejected, own, _ = run('claude', 'unaccepted-role', {'role_revision':{'role':'invented','revision':1,'native_tools':['Read']}})
+            check('revision/history', 'a caller cannot invent an accepted role revision',
+                  rejected.get('refusal') == 'invalid_input:role_revision' and not own)
+            for field in ('native_tools', 'mcp', 'skills', 'instructions'):
+                invalid_mode = f.role('claude', 'mode-' + field)
+                invalid_mode[field][0]['load'] = 'default'
+                _, error = attempt(lambda: f.save(invalid_mode))
+                check('revision/history', field + ': every item requires an explicit supported load mode', bool(error))
+            ordinary = json.dumps(list(f.writer.execute('SELECT * FROM journal')), default=str) + json.dumps(f.changes) + ''.join(r[0] for r in f.writer.execute('SELECT data FROM entities'))
             check('revision/history', 'no resolved credential value enters ordinary views',
                   all(v not in ordinary for v in f.values.values()))
             check('format/fake-lines', 'shared constructors produce both completed stream protocols',
                   bool(list(markers.glob('*.out'))))
             for engine in ('claude','codex'):
                 path = TREE / ('proof/VELDO-0127/' + engine + '-live.json')
-                data = json.loads(path.read_text()) if path.exists() else {}
-                check('live/' + engine, 'lead live capture is present and meets the full handoff and marker contract',
-                      data.get('schema') == 'veldo.role-live/v1' and data.get('engine') == engine
-                      and data.get('real_engine') is True and data.get('complete') is True
-                      and bool(data.get('runs')) and all(r.get('capabilities_equal') is True
-                          and r.get('first_turn_context',0) > 0 and r.get('revision_digest')
-                          for r in data.get('runs',[])) and data.get('marker_absent') is True
-                      and data.get('context_equal') is True)
+                data, error = attempt(lambda: json.loads(path.read_text()))
+                data = data if isinstance(data, dict) else {}
+                evidence = load('v127_live_evidence', TREE / 'proof/VELDO-0127/evidence.py')
+                problems = evidence.problems(TREE, engine, data, f.L.HANDOFF)
+                check('live/' + engine, '; '.join(problems), not problems)
     except Exception as error:
         for row in ROWS:
             check(row, 'the run ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:180]), False)

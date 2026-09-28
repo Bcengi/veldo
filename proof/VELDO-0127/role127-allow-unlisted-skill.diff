@@ -1,0 +1,9 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -167,5 +167,5 @@
+ 
+ def difference(event, wanted):
+-    for field in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins'):
++    for field in ('tools', 'mcp_servers', 'slash_commands', 'plugins'):
+         value = event.get(field)
+         if not isinstance(value, list):

@@ -554,12 +554,12 @@ class Runner:
         # Pending retirements first: a slot whose obligations have since completed is released before
         # this preparation reserves another.
         self.sweep()
+        now = self.clock()
         try:
             configuration = CFG.bind(self.dispatches.conn, self.dispatches.domain,
                                      self.dispatches.repository, configuration)
         except CFG.Refused as error:
             raise D.Refused(error.code) from None
-        now = self.clock()
         decided = dict(context or {}, holder=holder)
         decision = self.gate.require(station, unit, context=decided)
         held = self.dispatches.active(unit, station)
@@ -1013,6 +1013,9 @@ class Receiver:
         self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))
         self.recorder = ER.Recorder(ER.directory(self.config), header, self.resolved,
                                     hints=self.config.get('record_hints') or ())
+        if (self.binding or {}).get('expected') is not None:
+            self.recorder.line('wrapper', json.dumps({'role_capabilities': self.binding['expected'],
+                'role_revision_digest': self.binding['revision']['digest']}).encode())
 
     def _remove_run(self):
         """The run's own directories are removed once its engine has ended (or never started), before its end is
@@ -1189,7 +1192,7 @@ class Receiver:
             self.emit({'event': 'unknown', 'record': self._ended()})
             return
         supervision = self.supervision
-        if remote and supervision['cause'] == 'paid_api':
+        if remote and supervision['cause'] in ('paid_api', 'configuration_stop'):
             # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
@@ -1297,7 +1300,7 @@ class Receiver:
         login_environment = self._login_environment(adapter)
         cwd = self._engine_cwd(argv, dispatch_id, adapter.get('identity', 'local') == 'reported')
         self.token, problem = self._token()
-        problem = (problem or module.profile_problem(bound, login_environment, cwd)
+        problem = (problem or module.profile_problem(self.binding, login_environment, cwd)
                    or module.login_problem(bound, login_environment, cwd))
         if problem:
             self.binding, self.token = None, None
@@ -1393,7 +1396,9 @@ class Receiver:
             if extra.get('expected') and engine.PROVIDER == 'claude_code' and self.metering:
                 self.metering.login_guard.expected = extra['expected']
             if extra.get('expected') and engine.PROVIDER == 'codex':
-                HANDOFF.codex_listing(self.binding, extra, environment)
+                listing = HANDOFF.codex_listing(self.binding, extra, environment)
+                self.emit({'event': 'capability_listing', 'listing': [
+                    {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})
         except (engine.Refused, HANDOFF.Refused) as error:
             # VELDO-0158: a credential the engine cannot be handed (a name two servers claim) is never dropped.
             raise DL.Undeliverable(error.code, error.code.split(':', 1)[1], 'delivery_failed') from None
@@ -1441,6 +1446,7 @@ class Receiver:
             'token': token is not None,
             # VELDO-0173: the launch tool set and the registry tools switched off, by name only.
             'tools': extra.get('tools'),
+            'capabilities': extra.get('expected'),
             'removed': sorted((set(n for n in os.environ if n not in environment)
                               | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
                               - set(own))}})
@@ -1761,7 +1767,7 @@ class Receiver:
             # VELDO-0155, VELDO-0156: a login that is not a subscription stops it by name, and the held prompt
             # goes to the engine only once its login is confirmed and nothing has stopped it.
             if metering is not None and metering.guarded(chunk):
-                begin('paid_api')
+                begin('configuration_stop' if metering.login_stop.startswith('configuration_stop:') else 'paid_api')
             if login is not None and cause is None and code is None:
                 prompt = login.release()
                 if prompt is not None:
@@ -1866,7 +1872,7 @@ class Receiver:
                         recorder.feed('stderr', chunk)
         if recorder is not None:
             # Role debug qualification and first-turn size remain in the committed execution record.
-            debug = Path(self.run['config']) / 'role-debug.log' if self.run else None
+            debug = Path(self.run) / RUN_CONFIG / 'role-debug.log' if self.run else None
             if debug is not None and debug.is_file():
                 recorder.feed('stderr', debug.read_bytes())
             if metering is not None and metering.first_turn_context is not None:
@@ -2063,7 +2069,7 @@ class Metering:
                          wall_seconds=round(time.monotonic() - (self.start or time.monotonic()), 6))
             if termination.get('deadline_stop'):
                 outcome = 'timeout'
-            elif cause == 'paid_api':
+            elif cause in ('paid_api', 'configuration_stop'):
                 outcome = 'cancelled'
             elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):
                 outcome = 'cancelled'

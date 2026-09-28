@@ -1117,7 +1117,7 @@ REGISTRATION = {
     },
 }
 VERSION_TEXT = re.compile(r'[0-9]+(?:\.[0-9]+){1,3}')
-STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
+STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api', 'configuration_stop')
 
 
 class Refused(Exception):

@@ -24,6 +24,7 @@ footprint:
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
   - "scripts/suites/*_veldo_0127_*.py"
+  - "scripts/suites/82_veldo_0173_tool_registry.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"

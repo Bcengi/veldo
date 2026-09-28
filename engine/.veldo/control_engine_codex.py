@@ -758,11 +758,12 @@ def _codex_home(environment, cwd=None):
     return Path(cwd) / home if home is not None and cwd is not None and not home.is_absolute() else home
 
 
-def _held(directory, skip=()):
+def _held(directory, skip=(), allowed=()):
     """The first entry of a skill place, or None when it holds nothing (absent, or not a directory); a place
     that cannot be listed holds something unknown and is named itself."""
     try:
-        entries = sorted(set(os.listdir(directory)) - set(skip))
+        entries = sorted(name for name in set(os.listdir(directory)) - set(skip)
+                         if (Path(directory) / name / 'SKILL.md').resolve() not in allowed)
     except (FileNotFoundError, NotADirectoryError):
         return None
     except OSError:
@@ -786,22 +787,23 @@ def profile_problem(bound, environment, cwd=None):
     the profile (its bundled .system excepted), of the engine HOME's .agents and of the clone around the
     engine's working directory `cwd` (not known for another host's engine, whose own receiver checks it). None
     when there is none."""
+    allowed = {Path(s['source_path']).resolve() for s in (bound.get('capability') or {}).get('skills', [])}
     home = _codex_home(environment, cwd)
     for name in PROFILE_INSTRUCTIONS if home is not None else ():
         if os.path.lexists(home / name):
             return 'invalid_input:engine_profile:' + name
-    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,)) if home is not None else None
+    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,), allowed) if home is not None else None
     if held is not None:
         return 'invalid_input:engine_profile:%s/%s' % (PROFILE_SKILLS, held)
     user = environment.get('HOME')
     user = (Path(cwd) / user if cwd is not None and not Path(user).is_absolute() else Path(user)) if user else None
     for place in HOME_SKILLS if user is not None else ():
-        held = _held(user / place)
+        held = _held(user / place, allowed=allowed)
         if held is not None:
             return 'invalid_input:engine_home:%s/%s' % (place, held)
     for directory in _project(cwd) if cwd is not None else ():
         for place in CLONE_SKILLS:
-            held = _held(directory / place)
+            held = _held(directory / place, allowed=allowed)
             if held is not None:
                 return 'invalid_input:engine_clone:%s/%s' % (os.path.relpath(directory / place, cwd), held)
     return None

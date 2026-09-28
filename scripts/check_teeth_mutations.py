@@ -8029,7 +8029,7 @@ def cases():
                 "                      # defect: the bundled skills load when the prompt names one\n",
                 'baseline/planted-skill-bundled')
     baseline156('codex-skills-profile-accepted', 'control_engine_codex.py',
-                "    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,)) if home is not None else None\n",
+                "    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,), allowed) if home is not None else None\n",
                 "    held = None  # defect: a profile's own skill loads when the prompt names it\n",
                 'baseline/planted-skill-profile')
     baseline156('codex-skills-home-accepted', 'control_engine_codex.py',
@@ -8901,8 +8901,8 @@ def cases():
              ['redaction/claude-keystore-value', 'redaction/codex-keystore-value'])
     # AC1: Claude Code's values put in the engine environment besides its private file.
     delivery('claude-value-in-environment', 'control_engine_claude.py',
-             "    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],\n",
-             "    return {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()\n"
+             "    extra = {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],\n",
+             "    extra = {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()\n"
              "            for n, i in s['environment'].items() if 'handle' in i}), 'files': files, 'tools': options['report'],\n",
              ['delivery/claude-private-file'])
     # AC1: a server given another server's credential (every variable delivered so far forwarded to each).
@@ -8947,6 +8947,36 @@ def cases():
              "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
+    # VELDO-0127: immutable revision history and exact role capability handoff.
+    suite127 = '86_veldo_0127_agent_configuration.py'
+    add(127, 'role127-overwrite-history', suite127, 'control_agent_config.py',
+        '        return result\n',
+        '        if base and kind == KINDS[0]:\n'
+        '            self.conn.execute("UPDATE entities SET data=? WHERE id=?",\n'
+        '                (json.dumps(result), identity(self.domain, self.repository, kind, name, base)))\n'
+        '        return result\n', ['revision/history'])
+    add(127, 'role127-remove-mcp-tool', suite127, 'control_agent_config_handoff.py',
+        "    extra['expected'] = wanted",
+        "    wanted['tools'] = [n for n in wanted['tools'] if n != 'mcp__jira__jira_search']\n"
+        "    extra['expected'] = wanted", ['handoff/claude'],
+        also=(("    denied = ['mcp__%s__%s' % (s, t)",
+               "    denied = ['mcp__jira__jira_search'] + ['mcp__%s__%s' % (s, t)"),))
+    add(127, 'role127-codex-drop-tool', suite127, 'control_agent_config_handoff.py',
+        "configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']",
+        "configuration['mcp_servers'][server]['enabled_tools'] = []", ['handoff/codex'])
+    add(127, 'role127-add-default-tool', suite127, 'control_agent_config_handoff.py',
+        "            return 'configuration_stop:unexpected_tool'",
+        "            return None", ['dispatch/refusal'])
+    add(127, 'role127-in-run-ceiling', suite127, 'control_engine_claude.py',
+        "        launch, source = sorted(set(native)), 'role_revision'",
+        "        launch, source = sorted(set(tools['in_run'])), 'role_revision'", ['launch/push'])
+    add(127, 'role127-allow-unlisted-skill', suite127, 'control_agent_config_handoff.py',
+        "    for field in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins'):",
+        "    for field in ('tools', 'mcp_servers', 'slash_commands', 'plugins'):", ['launch/unlisted'])
+    add(127, 'role127-forget-first-context', suite127, 'control_launch.py',
+        '                    self.first_turn_context = HANDOFF.context_size(event, self.engine.PROVIDER)',
+        '                    self.first_turn_context = None', ['launch/instructions'])
+
     return result
 
 

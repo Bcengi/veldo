@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+"""Lead-only subscription capture. This driver is never run by the implementer or suite.
+
+Arguments name logged-in profile directories and pinned binaries. Only login files are
+linked into temporary profiles; original profiles are neither edited nor copied. Workers
+run serially in the temporary factory, under its own transient Linux slice. Captures hold
+capability names, credential-source identities and redacted execution-record evidence.
+"""
+import argparse
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import tomllib
+
+ROOT = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parent
+P = '-' * 2
+
+
+def load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def capture(f, engine, mode, marker, evidence):
+    role = engine + '-' + mode
+    contract = f.prepare(engine, engine + '-' + mode + ('-planted' if marker else '-control'), {'role': role},
+                         {'task': 'Reply with the word ready. Do not invoke any tools.'})
+    work = f.launch(engine, contract)
+    record = f.finish(engine, work)
+    revision = contract['capability']['configuration']['role_revision']
+    baseline = next((e['baseline'] for e in work.messages if e.get('event') == 'baseline'), {})
+    artifact = next((e['artifact'] for e in work.messages if e.get('event') == 'artifact'), {})
+    document = json.loads(Path(artifact['path']).read_text()) if artifact.get('path') else {}
+    page = f.L.ER.read(f.state / 'records', work.dispatch_id, 0, 100000, record.get('execution_record'))
+    events, debug, retained = [], [], []
+    for row in page['lines']:
+        retained.append(row['payload'])
+        if row['stream'] == 'stderr':
+            debug.append(row['payload'])
+        if row['stream'] == 'engine':
+            try:
+                event = json.loads(row['payload'])
+            except ValueError:
+                continue
+            events.append(event)
+    init = next((e for e in events if e.get('type') == 'system' and e.get('subtype') == 'init'), {})
+    init = {k: init[k] for k in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins', 'model') if k in init}
+    options = baseline.get('options') or []
+    disallowed = next((a.split('=', 1)[1].split(',') for a in options if a.startswith(P + 'disallowedTools=')), [])
+    configuration = {}
+    for index, option in enumerate(options):
+        if option == '-c':
+            def merge(target, source):
+                for k, v in source.items():
+                    if isinstance(v, dict): merge(target.setdefault(k, {}), v)
+                    else: target[k] = v
+            merge(configuration, tomllib.loads(options[index + 1]))
+    # The engine's own MCP listing is retained in its launch evidence, before the prompt.
+    listing = next((e['listing'] for e in work.messages if e.get('event') == 'capability_listing'), [])
+    helper = f.L.HANDOFF
+    expected = baseline.get('capabilities') or {}
+    cred = next((e['credentials'] for e in work.messages if e.get('event') == 'credentials'), {})
+    text = '\n'.join(retained)
+    debug_text = '\n'.join(debug)
+    # Only context counts survive from model messages; no answer or reasoning is retained.
+    context_events = []
+    for event in events:
+        value = helper.context_size(event, revision['engine'])
+        if value is None: continue
+        if engine == 'claude':
+            message = event.get('message') or (event.get('event') or {}).get('message', {})
+            context_events.append({'type':'assistant', 'message':{'usage':message['usage']}})
+        else:
+            context_events.append({'type':'turn.completed', 'usage':event['usage']})
+        break
+    return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
+            'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
+            'disallowed':disallowed, 'configuration':configuration, 'listing':listing,
+            'first_turn_context':document.get('first_turn_context'), 'context_events':context_events,
+            'credential_sources':cred.get('credentials'), 'record_commitment':record.get('execution_record'),
+            'marker_present':'VELDO0127_UNLISTED_MARKER' in text,
+            'debug_bytes':len(debug_text.encode()), 'debug_sha256':hashlib.sha256(debug_text.encode()).hexdigest(),
+            'debug_marker_present':'VELDO0127_UNLISTED_MARKER' in debug_text,
+            'debug_lines':[s for s in debug if 'CLAUDE.md' in s or 'instruction' in s.lower()][:30]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for option in ('claude', 'codex', 'claude-profile', 'codex-profile', 'claude-model', 'codex-model'):
+        parser.add_argument(P + option, required=True)
+    args = vars(parser.parse_args())
+    evidence = load('role_live_evidence', HERE / 'evidence.py')
+    fixture = load('role_live_factory', HERE / 'factory.py')
+    with tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/run/user/' + str(os.getuid())) as temp:
+        base = Path(temp)
+        args['claude_code_profile'] = str(base / 'claude-login')
+        args['codex_profile_source'] = args['codex_profile']
+        for engine, argument, names in [('claude', 'claude_profile', ['.credentials.json']),
+                                        ('codex', 'codex_profile_source', ['auth.json'])]:
+            profile = base / (engine + '-login')
+            profile.mkdir(mode=0o700)
+            source = Path(args[argument]).resolve()
+            for name in names:
+                if (source / name).is_file():
+                    (profile / name).symlink_to(source / name)
+            if not any(profile.iterdir()):
+                raise SystemExit('No file-backed subscription login in the supplied ' + engine + ' profile')
+        args['codex_profile'] = str(base / 'codex-login')
+        f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
+        try:
+            for engine in ('claude', 'codex'):
+                for mode in ('always', 'deferred'):
+                    definition = f.role(engine, engine + '-' + mode, mode == 'deferred')
+                    if mode == 'deferred':
+                        definition['instructions'].append({'source':'factory','path':'unassigned.md','load':'when assigned'})
+                    f.save(definition)
+                result = {'schema':'veldo.role-live/v1', 'engine':engine, 'production':evidence.production(ROOT), 'runs':[]}
+                for mode in ('always', 'deferred'):
+                    result['runs'].append(capture(f, engine, mode, False, evidence))
+                    profile = base / (engine + '-login')
+                    marker_paths = [f.src / 'CLAUDE.md', profile / 'CLAUDE.md']
+                    if engine == 'codex':
+                        marker_paths = [f.src / 'AGENTS.md']
+                    for path in marker_paths:
+                        path.write_text(('VELDO0127_UNLISTED_MARKER ' * 4000) + '\n')
+                    try:
+                        result['runs'].append(capture(f, engine, mode, True, evidence))
+                    finally:
+                        for path in marker_paths: path.unlink()
+                result['problems'] = evidence.problems(ROOT, engine, result, f.L.HANDOFF)
+                (HERE / (engine + '-live.json')).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
+                print(engine + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
+        finally:
+            for connection in f.connections: connection.close()
+            subprocess.run(['systemctl', P + 'user', 'stop', f.slice_name], env=f.inherited, capture_output=True, timeout=20)
+
+
+if __name__ == '__main__':
+    main()

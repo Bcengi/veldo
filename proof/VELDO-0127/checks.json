@@ -1,12 +1,64 @@
 {
-  "anchors": "0 bad anchors",
-  "behavior_suites_run": [],
-  "footprint": "changed 3, outside the footprint: none",
-  "gate_run": false,
-  "mutations_registered": [],
-  "red_record": null,
-  "schema": "veldo.inspection-checks/v1",
-  "scope": "Documentation of a blocker only; no implementation proof.",
-  "spec_id": "VELDO-0127",
-  "validate_exit": 0
+ "anchors": {
+  "exit_code": 0,
+  "summary": "0 bad anchors"
+ },
+ "engine_sync": {
+  "equal": true,
+  "modules": [
+   "control_agent_config.py",
+   "control_agent_config_handoff.py",
+   "control_engine_claude.py",
+   "control_engine_codex.py",
+   "control_launch.py"
+  ]
+ },
+ "footprint": {
+  "exit_code": 0,
+  "summary": "changed 18, outside the footprint: none"
+ },
+ "live_driver": {
+  "executed": false,
+  "parsed": true
+ },
+ "mutation_checks": {
+  "executed": false,
+  "registered": 7,
+  "static_audit": "7 unique mutations; every replacement occurs exactly once; every mutated module parses"
+ },
+ "red": {
+  "by_assertion": true,
+  "failed_rows": 11,
+  "record": "proof/VELDO-0127/red-at-abeb3e8c.json",
+  "rows": 11
+ },
+ "schema": "veldo.implementation-checks/v1",
+ "spec_id": "VELDO-0127",
+ "suites": {
+  "clean": {
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "live_pending_only": true,
+   "selector": "86_veldo_0127_agent_configuration",
+   "summary": "selftest (PARTIAL, 1 of 132 suites): 36 passed, 2 failed in 7.14s"
+  },
+  "normal": {
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "live_pending_only": true,
+   "selector": "86_veldo_0127_agent_configuration",
+   "summary": "selftest (PARTIAL, 1 of 132 suites): 36 passed, 2 failed in 4.23s"
+  }
+ },
+ "validate": {
+  "exit_code": 0
+ },
+ "whitespace": {
+  "exit_code": 2,
+  "summary": "proof/VELDO-0127/role127-allow-unlisted-skill.diff:4: trailing whitespace.\n+ \nproof/VELDO-0127/role127-overwrite-history.diff:10: trailing whitespace.\n+ \nproof/VELDO-0127/role127-overwrite-history.diff:10: new blank line at EOF."
+ }
 }

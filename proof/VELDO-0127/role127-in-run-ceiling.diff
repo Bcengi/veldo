@@ -1,0 +1,9 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1383,5 +1383,5 @@
+         if not isinstance(native, list) or not all(isinstance(n, str) and TOOL_NAME.fullmatch(n) for n in native):
+             raise Refused('invalid_input:role_revision', 'the bound role revision names no native tool list')
+-        launch, source = sorted(set(native)), 'role_revision'
++        launch, source = sorted(set(tools['in_run'])), 'role_revision'
+     disallowed = sorted(set(tools['registry']) - set(launch))
+     argv = ['%s=%s' % (TOOLS_OPTION, ','.join(launch)), '%s=%s' % (DISALLOWED_OPTION, ','.join(disallowed))]

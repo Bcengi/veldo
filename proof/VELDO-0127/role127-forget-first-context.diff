@@ -1,0 +1,9 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1992,5 +1992,5 @@
+                 try:
+                     event = json.loads(raw)
+-                    self.first_turn_context = HANDOFF.context_size(event, self.engine.PROVIDER)
++                    self.first_turn_context = None
+                 except (ValueError, AttributeError, TypeError):
+                     pass

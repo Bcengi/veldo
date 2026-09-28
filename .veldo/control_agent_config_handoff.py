@@ -35,8 +35,10 @@ def content(item, roots):
 
 def materialize(conn, domain, repository, revision, roots):
     """Read only listed sources. Bodies go to private engine input, never ordinary views."""
-    if not revision or 'digest' not in revision:
+    if not revision:
         return None
+    if 'digest' not in revision:
+        raise Refused('invalid_input:role_revision')
     C.verify_binding(conn, domain, repository, revision)
     settings = revision['settings']
     allowed = {'model'} if revision['engine'] == 'claude_code' else {'model', 'sandbox_mode', 'model_reasoning_effort'}
@@ -48,7 +50,8 @@ def materialize(conn, domain, repository, revision, roots):
     skills = []
     for item in selected(revision, 'skills'):
         source = C.read(conn, domain, repository, item['skill'], item['revision'], C.KINDS[1])
-        skills.append({'name': item['skill'], 'body': content(source, roots)})
+        skills.append({'name': item['skill'], 'body': content(source, roots),
+                       'source_path': str(Path(roots[source['source']]) / source['path'])})
     return {'revision': revision, 'project': roots.get('project'), 'instructions': '\n\n'.join(content(i, roots) for i in selected(revision, 'instructions')),
             'skills': skills}
 
@@ -143,6 +146,8 @@ def inventory(capability, servers):
     chosen = {}
     for item in selections:
         server = next(s for s in servers if s['id'] == item['server'])
+        if server['revision'] != item['revision']:
+            raise Refused('configuration_stop:mcp_revision')
         offered = tools_list(server)
         wanted = offered if item['tools'] == 'all' else sorted(item['tools'])
         if set(wanted) - set(offered):
@@ -171,6 +176,8 @@ def difference(event, wanted):
             if field == 'mcp_servers' and any(v.get('status') != 'connected' for v in value):
                 return 'configuration_stop:mcp_servers'
             value = [v['name'] for v in value]
+        if field == 'tools' and set(value) - set(wanted[field]):
+            return 'configuration_stop:unexpected_tool'
         if sorted(value) != sorted(wanted[field]):
             return 'configuration_stop:' + field
     if wanted.get('model') is not None and event.get('model') != wanted['model']:
@@ -257,6 +264,8 @@ def stage_skills(capability, config):
         root.mkdir(parents=True, exist_ok=True)
         for skill in capability['skills']:
             link = root / skill['name']
+            if link.is_dir() and (link / 'SKILL.md').resolve() == Path(skill['source_path']).resolve():
+                continue
             link.symlink_to(config / 'role-skills' / skill['name'], target_is_directory=True)
             staged.append(link)
     return staged
