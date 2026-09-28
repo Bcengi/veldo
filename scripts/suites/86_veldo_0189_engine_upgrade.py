@@ -840,6 +840,10 @@ def _v189_suite():
                       code == 0 and report.get('outcome') == 'set_up' and upgrade.get('outcome') == 'done')
                 check(row, 'before the upgrade the host held the older engine: the record named %d files and the '
                       'engine directory was exactly those' % len(recorded), installed_before == recorded != current)
+                check(row, 'the upgraded engine directory holds control_client_api.py, the API process the older engine '
+                      'lacked',
+                      'control_client_api.py' not in recorded and (host.home / 'bin' / 'control_client_api.py').is_file()
+                      and named(host.home / 'bin').get('control_client_api.py') == current.get('control_client_api.py'))
                 equals_fresh(row, host, fresh, commit)
                 check(row, 'the record names the current engine: its closure and template are the fresh host\'s',
                       host.record()['closure'] == fresh.record()['closure']

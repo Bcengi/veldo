@@ -8919,6 +8919,71 @@ def cases():
               "            or False):  # defect: a file that would differ is taken as equal\n", 'rerun/differs-refused')
     setup_api('api171-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_factory_setup_api.py",\n', '',
               'install/assets')
+    # VELDO-0189: a re-run of setup upgrades an earlier installation's engine in place. Each criterion's declared
+    # falsifier first, then the threat model's other shapes. The suite runs setup many times (about a minute).
+    def upgrade(name, module, old, new, row, also=()):
+        add(189, name, '86_veldo_0189_engine_upgrade.py', module, old, new, [row], also)
+        result[-1]['timeout'] = 900
+
+    # AC1 (declared falsifier): only the files whose names the installed record already lists are written.
+    upgrade('upgrade189-only-recorded-names', 'control_factory_setup_upgrade.py',
+            "    for name, data in sorted(plan['fixed'].items()):\n",
+            "    for name, data in sorted((n, d) for n, d in plan['fixed'].items() if n in plan['recorded']):"
+            "  # defect: only the names the record lists\n", 'upgrade/from-8bc34e94',
+            also=[("    if installed_files(directory) != plan['current']:\n",
+                   "    if installed_files(directory) != {n: d for n, d in plan['current'].items() if n in plan['recorded']}:\n")])
+    # AC2 (declared falsifier): the new files are written over the installed ones in place, one by one.
+    upgrade('upgrade189-in-place-writes', 'control_factory_setup_upgrade.py',
+            "        stage(plan, modes, bin_mode)\n        point(log, {'point': 'staged', 'files': len(plan['fixed'])})\n",
+            "        os.chmod(plan['bin'], 0o700)  # defect: the new files are written over the installed ones in place\n"
+            "        for name, data in sorted(plan['fixed'].items()):\n"
+            "            path = os.path.join(plan['bin'], name)\n"
+            "            with contextlib.suppress(FileNotFoundError):\n"
+            "                os.chmod(path, 0o600)\n"
+            "            with open(path, 'wb') as handle:\n"
+            "                handle.write(data)\n"
+            "            os.chmod(path, modes(name))\n"
+            "            point(log, {'point': 'wrote', 'file': name})\n"
+            "        for name in plan['removed']:\n"
+            "            os.unlink(os.path.join(plan['bin'], name))\n"
+            "        os.chmod(plan['bin'], bin_mode)\n", 'switch/kill-points',
+            also=[("            exchange(plan['stage'], plan['bin'])\n            switched = True\n",
+                   "            switched = False\n")])
+    # AC3 (declared falsifier): each configuration file is written as a fresh installation would.
+    upgrade('upgrade189-configs-written-fresh', 'control_factory_setup_upgrade.py',
+            "            writes.append(('configuration', path, _text(dict(held, **{k: v for k, v in fresh.items() if k not in held})),\n",
+            "            writes.append(('configuration', path, _text(fresh),  # defect: written as a fresh installation would\n",
+            'kept/owner-data')
+    # AC4 (declared falsifier): the authority unit restarts on every run.
+    upgrade('upgrade189-restart-every-run', 'control_factory_setup_upgrade.py',
+            "    if plan['state'] == 'current' and not plan['restart_due'] and not plan['stage_left']:\n",
+            "    if plan['state'] == 'current' and not plan['restart_due'] and not plan['stage_left']:\n"
+            "        if active:\n"
+            "            runner.run(['restart', unit])  # defect: the authority unit restarts on every run\n",
+            'second-run/changes-nothing')
+    # The threat model: an engine file edited by hand overwritten without notice; a file the current engine no
+    # longer ships left installed; an engine half old and half new after a failure; no exchange probe.
+    upgrade('upgrade189-edited-file-overwritten', 'control_factory_setup_upgrade.py',
+            "    else:\n        for name in sorted(set(found) | set(recorded)):\n",
+            "    else:\n        installed = 'recorded'  # defect: an engine file edited by hand is overwritten without notice\n"
+            "        for name in []:\n", 'upgrade/refused-by-name')
+    upgrade('upgrade189-removed-file-kept', 'control_factory_setup_upgrade.py',
+            "    os.chmod(directory, bin_mode)\n    if installed_files(directory) != plan['current']:\n",
+            "    for name in plan['removed']:  # defect: a file the current engine no longer ships stays installed\n"
+            "        __import__('shutil').copy2(os.path.join(plan['bin'], name), os.path.join(directory, name))\n"
+            "    os.chmod(directory, bin_mode)\n"
+            "    if {n: d for n, d in installed_files(directory).items() if n not in plan['removed']} != plan['current']:\n",
+            'upgrade/removed-module')
+    upgrade('upgrade189-no-switch-back', 'control_factory_setup_upgrade.py',
+            "        if switched:\n            switch_back(plan, replaced, runner, reason, restart_again=restart == 'failed', answers=answers)\n",
+            "        if False:  # defect: a failure after the exchange leaves the current engine installed\n"
+            "            switch_back(plan, replaced, runner, reason, restart_again=restart == 'failed', answers=answers)\n",
+            'switch/failed-restart')
+    upgrade('upgrade189-no-exchange-probe', 'control_factory_setup_upgrade.py',
+            "        probe(plan['home'])\n",
+            "        pass  # defect: the filesystem is not probed before the first write\n", 'upgrade/refused-by-name')
+    upgrade('upgrade189-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_factory_setup_upgrade.py",\n', '',
+            'install/assets')
     return result
 
 
