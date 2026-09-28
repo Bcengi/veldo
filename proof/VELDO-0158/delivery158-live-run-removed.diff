@@ -1,0 +1,7 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -542 +542,3 @@
+-        return self.clear_runs()
++        for dispatch_id in sorted(self.leftovers):
++            shutil.rmtree(run_directory(self.runs, dispatch_id), ignore_errors=True)  # defect: never checked
++        return sorted(self.leftovers)

@@ -1,6 +1,6 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1415 +1415,4 @@
+@@ -1504 +1504,4 @@
 -        self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)
 +        try:
 +            self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)

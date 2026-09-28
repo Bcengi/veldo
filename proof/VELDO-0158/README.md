@@ -94,8 +94,13 @@ of the account from /proc. Each row reports once.
 
 ## Red record and mutations
 
-`red-at-7851ae9b.json`: the current suite against the unchanged tree of the commit before this change. All 14
+`red-at-7851ae9b.json`: the current suite against the unchanged tree of the commit before this change. All 19
 behavior rows (and `format/fake-lines`) fail by assertion; only the two fixture rows hold.
+
+`red-at-4f6ab522.json`: the current suite against the branch as the review found it. Exactly the review's findings
+fail, by assertion: `redaction/claude-bare-bearer`, `refusal/env-collision` (PATH was replaced and the run exited;
+CODEX_HOME was refused under another name), the three `orphan/` rows, and `delivery/private-dir-removed`, whose
+last check sees the two directories the dead receivers left.
 
 `mutations.json` (`python3 -B proof/VELDO-0158/drive.py`): a green baseline, green no-op copies of the five
 mutated modules, and eleven finding-158 mutations, each red on its named rows by assertion, with its diff beside it.

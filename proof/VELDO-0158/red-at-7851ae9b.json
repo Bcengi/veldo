@@ -7,16 +7,17 @@
   "VELDO-0158 delivery/codex-environment detail: the generated mcp_servers table names each stdio credential by its variable in env_vars and the Atlassian bearer token by bearer_token_env_var, literals only in env [{}]",
   "VELDO-0158 delivery/codex-environment detail: the engine environment carries each value under that name",
   "VELDO-0158 delivery/codex-environment detail: each stdio server received its credential through env_vars",
-  "VELDO-0158 delivery/command-lines detail: claude: every process of the account was read while the run held [210 read, ready True]",
+  "VELDO-0158 delivery/command-lines detail: claude: every process of the account was read while the run held [225 read, ready True]",
   "VELDO-0158 delivery/command-lines detail: claude: the environments holding a value are its servers' alone [[], wanted [], inside []]",
-  "VELDO-0158 delivery/command-lines detail: codex: every process of the account was read while the run held [210 read, ready True]",
-  "VELDO-0158 delivery/command-lines detail: codex: the environments holding a value are its servers' and its engine's, all inside the run's own group [[], wanted [3917800], inside []]",
+  "VELDO-0158 delivery/command-lines detail: codex: every process of the account was read while the run held [226 read, ready True]",
+  "VELDO-0158 delivery/command-lines detail: codex: the environments holding a value are its servers' and its engine's, all inside the run's own group [[], wanted [80987], inside []]",
   "VELDO-0158 delivery/command-lines detail: every keystore lookup carried the reference alone, never a value",
   "VELDO-0158 delivery/own-server-only detail: claude: the tracker server holds none of the notes credential and the notes server none of the tracker's",
   "VELDO-0158 delivery/own-server-only detail: codex: the tracker server holds none of the notes credential and the notes server none of the tracker's",
   "VELDO-0158 delivery/own-server-only detail: the keystore was asked only for the selected servers' credentials [0 lookups]",
   "VELDO-0158 delivery/not-in-packet-contract-journal detail: the contracts and dispatch records name the selected revisions and hold no value, though both runs' servers received it [0 delivered]",
   "VELDO-0158 delivery/private-dir-removed detail: the Claude Code configuration file the engine read, holding the values, is gone",
+  "VELDO-0158 delivery/private-dir-removed detail: a refused launch leaves no run directory [['2a336bf8a46ba0446f2d8800738bada9', 'ec04d7d44ab11095a74d5ae76594bf6e']]",
   "VELDO-0158 delivery/report detail: claude: the credentials event names each revision, credential id and its route [{}]",
   "VELDO-0158 delivery/report detail: codex: the credentials event names each revision, credential id and its route [{}]",
   "VELDO-0158 refusal/keystore-locked detail: the dispatch is refused as credential_unavailable:tracker-token [exited None]",
@@ -36,6 +37,18 @@
   "VELDO-0158 redaction/codex-keystore-value detail: every occurrence is replaced by the marker naming its kind and no line holds any part of either value [[], 5 lines]",
   "VELDO-0158 redaction/codex-keystore-value detail: each such line's redaction field names the kind [0 lines]",
   "VELDO-0158 redaction/per-run-set detail: a run selecting only the other server exited, its own value replaced [exited]",
+  "VELDO-0158 redaction/claude-bare-bearer detail: the Claude Code run printed the bearer token without its scheme alone, inside a command's output and on its error stream [{'alone': False, 'command output': False, 'error stream': False}]",
+  "VELDO-0158 redaction/claude-bare-bearer detail: every occurrence is replaced by the marker naming its kind and no line holds any part of the token [[], 0 lines]",
+  "VELDO-0158 refusal/env-collision detail: CODEX_HOME: the dispatch is refused as invalid_input:mcp_delivery:env_collision:CODEX_HOME [exited None]",
+  "VELDO-0158 refusal/env-collision detail: CODEX_HOME: the credential was resolved, no engine process started and no run directory is left [[]]",
+  "VELDO-0158 refusal/env-collision detail: CODEX_HOME: the refusal names the credential and never its value",
+  "VELDO-0158 refusal/env-collision detail: PATH: the dispatch is refused as invalid_input:mcp_delivery:env_collision:PATH [exited None]",
+  "VELDO-0158 refusal/env-collision detail: PATH: the credential was resolved, no engine process started and no run directory is left [[]]",
+  "VELDO-0158 refusal/env-collision detail: PATH: the refusal names the credential and never its value",
+  "VELDO-0158 orphan/run-directory-removed detail: the receiver was sent SIGKILL while the run held, its generated MCP configuration holding the value in the run directory [{'ready': True, 'killed': True, 'config_path': '/run/user/1000/v158-a19f94zq/state/factory/runs/ec04d7d44ab11095a74d5ae76594bf6e/config/mcp.json', 'dir_before': True}]",
+  "VELDO-0158 orphan/run-directory-removed detail: after the orphan release the run is gone and so are its directory and the configuration file holding the value [['dispatch/VELDO-15810/23a24580cdc4441db8eee32d0dce2d4f'] None, dir True, file True]",
+  "VELDO-0158 orphan/start-sweep detail: the service's next start removes the directory left from before and names its dispatch [{'loop': True, 'refusal': None, 'swept': None}, dir True]",
+  "VELDO-0158 orphan/live-run-kept detail: the service's start, its dispatch settled but its run alive, keeps the run's directory [{'loop': True, 'refusal': None, 'swept': None}, alive True, dir True]",
   "VELDO-0158 format/fake-lines detail: every event line the fakes printed is one of the binaries' own schemas with its required fields [19 lines, []]"
  ],
  "failed_rows": [
@@ -53,6 +66,11 @@
   "VELDO-0158 redaction/claude-keystore-value",
   "VELDO-0158 redaction/codex-keystore-value",
   "VELDO-0158 redaction/per-run-set",
+  "VELDO-0158 redaction/claude-bare-bearer",
+  "VELDO-0158 refusal/env-collision",
+  "VELDO-0158 orphan/run-directory-removed",
+  "VELDO-0158 orphan/start-sweep",
+  "VELDO-0158 orphan/live-run-kept",
   "VELDO-0158 format/fake-lines"
  ],
  "modules": {
@@ -62,7 +80,7 @@
   },
   ".veldo/control_credential_delivery.py": {
    "at_commit": null,
-   "now": "874e652cad42f95dda5ee3f3a5927630203463a22ea7708d4437aca4e3788b0e"
+   "now": "069ce48a3e56c00d89457b8b0116b68266f64e3db5d080c19a6f6c3c18952849"
   },
   ".veldo/control_credential_keystore.py": {
    "at_commit": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294",
@@ -78,7 +96,11 @@
   },
   ".veldo/control_launch.py": {
    "at_commit": "9f83b8e8756b5361bd07b0081b92a7a89d1a54397e444ac192a59fab2a676e67",
-   "now": "584dda8751a398fde887840b5a170812bb1176024b47f25dcad643045a5c74a3"
+   "now": "93b685e89f3acd78f178137457c7b6de634c3574f58b1c22b6de46fe7fc8ddde"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a",
+   "now": "d6e33fa41fb7fbb0599a5bd9bf573854e77fc487658a79e635a55c3eb78e607c"
   },
   ".veldo/secretref.py": {
    "at_commit": "9557b11754c3f24bfd4ebbc6b09f27c702e1f475ba7540018f3a966e3cf82af3",
@@ -144,6 +166,26 @@
    false
   ],
   [
+   "VELDO-0158 redaction/claude-bare-bearer",
+   false
+  ],
+  [
+   "VELDO-0158 refusal/env-collision",
+   false
+  ],
+  [
+   "VELDO-0158 orphan/run-directory-removed",
+   false
+  ],
+  [
+   "VELDO-0158 orphan/start-sweep",
+   false
+  ],
+  [
+   "VELDO-0158 orphan/live-run-kept",
+   false
+  ],
+  [
    "VELDO-0158 fixture/route-set",
    true
   ],
@@ -157,7 +199,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 3.946,
+ "seconds": 6.342,
  "spec_id": "VELDO-0158",
  "suite": "scripts/suites/85_veldo_0158_credential_delivery.py",
  "tree": "git archive 7851ae9bef69c2d9d8e54a0b95a823110113b1ef, unchanged; the current suite file run against it"
