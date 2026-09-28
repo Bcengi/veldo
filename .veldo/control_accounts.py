@@ -313,9 +313,12 @@ class Accounts:
             if prior is not None and prior['observed_at'] > params['now']:
                 return {}  # An older observation never replaces a newer one.
             if params['status'] is None and prior is not None and blocking({'windows': {'w': prior}}, params['now']):
-                # VELDO-0166: a window reported beside the one an event rates carries no status, so it never
-                # lifts a rejection still in force; only a rating of that window or its reset does.
-                return {}
+                # VELDO-0166: keep a rejection, but let a later report supply its missing reset.
+                # The account then remains blocked only until that reported time.
+                if prior.get('reset_at') is None and params['reset_at'] is not None:
+                    params = dict(params, status='rejected')
+                else:
+                    return {}
             value = current
             value['windows'][params['window_id']] = {
                 'status': params['status'], 'reset_at': params['reset_at'], 'utilization': params['utilization'],

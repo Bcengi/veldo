@@ -1,0 +1,5 @@
+--- a/.veldo/accounts.py
++++ b/.veldo/accounts.py
+@@ -184 +184 @@
+-                          "directory_state": state, "metrics": {"accounts_added": 1}}), file=sys.stderr)
++                          "directory_state": "created", "metrics": {"accounts_added": 1}}), file=sys.stderr)

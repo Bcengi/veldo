@@ -54,6 +54,7 @@ import uuid
 from datetime import datetime, timezone
 
 SCHEMA = "veldo.accounts/v1"
+ADDED_COUNTS = {"created": 0, "existing": 0}
 # Each provider's login profile variable (VELDO-0062): THE ONE PLACE it is named. control_accounts,
 # the launch receiver and fleet.py read it from here. And each provider's one-time login command.
 PROFILE_ENV = {"claude_code": "CLAUDE_CONFIG_DIR", "codex": "CODEX_HOME"}
@@ -176,6 +177,11 @@ def account_add(name, config_dir=None, root=None, provider="claude_code", **meta
         rec.update({k: v for k, v in meta.items() if v is not None})
         data["accounts"][name] = rec
         _save(data, root)
+        state = "existing" if existing else "created"
+        ADDED_COUNTS[state] += 1
+        # Only registration facts enter the log, never arbitrary metadata or profile contents.
+        print(json.dumps({"event": "account_added", "account": name, "directory": cdir,
+                          "directory_state": state, "metrics": {"accounts_added": 1}}), file=sys.stderr)
         return dict(rec)
 
 

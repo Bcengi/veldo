@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1100 +1100 @@
+-                    or (named is None and status == 'allowed')):
++                    or False):

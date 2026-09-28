@@ -20,7 +20,7 @@ HERE.mkdir(parents=True, exist_ok=True)
 SUITE = '83_veldo_0166_usage_windows.py'
 PREFIX = 'VELDO-0166 '
 FINDING = 166
-MODULES = ('control_engine_claude.py', 'control_accounts.py', 'accounts.py')
+MODULES = ('control_engine_claude.py', 'control_accounts.py', 'accounts.py', 'control_launch.py')
 
 
 def _load(name, path):
@@ -119,7 +119,34 @@ def red(commit):
                       'written': name}))
 
 
+def register_only():
+    """Refresh mutation definitions and diffs without running any mutation suite."""
+    ctm = _driver()
+    cases = [case for case in ctm.cases() if case['finding'] == FINDING]
+    report = dict(schema='veldo.proof-mutations/v1', spec_id='VELDO-0166',
+                  status='registered; execution reserved for the reviewer', mutants=[])
+    for case in cases:
+        source = (ROOT / '.veldo' / case['module']).read_text()
+        changed = ctm.mutate(source, case)
+        ast.parse(changed)
+        name = case['name'] + '.diff'
+        (HERE / name).write_text(''.join(difflib.unified_diff(
+            source.splitlines(keepends=True), changed.splitlines(keepends=True), n=0,
+            fromfile='a/.veldo/' + case['module'], tofile='b/.veldo/' + case['module'])))
+        report['mutants'].append(dict(name=case['name'], module='.veldo/' + case['module'],
+                                     suite='scripts/suites/' + case['suite'], named_rows=case['rows'],
+                                     diff='proof/VELDO-0166/' + name,
+                                     source_sha256=hashlib.sha256(source.encode()).hexdigest(),
+                                     mutant_sha256=hashlib.sha256(changed.encode()).hexdigest(),
+                                     result='not run'))
+    (HERE / 'mutations.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+    print(json.dumps(dict(registered=len(cases), executed=0)))
+
+
 def main():
+    if len(sys.argv) == 2 and sys.argv[1] == '-' * 2 + 'register-only':
+        register_only()
+        return
     if len(sys.argv) >= 3 and sys.argv[1] == '-' * 2 + 'red':
         red(sys.argv[2])
         return

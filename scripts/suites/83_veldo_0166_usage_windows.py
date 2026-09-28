@@ -2,6 +2,8 @@
 
 
 def _v166_suite():
+    import contextlib
+    import io
     import hashlib
     import importlib.util
     import json
@@ -14,13 +16,16 @@ def _v166_suite():
     from types import SimpleNamespace
 
     PRODUCTION = {
+        'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
         'control_accounts.py': ROOT / ".veldo" / "control_accounts.py",
         'accounts.py': ROOT / ".veldo" / "accounts.py",
     }
     rows = {name: [] for name in ('windows/five-hour', 'windows/qualified-set',
                                   'windows/status-only-named', 'windows/missing-reset-receipts',
-                                  'windows/rejection-kept',
+                                  'windows/rejection-kept', 'windows/named-fallback',
+                                  'windows/named-precedence', 'windows/rejection-reset-filled',
+                                  'windows/clear', 'observability/counts-and-log',
                                   'profiles/existing', 'profiles/created')}
 
     def check(row, label, condition):
@@ -34,7 +39,8 @@ def _v166_suite():
 
     # The spec's 2.1.281 source line, byte for byte, including its whitespace and all fields.
     raw = b'{"type": "rate_limit_event", "rate_limit_info": {"status": "allowed_warning", "resetsAt": 1790960400, "rateLimitType": "seven_day", "utilization": 0.7, "isUsingOverage": false, "unifiedWindows": {"five_hour": {"utilization": 0.3, "resetsAt": 1790487000}, "seven_day": {"utilization": 0.7, "resetsAt": 1790960400}}}, "uuid": "531e8e6b-8253-4b0a-92dc-255c5111efee", "session_id": "918dd621-97a8-44cf-ab38-4d3e1b9e588e"}'
-    with tempfile.TemporaryDirectory(prefix='v166-', dir='/dev/shm') as directory:
+    account_logs = io.StringIO()
+    with tempfile.TemporaryDirectory(prefix='v166-', dir='/dev/shm') as directory, contextlib.redirect_stderr(account_logs):
         base = Path(directory)
         mods = base / 'modules'
         mods.mkdir()
@@ -73,7 +79,9 @@ def _v166_suite():
                 register(name)
                 contract = dict(dispatch_id='dispatch/' + name, unit='unit/' + name,
                                 reservation=dict(account=name, project='project'))
-                receiver = SimpleNamespace(login={'engine': C}, config={'store': str(base / 'store.sqlite3')})
+                events = []
+                receiver = SimpleNamespace(login={'engine': C}, config={'store': str(base / 'store.sqlite3')},
+                                           emit=events.append, events=events)
                 reservations = L.D.RES.Reservations(S, conn, domain='domain', repository='repo',
                                                    principal='receiver', signer='receiver', sign=sign,
                                                    authorize=L.D.RES.service_authority)
@@ -157,6 +165,100 @@ def _v166_suite():
                       and five.get('reset_at') == (reset if kept_status else reset + 60)
                       and A.blocking({'windows': windows}, time.time()) == (['five_hour'] if kept_status else [])
                       and windows['seven_day']['status'] == 'allowed' and len(kept) == 5)
+
+            def rate(info):
+                return json.dumps(dict(type='rate_limit_event', rate_limit_info=info)).encode()
+
+            reset = int(time.time()) + 3600
+            line = rate(dict(status='rejected', rateLimitType='five_hour', unifiedWindows={
+                'five_hour': dict(utilization=1.0, resetsAt=reset)}))
+            windows, meter, kept = observe('fallback', line)
+            five = windows.get('five_hour', {})
+            check('windows/named-fallback', 'named map supplies both absent fields and the stream reset',
+                  not meter.errors and set(windows) == {'five_hour'} and len(kept) == 2
+                  and five.get('status') == 'rejected' and five.get('reset_at') == reset
+                  and five.get('utilization') == 1.0
+                  and (meter.meter.limit() or {}).get('reset_at') == reset)
+
+            # Older fake engines report zero-valued companions. Explicit fields still win,
+            # independently for each field, including an explicit zero.
+            for suffix, fields, expected in (
+                    ('both', dict(resetsAt=reset, utilization=1.0), (reset, 1.0)),
+                    ('reset', dict(resetsAt=reset), (reset, 0.2)),
+                    ('util', dict(utilization=0.0), (reset + 60, 0.0))):
+                line = rate(dict(status='rejected', rateLimitType='five_hour', **fields, unifiedWindows={
+                    'five_hour': dict(utilization=0.2, resetsAt=reset + 60),
+                    'seven_day': dict(utilization=0.4, resetsAt=reset + 120)}))
+                windows, meter, _ = observe('precedence-' + suffix, line)
+                five = windows.get('five_hour', {})
+                check('windows/named-precedence', suffix + ': each explicit field wins independently',
+                      not meter.errors and set(windows) == {'five_hour', 'seven_day'}
+                      and (five.get('reset_at'), five.get('utilization')) == expected
+                      and (meter.meter.limit() or {}).get('reset_at') == expected[0])
+
+            for label, reset in (('future', int(time.time()) + 3600), ('past', int(time.time()) - 3600)):
+                first = rate(dict(status='rejected', rateLimitType='five_hour'))
+                second = rate(dict(status='allowed_warning', rateLimitType='seven_day', unifiedWindows={
+                    'five_hour': dict(utilization=0.4, resetsAt=reset),
+                    'seven_day': dict(utilization=0.7, resetsAt=int(time.time()) + 7200)}))
+                windows, meter, _ = observe('filled-' + label, first, second)
+                five = windows.get('five_hour', {})
+                check('windows/rejection-reset-filled', label + ': later companion fills an unknown reset',
+                      not meter.errors and five.get('reset_at') == reset and five.get('status') == 'rejected'
+                      and five.get('source_dispatch') == 'dispatch/filled-' + label
+                      and A.blocking({'windows': windows}, time.time()) == (['five_hour'] if label == 'future' else [])
+                      and A.blocking({'windows': windows}, reset + 1) == [])
+
+            passed = int(time.time()) - 60
+            first = rate(dict(status='rejected', rateLimitType='five_hour', resetsAt=passed, utilization=1.0))
+            clear = rate(dict(status='allowed', isUsingOverage=False, unifiedWindows={
+                'five_hour': dict(utilization=0.1, resetsAt=passed + 7200),
+                'seven_day': dict(utilization=0.3, resetsAt=passed + 14400)}))
+            windows, meter, kept = observe('clear', first, clear)
+            check('windows/clear', 'clear updates only reported windows and lifts the stream rejection',
+                  not meter.errors and set(windows) == {'five_hour', 'seven_day'}
+                  and meter.meter.limit() is None and A.blocking({'windows': windows}, time.time()) == []
+                  and all(w['status'] is None for w in windows.values())
+                  and windows.get('five_hour', {}).get('utilization') == 0.1
+                  and windows.get('seven_day', {}).get('reset_at') == passed + 14400
+                  and kept[1:] == [first, clear, clear])
+
+            first = json.loads(raw)
+            first['rate_limit_info']['status'] = 'rejected'
+            windows, meter, _ = observe('observable', json.dumps(first).encode(), raw)
+            expected_counts = {('seven_day', 'rejected'): 1, ('seven_day', 'allowed'): 1, ('five_hour', None): 2}
+            check('observability/counts-and-log', 'count each observation by window and reported status',
+                  not meter.errors and getattr(meter, 'window_counts', {}) == expected_counts)
+            logs = meter.receiver.events
+            check('observability/counts-and-log', 'window logs join receipt, values, account and invocation',
+                  len(logs) == 4 and all(
+                      event.get('event') == 'window_observed' and event.get('account') == 'observable'
+                      and event.get('dispatch_id') == 'dispatch/observable'
+                      and event.get('invocation') == meter.invocation
+                      and event.get('receipt') == meter.receipts[i]
+                      and event.get('metrics') == {'window_observations': 1}
+                      and event.get('window') == ('seven_day' if i % 2 == 0 else 'five_hour')
+                      and event.get('status') == (('rejected' if i == 0 else 'allowed') if i % 2 == 0 else None)
+                      and event.get('utilization') == (0.7 if i % 2 == 0 else 0.3)
+                      and event.get('reset_at') == (1790960400 if i % 2 == 0 else 1790487000)
+                      for i, event in enumerate(logs)))
+            before_counts = dict(getattr(H, 'ADDED_COUNTS', {}))
+            start_logs = len(account_logs.getvalue())
+            private = 'private-' + os.urandom(8).hex()
+            for state in ('created', 'existing'):
+                profile = base / ('observable-' + state)
+                if state == 'existing':
+                    profile.mkdir()
+                    (profile / 'settings.json').write_text(private)
+                H.account_add('observable-' + state, config_dir=str(profile), root=str(base / 'registry'),
+                              private_note=private)
+            after_counts = getattr(H, 'ADDED_COUNTS', {})
+            added = [json.loads(line) for line in account_logs.getvalue()[start_logs:].splitlines()]
+            check('observability/counts-and-log', 'account additions count both directory states and log only facts',
+                  all(after_counts.get(state, 0) - before_counts.get(state, 0) == 1 for state in ('created', 'existing'))
+                  and len(added) == 2 and all(event == dict(event='account_added', account='observable-' + state,
+                      directory=str(base / ('observable-' + state)), directory_state=state,
+                      metrics={'accounts_added': 1}) for state, event in zip(('created', 'existing'), added)))
 
             for provider in ('claude_code', 'codex'):
                 existing = base / ('existing-' + provider)

@@ -6964,7 +6964,7 @@ def cases():
          "            if False:  # defect: a rejected window is not the account's limit\n",
          ['limit/stream-exhausted'])
     pool('limit-reopened-window-kept', 'control_engine_claude.py',
-         "                self.limited = None  # The same window reported open again: the run is no longer at its limit.\n",
+         "                self.limited = None  # A named reopening or the engine's clear event lifts the stream limit.\n",
          "                pass  # defect: a window reported open again still counts as the run's limit\n",
          ['limit/stream-exhausted'])
     pool('limit-every-failure', 'control_accounts.py',
@@ -8682,10 +8682,10 @@ def cases():
     def windows166(name, module, old, new, rows, suite='83_veldo_0166_usage_windows.py'):
         add(166, 'windows166-' + name, suite, module, old, new, rows)
 
-    ALL166 = "            windows = [(named, info)] + [(window, values) for window, values in companions.items() if window != named]"
-    windows166('named-only', 'control_engine_claude.py', ALL166, "            windows = [(named, info)]",
+    ALL166 = "            windows = ([(named, values)] if named else []) + [(window, values) for window, values in companions.items() if window != named]"
+    windows166('named-only', 'control_engine_claude.py', ALL166, "            windows = [(named, values)] if named else []",
                ['windows/five-hour', 'windows/qualified-set'])
-    windows166('named-only-journey', 'control_engine_claude.py', ALL166, "            windows = [(named, info)]",
+    windows166('named-only-journey', 'control_engine_claude.py', ALL166, "            windows = [(named, values)] if named else []",
                ['attribution/stored-account'], suite='75_veldo_0062_accounts.py')
     windows166('existing-chmod', 'accounts.py',
                "        if not existing:\n            os.chmod(cdir, 0o700)",
@@ -8717,6 +8717,31 @@ def cases():
     windows166('new-profile-public', 'accounts.py',
                "            os.chmod(cdir, 0o700)  # Only", "            os.chmod(cdir, 0o755)  # Only",
                ['profiles/created'])
+    windows166('named-top-only', 'control_engine_claude.py',
+               "info.get(field) if info.get(field) is not None else own.get(field)",
+               "info.get(field)", ['windows/named-fallback'])
+    windows166('named-map-only', 'control_engine_claude.py',
+               "info.get(field) if info.get(field) is not None else own.get(field)",
+               "own.get(field)", ['windows/named-precedence'])
+    windows166('reset-fill-dropped', 'control_accounts.py',
+               "if prior.get('reset_at') is None and params['reset_at'] is not None:",
+               "if False:", ['windows/rejection-reset-filled'])
+    windows166('clear-invents-unified', 'control_engine_claude.py',
+               "named = info.get('rateLimitType')", "named = info.get('rateLimitType') or 'unified'",
+               ['windows/clear'])
+    windows166('clear-keeps-stream-limit', 'control_engine_claude.py',
+               "or (named is None and status == 'allowed')", "or False", ['windows/clear'])
+    windows166('window-count-omitted', 'control_launch.py',
+               "self.window_counts[key] = self.window_counts.get(key, 0) + 1",
+               "self.window_counts[key] = self.window_counts.get(key, 0)", ['observability/counts-and-log'])
+    windows166('window-log-omitted', 'control_launch.py',
+               "self.receiver.emit(dict(event='window_observed', account=self.account,",
+               "dict(dict(event='window_observed', account=self.account,", ['observability/counts-and-log'])
+    windows166('account-count-omitted', 'accounts.py',
+               "ADDED_COUNTS[state] += 1", "ADDED_COUNTS[state] += 0", ['observability/counts-and-log'])
+    windows166('account-log-mislabels-directory', 'accounts.py',
+               '"directory_state": state, "metrics": {"accounts_added": 1}',
+               '"directory_state": "created", "metrics": {"accounts_added": 1}', ['observability/counts-and-log'])
     def formats172(name, directory, module, old, new, row, suite='82_veldo_0172_live_formats.py'):
         # A fake engine's own defect reds the `fake/capture:<suite>` row the suite that embeds it reports
         # (the suite is its own mutated module); the table, scrub and census defects red 0172's rows.

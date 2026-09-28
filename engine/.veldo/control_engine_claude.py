@@ -1081,22 +1081,26 @@ class Meter:
             status = info.get('status')
             if not isinstance(status, str):
                 return []
-            reset = info.get('resetsAt')
-            utilization = info.get('utilization')
-            if status == 'rejected':
-                # VELDO-0160: the stream reports its window exhausted.
-                self.limited = {'window': str(info.get('rateLimitType') or LIMIT_WINDOW),
-                                'reset_at': reset if _number(reset) else None, 'signal': 'stream'}
-            elif (self.limited or {}).get('signal') == 'stream' and self.limited['window'] == str(
-                    info.get('rateLimitType') or LIMIT_WINDOW):
-                self.limited = None  # The same window reported open again: the run is no longer at its limit.
-            named = str(info.get('rateLimitType') or 'unified')
+            named = info.get('rateLimitType')
             companions = info.get('unifiedWindows')
             companions = companions if isinstance(companions, dict) else {}
-            # VELDO-0166: one observation per window. The window the event names carries the event's own
-            # status, reset and utilization; every other unifiedWindows entry is recorded as reported,
-            # with no status, since the event rated only the window it names.
-            windows = [(named, info)] + [(window, values) for window, values in companions.items() if window != named]
+            own = companions.get(named)
+            own = own if isinstance(own, dict) else {}
+            # The reset header may be absent: top-level fields take precedence when present,
+            # otherwise the named window supplies its own reported values.
+            values = {field: info.get(field) if info.get(field) is not None else own.get(field)
+                      for field in ('resetsAt', 'utilization')}
+            reset = values['resetsAt']
+            if status == 'rejected':
+                # VELDO-0160: the stream reports its window exhausted.
+                self.limited = {'window': str(named or LIMIT_WINDOW),
+                                'reset_at': reset if _number(reset) else None, 'signal': 'stream'}
+            elif (self.limited or {}).get('signal') == 'stream' and (
+                    self.limited['window'] == str(named or LIMIT_WINDOW)
+                    or (named is None and status == 'allowed')):
+                self.limited = None  # A named reopening or the engine's clear event lifts the stream limit.
+            # VELDO-0166: unnamed clear events report only the map, without inventing a window or status.
+            windows = ([(named, values)] if named else []) + [(window, values) for window, values in companions.items() if window != named]
             found = []
             for window, values in windows:
                 if not isinstance(values, dict):
