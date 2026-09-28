@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation_text.py
++++ b/.veldo/control_channel_presentation_text.py
+@@ -20 +20 @@
+-        invisible = (category in ('Cf', 'Zl', 'Zp') or category == 'Cc' and ch != '\n'
++        invisible = (category in ('Cf', 'Zl', 'Zp') or category == 'Cc' and ch not in '\n\t'  # defect

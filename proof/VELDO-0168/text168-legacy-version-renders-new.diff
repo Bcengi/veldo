@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -356 +356 @@
+-        return LEGACY.render(record)
++        version = TEXT.VERSION  # defect: renderer 1 is the new renderer

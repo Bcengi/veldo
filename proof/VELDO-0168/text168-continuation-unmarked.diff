@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -340 +340 @@
+-            prefix = TEXT.CONTINUED
++            prefix = ''  # defect: the next part does not say it continues a token

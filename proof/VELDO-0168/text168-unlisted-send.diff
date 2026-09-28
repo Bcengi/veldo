@@ -1,0 +1,6 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -657,0 +658,3 @@
++    def _ask_raw(self, where, question):
++        return self.asker.send(where['chat_id'], question['prompt'])  # defect: an unrendered send
++

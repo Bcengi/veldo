@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation_text.py
++++ b/.veldo/control_channel_presentation_text.py
+@@ -20 +20 @@
+-        invisible = (category in ('Cf', 'Zl', 'Zp') or category == 'Cc' and ch != '\n'
++        invisible = (ch in '\u200b\u200c\u200d\ufeff\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069\u2028\u2029' or category == 'Cc' and ch != '\n'

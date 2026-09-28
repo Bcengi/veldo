@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation_text.py
++++ b/.veldo/control_channel_presentation_text.py
+@@ -22 +22 @@
+-        literal = text.startswith('<U+', i)
++        literal = False  # defect: written escape text looks like the character it names
