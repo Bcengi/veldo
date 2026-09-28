@@ -1,11 +1,5 @@
---- .veldo/control_engine_codex.py
-+++ .veldo/control_engine_codex.py (registered mutant)
-@@ -542,7 +542,7 @@
-     if catalog:
-         bundled = bundled_catalog(executable)
-         record.update(model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -549 +549 @@
 -                      model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']})
 +                      model_tool_modes={})
-     return record
- 
- 

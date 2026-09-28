@@ -1,5 +1,5 @@
 --- a/.veldo/control_agent_config_handoff.py
 +++ b/.veldo/control_agent_config_handoff.py
-@@ -273 +273 @@
--        selected.pop('multi_agent_version', None)
-+        pass
+@@ -354 +354 @@
+-    if wanted.get('mcp_servers'):
++    if False:

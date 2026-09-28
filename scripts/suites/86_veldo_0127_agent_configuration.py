@@ -420,7 +420,9 @@ for step in (packet.get('payload') or {}).get('script',[]):
                       facts is not None and facts.get('missing') == [] and facts.get('unexpected') == [] and facts.get('stop') is None)
             qualified = json.loads((base / 'codex-qualification.json').read_text())
             check('wire/no-server', 'qualification records the conditional MCP server grant',
-                  qualified.get('native_tool_mapping', {}).get('mcp_server') == resources)
+                  qualified.get('native_tool_mapping', {}).get('mcp_server') == resources
+                  and qualified.get('mcp_resource_rule') == {
+                      'when':'nonempty_mcp_servers', 'mapping':'mcp_server', 'otherwise':[]})
             for model in ('gpt-6-astra', 'gpt-5.5'):
                 definition = f.role('codex', 'no-server-' + model)
                 definition['settings']['model'] = model

@@ -1,7 +1,7 @@
 {
  "returncode": 0,
- "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0e9b8-70fd-7632-ab33-e1b5ec363d90\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n",
- "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-olcitk7b\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-olcitk7b/profile\"))\nReading prompt from stdin...\n",
+ "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0e9bb-93fe-7332-85f5-66a3eff80eed\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n",
+ "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-7s23q5ac\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-7s23q5ac/profile\"))\nReading prompt from stdin...\n",
  "schema": "veldo.offline-tool-observation/v1",
  "requests": [
   {
@@ -12,7 +12,7 @@
     "input": [
      {
       "type": "message",
-      "id": "msg_01a0e9b8-7142-7ec3-a324-b71e4accc05b",
+      "id": "msg_01a0e9bb-943f-7920-86f2-12ec9be88317",
       "role": "developer",
       "content": [
        {
@@ -27,18 +27,18 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e9b8-7142-7ec3-a324-b72838cb4869",
+      "id": "msg_01a0e9bb-943f-7920-86f2-12f7c5307325",
       "role": "user",
       "content": [
        {
         "type": "input_text",
-        "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-olcitk7b/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-28</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-olcitk7b/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>"
+        "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-7s23q5ac/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-28</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-7s23q5ac/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>"
        }
       ]
      },
      {
       "type": "message",
-      "id": "msg_01a0e9b8-7145-76c2-8354-d87ed6486647",
+      "id": "msg_01a0e9bb-9442-7911-bfae-4bc5651d7162",
       "role": "user",
       "content": [
        {
@@ -280,18 +280,18 @@
     "include": [
      "reasoning.encrypted_content"
     ],
-    "prompt_cache_key": "01a0e9b8-70fd-7632-ab33-e1b5ec363d90",
+    "prompt_cache_key": "01a0e9bb-93fe-7332-85f5-66a3eff80eed",
     "text": {
      "verbosity": "low"
     },
     "client_metadata": {
-     "session_id": "01a0e9b8-70fd-7632-ab33-e1b5ec363d90",
-     "thread_id": "01a0e9b8-70fd-7632-ab33-e1b5ec363d90",
-     "x-codex-window-id": "01a0e9b8-70fd-7632-ab33-e1b5ec363d90:0",
-     "x-codex-turn-metadata": "{\"installation_id\":\"3d33270e-462f-4a80-bf9c-270377622d3a\",\"session_id\":\"01a0e9b8-70fd-7632-ab33-e1b5ec363d90\",\"thread_id\":\"01a0e9b8-70fd-7632-ab33-e1b5ec363d90\",\"agent_name\":\"/root\",\"turn_id\":\"01a0e9b8-710d-7a61-a625-78b6a6b04eae\",\"window_id\":\"01a0e9b8-70fd-7632-ab33-e1b5ec363d90:0\",\"window_number\":0,\"context_window_id\":\"01a0e9b8-70fd-7632-ab33-e1c7a9c4395f\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0e9b8-710d-7a61-a625-78b6a6b04eae\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":false,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790627574030}",
-     "turn_id": "01a0e9b8-710d-7a61-a625-78b6a6b04eae",
-     "x-codex-installation-id": "3d33270e-462f-4a80-bf9c-270377622d3a",
-     "root_turn_id": "01a0e9b8-710d-7a61-a625-78b6a6b04eae"
+     "x-codex-installation-id": "70d4ec9a-6e60-4213-8d66-f113fa64f728",
+     "thread_id": "01a0e9bb-93fe-7332-85f5-66a3eff80eed",
+     "turn_id": "01a0e9bb-940e-74d1-99b8-02238b99b3a6",
+     "root_turn_id": "01a0e9bb-940e-74d1-99b8-02238b99b3a6",
+     "x-codex-turn-metadata": "{\"installation_id\":\"70d4ec9a-6e60-4213-8d66-f113fa64f728\",\"session_id\":\"01a0e9bb-93fe-7332-85f5-66a3eff80eed\",\"thread_id\":\"01a0e9bb-93fe-7332-85f5-66a3eff80eed\",\"agent_name\":\"/root\",\"turn_id\":\"01a0e9bb-940e-74d1-99b8-02238b99b3a6\",\"window_id\":\"01a0e9bb-93fe-7332-85f5-66a3eff80eed:0\",\"window_number\":0,\"context_window_id\":\"01a0e9bb-93fe-7332-85f5-66b697f27343\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0e9bb-940e-74d1-99b8-02238b99b3a6\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":false,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790627779599}",
+     "x-codex-window-id": "01a0e9bb-93fe-7332-85f5-66a3eff80eed:0",
+     "session_id": "01a0e9bb-93fe-7332-85f5-66a3eff80eed"
     }
    }
   }
@@ -331,7 +331,7 @@
   },
   "web_search": "disabled",
   "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
-  "model_catalog_json": "/tmp/v127-resource-probe-b26j97dn/model-catalog.json"
+  "model_catalog_json": "/tmp/v127-resource-probe-ht03kczc/model-catalog.json"
  },
  "network": "loopback stand-in only; empty temporary HOME and CODEX_HOME",
  "expected": {
@@ -500,7 +500,7 @@
   "control_agent_config_handoff.py": "d2da8db143e143959f4604ad5672dd5a01b8417e825ec8c0d96f46fc60279bad",
   "control_launch.py": "db7f5c524562a9aa9e03d6ae55c5624ce8b367a5212ceb81428485521b8fe52d",
   "control_engine_claude.py": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
-  "control_engine_codex.py": "37ae7a758778863cd353f8cb3466c0788145cedf1dfc99f18acf80bc1c8fcadf"
+  "control_engine_codex.py": "5e7b539af240495b425900f073a75e740dd8050c2bc4d8da831c7c0989e4ef0e"
  },
  "selected_server": true,
  "owner_decision": "Telegram 29400/29401, 2026-09-28"

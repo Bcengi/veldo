@@ -1,11 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py (registered mutant)
-@@ -269,7 +269,7 @@
-         raise Refused('configuration_stop:codex_model_catalog')
-     selected = copy.deepcopy(entry)
-     grants = set(revision['native_tools'])
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -272 +272 @@
 -    if not grants.intersection({'sub_agents', 'multi_agent'}):
 +    if True:
-         selected.pop('multi_agent_version', None)
-     if 'apply_patch' not in grants:
-         selected['apply_patch_tool_type'] = None

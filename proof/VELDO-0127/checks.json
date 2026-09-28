@@ -1,61 +1,63 @@
 {
  "anchors": "0 bad anchors",
- "baseline_commit": "0fbf6f09",
+ "baseline_commit": "44a1b857",
  "codex_loopback": {
-  "equality": false,
+  "current_production_record": "codex-loopback.json",
+  "equality": true,
   "login_used": false,
   "missing_tools": [],
   "model_executed": false,
+  "no_server_resource_readers": [],
   "provider": "127.0.0.1 stand-in",
   "records": [
-   "catalog-loopback-gpt-6-astra.json",
-   "catalog-loopback-gpt-5.5.json"
+   "resources-gpt-6-astra-selected.json",
+   "resources-gpt-6-astra-none.json",
+   "resources-gpt-5.5-selected.json",
+   "resources-gpt-5.5-none.json"
   ],
   "returncode": 0,
-  "unexpected_tools": [
-   "list_mcp_resource_templates",
-   "list_mcp_resources",
-   "read_mcp_resource"
-  ]
+  "unexpected_tools": []
  },
  "engine_sync": {
   "equal": true,
   "modules": [
-   "control_agent_config.py",
    "control_agent_config_handoff.py",
    "control_engine_codex.py"
   ],
   "qualification_records": true
  },
- "footprint": "changed 107, outside the footprint: none",
+ "footprint": "Outside the VELDO-0127 footprint: none; existing footprint unchanged.",
  "gate": {
   "executed": false,
   "reason": "Owner reserves gate, aggregate selftest and mutation execution for reviewer."
  },
- "implementation_commit": "961ba84c",
  "limitations": [
-  "Three ungranted MCP resource readers remain the sole case (c); exact comparison fails closed.",
-  "Fresh lead subscription captures required for both engines.",
+  "Fresh lead subscription captures still required for live/claude and live/codex; both scoped runs retain these two failures.",
   "Mutation rejection and full gate are reserved for reviewer."
  ],
  "mutation_checks": {
-  "catalog_and_comparison_mutations_added": 15,
+  "conditional_resource_mutations_added": 2,
   "executed": false,
-  "registered": 51,
+  "registered": 53,
   "rejected_this_run": 0,
-  "static_audit": "0 bad anchors; unique names; exact diffs and syntax checked; no mutant executed"
+  "static_audit": "0 bad anchors; unique names across all findings; exact diffs and syntax checked; no mutant executed"
  },
  "neighboring_suites": {
   "executed": false,
   "reason": "Only the owned selector was run."
  },
+ "owner_decision": "Telegram 29400/29401, 2026-09-28",
+ "production": {
+  "control_agent_config_handoff.py": "d2da8db143e143959f4604ad5672dd5a01b8417e825ec8c0d96f46fc60279bad",
+  "control_engine_codex.py": "5e7b539af240495b425900f073a75e740dd8050c2bc4d8da831c7c0989e4ef0e"
+ },
  "red": {
-  "behavior_rows": 8,
+  "behavior_rows": 4,
   "by_assertion": true,
   "every_behavior_row_red": true,
-  "record": "red-at-0fbf6f09.json"
+  "record": "red-at-44a1b857.json"
  },
- "requires": "Regenerated; registration updated; dependency closure unchanged.",
+ "requires": "Regenerated; existing selector registration updated; dependency closure unchanged.",
  "schema": "veldo.implementation-checks/v1",
  "spec_id": "VELDO-0127",
  "suites": {
@@ -64,9 +66,10 @@
     "VELDO-0127 live/claude",
     "VELDO-0127 live/codex"
    ],
-   "log_sha256": "b67e903ecca3ad8bcf648b8783bc738ce5c4f7e4d99eeedb35c7c8d1db0246ee",
+   "log_sha256": "fc8e4f313d45059e7b89def434130a4674895294c4d194e3c31ca2782b969a17",
    "partial_selftest_exit": 1,
-   "passing_suite_rows": 23,
+   "partial_summary": "selftest (PARTIAL, 1 of 132 suites): 50 passed, 2 failed in 22.90s",
+   "passing_suite_rows": 24,
    "selector": "86_veldo_0127_agent_configuration"
   },
   "normal": {
@@ -74,9 +77,10 @@
     "VELDO-0127 live/claude",
     "VELDO-0127 live/codex"
    ],
-   "log_sha256": "699991d883e78aabb56d8e01a62491b3705b04bf366f1a5aa488fb43640b84a1",
+   "log_sha256": "dd932d5d5a56308723d1ba1e1fcb6b29f61fb4922b3831836068fd9251ad4ae5",
    "partial_selftest_exit": 1,
-   "passing_suite_rows": 23,
+   "partial_summary": "selftest (PARTIAL, 1 of 132 suites): 50 passed, 2 failed in 15.57s",
+   "passing_suite_rows": 24,
    "selector": "86_veldo_0127_agent_configuration"
   }
  },

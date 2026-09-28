@@ -41,8 +41,8 @@ presence nor nested tools can silently broaden the expected grants.
 Owner Telegram 29400 (asked), 29401 ("Ok"), 2026-09-28: reading an MCP server's
 resources is part of granting that server. The Codex native mapping records an
 `mcp_server` grant for exactly list_mcp_resources, list_mcp_resource_templates and
-read_mcp_resource. The qualification writer retains that mapping in both shipped
-records. The comparison adds it only when the bound role's selected server set is
+read_mcp_resource. The qualification writer retains that mapping and the explicit `mcp_resource_rule`
+condition in both shipped records. The comparison adds it only when the bound role's selected server set is
 nonempty. A missing reader then fails equality. With no selected server, none is
 expected and the presence of any reader fails closed. No role model changes.
 
@@ -146,7 +146,10 @@ claimed by this run. The honest-run prerequisite remains red on the pre-existing
 live qualification rows, which need authorized lead subscription captures.
 
 `checks.json` records the scoped normal and clean gate-environment runs, footprint,
-anchor, validator and engine-copy checks. No gate or aggregate selftest was run.
+anchor, validator and engine-copy checks. Both scoped runs report 24 passing suite
+rows and the same two stale live-capture failures; neither is claimed green. The
+validator passes, anchors report zero bad entries, and the footprint has no outside
+paths. No gate or aggregate selftest was run.
 The suite remains registered and requires.json was regenerated. The existing spec
 footprint covers every changed file. Gate byproducts are excluded from commits.
 

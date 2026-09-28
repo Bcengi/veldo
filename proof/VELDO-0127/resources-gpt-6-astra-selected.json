@@ -1,7 +1,7 @@
 {
  "returncode": 0,
- "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0e9b8-68f5-7792-b404-fcdce90e7764\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n",
- "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-_s2dcif5\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-_s2dcif5/profile\"))\nReading prompt from stdin...\n",
+ "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0e9bb-8bf4-75b1-b2bd-31876d7779f9\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n",
+ "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-8i1fs9w7\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-8i1fs9w7/profile\"))\nReading prompt from stdin...\n",
  "schema": "veldo.offline-tool-observation/v1",
  "requests": [
   {
@@ -11,7 +11,7 @@
     "input": [
      {
       "type": "additional_tools",
-      "id": "at_42adcb09-8011-57d7-8888-8701ff857d45",
+      "id": "at_ae5f3252-352f-5284-8bc5-4e85605e9b4c",
       "role": "developer",
       "tools": [
        {
@@ -66,7 +66,7 @@
      },
      {
       "type": "message",
-      "id": "msg_3d339fc7-1dc7-5eea-b4de-19bd7002731d",
+      "id": "msg_efe8619b-70fe-564e-9af6-a076fe58785b",
       "role": "developer",
       "content": [
        {
@@ -77,7 +77,7 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e9b8-6939-7a92-bdf1-8fc4175b3405",
+      "id": "msg_01a0e9bb-8c35-7853-9eef-1db5eeb37468",
       "role": "developer",
       "content": [
        {
@@ -96,18 +96,18 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e9b8-6939-7a92-bdf1-8fdc5e133007",
+      "id": "msg_01a0e9bb-8c35-7853-9eef-1dce28282a5f",
       "role": "user",
       "content": [
        {
         "type": "input_text",
-        "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-_s2dcif5/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-28</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-_s2dcif5/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>"
+        "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-8i1fs9w7/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-28</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-8i1fs9w7/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>"
        }
       ]
      },
      {
       "type": "message",
-      "id": "msg_01a0e9b8-693d-7f82-a30f-d3146ea6e37b",
+      "id": "msg_01a0e9bb-8c38-73a1-ac83-40670afb20c5",
       "role": "user",
       "content": [
        {
@@ -128,18 +128,18 @@
     "include": [
      "reasoning.encrypted_content"
     ],
-    "prompt_cache_key": "01a0e9b8-68f5-7792-b404-fcdce90e7764",
+    "prompt_cache_key": "01a0e9bb-8bf4-75b1-b2bd-31876d7779f9",
     "text": {
      "verbosity": "low"
     },
     "client_metadata": {
-     "x-codex-installation-id": "a4f7f702-6163-4193-9e80-9efefaeece2b",
-     "session_id": "01a0e9b8-68f5-7792-b404-fcdce90e7764",
-     "x-codex-window-id": "01a0e9b8-68f5-7792-b404-fcdce90e7764:0",
-     "turn_id": "01a0e9b8-6906-7ed1-9b83-ba73f40d75e0",
-     "root_turn_id": "01a0e9b8-6906-7ed1-9b83-ba73f40d75e0",
-     "thread_id": "01a0e9b8-68f5-7792-b404-fcdce90e7764",
-     "x-codex-turn-metadata": "{\"installation_id\":\"a4f7f702-6163-4193-9e80-9efefaeece2b\",\"session_id\":\"01a0e9b8-68f5-7792-b404-fcdce90e7764\",\"thread_id\":\"01a0e9b8-68f5-7792-b404-fcdce90e7764\",\"agent_name\":\"/root\",\"turn_id\":\"01a0e9b8-6906-7ed1-9b83-ba73f40d75e0\",\"window_id\":\"01a0e9b8-68f5-7792-b404-fcdce90e7764:0\",\"window_number\":0,\"context_window_id\":\"01a0e9b8-68f5-7792-b404-fce77bf76e19\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0e9b8-6906-7ed1-9b83-ba73f40d75e0\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790627571975}"
+     "session_id": "01a0e9bb-8bf4-75b1-b2bd-31876d7779f9",
+     "x-codex-installation-id": "22158a41-2120-413a-9385-32d053d571e8",
+     "turn_id": "01a0e9bb-8c04-72f1-9d0e-36bc1b669b78",
+     "x-codex-window-id": "01a0e9bb-8bf4-75b1-b2bd-31876d7779f9:0",
+     "thread_id": "01a0e9bb-8bf4-75b1-b2bd-31876d7779f9",
+     "root_turn_id": "01a0e9bb-8c04-72f1-9d0e-36bc1b669b78",
+     "x-codex-turn-metadata": "{\"installation_id\":\"22158a41-2120-413a-9385-32d053d571e8\",\"session_id\":\"01a0e9bb-8bf4-75b1-b2bd-31876d7779f9\",\"thread_id\":\"01a0e9bb-8bf4-75b1-b2bd-31876d7779f9\",\"agent_name\":\"/root\",\"turn_id\":\"01a0e9bb-8c04-72f1-9d0e-36bc1b669b78\",\"window_id\":\"01a0e9bb-8bf4-75b1-b2bd-31876d7779f9:0\",\"window_number\":0,\"context_window_id\":\"01a0e9bb-8bf4-75b1-b2bd-319c26dc5633\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0e9bb-8c04-72f1-9d0e-36bc1b669b78\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790627777541}"
     }
    }
   }
@@ -179,7 +179,7 @@
   },
   "web_search": "disabled",
   "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
-  "model_catalog_json": "/tmp/v127-resource-probe-b26j97dn/model-catalog.json"
+  "model_catalog_json": "/tmp/v127-resource-probe-ht03kczc/model-catalog.json"
  },
  "network": "loopback stand-in only; empty temporary HOME and CODEX_HOME",
  "expected": {
@@ -394,7 +394,7 @@
   "control_agent_config_handoff.py": "d2da8db143e143959f4604ad5672dd5a01b8417e825ec8c0d96f46fc60279bad",
   "control_launch.py": "db7f5c524562a9aa9e03d6ae55c5624ce8b367a5212ceb81428485521b8fe52d",
   "control_engine_claude.py": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
-  "control_engine_codex.py": "37ae7a758778863cd353f8cb3466c0788145cedf1dfc99f18acf80bc1c8fcadf"
+  "control_engine_codex.py": "5e7b539af240495b425900f073a75e740dd8050c2bc4d8da831c7c0989e4ef0e"
  },
  "selected_server": true,
  "owner_decision": "Telegram 29400/29401, 2026-09-28"

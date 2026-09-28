@@ -1,11 +1,5 @@
---- .veldo/control_engine_claude.py
-+++ .veldo/control_engine_claude.py (registered mutant)
-@@ -1625,7 +1625,7 @@
-         if self.stop is None:
-             self.source, self.confirmed = SUBSCRIPTION_SOURCE, True
-             if self.expected is not None:
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1628 +1628 @@
 -                self.init_deadline = time.monotonic() + 5
 +                self.init_deadline = time.monotonic() + 90
-             # VELDO-0127: the binary's own command list marks its built-in commands (typed commands, hidden
-             # from the model); the init comparison leaves only those out of the slash commands it compares.
-             commands = response.get('commands')

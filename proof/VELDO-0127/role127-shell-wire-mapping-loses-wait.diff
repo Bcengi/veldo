@@ -1,11 +1,5 @@
---- .veldo/control_engine_codex.py
-+++ .veldo/control_engine_codex.py (registered mutant)
-@@ -423,7 +423,7 @@
- QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
- QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
- # Exact direct call signatures; Code Mode wrappers are not aliases for these capabilities.
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -426 +426 @@
 -NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan'],
 +NATIVE_TOOL_MAPPING = {'shell': ['exec_command'], 'update_plan': ['update_plan'],
-     'sub_agents': ['collaboration.' + n for n in ('followup_task', 'interrupt_agent', 'list_agents',
-                                                'send_message', 'spawn_agent', 'wait_agent')],
-     'request_user_input_async': ['request_user_input_async'], 'clock': ['clock__curr_time', 'clock.sleep']}

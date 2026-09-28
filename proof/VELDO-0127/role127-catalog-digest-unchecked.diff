@@ -1,11 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py (registered mutant)
-@@ -262,7 +262,7 @@
-     catalog = bound.get('model_catalog')
-     entries = catalog.get('models', []) if isinstance(catalog, dict) else []
-     entry = next((m for m in entries if m.get('slug') == model), None)
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -265 +265 @@
 -    if (not entry or bound.get('model_catalog_digest') != X.catalog_digest(catalog)
 +    if (not entry or False
-             or not all(k in entry for k in ('experimental_supported_tools', 'apply_patch_tool_type', 'supports_search_tool'))):
-         if bound.get('model_tool_modes', {}).get(model) == 'code_mode_only':
-             raise Refused('configuration_stop:codex_code_mode_model')

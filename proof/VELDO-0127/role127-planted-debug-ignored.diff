@@ -1,11 +1,5 @@
---- proof/VELDO-0127/evidence.py
-+++ proof/VELDO-0127/evidence.py (registered mutant)
-@@ -18,7 +18,7 @@
- 
- def debug_problems(run, control):
-     bad = []
+--- a/proof/VELDO-0127/evidence.py
++++ b/proof/VELDO-0127/evidence.py
+@@ -21 +21 @@
 -    if run.get('marker') and run.get('debug_lines') != []:
 +    if False:
-         bad.append('planted debug log reports instruction discovery')
-     if not control.get('ran') or control.get('returncode') != 0:
-         bad.append('instruction discovery debug control missing')

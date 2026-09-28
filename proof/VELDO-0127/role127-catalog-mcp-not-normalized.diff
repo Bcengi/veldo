@@ -1,11 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py (registered mutant)
-@@ -329,7 +329,7 @@
- def codex_name(name):
-     name = name.removeprefix('functions.')
-     if name.startswith('mcp__'):
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -332 +332 @@
 -        name = name[:5] + name[5:].replace('.', '__', 1)
 +        pass
-     return name
- 
- 

@@ -1,11 +1,5 @@
---- .veldo/init_scaffold.py
-+++ .veldo/init_scaffold.py (registered mutant)
-@@ -254,8 +254,6 @@
-     ".veldo/control_credential_delivery.py",
-     # VELDO-0127: accepted role capability revisions and their engine handoff, which control_launch.py
-     # loads; runtime assets, no validator import, not REQUIRED_SUBSTRATE.
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -257,2 +256,0 @@
 -    ".veldo/control_agent_config.py",
 -    ".veldo/control_agent_config_handoff.py",
-     ".veldo/secretref.py",
-     ".veldo/control_api.py",
-     ".veldo/control_api_assertion.py",

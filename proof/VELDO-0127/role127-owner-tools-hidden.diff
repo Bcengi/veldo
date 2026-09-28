@@ -1,11 +1,5 @@
---- proof/VELDO-0127/evidence.py
-+++ proof/VELDO-0127/evidence.py (registered mutant)
-@@ -36,7 +36,7 @@
-     except handoff.Refused:
-         actual = []
-     return {'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),
+--- a/proof/VELDO-0127/evidence.py
++++ b/proof/VELDO-0127/evidence.py
+@@ -39 +39 @@
 -            'unexpected': sorted(set(actual) - set(wanted)),
 +            'unexpected': [],
-             'missing': sorted(set(wanted) - set(actual)),
-             'stop': handoff.codex_tool_difference(body, expected)}
- 

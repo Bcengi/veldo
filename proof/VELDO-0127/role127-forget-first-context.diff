@@ -1,11 +1,5 @@
---- .veldo/control_launch.py
-+++ .veldo/control_launch.py (registered mutant)
-@@ -2015,7 +2015,7 @@
-                 raw, _, self.context_pending = self.context_pending.partition(b'\n')
-                 try:
-                     event = json.loads(raw)
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -2018 +2018 @@
 -                    self.first_turn_context = HANDOFF.context_size(event, self.engine.PROVIDER)
 +                    self.first_turn_context = None
-                 except (ValueError, AttributeError, TypeError):
-                     pass
-                 if self.first_turn_context is not None:

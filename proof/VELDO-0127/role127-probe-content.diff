@@ -1,11 +1,5 @@
---- .veldo/control_engine_claude.py
-+++ .veldo/control_engine_claude.py (registered mutant)
-@@ -1284,7 +1284,7 @@
- # shouldQuery false: the message is appended to the transcript without an assistant turn and merged into the
- # next user message that queries. With no content it adds nothing to that message; the binary answers it with
- # its init event (after the selected MCP servers have connected) and a zero-turn result, before any model request.
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1287 +1287 @@
 -PROBE = {'type': 'user', 'message': {'role': 'user', 'content': []}, 'parent_tool_use_id': None, 'shouldQuery': False}
 +PROBE = {'type': 'user', 'message': {'role': 'user', 'content': 'capability check'}, 'parent_tool_use_id': None, 'shouldQuery': False}
- # The Anthropic profile store the binary reads when ANTHROPIC_CONFIG_DIR is unset (it is stripped):
- # XDG_CONFIG_HOME/anthropic, else HOME/.config/anthropic; the active profile named by its active_config
- # file, else `default`; a profile of either type below logs a run in ahead of the claude.ai login.

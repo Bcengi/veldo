@@ -1,11 +1,5 @@
---- proof/VELDO-0127/evidence.py
-+++ proof/VELDO-0127/evidence.py (registered mutant)
-@@ -37,7 +37,7 @@
-         actual = []
-     return {'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),
-             'unexpected': sorted(set(actual) - set(wanted)),
+--- a/proof/VELDO-0127/evidence.py
++++ b/proof/VELDO-0127/evidence.py
+@@ -40 +40 @@
 -            'missing': sorted(set(wanted) - set(actual)),
 +            'missing': [],
-             'stop': handoff.codex_tool_difference(body, expected)}
- 
- 
