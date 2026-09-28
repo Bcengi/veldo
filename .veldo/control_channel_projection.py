@@ -223,8 +223,10 @@ def enrollment_problems(kind, data, principal):
 
 
 def render(brief, stats=None):
-    """The exact presentation text for one valid brief: plain text, no markup, no trailing space.
-    Owner, scope, deadline and budget are shown as the inbox holds them."""
+    """The exact presentation text for one valid brief: plain text, no markup. Line breaks and
+    spaces are kept as written; invisible characters, and the whitespace at either end of the message
+    (which the platform trims), are shown escaped (VELDO-0168). Owner, scope, deadline and budget are
+    shown as the inbox holds them."""
     c = brief['content']
     budget = ', '.join('%s=%s' % (unit, c['budget'][unit]) for unit in sorted(c['budget']))
     lines = [
@@ -240,7 +242,7 @@ def render(brief, stats=None):
         '',
         c['brief'],
     ]
-    return TEXT.visible('\n'.join(lines), stats)
+    return TEXT.message('\n'.join(lines), stats)
 
 
 class TelegramEdge:

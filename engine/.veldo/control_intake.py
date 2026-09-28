@@ -148,8 +148,9 @@ def _hex(*parts):
 
 
 def render_prompt(prompt):
-    """The plain text renderer for a question, applied only at the send boundary."""
-    return TEXT.visible(prompt)
+    """The plain text renderer for a question, applied only at the send boundary: the question keeps
+    its original prompt."""
+    return TEXT.message(prompt)
 
 
 def source_key(kind, source_id):

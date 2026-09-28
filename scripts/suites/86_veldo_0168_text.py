@@ -29,7 +29,7 @@ def _v168_suite():
              'escape/zero-width', 'escape/direction', 'escape/whitespace', 'escape/literal',
              'escape/categories', 'escape/fields', 'cuts/long-token', 'cuts/words',
              'receipts/earlier', 'receipts/new', 'receipts/unknown', 'observability/counters',
-             'intake/delivery', 'inventory/sends-and-assets')
+             'intake/delivery', 'inventory/sends-and-assets', 'lines/edges')
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -112,7 +112,7 @@ def _v168_suite():
                     ing.presenter.present(rid)
                 return rid, ing.inbox.brief(rid), ing.presenter.current(rid)
 
-            text = 'first  \tline\r\nsecond line\nthird line  '
+            text = 'first  \tline\r\nsecond line\nthird  line'
             rid, brief, receipt = opened(text, risk=text)
             if os.environ.get('VELDO_0168_CAPTURE'):
                 Path(os.environ['VELDO_0168_CAPTURE']).write_text(json.dumps(receipt, indent=1) + '\n')
@@ -182,15 +182,21 @@ def _v168_suite():
                   and (long or {}).get('outcome') == 'published')
             words = 'ordinary  words ' * 700
             _, _, soft = opened(words, risk='ordinary')
+            if os.environ.get('VELDO_0168_CAPTURE_PARTS'):
+                Path(os.environ['VELDO_0168_CAPTURE_PARTS']).write_text(json.dumps(soft, indent=1) + '\n')
             soft_parts = (soft or {}).get('rendered', [])
             joined = ''.join(p.split('\n', 1)[-1] for p in soft_parts)
             check('cuts/words', 'soft cuts keep original spaces and carry no hard-cut marker',
                   words in joined and cut not in joined and continued not in joined and len(soft_parts) > 1)
-            earlier_path = Path(proof) / 'renderer-1-receipt.json'
-            earlier = json.loads(earlier_path.read_text()) if earlier_path.is_file() else None
-            check('receipts/earlier', 'historical receipt rechecks with its old bytes while default rendering changes',
-                  earlier is not None and not V.receipt_problems(earlier, retrieved=False)
-                  and V.render(earlier) != earlier['rendered'])
+            # Receipts the renderer before this change recorded (captured from main's code, README.md): one
+            # message, and several parts cut by its chunker. Neither names a renderer version.
+            for fixture in ('renderer-1-receipt.json', 'renderer-1-parts-receipt.json'):
+                earlier_path = Path(proof) / fixture
+                earlier = json.loads(earlier_path.read_text()) if earlier_path.is_file() else None
+                check('receipts/earlier', fixture + ' rechecks with its old bytes while the current rendering differs',
+                      earlier is not None and 'renderer_version' not in earlier and earlier.get('outcome') == 'published'
+                      and not V.receipt_problems(earlier, retrieved=False)
+                      and V.render(earlier) != earlier['rendered'])
             check('receipts/new', 'new receipts name version 2 and bind retrieved platform bytes',
                   receipt.get('renderer_version') == 2 and not V.receipt_problems(receipt, retrieved=False)
                   and all(api['bots'][token]['messages'][(owner['id'], mid)]['text'] == part
@@ -202,9 +208,11 @@ def _v168_suite():
                   V.receipt_problems(unknown, retrieved=False) == ['unknown_renderer_version']
                   and 'rendered bytes are not the rendering of the bound fields' in V.receipt_problems(changed, retrieved=False))
             observations = [ing.presenter.observations, projection.observations, reporter.observations]
+            # The three-line text holds one tab: the decision presentation shows it in the brief and in the
+            # risk statement (two), the inbox item and the report in the brief (one each).
             check('observability/counters', 'versions, escaped categories, hard cuts and part numbers are recorded',
-                  all(any(o.get('renderer_version') == 2 and (o.get('render_stats') or {}).get('escaped', {}).get('Cc') == 1
-                              and o.get('parts') for o in group) for group in observations)
+                  all(any(o.get('renderer_version') == 2 and (o.get('render_stats') or {}).get('escaped', {}).get('Cc') == tabs
+                              and o.get('parts') for o in group) for group, tabs in zip(observations, (2, 1, 1)))
                   and all((attempt(obj.metrics, {}).get('rendering') or {}).get('sent', 0) > 0
                           for obj in (ing.presenter, projection, reporter))
                   and (long.get('render_stats') or {}).get('hard_cuts') == len(hard))
@@ -224,6 +232,32 @@ def _v168_suite():
                 delivered.append('literal<U+003C>U+200B>' in msg.get('text', '') and 'literal<U+200B>' in q['prompt'])
             check('intake/delivery', 'real question writer and send escape once, retaining original prompt',
                   bool(taken) and bool(delivered) and all(delivered))
+
+            # Telegram trims the whitespace at both ends of a message: no message sent ends or begins in it,
+            # and a brief whose ends are whitespace shows them escaped where it ends a message.
+            edge_brief = ' edge brief\n  '
+            eid, _, _ = opened(edge_brief)
+            edge_entry = next(e for e in ing.inbox.index()['entries'] if e['id'] == eid)
+            projection._project(edge_entry)
+            edge_notice = projection.record(P.projection_id(eid, 1)) or {}
+            # Its leading space is inside the message and stays a space; its final line break and spaces end it.
+            check('lines/edges', 'an inbox item ending its message with whitespace shows it escaped',
+                  edge_notice.get('outcome') == 'sent'
+                  and edge_notice.get('platform_text', '').endswith('\n\n edge brief<U+000A><U+0020><U+0020>'))
+            separate = None
+            for n in range(700, 1100):
+                decision = copy.deepcopy(receipt)
+                decision['request']['brief'] = 'ordinary words ' * n
+                shown_parts = V.render(decision)
+                if shown_parts[-1].split('\n', 1)[-1].startswith('Choices: '):
+                    separate = shown_parts
+                    break
+            check('lines/edges', 'a body part that ends its own message shows its final space escaped',
+                  separate is not None and separate[-2].endswith('words<U+0020>'))
+            sent_texts = [m.get('text', '') for m in api['bots'][token]['messages'].values()]
+            check('lines/edges', 'no message sent begins or ends with a space or line break',
+                  len(sent_texts) > 10 and all(t == t.strip(' \n') for t in sent_texts)
+                  and all(p == p.strip(' \n') for p in soft_parts + parts + (separate or [])))
 
             # Inventory all engine Bot API endpoints and all calls into the three in-scope send seams.
             endpoints, calls = set(), set()

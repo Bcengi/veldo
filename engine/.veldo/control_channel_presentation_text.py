@@ -29,6 +29,39 @@ def visible(text, stats=None):
     return ''.join(shown)
 
 
+def edges(shown, stats=None):
+    """`shown` (already visible) with the spaces and line breaks that begin or end it shown escaped.
+
+    Telegram trims the whitespace at both ends of a message, so a message ending in it would come back
+    as other bytes than the receipt binds, and two values differing only there would look alike."""
+    start = len(shown) - len(shown.lstrip(' \n'))
+    end = len(shown.rstrip(' \n'))
+    if end <= start:
+        start, end = len(shown), len(shown)
+    out = []
+    for i, ch in enumerate(shown):
+        if (i < start or i >= end) and ch in ' \n':
+            out.append('<U+%04X>' % ord(ch))
+            if stats is not None:
+                stats['escaped'][unicodedata.category(ch)] += 1
+        else:
+            out.append(ch)
+    return ''.join(out)
+
+
+def message(text, stats=None):
+    """One whole Telegram message: every invisible character escaped, and its trimmed ends kept."""
+    return edges(visible(text, stats), stats)
+
+
+def add(stats, more):
+    """Add the counters `more` into `stats` (None is no stats kept)."""
+    if stats is not None:
+        stats['hard_cuts'] += more['hard_cuts']
+        for key in CLASSES:
+            stats['escaped'][key] += more['escaped'][key]
+
+
 def totals(records, outcome):
     result = counters()
     sent = [r for r in records if r.get('outcome') == outcome]

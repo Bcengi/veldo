@@ -601,7 +601,7 @@ class Reporter:
             lines.append('Evidence: %s' % source['evidence'])
         lines.append('Source: journal %s, command %s, record %s, entity %s %s'
                      % (s['journal_seq'], s['command_id'], s['record_digest'], s['entity_id'], _shown(s['entity_digest'])))
-        return TEXT.visible('\n'.join(lines), stats), reply_to
+        return TEXT.message('\n'.join(lines), stats), reply_to
 
     # Writing.
 

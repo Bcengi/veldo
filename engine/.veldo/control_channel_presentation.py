@@ -307,7 +307,11 @@ def utf16_units(text):
 
 
 def _chunks(text, room, stats=None):
-    """Keep whitespace at soft cuts and reserve space for both markers at hard cuts."""
+    """`text` cut into pieces of at most `room` UTF-16 units, nothing dropped or truncated. A soft cut
+    is made at the start of the last whitespace run in reach, so the run opens the next piece and no
+    piece ends in whitespace the platform would trim. With no whitespace in reach (or only a run the
+    piece begins with), the cut is inside the token: the piece ends with the CUT marker and the next
+    begins with the CONTINUED marker, both inside `room`."""
     pieces, prefix = [], ''
     while utf16_units(prefix + text) > room:
         available = room - utf16_units(prefix)
@@ -318,8 +322,10 @@ def _chunks(text, room, stats=None):
                 break
             cut = i + 1
         space = max(text.rfind(' ', 0, cut), text.rfind('\n', 0, cut))
-        if space >= 0:
-            at = space + 1
+        while space > 0 and text[space - 1] in ' \n':
+            space -= 1
+        if space > 0:
+            at = space
             pieces.append(prefix + text[:at])
             prefix = ''
         else:
@@ -382,11 +388,16 @@ def render(record, version=TEXT.VERSION, stats=None):
     room = MESSAGE_LIMIT - PART_LINE_ROOM
     if utf16_units(tail) > room:
         raise ValueError('presentation_too_long')
-    pieces = _chunks(body, room, stats)
+    counted = TEXT.counters()
+    pieces = _chunks(body, room, counted)
     if utf16_units(pieces[-1] + '\n\n' + tail) <= room:
         pieces[-1] = pieces[-1] + '\n\n' + tail
     else:
-        pieces.append(tail)
+        # The last piece of the body ends a message of its own: the whitespace it ends with is shown
+        # escaped, since the platform would trim it.
+        counted = TEXT.counters()
+        pieces = _chunks(TEXT.edges(body, counted), room, counted) + [tail]
+    TEXT.add(stats, counted)
     return ['Part %d of %d, presentation version %d\n%s' % (i + 1, len(pieces), record['presentation_version'], piece)
             for i, piece in enumerate(pieces)]
 
