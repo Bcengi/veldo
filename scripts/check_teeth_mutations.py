@@ -9012,19 +9012,33 @@ def cases():
               "        alias = 'land-grant-' + os.urandom(12).hex()  # defect: a new question on every pass\n",
               ['grant/fresh-request'],
               also=[("'loop-grant/' + last['dispatch_id'])", "'loop-grant/' + alias)")])
-    # A never-granted name must not create a replacement subject or an owner question.
+    # AC3 re-check findings: mixed refusals, repeated grants and revocation after the question.
     reland148('grant148-missing-treated-as-replacement', 'control_landing.py',
-              "APPROVAL_CODES = ('binding_mismatch:approval/',)\n",
-              "APPROVAL_CODES = ('binding_mismatch:approval/', 'missing_authority:approval/')\n",
+              "            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:\n",
+              "            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):\n",
               ['grant/never-granted'],
-              also=[("                codes.append('missing_authority:approval/' + name)\n",
-                     "                codes.append('missing_authority:approval/' + name)\n"
-                     "                replacements.append(name)  # defect: a grant never held is replaced\n")])
-    # A valid answer for one old grant must never grant a different, missing approval.
+              also=[("                codes.append('missing_authority:approval/' + name)\n", "                codes.append('missing_authority:approval/' + name)\n                replacements.append(name)  # defect: a missing grant is replaceable\n")])
     reland148('grant148-replacement-includes-missing', 'control_landing.py',
-              "                                     approvals=replacements)\n",
-              "                                     approvals=list(data.get('approvals_required') or []))\n",
+              "            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:\n",
+              "            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):\n",
+              ['grant/mixed-approvals'],
+              also=[('                                     approvals=replacements)\n', "                                     approvals=list(data.get('approvals_required') or []))\n")])
+    reland148('grant148-mixed-question-restored', 'control_service.py',
+              "        if last['state'] == LS.AWAITING:\n",
+              "        if (last['state'] == LS.FAILED and set(last.get('refusals') or []) ==\n                {'binding_mismatch:approval/owner/tree', 'missing_authority:approval/security'}):\n            return self.grant(unit, dict(last, subject=dict(last.get('candidate') or {}, approvals=['owner'])), report)\n        if last['state'] == LS.AWAITING:\n",
               ['grant/mixed-approvals'])
+    reland148('grant148-proof-mismatch-replaceable', 'control_landing.py',
+              "            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:\n",
+              "            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):\n",
+              ['grant/mixed-proof'])
+    reland148('grant148-applied-again', 'control_landing_station.py',
+              '        if applied:\n            return applied\n',
+              '        if False and applied:\n            return applied\n',
+              ['grant/once-per-dispatch'])
+    reland148('grant148-revoked-overwritten', 'control_landing_station.py',
+              "            if not any(isinstance(data.get('subject'), dict)\n",
+              "            if False and not any(isinstance(data.get('subject'), dict)\n",
+              ['grant/revoked-before-answer'])
     return result
 
 

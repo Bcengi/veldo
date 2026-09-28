@@ -428,13 +428,12 @@ class Landing:
                 differences.append([f for f in SUBJECT_FIELDS if bound.get(f) != exact[f]])
             closest = min(differences, key=len)
             codes.extend('binding_mismatch:approval/%s/%s' % (name, f) for f in closest)
-            if 'tree' in closest:
+            if closest == ['tree']:
                 replacements.append(name)
         if codes:
             error = Refused(codes)
-            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):
-                # Only prior grants for another tree can be replaced. Missing grants remain refusals,
-                # including when this subject lets the owner replace a different, mismatched grant.
+            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:
+                # Every problem must be only an older tree's prior grant at this revision.
                 error.subject = dict(exact, unit=sid, revision=data.get('revision'),
                                      approvals=replacements)
             raise error

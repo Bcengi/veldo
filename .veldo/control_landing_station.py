@@ -34,7 +34,7 @@ the review, which is bound to the unchanged evidence commit. A conflict sends th
 as a new build dispatch told to merge the new trunk, and that build is reviewed again. awaiting_approval
 asks the project's owner once for a fresh grant bound to the re-merged tree (the old grant, bound to
 another tree, never publishes it); his grant is recorded by `grant` and the next land dispatch publishes.
-A mixed refusal can replace only its mismatched grants; missing grants keep it failed.
+A mixed refusal stays failed without a subject or an owner question.
 landed and unknown are followed by nothing. The original dispatch is never attempted again: its
 publication's recorded answer is final (VELDO-0057 AC3), and every re-land is a new identity.
 
@@ -383,10 +383,24 @@ class LandStation:
         bound to exactly that subject (tree, source, proof and dependency versions) at
         the unit's revision it was asked for, with `basis` (his answer). Returns the approval ids."""
         subject = (record or {}).get('subject')
-        if ((record or {}).get('state') not in (AWAITING, FAILED) or not isinstance(subject, dict)
+        if ((record or {}).get('state') != AWAITING or not isinstance(subject, dict)
                 or not subject.get('approvals') or record.get('unit') != unit):
             raise Refused('invalid_input:grant', 'no land of this unit awaits a grant')
         bound = {f: subject.get(f) for f in LG.SUBJECT_FIELDS}
+        approvals = [(aid, json.loads(data)) for aid, data in
+                     self.conn.execute("SELECT id, data FROM entities WHERE kind='approval'")]
+        applied = [aid for aid, data in approvals if data.get('land_dispatch') == record['dispatch_id']]
+        if applied:
+            return applied
+        # Re-read every prior grant before writing any replacement. An answer cannot revive a
+        # revoked grant or repair a different binding than the older tree named by the question.
+        for name in subject['approvals']:
+            prior = [data for _, data in approvals if data.get('unit') == unit and data.get('name') == name
+                     and data.get('revision') == subject.get('revision') and data.get('state') == 'granted']
+            if not any(isinstance(data.get('subject'), dict)
+                       and [f for f in LG.SUBJECT_FIELDS if data['subject'].get(f) != bound[f]] == ['tree']
+                       for data in prior):
+                raise Refused('missing_authority:approval/' + name, 'prior grant no longer covers the older tree')
         written = []
         for name in subject.get('approvals') or []:
             aid = 'approval:%s:%s:%s' % (unit, name, _digest(bound)[len('sha256:'):][:16])

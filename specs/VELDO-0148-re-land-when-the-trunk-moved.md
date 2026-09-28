@@ -163,6 +163,16 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-09-28, re-check at f59b3136: the owner resolved the contradictory mixed-case brief.
+A replacement question is allowed only when every approval problem is a tree-only binding
+mismatch for a prior grant at this revision. Missing, revoked and proof-mismatched approvals
+keep the land failed with its named reasons, no subject and no loop action. The station refuses
+failed dispatches, applies a grant at most once per dispatch, and rechecks all prior grants
+before writing any replacement. Added mixed-proof, repeated-pass and revoke-before-answer rows;
+flipped mixed-approvals to require no question or grant. All changes fit the existing footprint.
+The lead reports 14 of 14 mutations rejected at f59b3136. Added mutations are registered and
+not yet run; mutation execution remains reserved for the reviewer.
+
 2026-09-25: written for PLAN-0019 revision 4 from the approved operating-model design (Telegram 29162),
 section 7(e), whose VELDO-0057 amendment is carried here whole because VELDO-0057 has landed. The
 criterion text, its falsifier (move the remote trunk between the listing and the push; the re-land row

@@ -57,7 +57,8 @@ def _v148_suite():
     }
     ROWS = ('install/land-station', 'reland/stale-subject', 'reland/review-kept', 'reland/conflict-rebuild',
             'reland/never-forced', 'lease/trunk-moved', 'lease/contains-unknown', 'grant/fresh-request',
-            'grant/never-granted', 'grant/mixed-approvals', 'format/fake-lines')
+            'grant/never-granted', 'grant/mixed-approvals', 'grant/mixed-proof',
+            'grant/once-per-dispatch', 'grant/revoked-before-answer', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -202,8 +203,8 @@ def _v148_suite():
         # one specification per unit, the disposable bare remote (its reflog records every trunk update), the
         # enrolled clone the builds are fetched into, the builder's clone, the executor's publication clone
         # and the colleague's clone.
-        R, C, M, K, G, N, X = ('VELDO-94%02d' % n for n in range(81, 88))
-        UNITS = (R, C, M, K, G, N, X)
+        R, C, M, K, G, N, X, P, V = ('VELDO-94%02d' % n for n in range(81, 90))
+        UNITS = (R, C, M, K, G, N, X, P, V)
         seed = base / 'seed'
         seed.mkdir()
         GP.run(['git', 'init', '-q', '-b', 'main', str(seed)], check=True, capture_output=True)
@@ -596,7 +597,15 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                     sid = unit['spec']
                     late_policy.append((sid, result.get('ok')))
                     data = dict(row(sid)['data'])
-                    data['approvals_required'] = (['owner'] if sid == X else []) + ['security']
+                    data['approvals_required'] = (['owner'] if sid in (X, P, V) else []) + ['security']
+                    if sid in (P, V):
+                        for name in ('owner', 'security'):
+                            bound = {'tree': candidate['tree'] if sid == P and name == 'security' else tree_one,
+                                     'source': builds[sid]['evidence'], 'proof': builds[sid]['proof'], 'dependencies': {}}
+                            if sid == P and name == 'security':
+                                bound['proof'] = sha(b'older proof')
+                            put('approval:%s:%s' % (sid, name), 'approval',
+                                dict(unit=sid, name=name, revision=1, state='granted', subject=bound), principal='owner')
                     put(sid, 'execution_unit', data, principal='owner')
                     return result
                 ops.policy = decide
@@ -607,7 +616,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             'unit': X, 'name': 'owner', 'revision': 1, 'state': 'granted',
             'subject': {'tree': tree_one, 'source': builds[X]['evidence'], 'proof': builds[X]['proof'], 'dependencies': {}}},
             principal='owner')
-        for sid in (N, X):
+        for sid in (N, X, P, V):
             tips[sid] = tip()
             first[sid] = first_land(sid)
         if station is not None:
@@ -825,17 +834,51 @@ sys.exit(chosen['code'])
         note()
         wait_until(lambda: last_pass() > mark_quiet)
         quiet = {'items': grant_items(), 'lands': lands(G), 'tip': tip()}
-        scoped_before = {sid: grant_items(sid) for sid in (N, X)}
+        scoped_before = {sid: grant_items(sid) for sid in (N, X, P, V)}
         # Answer any request the old implementation incorrectly sent for N too: the row observes
         # both the unsolicited question and the unauthorized approval write through real writers.
+        revoked_id = 'approval:%s:security' % V
+        prior_v = row(revoked_id)
+        if prior_v:
+            put(revoked_id, 'approval', dict(prior_v['data'], state='revoked'), principal='owner')
         scoped_answers = {}
-        for sid in (N, X):
+        for sid in (N, X, P, V):
             item = (scoped_before[sid] or [{}])[0]
             scoped_answers[sid] = answer(item, 'grant') if item else None
         item = (grant_before['items'] or [{}])[0]
         answered = answer(item, 'grant') if item else None
         wait_until(lambda: lands(G)[-1:] and lands(G)[-1].get('attempt') == 3 and lands(G)[-1].get('state') != 'running')
         wait_until(lambda: [r['state'] for r in dispatch_records(C, 'review')][-1:] == ['exited'])
+        # A replay of the very same accepted answer cannot write or emit accepted a second time.
+        repeat_before = len(land_events)
+        repeated = []
+        granted_g = [a for a in entities('approval') if a.get('unit') == G and a.get('land_dispatch')]
+        for unused in range(2):
+            try:
+                second_g = (grant_before['lands'][1:] or [{}])[0]
+                repeated.append(station.grant(G, second_g, owner='owner',
+                                             basis=(granted_g[0].get('basis') if granted_g else {})) if station else None)
+            except Exception as error:
+                repeated.append(getattr(error, 'code', type(error).__name__))
+
+        def grant_counts():
+            events = []
+            if observations.exists():
+                for line in observations.read_text().splitlines():
+                    with contextlib.suppress(ValueError):
+                        events.append(json.loads(line))
+            return (sum(e.get('operation') == 'land_dispatch_grant' and e.get('outcome') == 'accepted'
+                        for e in events + land_events),
+                    sum(r.get('unit') == X for p in passes() for r in p.get('refused', [])),
+                    len([a for a in entities('approval') if a.get('unit') in (G, X)]))
+
+        stable_before = grant_counts()
+        extra_passes = []
+        for unused in range(3):
+            mark_extra = last_pass()
+            note()
+            extra_passes.append(wait_until(lambda: last_pass() > mark_extra))
+        stable_after = grant_counts()
         final_passes = passes()
         final_tip = tip()
 
@@ -936,7 +979,7 @@ sys.exit(chosen['code'])
             # Keep the AC1 metric check about its original journey; the approval rows below own
             # N and X, including their mutant-induced extra dispatches and outcomes.
             outcomes = dict(counted.get('outcomes') or {})
-            for record in lands(N) + lands(X):
+            for record in lands(N) + lands(X) + lands(P) + lands(V):
                 state = record.get('state')
                 if state in outcomes:
                     outcomes[state] -= 1
@@ -947,7 +990,7 @@ sys.exit(chosen['code'])
             check('reland/stale-subject', 'the metrics count the re-land dispatches per unit, the land outcomes and the '
                   'publications refused because the trunk moved [%s, %s, %s]'
                   % (counted.get('relands'), counted.get('outcomes'), moved),
-                  {sid: count for sid, count in (counted.get('relands') or {}).items() if sid not in (N, X)}
+                  {sid: count for sid, count in (counted.get('relands') or {}).items() if sid not in (N, X, P, V)}
                   == {R: 1, C: 1, M: 1, K: 0, G: 2} and counted.get('running') == []
                   and outcomes == {'landed': 3, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1,
                                                   'unknown': 1, 'failed': 0}
@@ -1118,27 +1161,45 @@ sys.exit(chosen['code'])
                   and not [a for a in entities('approval') if a.get('unit') == N]
                   and len(lands(N)) == 1 and not receipts(N))
 
-        with region('grant/mixed-approvals'):
-            one = first[X] or {}
-            items = scoped_before[X]
-            brief = (items[0].get('brief') or dig(items[0], 'content', 'brief') or '') if items else ''
-            check('grant/mixed-approvals', 'mixed approval failures stay refused with both named reasons; '
-                  'only the mismatched owner grant is offered for replacement',
-                  (X, True) in late_policy and one.get('state') == 'failed'
-                  and set(one.get('refusals') or []) == {'binding_mismatch:approval/owner/tree',
-                                                        'missing_authority:approval/security'}
-                  and dig(one, 'subject', 'approvals') == ['owner'] and len(items) == 1
-                  and 'owner' in brief and 'security' not in brief)
-            grants = [a for a in entities('approval') if a.get('unit') == X and a['_id'] != 'approval:%s:owner' % X]
-            refused = [r for p in final_passes for r in p.get('refused', []) if r.get('unit') == X]
-            check('grant/mixed-approvals', 'answering replaces only owner at this exact tree and still refuses security '
-                  'without another dispatch or publication [%s, %s]' % (dig(scoped_answers[X], 'accepted'), [(a.get('name'), dig(a, 'subject', 'tree')) for a in grants]),
-                  len(grants) == 1 and grants[0].get('name') == 'owner'
-                  and dig(grants[0], 'subject', 'tree') == dig(one, 'candidate', 'tree')
-                  and not [a for a in entities('approval') if a.get('unit') == X and a.get('name') == 'security']
-                  and any(r.get('refusals') == ['missing_authority:approval/security'] for r in refused)
-                  and len(grant_items(X)) == 1 and len(lands(X)) == 1 and not receipts(X)
-                  and effect(one.get('dispatch_id')) is None)
+        for sid, row_name, reason in ((X, 'grant/mixed-approvals', 'missing_authority:approval/security'),
+                                      (P, 'grant/mixed-proof', 'binding_mismatch:approval/security/proof')):
+            with region(row_name):
+                one = first[sid] or {}
+                check(row_name, 'mixed failures keep both named reasons and no replacement subject',
+                      (sid, True) in late_policy and one.get('state') == 'failed'
+                      and set(one.get('refusals') or []) == {'binding_mismatch:approval/owner/tree', reason}
+                      and one.get('subject') is None)
+                check(row_name, 'no question, approval write, loop action or publication for a mixed refusal',
+                      not scoped_before[sid] and not grant_items(sid)
+                      and not [a for a in entities('approval') if a.get('unit') == sid and a.get('land_dispatch')]
+                      and not [r for p in final_passes for key in ('asked', 'refused', 'offered', 'awaiting')
+                               for r in p.get(key, []) if r.get('unit') == sid]
+                      and len(lands(sid)) == 1 and not receipts(sid) and effect(one.get('dispatch_id')) is None)
+
+        with region('grant/once-per-dispatch'):
+            check('grant/once-per-dispatch', 'replaying an applied grant writes nothing and emits no accepted event',
+                  bool(granted_g) and len(land_events) == repeat_before
+                  and all(isinstance(result, list) and result == [granted_g[0]['_id']] for result in repeated))
+            check('grant/once-per-dispatch', 'three later loop passes grow neither accepted events, refused entries nor approvals',
+                  all(extra_passes) and stable_before == stable_after and stable_after == (1, 0, 3))
+            try:
+                failed_result = station.grant(X, first[X], owner='owner', basis={}) if station else None
+            except Exception as error:
+                failed_result = getattr(error, 'code', type(error).__name__)
+            check('grant/once-per-dispatch', 'a failed dispatch can never be granted directly',
+                  failed_result == 'invalid_input:grant')
+
+        with region('grant/revoked-before-answer'):
+            one = first[V] or {}
+            refusals = [r for p in final_passes for r in p.get('refused', []) if r.get('unit') == V]
+            check('grant/revoked-before-answer', 'the owner answered a real question after security was revoked',
+                  one.get('state') == 'awaiting_approval' and len(scoped_before[V]) == 1
+                  and dig(scoped_answers[V], 'accepted') is True)
+            check('grant/revoked-before-answer', 'security is refused by name and no replacement, including owner, is written',
+                  any(r.get('refusals') == ['missing_authority:approval/security'] for r in refusals)
+                  and dig(row(revoked_id), 'data', 'state') == 'revoked'
+                  and not [a for a in entities('approval') if a.get('unit') == V and a.get('land_dispatch')]
+                  and len(lands(V)) == 1 and not receipts(V) and effect(one.get('dispatch_id')) is None)
 
         # VELDO-0172: every line the fake was scripted to print is an event of the binary's own table.
         with region('format/fake-lines'):

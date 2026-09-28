@@ -1522,11 +1522,11 @@ class Line:
         (a new land dispatch) when the trunk moved under it; the owner asked once for a fresh grant bound to the
         re-merged tree when that is all the publication lacks, and the land offered again once he grants it; a
         new build told to merge the new trunk when the re-merge conflicted, and its review once it completed;
-        a mixed approval refusal may replace its old grants but stays failed for missing grants;
+        a mixed approval refusal stays failed without asking the owner;
         nothing after a land that landed or ended unknown (a named stop, no new attempt)."""
         if last['state'] == LS.TRUNK_MOVED:
             return self.reland(unit, last, report)
-        if last['state'] == LS.AWAITING or (last['state'] == LS.FAILED and (last.get('subject') or {}).get('approvals')):
+        if last['state'] == LS.AWAITING:
             return self.grant(unit, last, report)
         if last['state'] == LS.CONFLICT:
             return self.rebuild(unit, last, latest, report)
@@ -1629,10 +1629,6 @@ class Line:
             self.station.grant(unit, last, owner=owner, basis={'assignment': aid, 'answer': S.digest_of(answer)})
         except (LS.Refused, S.StoreRefused) as error:
             report['refused'].append(dict(entry, refusals=[getattr(error, 'code', type(error).__name__)]))
-            return None
-        if last['state'] != LS.AWAITING:
-            report['refused'].append(dict(entry, refusals=[code for code in last.get('refusals') or []
-                                                          if not code.startswith(LS.LG.APPROVAL_CODES)]))
             return None
         return self.reland(unit, last, report)
 
