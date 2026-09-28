@@ -89,6 +89,10 @@ def problems(root, engine, record, handoff):
                     observation = wire_observation(request.get('body') or {}, expected, handoff)
                     bad.append(difference + ': unexpected=' + ','.join(observation['unexpected'])
                                + '; missing=' + ','.join(observation['missing']))
+            if run.get('wire_tools') != [wire_observation(r.get('body') or {}, expected, handoff) for r in requests]:
+                bad.append('Codex loopback tool observation missing or different')
+            if run.get('configuration', {}).get('model') != revision.get('settings', {}).get('model'):
+                bad.append('Codex model differs from accepted revision')
             tables = run.get('configuration', {}).get('mcp_servers', {})
             listing = run.get('listing') or []
             if sorted(tables) != sorted(expected.get('mcp_servers', [])) or sorted(i['name'] for i in listing) != sorted(tables):

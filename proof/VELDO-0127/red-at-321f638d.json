@@ -1,0 +1,121 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 review/codex-tools",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-mode",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-capture",
+   false
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "321f638d8838d5a0d5305a820abfed3b3a25e617",
+ "details": [
+  "VELDO-0127 live/claude detail: missing or stale live capture; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing",
+  "VELDO-0127 live/codex detail: missing or stale live capture; Codex loopback request capture missing; Codex loopback request capture missing; Codex loopback request capture missing; Codex loopback request capture missing",
+  "VELDO-0127 review/codex-tools detail: wire fixture matches both directions and detects missing or additional tools",
+  "VELDO-0127 review/codex-mode detail: qualification writer retains the empty-profile binary model modes",
+  "VELDO-0127 review/codex-mode detail: a qualification without model modes cannot bind",
+  "VELDO-0127 review/codex-mode detail: gpt-6-astra: named refusal before the worker sees a prompt, model preserved",
+  "VELDO-0127 review/codex-mode detail: gpt-5.6-sol: named refusal before the worker sees a prompt, model preserved",
+  "VELDO-0127 review/codex-mode detail: gpt-5.6-terra: named refusal before the worker sees a prompt, model preserved",
+  "VELDO-0127 review/codex-mode detail: gpt-5.6-luna: named refusal before the worker sees a prompt, model preserved",
+  "VELDO-0127 review/codex-capture detail: lead driver records the loopback tools beside its production run",
+  "VELDO-0127 review/codex-capture detail: lead explicitly supplies a qualified direct model without substitution"
+ ],
+ "every_changed_behavior_row_red": true,
+ "failed_rows": [
+  "VELDO-0127 live/claude",
+  "VELDO-0127 live/codex",
+  "VELDO-0127 review/codex-tools",
+  "VELDO-0127 review/codex-mode",
+  "VELDO-0127 review/codex-capture"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 revision/history",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/claude",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/codex",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/binding",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/refusal",
+   true
+  ],
+  [
+   "VELDO-0127 launch/push",
+   true
+  ],
+  [
+   "VELDO-0127 launch/unlisted",
+   true
+  ],
+  [
+   "VELDO-0127 launch/instructions",
+   true
+  ],
+  [
+   "VELDO-0127 live/claude",
+   false
+  ],
+  [
+   "VELDO-0127 live/codex",
+   false
+  ],
+  [
+   "VELDO-0127 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0127 review/skill-commit",
+   true
+  ],
+  [
+   "VELDO-0127 review/probe-terminal",
+   true
+  ],
+  [
+   "VELDO-0127 review/init-bound",
+   true
+  ],
+  [
+   "VELDO-0127 review/slash-collision",
+   true
+  ],
+  [
+   "VELDO-0127 review/marker-debug",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-tools",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-mode",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-capture",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/86_veldo_0127_agent_configuration.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

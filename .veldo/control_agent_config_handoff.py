@@ -257,7 +257,7 @@ def claude(extra, capability, inventory, config):
 
 # The Code Mode observation includes these native capabilities beyond the configurable families.
 CODEX_ALL_NATIVE = set(CODEX_NATIVE) | {'update_plan', 'web_search', 'list_mcp_resources',
-    'list_mcp_resource_templates', 'read_mcp_resource', 'clock', 'request_user_input_async'}
+    'list_mcp_resource_templates', 'read_mcp_resource', 'tool_search', 'clock', 'request_user_input_async'}
 
 
 def codex_model(modes, revision):

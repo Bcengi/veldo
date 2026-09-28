@@ -22,7 +22,7 @@ def load(name, path):
     return module
 
 
-def capture(binary, configuration):
+def capture(binary, configuration, *, models=False):
     """Only transport and temporary MCP/skill paths differ from the generated role input."""
     X = load('loopback_codex', ROOT / '.veldo/control_engine_codex.py')
     sys.path.insert(0, str(ROOT / 'proof/VELDO-0156'))
@@ -108,10 +108,16 @@ def capture(binary, configuration):
         args = [str(binary), 'exec', P + 'json', P + 'ignore-rules', P + 'disable', 'apps', P + 'skip-git-repo-check']
         for key, value in flattened(cfg):
             args += ['-c', key + '=' + X._toml(value)]
+        if models:
+            args = [str(binary), 'debug', 'models']
         try:
             done = subprocess.run(args, input='Reply ready without tools.', text=True, capture_output=True,
                                   cwd=clone, env=env, timeout=45, preexec_fn=lambda: deny_network(port))
             result = {'returncode': done.returncode, 'stdout': done.stdout, 'stderr': done.stderr}
+            if models and done.returncode == 0:
+                catalog = json.loads(result.pop('stdout'))
+                result['model_tool_modes'] = {m['slug']: m.get('tool_mode') for m in catalog['models']}
+                result['catalog_sha256'] = hashlib.sha256(done.stdout.encode()).hexdigest()
         except subprocess.TimeoutExpired as error:
             result = {'returncode': None, 'refusal': 'loopback_timeout', 'stderr': str(error)}
         finally:

@@ -47,6 +47,13 @@ def diagnose(path, label, work, record, page):
         handle.write('\n'.join(kept) + '\n(dropped %d sensitive-looking lines)\n' % (len(lines) - len(kept)))
 
 
+def codex_model(model, engine):
+    modes = engine.MODEL_TOOL_MODES
+    if model not in modes or modes[model] is not None:
+        raise SystemExit('A qualified direct-tool codex-model is required: ' + model)
+    return model
+
+
 def capture(f, engine, mode, marker, evidence, diagnostics=None):
     role = engine + '-' + mode
     contract = f.prepare(engine, engine + '-' + mode + ('-planted' if marker else '-control'), {'role': role},
@@ -111,13 +118,15 @@ def capture(f, engine, mode, marker, evidence, diagnostics=None):
             context_events.append({'type':'turn.completed', 'usage':event['usage']})
         break
     wire = None
+    wire_tools = []
     if engine == 'codex':
         loopback = load('role_loopback', HERE / 'loopback.py')
         wire = loopback.capture(document['executable']['path'], configuration)
+        wire_tools = [evidence.wire_observation(r['body'], expected, helper) for r in wire['requests']]
     return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
             'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
             'builtin_commands':builtin, 'probe':document.get('probe'),
-            'disallowed':disallowed, 'configuration':configuration, 'listing':listing, 'wire_capture':wire,
+            'disallowed':disallowed, 'configuration':configuration, 'listing':listing, 'wire_capture':wire, 'wire_tools':wire_tools,
             'first_turn_context':document.get('first_turn_context'), 'context_events':context_events,
             'credential_sources':cred.get('credentials'), 'record_commitment':record.get('execution_record'),
             'marker_present':'VELDO0127_UNLISTED_MARKER' in text,
@@ -168,6 +177,8 @@ def main():
     engines = ('claude', 'codex')
     if only is not None and len(only) == 1:
         engines, only = only, None
+    if 'codex' in engines:
+        codex_model(args['codex_model'], load('lead_codex', ROOT / '.veldo/control_engine_codex.py'))
     diagnostics = args.pop('diagnostics')
     if diagnostics and not diagnostics.startswith('/run/user/' + str(os.getuid()) + '/'):
         raise SystemExit('diagnostics must be under /run/user/' + str(os.getuid()))

@@ -22,7 +22,7 @@ def _v127_suite():
     ROWS = ('revision/history', 'handoff/claude', 'handoff/codex', 'dispatch/binding', 'dispatch/refusal',
             'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines',
             'review/skill-commit', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
-            'review/marker-debug', 'review/codex-tools')
+            'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture')
     rows = {name: [] for name in ROWS}
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -188,6 +188,17 @@ else:
     own['wire']['tools'] += [{'type':'namespace', 'name':'mcp__' + n,
                               'tools':[{'type':'function', 'name':t, 'parameters':{}} for t in ts]}
                              for n,ts in own['mcp_tools'].items()]
+    # Pinned direct-tool binary: the current feature settings do not suppress these definitions.
+    own['wire']['tools'] = [t for t in own['wire']['tools'] if t.get('type') != 'namespace']
+    own['wire']['tools'] += [{'type':'function', 'name':n, 'parameters':{}} for n in
+                            ('apply_patch','list_mcp_resource_templates','list_mcp_resources','read_mcp_resource','tool_search')]
+    if config.get('model_provider') == 'loopback':
+        import urllib.request
+        target = config['model_providers']['loopback']['base_url'] + '/responses'
+        with urllib.request.urlopen(urllib.request.Request(target, data=json.dumps(own['wire']).encode(),
+                                    headers={'Content-Type':'application/json'}), timeout=10) as response:
+            response.read()
+        sys.exit(0)
     (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
     packet = json.loads(sys.stdin.read())
     if Path('.git').exists():
@@ -268,7 +279,9 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   and invalid == 'invalid_input:agent_mcp')
             for engine in ('claude','codex'):
                 if engine == 'codex':
-                    f.save(f.role(engine))
+                    direct_role = f.role(engine)
+                    direct_role['settings']['model'] = 'gpt-5.5'
+                    f.save(direct_role)
                     # The account profile's own MCP server, which exec never loads (--ignore-user-config): the
                     # listing must read exactly the table exec is handed, never this profile's config.toml.
                     profile = Path(f.HELPER.resolve('acct-x1', root=str(f.helper_root)))
@@ -279,7 +292,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 contract = record.get('contract') or {}
                 bound = ((contract.get('capability') or {}).get('configuration') or {}).get('role_revision', {})
                 check('handoff/' + engine, 'dispatch records accepted revision and model',
-                      bound.get('digest') and bound.get('settings') == {'model':'fixture-model'})
+                      bound.get('digest') and bound.get('settings') == {'model':'fixture-model' if engine == 'claude' else 'gpt-5.5'})
                 reports = [m.get('credentials') for m in (work.messages if work else []) if m.get('event') == 'credentials']
                 check('handoff/' + engine, 'only selected catalog credential source reaches this run',
                       bool(reports) and reports[0].get('credentials') == ['jira'])
@@ -327,7 +340,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     compare = getattr(L.HANDOFF, 'codex_tool_difference', None)
                     good = compare(wire, wanted) if compare else 'absent comparison'
                     extra = copy.deepcopy(wire); extra['tools'].append({'type':'function','name':'ungranted','parameters':{}})
-                    missing = copy.deepcopy(wire); missing['tools'].pop()
+                    missing = {'tools':[t for t in wire['tools'] if t.get('name') in ('exec_command', 'update_plan')]}
                     check('review/codex-tools', 'wire fixture matches both directions and detects missing or additional tools',
                           compare is not None and good is None
                           and compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool'
@@ -338,7 +351,8 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     check('review/codex-tools', 'qualification writer and comparator share exact shell and plan vocabulary',
                           observed.get('native_tool_mapping') == {'shell':['exec_command','write_stdin'], 'update_plan':['update_plan']}
                           and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
-                          and observed.get('missing') == [] and observed.get('unexpected') == []
+                          and observed.get('missing') == ['mcp__jira.jira_search']
+                          and observed.get('unexpected') == ['apply_patch','list_mcp_resource_templates','list_mcp_resources','read_mcp_resource','tool_search']
                           and observe({}, wanted, L.HANDOFF).get('stop') == 'missing_evidence:codex_request_tools')
                     capture = json.loads((TREE / 'proof/VELDO-0127/codex-loopback.json').read_text())
                     captured_wire = capture['requests'][0]['body']
@@ -349,7 +363,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           and facts.get('stop') == 'configuration_stop:codex_unexpected_tool')
                     cfg = own.get('configuration', {})
                     check('handoff/codex', 'generated settings, native features and filtered MCP list match',
-                          own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == 'fixture-model'
+                          own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == 'gpt-5.5'
                           and cfg.get('features',{}).get('shell_tool') is True
                           and cfg.get('features',{}).get('multi_agent') is False)
                     listings = [m.get('listing') for m in (work.messages if work else []) if m.get('event') == 'capability_listing']
@@ -357,6 +371,22 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           listings == [[{'name': 'jira', 'enabled': True, 'enabled_tools': ['jira_search']}]])
                     check('launch/instructions', 'Codex gets both sources through developer instructions',
                           'project role instruction' in cfg.get('developer_instructions',''))
+            qualified = json.loads((base / 'codex-qualification.json').read_text())
+            modes = json.loads((TREE / 'proof/VELDO-0127/codex-tool-investigation.json').read_text()).get('qualified_model_tool_modes')
+            check('review/codex-mode', 'qualification writer retains the empty-profile binary model modes',
+                  bool(modes) and qualified.get('model_tool_modes') == modes)
+            absent_modes = dict(qualified); absent_modes.pop('model_tool_modes', None)
+            _, absent_stop = attempt(lambda: L.HANDOFF.X.qualified_baseline(None, absent_modes))
+            check('review/codex-mode', 'a qualification without model modes cannot bind',
+                  absent_stop == 'missing_evidence:codex_model_tool_modes')
+            for model in ('gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'):
+                definition = f.role('codex', 'restricted-' + model)
+                definition['settings']['model'] = model
+                accepted = f.save(definition)
+                work, rec, own, error = run('codex', 'mode-' + model, {'role':definition['role']})
+                check('review/codex-mode', model + ': named refusal before the worker sees a prompt, model preserved',
+                      rec.get('refusal') == 'configuration_stop:codex_code_mode_model' and not own
+                      and accepted['settings']['model'] == model)
             # A prepared A is launched after B has been saved, so the receiver must not reread the head.
             pending = f.prepare('claude', 'bound-a', {'role':'claude','revision':1}, payload('claude'))
             updated = f.role('claude'); updated['native_tools'] = [{'name':'Read','load':'always'}]
@@ -446,6 +476,25 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   bool(list(markers.glob('*.out'))))
             evidence = load('v127_live_evidence', EVIDENCE_PATH)
             live = load('v127_live_driver', LIVE_PATH)
+            capture_role = f.role('codex', 'codex-always')
+            capture_role['settings']['model'] = 'gpt-5.5'
+            f.save(capture_role)
+            direct, error = attempt(lambda: live.capture(f, 'codex', 'always', False, evidence))
+            check('review/codex-capture', 'lead driver records the loopback tools beside its production run',
+                  direct is not None and bool(direct.get('wire_tools'))
+                  and direct.get('wire_tools') == [evidence.wire_observation(r['body'], direct['expected'], L.HANDOFF)
+                                                 for r in direct.get('wire_capture', {}).get('requests', [])]
+                  and direct['configuration']['model'] == direct['revision']['settings']['model'] == 'gpt-5.5')
+            select_model = getattr(live, 'codex_model', None)
+            refused_models = []
+            for model in ('gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'):
+                try:
+                    if select_model: select_model(model, L.HANDOFF.X)
+                    refused_models.append(False)
+                except SystemExit:
+                    refused_models.append(True)
+            check('review/codex-capture', 'lead explicitly supplies a qualified direct model without substitution',
+                  select_model is not None and select_model('gpt-5.5', L.HANDOFF.X) == 'gpt-5.5' and all(refused_models))
             # The driver reads the same real writer's fake-engine execution record.
             f.save(f.role('claude', 'claude-always'))
             captured, error = attempt(lambda: live.capture(f, 'claude', 'always', True, evidence)) if not claude_blocked else (None, None)

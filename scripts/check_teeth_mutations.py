@@ -8947,6 +8947,18 @@ def cases():
              "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
+    # VELDO-0127 model-dependent qualification and lead capture, with no invented switch claims.
+    add(127, 'role127-model-modes-omitted', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
+        "'model_tool_modes': MODEL_TOOL_MODES,", "'model_tool_modes': {},", ['review/codex-mode'])
+    add(127, 'role127-model-baseline-unchecked', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
+        "    if record.get('model_tool_modes') != MODEL_TOOL_MODES:", "    if False:", ['review/codex-mode'])
+    add(127, 'role127-code-mode-refusal-bypassed', '86_veldo_0127_agent_configuration.py', 'control_agent_config_handoff.py',
+        "        raise Refused('configuration_stop:codex_code_mode_model')", "        return None", ['review/codex-mode'])
+    add(127, 'role127-lead-model-mode-ignored', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/live.py',
+        "    if model not in modes or modes[model] is not None:", "    if False:", ['review/codex-capture'])
+    add(127, 'role127-loopback-tool-observation-lost', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/live.py',
+        "'wire_tools':wire_tools,", "'wire_tools':[],", ['review/codex-capture'])
+
     # VELDO-0127 item 1: direct shell vocabulary and named, unmasked Code Mode evidence.
     add(127, 'role127-shell-wire-mapping-loses-wait', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
         "NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan']}",

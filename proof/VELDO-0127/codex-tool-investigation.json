@@ -381,66 +381,6 @@
  "direct_tool_probes": [
   {
    "name": "combined",
-   "configuration": {
-    "project_doc_max_bytes": 0,
-    "forced_login_method": "chatgpt",
-    "cli_auth_credentials_store": "file",
-    "skills.bundled.enabled": false,
-    "skills.include_instructions": false,
-    "mcp_servers": {
-     "jira": {
-      "args": [
-       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
-       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
-      ],
-      "command": "/usr/bin/python3",
-      "enabled_tools": [
-       "jira_search"
-      ],
-      "env_vars": [
-       "ROLE_CREDENTIAL"
-      ],
-      "required": true
-     }
-    },
-    "model": "gpt-5.5",
-    "features.shell_tool": true,
-    "features.apply_patch_freeform": false,
-    "features.view_image": false,
-    "features.multi_agent": false,
-    "tools.update_plan": {
-     "enabled": true
-    },
-    "tools.experimental_request_user_input": {
-     "enabled": false
-    },
-    "features.sleep_tool": {
-     "enabled": false
-    },
-    "features.goals": false,
-    "features.code_mode": {
-     "enabled": false
-    },
-    "features.code_mode_only": false,
-    "features.multi_agent_v2": {
-     "enabled": false
-    },
-    "web_search": "disabled",
-    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
-    "tools.apply_patch": {
-     "enabled": false
-    },
-    "tools.list_mcp_resources": {
-     "enabled": false
-    },
-    "tools.list_mcp_resource_templates": {
-     "enabled": false
-    },
-    "tools.read_mcp_resource": {
-     "enabled": false
-    },
-    "features.tool_search": false
-   },
    "returncode": 0,
    "observations": [
     {
@@ -484,56 +424,29 @@
    ],
    "request_sha256": [
     "63597ed3f240613c49cf3e3d20ffc4b927dbe740d6951788a6949e139098c533"
-   ]
+   ],
+   "overrides": {
+    "tools.apply_patch": {
+     "enabled": false
+    },
+    "tools.list_mcp_resources": {
+     "enabled": false
+    },
+    "tools.list_mcp_resource_templates": {
+     "enabled": false
+    },
+    "tools.read_mcp_resource": {
+     "enabled": false
+    },
+    "features.tool_search": false
+   }
   },
   {
    "name": "tables",
-   "configuration": {
-    "project_doc_max_bytes": 0,
-    "forced_login_method": "chatgpt",
-    "cli_auth_credentials_store": "file",
-    "skills.bundled.enabled": false,
-    "skills.include_instructions": false,
-    "mcp_servers": {
-     "jira": {
-      "args": [
-       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
-       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
-      ],
-      "command": "/usr/bin/python3",
-      "enabled_tools": [
-       "jira_search"
-      ],
-      "env_vars": [
-       "ROLE_CREDENTIAL"
-      ],
-      "required": true
-     }
-    },
-    "model": "gpt-5.5",
-    "features.shell_tool": true,
-    "features.apply_patch_freeform": false,
-    "features.view_image": false,
-    "features.multi_agent": false,
-    "tools.update_plan": {
-     "enabled": true
-    },
-    "tools.experimental_request_user_input": {
-     "enabled": false
-    },
-    "features.sleep_tool": {
-     "enabled": false
-    },
-    "features.goals": false,
-    "features.code_mode": {
-     "enabled": false
-    },
-    "features.code_mode_only": false,
-    "features.multi_agent_v2": {
-     "enabled": false
-    },
-    "web_search": "disabled",
-    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
+   "returncode": 1,
+   "observations": [],
+   "request_sha256": [],
+   "overrides": {
     "features.apply_patch": {
      "enabled": false
     },
@@ -543,120 +456,21 @@
     "features.tool_search": {
      "enabled": false
     }
-   },
-   "returncode": 1,
-   "observations": [],
-   "request_sha256": []
+   }
   },
   {
    "name": "searchtable",
-   "configuration": {
-    "project_doc_max_bytes": 0,
-    "forced_login_method": "chatgpt",
-    "cli_auth_credentials_store": "file",
-    "skills.bundled.enabled": false,
-    "skills.include_instructions": false,
-    "mcp_servers": {
-     "jira": {
-      "args": [
-       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
-       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
-      ],
-      "command": "/usr/bin/python3",
-      "enabled_tools": [
-       "jira_search"
-      ],
-      "env_vars": [
-       "ROLE_CREDENTIAL"
-      ],
-      "required": true
-     }
-    },
-    "model": "gpt-5.5",
-    "features.shell_tool": true,
-    "features.apply_patch_freeform": false,
-    "features.view_image": false,
-    "features.multi_agent": false,
-    "tools.update_plan": {
-     "enabled": true
-    },
-    "tools.experimental_request_user_input": {
-     "enabled": false
-    },
-    "features.sleep_tool": {
-     "enabled": false
-    },
-    "features.goals": false,
-    "features.code_mode": {
-     "enabled": false
-    },
-    "features.code_mode_only": false,
-    "features.multi_agent_v2": {
-     "enabled": false
-    },
-    "web_search": "disabled",
-    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
+   "returncode": 1,
+   "observations": [],
+   "request_sha256": [],
+   "overrides": {
     "features.tool_search": {
      "enabled": false
     }
-   },
-   "returncode": 1,
-   "observations": [],
-   "request_sha256": []
+   }
   },
   {
    "name": "toggles",
-   "configuration": {
-    "project_doc_max_bytes": 0,
-    "forced_login_method": "chatgpt",
-    "cli_auth_credentials_store": "file",
-    "skills.bundled.enabled": false,
-    "skills.include_instructions": false,
-    "mcp_servers": {
-     "jira": {
-      "args": [
-       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
-       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
-      ],
-      "command": "/usr/bin/python3",
-      "enabled_tools": [
-       "jira_search"
-      ],
-      "env_vars": [
-       "ROLE_CREDENTIAL"
-      ],
-      "required": true
-     }
-    },
-    "model": "gpt-5.5",
-    "features.shell_tool": true,
-    "features.apply_patch_freeform": false,
-    "features.view_image": false,
-    "features.multi_agent": false,
-    "tools.update_plan": {
-     "enabled": true
-    },
-    "tools.experimental_request_user_input": {
-     "enabled": false
-    },
-    "features.sleep_tool": {
-     "enabled": false
-    },
-    "features.goals": false,
-    "features.code_mode": {
-     "enabled": false
-    },
-    "features.code_mode_only": false,
-    "features.multi_agent_v2": {
-     "enabled": false
-    },
-    "web_search": "disabled",
-    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
-    "features.tool_search": false,
-    "features.tool_search_always_defer_mcp_tools": false,
-    "features.mcp_2026_07_28": false,
-    "orchestrator.mcp.enabled": false
-   },
    "returncode": 0,
    "observations": [
     {
@@ -700,116 +514,28 @@
    ],
    "request_sha256": [
     "c10390d0c11ec17ae62656d103539d571255de222762acef132f3484bbb55660"
-   ]
+   ],
+   "overrides": {
+    "features.tool_search": false,
+    "features.tool_search_always_defer_mcp_tools": false,
+    "features.mcp_2026_07_28": false,
+    "orchestrator.mcp.enabled": false
+   }
   },
   {
    "name": "registry",
-   "configuration": {
-    "project_doc_max_bytes": 0,
-    "forced_login_method": "chatgpt",
-    "cli_auth_credentials_store": "file",
-    "skills.bundled.enabled": false,
-    "skills.include_instructions": false,
-    "mcp_servers": {
-     "jira": {
-      "args": [
-       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
-       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
-      ],
-      "command": "/usr/bin/python3",
-      "enabled_tools": [
-       "jira_search"
-      ],
-      "env_vars": [
-       "ROLE_CREDENTIAL"
-      ],
-      "required": true
-     }
-    },
-    "model": "gpt-5.5",
-    "features.shell_tool": true,
-    "features.apply_patch_freeform": false,
-    "features.view_image": false,
-    "features.multi_agent": false,
-    "tools.update_plan": {
-     "enabled": true
-    },
-    "tools.experimental_request_user_input": {
-     "enabled": false
-    },
-    "features.sleep_tool": {
-     "enabled": false
-    },
-    "features.goals": false,
-    "features.code_mode": {
-     "enabled": false
-    },
-    "features.code_mode_only": false,
-    "features.multi_agent_v2": {
-     "enabled": false
-    },
-    "web_search": "disabled",
-    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
+   "returncode": 1,
+   "observations": [],
+   "request_sha256": [],
+   "overrides": {
     "features.tool_registry": {
      "enabled": false
     },
     "features.tool_search": false
-   },
-   "returncode": 1,
-   "observations": [],
-   "request_sha256": []
+   }
   },
   {
    "name": "control",
-   "configuration": {
-    "project_doc_max_bytes": 0,
-    "forced_login_method": "chatgpt",
-    "cli_auth_credentials_store": "file",
-    "skills.bundled.enabled": false,
-    "skills.include_instructions": false,
-    "mcp_servers": {
-     "jira": {
-      "args": [
-       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
-       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
-      ],
-      "command": "/usr/bin/python3",
-      "enabled_tools": [
-       "jira_search"
-      ],
-      "env_vars": [
-       "ROLE_CREDENTIAL"
-      ],
-      "required": true
-     }
-    },
-    "model": "gpt-5.5",
-    "features.shell_tool": false,
-    "features.apply_patch_freeform": false,
-    "features.view_image": false,
-    "features.multi_agent": false,
-    "tools.update_plan": {
-     "enabled": false
-    },
-    "tools.experimental_request_user_input": {
-     "enabled": false
-    },
-    "features.sleep_tool": {
-     "enabled": false
-    },
-    "features.goals": false,
-    "features.code_mode": {
-     "enabled": false
-    },
-    "features.code_mode_only": false,
-    "features.multi_agent_v2": {
-     "enabled": false
-    },
-    "web_search": "disabled",
-    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
-    "features.tool_search": false,
-    "features.tool_search_always_defer_mcp_tools": false
-   },
    "returncode": 0,
    "observations": [
     {
@@ -853,62 +579,18 @@
    ],
    "request_sha256": [
     "fe0a8000793a91ac8fa7ebf88f437a2703e625423b581b701c58af85fdb24f20"
-   ]
+   ],
+   "overrides": {
+    "features.shell_tool": false,
+    "tools.update_plan": {
+     "enabled": false
+    },
+    "features.tool_search": false,
+    "features.tool_search_always_defer_mcp_tools": false
+   }
   },
   {
    "name": "discovery",
-   "configuration": {
-    "project_doc_max_bytes": 0,
-    "forced_login_method": "chatgpt",
-    "cli_auth_credentials_store": "file",
-    "skills.bundled.enabled": false,
-    "skills.include_instructions": false,
-    "mcp_servers": {
-     "jira": {
-      "args": [
-       "/run/user/1000/veldo0127-live-6ec4tdcg/server.py",
-       "/run/user/1000/veldo0127-live-6ec4tdcg/jira.value"
-      ],
-      "command": "/usr/bin/python3",
-      "enabled_tools": [
-       "jira_search"
-      ],
-      "env_vars": [
-       "ROLE_CREDENTIAL"
-      ],
-      "required": true
-     }
-    },
-    "model": "gpt-5.5",
-    "features.shell_tool": true,
-    "features.apply_patch_freeform": false,
-    "features.view_image": false,
-    "features.multi_agent": false,
-    "tools.update_plan": {
-     "enabled": true
-    },
-    "tools.experimental_request_user_input": {
-     "enabled": false
-    },
-    "features.sleep_tool": {
-     "enabled": false
-    },
-    "features.goals": false,
-    "features.code_mode": {
-     "enabled": false
-    },
-    "features.code_mode_only": false,
-    "features.multi_agent_v2": {
-     "enabled": false
-    },
-    "web_search": "disabled",
-    "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
-    "features.executor_capability_discovery": false,
-    "features.tool_search": false,
-    "features.tool_search_always_defer_mcp_tools": false,
-    "features.deferred_tool_world_state": false,
-    "orchestrator.mcp.enabled": false
-   },
    "returncode": 0,
    "observations": [
     {
@@ -952,8 +634,16 @@
    ],
    "request_sha256": [
     "60133b718707c8b2067df162a215ddb039f181058ed9829f63ddef1aaa7b1032"
-   ]
+   ],
+   "overrides": {
+    "features.executor_capability_discovery": false,
+    "features.tool_search": false,
+    "features.tool_search_always_defer_mcp_tools": false,
+    "features.deferred_tool_world_state": false,
+    "orchestrator.mcp.enabled": false
+   }
   }
  ],
- "direct_tool_conclusion": "Tested switches did not establish equality. No working switch claimed or installed."
+ "direct_tool_conclusion": "Tested switches did not establish equality. No working switch claimed or installed.",
+ "model_catalog_record": "codex-model-modes.json"
 }
