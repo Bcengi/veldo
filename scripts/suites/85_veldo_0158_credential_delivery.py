@@ -568,6 +568,11 @@ err.close()
             VERSION: {'sha256': file_sha(versions / VERSION), 'flags': list(FLAGS),
                       'environment': {'DISABLE_AUTOUPDATER': '1'}, 'baseline': E.BASELINE,
                       'session_environment': E.session_environment(versions / VERSION)}}}
+        if hasattr(E, 'qualified_tools'):
+            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
+            test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
+                                                    tool_classification=tools173['tool_classification'])
         (mods / 'runtime').mkdir(exist_ok=True)
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'

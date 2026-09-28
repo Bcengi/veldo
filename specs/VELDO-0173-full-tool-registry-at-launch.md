@@ -14,6 +14,7 @@ depends_on: [VELDO-0165, VELDO-0160]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/85_veldo_0158_credential_delivery.py"
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "engine/.veldo/control_engine_claude*.py"
@@ -25,6 +26,11 @@ footprint:
   - "scripts/suites/*_veldo_0173_*.py"
   - "scripts/suites/78_veldo_0060_claude_adapter.py"
   - "scripts/suites/80_veldo_0155_claude_baseline.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/suites/78_veldo_0160_account_pool.py"
+  - "scripts/suites/82_veldo_0129_worker_wiring.py"
+  - "scripts/suites/82_veldo_0141_execution_record.py"
+  - "scripts/suites/82_veldo_0165_launch_hygiene.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -144,3 +150,22 @@ lead's decision, with a full-registry falsifier that must fail on ReportFindings
 PushNotification grant row moves to VELDO-0127 AC4. Only the owner marks a specification ready.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-28: implemented. A committed extractor, proof/VELDO-0173/extract_tools.py, reads the Bun module
+graph of the pinned 2.1.281 bytes and resolves every item of the array getAllBaseTools returns: 86
+registered tools, each with the offset of its name literal, and seven compiled-out slots. The
+classification reads the 18-name in-run list of cli-formats.json; every other registry tool is outward,
+each reason quoting its definition. The build registers no REPL tool (its slot's getter returns null), so
+REPL keeps an in-run row marked unregistered and the init row expects the in-run list less REPL. The
+Claude Code record's entry carries tool_registry and tool_classification; a missing or malformed one, or
+an unclassified registry tool, refuses before acceptance as missing_evidence:engine_baseline:<version>.
+The launch passes the tools option (the bound role revision's native tools, read from the contract's
+capability configuration role_revision, else the in-run tools) and the disallowedTools option (the
+registry less that set), each as one option=value argument; the baseline event names both, the source and
+the revision. Suite 82_veldo_0173_tool_registry has seven behavior rows and three controls; all seven are
+red by assertion at 7851ae9b, and all nine finding 173 mutations are rejected. The footprint adds the
+VELDO-0062, VELDO-0160, VELDO-0129, VELDO-0141 and VELDO-0165 suites for their fake qualification
+writers. No gate, real engine run or push was performed. Status unchanged; evidence is in
+proof/VELDO-0173/README.md.
+
+2026-09-28, integration with VELDO-0158 on main: the footprint adds suite 85 (VELDO-0158), whose test qualification record now carries the tool registry and classification this specification requires; no criterion changes.

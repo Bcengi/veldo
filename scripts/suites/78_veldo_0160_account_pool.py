@@ -309,6 +309,11 @@ sys.exit(payload.get('code', 0))
             claude_record['versions']['2.1.281']['baseline'] = CLAUDE_ENGINE.BASELINE
             if hasattr(CLAUDE_ENGINE, 'session_environment'):
                 claude_record['versions']['2.1.281']['session_environment'] = CLAUDE_ENGINE.session_environment(versions / '2.1.281')
+        if hasattr(CLAUDE_ENGINE, 'qualified_tools'):
+            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
+            claude_record['versions']['2.1.281'].update(tool_registry=tools173['tool_registry'],
+                                                        tool_classification=tools173['tool_classification'])
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
