@@ -304,3 +304,16 @@ or model metadata was changed. The fake-driven row checks the production writer'
 mapping and these honest refusal observations. Item 1 remains blocked on the owner
 decisions and missing wire definitions; no exact equality or completed qualification
 is claimed. Status and acceptance criteria are unchanged.
+
+2026-09-28, item 1 continuation from 321f638d: the qualified baseline records every
+model's tool_mode from the pinned binary's debug models with an empty profile.
+AC2 and AC3 require configuration_stop:codex_code_mode_model before launching a
+code_mode_only role with a restricted native set. The observed Code Mode wrapper
+capabilities remain the case (c) evidence. AC2 also requires direct-tool equality,
+including explicit patch/resource grants and selected MCP definitions without search
+indirection; candidate switches must be verified on the loopback stand-in. The lead
+capture takes the direct model only from its codex-model argument and retains the
+loopback tool observation beside each run. Falsifiers: erase the qualified modes,
+bypass the model refusal, or omit the recorded loopback tool observation. No footprint
+addition is needed for these existing production and proof files. Direct-tool switch
+qualification is still incomplete; no role model is silently changed.

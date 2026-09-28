@@ -423,6 +423,9 @@ QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualifica
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 # Exact direct call signatures; Code Mode wrappers are not aliases for these capabilities.
 NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan']}
+# Pinned 0.154.0 debug models under an empty profile; absent tool_mode is JSON null.
+MODEL_TOOL_MODES = {'gpt-6-astra': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'gpt-5.4': None, 'gpt-5.4-mini': None, 'gpt-5.2': None, 'codex-auto-review': 'code_mode_only'}
+
 
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The stop causes the receiver records (control_launch): an invocation stopped for one is never complete.
@@ -502,7 +505,7 @@ def qualification(executable, flags=FLAGS):
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
-            'native_tool_mapping': NATIVE_TOOL_MAPPING,
+            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': MODEL_TOOL_MODES,
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',
@@ -549,7 +552,7 @@ def bind(adapter, state_root=None):
     base = qualified_baseline(None, record)
     return {'engine': PROVIDER, 'path': executable, 'version': record['version'],
             'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags']),
-            'baseline': base}
+            'baseline': base, 'model_tool_modes': record['model_tool_modes']}
 
 
 def command(bound, adapter):
@@ -670,6 +673,8 @@ def qualified_baseline(bound, record=None):
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
     if not isinstance(record.get('session_environment'), list):
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
+    if record.get('model_tool_modes') != MODEL_TOOL_MODES:
+        raise Refused('missing_evidence:codex_model_tool_modes')
     if record.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     return BASELINE
@@ -701,6 +706,7 @@ def baseline(bound, run, environment=None, record=None, servers=()):
     if run.get('capability'):
         helper = _capability_handoff()
         try:
+            helper.codex_model(bound.get('model_tool_modes', {}), run['capability']['revision'])
             listing = helper.inventory(run['capability'], servers)
             files = helper.codex(configuration, run['capability'], listing, Path(run['config']))
             wanted = helper.expected(run['capability'], listing)

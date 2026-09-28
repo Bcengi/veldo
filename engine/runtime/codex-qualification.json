@@ -39,6 +39,19 @@
   "-c",
   "check_for_update_on_startup=false"
  ],
+ "model_tool_modes": {
+  "codex-auto-review": "code_mode_only",
+  "gpt-5.2": null,
+  "gpt-5.4": null,
+  "gpt-5.4-mini": null,
+  "gpt-5.5": null,
+  "gpt-5.6-luna": "code_mode_only",
+  "gpt-5.6-sol": "code_mode_only",
+  "gpt-5.6-terra": "code_mode_only",
+  "gpt-6-astra": "code_mode_only",
+  "gpt-daybreak-blue-latest": "code_mode_only",
+  "gpt-daybreak-red-latest": "code_mode_only"
+ },
  "native_tool_mapping": {
   "shell": [
    "exec_command",
