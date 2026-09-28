@@ -151,3 +151,15 @@ clears a stream rejection. Added counters and structured logs for window observa
 registration, with generated-fixture rows and mutations. No footprint expansion: control_launch.py and
 its engine copy are already declared. Only suite 0166 is run here; the reviewer owns the gate and
 mutation execution.
+
+2026-09-28: re-check repairs unnamed rejections: the Meter records the same unified window that its
+limit reports, so the pool blocks the account until the reset, or indefinitely without one. An unnamed
+allowed clear carries an explicit clearing signal for its reported companions, so both the Meter and
+store lift an active rejection, including one with no reset, without inventing a companion status or
+an extra unified observation. Two production rows and four finding-166 mutations pin these cases.
+All edits remain within the existing footprint.
+
+2026-09-28: VELDO-0160 follow-up ticket: add an expiry for rejections stored with no reset. A
+seven_day_opus, seven_day_sonnet or overage rejection without a unifiedWindows entry, or a result-text
+limit with no readable reset, currently blocks the account indefinitely. Pool expiry remains outside
+VELDO-0166.

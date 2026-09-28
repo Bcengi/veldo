@@ -1099,16 +1099,18 @@ class Meter:
                     self.limited['window'] == str(named or LIMIT_WINDOW)
                     or (named is None and status == 'allowed')):
                 self.limited = None  # A named reopening or the engine's clear event lifts the stream limit.
-            # VELDO-0166: unnamed clear events report only the map, without inventing a window or status.
-            windows = ([(named, values)] if named else []) + [(window, values) for window, values in companions.items() if window != named]
+            # Unnamed rejections use the stream limit's window; clear events still report only the map.
+            rated_window = named or (LIMIT_WINDOW if status == 'rejected' else None)
+            windows = ([(rated_window, values)] if rated_window else []) + [(window, values) for window, values in companions.items() if window != rated_window]
             found = []
             for window, values in windows:
                 if not isinstance(values, dict):
                     continue  # An unreadable entry, unlike a readable window reported without a reset.
                 reset, utilization = values.get('resetsAt'), values.get('utilization')
-                rated = window == named
+                rated = window == rated_window
                 found.append(dict(seen, kind='window', window_id=str(window),
                                   status=('rejected' if status == 'rejected' else 'allowed') if rated else None,
+                                  clear_rejection=named is None and status == 'allowed',
                                   reset_at=reset if _number(reset) else None,
                                   utilization=utilization if _number(utilization) and utilization >= 0 else None))
             return found

@@ -8682,10 +8682,10 @@ def cases():
     def windows166(name, module, old, new, rows, suite='83_veldo_0166_usage_windows.py'):
         add(166, 'windows166-' + name, suite, module, old, new, rows)
 
-    ALL166 = "            windows = ([(named, values)] if named else []) + [(window, values) for window, values in companions.items() if window != named]"
-    windows166('named-only', 'control_engine_claude.py', ALL166, "            windows = [(named, values)] if named else []",
+    ALL166 = "            windows = ([(rated_window, values)] if rated_window else []) + [(window, values) for window, values in companions.items() if window != rated_window]"
+    windows166('named-only', 'control_engine_claude.py', ALL166, "            windows = [(rated_window, values)] if rated_window else []",
                ['windows/five-hour', 'windows/qualified-set'])
-    windows166('named-only-journey', 'control_engine_claude.py', ALL166, "            windows = [(named, values)] if named else []",
+    windows166('named-only-journey', 'control_engine_claude.py', ALL166, "            windows = [(rated_window, values)] if rated_window else []",
                ['attribution/stored-account'], suite='75_veldo_0062_accounts.py')
     windows166('existing-chmod', 'accounts.py',
                "        if not existing:\n            os.chmod(cdir, 0o700)",
@@ -8695,7 +8695,7 @@ def cases():
     windows166('allowed-invented', 'control_engine_claude.py',
                "if rated else None,", "if rated else 'allowed',", ['windows/status-only-named'])
     windows166('named-twice', 'control_engine_claude.py',
-               "companions.items() if window != named]", "companions.items()]",
+               "companions.items() if window != rated_window]", "companions.items()]",
                ['windows/qualified-set', 'windows/status-only-named'])
     windows166('reset-borrowed', 'control_engine_claude.py',
                "reset, utilization = values.get('resetsAt'), values.get('utilization')",
@@ -8709,7 +8709,7 @@ def cases():
                "WINDOW_STATUSES = ('allowed', 'rejected', None)", "WINDOW_STATUSES = ('allowed', 'rejected')",
                ['windows/five-hour', 'windows/status-only-named'])
     windows166('rejection-lifted', 'control_accounts.py',
-               "            if params['status'] is None and prior is not None and blocking(",
+               "            if not params.get('clear_rejection') and params['status'] is None and prior is not None and blocking(",
                "            if False and blocking(", ['windows/rejection-kept'])
     windows166('rejection-kept-forever', 'control_accounts.py',
                "blocking({'windows': {'w': prior}}, params['now']):", "prior.get('status') == 'rejected':",
@@ -8731,6 +8731,18 @@ def cases():
                ['windows/clear'])
     windows166('clear-keeps-stream-limit', 'control_engine_claude.py',
                "or (named is None and status == 'allowed')", "or False", ['windows/clear'])
+    windows166('unnamed-rejection-dropped', 'control_engine_claude.py',
+               "rated_window = named or (LIMIT_WINDOW if status == 'rejected' else None)",
+               "rated_window = named", ['windows/unnamed-rejection'])
+    windows166('clear-signal-dropped', 'control_engine_claude.py',
+               "clear_rejection=named is None and status == 'allowed',",
+               "clear_rejection=False,", ['windows/clear-active-rejection'])
+    windows166('clear-signal-not-forwarded', 'control_launch.py',
+               "clear_rejection=observation.get('clear_rejection', False)",
+               "clear_rejection=False", ['windows/clear-active-rejection'])
+    windows166('clear-store-keeps-rejection', 'control_accounts.py',
+               "not params.get('clear_rejection') and params['status'] is None",
+               "params['status'] is None", ['windows/clear-active-rejection'])
     windows166('window-count-omitted', 'control_launch.py',
                "self.window_counts[key] = self.window_counts.get(key, 0) + 1",
                "self.window_counts[key] = self.window_counts.get(key, 0)", ['observability/counts-and-log'])

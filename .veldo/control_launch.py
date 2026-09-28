@@ -1960,7 +1960,8 @@ class Metering:
                                                            observation['window_id']),
                                       self.account, observation['window_id'], status=observation['status'],
                                       reset_at=observation['reset_at'], utilization=observation['utilization'],
-                                      source_dispatch=self.dispatch_id, now=now)
+                                      source_dispatch=self.dispatch_id, now=now,
+                                      clear_rejection=observation.get('clear_rejection', False))
                 key = (observation['window_id'], observation['status'])
                 self.window_counts[key] = self.window_counts.get(key, 0) + 1
                 self.receiver.emit(dict(event='window_observed', account=self.account,

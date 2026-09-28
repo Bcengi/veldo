@@ -25,7 +25,8 @@ def _v166_suite():
                                   'windows/status-only-named', 'windows/missing-reset-receipts',
                                   'windows/rejection-kept', 'windows/named-fallback',
                                   'windows/named-precedence', 'windows/rejection-reset-filled',
-                                  'windows/clear', 'observability/counts-and-log',
+                                  'windows/clear', 'windows/unnamed-rejection',
+                                  'windows/clear-active-rejection', 'observability/counts-and-log',
                                   'profiles/existing', 'profiles/created')}
 
     def check(row, label, condition):
@@ -208,6 +209,50 @@ def _v166_suite():
                       and five.get('source_dispatch') == 'dispatch/filled-' + label
                       and A.blocking({'windows': windows}, time.time()) == (['five_hour'] if label == 'future' else [])
                       and A.blocking({'windows': windows}, reset + 1) == [])
+
+            pool = load('v166_pool', mods / 'control_account_pool.py')
+            def pool_state(name, now):
+                choice = pool.choose(conn, {}, dict(engine='claude_code', host='host'), now, lambda account: None)
+                trace = choice.get('trace', choice)
+                return trace.get('passed', {}).get(name), any(
+                    candidate['account'] == name for candidate in trace.get('candidates', []))
+
+            now = int(time.time())
+            for suffix, reset in (('no-reset', None), ('reset', now + 3600)):
+                fields = dict(status='rejected')
+                if reset is not None:
+                    fields.update(resetsAt=reset, utilization=1.0)
+                name = 'unnamed-' + suffix
+                line = rate(fields)
+                windows, meter, kept = observe(name, line)
+                unified = windows.get('unified', {})
+                check('windows/unnamed-rejection', suffix + ': the stream limit is stored with its receipt',
+                      not meter.errors and set(windows) == {'unified'}
+                      and unified.get('status') == 'rejected' and unified.get('reset_at') == reset
+                      and unified.get('source_dispatch') == 'dispatch/' + name
+                      and meter.meter.limit() == dict(window='unified', reset_at=reset, signal='stream')
+                      and kept[1:] == [line]
+                      and meter.receipts == ['sha256:' + hashlib.sha256(line).hexdigest()])
+                check('windows/unnamed-rejection', suffix + ': the real pool refuses until reset or indefinitely',
+                      pool_state(name, now) == ('account_limit:unified', False)
+                      and pool_state(name, reset - 1 if reset is not None else now + 10**12)
+                          == ('account_limit:unified', False)
+                      and (reset is None or pool_state(name, reset) == (None, True)))
+
+            for suffix, reset in (('no-reset', None), ('future-reset', now + 3600)):
+                first = rate(dict(status='rejected', rateLimitType='five_hour', resetsAt=reset))
+                clear = rate(dict(status='allowed', isUsingOverage=False, unifiedWindows={
+                    'five_hour': dict(utilization=0.1, resetsAt=now + 7200),
+                    'seven_day': dict(utilization=0.3, resetsAt=now + 14400)}))
+                name = 'clear-active-' + suffix
+                windows, meter, kept = observe(name, first, clear)
+                check('windows/clear-active-rejection', suffix + ': Meter and pool both reopen on a clear event',
+                      not meter.errors and set(windows) == {'five_hour', 'seven_day'}
+                      and meter.meter.limit() is None and pool_state(name, now) == (None, True)
+                      and all(w['status'] is None for w in windows.values())
+                      and windows.get('five_hour', {}).get('reset_at') == now + 7200
+                      and windows.get('five_hour', {}).get('utilization') == 0.1
+                      and kept[1:] == [first, clear, clear])
 
             passed = int(time.time()) - 60
             first = rate(dict(status='rejected', rateLimitType='five_hour', resetsAt=passed, utilization=1.0))

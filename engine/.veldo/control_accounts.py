@@ -276,15 +276,16 @@ class Accounts:
             raise Refused('invalid_input', 'status is one of ' + ', '.join(STATUSES))
         return self._run(command_id, dict(action='status', account=account, status=status, now=now))
 
-    def observe(self, command_id, account, window_id, *, status, reset_at, utilization, source_dispatch, now):
-        """Record one rate-limit window exactly as the account's CLI reported it."""
+    def observe(self, command_id, account, window_id, *, status, reset_at, utilization, source_dispatch, now,
+                clear_rejection=False):
+        """Record a reported window; an explicit clear can lift a rejection without inventing a status."""
         if (not _text(window_id) or status not in WINDOW_STATUSES or (reset_at is not None and not _number(reset_at))
                 or (utilization is not None and (not _number(utilization) or utilization < 0))
                 or not _text(source_dispatch)):
             raise Refused('invalid_input', 'a window id, status, reset, utilization and source dispatch')
         return self._run(command_id, dict(action='observe', account=account, window_id=window_id, status=status,
                                           reset_at=reset_at, utilization=utilization,
-                                          source_dispatch=source_dispatch, now=now))
+                                          source_dispatch=source_dispatch, now=now, clear_rejection=clear_rejection))
 
     def _in_transaction(self, conn, params, before):
         if self.authorize(conn, self._command) is not True:
@@ -312,7 +313,7 @@ class Accounts:
             prior = current['windows'].get(params['window_id'])
             if prior is not None and prior['observed_at'] > params['now']:
                 return {}  # An older observation never replaces a newer one.
-            if params['status'] is None and prior is not None and blocking({'windows': {'w': prior}}, params['now']):
+            if not params.get('clear_rejection') and params['status'] is None and prior is not None and blocking({'windows': {'w': prior}}, params['now']):
                 # VELDO-0166: keep a rejection, but let a later report supply its missing reset.
                 # The account then remains blocked only until that reported time.
                 if prior.get('reset_at') is None and params['reset_at'] is not None:
