@@ -204,11 +204,13 @@ def host_trust_directory_problem(directory):
 
 
 def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir,
-          profile, writable, origin):
-    """Every precondition, as a plan the setup then carries out, or Refused naming the first problem."""
+          profile, writable, origin, rerun=False):
+    """Every precondition, as a plan the setup then carries out, or Refused naming the first problem. With
+    `rerun` the state root holds a store laid down before, and the host trust file and the workspace binding
+    it wrote are expected (rerun() then compares them with this run's arguments)."""
     CS, E, IN, S = organ('control_service'), organ('control_enrollment'), organ('control_channel_ingress'), organ('control_store')
     problems = state_root_problems(state_root)
-    if problems:
+    if problems and not (rerun and problems == ['invalid_input:state_root:holds_store']):
         raise Refused(problems[0], str(state_root), problems)
     root = os.path.realpath(str(state_root))
     if S.filesystem_problems(root):
@@ -217,7 +219,7 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         raise Refused('invalid_input:owner:name', 'the owner is a plain principal name, not a service principal')
     if type(chat) is not int or chat <= 0:
         raise Refused('invalid_input:chat:not_a_user_id', 'the chat is the owner\'s numeric Telegram user id')
-    if os.path.lexists(host_trust):
+    if not rerun and os.path.lexists(host_trust):
         raise Refused('invalid_input:host_trust:exists', host_trust)
     if _within(host_trust, root):
         raise Refused('invalid_input:host_trust:inside_state_root', host_trust)
@@ -229,7 +231,7 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         E.git_common_dir(workspace)
     except (E.EnrollmentRefused, OSError):
         raise Refused('invalid_input:workspace:not_a_clone', workspace) from None
-    if E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace)):
+    if not rerun and (E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace))):
         raise Refused('invalid_input:workspace:enrolled', workspace)
     if _within(workspace, root) or _within(root, workspace):
         raise Refused('invalid_input:workspace:overlaps_state_root', workspace)
@@ -281,6 +283,45 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
 
 
 # ---------------------------------------------------------------------------------------------
+# What the file steps write, built once for the first run and for every re-run's comparison
+# ---------------------------------------------------------------------------------------------
+
+def host_files(plan, settlement_public):
+    """The host trust and the two signer files it names: {path: text}."""
+    host = os.path.join(plan['root'], HOST_DIR)
+    enrollment_signers, settlement_signers = os.path.join(host, 'enrollment_signers'), os.path.join(host, 'settlement_signers')
+    return {enrollment_signers: '%s namespaces="%s" %s\n' % (plan['owner'], organ('control_eligibility').ENROLLMENT_NAMESPACE,
+                                                             plan['owner_public']),
+            settlement_signers: '%s namespaces="%s" %s\n' % (SETTLEMENT_PRINCIPAL,
+                                                             organ('control_decision_dependency').SETTLEMENT_NAMESPACE,
+                                                             settlement_public),
+            plan['host_trust']: json.dumps({'schema': organ('control_eligibility').HOST_TRUST_SCHEMA,
+                                            'host_identity': plan['host_identity'],
+                                            'enrollment_signers': enrollment_signers,
+                                            'settlement_signers': settlement_signers}, indent=1, sort_keys=True) + '\n'}
+
+
+def ingress_files(plan, ids):
+    """The protected signer's configuration and the VELDO-0073 ingress configuration: {path: text}."""
+    E, IN = organ('control_channel_enrollment'), organ('control_channel_ingress')
+    root, keys, workspace = plan['root'], plan['keys'], plan['workspace']
+    host = os.path.join(root, HOST_DIR)
+    projection, signer_config = os.path.join(host, 'allowed_signers'), os.path.join(host, 'signer.json')
+    return {signer_config: json.dumps({'store': plan['store'], 'repository': workspace, 'allowed_signers': projection,
+                                       'key_directory': keys, 'authority_ids': ids}, indent=1, sort_keys=True) + '\n',
+            os.path.join(host, 'ingress.json'): json.dumps(
+                {'schema': IN.CONFIG_SCHEMA, 'channel': CHANNEL, 'store_path': plan['store'], 'authority_ids': ids,
+                 'authority_generation': 1, 'journal': {'principal': JOURNAL_PRINCIPAL, 'key': os.path.join(keys, JOURNAL_KEY)},
+                 'workspace': workspace, 'host_trust': plan['host_trust'],
+                 'signer': {'config': signer_config, 'edge_key_id': E.edge_key_id(CHANNEL),
+                            'connection_key': os.path.join(root, EDGE_DIR, CONNECTION_KEY)},
+                 'edge_principal': EDGE_PRINCIPAL, 'api_edge': API_EDGE,
+                 'bot_api': {'origin': plan['origin'], 'token_file': plan['token_file']},
+                 'decision_signer': {'principal': SETTLEMENT_PRINCIPAL, 'key': os.path.join(keys, SETTLEMENT_KEY)}},
+                indent=1, sort_keys=True) + '\n'}
+
+
+# ---------------------------------------------------------------------------------------------
 # The setup
 # ---------------------------------------------------------------------------------------------
 
@@ -310,12 +351,23 @@ class _Step:
 
 
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
-          unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time):
-    """Lay the factory down; returns what was laid down. Refused by name, writing nothing, when a check fails."""
-    EL = organ('control_eligibility')
-    plan = check(state_root, owner, owner_key, workspace, chat, token_file,
-                 host_trust=host_trust or EL.host_trust_path(), install_root=install_root, unit_dir=unit_dir,
-                 profile=profile, writable=writable, origin=origin)
+          unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
+          tailscale=None, api_port=None):
+    """Lay the factory down, or complete one laid down with these same arguments (rerun). Returns what
+    was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
+    system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port."""
+    EL, API = organ('control_eligibility'), organ('control_factory_setup_api')
+    options = dict(host_trust=host_trust or EL.host_trust_path(), install_root=install_root, unit_dir=unit_dir,
+                   profile=profile, writable=writable, origin=origin)
+    port = API.PORT if api_port is None else api_port
+    runner = runner or organ('control_service').Systemctl()
+    if state_root_problems(state_root) == ['invalid_input:state_root:holds_store']:
+        return rerun(state_root, owner, owner_key, workspace, chat, token_file, runner=runner, clock=clock,
+                     tailscale=tailscale, port=port, **options)
+    plan = check(state_root, owner, owner_key, workspace, chat, token_file, **options)
+    # Tailscale is read, with read-only commands, after every other check and before the first write.
+    cli = _api(lambda: API.Tailscale(tailscale))
+    transport = _api(lambda: API.transport(cli, port))
     claims, K, E, CE = organ('control_claim'), organ('control_keys'), organ('control_channel_enrollment'), organ('control_enrollment')
     IN, CS, ACT = organ('control_channel_ingress'), organ('control_service'), organ('control_channel_activation')
     S, CM, AC = claims.S, claims.CM, claims.AC
@@ -345,7 +397,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                   'requester': _keygen(os.path.join(keys, REQUESTER_KEY), 'veldo-qualification-requester')}
         journal_principal, journal_sign = IN.journal_signer({'principal': JOURNAL_PRINCIPAL,
                                                              'key': os.path.join(keys, JOURNAL_KEY)})
-    conn = None
+    conn, lock = None, None
 
     def envelope(command, principal):
         now = CM.authority_state(S, conn)
@@ -368,6 +420,10 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             # the same mode.
             os.close(os.open(plan['store'], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600))
             os.chmod(plan['store'], 0o600)
+            # Setup writes the store only while it holds the store's lock itself (AC1 of VELDO-0171).
+            lock = take_lock(root)
+            if lock is None:
+                raise Refused('invalid_input:state_root:service_running:store', 'another process holds the store lock')
             conn = S.open_store(plan['store'])
             CM.attach(S)
             K.attach(S)
@@ -415,33 +471,19 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             K.publish(S, conn, projection)
             os.chmod(projection, 0o600)
         with step('host_trust'):
-            enrollment_signers = _private(os.path.join(host, 'enrollment_signers'), '%s namespaces="%s" %s\n'
-                                          % (owner, organ('control_eligibility').ENROLLMENT_NAMESPACE, owner_public))
-            settlement_signers = _private(os.path.join(host, 'settlement_signers'), '%s namespaces="%s" %s\n'
-                                          % (SETTLEMENT_PRINCIPAL, organ('control_decision_dependency').SETTLEMENT_NAMESPACE,
-                                             public['settlement']))
+            texts = host_files(plan, public['settlement'])
+            for path in (os.path.join(host, 'enrollment_signers'), os.path.join(host, 'settlement_signers')):
+                _private(path, texts[path])
             os.makedirs(os.path.dirname(plan['host_trust']), mode=0o700, exist_ok=True)
-            _private(plan['host_trust'], json.dumps({'schema': EL.HOST_TRUST_SCHEMA, 'host_identity': plan['host_identity'],
-                                                     'enrollment_signers': enrollment_signers,
-                                                     'settlement_signers': settlement_signers}, indent=1, sort_keys=True) + '\n')
+            _private(plan['host_trust'], texts[plan['host_trust']])
         with step('workspace_enrollment'):
             binding = CE.enroll(workspace, ids['domain_uuid'], ids['store_uuid'], plan['store'], plan['host_identity'], 1,
                                 ACT.ssh_signer(plan['owner_key'], EL.ENROLLMENT_NAMESPACE), owner, clock(),
                                 repository_uuid=ids['repository_uuid'])
         with step('ingress_configuration'):
-            signer_config = _private(os.path.join(host, 'signer.json'), json.dumps(
-                {'store': plan['store'], 'repository': workspace, 'allowed_signers': projection, 'key_directory': keys,
-                 'authority_ids': ids}, indent=1, sort_keys=True) + '\n')
-            ingress = _private(os.path.join(host, 'ingress.json'), json.dumps(
-                {'schema': IN.CONFIG_SCHEMA, 'channel': CHANNEL, 'store_path': plan['store'], 'authority_ids': ids,
-                 'authority_generation': 1, 'journal': {'principal': JOURNAL_PRINCIPAL, 'key': os.path.join(keys, JOURNAL_KEY)},
-                 'workspace': workspace, 'host_trust': plan['host_trust'],
-                 'signer': {'config': signer_config, 'edge_key_id': E.edge_key_id(CHANNEL),
-                            'connection_key': os.path.join(root, EDGE_DIR, CONNECTION_KEY)},
-                 'edge_principal': EDGE_PRINCIPAL, 'api_edge': API_EDGE,
-                 'bot_api': {'origin': plan['origin'], 'token_file': plan['token_file']},
-                 'decision_signer': {'principal': SETTLEMENT_PRINCIPAL, 'key': os.path.join(keys, SETTLEMENT_KEY)}},
-                indent=1, sort_keys=True) + '\n')
+            texts = ingress_files(plan, ids)
+            signer_config = _private(os.path.join(host, 'signer.json'), texts[os.path.join(host, 'signer.json')])
+            ingress = _private(os.path.join(host, 'ingress.json'), texts[os.path.join(host, 'ingress.json')])
             # The configuration is the one the ingress is constructed from, read back as it reads it: its
             # fields, the token file, the journal key and the decision key the host trust names. The ingress
             # itself is never opened here: its organs bind the store's owned entities to the code that first
@@ -450,14 +492,34 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             IN.read_token(config['bot_api']['token_file'])
             IN.journal_signer(config['journal'])
             IN.decision_signer(config, EL.load_host_trust(plan['host_trust']).settlement_trust(workspace))
+        api_files = paths(root, keys, None, plan['unit_dir'], None)
+        with step('api_edge_key'):
+            API.generate_keys(api_files['key'], api_files['connection_key'])
+        with step('api_edge_enrollment'):
+            enroll_api_edge(plan, ids, S, conn, (journal_principal, journal_sign), owner_sign, envelope, next_id, projection)
+            os.chmod(projection, 0o600)
+        with step('api_service_configuration'):
+            api_service = _private(api_files['service_config'], api_service_text(plan, ids, transport['name']))
         with step('service_install'):
             installed = CS.install([workspace], host_trust=plan['host_trust'], key_directory=keys,
                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
-                                   writable=plan['writable'], runner=runner, channel_ingress=ingress)
+                                   writable=plan['writable'], runner=runner, channel_ingress=ingress,
+                                   api_service=api_service)
         genesis = S.export_journal(conn)[0]
     finally:
         if conn is not None:
             conn.close()
+        if lock is not None:
+            os.close(lock)
+    api_files = paths(root, keys, installed['home'], plan['unit_dir'], installed['unit'])
+    python = json.loads(Path(installed['config']).read_text())['python']
+    with step('api_process_configuration'):
+        _private(api_files['process_config'], api_process_text(plan, ids, api_files, transport['name'], port))
+    with step('api_unit'):
+        install_api_unit(api_files, installed['unit'], python, runner)
+    with step('tailscale_serve'):
+        if transport['serve'] == 'free':
+            _api(lambda: API.serve(cli, transport['name'], port))
     return {'schema': SCHEMA, 'outcome': 'set_up', 'state_root': root, 'store': plan['store'], 'authority_ids': ids,
             'owner': owner, 'owner_key_digest': 'sha256:' + __import__('hashlib').sha256(owner_public.encode()).hexdigest(),
             'genesis': {'command_id': genesis.get('command_id'), 'principal': genesis.get('principal'),
@@ -466,8 +528,388 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'workspace': workspace, 'binding_digest': binding.get('binding_digest'), 'chat_enrolled': True,
             'edge_key': os.path.join(keys, E.edge_key_id(CHANNEL)), 'ingress': ingress,
             'token_file': plan['token_file'], 'unit': installed['unit'], 'unit_path': installed['unit_path'],
-            'home': installed['home'], 'started': False, 'steps': done, 'qualification_requester': REQUESTER,
-            'next': 'start it explicitly: systemctl --user start %s, then veldo channel qualify' % installed['unit']}
+            'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
+            'steps': [{'step': name, 'outcome': 'done'} for name in done]
+            + [{'step': 'api_start', 'outcome': 'deferred'}],
+            'api': api_report(transport['name'], port, api_files, through_service=False),
+            'next': 'start it explicitly: systemctl --user start %s (the API unit %s starts with it), then veldo channel '
+                    'qualify' % (installed['unit'], api_files['unit'])}
+
+
+# ---------------------------------------------------------------------------------------------
+# The API steps (VELDO-0171), shared by the first run and every re-run
+# ---------------------------------------------------------------------------------------------
+
+def _api(call):
+    """Run one call into control_factory_setup_api, its refusal kept by name as this module's."""
+    API = organ('control_factory_setup_api')
+    try:
+        return call()
+    except API.Refused as exc:
+        raise Refused(exc.code, exc.detail) from None
+
+
+def _differs(path):
+    return Refused('invalid_input:state_root:differs:' + str(path), 'an existing file this run would write differently')
+
+
+def take_lock(root, create=True):
+    """The store's lock (authority.lock beside it), held exclusively by this run: whoever holds it is the
+    store's only writer. None when another process, the running authority service, holds it; with `create`
+    False, -1 when there is no lock file (no service ever ran, so nobody holds it)."""
+    import fcntl
+    path = os.path.join(root, STORE_DIR, organ('control_service').LOCK_NAME)
+    try:
+        fd = os.open(path, os.O_RDWR | os.O_NOFOLLOW | os.O_CLOEXEC | (os.O_CREAT if create else 0), 0o600)
+    except FileNotFoundError:
+        return -1
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        os.close(fd)
+        return None
+    return fd
+
+
+def paths(root, keys, home, unit_dir, unit):
+    """Every path the API steps own. `home` and `unit` are the installation's (None before it exists)."""
+    API, E = organ('control_factory_setup_api'), organ('control_channel_enrollment')
+    found = {'key': os.path.join(keys, E.edge_key_id(API.CHANNEL)),
+             'connection_key': os.path.join(root, EDGE_DIR, API.CONNECTION_KEY),
+             'service_config': os.path.join(root, HOST_DIR, API.SERVICE_CONFIG),
+             'state_dir': os.path.join(root, API.STATE_DIR)}
+    if home is not None and unit is not None:
+        name = API.UNIT_PREFIX + unit[len(organ('control_client').SERVICE_PREFIX):]
+        found.update(installed_service_config=os.path.join(home, 'config', API.SERVICE_CONFIG),
+                     process_config=os.path.join(home, 'config', API.PROCESS_CONFIG),
+                     service_json=os.path.join(home, 'config', 'service.json'),
+                     executable=os.path.join(home, 'bin', API.API_EXECUTABLE), unit=name,
+                     unit_path=os.path.join(unit_dir, name), wants=os.path.join(unit_dir, unit + '.wants', name))
+    return found
+
+
+def api_service_text(plan, ids, name):
+    API = organ('control_factory_setup_api')
+    return API.text(API.service_config(plan['store'], ids, {'principal': JOURNAL_PRINCIPAL,
+                                                            'key': os.path.join(plan['keys'], JOURNAL_KEY)},
+                                       API_EDGE, plan['workspace'], plan['root'], name))
+
+
+def api_process_text(plan, ids, api, name, port):
+    API, E = organ('control_factory_setup_api'), organ('control_channel_enrollment')
+    return API.text(API.process_config(ids, plan['workspace'], plan['host_trust'],
+                                       os.path.join(plan['root'], HOST_DIR, 'signer.json'), E.edge_key_id(API.CHANNEL),
+                                       api['connection_key'], API_EDGE, api['state_dir'], name, port))
+
+
+def enroll_api_edge(plan, ids, S, conn, journal, owner_sign, envelope, next_id, projection):
+    """The owner's enroll_channel_edge of the api edge with the key's possession co-signature, admitted on
+    this run's own store connection (it holds the lock); the projection is republished by the admission."""
+    API, E, ACT, AC = organ('control_factory_setup_api'), organ('control_channel_enrollment'), organ('control_channel_activation'), organ('authority_contract')
+    api = paths(plan['root'], plan['keys'], None, None, None)
+    command = API.enrollment_command(next_id('api-edge'), API_EDGE, E.edge_key_id(API.CHANNEL), API.derived(api['key']),
+                                     API.derived(api['connection_key']))
+    env = envelope(command, plan['owner'])
+    possession = ACT.ssh_signer(api['key'], E.POSSESSION_NAMESPACE)(AC.canonical_envelope_bytes(env))
+    observed = E.Enrollment(S, conn, ids, journal[0], journal[1], projection=projection).admit(
+        env, command, owner_sign(AC.canonical_envelope_bytes(env)), possession)
+    if observed.get('outcome') != 'accepted':
+        raise Refused('edge_enrollment_refused:%s' % observed.get('refusal'))
+    return observed
+
+
+def enroll_api_edge_through_service(plan, owner_sign, clock, serial):
+    """The same signed enrollment sent to the running authority service over its socket, as every client
+    reaches it (it holds the lock). Returns the service's answer."""
+    API, E, ACT, AC = organ('control_factory_setup_api'), organ('control_channel_enrollment'), organ('control_channel_activation'), organ('authority_contract')
+    CC, CE, EL = organ('control_client'), organ('control_enrollment'), organ('control_eligibility')
+    workspace = plan['workspace']
+    trust, binding = EL.load_host_trust(plan['host_trust']), CE.read_binding(workspace)
+    verify = trust.verifier(binding.get('enrolled_by'), workspace)
+
+    def send(packet):
+        try:
+            answer = CC.send(workspace, packet, CE, verify, owner_sign, trust.host_identity, timeout=60)
+        except CC.RoutingRefused as exc:
+            raise Refused('unavailable_service:authority:' + exc.reason, 'the running service did not answer') from None
+        if not answer.get('accepted'):
+            raise Refused('edge_enrollment_refused:%s' % answer.get('reason'), 'the running service refused the request')
+        return answer.get('result') or {}
+    status = send({'operation': 'inspect', 'entity_ids': []}).get('channel') or {}
+    if not status.get('available'):
+        raise Refused('invalid_input:state_root:service_running:api_edge_enrollment',
+                      'the running service reports no authority versions to sign against')
+    api = paths(plan['root'], plan['keys'], None, None, None)
+    ids = status.get('authority_ids') or {}
+    command = API.enrollment_command('setup-api-edge-%s-%s' % (str(ids.get('store_uuid'))[:8], serial), API_EDGE,
+                                     E.edge_key_id(API.CHANNEL), API.derived(api['key']), API.derived(api['connection_key']))
+    env = dict({k: ids.get(k) for k in ('domain_uuid', 'repository_uuid', 'store_uuid')}, schema=AC.ENVELOPE_SCHEMA,
+               command_id=command['command_id'], principal=plan['owner'], request_revision=1,
+               nonce='nonce-' + command['command_id'], expires_at=clock() + 600,
+               membership_version=status.get('membership_version'), delegation_version=status.get('delegation_version'),
+               command_digest=AC.canonical_command_digest(command))
+    possession = ACT.ssh_signer(api['key'], E.POSSESSION_NAMESPACE)(AC.canonical_envelope_bytes(env))
+    result = send({'command': command, 'envelope': env, 'signature': owner_sign(AC.canonical_envelope_bytes(env)),
+                   'possession': possession})
+    if not result.get('ok'):
+        raise Refused('edge_enrollment_refused:%s' % result.get('reason'), 'the running service refused the enrollment')
+    return result
+
+
+def install_api_unit(api, authority_unit, python, runner, states=None):
+    """The API unit and the authority unit's want of it, each written only when absent; True when written."""
+    API = organ('control_factory_setup_api')
+    body = _api(lambda: API.unit_text(authority_unit, python, api['executable'], api['process_config']))
+    wrote = False
+    if states is None or states['unit'] == 'absent':
+        API.write_new(api['unit_path'], body, 0o644)
+        wrote = True
+    if states is None or states['wants'] == 'absent':
+        os.makedirs(os.path.dirname(api['wants']), mode=0o755, exist_ok=True)
+        os.symlink(os.path.join('..', api['unit']), api['wants'])
+        wrote = True
+    if wrote:
+        runner.run(['daemon-reload'])
+    return wrote
+
+
+def api_report(name, port, api, through_service):
+    return {'tailnet_name': name, 'origin': 'https://' + name, 'listen': '%s:%d' % ('127.0.0.1', port), 'port': port,
+            'unit': api.get('unit'), 'unit_path': api.get('unit_path'), 'service_config': api.get('service_config'),
+            'process_config': api.get('process_config'), 'store_write_through_service': through_service}
+
+
+# The steps VELDO-0139 laid down, in its order; a re-run reports each of them.
+BASE_STEPS = ('directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollment', 'edge_enrollment', 'delegation',
+              'requester_enrollment', 'host_trust', 'workspace_enrollment', 'ingress_configuration', 'service_install')
+
+
+def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
+          writable, origin, runner, clock, tailscale, port):
+    """A run over a state root laid down before. Accepted only when EVERY argument equals what the store and
+    the installation were laid down with (else invalid_input:state_root:holds_<argument>). Every check runs
+    before the first write: an earlier step is reported already done, a missing one is run, and an existing
+    file that would differ is refused by name and never overwritten. The store is written only while this
+    run holds its lock; while the authority service holds it, the api edge enrollment goes to the service
+    and any other store write is refused (invalid_input:state_root:service_running:<step>)."""
+    API, CS, CC, CE, E = (organ('control_factory_setup_api'), organ('control_service'), organ('control_client'),
+                          organ('control_enrollment'), organ('control_channel_enrollment'))
+    claims, K = organ('control_claim'), organ('control_keys')
+    S, CM, AC = claims.S, claims.CM, claims.AC
+    plan = check(state_root, owner, owner_key, workspace, chat, token_file, host_trust=host_trust,
+                 install_root=install_root, unit_dir=unit_dir, profile=profile, writable=writable, origin=origin,
+                 rerun=True)
+    root, keys, workspace = plan['root'], plan['keys'], plan['workspace']
+    host = os.path.join(root, HOST_DIR)
+    try:
+        laid = json.loads(Path(os.path.join(host, 'ingress.json')).read_text())
+        ids = {k: laid['authority_ids'][k] for k in ('domain_uuid', 'repository_uuid', 'store_uuid')}
+    except (OSError, ValueError, KeyError, TypeError):
+        raise Refused('invalid_input:state_root:holds_store', 'a store without the configuration setup lays down with it') from None
+
+    def holds(name):
+        raise Refused('invalid_input:state_root:holds_' + name, 'the state root was laid down with another ' + name)
+    now = clock()
+    reader = S.open_store(plan['store'], mode='r')
+    try:
+        reader.execute('BEGIN')
+        state = CM.authority_state(S, reader)
+        row = reader.execute('SELECT data FROM entities WHERE id=?', ('channel-enrollment:%s:%s' % (CHANNEL, owner),)).fetchone()
+        reader.execute('ROLLBACK')
+    finally:
+        reader.close()
+    member = AC.membership_entry(state['membership'], owner)
+    if not member or member.get('principal_type') != 'person':
+        holds('owner')
+    active = AC.active_key(state['keyring'], owner, now)
+    if not active or active.get('public_key') != plan['owner_public']:
+        holds('owner_key')
+    try:
+        binding = CE.read_binding(workspace)
+    except (CE.EnrollmentRefused, OSError, ValueError):
+        binding = None
+    if (os.path.realpath(str(laid.get('workspace'))) != workspace or not isinstance(binding, dict)
+            or binding.get('store_uuid') != ids['store_uuid'] or binding.get('store_path') != plan['store']):
+        holds('workspace')
+    if (json.loads(row[0]) if row else {}).get('chat_id') != plan['chat']:
+        holds('chat')
+    if (laid.get('bot_api') or {}).get('token_file') != plan['token_file']:
+        holds('token_file')
+    if laid.get('host_trust') != plan['host_trust']:
+        holds('host_trust')
+    if (laid.get('bot_api') or {}).get('origin') != plan['origin']:
+        holds('origin')
+    authority_unit, home = CC.service_unit(binding), os.path.join(plan['install_root'], CC.service_id(binding))
+    try:
+        installed = json.loads(Path(home, 'config', 'service.json').read_text())
+    except (OSError, ValueError):
+        installed = {}
+    if installed.get('store_uuid') != ids['store_uuid']:
+        holds('install_root')
+    unit_dir = os.path.realpath(str(plan['unit_dir'] or CS.default_unit_dir()))
+    if not os.path.isfile(os.path.join(unit_dir, authority_unit)):
+        holds('unit_dir')
+    profiles = []
+    for path in sorted(((installed.get('receiver') or {}).get('configs') or {}).values()):
+        try:
+            profiles.append(json.loads(Path(path).read_text()).get('profile'))
+        except (OSError, ValueError):
+            profiles.append(None)
+    if not profiles or any(p != json.loads(json.dumps(plan['profile'])) for p in profiles):
+        holds('profile')
+
+    # What VELDO-0139 committed to the store, read, never rewritten.
+    telegram = E.edge_record(state, E.edge_key_id(CHANNEL))
+    missing = [name for name, present in (
+        ('edge_enrollment', telegram is not None and E.active(telegram, now)
+         and telegram.get('public_key') == organ('control_factory_setup_api').derived(os.path.join(keys, E.edge_key_id(CHANNEL)))),
+        ('delegation', any(d.get('principal') == owner and d.get('channel') == CHANNEL for d in state['delegations'])),
+        ('requester_enrollment', AC.membership_entry(state['membership'], REQUESTER) is not None)) if not present]
+    for path in (os.path.join(keys, JOURNAL_KEY), os.path.join(keys, E.edge_key_id(CHANNEL)), os.path.join(keys, SETTLEMENT_KEY),
+                 os.path.join(keys, REQUESTER_KEY), os.path.join(root, EDGE_DIR, CONNECTION_KEY)):
+        if not os.path.isfile(path):
+            raise _differs(path)
+    # The files the earlier steps wrote: equal ones are left alone, absent ones written, none overwritten.
+    base = dict(host_files(plan, API.derived(os.path.join(keys, SETTLEMENT_KEY))), **ingress_files(plan, ids))
+    base_states = {path: API.file_state(path, data, 0o600, _differs) for path, data in base.items()}
+    # Tailscale, read-only, after every argument check and before the first write.
+    cli = _api(lambda: API.Tailscale(tailscale))
+    transport = _api(lambda: API.transport(cli, port))
+    name = transport['name']
+    api = paths(root, keys, home, unit_dir, authority_unit)
+    edge = API.edge_state(state, api['key'], api['connection_key'], now, _differs)
+    service_text = api_service_text(plan, ids, name)
+    unit_body = _api(lambda: API.unit_text(authority_unit, installed.get('python') or '', api['executable'],
+                                           api['process_config']))
+    states = {'service_config': API.file_state(api['service_config'], service_text, 0o600, _differs),
+              'installed_service_config': API.file_state(api['installed_service_config'], service_text, 0o600, _differs),
+              'process_config': API.file_state(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600,
+                                               _differs),
+              'unit': API.file_state(api['unit_path'], unit_body, 0o644, _differs),
+              'wants': API.link_state(api['wants'], api['unit'], _differs)}
+    named = installed.get('api_service')
+    if named is not None and named != api['installed_service_config']:
+        raise _differs(api['service_json'])
+    if not os.path.isfile(api['executable']):
+        raise Refused('unavailable_service:api:not_installed', 'the installed engine has no API process (%s)'
+                      % api['executable'])
+    lock = take_lock(root, create=False)
+    running = lock is None
+    try:
+        if missing:
+            if running:
+                raise Refused('invalid_input:state_root:service_running:' + missing[0],
+                              'the running service takes no command for this store write')
+            raise Refused('invalid_input:state_root:holds_store', 'a store setup did not complete (%s)' % missing[0])
+        outcomes = [{'step': step, 'outcome': 'already_done'} for step in BASE_STEPS[:8]]
+
+        def mark(step, wrote, **extra):
+            outcomes.append(dict({'step': step, 'outcome': 'done' if wrote else 'already_done'}, **extra))
+
+        def files(step, chosen):
+            wrote = False
+            for path in chosen:
+                if base_states[path] == 'absent':
+                    API.write_new(path, base[path], 0o600)
+                    wrote = True
+            mark(step, wrote)
+        files('host_trust', [p for p in base if p == plan['host_trust'] or os.path.basename(p).endswith('_signers')])
+        mark('workspace_enrollment', False)
+        files('ingress_configuration', [p for p in base if os.path.basename(p) in ('signer.json', 'ingress.json')])
+        mark('service_install', False)
+        if edge == 'absent':
+            API.generate_keys(api['key'], api['connection_key'])
+        mark('api_edge_key', edge == 'absent')
+        through = False
+        projection = os.path.join(host, 'allowed_signers')
+        if edge != 'enrolled':
+            if running:
+                enroll_api_edge_through_service(plan, organ('control_channel_activation').ssh_signer(plan['owner_key']),
+                                                clock, uuid.uuid4().hex[:12])
+                API.republish(S, CM, K, plan['store'], projection)
+                through = True
+            else:
+                if lock == -1:
+                    lock = take_lock(root)
+                    if lock is None:
+                        raise Refused('invalid_input:state_root:service_running:api_edge_enrollment',
+                                      'the authority service started during this run')
+                writer = S.open_store(plan['store'])
+                try:
+                    CM.attach(S)
+                    K.attach(S)
+                    IN = organ('control_channel_ingress')
+                    journal = IN.journal_signer({'principal': JOURNAL_PRINCIPAL, 'key': os.path.join(keys, JOURNAL_KEY)})
+                    serial = [0]
+
+                    def next_id(prefix):
+                        serial[0] += 1
+                        return 'setup-%s-%s-%s-%d' % (prefix, ids['store_uuid'][:8], uuid.uuid4().hex[:8], serial[0])
+
+                    def envelope(command, principal):
+                        current = CM.authority_state(S, writer)
+                        return dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal=principal,
+                                    request_revision=1, nonce='nonce-' + command['command_id'], expires_at=clock() + 600,
+                                    membership_version=current['membership_version'],
+                                    delegation_version=current['delegation_version'],
+                                    command_digest=AC.canonical_command_digest(command))
+                    enroll_api_edge(plan, ids, S, writer, journal, organ('control_channel_activation').ssh_signer(plan['owner_key']),
+                                    envelope, next_id, projection)
+                    os.chmod(projection, 0o600)
+                finally:
+                    writer.close()
+        mark('api_edge_enrollment', edge != 'enrolled', through_service=through)
+        if states['service_config'] == 'absent':
+            API.write_new(api['service_config'], service_text, 0o600)
+        mark('api_service_configuration', states['service_config'] == 'absent')
+        added = named is None
+        if states['installed_service_config'] == 'absent':
+            SA = organ('control_service_api')
+            try:
+                SA.installable(api['service_config'], binding, installed.get('principal'), installed.get('journal_key'),
+                               installed.get('repositories') or {}, installed.get('channel_ingress'))
+            except SA.Refused as exc:
+                raise Refused(exc.code, exc.detail) from None
+            API.write_new(api['installed_service_config'], service_text, 0o600)
+        if added:
+            # The one change to an existing file: the installation's service configuration gains the key
+            # it holds as null, naming the API configuration.
+            API.replace_file(api['service_json'], CS._json(dict(installed, api_service=api['installed_service_config'])),
+                             0o600)
+        mark('api_service_install', added or states['installed_service_config'] == 'absent')
+        if states['process_config'] == 'absent':
+            API.write_new(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600)
+        mark('api_process_configuration', states['process_config'] == 'absent')
+        mark('api_unit', install_api_unit(api, authority_unit, installed.get('python') or '', runner, states))
+        started, next_step = False, None
+        if running and not added:
+            if not API.service_running(runner, api['unit']):
+                code, _out, err = runner.run(['start', api['unit']])
+                if code or not API.service_running(runner, api['unit']):
+                    raise Refused('unavailable_service:api', 'the API unit did not start (%s)' % err.strip()[:200])
+                started = True
+            mark('api_start', started)
+        elif running:
+            outcomes.append({'step': 'api_start', 'outcome': 'deferred'})
+            next_step = ('the running service reads the API configuration when it starts: systemctl --user restart %s '
+                         '(the API unit %s starts with it)' % (authority_unit, api['unit']))
+        else:
+            outcomes.append({'step': 'api_start', 'outcome': 'deferred'})
+            next_step = 'start it explicitly: systemctl --user start %s (the API unit %s starts with it)' % (
+                authority_unit, api['unit'])
+        if transport['serve'] == 'free':
+            _api(lambda: API.serve(cli, name, port))
+        mark('tailscale_serve', transport['serve'] == 'free')
+    finally:
+        if lock is not None and lock != -1:
+            os.close(lock)
+    wrote = any(o['outcome'] == 'done' for o in outcomes)
+    return {'schema': SCHEMA, 'outcome': 'set_up' if wrote else 'already_set_up', 'state_root': root,
+            'store': plan['store'], 'authority_ids': ids, 'owner': owner, 'host_trust': plan['host_trust'],
+            'workspace': workspace, 'ingress': os.path.join(host, 'ingress.json'), 'token_file': plan['token_file'],
+            'unit': authority_unit, 'unit_path': os.path.join(unit_dir, authority_unit), 'home': home,
+            'started': started, 'service_running': running, 'steps': outcomes,
+            'api': api_report(name, port, api, through), 'next': next_step}
 
 
 def main(argv=None, **overrides):
@@ -475,6 +917,10 @@ def main(argv=None, **overrides):
     --token-file FILE. Prints one JSON answer; exit 0 set up, 1 refused by name, 2 usage."""
     import argparse
     import sys
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv[:1] == ['passkey']:
+        # veldo factory passkey (VELDO-0171): the owner signs the one pending registration he names.
+        return organ('control_factory_setup_api').passkey_main(argv[1:])
     parser = argparse.ArgumentParser(prog='veldo factory setup', description='Lay a real factory down on this host '
                                      'from the owner\'s own signed commands.')
     parser.add_argument('action', choices=('setup',))
@@ -485,7 +931,7 @@ def main(argv=None, **overrides):
     parser.add_argument('--chat', required=True, type=int, help='his numeric Telegram user id')
     parser.add_argument('--token-file', required=True, help='this account\'s own 0600 bot token file; named, never copied')
     try:
-        args = parser.parse_args(sys.argv[1:] if argv is None else list(argv))
+        args = parser.parse_args(argv)
     except SystemExit as exc:
         return exc.code if isinstance(exc.code, int) else EXIT_USAGE
 

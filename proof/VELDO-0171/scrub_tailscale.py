@@ -1,7 +1,13 @@
-"""Allowlist scrub of the five authorized local Tailscale captures.
+"""Allowlist scrub of the five authorized read-only local Tailscale captures (VELDO-0171 AC2).
 
-Raw input stays outside the repository. Dynamic map keys are values too.
-This records captured states only; it does not invent capability fields.
+    python3 -B proof/VELDO-0171/scrub_tailscale.py
+
+Raw input stays outside the repository, in /home/dmitry/projects/veldo-live-captures/2026-09-27/tailscale/.
+Dynamic map keys are values too. The captured outputs are kept as scrubbed; every state the suite's
+stand-in replays beyond them is a listed field edit of the capture (field_edits), and no capability
+field the CLI does not print is invented. The one parametric value is the loopback target of the status
+after `serve --bg`: it is the target that invocation named (@TARGET@), since each suite run listens on a
+port of its own.
 """
 import json
 from pathlib import Path
@@ -100,9 +106,9 @@ def main():
         'persistence': [('serve-help', [], '')],
         'logged-out': [('status', ['BackendState'], 'NeedsLogin')],
         'served': [('serve-status', [], {'TCP': {'443': {'HTTPS': True}},
-                    'Web': {'factory.invalid:443': {'Handlers': {'/': {'Proxy': 'http://127.0.0.1:8765'}}}}})],
+                    'Web': {'factory.invalid:443': {'Handlers': {'/': {'Proxy': '@TARGET@'}}}}})],
         'occupied': [('serve-status', [], {'TCP': {'443': {'HTTPS': True}},
-                      'Web': {'factory.invalid:443': {'Handlers': {'/': {'Proxy': 'http://127.0.0.1:9876'}}}}})]
+                      'Web': {'factory.invalid:443': {'Handlers': {'/': {'Proxy': 'http://127.0.0.1:9'}}}}})]
     }
     import copy
     for name, changes in edits.items():
@@ -119,6 +125,13 @@ def main():
         result['field_edits'].append({'state': name, 'edits': listed})
     result['scrub_rules']['prefs'] = 'Schema names only; OperatorUser presence as a string placeholder; every other leaf null'
     result['scrub_rules']['serve-help'] = 'Only the schema flag --bg, when listed; all prose discarded'
+    result['state_rules'] = {
+        'ready': 'the captured outputs with a tailnet name of the reserved .invalid domain, its certificate domain, '
+                 'and no Serve mapping',
+        'operator': 'ready without the operator setting', 'https': 'ready without a certificate domain',
+        'persistence': 'ready whose serve help lists no --bg', 'logged-out': 'ready with a logged-out backend',
+        'served': 'the Serve status after `serve --bg --https=443 <target>`; @TARGET@ is the target that invocation named',
+        'occupied': 'ready with the name\'s HTTPS mapped to another loopback target'}
     text = json.dumps(result, indent=2, sort_keys=True) + '\n'
     constants = FIELDS | STATES | set(versions) | {'https'} | set(k for k in strings(result['captured']['prefs']) if k != '<string>')
     # Literal substring checks cover every raw string value, and also dynamic

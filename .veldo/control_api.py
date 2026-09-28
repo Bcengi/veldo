@@ -5,7 +5,8 @@ WHAT THIS MODULE IS. An ingress service over existing domain commands, never a s
 scheduler. It serves plain HTTP with the standard library's ThreadingHTTPServer on a loopback address
 only (`listen` refuses any other), behind the TLS terminator on the host (Tailscale Serve, the owner's
 choice) that forwards with the Host header preserved. It refuses any Host but the configured name, caps
-request bodies at 64 KiB and sends Strict-Transport-Security on every response.
+request bodies at 64 KiB and sends Strict-Transport-Security and a same-origin Content-Security-Policy
+(CSP, VELDO-0171) on every response.
 
 THE ROUTES are one published table, ROUTES: each route's name, method, path, family, whether it needs a
 session, its exact body fields and the authority operation it asks for. The handlers are registered by
@@ -130,6 +131,10 @@ REVOKED = ('credential_revoked', 'principal_not_member')
 EVENT_LIMIT = 256
 # Body fields that name who is speaking. The speaker is the session's member; a body naming one is refused.
 ACTOR_FIELDS = ('principal', 'actor', 'actor_id', 'decider')
+# The same-origin content security policy of every response (VELDO-0171): nothing but this origin's own
+# scripts, connections and form targets, no framing, no base URL and no inline script.
+CSP = ("default-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; "
+       "base-uri 'none'")
 STATUS = {'unauthenticated': 401, 'unauthorized': 403, 'invalid_input': 400, 'stale_version': 409,
           'missing_evidence': 404, 'unavailable_service': 503, 'unknown_outcome': 500}
 
@@ -457,7 +462,8 @@ class ControlApi:
         self.observe(event)
         kind = 'text/event-stream' if isinstance(value, Stream) else 'application/json'
         out = [('Content-Type', kind), ('Cache-Control', 'no-store'),
-               ('Strict-Transport-Security', HSTS), ('X-Content-Type-Options', 'nosniff')] + extra
+               ('Strict-Transport-Security', HSTS), ('Content-Security-Policy', CSP),
+               ('X-Content-Type-Options', 'nosniff')] + extra
         return status, out, value
 
     def _handle(self, method, path, headers, raw, extra, about):
@@ -1083,6 +1089,19 @@ def listen(api, host, port):
 
         def log_message(self, *args):
             pass
+
+        def send_header(self, keyword, value):
+            if keyword.lower() == 'content-security-policy':
+                self._policy_sent = True
+            super().send_header(keyword, value)
+
+        def end_headers(self):
+            # Every response carries the policy, the ones http.server writes itself (an unsupported
+            # method, a malformed request line) as well.
+            if not getattr(self, '_policy_sent', False):
+                super().send_header('Content-Security-Policy', CSP)
+            self._policy_sent = False
+            super().end_headers()
 
         def _serve(self, method):
             length = self.headers.get('Content-Length')

@@ -1907,7 +1907,7 @@
             "factory.invalid:443": {
               "Handlers": {
                 "/": {
-                  "Proxy": "http://127.0.0.1:8765"
+                  "Proxy": "@TARGET@"
                 }
               }
             }
@@ -2224,7 +2224,7 @@
             "factory.invalid:443": {
               "Handlers": {
                 "/": {
-                  "Proxy": "http://127.0.0.1:9876"
+                  "Proxy": "http://127.0.0.1:9"
                 }
               }
             }
@@ -2654,7 +2654,7 @@
               "factory.invalid:443": {
                 "Handlers": {
                   "/": {
-                    "Proxy": "http://127.0.0.1:8765"
+                    "Proxy": "@TARGET@"
                   }
                 }
               }
@@ -2680,7 +2680,7 @@
               "factory.invalid:443": {
                 "Handlers": {
                   "/": {
-                    "Proxy": "http://127.0.0.1:9876"
+                    "Proxy": "http://127.0.0.1:9"
                   }
                 }
               }
@@ -2703,6 +2703,15 @@
     "serve-help": "Only the schema flag --bg, when listed; all prose discarded",
     "strings": "<string> unless the field and value are in constant_allowlist",
     "version_output": "first line is the CLI version; other lines are string placeholders"
+  },
+  "state_rules": {
+    "https": "ready without a certificate domain",
+    "logged-out": "ready with a logged-out backend",
+    "occupied": "ready with the name's HTTPS mapped to another loopback target",
+    "operator": "ready without the operator setting",
+    "persistence": "ready whose serve help lists no --bg",
+    "ready": "the captured outputs with a tailnet name of the reserved .invalid domain, its certificate domain, and no Serve mapping",
+    "served": "the Serve status after `serve --bg --https=443 <target>`; @TARGET@ is the target that invocation named"
   },
   "streams": {
     "prefs": "stdout",
