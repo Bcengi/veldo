@@ -49,6 +49,7 @@ def _v189_suite():
         'control_factory_setup_upgrade.py': ROOT / ".veldo" / "control_factory_setup_upgrade.py",
         'control_factory_setup_api.py': ROOT / ".veldo" / "control_factory_setup_api.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
+        'control_store.py': ROOT / ".veldo" / "control_store.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
     ROWS = ('install/assets', 'upgrade/from-8bc34e94', 'upgrade/from-971186ac', 'upgrade/removed-module',

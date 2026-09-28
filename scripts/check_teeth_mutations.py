@@ -8984,6 +8984,16 @@ def cases():
             "        pass  # defect: the filesystem is not probed before the first write\n", 'upgrade/refused-by-name')
     upgrade('upgrade189-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_factory_setup_upgrade.py",\n', '',
             'install/assets')
+    # An upgraded owning module (control_channel_activation.py changed at 7fefdb9a) is refused ownership_conflict
+    # unless the upgraded service carries the store's declarations to its installed bytes; a digest the file's
+    # bytes do not have is never taken.
+    upgrade('upgrade189-ownership-not-carried', 'control_service.py',
+            "            rebound = S.rebind_owners(conn, installed_engine(config))\n",
+            "            rebound = []  # defect: the declarations keep the previous engine's digests\n", 'switch/kill-points')
+    upgrade('upgrade189-rebind-any-digest', 'control_store.py',
+            "                if r[4] in installed and r[5] != installed[r[4]] and module_digest(r[4]) == installed[r[4]]]\n",
+            "                if r[4] in installed and r[5] != installed[r[4]]]  # defect: any digest is taken\n",
+            'switch/kill-points')
 
     # VELDO-0158: each Linux run's credentials, delivered from the keystore and added to the run's set. Each
     # criterion's declared falsifier first, then the threat model's other routes.
