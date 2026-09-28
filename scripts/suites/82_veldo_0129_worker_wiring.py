@@ -374,6 +374,11 @@ sys.exit(7 if mode == 'nonzero' else 0)
         if hasattr(E, 'session_environment'):
             # VELDO-0165: the version's extracted session names, read from the fake's own bytes.
             record['versions'][version]['session_environment'] = E.session_environment(versions / version)
+        if hasattr(E, 'qualified_tools'):
+            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
+            record['versions'][version].update(tool_registry=tools173['tool_registry'],
+                                               tool_classification=tools173['tool_classification'])
         (mods / 'runtime').mkdir(exist_ok=True)
         (mods / 'runtime/claude-qualification.json').write_text(json.dumps(record))
         E.pin(version, versions=str(versions), state_root=str(factory))

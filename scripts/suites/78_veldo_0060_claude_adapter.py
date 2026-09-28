@@ -376,6 +376,11 @@ sys.exit(payload.get('code', 0))
             test_record['versions'][VERSION]['baseline'] = E.BASELINE
             if hasattr(E, 'session_environment'):
                 test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
+            if hasattr(E, 'qualified_tools'):
+                # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+                tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
+                test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
+                                                        tool_classification=tools173['tool_classification'])
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
         QUALIFIED = test_record['versions'][VERSION]
@@ -626,8 +631,11 @@ sys.exit(payload.get('code', 0))
             if base is None:
                 return list(args[len(flags):]) == []
             config = next((str(Path(a).parent) for a in args if a.endswith('/config/settings.json')), '/none')
-            expected, _ = attempt(lambda: module.baseline({'baseline': base, 'version': VERSION},
-                                                          {'config': config, 'runtime': '/none'})['argv'])
+            bound = {'baseline': base, 'version': VERSION}
+            if hasattr(module, 'qualified_tools'):
+                # VELDO-0173: an unbound run's launch tool options, from the qualified registry and classification.
+                bound['tools'], _ = attempt(lambda: module.qualified_tools(VERSION, QUALIFIED))
+            expected, _ = attempt(lambda: module.baseline(bound, {'config': config, 'runtime': '/none'})['argv'])
             return expected is not None and list(args[len(flags):]) == list(expected)
 
         def nothing_ran(dispatch_id):
@@ -1580,6 +1588,16 @@ sys.exit(payload.get('code', 0))
                 n = 0
                 while n < len(argv):
                     option = declared.get(argv[n])
+                    name, joined, value = argv[n].partition('=')
+                    if option is None and joined and name.startswith('--') and name in declared:
+                        # VELDO-0173: `--option=value`, which the binary's parser reads for an option taking a
+                        # value (its `/^--[^=]+=/` branch), so a variadic option takes nothing after it.
+                        option = declared[name]
+                        if option['value'] != 'required' or (option['choices'] and value not in option['choices']):
+                            undeclared.append(argv[n])
+                            break
+                        n += 1
+                        continue
                     if option is None:
                         undeclared.append(argv[n])
                         break
