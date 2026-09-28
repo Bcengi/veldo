@@ -1,5 +1,5 @@
---- .veldo/control_engine_claude.py
-+++ .veldo/control_engine_claude.py
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
 @@ -1284,7 +1284,7 @@
  # shouldQuery false: the message is appended to the transcript without an assistant turn and merged into the
  # next user message that queries. With no content it adds nothing to that message; the binary answers it with

@@ -1,6 +1,6 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
-@@ -349,7 +349,7 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -360,7 +360,7 @@
  
      def ask(command):
          try:

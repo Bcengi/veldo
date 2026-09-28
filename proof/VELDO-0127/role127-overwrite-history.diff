@@ -1,5 +1,5 @@
---- .veldo/control_agent_config.py
-+++ .veldo/control_agent_config.py
+--- a/.veldo/control_agent_config.py
++++ b/.veldo/control_agent_config.py
 @@ -154,6 +154,9 @@
              self.observe(dict(about, outcome='refused', refusal=error.code))
              raise Refused(error.code) from None

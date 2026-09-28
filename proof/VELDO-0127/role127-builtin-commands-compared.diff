@@ -1,5 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
 @@ -196,7 +196,7 @@
          if not isinstance(value, list):
              return 'configuration_stop:' + field

@@ -1,5 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
 @@ -191,7 +191,7 @@
      """The named stop for an init event whose launch set differs from `wanted` in either direction, else None.
      `builtin` names the engine's own built-in commands (its initialize answer marks them): typed commands the

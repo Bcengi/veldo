@@ -1,5 +1,5 @@
---- .veldo/control_engine_claude.py
-+++ .veldo/control_engine_claude.py
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
 @@ -1581,8 +1581,7 @@
          if self.expected is not None and (not self.capabilities_confirmed or self.probe_result is None):
              if self.probed:

@@ -1,0 +1,11 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -263,7 +263,7 @@
+ def codex_model(modes, revision):
+     if (modes.get(revision['settings'].get('model')) == 'code_mode_only'
+             and set(revision['native_tools']) != CODEX_ALL_NATIVE):
+-        raise Refused('configuration_stop:codex_code_mode_model')
++        return None
+ 
+ 
+ def codex(configuration, capability, inventory, config):

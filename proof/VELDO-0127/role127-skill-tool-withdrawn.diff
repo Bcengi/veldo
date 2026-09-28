@@ -1,5 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
 @@ -238,7 +238,7 @@
          extra['argv'] += [OPTION + 'append-system-prompt-file', str(config / 'role-instructions.md')]
      # `--disable-slash-commands` also withdraws the Skill tool, so a role granting it, or listing a skill, runs

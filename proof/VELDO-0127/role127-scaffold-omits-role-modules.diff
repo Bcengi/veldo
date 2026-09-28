@@ -1,5 +1,5 @@
---- .veldo/init_scaffold.py
-+++ .veldo/init_scaffold.py
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
 @@ -254,8 +254,6 @@
      ".veldo/control_credential_delivery.py",
      # VELDO-0127: accepted role capability revisions and their engine handoff, which control_launch.py

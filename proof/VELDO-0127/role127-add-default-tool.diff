@@ -1,5 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
 @@ -204,7 +204,7 @@
                  return 'configuration_stop:mcp_servers'
              value = [v['name'] for v in value]

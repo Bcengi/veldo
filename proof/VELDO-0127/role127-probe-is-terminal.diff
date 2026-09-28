@@ -1,5 +1,5 @@
---- .veldo/control_engine_claude.py
-+++ .veldo/control_engine_claude.py
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
 @@ -1751,7 +1751,7 @@
              if decoded is None:
                  self.malformed += 1

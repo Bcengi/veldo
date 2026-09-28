@@ -5,6 +5,66 @@
  "mutations_rejected_this_run": 0,
  "mutants": [
   {
+   "name": "role127-model-modes-omitted",
+   "module": ".veldo/control_engine_codex.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/codex-mode"
+   ],
+   "diff": "role127-model-modes-omitted.diff",
+   "source_sha256": "36368af424c46992c79f5db26e8bda47ae679401e2c8dd3a429fa863d803ab13",
+   "mutant_sha256": "8fcf955124d37969b4b812dc2ff8cf7aeaebe8ebec4b8111428ea3b420c969be",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-model-baseline-unchecked",
+   "module": ".veldo/control_engine_codex.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/codex-mode"
+   ],
+   "diff": "role127-model-baseline-unchecked.diff",
+   "source_sha256": "36368af424c46992c79f5db26e8bda47ae679401e2c8dd3a429fa863d803ab13",
+   "mutant_sha256": "e124402cc1c03c75c1e8a36b2d90c1dfef3a2693c4edd517164d657eac164df9",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-code-mode-refusal-bypassed",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/codex-mode"
+   ],
+   "diff": "role127-code-mode-refusal-bypassed.diff",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "36da6e3d6de3fec9d3404fc719286bdd61b532a5534c53c4f279a499ec6cd0a1",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-lead-model-mode-ignored",
+   "module": "proof/VELDO-0127/live.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/codex-capture"
+   ],
+   "diff": "role127-lead-model-mode-ignored.diff",
+   "source_sha256": "6f794abd18e981d23395c5aa88c6dd131472918046873ab29a358aa31117111d",
+   "mutant_sha256": "aaedce3accda7a7be6805177f1c07090fcb5c0fd7851e4fcfec7afaed462f263",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-loopback-tool-observation-lost",
+   "module": "proof/VELDO-0127/live.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/codex-capture"
+   ],
+   "diff": "role127-loopback-tool-observation-lost.diff",
+   "source_sha256": "6f794abd18e981d23395c5aa88c6dd131472918046873ab29a358aa31117111d",
+   "mutant_sha256": "31452bce30d5098ce4e8cd7d5fd0fc4328958be8a3fb69b278438a1a15ea97a4",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
    "name": "role127-shell-wire-mapping-loses-wait",
    "module": ".veldo/control_engine_codex.py",
    "suite": "86_veldo_0127_agent_configuration.py",
@@ -12,8 +72,8 @@
     "review/codex-tools"
    ],
    "diff": "role127-shell-wire-mapping-loses-wait.diff",
-   "source_sha256": "4c5659be5dd88cc0ee086a1922c737962c8711cb0b0a36ad41c8afba6b8669d2",
-   "mutant_sha256": "ec4b92a93a08e4537b17310d3276129c5b4a4aae9c2c10123e869036eede323a",
+   "source_sha256": "36368af424c46992c79f5db26e8bda47ae679401e2c8dd3a429fa863d803ab13",
+   "mutant_sha256": "2b03c7ae3b27195f4bfe8db5306ebf93461f1c10252406df204191f8d1e5e12f",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -24,8 +84,8 @@
     "review/codex-tools"
    ],
    "diff": "role127-owner-tools-hidden.diff",
-   "source_sha256": "d668a145a6462094a2c404c3217f6d9789d42d5d5edcda7f33438160a14bd42d",
-   "mutant_sha256": "f18be5ec0f784dd5f742460b82f5d1b5395887d4de9beb874510df0ac1aeda0e",
+   "source_sha256": "ade991331866ed7deb1fb1d3989e4d7ae028dec214b4af98fd83316322abba7d",
+   "mutant_sha256": "9d0b2e3754703107ef516429622a443935c1ff89fa4e5890860fc7af8cc990b7",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -36,8 +96,8 @@
     "review/codex-tools"
    ],
    "diff": "role127-code-mode-hides-missing-grants.diff",
-   "source_sha256": "d668a145a6462094a2c404c3217f6d9789d42d5d5edcda7f33438160a14bd42d",
-   "mutant_sha256": "8b241e614271f76c45c91e1295c573ef508fc51f0190de2bc2ff954901cdcb82",
+   "source_sha256": "ade991331866ed7deb1fb1d3989e4d7ae028dec214b4af98fd83316322abba7d",
+   "mutant_sha256": "aa46a866af1b2b68151c888be823a5164af5b1a8852743a5a769a73292bad549",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -60,8 +120,8 @@
     "handoff/claude"
    ],
    "diff": "role127-remove-mcp-tool.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "ec00203f0486d95fb3140aa0bf3554f18973e390010b57395fad0b88df8a4993",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "50701ddb86737afb3d2f6fd32db22f6d427c05133bac4c84b52f427384ecb75b",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -72,8 +132,8 @@
     "handoff/codex"
    ],
    "diff": "role127-codex-drop-tool.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "7f5b9ca2836de62e730302f46bddf483f991da1bed5b8726528b3d5b834d5495",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "884dcd111230c1041f897b87f022b4e716c8e0f08c092a7345b8931e2363d378",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -84,8 +144,8 @@
     "dispatch/refusal"
    ],
    "diff": "role127-add-default-tool.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "359db08121240756fc50add1ecb7530189dd7805487ab8c6b2830f6211efcc5f",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "e63cd56de20ab5b2e5271389caa432fd53719588f9988c631aec24dd76e92603",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -108,8 +168,8 @@
     "launch/unlisted"
    ],
    "diff": "role127-allow-unlisted-skill.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "5c4fe27311b834ca75569e43a3e7411d675ccb9975deeb9a86895b3f3ebe7305",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "90336d76ab82490866c1aabf5e29b53616e7889f0ff84797a9561c1a88926730",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -156,8 +216,8 @@
     "handoff/claude"
    ],
    "diff": "role127-engine-plugins-kept.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "1e36b422d2398b12886e612a37a5edf80f9900438a289e99717b288991be7aa0",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "0d289d794cfd90ac5183dfb8e73404a67c898b6fc820b0a4e9c88ad5b28dad76",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -168,8 +228,8 @@
     "handoff/claude"
    ],
    "diff": "role127-bundled-skills-kept.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "9ffa0d2c5d27b677d2c7d385ae0d189d0a77da33d4547f5248063d900ce53bd7",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "4efed1a728e5f1854e5dd86a21da63bdef848a55d7bcb556e36263a29be809f5",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -180,8 +240,8 @@
     "handoff/claude"
    ],
    "diff": "role127-builtin-commands-compared.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "425bef71f1cc19e91a294dbbabdd363a333cb20833bc16e6efd4953cfeeee76c",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "4f9aae2bf4f0374dffe7a33b16a0e95f137c47059170cc2344057ada6b5ad005",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -192,8 +252,8 @@
     "launch/unlisted"
    ],
    "diff": "role127-skill-tool-withdrawn.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "2cbbfcff2e811d1e404ca012383da74c44fca0ada200dde535a42934e58a0c78",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "72420bb84b3aa7eb3eb03dabe9c8a3ac093a44c88772ec93a63271b17be5fdce",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -204,8 +264,8 @@
     "handoff/codex"
    ],
    "diff": "role127-codex-listing-exec-flag.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "045cf41935f652ba51a0bc3add67205f8be12c6031f13667ce264156ac069cd4",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "6cc871e8d408220447a36720976b214ebbf71e7020b497455ad46405e26d27dd",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -216,8 +276,8 @@
     "handoff/codex"
    ],
    "diff": "role127-codex-listing-profile.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "6ca30b9284d0928c67ee51929700907f6fddfa4a867a327a10fe402e8633971f",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "4cd1b48c3367cceff858df0817f64077b18d35b9a15c30492c2b756f62848528",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -228,8 +288,8 @@
     "handoff/codex"
    ],
    "diff": "role127-codex-listing-tools-from-list.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "9841969cc5227ea1e9b7f0829378ccdb61a2a285ffb6a350df6eadf96618558c",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "315d0223eb1c43abe89f49fe639667c51df4eb9bc07268efde8b0f7bebdf02f0",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -265,8 +325,8 @@
     "review/skill-commit"
    ],
    "diff": "role127-staged-skill-committed.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "469eb4f6fb5944580cba4d020f9e7d3e92d7e51fd07e9a8c0d69c86346bff7f8",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "f7994be7ae715b73d1f57a73787af0759b613e29a568cfa853cd06aad353e42c",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -313,8 +373,8 @@
     "review/slash-collision"
    ],
    "diff": "role127-slash-collision-hidden.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "9e6ed5d0bbec093b82293ee63e6c2bf577595912642a572e7a26d665d7bf5c0d",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "0992c9ab5319fbd15145d60a3c2e739d179e7e2cc91c14d072b2e7a9a6fa4c13",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -325,8 +385,8 @@
     "review/marker-debug"
    ],
    "diff": "role127-planted-debug-ignored.diff",
-   "source_sha256": "d668a145a6462094a2c404c3217f6d9789d42d5d5edcda7f33438160a14bd42d",
-   "mutant_sha256": "76cb03daacf5d00c535012e33acdb236d128b7a963a271514817e8d9e35f492e",
+   "source_sha256": "ade991331866ed7deb1fb1d3989e4d7ae028dec214b4af98fd83316322abba7d",
+   "mutant_sha256": "d0170adf1e433c13e1de88dcad6fbfbc4fb41a6ad196ed5cbf7a93852b02487f",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -337,8 +397,8 @@
     "review/marker-debug"
    ],
    "diff": "role127-debug-control-vacuous.diff",
-   "source_sha256": "d668a145a6462094a2c404c3217f6d9789d42d5d5edcda7f33438160a14bd42d",
-   "mutant_sha256": "a0c6f6fa3f44bbc4acfa6eadb2c1eb03f2d9693c7a8df8e293e6541d14a4b0f6",
+   "source_sha256": "ade991331866ed7deb1fb1d3989e4d7ae028dec214b4af98fd83316322abba7d",
+   "mutant_sha256": "11370ddbf113c7215a31877dd9fdf41d8711f62ffb7da3de8598cd5ed86bc851",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -349,8 +409,8 @@
     "review/codex-tools"
    ],
    "diff": "role127-wire-extra-ignored.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "0997f44012317ba8a2753b2a741837e22a993f488ee639a7bd69f2525679610a",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "415d2c03352a5daf51d0d52fe048b303a5096bca9cca761f12e2f0ffb4b2a6ee",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -361,8 +421,8 @@
     "review/codex-tools"
    ],
    "diff": "role127-wire-missing-ignored.diff",
-   "source_sha256": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
-   "mutant_sha256": "c6e0177a389960f51810b4f2c73a67db3869e6af43c720e564e66766d1b75111",
+   "source_sha256": "fdaffe34943c5d0f17354511ce305a3f0f862242ae5e329a723b58d23c9949e1",
+   "mutant_sha256": "2b2deaadbbc3d6e6ab3003dba80e88a7c46d47ebac01c517a6546d2d6e16fb5c",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -373,10 +433,10 @@
     "review/probe-terminal"
    ],
    "diff": "role127-probe-capture-omitted.diff",
-   "source_sha256": "4431b366cef9a1b90377021ab9728796b838e9cc284f63249230dae4f4bd0ae6",
-   "mutant_sha256": "b28295fcb10882a28cd65171f0c51897defc0a3246f582d998b3cee010e76a4e",
+   "source_sha256": "6f794abd18e981d23395c5aa88c6dd131472918046873ab29a358aa31117111d",
+   "mutant_sha256": "d05dc4449430e3d92faa1e34539b0d69de9fa40c0c4fe2f476d79598de7ede33",
    "status": "registered; execution reserved for reviewer"
   }
  ],
- "switch_mutations": "None added: no tested switch removed an unresolved tool; case (c) evidence retained instead."
+ "switch_mutations": "None added: tested direct-model switches did not remove the unresolved tools. Exact equality remains red."
 }

@@ -1,5 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
 @@ -184,7 +184,7 @@
      for command in commands if isinstance(commands, list) else []:
          if isinstance(command, dict) and isinstance(command.get('name'), str):

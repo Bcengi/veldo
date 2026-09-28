@@ -1,5 +1,5 @@
---- .veldo/control_launch.py
-+++ .veldo/control_launch.py
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
 @@ -1895,8 +1895,7 @@
              debug = Path(self.run) / RUN_CONFIG / 'role-debug.log' if self.run else None
              if debug is not None and debug.is_file():

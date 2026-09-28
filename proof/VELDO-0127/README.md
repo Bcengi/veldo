@@ -1,14 +1,24 @@
 # VELDO-0127 role capability configuration
 
-Item 1 continuation from `04795046`: the offline request is captured successfully,
-but AC2 exact equality remains blocked. No switch tested against the pinned binary
-removed the remaining tools. These are case (c) owner decisions, recorded individually
-in `codex-owner-decisions.json`, not approved exceptions. No capability was removed
-from the role or production configuration. No metadata override was introduced.
+Item 1 continuation from `321f638d`: model-dependent qualification and the lead
+capture changes are implemented. Direct-tool equality remains incomplete. The new
+`codex-direct-loopback.json` records the production handoff on gpt-5.5: five extra
+definitions and the selected Jira definition missing. Tested switches did not remove
+them. No ineffective switch or switch mutation is represented as a fix. The exact
+comparison row is now red, because the fake reproduces the observed defaults.
 The specification stays ready; no full qualification or gate pass is claimed.
 
-`codex-loopback-before.json` retains the original capture. `codex-loopback.json` is a
-fresh capture of the current production handoff configuration. Both use Codex
+`codex-model-modes.json` records all eleven models from the pinned binary's debug
+models under an empty temporary profile and the loopback network restriction. The
+qualification writer and both shipped records retain each tool_mode, including null
+where the binary omits it. Binding requires that table. A restricted code_mode_only
+role is refused before engine launch as configuration_stop:codex_code_mode_model.
+The full native universe includes the observed resource, input and clock capabilities;
+currently supported role sets cannot express that full universe. No accepted role's
+model was changed. Code Mode case (c) evidence below remains historical and intact.
+
+`codex-loopback-before.json` retains the original capture. `codex-loopback.json` is the retained
+Code Mode capture from the preceding continuation. Both use Codex
 0.154.0, empty temporary HOME and CODEX_HOME, a 127.0.0.1 HTTP stand-in, generated
 credential-free MCP fixtures and a Landlock TCP restriction to the stand-in port.
 No model, account profile, login or real credential was used. The request carries
@@ -59,8 +69,8 @@ that every grant is exposed. The reader preserves `configuration_stop:codex_unex
 The updated fake-driven `review/codex-tools` row consumes the actual fake worker's
 request, generated from the production launch configuration and authenticated MCP
 listing. It checks the qualification writer's mapping, exact comparison in both
-directions, and the named unresolved observations from the real capture. Its green
-result does not mean real Codex equality. The other review repairs are unchanged.
+directions, and the named unresolved observations from the real capture. Its current red
+result exposes the unresolved direct-model equality failure. The other review repairs are unchanged.
 
 The debug leg has no qualified positive control yet. Empty old debug lines prove
 nothing. The retained old context-size comparison is the only present AC4 marker
@@ -108,7 +118,9 @@ slice is stopped at teardown. No real credential or model is used by the suite.
 | AC3 | dispatch/binding, dispatch/refusal | A prepared A still launches A after B is saved, the next dispatch binds B, unsupported settings and missing tools give named refusals, and an extra default tool stops before the prompt. |
 | AC4 | launch/push, launch/unlisted, launch/instructions | PushNotification is in init and absent from the deny list; unassigned native tools, servers, skills and instruction files do not load; an extra skill stops before the prompt; both instruction sources reach each engine and first-turn context is kept in the committed execution record. |
 | AC2, AC4 | live/claude, live/codex | Fail closed until digest-bound live captures qualify both role modes, exact engine surfaces, credential sources, and marker/context comparisons. |
-| AC2 | review/codex-tools | The fake worker derives its request from production configuration and its authenticated MCP listing. The qualification mapping agrees, extra or missing tools fail, and the real Code Mode capture retains every unresolved name and missing definition. |
+| AC2 | review/codex-tools | The fake follows the direct binary's extras and deferred Jira tool. Exact equality fails by assertion, with both directions compared. Case (c) retains every Code Mode extra and missing grant. |
+| AC2, AC3 | review/codex-mode | The production qualification writer retains the binary model modes, missing modes cannot bind, and four restricted Code Mode models stop by name through the Runner and receiver before a worker starts. |
+| AC2 | review/codex-capture | The production live capture driver runs a fake worker and then the real loopback transport. It records the observed tool list beside the unchanged model; its argument validator refuses Code Mode models and accepts the supplied direct model. |
 | AC2, AC4 | review/skill-commit | A real fake-worker commit of everything contains its delivery but no staged skill symlink. |
 | AC4 | review/marker-debug | The live capture reader consumes a production execution record; planted instruction debug lines fail, and absent positive debug evidence requires an explicit context-size-only fallback. |
 | AC3, AC4 | review/probe-terminal | A fake engine closes input after the zero-turn probe. The receiver names the failed prompt write, never accepts that probe as terminal, and the live driver records zero turns and zero pre-prompt assistant events. |
@@ -122,7 +134,9 @@ The lead runs `python3 proof/VELDO-0127/live.py` with these required options:
 `claude`, `codex`, `claude-profile`, `codex-profile`, `claude-model`, `codex-model`
 (each prefixed with two ASCII hyphens). Supply the pinned Claude 2.1.281 version file,
 the Codex 0.154.0 vendor binary, clean logged-in file-backed subscription profiles,
-and exact model identifiers. The driver links only the login files into temporary
+and exact model identifiers. The codex-model argument must name a qualified direct-tool
+model, such as the lead's gpt-5.5. It is checked before opening supplied profiles; the
+driver never chooses a replacement. The driver links only the login files into temporary
 profiles; it never edits the supplied profiles. It creates accepted revisions in a
 temporary factory and runs one worker at a time through the same production interfaces.
 
@@ -132,7 +146,8 @@ clone and temporary account profile. Codex gets a project AGENTS.md marker; its 
 instructions remain subject to the previously qualified named refusal. The driver writes
 `claude-live.json` and `codex-live.json`, including init or generated config and MCP listing,
 the engine's built-in command names from its initialize answer, redacted debug evidence,
-execution-record commitments and first-turn usage. `evidence.py` independently compares those
+execution-record commitments and first-turn usage. Each Codex run also retains
+wire_tools: the loopback tool list, expected list, missing names and unexpected names. `evidence.py` independently compares those
 facts and current production digests. Missing, stale, incomplete or mismatched captures, and a
 planted marker that moves the first-turn context by a quarter of its 4000 repetitions or more,
 fail their rows. Two real runs of one role differ by a few dozen tokens (their generated run
@@ -175,7 +190,7 @@ context comparison (`rejudge`), without new runs; the production modules did not
 review behavior rows red by assertion, with no raised exception. Other already
 implemented rows are retained separately and are not falsely claimed red.
 
-Finding 127 now registers 31 unique mutations. `mutations.json` and the individual
+The preceding continuation registered 31 unique mutations. `mutations.json` and the individual
 diffs contain current exact replacements and source hashes. No mutant was executed
 in this run. The earlier owner report of seven rejections followed by the withheld
 probe timeout is historical. The new bounded init wait and suite launch skip make
@@ -208,10 +223,25 @@ mutation is invented because no working switch was found or shipped. The reviewe
 must run mutation rejection; this run executes no mutants. Live rows still require
 fresh lead qualification, including the independent Claude recapture.
 
-Final scoped checks for this continuation: both normal and clean gate-environment
+Scoped checks for the preceding continuation from 04795046: both normal and clean gate-environment
 runs report 16 owned behavior and format rows passing and two live rows failing.
 `red-at-04795046.json` records the changed row red by assertion. The footprint check
 reports nothing outside, the anchor check reports 0 bad anchors, and validate all
 exits 0. The gate and mutation worker were not run. Engine modules and qualification
 copies are byte-identical. `checks.json` records the scoped results without a gate
 or completed qualification claim.
+
+## Model-mode continuation checks
+
+The red record `red-at-321f638d.json` shows all three changed behavior rows red by
+assertion: review/codex-tools, review/codex-mode and review/codex-capture. The current
+normal and clean gate-environment runs each pass 17 suite rows and fail three:
+review/codex-tools, live/claude and live/codex. The direct equality failure is an
+implementation blocker, not a waived requirement. The live rows also await fresh lead
+captures. No real subscription profile, login or provider was used in this run.
+
+Finding 127 has 36 registered mutations, including five new model-mode and capture
+mutations. Their anchors and diffs were audited without executing any mutant. Zero
+mutation rejections are claimed. The honest-run prerequisite remains red. No working
+switch was found, so the required per-switch mutations remain unimplemented. No
+footprint addition was needed. checks.json records the scoped checks and limitations.

@@ -1,5 +1,5 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
 @@ -229,7 +229,7 @@
      if SETTINGS_FILE not in extra['files']:
          raise Refused('missing_evidence:engine_settings')

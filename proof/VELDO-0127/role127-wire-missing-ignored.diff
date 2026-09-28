@@ -1,6 +1,6 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
-@@ -327,7 +327,7 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -338,7 +338,7 @@
      if set(actual) - set(expected_names):
          return 'configuration_stop:codex_unexpected_tool'
      if sorted(actual) != sorted(expected_names):

@@ -1,7 +1,7 @@
 {
  "schema": "veldo.implementation-checks/v1",
  "spec_id": "VELDO-0127",
- "baseline_commit": "04795046",
+ "baseline_commit": "321f638d",
  "engine_sync": {
   "modules": [
    "control_agent_config.py",
@@ -18,37 +18,39 @@
    "selector": "86_veldo_0127_agent_configuration",
    "failed_rows": [
     "VELDO-0127 live/claude",
-    "VELDO-0127 live/codex"
+    "VELDO-0127 live/codex",
+    "VELDO-0127 review/codex-tools"
    ],
-   "owned_behavior_and_format_rows_passed": 16,
-   "log_sha256": "5e73c90ef378a59cad6699205ddc8a010226e633a7279640c5d1f66e62d45e0f",
+   "passing_suite_rows": 17,
+   "log_sha256": "d21ee586f3a8e326fc6520b46c6939e237186c9b8f9313706cd193913fd891d6",
    "partial_selftest_exit": 1
   },
   "gate_environment": {
    "selector": "86_veldo_0127_agent_configuration",
    "failed_rows": [
     "VELDO-0127 live/claude",
-    "VELDO-0127 live/codex"
+    "VELDO-0127 live/codex",
+    "VELDO-0127 review/codex-tools"
    ],
-   "owned_behavior_and_format_rows_passed": 16,
-   "log_sha256": "82c094a85dcbefc6a44c05c8ce298b266df490e9f7b36f7fcbdee9579ecbcfc7",
+   "passing_suite_rows": 17,
+   "log_sha256": "2b9064e19d6d6f3385db30b09cf8478989ea87be5fad6a6444d910bbce01a1ce",
    "partial_selftest_exit": 1
   }
  },
  "red": {
-  "record": "red-at-04795046.json",
-  "behavior_rows": 1,
-  "scope": "The changed review/codex-tools row; prior implemented rows are retained separately.",
+  "record": "red-at-321f638d.json",
+  "behavior_rows": 3,
+  "scope": "Changed direct comparison, model mode and lead capture rows; earlier behavior rows retained separately.",
   "every_behavior_row_red": true,
   "by_assertion": true
  },
  "mutation_checks": {
   "executed": false,
-  "registered": 31,
+  "registered": 36,
   "rejected_this_run": 0,
   "static_audit": "0 bad anchors; unique names; exact diffs generated, no mutant executed",
   "switch_mutations_added": 0,
-  "reason": "No tested switch removes the unresolved tools; no ineffective switch is represented as a fix."
+  "reason": "Direct-model probes did not identify working switches. Five model-mode and lead capture mutations added; reviewer execution remains required."
  },
  "gate": {
   "executed": false,
@@ -56,33 +58,44 @@
  },
  "neighboring_suites": {
   "executed": false,
-  "reason": "owner restricts suite execution to this specification"
+  "reason": "Only the owned suite was run under the explicit own-suite-only rule; no neighboring suite file was edited."
  },
- "footprint": "outside the footprint: none; AC2 adds both shipped Codex qualification records",
+ "footprint": "outside the footprint: none; no additions needed",
  "anchors": "0 bad anchors",
  "validate_all": {
   "exit": 0
  },
- "requires": "regenerated with scripts/run_scope.py emit-requires; content unchanged",
+ "requires": "regenerated; suite remains registered and requires content is unchanged",
  "codex_loopback": {
-  "record": "codex-loopback.json",
+  "record": "codex-direct-loopback.json",
   "returncode": 0,
   "provider": "127.0.0.1 stand-in",
   "model_executed": false,
   "login_used": false,
+  "model": "gpt-5.5",
   "equality": false,
-  "owner_decisions": "codex-owner-decisions.json",
-  "unexpected_tools": 9,
+  "unexpected_tools": [
+   "apply_patch",
+   "list_mcp_resource_templates",
+   "list_mcp_resources",
+   "read_mcp_resource",
+   "tool_search"
+  ],
   "missing_direct_definitions": [
-   "exec_command",
-   "write_stdin",
-   "update_plan",
    "mcp__jira.jira_search"
-  ]
+  ],
+  "case_c_record": "codex-loopback.json"
  },
  "claude_live": {
   "executed": false,
   "reason": "real login and model forbidden; probe and positive-control recapture remains for lead"
  },
- "status": "Item 1 remains incomplete; case (c) decisions and missing direct definitions require owner resolution."
+ "status": "Incomplete: model refusal, case (c) retention and direct-model lead capture implemented; direct equality and per-switch mutations unresolved. Fresh lead live qualification still required.",
+ "codex_model_modes": {
+  "record": "codex-model-modes.json",
+  "models": 11,
+  "source": "binary debug models; empty temporary profile with loopback containment",
+  "writer_matches": true,
+  "code_mode_named_refusal": "configuration_stop:codex_code_mode_model"
+ }
 }

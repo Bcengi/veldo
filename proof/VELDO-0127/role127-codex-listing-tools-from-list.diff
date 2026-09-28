@@ -1,6 +1,6 @@
---- .veldo/control_agent_config_handoff.py
-+++ .veldo/control_agent_config_handoff.py
-@@ -362,7 +362,7 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -373,7 +373,7 @@
      if any(i.get('enabled') is not True for i in listing):
          raise Refused('configuration_stop:mcp_servers')
      for item in listing:
