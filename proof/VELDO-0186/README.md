@@ -53,13 +53,31 @@ absent. The digest mutants remove the preflight check: any later pin refusal is 
 setup has already written the state root. Mutation execution is reserved for the reviewer by the
 owner's instructions. `mutations.json` records registration and pending execution, not rejection.
 
-The footprint adds four existing service-suite files because AC1 requires complete runtime source
-fixtures: suites 66 (0047), 71 (0130 and 0138), and 83 (0154). Suite 73 (0139), already in the
-footprint, now supplies the required engine fixtures. The scaffold ships the new setup helper.
-No other behavior is added to those suites, and none was run in this implementation session.
+The footprint includes the existing service installer fixtures in suites 66 (0047), 71 (0130 and
+0138), and 83 (0154). They copy the runtime directory into their source trees. Both factory setup
+fixtures, suites 73 (0139) and 74 (0140), use this proof's `fixtures.install` helper to supply runtime
+records and qualified inert engine bytes. Suite 74 was added to the footprint in the review repair:
+its Python-only source tree caused all eight standing-delegation rows to fail before their scenarios
+could run. It now also checks the shared fake-format constructor at teardown and restores PATH.
+The scaffold ships the setup helper. No production refusal was weakened.
 
-`verification.json` records the normal and clean-environment runs of the single allowed selector,
-plus footprint, anchor, validation and engine-copy checks. The selector reports 32 passed and zero
-failed, including the shared preamble and format hook. Its exit status is 2 by design because a
-partial selftest cannot certify the gate. The full selftest, gate and mutation runners were not run.
+The review repair audited all setup and service-install calls in the suites and shared helpers.
+The setup callers are 73, 74 and 86; the other real service installers are 66, 71 (0130 and 0138),
+and 83. No additional shared helper lays down a factory. The other suites that load the service
+construct service objects without calling its installer.
+
+The mutation checker observes each `expect` call, removes any detail after a colon, and matches the
+last whitespace-separated word against each mutation target. Finding 186 previously registered
+`VELDO-0186 runtime/assets` where that reader requires `runtime/assets`; the honest run therefore
+found no matching observation even though the suite passed. All eight registrations now use the
+final labels shown above. The suite reports each full behavior row exactly once and returns
+normally; the checker's worker can then exit zero. Static inspection checked target coverage of all
+five rows, unique mutation names, and unique production edit anchors. This is not a mutation run.
+
+`verification.json` records the normal and clean-environment runs of suite 86, the affected fixture
+suites, and footprint, anchor, validation and engine-copy checks. The selftest selector's process
+exit is separately governed by `RunScope`: a passing selected run exits 2 because it is partial.
+This status does not apply to the mutation worker, which executes the suite directly and returns
+its captured assertions. The shared preamble and fixture-format hooks are included in selector
+counts. The full selftest, gate and mutation runners remain reserved for the reviewer.
 This proof is ready for independent review; it is not a gate stamp or a landing authorization.

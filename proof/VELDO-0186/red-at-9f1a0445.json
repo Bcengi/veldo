@@ -53,7 +53,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 9.213,
+ "seconds": 9.624,
  "spec_id": "VELDO-0186",
  "suite": "scripts/suites/86_veldo_0186_setup_assets.py",
  "tree": "unchanged git archive of the pre-change commit"

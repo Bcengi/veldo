@@ -7,7 +7,9 @@
    "control_service.py": "3e091ad0caa9741dc2994d5cba110ce84401898b40548c62bb0c35101055af87",
    "init_scaffold.py": "34db300408b751b006155f94b58685ae5104c6a1ac561f84f4470054ccbfbd48"
   },
-  "footprint": "changed 23, outside the footprint: none",
+  "footprint": "changed 25, outside the footprint: none",
+  "mutation_contract_static": "8 unique mutation names; exact final-label targets cover all 5 behavior rows; all production edit anchors unique",
+  "requires": "regenerated; unchanged closure for 132 suites",
   "validate_all": {
    "exit_code": 0,
    "log_sha256": "9e6883992332a14ccb14ff6d4feda4c4a02827ce810cfcf2b3a092bb613ac117"
@@ -18,7 +20,7 @@
    "GIT_CONFIG_GLOBAL": "/dev/null",
    "GIT_CONFIG_NOSYSTEM": "1",
    "GIT_TERMINAL_PROMPT": "0",
-   "HOME": "/dev/shm/v186-clean-home-8fxbm0j_",
+   "HOME": "/dev/shm/v186-review-home-1mpl8pq_",
    "LANG": "C.UTF-8",
    "LC_ALL": "C.UTF-8",
    "PATH": "/usr/bin:/usr/bin:/bin",
@@ -32,25 +34,68 @@
   "failed": 0,
   "partial": true,
   "passed": 32,
-  "seconds": 11.54
+  "seconds": 11.68
  },
  "command": "python3 scripts/selftest.py --suite 86_veldo_0186_setup_assets",
- "implementation_commit": "3aa62dd72b764d0dc26188d38b89e9269adc68cc",
- "limitation": "Partial runs do not certify the gate or authorize landing.",
+ "fixture_suites": {
+  "66_veldo_0047_authority": {
+   "exit_code": 2,
+   "failed": 0,
+   "partial": true,
+   "passed": 56,
+   "seconds": 12.61
+  },
+  "71_veldo_0130_api": {
+   "exit_code": 2,
+   "failed": 0,
+   "partial": true,
+   "passed": 68,
+   "seconds": 20.55
+  },
+  "71_veldo_0138_channel_service": {
+   "exit_code": 2,
+   "failed": 0,
+   "partial": true,
+   "passed": 39,
+   "seconds": 30.05
+  },
+  "73_veldo_0139_factory_setup": {
+   "exit_code": 2,
+   "failed": 0,
+   "partial": true,
+   "passed": 43,
+   "seconds": 22.69
+  },
+  "74_veldo_0140_standing_delegation": {
+   "exit_code": 2,
+   "failed": 0,
+   "partial": true,
+   "passed": 35,
+   "seconds": 11.45
+  },
+  "83_veldo_0154_factory_loop": {
+   "exit_code": 2,
+   "failed": 0,
+   "partial": true,
+   "passed": 39,
+   "seconds": 16.48
+  }
+ },
+ "implementation_commit": "bcee062fb55dcc7fae4f636a9588cf99fe503a66",
+ "limitation": "Passing selftest selectors exit 2 under RunScope and do not certify the gate. The mutation worker directly executes the suite, which returns normally and reports each row once; registered targets now match its final-label reader. Mutation execution is reserved for the reviewer.",
  "mutations": "registered; execution reserved for reviewer",
  "normal": {
   "exit_code": 2,
   "failed": 0,
   "partial": true,
   "passed": 32,
-  "seconds": 10.77
+  "seconds": 11.36
  },
  "not_run": [
   "whole selftest",
   "scripts/verify.sh",
   "scripts/check_teeth_mutations.py",
-  "scripts/check_gate_mutations.py",
-  "other suite selectors"
+  "scripts/check_gate_mutations.py"
  ],
  "red_record": "red-at-9f1a0445.json",
  "spec_id": "VELDO-0186",

@@ -8948,6 +8948,7 @@ def cases():
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
+    # targets() matches the final word of each reported row, without the spec prefix.
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', '        for name, data in assets.items():', '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
     add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])
     add(186, 'setup186-missing-runtime-ignored', '86_veldo_0186_setup_assets.py', 'control_service.py', "            raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None", '            continue', ['runtime/missing'], [])
