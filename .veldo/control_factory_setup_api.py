@@ -226,13 +226,16 @@ def replace_file(path, data, mode):
     os.replace(temporary, str(path))
 
 
-def service_config(store, ids, journal, api_edge, workspace, root, name):
-    """The veldo.api_service/v1 the authority service constructs the API's judge from."""
+def service_config(store, ids, journal, api_edge, workspace, name):
+    """The veldo.api_service/v1 the authority service constructs the API's judge from: this authority's
+    store, identities and journal, the ingress's api edge, the served repository as the one intake project
+    and workflow repository, the served clone as the event publication's destination, and the tailnet name
+    as relying party and origin."""
     return {'schema': 'veldo.api_service/v1', 'store_path': store, 'authority_ids': dict(ids),
             'authority_generation': 1, 'journal': dict(journal), 'api_edge': api_edge,
             'domain': ids['domain_uuid'], 'projects': [ids['repository_uuid']], 'rp_id': name,
-            'origin': 'https://' + name, 'workflows_repository': workspace,
-            'publication_root': os.path.join(root, 'authority', 'publication')}
+            'origin': 'https://' + name, 'workflows_repository': ids['repository_uuid'],
+            'publication_root': workspace}
 
 
 def process_config(ids, workspace, host_trust, signer_config, key_id, connection_key, api_edge, state_dir, name, port):
@@ -332,6 +335,8 @@ def pending(state_dir, now):
             record = json.loads(path.read_text())
             binding = record['binding']
             expires = float(binding['expires_at'])
+            if not isinstance(binding['credential_id'], str) or not isinstance(binding['public_key'], str):
+                continue
         except (OSError, ValueError, KeyError, TypeError):
             continue
         found.append((path, record, expires > now))
@@ -353,11 +358,29 @@ def passkey(state_root, owner, owner_key, fingerprint=None, clock=time.time):
     if trust is None or not isinstance(binding, dict):
         raise Refused('missing_authority:state_root:not_set_up', root)
     now = clock()
-    found = pending(os.path.join(root, STATE_DIR), now)
-    listed = [dict(CR.describe(record), principal=owner, pending_id=path.stem, expired=not live)
-              for path, record, live in found]
+    verify = trust.verifier(binding.get('enrolled_by'), workspace)
+    sign = ACT.ssh_signer(os.path.realpath(str(owner_key)))
+
+    def send(packet):
+        try:
+            answer = CC.send(workspace, packet, CE, verify, sign, trust.host_identity, timeout=60)
+        except CC.RoutingRefused as exc:
+            raise Refused('unavailable_service:authority:' + exc.reason, 'the authority service did not answer') from None
+        except ACT.Refused:
+            raise Refused('invalid_input:owner_key:does_not_sign', 'the owner key did not sign') from None
+        if not answer.get('accepted'):
+            raise Refused(str(answer.get('reason') or 'unknown_outcome'), 'the authority refused the request')
+        return answer.get('result') or {}
+    # A registration whose credential the authority already holds is enrolled, not pending.
+    found = pending(os.path.join(root, STATE_DIR), now)[:64]
+    inspected = send({'operation': 'inspect', 'entity_ids': [CR.entity_id(r['binding'].get('credential_id'))
+                                                             for _p, r, _l in found]})
+    held = set(inspected.get('entities') or {})
+    found = [(path, record, live) for path, record, live in found
+             if CR.entity_id(record['binding'].get('credential_id')) not in held]
     if fingerprint is None:
-        return {'outcome': 'listed', 'pending': [p for p in listed if not p['expired']]}
+        return {'outcome': 'listed', 'pending': [dict(CR.describe(record), principal=owner, pending_id=path.stem)
+                                                 for path, record, live in found if live]}
     named = [(path, record, live) for path, record, live in found
              if CR.describe(record).get('fingerprint') == fingerprint]
     if not named:
@@ -367,18 +390,7 @@ def passkey(state_root, owner, owner_key, fingerprint=None, clock=time.time):
     path, record, live = named[0]
     if not live:
         raise Refused('invalid_input:passkey:expired', 'that pending registration expired')
-    verify = trust.verifier(binding.get('enrolled_by'), workspace)
-    sign = ACT.ssh_signer(os.path.realpath(str(owner_key)))
-
-    def send(packet):
-        try:
-            answer = CC.send(workspace, packet, CE, verify, sign, trust.host_identity, timeout=60)
-        except CC.RoutingRefused as exc:
-            raise Refused('unavailable_service:authority:' + exc.reason, 'the authority service did not answer') from None
-        if not answer.get('accepted'):
-            raise Refused(str(answer.get('reason') or 'unknown_outcome'), 'the authority refused the request')
-        return answer.get('result') or {}
-    status = send({'operation': 'inspect', 'entity_ids': []}).get('channel') or {}
+    status = inspected.get('channel') or {}
     if not status.get('available'):
         raise Refused('unavailable_service:channel', 'the running service reports no authority versions')
     command = CR.enrollment_command(record, owner, 'passkey-%s-%s' % (owner, path.stem))

@@ -88,6 +88,11 @@ so a revocation committed here ends the API's sessions and closes their open str
 new instance sends that hint to every API a previous instance had subscribed (`announce_api`), so an
 API whose service restarted reconciles by itself. An API that cannot be constructed leaves the service
 serving everything else, its refusal reported by name.
+The owner's enroll_channel_edge of the API's own edge (channel "api"), which veldo factory setup sends
+while this service holds the store's lock (VELDO-0171), is admitted by control_channel_enrollment on this
+instance's connection; no other channel's enrollment is taken here. The API process's program
+(control_client_api.py) is an entry point of the fixed executable, so the API unit setup installs runs the
+installation's own copy.
 
 THE FACTORY LOOP (VELDO-0154). An installation given --work copies that veldo.factory_work/v1 configuration
 (each served repository's builder and reviewers: identity, engine adapter, configuration, payload and seconds;
@@ -162,6 +167,8 @@ C = L.C
 CH = _organ('control_service_channel')
 CHANNEL_INGRESS = 'channel-ingress.json'
 SA = _organ('control_service_api')
+# VELDO-0171: the owner's enrollment of the API's own edge, sent by veldo factory setup while this service runs.
+EDGE = _organ('control_channel_enrollment')
 API_SERVICE = 'api-service.json'
 # VELDO-0154: the factory loop's organs: the person inbox its questions go to (VELDO-0064), the entity contract
 # the inbox reads its lifecycle from, and the re-run-or-ask decision over a limited run's record (VELDO-0160).
@@ -175,9 +182,9 @@ WORK = 'work.json'
 MUTATIONS = tuple(sorted(S.COMMAND_REGISTRY))
 
 # The programs an installation runs by path: the service (the unit's ExecStart), the launch receiver
-# with its trusted wrapper, and the key custody wrapper. The rest of the fixed executable is derived
+# with its trusted wrapper, the key custody wrapper, and the API process (VELDO-0171's API unit). The rest of the fixed executable is derived
 # from what these and the architecture validator load (closure()), never listed by hand.
-ENTRY_POINTS = ('control_client_api.py', 'control_service.py', 'control_launch.py', 'control_keys_custody.py')
+ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py')
 # The one way an engine module loads a sibling: importlib.util.spec_from_file_location.
 LOADER = 'spec_from_file_location'
 
@@ -1081,8 +1088,8 @@ class Service:
                 result = self.mcp_command(packet, repository)
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
-            elif command.get('operation') == 'enroll_channel_edge' and 'envelope' in packet:
-                result = self.enroll_edge(packet, repository)
+            elif command.get('operation') == EDGE.ENROLL and 'envelope' in packet:
+                result = self.api_edge(packet, observation)
             elif command.get('operation') == CH.AUTHORIZE:
                 result = self.channel_command(packet, repository, observation)
             elif command.get('operation') in CH.DELEGATION_OPERATIONS:
@@ -1115,19 +1122,6 @@ class Service:
         self.hint_after(before)
         self._count(observation)
         return result
-
-    def enroll_edge(self, packet, repository):
-        """An owner's possession-cosigned edge enrollment, under this service's lock."""
-        if self.channel is None:
-            raise Refused('unavailable_service:channel', 'edge enrollment needs its ingress')
-        edge = _organ('control_channel_enrollment')
-        ing = self.channel.ingress
-        ids = dict(domain_uuid=self.domain, store_uuid=self.store, repository_uuid=repository)
-        projection = self.channel.config['signer']['config']
-        projection = json.loads(Path(projection).read_text())['allowed_signers']
-        writer = edge.Enrollment(ing.activations.S, ing.conn, ids, self.principal, self.sign, projection=projection)
-        observed = writer.admit(packet['envelope'], packet['command'], packet.get('signature'), packet.get('possession'))
-        return dict(ok=observed.get('outcome') == 'accepted', reason=observed.get('refusal'), enrollment=observed)
 
     def api_call(self, packet):
         """One API call (VELDO-0130), run by this instance's API judge; refused by name without one."""
@@ -1167,6 +1161,23 @@ class Service:
         except (SA.AUTH.MC.Refused, SA.AUTH.CV.Refused) as error:
             return {'ok': False, 'reason': error.code}
         return {'ok': True, 'reason': command['operation'], 'result': result}
+
+    def api_edge(self, packet, observation):
+        """The owner's enroll_channel_edge of the API's own edge (channel "api", VELDO-0171), signed at the host
+        with the edge key's possession co-signature and sent by veldo factory setup while this service holds
+        the store's lock; admitted by control_channel_enrollment on this instance's connection. No other
+        channel's enrollment is taken here."""
+        params = (packet.get('command') or {}).get('parameters')
+        if not isinstance(params, dict) or params.get('channel') not in EDGE.API_CHANNELS:
+            raise Refused('forbidden_command', 'the service enrolls only the API\'s own edge')
+        writer = EDGE.Enrollment(S, self.conn, {'domain_uuid': self.domain, 'store_uuid': self.store,
+                                                'repository_uuid': (packet.get('envelope') or {}).get('repository_uuid')},
+                                 self.principal, self.sign, authority_generation=self.generation)
+        observed = writer.admit(packet.get('envelope'), packet.get('command'), packet.get('signature'),
+                                packet.get('possession'))
+        observation['accepted_versions'] = dict(observed.get('accepted_versions') or {})
+        return {'ok': observed.get('outcome') == 'accepted', 'reason': observed.get('refusal'),
+                'seq': observed.get('seq')}
 
     def api_credential(self, packet, observation):
         """A steward's enroll_api_credential or revoke_api_credential, signed at the host."""

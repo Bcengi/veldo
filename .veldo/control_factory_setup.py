@@ -541,12 +541,16 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
 # ---------------------------------------------------------------------------------------------
 
 def _api(call):
-    """Run one call into control_factory_setup_api, its refusal kept by name as this module's."""
-    API = organ('control_factory_setup_api')
+    """Run one call into control_factory_setup_api, its refusal kept by name as this module's. (Each load of
+    that module by path is a module of its own, so its Refused is recognized by name, not by identity.)"""
     try:
         return call()
-    except API.Refused as exc:
-        raise Refused(exc.code, exc.detail) from None
+    except Refused:
+        raise
+    except Exception as exc:
+        if type(exc).__name__ == 'Refused' and isinstance(getattr(exc, 'code', None), str):
+            raise Refused(exc.code, getattr(exc, 'detail', '')) from None
+        raise
 
 
 def _differs(path):
@@ -592,7 +596,7 @@ def api_service_text(plan, ids, name):
     API = organ('control_factory_setup_api')
     return API.text(API.service_config(plan['store'], ids, {'principal': JOURNAL_PRINCIPAL,
                                                             'key': os.path.join(plan['keys'], JOURNAL_KEY)},
-                                       API_EDGE, plan['workspace'], plan['root'], name))
+                                       API_EDGE, plan['workspace'], name))
 
 
 def api_process_text(plan, ids, api, name, port):
