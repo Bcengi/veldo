@@ -219,3 +219,19 @@ switch at once.
 a specification ready.
 
 2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
+
+2026-09-28, build: built on build-veldo-0171 with VELDO-0171, one row short of green. The upgrade is
+.veldo/control_factory_setup_upgrade.py, run by control_factory_setup's re-run after every read-only check
+and before any other write; the current installer's rendering of an installation's arguments is
+control_service.layout, the pure half of install(), which install() now writes. The staged engine is one
+write point of the step log (<home>/state/engine-upgrade.jsonl), since it is not installed until the
+exchange. Over 8bc34e94 and 971186ac the receiver configuration lacks the host_trust key the current launch
+receiver needs, so the upgrade adds it (AC3's "the only change being a key the file lacked"), and VELDO-0171
+AC4's row over the 7fefdb9a host accepts that added key too. A service running outside its unit is not
+restarted, and VELDO-0171's re-run then starts no API unit beside it. Proof in suite
+86_veldo_0189_engine_upgrade and proof/VELDO-0189/. Blocked: switch/kill-points is red over the 8bc34e94 host
+because the store's ownership declarations bind control_channel_activation.py to the bytes the 8bc34e94
+service first attached (changed at 7fefdb9a), so the upgraded service's channel is refused
+ownership_conflict and the API edge enrollment through it is refused. Carrying ownership across an upgrade
+is a store write that AC3 and the rollback rule out, and a control_store change outside this footprint: the
+owner decides. Over a 971186ac kill host every row is green and every mutation is rejected.

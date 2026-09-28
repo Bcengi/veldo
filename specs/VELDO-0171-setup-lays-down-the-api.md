@@ -320,3 +320,11 @@ archive`, not only its setup module, so the host holds the older engine and the 
 1dbf0b88, with these changes. Back to draft: the owner must re-mark it ready.
 
 2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
+
+2026-09-28, build of the amendment: the rows over a VELDO-0139 host lay it down from the whole .veldo of
+7fefdb9a with git archive and its own setup module; the re-run upgrades that engine first (VELDO-0189,
+restarting the running service once) and then runs the API steps, and rerun/over-0139-host,
+api-edge/running-service and api/start-rules go green through the upgrade. Outside the installed engine
+the files that change are service.json (its engine keys, the work key it lacked and api_service), the
+receiver configuration (only the host_trust key it lacked, added by the upgrade) and the key projection.
+The re-run's first step is engine_upgrade.

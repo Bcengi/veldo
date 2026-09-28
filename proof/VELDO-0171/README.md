@@ -43,9 +43,9 @@ otherwise `invalid_input:state_root:holds_<argument>`, writing nothing. Every ea
 already done; every file a step writes is compared with what it would write (equal: left alone; absent:
 written; different: `invalid_input:state_root:differs:<path>`, never overwritten). The one change to an
 existing file is the installation's `service.json` gaining the `api_service` key it held as null. The
-installed engine files are never replaced; an installation whose fixed executable has no API process
-(installed before this change) is refused `unavailable_service:api:not_installed` before anything is
-written. With the authority running and its installation already naming the API configuration, setup
+installed engine files are replaced only by VELDO-0189's upgrade, which runs first on a re-run over an
+older engine (proof/VELDO-0189/); an installation whose engine, after that upgrade, would still have no API
+process is refused `unavailable_service:api:not_installed` before anything is written. With the authority running and its installation already naming the API configuration, setup
 starts the API unit itself; when this run added it, setup restarts nothing and names
 `systemctl --user restart <authority unit>`.
 
@@ -112,12 +112,18 @@ run once by the lead with the owner and recorded; fixtures never count as it.
   `rerun/over-0139-host`.
 - `install/assets`: the scaffold, the engine copies, bin/veldo's `factory passkey` routing.
 
-The host VELDO-0139 laid down before this change is laid down by the setup module as commit 7fefdb9a
-shipped it (VELDO-0139 with VELDO-0140's delegation), read from the repository's history through
-git_process, over the current installer. Over it, the earlier files that change are the installation's
-`service.json` (only its null `api_service` key) and the key projection, which AC1 requires republished
-once the api edge key is enrolled (the protected signer's api purpose refuses a stale projection). The store
-files and the service's own state directory, which the running service writes, are outside that comparison.
+The host VELDO-0139 laid down before this change is laid down by the whole `.veldo` of commit 7fefdb9a
+(VELDO-0139 with VELDO-0140's delegation), taken from the repository's history with `git archive` through
+git_process and set up by that tree's own setup module, so the host holds that commit's engine (amended
+AC4). The re-run upgrades it first (VELDO-0189, restarting the running service once) and then runs the API
+steps through the restarted service. Over it, the earlier files that change outside the installed engine
+are the installation's `service.json` (its engine keys, the `work` key it lacked, and its null
+`api_service` key naming the API configuration), the receiver configuration (only the `host_trust` key it
+lacked, which the upgrade adds) and the key projection, which AC1 requires republished once the api edge
+key is enrolled (the protected signer's api purpose refuses a stale projection); the installed engine is
+then the current one, name for name, byte for byte and mode for mode. `api/start-rules` counts the
+upgrade's one restart and no other lifecycle call. The store files and the service's own state directory,
+which the running service writes, are outside that comparison.
 
 Suites 73 (VELDO-0139) and 74 (VELDO-0140) now give setup the same stand-in (added to this footprint), so
 no suite reaches the host's real Tailscale; suite 73's re-run row expects `holds_workspace` (VELDO-0139

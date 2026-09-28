@@ -1,0 +1,10 @@
+{"finding": 189, "mutation": "upgrade189-only-recorded-names", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 upgrade/from-8bc34e94", "VELDO-0189 upgrade/from-971186ac", "VELDO-0189 switch/kill-points", "VELDO-0189 announce/before-first-write", "VELDO-0189 restart/rules", "VELDO-0189 second-run/changes-nothing"]}
+{"finding": 189, "mutation": "upgrade189-in-place-writes", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 switch/kill-points", "VELDO-0189 switch/failed-restart"]}
+{"finding": 189, "mutation": "upgrade189-configs-written-fresh", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 upgrade/from-8bc34e94", "VELDO-0189 upgrade/from-971186ac", "VELDO-0189 switch/kill-points", "VELDO-0189 kept/owner-data"]}
+{"finding": 189, "mutation": "upgrade189-restart-every-run", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 switch/kill-points", "VELDO-0189 second-run/changes-nothing"]}
+{"finding": 189, "mutation": "upgrade189-edited-file-overwritten", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 upgrade/refused-by-name"]}
+{"finding": 189, "mutation": "upgrade189-removed-file-kept", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 upgrade/removed-module"]}
+{"finding": 189, "mutation": "upgrade189-no-switch-back", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 switch/failed-restart"]}
+{"finding": 189, "mutation": "upgrade189-no-exchange-probe", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 upgrade/refused-by-name"]}
+{"finding": 189, "mutation": "upgrade189-module-not-scaffolded", "baseline": "green", "assertions": 38, "red_rows": ["VELDO-0189 install/assets"]}
+{"mutations_rejected": 9, "green_suites": {"86_veldo_0189_engine_upgrade.py": 38}}
