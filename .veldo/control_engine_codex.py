@@ -675,18 +675,60 @@ def generated(environment=None):
     return dict(BASELINE['configuration'])
 
 
-def baseline(bound, run, environment=None, record=None):
-    """{argv, environment, files}: what the run adds right after its qualified flags; the generated
-    configuration is passed as `-c` overrides and kept, as passed, in the run's `config` directory."""
+def baseline(bound, run, environment=None, record=None, servers=()):
+    """{argv, environment, files, secrets, routes}: what the run adds right after its qualified flags; the
+    generated configuration is passed as `-c` overrides and kept, as passed, in the run's `config` directory.
+    VELDO-0158: `servers` are the dispatch's selected catalog servers with their credentials resolved
+    (control_credential_delivery.resolve), generated as the `mcp_servers` table. Since every `-c` value is on
+    the command line, a credential is never one: its value reaches the engine environment (`secrets`, name to
+    value) under the name the server definition gives it, which the table names through `env_vars` (a stdio
+    server's environment) or `bearer_token_env_var` (an http server's bearer Authorization header; any other
+    header through `env_http_headers`). Only literals are written into the table itself."""
     base = bound.get('baseline') if record is None else qualified_baseline(bound, record)
     if base != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
     configuration = generated(environment)
+    secrets, routes = {}, []
+    if servers:
+        configuration['mcp_servers'] = {server['id']: _mcp_table(server, secrets, routes) for server in servers}
     argv = list(base['options'])
     for key in sorted(configuration):
         argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]
     text = ''.join('%s = %s\n' % (key, _toml(configuration[key])) for key in sorted(configuration))
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': {GENERATED_FILE: text.encode()}}
+    return {'argv': argv, 'environment': dict(base['environment']), 'files': {GENERATED_FILE: text.encode()},
+            'secrets': secrets, 'routes': routes}
+
+
+def _mcp_table(server, secrets, routes):
+    """One selected server's `mcp_servers` table, and each of its credentials put in `secrets` under its name.
+    A name already holding another value is refused by name: two servers never share one variable."""
+    def deliver(item, field, name, variable, value):
+        if secrets.get(variable, value) != value:
+            raise Refused('credential_unavailable:' + item['credential'])
+        secrets[variable] = value
+        routes.append({'credential': item['credential'], 'server': server['id'], 'field': field, 'name': name,
+                       'route': 'engine_environment', 'variable': variable})
+        return variable
+    if server['transport'] == 'stdio':
+        table = {'command': server['command'], 'args': list(server['arguments'])}
+        literals = {n: i['literal'] for n, i in sorted(server['environment'].items()) if 'literal' in i}
+        forwarded = [deliver(i, 'environment', n, n, i['handle'].reveal())
+                     for n, i in sorted(server['environment'].items()) if 'handle' in i]
+        if literals:
+            table['env'] = literals
+        if forwarded:
+            table['env_vars'] = forwarded
+        return table
+    table = {'url': server['url']}
+    for name, item in sorted(server['headers'].items()):
+        variable = 'VELDO_MCP_' + re.sub(r'[^A-Z0-9]', '_', (server['id'] + '_' + name).upper())
+        value = item['handle'].reveal()
+        bearer = re.match(r'(?i)bearer (\S.*)\Z', value) if name.lower() == 'authorization' else None
+        if bearer:
+            table['bearer_token_env_var'] = deliver(item, 'headers', name, variable, bearer.group(1))
+        else:
+            table.setdefault('env_http_headers', {})[name] = deliver(item, 'headers', name, variable, value)
+    return table
 
 
 def _codex_home(environment, cwd=None):

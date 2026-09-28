@@ -1,0 +1,5 @@
+--- a/.veldo/control_credential_delivery.py
++++ b/.veldo/control_credential_delivery.py
+@@ -136 +136 @@
+-                    out.append(schemed.group(1))
++                    pass  # defect: only the value with its scheme is in the set

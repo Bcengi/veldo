@@ -8302,8 +8302,8 @@ def cases():
               "         }  # defect: the record call is not one the service carries",
               ['api/service-call'])
     record141('redaction-token-unresolved', 'control_launch.py',
-              "RESOLVERS = [subscription_token]\n",
-              "RESOLVERS = []  # defect: the subscription token never enters the run's set\n",
+              "RESOLVERS = [subscription_token, keystore_credentials]\n",
+              "RESOLVERS = [keystore_credentials]  # defect: the subscription token never enters the run's set\n",
               ['redaction/known-pattern'])
     record141('redaction-kinds-unnamed', 'control_execution_record.py',
               "'redacted': kinds, 'payload': text})",
@@ -8842,6 +8842,75 @@ def cases():
     handout('andon-subject-race-renamed', 'control_andon.py',
             "            return 'stale_version' if moved else 'stale_subject'\n",
             "            return 'stale_version'\n", ['andon/subject-race'])
+
+    # VELDO-0158: each Linux run's credentials, delivered from the keystore and added to the run's set. Each
+    # criterion's declared falsifier first, then the threat model's other routes.
+    def delivery(name, module, old, new, rows, also=()):
+        add(158, 'delivery158-' + name, '85_veldo_0158_credential_delivery.py', module, old, new, rows, also)
+    # AC1: a Codex server's secret on the engine command line (the -c table's env instead of env_vars).
+    delivery('codex-value-on-argv', 'control_engine_codex.py',
+             "        if forwarded:\n            table['env_vars'] = forwarded\n",
+             "        if forwarded:\n            table['env'] = dict(literals, **{n: secrets[n] for n in forwarded})\n",
+             ['delivery/command-lines'])
+    # AC2: the run launched without its server when its credential does not resolve.
+    delivery('run-without-server', 'control_launch.py',
+             "        self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)\n",
+             "        try:\n            self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)\n"
+             "        except DL.Undeliverable:\n            self.credentials = []  # defect: launched without the server\n",
+             ['refusal/keystore-locked', 'refusal/keystore-unreachable', 'refusal/reference-not-found'])
+    # AC3: the keystore value resolved without being added to the run's set.
+    delivery('value-not-in-set', 'control_launch.py',
+             'RESOLVERS = [subscription_token, keystore_credentials]\n',
+             'RESOLVERS = [subscription_token]\n',
+             ['redaction/claude-keystore-value', 'redaction/codex-keystore-value'])
+    # AC1: Claude Code's values put in the engine environment besides its private file.
+    delivery('claude-value-in-environment', 'control_engine_claude.py',
+             "    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'secrets': {}, 'routes': routes}\n",
+             "    return {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()\n"
+             "            for n, i in s['environment'].items() if 'handle' in i}), 'files': files, 'secrets': {}, 'routes': routes}\n",
+             ['delivery/claude-private-file'])
+    # AC1: a server given another server's credential (every variable delivered so far forwarded to each).
+    delivery('every-server-variable', 'control_engine_codex.py',
+             "        if forwarded:\n            table['env_vars'] = forwarded\n",
+             "        if forwarded:\n            table['env_vars'] = sorted(secrets)\n",
+             ['delivery/own-server-only'])
+    # AC1: the run's private directory left behind once it is reaped.
+    delivery('run-directory-kept', 'control_launch.py',
+             '            shutil.rmtree(run, ignore_errors=True)\n',
+             '            pass  # defect: the run directory and its generated configuration stay\n',
+             ['delivery/private-dir-removed'])
+    # The review fixes. A dead receiver's run directory left behind by its orphan release.
+    delivery('orphan-run-kept', 'control_launch.py',
+             "        # VELDO-0158: a dead receiver removed no run directory; each goes once the kernel shows its run gone.\n"
+             "        self.clear_runs()\n",
+             "        pass  # defect: the orphan release leaves the run directory\n",
+             ['orphan/run-directory-removed'])
+    # A directory left from before a restart never swept: the service starts without the sweep.
+    delivery('start-unswept', 'control_service.py',
+             "        loop.start()\n",
+             "        pass  # defect: the service starts without sweeping the run directories\n",
+             ['orphan/start-sweep'])
+    # A live run's directory removed by the start sweep, without the kernel showing the run gone.
+    delivery('live-run-removed', 'control_launch.py',
+             "        return self.clear_runs()\n",
+             "        for dispatch_id in sorted(self.leftovers):\n"
+             "            shutil.rmtree(run_directory(self.runs, dispatch_id), ignore_errors=True)  # defect: never checked\n"
+             "        return sorted(self.leftovers)\n",
+             ['orphan/live-run-kept'])
+    # AC3: a Claude run's bearer token without its scheme never enters the run's set.
+    delivery('bearer-scheme-kept', 'control_credential_delivery.py',
+             "                if schemed:\n                    out.append(schemed.group(1))\n",
+             "                if schemed:\n                    pass  # defect: only the value with its scheme is in the set\n",
+             ['redaction/claude-bare-bearer'])
+    # A Codex credential replacing an inherited variable of the engine (PATH), as before the fix.
+    delivery('env-collision-inherited', 'control_launch.py',
+             "        taken = sorted(n for n in secrets if n in ENGINE_RESERVED or n in own or n in environment\n",
+             "        taken = sorted(n for n in secrets if n in own or (n in environment and n not in os.environ)\n",
+             ['refusal/env-collision'])
+    delivery('env-collision-factory-names', 'control_launch.py',
+             "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
+             "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
+             ['refusal/env-collision'])
     return result
 
 
