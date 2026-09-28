@@ -22,6 +22,8 @@ def check(Refused):
             raise Refused('missing_evidence:engine_source:' + engine)
         paths[engine] = Path(found).resolve()
     version = paths['claude_code'].name
+    if not claude.VERSION_TEXT.fullmatch(version):
+        raise Refused('missing_evidence:engine_version:claude_code')
     try:
         record = claude.qualification()
         if version not in record['versions']:
@@ -58,3 +60,10 @@ def install(state_root, directory, plan, Refused):
         raise Refused(code) from None
     return {bound['engine']: {key: bound[key] for key in ('version', 'path', 'sha256')}
             for bound in (pinned, vendor)}
+
+
+def count_pins(state_root, engines):
+    """Count distinct regular pinned copies made under this factory's engine directory."""
+    directory = Path(state_root).resolve() / 'engines'
+    paths = {Path(bound['path']) for bound in engines.values()}
+    return sum(path.is_file() and not path.is_symlink() and directory in path.parents for path in paths)

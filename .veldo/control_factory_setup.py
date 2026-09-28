@@ -480,7 +480,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'edge_key': os.path.join(keys, E.edge_key_id(CHANNEL)), 'ingress': ingress,
             'token_file': plan['token_file'], 'unit': installed['unit'], 'unit_path': installed['unit_path'],
             'engines': engines, 'runtime_assets': installed['runtime_assets'],
-            'runtime_assets_installed': installed['runtime_assets_installed'], 'pins_made': 1,
+            'runtime_assets_installed': installed['runtime_assets_installed'],
+            'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'steps': done, 'qualification_requester': REQUESTER,
             'next': 'start it explicitly: systemctl --user start %s, then veldo channel qualify' % installed['unit']}
 

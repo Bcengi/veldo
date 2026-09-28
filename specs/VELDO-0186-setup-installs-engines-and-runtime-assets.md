@@ -16,6 +16,8 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
   - "engine/.veldo/control_engine_claude*.py"
@@ -159,3 +161,11 @@ checker matches, preserving the suite's single report per exact behavior row. Ad
 runtime records and qualified inert engine bytes, using the existing 0186 fixture writer.
 Audited setup and service installer callers across suites and shared helpers; the other installer
 fixtures already carry these inputs. Production refusals and the selftest scope contract are unchanged.
+
+2026-09-28: review repair adds setup missing-source preflight proof, fixed runtime directory modes,
+exception-safe fixture PATH restoration, explicit unknown Claude version refusal, measured pin counts
+and receiver bind-refusal metrics. AC2 observability requires control_launch.py and its engine copy,
+now named in the footprint because the receiver owns the binding refusal and event stream.
+
+2026-09-28: VELDO-0189 inputs: older installs acquiring pins and host/engines.json; acquiring
+bin/runtime and state_root; moving the runs directory when state_root is added.

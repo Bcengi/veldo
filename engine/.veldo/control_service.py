@@ -883,6 +883,9 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             target = os.path.join(bin_dir, name)
             os.makedirs(os.path.dirname(target), mode=0o700, exist_ok=True)
             _write(target, data, 0o400)
+        for directory, _dirs, _files in os.walk(bin_dir, topdown=False):
+            if directory != bin_dir:
+                os.chmod(directory, 0o500)
         os.chmod(bin_dir, 0o500)
         if not os.path.lexists(journal):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,

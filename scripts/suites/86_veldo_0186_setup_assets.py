@@ -20,11 +20,13 @@ def _v186_suite():
 
     TREE = Path(globals().get('__suite_file__', str(ROOT / 'scripts/suites/x.py'))).resolve().parents[2]
     PRODUCTION = {
+        'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'control_factory_setup_engines.py': ROOT / ".veldo" / "control_factory_setup_engines.py",
     }
-    ROWS = ('runtime/assets', 'runtime/missing', 'bind/engines', 'engines/unlisted', 'engines/digest')
+    ROWS = ('runtime/assets', 'runtime/missing', 'bind/engines', 'engines/unlisted', 'engines/digest',
+            'runtime/setup-missing', 'runtime/modes', 'engines/version', 'metrics/pins', 'metrics/binds')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, ok):
@@ -61,7 +63,6 @@ def _v186_suite():
     original_organ = F.organ
     F.organ = lambda name: CS if name == 'control_service' else original_organ(name)
     original_path = os.environ.get('PATH', '')
-    os.environ['PATH'] = str(engines['path']) + os.pathsep + original_path
 
     class Manager:
         def __init__(self):
@@ -98,10 +99,15 @@ def _v186_suite():
         return home, args, kwargs
 
     try:
+        os.environ['PATH'] = str(engines['path']) + os.pathsep + original_path
         # A future loaded module uses both literal forms already used by production modules.
         with (mods / 'control_engine_claude.py').open('a') as handle:
             handle.write("\n_FUTURE_ASSET = 'runtime/future.json'\n")
         (mods / 'runtime/future.json').write_text('{"future": true}\n')
+        with (mods / 'control_engine_claude.py').open('a') as handle:
+            handle.write("_NESTED_ASSET = 'runtime/nested/future.json'\n")
+        (mods / 'runtime/nested').mkdir()
+        (mods / 'runtime/nested/future.json').write_text('{}\n')
         home, args, kwargs = fresh()
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
@@ -113,7 +119,7 @@ def _v186_suite():
         config_path = installed.parent / 'config/service.json'
         config = json.loads(config_path.read_text()) if config_path.is_file() else {}
         expected = ['runtime/claude-qualification.json', 'runtime/codex-qualification.json',
-                    'runtime/langgraph-records.json', 'runtime/future.json']
+                    'runtime/langgraph-records.json', 'runtime/future.json', 'runtime/nested/future.json']
         for name in expected:
             target = installed / name
             check('runtime/assets', name + ' installed with digest', target.is_file()
@@ -122,6 +128,11 @@ def _v186_suite():
         check('runtime/assets', 'reported assets and count', report.get('runtime_assets') == config.get('runtime_assets')
               and report.get('runtime_assets_installed') == len(expected))
         check('runtime/assets', 'only daemon reload requested', manager.calls == [['daemon-reload']])
+
+        for name in ('runtime', 'runtime/nested'):
+            target = installed / name
+            check('runtime/modes', name + ' fixed at mode 0500',
+                  target.is_dir() and stat.S_IMODE(target.stat().st_mode) == 0o500)
 
         receiver, error = attempt(lambda: load('v186_installed_receiver', installed / 'control_launch.py'))
         check('bind/engines', 'installed receiver loads', error is None)
@@ -145,6 +156,45 @@ def _v186_suite():
             check('bind/engines', engine + ' recorded binding equals installed binding',
                   summary is not None and recorded.get(engine) == summary == report.get('engines', {}).get(engine))
         check('bind/engines', 'pin count', report.get('pins_made') == 1)
+        helper = F.organ('control_factory_setup_engines')
+        for bindings, wanted in ((recorded, 1), ({'codex': recorded.get('codex', {})}, 0), ({}, 0)):
+            count, error = attempt(lambda: helper.count_pins(args[0], bindings))
+            check('metrics/pins', 'real pin inventory counts ' + str(wanted), error is None and count == wanted)
+        check('metrics/pins', 'setup reports its real pins', report.get('pins_made') == int(pinned.is_file()))
+
+        events = []
+        worker, error = attempt(lambda: receiver.Receiver(receiver_config, events.append))
+        check('metrics/binds', 'installed receiver constructed', error is None)
+        if worker is not None:
+            try:
+                result, error = attempt(lambda: worker._bind({}, 'no-engine'))
+                check('metrics/binds', 'non-engine bind has no refused count',
+                      error is None and result is None and not events)
+                for engine, source in (('claude_code', pinned), ('codex', engines['vendor'])):
+                    if not source.is_file():
+                        check('metrics/binds', engine + ' source exists', False)
+                        continue
+                    original = source.read_bytes()
+                    mode = stat.S_IMODE(source.stat().st_mode)
+                    source.chmod(0o700)
+                    source.write_bytes(original + b'\n# changed after setup\n')
+                    source.chmod(mode)
+                    worker.login = {'engine': receiver.ENGINES[engine]}
+                    adapter = {'executable': {'version': engines['version']} if engine == 'claude_code' else str(source)}
+                    result, error = attempt(lambda: worker._bind(adapter, 'changed-engine'))
+                    check('metrics/binds', engine + ' refused bind counted once: ' + str((result, error, events[-1:])), error is None
+                          and result in ('binding_mismatch:engine_digest', 'stale_subject:engine_digest')
+                          and len(events) > 0 and events[-1].get('engine') == engine
+                          and events[-1].get('refusal') == result
+                          and events[-1].get('metrics', {}).get('binds_refused') == 1)
+                    source.chmod(0o700)
+                    source.write_bytes(original)
+                    source.chmod(mode)
+                check('metrics/binds', 'two refused engine binds counted',
+                      sum(event.get('metrics', {}).get('binds_refused', 0) for event in events) == 2)
+            finally:
+                worker.close()
+
 
         # Real installer, same enrollment, another service destination. Missing source is refused before writes.
         (mods / 'runtime/future.json').unlink()
@@ -154,7 +204,25 @@ def _v186_suite():
             unit_dir=str(home / 'missing-units'), profile={}, writable=[], runner=manager))
         check('runtime/missing', 'absent source named without installation: ' + str(error),
               error == 'missing_evidence:runtime_asset:runtime/future.json' and not missing_root.exists())
+        _home, neg_args, neg_kwargs = fresh()
+        _result, error = attempt(lambda: F.setup(*neg_args, **neg_kwargs))
+        check('runtime/setup-missing', 'setup names missing source before any state writes: ' + str(error),
+              error == 'missing_evidence:runtime_asset:runtime/future.json'
+              and not list(Path(neg_args[0]).iterdir()))
         (mods / 'runtime/future.json').write_text('{"future": true}\n')
+
+        link = engines['path'] / 'claude'
+        unversioned = engines['source'].with_name('cli.js')
+        unversioned.write_bytes(engines['source'].read_bytes())
+        unversioned.chmod(0o755)
+        link.unlink()
+        link.symlink_to(unversioned)
+        _home, neg_args, neg_kwargs = fresh()
+        _result, error = attempt(lambda: F.setup(*neg_args, **neg_kwargs))
+        check('engines/version', 'non-versioned Claude target names the missing version: ' + str(error),
+              error == 'missing_evidence:engine_version:claude_code' and not list(Path(neg_args[0]).iterdir()))
+        link.unlink()
+        link.symlink_to(engines['source'])
 
         # Each refusal passes through the factory writer with fresh valid inputs.
         for engine in ('claude_code', 'codex'):
@@ -190,11 +258,11 @@ def _v186_suite():
         for row in ROWS:
             check(row, 'section raised ' + type(error).__name__ + ': ' + str(error)[:160], False)
     finally:
+        os.environ['PATH'] = original_path
         issues, trace = compare_formats.conform_fake(locals(), '0186_setup_assets')
         expect('VELDO-0172 fake/capture:0186_setup_assets', not issues)
         for line in compare_formats.describe('0186_setup_assets', issues, trace):
             print(line)
-        os.environ['PATH'] = original_path
         for directory, _dirs, _files in os.walk(base):
             os.chmod(directory, 0o700)
         shutil.rmtree(base)

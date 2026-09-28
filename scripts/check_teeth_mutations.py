@@ -8959,6 +8959,12 @@ def cases():
 
     add(186, 'setup186-receiver-without-state-root', '86_veldo_0186_setup_assets.py', 'control_service.py', "                                'adapters': adapters, 'state_root': state_root}), 0o600)", "                                'adapters': adapters, 'state_root': None}), 0o600)", ['bind/engines'], [])
 
+    add(186, 'setup186-skip-setup-asset-check', '86_veldo_0186_setup_assets.py', 'control_factory_setup.py', '        CS.runtime_assets(CS.closure())', '        pass', ['runtime/setup-missing'], [])
+    add(186, 'setup186-writable-runtime', '86_veldo_0186_setup_assets.py', 'control_service.py', '                os.chmod(directory, 0o500)', '                os.chmod(directory, 0o700)', ['runtime/modes'], [])
+    add(186, 'setup186-filename-as-version', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "    if not claude.VERSION_TEXT.fullmatch(version):\n        raise Refused('missing_evidence:engine_version:claude_code')\n", '', ['engines/version'], [])
+    add(186, 'setup186-constant-pin-count', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', '    return sum(path.is_file() and not path.is_symlink() and directory in path.parents for path in paths)', '    return 1', ['metrics/pins'], [])
+    add(186, 'setup186-unmeasured-bind-refusal', '86_veldo_0186_setup_assets.py', 'control_launch.py', "                       'metrics': {'binds_refused': 1}})", "                       'metrics': {'binds_refused': 0}})", ['metrics/binds'], [])
+
     return result
 
 
