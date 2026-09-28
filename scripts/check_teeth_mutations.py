@@ -9071,6 +9071,18 @@ def cases():
     add(127, 'role127-codex-listing-tools-from-list', suite127, 'control_agent_config_handoff.py',
         "        server = ask(['get', item['name']])",
         "        server = dict(item)", ['handoff/codex'])
+    # The real Codex loads the per-run model_catalog_json for `mcp list`: the listing ran before the run's files
+    # were written, so every real role-bound Codex launch stopped as configuration_stop:mcp_servers (live, 29401 on).
+    add(127, 'role127-codex-listing-before-files', suite127, 'control_launch.py',
+        "                self.metering.terminal.hold_prompt()\n        except (engine.Refused, HANDOFF.Refused) as error:",
+        "                self.metering.terminal.hold_prompt()\n"
+        "            if extra.get('expected') and engine.PROVIDER == 'codex':\n"
+        "                listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])\n"
+        "                self.emit({'event': 'capability_listing', 'listing': [\n"
+        "                    {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})\n"
+        "        except (engine.Refused, HANDOFF.Refused) as error:", ['handoff/codex'],
+        also=(("        try:\n            if extra.get('expected') and engine.PROVIDER == 'codex':\n",
+               "        try:\n            if False:  # defect: the listing ran before the files it loads were written\n"),))
     add(127, 'role127-context-line-every-run', '82_veldo_0141_execution_record.py', 'control_launch.py',
         "            if (metering is not None and metering.first_turn_context is not None\n"
         "                    and (self.binding or {}).get('capability')):\n",
