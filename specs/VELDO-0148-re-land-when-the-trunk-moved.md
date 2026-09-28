@@ -226,3 +226,17 @@ is regenerated. The proof README maps each criterion's rows, the saved red recor
 mutation rejections and replay instructions. No further footprint expansion or criterion change
 was needed. The full gate and mutation checker were not run, as directed; they remain for the
 independent reviewer. Gate byproducts are restored before the final commit and are not this work.
+
+2026-09-28, review repair: local main is already an ancestor of b33e82f8. AC3 replacement
+requests cover only prior grants at this revision whose tree binding mismatches. A never-granted
+approval stays refused by name with no request or grant. A mixed refusal can request replacement
+of its mismatched grant only; the dispatch stays failed and its missing approval still blocks
+publication after the answer. Added production-interface rows for both cases, including a policy
+requirement added between candidate policy and final authorization. The repeated-question mutant
+now varies the command identity as well as the alias, and the row counts persisted questions on
+both passes directly. No footprint expansion.
+
+2026-09-28, follow-up tickets outside this repair: start the first land dispatch after a conflict
+rebuild; offer the rebuild review at its new evidence commit; reject open with follows=None after
+an end; replace the module-declared EXTERNAL_LOADERS opt-out; move synchronous re-land gates out
+of loop passes; clean up refs/veldo/observed/*.

@@ -57,7 +57,7 @@ def _v148_suite():
     }
     ROWS = ('install/land-station', 'reland/stale-subject', 'reland/review-kept', 'reland/conflict-rebuild',
             'reland/never-forced', 'lease/trunk-moved', 'lease/contains-unknown', 'grant/fresh-request',
-            'format/fake-lines')
+            'grant/never-granted', 'grant/mixed-approvals', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -202,8 +202,8 @@ def _v148_suite():
         # one specification per unit, the disposable bare remote (its reflog records every trunk update), the
         # enrolled clone the builds are fetched into, the builder's clone, the executor's publication clone
         # and the colleague's clone.
-        R, C, M, K, G = ('VELDO-94%02d' % n for n in range(81, 86))
-        UNITS = (R, C, M, K, G)
+        R, C, M, K, G, N, X = ('VELDO-94%02d' % n for n in range(81, 88))
+        UNITS = (R, C, M, K, G, N, X)
         seed = base / 'seed'
         seed.mkdir()
         GP.run(['git', 'init', '-q', '-b', 'main', str(seed)], check=True, capture_output=True)
@@ -580,6 +580,38 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
         armed('contain', 'K', 'contain-k.txt')
         tips[K] = tip()
         first[K] = first_land(K)
+        # Exercise the final authorization as well as the earlier policy check. The owner adds
+        # security after CandidatePolicy accepts, before Landing publishes. No security grant ever
+        # exists. X already holds an owner grant for a different tree at this revision.
+        late_policy = []
+        if station is not None:
+            original_ops = station._ops
+
+            def with_new_requirement(evidence):
+                ops = original_ops(evidence)
+                policy = ops.policy
+
+                def decide(unit, candidate):
+                    result = policy(unit, candidate)
+                    sid = unit['spec']
+                    late_policy.append((sid, result.get('ok')))
+                    data = dict(row(sid)['data'])
+                    data['approvals_required'] = (['owner'] if sid == X else []) + ['security']
+                    put(sid, 'execution_unit', data, principal='owner')
+                    return result
+                ops.policy = decide
+                return ops
+
+            station._ops = with_new_requirement
+        put('approval:%s:owner' % X, 'approval', {
+            'unit': X, 'name': 'owner', 'revision': 1, 'state': 'granted',
+            'subject': {'tree': tree_one, 'source': builds[X]['evidence'], 'proof': builds[X]['proof'], 'dependencies': {}}},
+            principal='owner')
+        for sid in (N, X):
+            tips[sid] = tip()
+            first[sid] = first_land(sid)
+        if station is not None:
+            station._ops = original_ops
         after_first = {sid: {'effect': effect((first[sid] or {}).get('dispatch_id')), 'record': first[sid]}
                        for sid in UNITS}
         tip_after_first = tip()
@@ -768,9 +800,12 @@ sys.exit(chosen['code'])
         def all_offered(name, station_name=None):
             return [o for p in passes() for o in offered(p, name, station_name)]
 
-        def grant_items():
-            return [a for a in entities('assignment') if (dig(a, 'subject', 'kind') or dig(a, 'content', 'subject', 'kind')
-                                                          or '') == 'land_approval' or 'land-grant-' in str(a.get('alias'))]
+        def grant_items(sid=G):
+            dispatches = {r['dispatch_id'] for r in lands(sid)}
+            return [a for a in entities('assignment')
+                    if (dig(a, 'subject', 'ref') or dig(a, 'content', 'subject', 'ref')) in dispatches
+                    and ((dig(a, 'subject', 'kind') or dig(a, 'content', 'subject', 'kind') or '') == 'land_approval'
+                         or 'land-grant-' in str(a.get('alias')))]
 
         wait_until(lambda: os.path.exists(config.get('socket') or str(base / 'no-socket')), 10)
         mark = last_pass()
@@ -790,6 +825,13 @@ sys.exit(chosen['code'])
         note()
         wait_until(lambda: last_pass() > mark_quiet)
         quiet = {'items': grant_items(), 'lands': lands(G), 'tip': tip()}
+        scoped_before = {sid: grant_items(sid) for sid in (N, X)}
+        # Answer any request the old implementation incorrectly sent for N too: the row observes
+        # both the unsolicited question and the unauthorized approval write through real writers.
+        scoped_answers = {}
+        for sid in (N, X):
+            item = (scoped_before[sid] or [{}])[0]
+            scoped_answers[sid] = answer(item, 'grant') if item else None
         item = (grant_before['items'] or [{}])[0]
         answered = answer(item, 'grant') if item else None
         wait_until(lambda: lands(G)[-1:] and lands(G)[-1].get('attempt') == 3 and lands(G)[-1].get('state') != 'running')
@@ -898,9 +940,9 @@ sys.exit(chosen['code'])
             check('reland/stale-subject', 'the metrics count the re-land dispatches per unit, the land outcomes and the '
                   'publications refused because the trunk moved [%s, %s, %s]'
                   % (counted.get('relands'), counted.get('outcomes'), moved),
-                  counted.get('relands') == {R: 1, C: 1, M: 1, K: 0, G: 2} and counted.get('running') == []
+                  counted.get('relands') == {R: 1, C: 1, M: 1, K: 0, G: 2, N: 0, X: 0} and counted.get('running') == []
                   and counted.get('outcomes') == {'landed': 3, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1,
-                                                  'unknown': 1, 'failed': 0}
+                                                  'unknown': 1, 'failed': 2}
                   and moved == {'stale-subject': 3, 'trunk-moved': 1})
 
         # AC1: a clean re-merge keeps the review bound to the unchanged evidence commit: no new build or review.
@@ -1039,7 +1081,8 @@ sys.exit(chosen['code'])
             text = json.dumps(items)
             check('grant/fresh-request', 'exactly one request to the owner for that re-land, naming the re-merged tree, '
                   'and none again on a later pass before his answer [%s]' % [a.get('alias') for a in items],
-                  len(items) == 1 and tree_two is not None and tree_two in text and quiet['items'] == items
+                  len(items) == 1 and len(quiet['items']) == 1
+                  and tree_two is not None and tree_two in text and quiet['items'] == items
                   and len(quiet['lands']) == 2)
             mine = lands(G)
             third = mine[2] if len(mine) > 2 else {}
@@ -1054,6 +1097,40 @@ sys.exit(chosen['code'])
                   and dig(third, 'candidate', 'tree') == tree_two and len(got) == 1
                   and (got[0].get('publication_receipt') or {}).get('dispatch_id') == third.get('dispatch_id')
                   and len(mine) == 3)
+
+        with region('grant/never-granted'):
+            one = first[N] or {}
+            check('grant/never-granted', 'the real policy accepted before the new requirement, then final publication '
+                  'refused the never-granted security approval by name',
+                  (N, True) in late_policy and one.get('state') == 'failed'
+                  and one.get('refusals') == ['missing_authority:approval/security']
+                  and one.get('subject') is None and effect(one.get('dispatch_id')) is None)
+            check('grant/never-granted', 'no owner question, approval write, retry or publication for a never-granted name',
+                  not scoped_before[N] and not grant_items(N)
+                  and not [a for a in entities('approval') if a.get('unit') == N]
+                  and len(lands(N)) == 1 and not receipts(N))
+
+        with region('grant/mixed-approvals'):
+            one = first[X] or {}
+            items = scoped_before[X]
+            brief = (items[0].get('brief') or dig(items[0], 'content', 'brief') or '') if items else ''
+            check('grant/mixed-approvals', 'mixed approval failures stay refused with both named reasons; '
+                  'only the mismatched owner grant is offered for replacement',
+                  (X, True) in late_policy and one.get('state') == 'failed'
+                  and set(one.get('refusals') or []) == {'binding_mismatch:approval/owner/tree',
+                                                        'missing_authority:approval/security'}
+                  and dig(one, 'subject', 'approvals') == ['owner'] and len(items) == 1
+                  and 'owner' in brief and 'security' not in brief)
+            grants = [a for a in entities('approval') if a.get('unit') == X and a['_id'] != 'approval:%s:owner' % X]
+            refused = [r for p in final_passes for r in p.get('refused', []) if r.get('unit') == X]
+            check('grant/mixed-approvals', 'answering replaces only owner at this exact tree and still refuses security '
+                  'without another dispatch or publication [%s, %s]' % (scoped_answers[X], grants),
+                  len(grants) == 1 and grants[0].get('name') == 'owner'
+                  and dig(grants[0], 'subject', 'tree') == dig(one, 'candidate', 'tree')
+                  and not [a for a in entities('approval') if a.get('unit') == X and a.get('name') == 'security']
+                  and any(r.get('refusals') == ['missing_authority:approval/security'] for r in refused)
+                  and len(grant_items(X)) == 1 and len(lands(X)) == 1 and not receipts(X)
+                  and effect(one.get('dispatch_id')) is None)
 
         # VELDO-0172: every line the fake was scripted to print is an event of the binary's own table.
         with region('format/fake-lines'):

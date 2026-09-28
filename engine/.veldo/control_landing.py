@@ -120,7 +120,7 @@ EXECUTOR_REFUSALS = {'stale-subject': 'stale_subject', 'missing-evidence': 'miss
 # contain the candidate). A publication refused so is followed by a re-land (control_landing_station).
 TRUNK_MOVED = ('stale-subject', 'trunk-moved')
 # The refusals of the subject that only a grant for the re-merged tree answers (VELDO-0148 AC3).
-APPROVAL_CODES = ('missing_authority:approval/', 'binding_mismatch:approval/')
+APPROVAL_CODES = ('binding_mismatch:approval/',)
 
 
 def taxonomy(code):
@@ -415,6 +415,7 @@ class Landing:
                 dependencies[dep] = {'version': row['version'], 'digest': row['digest']}
         exact = {'tree': tree, 'source': fields['evidence'], 'proof': proof, 'dependencies': dependencies}
         approvals = self._kind('approval')
+        replacements = []
         for name in data.get('approvals_required') or []:
             granted = [a['data'] for a in approvals if a['data'].get('unit') == sid and a['data'].get('name') == name
                        and a['data'].get('state') == 'granted' and a['data'].get('revision') == data.get('revision')]
@@ -427,13 +428,15 @@ class Landing:
                 differences.append([f for f in SUBJECT_FIELDS if bound.get(f) != exact[f]])
             closest = min(differences, key=len)
             codes.extend('binding_mismatch:approval/%s/%s' % (name, f) for f in closest)
+            if 'tree' in closest:
+                replacements.append(name)
         if codes:
             error = Refused(codes)
-            if all(code.startswith(APPROVAL_CODES) for code in codes):
-                # VELDO-0148: only a grant is missing, so the refusal names the exact subject a fresh
-                # grant would be bound to (the land station asks the owner for it).
+            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):
+                # Only prior grants for another tree can be replaced. Missing grants remain refusals,
+                # including when this subject lets the owner replace a different, mismatched grant.
                 error.subject = dict(exact, unit=sid, revision=data.get('revision'),
-                                     approvals=list(data.get('approvals_required') or []))
+                                     approvals=replacements)
             raise error
         return dict(exact, unit=sid, revision=data.get('revision'), commit=fields['commit'], old_tip=fields['watermark'],
                     implementation=fields['implementation'], observation=reference,

@@ -22,7 +22,7 @@ who lands a unit through the factory land it here. LandStation.land runs ONE lan
                           watermark, the tip found and the classification are recorded;
        conflict           the re-merge onto the watermark conflicted (a real conflict, or an append-only
                           union that is not safe); nothing was published;
-       awaiting_approval  every refusal of the publication's subject is a grant the re-merged tree lacks;
+       awaiting_approval  every refusal of the publication's subject is a prior grant with a mismatched binding;
                           the exact subject a fresh grant would be bound to is recorded; nothing moved;
        unknown            the outcome cannot be established (an unknown publication): a named stop;
        failed             any other refusal.
@@ -34,7 +34,8 @@ the review, which is bound to the unchanged evidence commit. A conflict sends th
 as a new build dispatch told to merge the new trunk, and that build is reviewed again. awaiting_approval
 asks the project's owner once for a fresh grant bound to the re-merged tree (the old grant, bound to
 another tree, never publishes it); his grant is recorded by `grant` and the next land dispatch publishes.
-landed, failed and unknown are followed by nothing. The original dispatch is never attempted again: its
+A mixed refusal can replace only its mismatched grants; missing grants keep it failed.
+landed and unknown are followed by nothing. The original dispatch is never attempted again: its
 publication's recorded answer is final (VELDO-0057 AC3), and every re-land is a new identity.
 
 THE RECORDS. `transition` is the one store transition of a land dispatch, `open` and `end`, committed on the
@@ -370,18 +371,20 @@ class LandStation:
         if (stage == 'finalize' and landing.get('outcome') == 'failed'
                 and (landing.get('observed') or {}).get('classification') in LG.TRUNK_MOVED):
             return TRUNK_MOVED, fields
-        if stage == 'finalize' and landing.get('outcome') == 'refused' and isinstance(landing.get('subject'), dict):
+        if (stage == 'finalize' and landing.get('outcome') == 'refused' and isinstance(landing.get('subject'), dict)
+                and refusals and all(code.startswith(LG.APPROVAL_CODES) for code in refusals)):
             return AWAITING, fields
         if landing.get('outcome') == 'unknown' or taxonomy(fields['refusal']) == 'unknown_outcome':
             return UNKNOWN, fields
         return FAILED, fields
 
     def grant(self, unit, record, *, owner, basis):
-        """The owner's fresh grant for the re-merged tree a land awaiting approval names: one approval of each
-        name the unit requires, bound to exactly that subject (tree, source, proof and dependency versions) at
+        """The owner's fresh grant for the re-merged tree: only the mismatched names in the subject,
+        bound to exactly that subject (tree, source, proof and dependency versions) at
         the unit's revision it was asked for, with `basis` (his answer). Returns the approval ids."""
         subject = (record or {}).get('subject')
-        if (record or {}).get('state') != AWAITING or not isinstance(subject, dict) or record.get('unit') != unit:
+        if ((record or {}).get('state') not in (AWAITING, FAILED) or not isinstance(subject, dict)
+                or not subject.get('approvals') or record.get('unit') != unit):
             raise Refused('invalid_input:grant', 'no land of this unit awaits a grant')
         bound = {f: subject.get(f) for f in LG.SUBJECT_FIELDS}
         written = []

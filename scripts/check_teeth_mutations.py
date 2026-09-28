@@ -9010,7 +9010,21 @@ def cases():
     reland148('grant148-asked-every-pass', 'control_service.py',
               "        alias = 'land-grant-' + hashlib.sha256(last['dispatch_id'].encode()).hexdigest()[:24]\n",
               "        alias = 'land-grant-' + os.urandom(12).hex()  # defect: a new question on every pass\n",
-              ['grant/fresh-request'])
+              ['grant/fresh-request'],
+              also=[("'loop-grant/' + last['dispatch_id'])", "'loop-grant/' + alias)")])
+    # A never-granted name must not create a replacement subject or an owner question.
+    reland148('grant148-missing-treated-as-replacement', 'control_landing.py',
+              "APPROVAL_CODES = ('binding_mismatch:approval/',)\n",
+              "APPROVAL_CODES = ('binding_mismatch:approval/', 'missing_authority:approval/')\n",
+              ['grant/never-granted'],
+              also=[("                codes.append('missing_authority:approval/' + name)\n",
+                     "                codes.append('missing_authority:approval/' + name)\n"
+                     "                replacements.append(name)  # defect: a grant never held is replaced\n")])
+    # A valid answer for one old grant must never grant a different, missing approval.
+    reland148('grant148-replacement-includes-missing', 'control_landing.py',
+              "                                     approvals=replacements)\n",
+              "                                     approvals=list(data.get('approvals_required') or []))\n",
+              ['grant/mixed-approvals'])
     return result
 
 
