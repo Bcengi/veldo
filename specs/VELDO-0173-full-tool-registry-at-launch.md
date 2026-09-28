@@ -14,6 +14,7 @@ depends_on: [VELDO-0165, VELDO-0160]
 placement: [fleet, loop, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/85_veldo_0158_credential_delivery.py"
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "engine/.veldo/control_engine_claude*.py"
@@ -166,3 +167,5 @@ red by assertion at 7851ae9b, and all nine finding 173 mutations are rejected. T
 VELDO-0062, VELDO-0160, VELDO-0129, VELDO-0141 and VELDO-0165 suites for their fake qualification
 writers. No gate, real engine run or push was performed. Status unchanged; evidence is in
 proof/VELDO-0173/README.md.
+
+2026-09-28, integration with VELDO-0158 on main: the footprint adds suite 85 (VELDO-0158), whose test qualification record now carries the tool registry and classification this specification requires; no criterion changes.
