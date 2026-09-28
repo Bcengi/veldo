@@ -8911,6 +8911,70 @@ def cases():
              "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
+    # VELDO-0148: a land refused because another factory moved main is re-landed on the new tip, re-merged and
+    # re-gated, and nothing ever forces. Each criterion's declared falsifier first (AC1 to AC3), each on its named
+    # row of suite 86, then the seams the rows rest on.
+    def reland148(name, module, old, new, rows, also=()):
+        add(148, name, '86_veldo_0148_re_land.py', module, old, new, list(rows), also)
+    # AC1: a stale-subject refusal leaves the land failed, so nothing re-lands it.
+    reland148('reland148-stale-left-failed', 'control_landing_station.py',
+              "                and (landing.get('observed') or {}).get('classification') in LG.TRUNK_MOVED):\n",
+              "                and (landing.get('observed') or {}).get('classification') == 'trunk-moved'):"
+              "  # defect: a stale-subject refusal leaves the land failed\n", ['reland/stale-subject'])
+    # AC2: a lease lost between the listing and the push is recorded unknown, whatever the new tip holds.
+    reland148('lease148-loss-unknown', 'control_effect_executor.py',
+              "        if not complete and push.returncode and pushed and all(\n",
+              "        if False and not complete and push.returncode and pushed and all(  # defect: a lost lease is unknown\n",
+              ['lease/trunk-moved'])
+    # AC3: the approval bound to the old candidate tree is accepted for the re-merged tree.
+    reland148('grant148-old-tree-accepted', 'control_landing.py',
+              "                differences.append([f for f in SUBJECT_FIELDS if bound.get(f) != exact[f]])\n",
+              "                differences.append([f for f in SUBJECT_FIELDS if f != 'tree' and bound.get(f) != exact[f]])"
+              "  # defect: the old tree's grant publishes the re-merged tree\n", ['grant/fresh-request'])
+    # The loop's next-station rule: nothing offered after the trunk moved; a conflict re-landed rather than rebuilt;
+    # the rebuild never reviewed; a clean landing rebuilt; a land's end waking no pass.
+    reland148('reland148-loop-offers-nothing', 'control_service.py',
+              "        if last['state'] == LS.TRUNK_MOVED:\n            return self.reland(unit, last, report)\n",
+              "        if last['state'] == LS.TRUNK_MOVED:\n            return None  # defect: no land is offered after the trunk moved\n",
+              ['reland/stale-subject'])
+    reland148('reland148-conflict-relanded', 'control_service.py',
+              "            return self.rebuild(unit, last, latest, report)\n        return None\n",
+              "            return self.reland(unit, last, report)  # defect: a conflicting re-merge is re-landed\n        return None\n",
+              ['reland/conflict-rebuild'])
+    reland148('reland148-rebuild-not-reviewed', 'control_service.py',
+              "        if review is not None and follows(review) == build['dispatch_id']:\n"
+              "            return None if review['state'] in L.D.HOLDING else self.limited(review, report)\n",
+              "        if True:\n            return None  # defect: the rebuilt unit is never reviewed again\n",
+              ['reland/conflict-rebuild'])
+    reland148('reland148-landed-rebuilt', 'control_service.py',
+              "            return self.rebuild(unit, last, latest, report)\n        return None\n",
+              "            return self.rebuild(unit, last, latest, report)\n"
+              "        return self.rebuild(unit, last, latest, report)  # defect: a clean landing is built and reviewed again\n",
+              ['reland/review-kept'])
+    reland148('reland148-end-wakes-nothing', 'control_service.py',
+              "            self.loop.wake('run_end', record['dispatch_id'])\n",
+              "            pass  # defect: a land's end wakes no pass\n", ['reland/conflict-rebuild'])
+    # The executor: a tip that contains the candidate judged moved; the moved tip never fetched; the push forced.
+    reland148('lease148-contained-refused', 'control_effect_executor.py',
+              "            return git('merge-base', '--is-ancestor', payload['commit'], tip).returncode == 1\n",
+              "            return git('merge-base', '--is-ancestor', payload['commit'], tip).returncode in (0, 1)"
+              "  # defect: a tip containing the candidate is judged moved\n", ['lease/contains-unknown'])
+    reland148('lease148-tip-not-fetched', 'control_effect_executor.py',
+              "                                '+%s:%s' % (ref, observed))\n",
+              "                                '+%s-unfetched:%s' % (ref, observed))  # defect: the moved tip is never fetched\n",
+              ['lease/trunk-moved'])
+    # A forced push that overwrites a trunk that moved: no lease and no refusal at the listing (the push protocol
+    # alone still refuses a move made after the push connected, so both guards go together).
+    reland148('never148-forced-push', 'control_effect_executor.py',
+              "                         '--force-with-lease=' + ref + ':' + ('' if absent else payload['old_tip']),\n",
+              "                         '--force',  # defect: the push is forced\n", ['reland/never-forced'],
+              also=[("            raise E.Refused('stale-subject')\n",
+                     "            pass  # defect: a trunk that moved is not refused at the listing\n")])
+    # The question: a new one opened on every pass.
+    reland148('grant148-asked-every-pass', 'control_service.py',
+              "        alias = 'land-grant-' + hashlib.sha256(last['dispatch_id'].encode()).hexdigest()[:24]\n",
+              "        alias = 'land-grant-' + os.urandom(12).hex()  # defect: a new question on every pass\n",
+              ['grant/fresh-request'])
     return result
 
 
