@@ -245,3 +245,14 @@ The footprint checker compares this stacked branch with origin/main. VELDO-0189 
 inherited VELDO-0171 paths; the check with both VELDO-0189 and VELDO-0171 reports none outside. The follow-up
 changes themselves remain entirely within VELDO-0189. `mutations-before-followup.json` retains the earlier
 executed evidence; `mutations.json` lists the current registered mutants as reviewer_pending.
+
+
+For the kill host, the older installer's unit template has a harmless extra comment before that installer
+runs. Its installed engine files remain exactly the older commit's bytes. This makes a real unit write
+part of the upgrade, so resuming after that write tests restoration of the older unit. The two AC1 older
+hosts use their unmodified archived templates.
+
+The follow-up red run completed with 22 rows: the four defect rows above failed by assertion and all
+other rows passed. The ordinary suite run completed with 48 assertions passed and zero failed (22
+VELDO-0189 rows plus the shared preamble). Validation passes, mutation anchors report zero bad anchors,
+and the acceptance-criteria block is byte-identical to the pre-fix commit.
