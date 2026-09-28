@@ -15,7 +15,8 @@
     "81_veldo_0156_codex_baseline.py",
     "82_veldo_0129_worker_wiring.py",
     "82_veldo_0141_execution_record.py",
-    "82_veldo_0165_launch_hygiene.py"
+    "82_veldo_0165_launch_hygiene.py",
+    "83_veldo_0154_factory_loop.py"
    ],
    "field_metrics": {
     "claude_code": {
@@ -95,117 +96,86 @@
    },
    "printed_events": {
     "75_veldo_0062_accounts.py": [
-     "assistant",
-     "error",
-     "message",
-     "rate_limit_event",
-     "result/success",
-     "system/init",
-     "thread.started",
-     "turn.completed",
-     "turn.failed",
-     "turn.started"
+     "claude:assistant",
+     "claude:control_response",
+     "claude:rate_limit_event",
+     "claude:result/success",
+     "claude:system/init",
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
     ],
     "78_veldo_0060_claude_adapter.py": [
-     "agent_message",
-     "assistant",
-     "item.completed",
-     "message",
-     "rate_limit_event",
-     "reasoning",
-     "result/success",
-     "system/init",
-     "thread.started",
-     "turn.completed",
-     "turn.started"
+     "claude:assistant",
+     "claude:rate_limit_event",
+     "claude:result/success",
+     "claude:system/init",
+     "codex:item.completed",
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
     ],
     "78_veldo_0160_account_pool.py": [
-     "assistant",
-     "content_block_delta",
-     "content_block_start",
-     "content_block_stop",
-     "control_cancel_request",
-     "control_request",
-     "control_response",
-     "error",
-     "item.started",
-     "keep_alive",
-     "mcp_tool_call",
-     "mcp_tool_result",
-     "mcp_tool_use",
-     "message",
-     "message_start",
-     "progress",
-     "rate_limit_event",
-     "redacted_thinking",
-     "result/error_during_execution",
-     "result/success",
-     "server_tool_use",
-     "skill_progress",
-     "system/init",
-     "text",
-     "text_delta",
-     "thinking",
-     "thread.started",
-     "tool_result",
-     "tool_use",
-     "transcript_mirror",
-     "turn.completed",
-     "turn.failed",
-     "turn.started",
-     "turn.unlisted",
-     "unlisted_block",
-     "unlisted_stream_event",
-     "workflow_agent",
-     "workflow_phase"
+     "claude:assistant",
+     "claude:control_response",
+     "claude:rate_limit_event",
+     "claude:result/success",
+     "claude:system/init",
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
     ],
     "79_veldo_0061_codex_adapter.py": [
-     "error",
-     "thread.started",
-     "turn.completed",
-     "turn.failed",
-     "turn.progress",
-     "turn.started"
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
     ],
     "80_veldo_0155_claude_baseline.py": [
-     "command",
-     "control_request",
-     "control_response",
-     "oidc_federation",
-     "user",
-     "user_oauth"
+     "claude:assistant",
+     "claude:control_response",
+     "claude:result/success",
+     "claude:system/init"
     ],
     "81_veldo_0156_codex_baseline.py": [
-     "error"
+     "codex:item.completed",
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
     ],
     "82_veldo_0129_worker_wiring.py": [
-     "missing"
+     "claude:assistant",
+     "claude:control_response",
+     "claude:result/success",
+     "claude:system/init",
+     "codex:item.completed",
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
     ],
     "82_veldo_0141_execution_record.py": [
-     "content_block_delta",
-     "content_block_start",
-     "content_block_stop",
-     "message_start",
-     "message_stop",
-     "stream_event",
-     "system/init",
-     "text",
-     "text_delta",
-     "tool_use"
+     "claude:assistant",
+     "claude:control_response",
+     "claude:result/success",
+     "claude:system/init",
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
     ],
     "82_veldo_0165_launch_hygiene.py": [
-     "agent_message",
-     "any",
-     "assistant",
-     "item.completed",
-     "message",
-     "object",
-     "rate_limit_event",
-     "result/success",
-     "sdk",
-     "thread.started",
-     "turn.completed",
-     "turn.started"
+     "claude:assistant",
+     "claude:control_response",
+     "claude:rate_limit_event",
+     "claude:result/success",
+     "claude:system/init",
+     "codex:item.completed",
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
+    ],
+    "83_veldo_0154_factory_loop.py": [
+     "codex:thread.started",
+     "codex:turn.completed",
+     "codex:turn.started"
     ]
    }
   },
@@ -227,7 +197,7 @@
     true
    ]
   ],
-  "seconds": 1.047
+  "seconds": 1.227
  },
  "controls_green": true,
  "mutants": [
@@ -259,7 +229,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -339,117 +310,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -471,7 +411,7 @@
      true
     ]
    ],
-   "seconds": 1.081,
+   "seconds": 1.228,
    "source_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303",
    "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   },
@@ -487,7 +427,7 @@
     "VELDO-0172 fake/capture"
    ],
    "module": "scripts/suites/79_veldo_0061_codex_adapter.py",
-   "mutant_sha256": "feaea1f5d83ef63e93b91adc1f6f008e6cffdf607f5ac47123b5ce18a2081ba9",
+   "mutant_sha256": "07ed90907655eedae9a6e60a0014772f95bc427e0a5d5b42829d4b3a0baa2413",
    "name": "formats172-login-stdout",
    "named_row_red": true,
    "named_rows": [
@@ -501,8 +441,8 @@
      false
     ]
    ],
-   "seconds": 15.263,
-   "source_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da",
+   "seconds": 16.61,
+   "source_sha256": "cedbf55916606b16686b0395e48784436627400e423024f8adfcc97977c90c31",
    "suite": "scripts/suites/79_veldo_0061_codex_adapter.py"
   },
   {
@@ -533,7 +473,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -613,117 +554,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -745,7 +655,7 @@
      false
     ]
    ],
-   "seconds": 1.069,
+   "seconds": 1.247,
    "source_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8",
    "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   },
@@ -777,7 +687,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -857,117 +768,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -989,7 +869,7 @@
      false
     ]
    ],
-   "seconds": 1.064,
+   "seconds": 1.237,
    "source_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8",
    "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   },
@@ -1021,7 +901,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -1101,117 +982,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -1233,7 +1083,7 @@
      true
     ]
    ],
-   "seconds": 1.091,
+   "seconds": 1.253,
    "source_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303",
    "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   },
@@ -1265,7 +1115,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -1345,117 +1196,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -1477,7 +1297,7 @@
      true
     ]
    ],
-   "seconds": 1.068,
+   "seconds": 1.246,
    "source_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303",
    "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   },
@@ -1488,14 +1308,17 @@
     "VELDO-0172 fake/capture:0165_launch_hygiene detail: claude:production:terminal-incomplete",
     "VELDO-0172 fake/capture:0165_launch_hygiene detail: control_response.response.response.account.apiProvider:table:required",
     "VELDO-0172 fake/capture:0165_launch_hygiene detail: control_response.response.response.account.apiProvider:fake:missing",
-    "VELDO-0172 fake/capture:0165_launch_hygiene detail: assistant:fake:streamed-output-count"
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: assistant:fake:streamed-output-count",
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: claude:assistant:fake:credited-not-printed",
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: claude:rate_limit_event:fake:credited-not-printed",
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: claude:result/success:fake:credited-not-printed"
    ],
    "diff": "proof/VELDO-0172/formats172-hygiene-answer-drops-provider.diff",
    "failed_rows": [
     "VELDO-0172 fake/capture"
    ],
    "module": "scripts/suites/82_veldo_0165_launch_hygiene.py",
-   "mutant_sha256": "713efb1f24a114f938fc6a399e1a126f8ca8f3d23431331d1a9e173afeafc956",
+   "mutant_sha256": "f1fdb4772987ad4d191c30d4c3f9ce2415eeb6f11686be951baf566c57658b13",
    "name": "formats172-hygiene-answer-drops-provider",
    "named_row_red": true,
    "named_rows": [
@@ -1509,9 +1332,37 @@
      false
     ]
    ],
-   "seconds": 13.908,
-   "source_sha256": "14fa5920f9a487577f23c7782ccb2a24d03f99765579e3ec2580c0dd83ee2ab1",
+   "seconds": 14.589,
+   "source_sha256": "8e7705a3d2b2c0f8c4b2d9b8495cd6714928845701ac5dbd57925a45b7f2db0d",
    "suite": "scripts/suites/82_veldo_0165_launch_hygiene.py"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0172 fake/capture:0156_codex_baseline detail: codex:item.completed:fake:credited-not-printed"
+   ],
+   "diff": "proof/VELDO-0172/formats172-credited-event-not-printed.diff",
+   "failed_rows": [
+    "VELDO-0172 fake/capture"
+   ],
+   "module": "scripts/suites/81_veldo_0156_codex_baseline.py",
+   "mutant_sha256": "724c3812250cf7c946878c2b31669a7fbc336094d8b4e175955ce3135746ea41",
+   "name": "formats172-credited-event-not-printed",
+   "named_row_red": true,
+   "named_rows": [
+    "fake/capture"
+   ],
+   "preamble_rows": 47,
+   "readback": {},
+   "rows": [
+    [
+     "VELDO-0172 fake/capture",
+     false
+    ]
+   ],
+   "seconds": 4.307,
+   "source_sha256": "58b508e668d253eabe4e6b666a48bfd7a56aa5b6d58192e48fbc1c9343bf9dad",
+   "suite": "scripts/suites/81_veldo_0156_codex_baseline.py"
   },
   {
    "by_assertion": true,
@@ -1523,7 +1374,7 @@
     "VELDO-0172 fake/census"
    ],
    "module": "scripts/suites/79_veldo_0061_codex_adapter.py",
-   "mutant_sha256": "fd9eb8241d3823dbed864c1c4910739e97e475d57b9463b130579029bf6db9d6",
+   "mutant_sha256": "a6c501ee4e80f070c4542d2eff4f4da4c54ff7515e7a6a203ef3b94dc7ce4c1c",
    "name": "formats172-census-drops-conform",
    "named_row_red": true,
    "named_rows": [
@@ -1540,7 +1391,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -1620,117 +1472,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -1752,8 +1573,8 @@
      true
     ]
    ],
-   "seconds": 1.065,
-   "source_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da",
+   "seconds": 1.212,
+   "source_sha256": "cedbf55916606b16686b0395e48784436627400e423024f8adfcc97977c90c31",
    "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   }
  ],
@@ -1764,7 +1585,8 @@
   ],
   "fake/capture": [
    "formats172-login-stdout",
-   "formats172-hygiene-answer-drops-provider"
+   "formats172-hygiene-answer-drops-provider",
+   "formats172-credited-event-not-printed"
   ],
   "fake/census": [
    "formats172-census-drops-conform"
@@ -1777,7 +1599,7 @@
  },
  "noop": {
   "79_veldo_0061_codex_adapter.py in 79_veldo_0061_codex_adapter.py": {
-   "copy_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da",
+   "copy_sha256": "cedbf55916606b16686b0395e48784436627400e423024f8adfcc97977c90c31",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 46,
@@ -1788,11 +1610,11 @@
      true
     ]
    ],
-   "seconds": 15.314,
-   "source_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da"
+   "seconds": 16.487,
+   "source_sha256": "cedbf55916606b16686b0395e48784436627400e423024f8adfcc97977c90c31"
   },
   "79_veldo_0061_codex_adapter.py in 82_veldo_0172_live_formats.py": {
-   "copy_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da",
+   "copy_sha256": "cedbf55916606b16686b0395e48784436627400e423024f8adfcc97977c90c31",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -1806,7 +1628,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -1886,117 +1709,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -2018,11 +1810,26 @@
      true
     ]
    ],
-   "seconds": 1.039,
-   "source_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da"
+   "seconds": 1.255,
+   "source_sha256": "cedbf55916606b16686b0395e48784436627400e423024f8adfcc97977c90c31"
+  },
+  "81_veldo_0156_codex_baseline.py in 81_veldo_0156_codex_baseline.py": {
+   "copy_sha256": "58b508e668d253eabe4e6b666a48bfd7a56aa5b6d58192e48fbc1c9343bf9dad",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 47,
+   "readback": {},
+   "rows": [
+    [
+     "VELDO-0172 fake/capture",
+     true
+    ]
+   ],
+   "seconds": 4.212,
+   "source_sha256": "58b508e668d253eabe4e6b666a48bfd7a56aa5b6d58192e48fbc1c9343bf9dad"
   },
   "82_veldo_0165_launch_hygiene.py in 82_veldo_0165_launch_hygiene.py": {
-   "copy_sha256": "14fa5920f9a487577f23c7782ccb2a24d03f99765579e3ec2580c0dd83ee2ab1",
+   "copy_sha256": "8e7705a3d2b2c0f8c4b2d9b8495cd6714928845701ac5dbd57925a45b7f2db0d",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 48,
@@ -2033,8 +1840,8 @@
      true
     ]
    ],
-   "seconds": 14.127,
-   "source_sha256": "14fa5920f9a487577f23c7782ccb2a24d03f99765579e3ec2580c0dd83ee2ab1"
+   "seconds": 14.569,
+   "source_sha256": "8e7705a3d2b2c0f8c4b2d9b8495cd6714928845701ac5dbd57925a45b7f2db0d"
   },
   "extract_formats.py in 82_veldo_0172_live_formats.py": {
    "copy_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303",
@@ -2051,7 +1858,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -2131,117 +1939,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -2263,7 +2040,7 @@
      true
     ]
    ],
-   "seconds": 1.031,
+   "seconds": 1.233,
    "source_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303"
   },
   "scrub.py in 82_veldo_0172_live_formats.py": {
@@ -2281,7 +2058,8 @@
      "81_veldo_0156_codex_baseline.py",
      "82_veldo_0129_worker_wiring.py",
      "82_veldo_0141_execution_record.py",
-     "82_veldo_0165_launch_hygiene.py"
+     "82_veldo_0165_launch_hygiene.py",
+     "83_veldo_0154_factory_loop.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -2361,117 +2139,86 @@
     },
     "printed_events": {
      "75_veldo_0062_accounts.py": [
-      "assistant",
-      "error",
-      "message",
-      "rate_limit_event",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0060_claude_adapter.py": [
-      "agent_message",
-      "assistant",
-      "item.completed",
-      "message",
-      "rate_limit_event",
-      "reasoning",
-      "result/success",
-      "system/init",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "78_veldo_0160_account_pool.py": [
-      "assistant",
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "control_cancel_request",
-      "control_request",
-      "control_response",
-      "error",
-      "item.started",
-      "keep_alive",
-      "mcp_tool_call",
-      "mcp_tool_result",
-      "mcp_tool_use",
-      "message",
-      "message_start",
-      "progress",
-      "rate_limit_event",
-      "redacted_thinking",
-      "result/error_during_execution",
-      "result/success",
-      "server_tool_use",
-      "skill_progress",
-      "system/init",
-      "text",
-      "text_delta",
-      "thinking",
-      "thread.started",
-      "tool_result",
-      "tool_use",
-      "transcript_mirror",
-      "turn.completed",
-      "turn.failed",
-      "turn.started",
-      "turn.unlisted",
-      "unlisted_block",
-      "unlisted_stream_event",
-      "workflow_agent",
-      "workflow_phase"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "79_veldo_0061_codex_adapter.py": [
-      "error",
-      "thread.started",
-      "turn.completed",
-      "turn.failed",
-      "turn.progress",
-      "turn.started"
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "80_veldo_0155_claude_baseline.py": [
-      "command",
-      "control_request",
-      "control_response",
-      "oidc_federation",
-      "user",
-      "user_oauth"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init"
      ],
      "81_veldo_0156_codex_baseline.py": [
-      "error"
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0129_worker_wiring.py": [
-      "missing"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0141_execution_record.py": [
-      "content_block_delta",
-      "content_block_start",
-      "content_block_stop",
-      "message_start",
-      "message_stop",
-      "stream_event",
-      "system/init",
-      "text",
-      "text_delta",
-      "tool_use"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ],
      "82_veldo_0165_launch_hygiene.py": [
-      "agent_message",
-      "any",
-      "assistant",
-      "item.completed",
-      "message",
-      "object",
-      "rate_limit_event",
-      "result/success",
-      "sdk",
-      "thread.started",
-      "turn.completed",
-      "turn.started"
+      "claude:assistant",
+      "claude:control_response",
+      "claude:rate_limit_event",
+      "claude:result/success",
+      "claude:system/init",
+      "codex:item.completed",
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
+     ],
+     "83_veldo_0154_factory_loop.py": [
+      "codex:thread.started",
+      "codex:turn.completed",
+      "codex:turn.started"
      ]
     }
    },
@@ -2493,13 +2240,13 @@
      true
     ]
    ],
-   "seconds": 1.091,
+   "seconds": 1.254,
    "source_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8"
   }
  },
  "registry": "scripts/check_teeth_mutations.py",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 69.258,
+ "serial_seconds": 83.166,
  "spec_id": "VELDO-0172",
  "suite": "scripts/suites/82_veldo_0172_live_formats.py"
 }

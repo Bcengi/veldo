@@ -3,6 +3,7 @@ import ast
 import copy
 import json
 from pathlib import Path
+import re
 import subprocess
 import selectors
 import sys
@@ -126,38 +127,70 @@ def census(directory, copies=None):
 
 
 def _trees(tree):
-    """The suite's own tree and every embedded executable literal that parses as a program."""
+    """The suite's own tree and every embedded executable literal that parses as a program.
+
+    A literal is a template until the suite fills it: an `@@NAME@@` placeholder is read as a name and a
+    doubled `%` as the one the suite's own `%` formatting leaves, so the program it installs is read.
+    """
     yield tree
     for node in ast.walk(tree):
-        if isinstance(node, ast.Constant) and isinstance(node.value, str) and 'print(' in node.value:
-            try:
-                yield ast.parse(node.value)
-            except SyntaxError:
-                continue
+        if isinstance(node, ast.Constant) and isinstance(node.value, str) and ('print(' in node.value or 'sys.stdout' in node.value):
+            for text in (node.value, re.sub(r'@@[A-Z_]+@@', 'PLACEHOLDER', node.value).replace('%%', '%')):
+                try:
+                    yield ast.parse(text)
+                    break
+                except SyntaxError:
+                    continue
 
 
-def printed_events(tree):
-    """Event names the suite's constructors and executables declare in a dict display naming the event type.
+def _display(node):
+    """A dict display's constant string keys and their value nodes."""
+    return {key.value: value for key, value in zip(node.keys, node.values)
+            if isinstance(key, ast.Constant) and isinstance(key.value, str)}
 
-    The shape of each event comes from the shared templates; this is only which events a suite prints.
+
+def _constant(node):
+    return node.value if isinstance(node, ast.Constant) and isinstance(node.value, str) else None
+
+
+def credited_events(tree, capture):
+    """The captured events, per engine, a suite is credited with printing: (engine, event) pairs.
+
+    Only a dict display naming a captured event of that engine counts, so no other dict with a `type` key
+    (an input message, a schema kind, a server type) is credited, and an `item.completed` counts only
+    with the captured agent-message item displayed in it. The suite's own fake/capture row then requires its
+    conform trace to print every event credited here, so a credit the suite's fake does not earn reds it.
     """
-    events = set()
+    captured = {(engine, event_name(line)) for engine, lines in capture['streams'].items() for line in lines}
+    credited = set()
     for part in _trees(tree):
         for node in ast.walk(part):
             if not isinstance(node, ast.Dict):
                 continue
-            keys = {key.value: value for key, value in zip(node.keys, node.values)
-                    if isinstance(key, ast.Constant) and isinstance(key.value, str)}
-            kind = keys.get('type')
-            if not (isinstance(kind, ast.Constant) and isinstance(kind.value, str)):
+            keys = _display(node)
+            name = _constant(keys.get('type'))
+            if name is None:
                 continue
-            if kind.value in ('system', 'result'):
-                sub = keys.get('subtype')
-                if isinstance(sub, ast.Constant) and isinstance(sub.value, str):
-                    events.add(kind.value + '/' + sub.value)
-            else:
-                events.add(kind.value)
-    return events
+            if name in ('system', 'result'):
+                sub = _constant(keys.get('subtype'))
+                if sub is None:
+                    continue
+                name += '/' + sub
+            if name == 'item.completed':
+                item = keys.get('item')
+                if not (isinstance(item, ast.Dict) and _constant(_display(item).get('type')) == 'agent_message'):
+                    continue
+            credited |= {(engine, event) for engine, event in captured if event == name}
+    return credited
+
+
+def suite_tree(suite_name, directory=None):
+    """The syntax tree of the committed suite whose short name this is, from the directory the census reads."""
+    directory = Path(directory or Path(__file__).resolve().parents[2] / 'scripts' / 'suites')
+    found = [path for path in sorted(directory.glob('*.py')) if short_name(path) == suite_name]
+    if len(found) != 1:
+        raise LookupError('suite %s names %d suite files' % (suite_name, len(found)))
+    return ast.parse(found[0].read_text())
 
 
 def wiring(tree, name):
@@ -190,7 +223,8 @@ def static_census(directory, capture, templates, copies=None):
     """The census row's facts, read from each suite's syntax tree without running it.
 
     Returns (suites, problems, events): every fake-building suite, what is missing from its wiring or
-    from the union of printed events, and each suite's statically known printed events.
+    from the union of credited events, and each suite's credited `engine:event` names. Each credit is
+    earned at run time: the suite's own fake/capture row reds unless its conform trace prints it.
     """
     copies = copies or {}
     suites, problems, events = [], [], {}
@@ -200,14 +234,14 @@ def static_census(directory, capture, templates, copies=None):
             continue
         suites.append(path.name)
         problems += wiring(tree, path.name)
-        events[path.name] = sorted(printed_events(tree))
+        events[path.name] = sorted(engine + ':' + event for engine, event in credited_events(tree, capture))
     if not suites:
         problems.append('census:empty')
     printed = set().union(*map(set, events.values())) if events else set()
     for engine, lines in capture['streams'].items():
         for line in lines:
             name = event_name(line)
-            if name not in printed:
+            if engine + ':' + name not in printed:
                 problems.append(engine + ':' + name + ':census:capture-event-not-printed')
             template = templates.get(engine, {}).get(name)
             if template is None:
@@ -227,7 +261,12 @@ def conform_fake(local, suite_name, table=None, capture=None):
     try:
         table = table or json.loads((root / 'proof/VELDO-0062/cli-formats.json').read_text())
         capture = capture or json.loads((root / 'proof/VELDO-0172/capture.json').read_text())
-        return observe_fake(local, suite_name, table, capture)
+        problems, trace = observe_fake(local, suite_name, table, capture)
+        # Every captured event the census credits to this suite is one its fake printed here, compared.
+        compared = {(t['engine'], t['event']) for t in trace if t.get('compared')}
+        problems += ['%s:%s:fake:credited-not-printed' % pair
+                     for pair in sorted(credited_events(suite_tree(suite_name, root / 'scripts' / 'suites'), capture) - compared)]
+        return problems, trace
     except Exception as error:  # noqa: BLE001 - reported on the suite's own row, never raised past teardown
         return ['observer:did-not-complete:' + type(error).__name__ + ':' + str(error)[:200]], []
 
@@ -295,7 +334,9 @@ def observe_fake(local, suite_name, table, capture):
             script = ([local['c_init']()] if 'c_init' in local else []) + [
                 local['c_msg']('fixture-message', 2, 3), local['c_rate']('allowed', 2000000000), local['c_result'](2, 4, 1)]
         elif engine == 'codex' and 'x_done' in local:
-            script = [local['x_thread'](), local['x_started'](), local['x_done'](2, 4)]
+            # A suite with an agent-message constructor prints that captured item in its normal turn.
+            script = [local['x_thread'](), local['x_started']()] + (
+                [local['x_message']()] if callable(local.get('x_message')) else []) + [local['x_done'](2, 4)]
         elif engine == 'codex' and 'x_normal' in local:
             script = local['x_normal']('fixture-thread', 2, 4)
         elif engine == 'codex' and callable(local.get('normal')):
@@ -360,11 +401,13 @@ def observe_fake(local, suite_name, table, capture):
             problems += conform(line, schema, name)
             # Other item variants (reasoning, tool calls) are outside the captured agent-message variant.
             other_item = name == 'item.completed' and line.get('item', {}).get('type') != 'agent_message'
-            if name in reference and not other_item:
+            compared = name in reference and not other_item
+            if compared:
                 actual, expected = paths(line), paths(reference[name])
                 problems += [name + field + ':fake:missing' for field in sorted(expected - actual)]
                 problems += [name + field + ':fake:added' for field in sorted(actual - expected)]
-            printed.append({'suite': suite_name, 'row': ROW + suite_name, 'engine': engine, 'line': index + 1, 'event': name})
+            printed.append({'suite': suite_name, 'row': ROW + suite_name, 'engine': engine, 'line': index + 1, 'event': name,
+                            'compared': compared})
         # AC2's suite-level facts, where this suite prints the event.
         for line in lines:
             if line.get('type') == 'rate_limit_event' and 'unifiedWindows' not in (line.get('rate_limit_info') or {}):

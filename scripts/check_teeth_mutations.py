@@ -8670,6 +8670,12 @@ def cases():
                "'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},",
                "'response': {'account': {'subscriptionType': 'Claude Team'},  # defect: required field dropped", 'fake/capture',
                suite='82_veldo_0165_launch_hygiene.py')
+    # The census credits suite 81 with the agent message its fake's dict display names; the fake no longer
+    # printing it (the display kept) must red that suite's own row, since the census row alone stays green.
+    formats172('credited-event-not-printed', 'scripts/suites', '81_veldo_0156_codex_baseline.py',
+               "emit({'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'agent_message', 'text': 'done'}})",
+               "0 and emit({'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'agent_message', 'text': 'done'}})"
+               "  # defect: a credited event is no longer printed", 'fake/capture', suite='81_veldo_0156_codex_baseline.py')
     formats172('census-drops-conform', 'scripts/suites', '79_veldo_0061_codex_adapter.py',
                "        fake_capture = conform_formats.conform_fake(locals(), '0061_codex_adapter')\n",
                "        fake_capture = (['defect: this suite no longer checks its fakes'], [])\n", 'fake/census')

@@ -251,3 +251,14 @@ script of its own read-back packet, and reports `VELDO-0172 fake/capture:0154_fa
 `format/fake-lines` row checks every scripted line, the usage-limit failures and MCP tool-call items
 included, against the binary's table. VELDO-0154's rows keep their checks. The footprint adds the suite file.
 Status unchanged.
+
+2026-09-28, independent review of the census redesign on batch-0165-0172: the census's event coverage
+credited any dict with a `type` key, whatever its engine, so it counted non-events and credited 0165 with an
+`item.completed` its conform run never printed; a fake that stopped printing an event left the row green.
+The census now credits a suite, per engine, only with a captured event its own dict displays or installed
+executables name, and each suite's `fake/capture` row requires its conform trace to have compared every event
+credited to it. The 0165 read-back prints its agent message; the 0129 read-back drives its Claude Code fake,
+which now lists the built-in tools in its init. New mutation `formats172-credited-event-not-printed` keeps
+suite 81's agent-message display but stops printing it; suite 81's own row reds while the census stays green.
+Suite 0165 registers the claim organ as `transaction_transition`, as VELDO-0169's store now requires.
+Criteria text unchanged. Status unchanged.

@@ -235,6 +235,9 @@ def emit(event):
     print(json.dumps(event), flush=True)
 if engine == 'claude_code':
     request = json.loads(sys.stdin.readline())
+    # The binary answers only its initialize control request before the prompt.
+    if request.get('type') != 'control_request':
+        sys.exit(2)
     emit(complete_event({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': request['request_id'],
           'response': {'account': {'subscriptionType': @@SUBSCRIPTION@@, 'apiProvider': @@PROVIDER@@}}}}))
     packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
@@ -313,7 +316,8 @@ usage = {'input_tokens': 3, 'output_tokens': 3, 'cache_creation_input_tokens': 0
          'server_tool_use': {'web_fetch_requests': 0, 'web_search_requests': 0}, 'service_tier': 'standard'}
 if engine == 'claude_code':
     session = str(uuid.uuid4())
-    emit(complete_event({'type': 'system', 'subtype': 'init', 'cwd': str(Path.cwd()), 'session_id': session, 'tools': [],
+    # The binary's built-in tools, as the live init listed them.
+    emit(complete_event({'type': 'system', 'subtype': 'init', 'cwd': str(Path.cwd()), 'session_id': session, 'tools': ['Read', 'Bash'],
                          'mcp_servers': [], 'model': 'configured-model', 'permissionMode': 'default',
                          'slash_commands': [], 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
                          'output_style': 'default', 'agents': [], 'skills': [], 'plugins': [], 'uuid': str(uuid.uuid4())}))
