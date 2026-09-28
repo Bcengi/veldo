@@ -169,3 +169,5 @@ now named in the footprint because the receiver owns the binding refusal and eve
 
 2026-09-28: VELDO-0189 inputs: older installs acquiring pins and host/engines.json; acquiring
 bin/runtime and state_root; moving the runs directory when state_root is added.
+
+2026-09-28, re-check of the review fix: a fourth VELDO-0189 input. VELDO-0189 AC3 says the upgrade writes only the engine directory, the record's engine keys, the keys the record lacks and the two unit files; once this specification lands that list must also name the Claude Code pin under <state root>/engines, host/engines.json, bin/runtime and the receiver configuration's state_root. Release 2 notes from the same re-check: binds_refused counts only refusals from module.bind, not the later refusals in _bind; the error taxonomy does not yet list missing_evidence:engine_version:claude_code; the engine_bind_refused event carries no dispatch_id.
