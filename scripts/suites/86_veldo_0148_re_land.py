@@ -888,6 +888,21 @@ sys.exit(chosen['code'])
                   == cand.get('commit') and contains(remote, cand['commit'], final_tip)
                   and dig(effect(second.get('dispatch_id')) or {}, 'data', 'payload', 'old_tip') == second.get('watermark'))
 
+            # The metrics: the station's re-land dispatches per unit and outcomes, and the publications refused
+            # because the trunk moved, by where it moved.
+            counted = station.status() if station is not None else {}
+            LG = load('v148_landing_status', mods / 'control_landing.py')
+            moved = LG.Landing(S, setup, domain=DOMAIN, repository=REPO, effects=effects_path, target='git-origin',
+                               principal='landing', connection_key=private / 'landing', floor=None,
+                               events_root=events_root, signer='authority', sign=journal_sign).status().get('trunk_moved')
+            check('reland/stale-subject', 'the metrics count the re-land dispatches per unit, the land outcomes and the '
+                  'publications refused because the trunk moved [%s, %s, %s]'
+                  % (counted.get('relands'), counted.get('outcomes'), moved),
+                  counted.get('relands') == {R: 1, C: 1, M: 1, K: 0, G: 2} and counted.get('running') == []
+                  and counted.get('outcomes') == {'landed': 3, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1,
+                                                  'unknown': 1, 'failed': 0}
+                  and moved == {'stale-subject': 3, 'trunk-moved': 1})
+
         # AC1: a clean re-merge keeps the review bound to the unchanged evidence commit: no new build or review.
         with region('reland/review-kept'):
             got = receipts(R)

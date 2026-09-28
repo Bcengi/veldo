@@ -1894,7 +1894,10 @@ class FactoryLoop:
         return {'available': True, 'passes': self.passes, 'timer': self.timer, 'counts': dict(self.counts),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
-                'last_sources': (self.last or {}).get('sources')}
+                'last_sources': (self.last or {}).get('sources'),
+                # VELDO-0148: each land station's land dispatches: outcomes, those running, re-lands per unit.
+                'lands': {repository: line.station.status() for repository, line in sorted(self.lines.items())
+                          if line.station is not None}}
 
 
 def open_loop(config, service):
