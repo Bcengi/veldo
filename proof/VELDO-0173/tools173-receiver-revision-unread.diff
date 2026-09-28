@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1139 +1139 @@
+-        revision = (self.contract['capability'].get('configuration') or {}).get('role_revision')
++        revision = None

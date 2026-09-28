@@ -148,7 +148,10 @@ systemctl reach the user manager; it names the run's own empty runtime directory
 its own and never the configuration directory) in ENGINE_RUNTIME, and the trusted wrapper, just before
 it execs, removes EXEC_STRIPPED and that name and makes the directory the engine's XDG_RUNTIME_DIR
 (`engine_environment`). The receiver reports each launch's baseline, the names it removed and never a
-value (`baseline` event).
+value (`baseline` event). VELDO-0173: the role revision a dispatch binds (the contract's capability
+configuration `role_revision`, VELDO-0127's) reaches the engine's baseline as the run's `revision`, checked
+before acceptance; Claude Code's baseline ends with its launch tool options, and the event names the launch
+tool set, the registry tools switched off and the revision, beside the pinned version and digest.
 
 THE EXECUTION RECORD (VELDO-0141). Every run's output is kept, as it is read and in order, as its execution
 record (control_execution_record): the engine's standard output line by line (its structured events), the
@@ -1256,7 +1259,16 @@ class Receiver:
         for name in sorted(settings):
             if name in configured and configured[name] != settings[name]:
                 return 'invalid_input:adapter_environment:' + name
-        self.binding = dict(bound, argv=argv, environment=settings, configured_environment=dict(configured))
+        # VELDO-0173: the role revision the dispatch binds (VELDO-0127's, in the contract's capability
+        # configuration), whose native tools are the launch tool set; checked before acceptance.
+        revision = (self.contract['capability'].get('configuration') or {}).get('role_revision')
+        if hasattr(module, 'tool_options'):
+            try:
+                module.tool_options(bound, revision)
+            except module.Refused as error:
+                return error.code
+        self.binding = dict(bound, argv=argv, environment=settings, configured_environment=dict(configured),
+                            revision=revision)
         # VELDO-0155, VELDO-0156: the subscription token an account is configured with, the account profile
         # and the login the engine would take in its environment, checked before acceptance: a profile item
         # the baseline cannot keep out, or a login that is not a subscription, is refused by name and no
@@ -1351,7 +1363,7 @@ class Receiver:
         files written 0600 into the run's own configuration directory, the engine's own runtime directory
         named for the wrapper's strip, and the subscription token of an account configured with one. The
         receiver reports what it added and the names removed, never a value."""
-        run = self._run_directories(dispatch_id)
+        run = dict(self._run_directories(dispatch_id), revision=self.binding.get('revision'))
         engine = self.login['engine']
         try:
             extra = engine.baseline(self.binding, run, environment, servers=self.credentials or ())
@@ -1396,7 +1408,10 @@ class Receiver:
             'executable': {k: self.binding[k] for k in ('engine', 'version', 'sha256')},
             'strip_prefixes': list(SESSION_PREFIXES),
             'options': list(extra['argv']), 'environment': sorted(extra['environment']),
-            'files': sorted(extra['files']), 'run': run, 'token': token is not None,
+            'files': sorted(extra['files']), 'run': {k: run[k] for k in ('root', 'config', 'runtime')},
+            'token': token is not None,
+            # VELDO-0173: the launch tool set and the registry tools switched off, by name only.
+            'tools': extra.get('tools'),
             'removed': sorted((set(n for n in os.environ if n not in environment)
                               | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
                               - set(own))}})

@@ -473,6 +473,11 @@ out.close()
             test_record['versions'][VERSION]['baseline'] = E.BASELINE
             if hasattr(E, 'session_environment'):
                 test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
+            if hasattr(E, 'qualified_tools'):
+                # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+                tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
+                test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
+                                                        tool_classification=tools173['tool_classification'])
         (mods / 'runtime').mkdir()
         record_path = mods / 'runtime' / 'claude-qualification.json'
         record_path.write_text(json.dumps(test_record, indent=1))
@@ -723,12 +728,19 @@ out.close()
                         # VELDO-0141: the stream options, partial messages and forwarded subagent text, last.
                         + [switches[name]['name'] for name in ('include_partial_messages', 'forward_subagent_text')
                            if name in switches])
+            if hasattr(E, 'qualified_tools'):
+                # VELDO-0173: then the launch tool options of a run no role revision binds, each one argument:
+                # the in-run tools, and every other tool of the binary's registry switched off.
+                tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
+                in_run173 = sorted(n for n, row in tools173['tool_classification'].items() if row['class'] == 'in_run')
+                expected += ['--tools=' + ','.join(in_run173),
+                             '--disallowedTools=' + ','.join(sorted(set(tools173['tool_registry']) - set(in_run173)))]
             check('baseline/qualified', 'the run started from the pinned copy with the qualified flags and then exactly '
                   'the baseline, every option one the binary declares: no setting source, the run\'s --settings and '
                   '--mcp-config files, strict MCP and slash commands off, partial messages and subagent text on [%s]'
                   % argv[1:],
                   normal_record.get('state') == 'exited' and argv[:1] == [str(pinned)] and argv[1:] == expected
-                  and all(a in OPTIONS['options'] for a in argv[1:] if a.startswith('--'))
+                  and all(a.partition('=')[0] in OPTIONS['options'] for a in argv[1:] if a.startswith('--'))
                   and config_dir is not None and '--bare' not in argv and '--safe-mode' not in argv)
             env = normal.get('env') or {}
             files = normal.get('files') or {}

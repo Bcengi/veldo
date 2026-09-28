@@ -8591,6 +8591,42 @@ def cases():
     hygiene165('refused-not-counted', 'control_launch.py',
                "int(refusal.startswith('missing_evidence:engine_baseline:'))",
                "0", ['report/refused'])
+
+    # VELDO-0173: the launch tool set, the full registry switched off beside it, and the qualified evidence.
+    def tools173(name, module, old, new, rows, also=()):
+        add(173, 'tools173-' + name, '82_veldo_0173_tool_registry.py', module, old, new, rows, also)
+
+    table173 = json.loads((ROOT / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())
+    table173 = table173['claude_code']['tool_forms']['builtin_tools']
+    # AC1's first falsifier: neither the tools nor the disallowedTools option at launch.
+    tools173('options-omitted', 'control_engine_claude.py',
+             "            + list(base['stream_options']) + list(options['argv']))",
+             "            + list(base['stream_options']))", ['launch/no-revision'])
+    # AC1's second falsifier: disallowedTools built from the 22-name table, not the binary's registry.
+    tools173('disallowed-from-table', 'control_engine_claude.py',
+             "    disallowed = sorted(set(tools['registry']) - set(launch))",
+             "    disallowed = sorted(set(" + repr(table173) + ") - set(launch))", ['launch/registry'])
+    # AC2's falsifier: a classification leaving one registry tool unclassified accepted.
+    tools173('unclassified-accepted', 'control_engine_claude.py',
+             "    if unclassified:", "    if False:", ['baseline/required'])
+    tools173('registry-unchecked', 'control_engine_claude.py',
+             "    if (not isinstance(registry, list) or not registry",
+             "    if False and (not isinstance(registry, list) or not registry", ['baseline/required'])
+    tools173('classification-unchecked', 'control_engine_claude.py',
+             "    if not isinstance(classification, dict) or not all(",
+             "    if False and not all(", ['baseline/required'])
+    tools173('revision-ignored', 'control_engine_claude.py',
+             "    if revision is None:\n        launch, source = list(tools['in_run']), 'in_run'",
+             "    if True:\n        launch, source = list(tools['in_run']), 'in_run'", ['launch/revision'])
+    tools173('receiver-revision-unread', 'control_launch.py',
+             "        revision = (self.contract['capability'].get('configuration') or {}).get('role_revision')",
+             "        revision = None", ['launch/revision'])
+    tools173('tools-unreported', 'control_launch.py',
+             "            'tools': extra.get('tools'),", "            'tools': None,", ['report/tools'])
+    tools173('extractor-drops-lazy', 'extract_tools.py',
+             "        m = REQUIRE.match(expr)\n        if m:\n            return self.export(m.group(1), m.group(2), slot, depth + 1)",
+             "        m = REQUIRE.match(expr)\n        if m:\n            return []", ['evidence/registry'])
+    result[-1]['dir'] = 'proof/VELDO-0173'
     add(129, 'worker129-runtime-architecture-bypassed', '60_veldo_0053_architecture.py', 'control_launch_work.py',
         "        self.gate.require('provider_request', unit, context=context)",
         "        pass  # defect: launch without the provider architecture decision",
@@ -8865,9 +8901,9 @@ def cases():
              ['redaction/claude-keystore-value', 'redaction/codex-keystore-value'])
     # AC1: Claude Code's values put in the engine environment besides its private file.
     delivery('claude-value-in-environment', 'control_engine_claude.py',
-             "    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'secrets': {}, 'routes': routes}\n",
+             "    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],\n",
              "    return {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()\n"
-             "            for n, i in s['environment'].items() if 'handle' in i}), 'files': files, 'secrets': {}, 'routes': routes}\n",
+             "            for n, i in s['environment'].items() if 'handle' in i}), 'files': files, 'tools': options['report'],\n",
              ['delivery/claude-private-file'])
     # AC1: a server given another server's credential (every variable delivered so far forwarded to each).
     delivery('every-server-variable', 'control_engine_codex.py',

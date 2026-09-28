@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1385 +1385 @@
+-    disallowed = sorted(set(tools['registry']) - set(launch))
++    disallowed = sorted(set(['Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'NotebookEdit', 'WebFetch', 'WebSearch', 'Task', 'TodoWrite', 'TaskCreate', 'TaskUpdate', 'TaskGet', 'TaskList', 'TaskStop', 'Skill', 'REPL', 'JavaScript', 'AskUserQuestion', 'ToolSearch', 'SendUserMessage']) - set(launch))

@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1356 +1356 @@
+-    if (not isinstance(registry, list) or not registry
++    if False and (not isinstance(registry, list) or not registry

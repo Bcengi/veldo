@@ -1,0 +1,1309 @@
+{
+ "compiled_out": [
+  {
+   "binding": "Os",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "offset": 207623920,
+   "slot": "...(Os?.()??[]).filter((n)=>!nde().has(n.underlyingV1ToolName))",
+   "text": "Os=null"
+  },
+  {
+   "binding": "sr",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "offset": 207623847,
+   "slot": "...sr?[sr]:[]",
+   "text": "sr=null"
+  },
+  {
+   "binding": "nr",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "offset": 207623839,
+   "slot": "...nr?[nr]:[]",
+   "text": "nr=null"
+  },
+  {
+   "binding": "mr",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "offset": 207624363,
+   "slot": "...r?[r]:[]",
+   "text": "{return null}"
+  },
+  {
+   "binding": "ar",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "offset": 207623912,
+   "slot": "...ar?[ar]:[]",
+   "text": "ar=null"
+  },
+  {
+   "binding": "cr",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "offset": 207623928,
+   "slot": "...cr?[cr()]:[]",
+   "text": "cr=null"
+  },
+  {
+   "binding": "tr",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "offset": 207623605,
+   "slot": "...tr?[tr]:[]",
+   "text": "tr=null"
+  }
+ ],
+ "engine": "claude_code",
+ "in_run": [
+  "Agent",
+  "Bash",
+  "CronCreate",
+  "Edit",
+  "Glob",
+  "Grep",
+  "Monitor",
+  "NotebookEdit",
+  "REPL",
+  "Read",
+  "Skill",
+  "TaskStop",
+  "TodoWrite",
+  "ToolSearch",
+  "WebFetch",
+  "WebSearch",
+  "Workflow",
+  "Write"
+ ],
+ "in_run_source": "proof/VELDO-0062/cli-formats.json claude_code.tool_forms.in_run.tools",
+ "method": "the Bun standalone module graph of the .bun section; the array getAllBaseTools returns, each item resolved through local bindings, imports, lazy requires, arrays, getters and factory calls to the object that names the tool; hints are the raw literal text of the definition",
+ "registry": [
+  {
+   "definition_offset": 207368567,
+   "hint": "delegate work to a subagent",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-tj1m57zn.js",
+   "name": "Agent",
+   "name_offset": 196465962,
+   "slot": "zUt"
+  },
+  {
+   "definition_offset": 204115089,
+   "hint": "execute shell commands",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "Bash",
+   "name_offset": 195150244,
+   "slot": "...aa()?[js]:[]"
+  },
+  {
+   "definition_offset": 201329467,
+   "hint": "find files by name pattern or wildcard",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "Glob",
+   "name_offset": 195865310,
+   "slot": "...[EP,kP].filter((n)=>!nde().has(n.name))"
+  },
+  {
+   "definition_offset": 201334634,
+   "hint": "search file contents with regex (ripgrep)",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "Grep",
+   "name_offset": 195865324,
+   "slot": "...[EP,kP].filter((n)=>!nde().has(n.name))"
+  },
+  {
+   "definition_offset": 207250767,
+   "hint": "present plan for approval and start coding (plan mode only)",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-049e548v.js",
+   "name": "ExitPlanMode",
+   "name_offset": 196703418,
+   "slot": "k2"
+  },
+  {
+   "definition_offset": 201302073,
+   "hint": "read files, images, PDFs, notebooks",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "Read",
+   "name_offset": 195486038,
+   "slot": "Py"
+  },
+  {
+   "definition_offset": 203957630,
+   "hint": "modify file contents in place",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "Edit",
+   "name_offset": 195150258,
+   "slot": "Iv"
+  },
+  {
+   "definition_offset": 201118388,
+   "hint": "create or overwrite files",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "Write",
+   "name_offset": 195150904,
+   "slot": "bw"
+  },
+  {
+   "definition_offset": 203970997,
+   "hint": "edit Jupyter notebook cells (.ipynb)",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "NotebookEdit",
+   "name_offset": 195867046,
+   "slot": "sre"
+  },
+  {
+   "definition_offset": 207549672,
+   "hint": "list the memory stores and the documents in them",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "memory_list",
+   "name_offset": 196898982,
+   "slot": "...Yt"
+  },
+  {
+   "definition_offset": 201345934,
+   "hint": "read a document from a memory store",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "memory_read",
+   "name_offset": 196898999,
+   "slot": "...Yt"
+  },
+  {
+   "definition_offset": 198198894,
+   "hint": "save a document to a memory store",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-fm23xn5s.js",
+   "name": "memory_write",
+   "name_offset": 196899016,
+   "slot": "...Yt"
+  },
+  {
+   "definition_offset": 201788318,
+   "hint": "fetch and extract content from a URL",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "WebFetch",
+   "name_offset": 197266704,
+   "slot": "kh"
+  },
+  {
+   "definition_offset": 207546984,
+   "hint": "manage the session task checklist",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "TodoWrite",
+   "name_offset": 199441174,
+   "slot": "qt"
+  },
+  {
+   "definition_offset": 207536139,
+   "hint": "report code-review findings as a structured list",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "ReportFindings",
+   "name_offset": 199400035,
+   "slot": "jt"
+  },
+  {
+   "definition_offset": 207529115,
+   "hint": "search the web for current information",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "WebSearch",
+   "name_offset": 199442490,
+   "slot": "Nt"
+  },
+  {
+   "definition_offset": 207516959,
+   "hint": "kill a running background task",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "TaskStop",
+   "name_offset": 199396594,
+   "slot": "Oe"
+  },
+  {
+   "definition_offset": 207450492,
+   "hint": "prompt the user with a multiple-choice question",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-xjqr7pfd.js",
+   "name": "AskUserQuestion",
+   "name_offset": 199383743,
+   "slot": "iq"
+  },
+  {
+   "definition_offset": 207559694,
+   "hint": "draft product or model-behavior feedback report queue",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "SendFeedback",
+   "name_offset": 207554268,
+   "slot": "no"
+  },
+  {
+   "definition_offset": 207422017,
+   "hint": "invoke a slash-command skill",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-d39pxmck.js",
+   "name": "Skill",
+   "name_offset": 195689868,
+   "slot": "pYe"
+  },
+  {
+   "definition_offset": 207407242,
+   "hint": "switch to plan mode to design an approach before coding",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-d39pxmck.js",
+   "name": "EnterPlanMode",
+   "name_offset": 199383720,
+   "slot": "RUt"
+  },
+  {
+   "definition_offset": 223812251,
+   "hint": "sync local design system components to a claude.ai/design project",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-644ad73c.js",
+   "name": "DesignSync",
+   "name_offset": 200102432,
+   "slot": "Ss"
+  },
+  {
+   "definition_offset": 223847811,
+   "hint": "work with Claude Design (claude.ai/design) projects",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-wtvnrw6c.js",
+   "name": "ClaudeDesign",
+   "name_offset": 204133910,
+   "slot": "...e?[e]:[]"
+  },
+  {
+   "definition_offset": 223894308,
+   "hint": "read and write the session's attached claude.ai project",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-njp61kjw.js",
+   "name": "Projects",
+   "name_offset": 223885453,
+   "slot": "_s"
+  },
+  {
+   "definition_offset": 207609289,
+   "hint": "create a task in the task list",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "TaskCreate",
+   "name_offset": 199441154,
+   "slot": "...Pw()?[Lo,$o,Wo,Ho]:[]"
+  },
+  {
+   "definition_offset": 207611496,
+   "hint": "retrieve a task by ID",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "TaskGet",
+   "name_offset": 199442453,
+   "slot": "...Pw()?[Lo,$o,Wo,Ho]:[]"
+  },
+  {
+   "definition_offset": 207615808,
+   "hint": "update a task",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "TaskUpdate",
+   "name_offset": 199442470,
+   "slot": "...Pw()?[Lo,$o,Wo,Ho]:[]"
+  },
+  {
+   "definition_offset": 207620737,
+   "hint": "list all tasks",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "TaskList",
+   "name_offset": 199396576,
+   "slot": "...Pw()?[Lo,$o,Wo,Ho]:[]"
+  },
+  {
+   "definition_offset": 223455978,
+   "hint": "render an HTML file to a claude.ai web page",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-47p047tr.js",
+   "name": "Artifact",
+   "name_offset": 194413085,
+   "slot": "...or?[or]:[]"
+  },
+  {
+   "definition_offset": 223733304,
+   "hint": "read and reply to comment threads on a published artifact; watch it for republishes",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-ywevghng.js",
+   "name": "ArtifactComments",
+   "name_offset": 194413142,
+   "slot": "...Es()"
+  },
+  {
+   "definition_offset": 223733645,
+   "hint": "read and write a published artifact's shared database",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-ywevghng.js",
+   "name": "ArtifactData",
+   "name_offset": 194413164,
+   "slot": "...Es()"
+  },
+  {
+   "definition_offset": 223733765,
+   "hint": null,
+   "hint_source": null,
+   "module": "/$bunfs/root/chunk-ywevghng.js",
+   "name": "ArtifactCheck",
+   "name_offset": 194413182,
+   "slot": "...Es()"
+  },
+  {
+   "definition_offset": 223771868,
+   "hint": "run appifact SDK JavaScript against an artifact",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-288vz79x.js",
+   "name": "AppifactRepl",
+   "name_offset": 214400244,
+   "slot": "...rr?[rr]:[]"
+  },
+  {
+   "definition_offset": 207576148,
+   "hint": "code intelligence (definitions, references, symbols, hover)",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "LSP",
+   "name_offset": 199441193,
+   "slot": "...wwe()?[nt]:[]"
+  },
+  {
+   "definition_offset": 207591891,
+   "hint": "create an isolated git worktree and switch into it",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "EnterWorktree",
+   "name_offset": 199400012,
+   "slot": "...G6e()?[Eo,Ao]:[]"
+  },
+  {
+   "definition_offset": 207601643,
+   "hint": "exit a worktree session and return to the original directory",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "ExitWorktree",
+   "name_offset": 199444209,
+   "slot": "...G6e()?[Eo,Ao]:[]"
+  },
+  {
+   "definition_offset": 222804079,
+   "hint": "send messages to agent teammates",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-ke17s3sn.js",
+   "name": "SendMessage",
+   "name_offset": 199403639,
+   "slot": "ct()"
+  },
+  {
+   "definition_offset": 222864988,
+   "hint": "send files to another Claude Code session",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-ma4ak0s0.js",
+   "name": "SendFile",
+   "name_offset": 202939779,
+   "slot": "vs()"
+  },
+  {
+   "definition_offset": 222697409,
+   "hint": "list agents you can SendMessage to",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-z3gzkz79.js",
+   "name": "ListAgents",
+   "name_offset": 199404410,
+   "slot": "...ur?[ur]:[]"
+  },
+  {
+   "definition_offset": 222703981,
+   "hint": "upload ONBOARDING.md and get a team share link",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-pdfshf1r.js",
+   "name": "ShareOnboardingGuide",
+   "name_offset": 199398308,
+   "slot": "...dr?[dr]:[]"
+  },
+  {
+   "definition_offset": 222889440,
+   "hint": "wait for and receive queued harness events",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-weh0gtje.js",
+   "name": "Poll",
+   "name_offset": 198410599,
+   "slot": "...re?[re]:[]"
+  },
+  {
+   "definition_offset": 224090110,
+   "hint": "orchestrate subagents with deterministic JavaScript workflow",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-5t9e9kmn.js",
+   "name": "Workflow",
+   "name_offset": 199389477,
+   "slot": "...fe?[fe]:[]"
+  },
+  {
+   "definition_offset": 224021293,
+   "hint": "schedule a recurring or one-shot prompt",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-2gs5sndh.js",
+   "name": "CronCreate",
+   "name_offset": 199427768,
+   "slot": "...hs"
+  },
+  {
+   "definition_offset": 224028225,
+   "hint": "cancel a scheduled cron job",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-anq85z92.js",
+   "name": "CronDelete",
+   "name_offset": 199427784,
+   "slot": "...hs"
+  },
+  {
+   "definition_offset": 223924990,
+   "hint": "list active cron jobs",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-cmqgtna8.js",
+   "name": "CronList",
+   "name_offset": 199427801,
+   "slot": "...hs"
+  },
+  {
+   "definition_offset": 223930956,
+   "hint": "read self-hosted environment aggregates and queue counts",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_get_pool",
+   "name_offset": 214223857,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 223932921,
+   "hint": "list registered self-hosted runners for an environment",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_list_runners",
+   "name_offset": 214223891,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 223931940,
+   "hint": "list queued/assigned sessions in a self-hosted environment",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_list_sessions",
+   "name_offset": 214223929,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 223933834,
+   "hint": "list self-hosted environment secrets (metadata only)",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_list_secrets",
+   "name_offset": 214223968,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 223939756,
+   "hint": "start a local self-hosted runner process for try-it-out",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_spawn_local",
+   "name_offset": 214224006,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 223934829,
+   "hint": "probe local self-hosted runner /healthz endpoint",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_read_health",
+   "name_offset": 214224043,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 223936248,
+   "hint": "read self-hosted runner Prometheus gauges from /metrics",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_read_metrics",
+   "name_offset": 214224080,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 223941862,
+   "hint": "tail self-hosted runner log file with secret redaction",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_tail_log",
+   "name_offset": 214224118,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 223937361,
+   "hint": "requeue a stuck self-hosted runner session onto another runner",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-qp905ja6.js",
+   "name": "self_hosted_runner_requeue_session",
+   "name_offset": 214224152,
+   "slot": "...Vo()?gs:[]"
+  },
+  {
+   "definition_offset": 207523968,
+   "hint": "self-pace the dynamic /loop: pick a delay before the next tick, or stop/end/cancel the dynamic loop with stop:true (a fixed-interval /loop is a recurring cron \\u2014 cancel it with ${Jk})",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "ScheduleWakeup",
+   "name_offset": 199390124,
+   "slot": "zt"
+  },
+  {
+   "definition_offset": 223958240,
+   "hint": "manage scheduled cloud agent routines; inspect their run history and logs",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-vzdd5emr.js",
+   "name": "RemoteTrigger",
+   "name_offset": 200024833,
+   "slot": "...Ko?[Ko]:[]"
+  },
+  {
+   "definition_offset": 223970467,
+   "hint": "discover MCP connectors by keyword",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-z4d9x8wt.js",
+   "name": "SearchMcpRegistry",
+   "name_offset": 214338951,
+   "slot": "...Go?[Go]:[]"
+  },
+  {
+   "definition_offset": 223976388,
+   "hint": "resolve MCP connector payloads by directoryUuid",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-k0z2nq9r.js",
+   "name": "SuggestConnectors",
+   "name_offset": 214341661,
+   "slot": "...Xo?[Xo]:[]"
+  },
+  {
+   "definition_offset": 207515644,
+   "hint": "show the Cowork onboarding role picker",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "ShowOnboardingRolePicker",
+   "name_offset": 202940956,
+   "slot": "Et"
+  },
+  {
+   "definition_offset": 207514421,
+   "hint": "read queued external notifications (webhooks, triggers)",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "ReadNotifications",
+   "name_offset": 199445878,
+   "slot": "It"
+  },
+  {
+   "definition_offset": 222883438,
+   "hint": "Claude in Chrome",
+   "hint_source": "label",
+   "module": "/$bunfs/root/chunk-060d2z6q.js",
+   "name": "enable__mcp__claude-in-chrome",
+   "name_offset": 222879715,
+   "slot": "...Is"
+  },
+  {
+   "definition_offset": 222883519,
+   "hint": "Browser",
+   "hint_source": "label",
+   "module": "/$bunfs/root/chunk-060d2z6q.js",
+   "name": "enable__mcp__remote-devices__Claude_Browser",
+   "name_offset": 222879749,
+   "slot": "...Is"
+  },
+  {
+   "definition_offset": 222883591,
+   "hint": "Computer use",
+   "hint_source": "label",
+   "module": "/$bunfs/root/chunk-060d2z6q.js",
+   "name": "enable__mcp__remote-devices__computer",
+   "name_offset": 222879797,
+   "slot": "...Is"
+  },
+  {
+   "definition_offset": 222883668,
+   "hint": "Your computer",
+   "hint_source": "label",
+   "module": "/$bunfs/root/chunk-060d2z6q.js",
+   "name": "request_computer",
+   "name_offset": 222879839,
+   "slot": "...Is"
+  },
+  {
+   "definition_offset": 223982547,
+   "hint": "list the user's installed MCP connectors",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-9b9arvkx.js",
+   "name": "ListConnectors",
+   "name_offset": 214195644,
+   "slot": "...Qo?[Qo]:[]"
+  },
+  {
+   "definition_offset": 214222077,
+   "hint": "Search the user's claude.ai plugin catalog by keyword to find plugins that might help complete the task.",
+   "hint_source": "description",
+   "module": "/$bunfs/root/chunk-33nksgxd.js",
+   "name": "SearchPlugins",
+   "name_offset": 199437009,
+   "slot": "...ys"
+  },
+  {
+   "definition_offset": 214222300,
+   "hint": "Search the user's claude.ai skills by keyword to find skills that might help complete the task.",
+   "hint_source": "description",
+   "module": "/$bunfs/root/chunk-33nksgxd.js",
+   "name": "SearchSkills",
+   "name_offset": 199437029,
+   "slot": "...ys"
+  },
+  {
+   "definition_offset": 214215444,
+   "hint": "render a plugin install card",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-33nksgxd.js",
+   "name": "SuggestPluginInstall",
+   "name_offset": 199437048,
+   "slot": "...ys"
+  },
+  {
+   "definition_offset": 214217426,
+   "hint": "render addable claude.ai skills by keyword",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-33nksgxd.js",
+   "name": "SuggestSkills",
+   "name_offset": 199437075,
+   "slot": "...ys"
+  },
+  {
+   "definition_offset": 214209732,
+   "hint": null,
+   "hint_source": null,
+   "module": "/$bunfs/root/chunk-33nksgxd.js",
+   "name": "ListPlugins",
+   "name_offset": 199437095,
+   "slot": "...ys"
+  },
+  {
+   "definition_offset": 214210782,
+   "hint": "the user's enabled claude.ai skills",
+   "hint_source": "subject",
+   "module": "/$bunfs/root/chunk-33nksgxd.js",
+   "name": "ListSkills",
+   "name_offset": 199437113,
+   "slot": "...ys"
+  },
+  {
+   "definition_offset": 206833304,
+   "hint": "watch, monitor, or keep an eye on a process/log/command or WebSocket \\u2014 stream each stdout line as a live notification",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-emcb57ny.js",
+   "name": "Monitor",
+   "name_offset": 196465316,
+   "slot": "...Zo?[Zo]:[]"
+  },
+  {
+   "definition_offset": 207520026,
+   "hint": "send a message to the user \\u2014 your primary visible output channel",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "SendUserMessage",
+   "name_offset": 194359704,
+   "slot": "At"
+  },
+  {
+   "definition_offset": 223991069,
+   "hint": "deliver files (screenshots, reports, artifacts) to the user",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-d0w508za.js",
+   "name": "SendUserFile",
+   "name_offset": 195430119,
+   "slot": "ks"
+  },
+  {
+   "definition_offset": 224010902,
+   "hint": "propose skills from recurring procedures for the user to review and save",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-bafknbs0.js",
+   "name": "propose_skills",
+   "name_offset": 199439936,
+   "slot": "Ts"
+  },
+  {
+   "definition_offset": 223783172,
+   "hint": "propose a session goal condition for the user to approve with one keypress",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-3hk9pdpn.js",
+   "name": "ProposeGoal",
+   "name_offset": 199434123,
+   "slot": "bs"
+  },
+  {
+   "definition_offset": 223792674,
+   "hint": "send a notification to the user via terminal and optionally mobile",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-yyfhmff9.js",
+   "name": "PushNotification",
+   "name_offset": 199397652,
+   "slot": "...Jo?[Jo]:[]"
+  },
+  {
+   "definition_offset": 213985930,
+   "hint": "read a relayed inbox message from a linked thread",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-d8j751k5.js",
+   "name": "FetchInboxMessage",
+   "name_offset": 213955863,
+   "slot": "...Se?[Se]:[]"
+  },
+  {
+   "definition_offset": 223918469,
+   "hint": "end the conversation \\u2014 only for sustained user abuse, or when the user explicitly asks to see it demonstrated",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-9dk9ghvg.js",
+   "name": "EndConversation",
+   "name_offset": 199433438,
+   "slot": "...er?[er]:[]"
+  },
+  {
+   "definition_offset": 214180695,
+   "hint": "execute Windows PowerShell commands",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-x1gasm55.js",
+   "name": "PowerShell",
+   "name_offset": 195150919,
+   "slot": "...ut()?[ut()]:[]"
+  },
+  {
+   "definition_offset": 207459644,
+   "hint": "list resources from connected MCP servers",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-mfpb43xd.js",
+   "name": "ListMcpResourcesTool",
+   "name_offset": 201977769,
+   "slot": "gx"
+  },
+  {
+   "definition_offset": 207464587,
+   "hint": "read a specific MCP resource by URI",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-mfpb43xd.js",
+   "name": "ReadMcpResourceTool",
+   "name_offset": 200757103,
+   "slot": "hx"
+  },
+  {
+   "definition_offset": 207461969,
+   "hint": "list the children of an MCP directory resource",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-mfpb43xd.js",
+   "name": "ReadMcpResourceDirTool",
+   "name_offset": 200756274,
+   "slot": "K$"
+  },
+  {
+   "definition_offset": 207585072,
+   "hint": "refresh or re-sync tool lists from connected MCP servers, recover missing device or server tools",
+   "hint_source": "searchHint",
+   "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+   "name": "RefreshMcpTools",
+   "name_offset": 199444231,
+   "slot": "...a.CLAUDE_CODE_ENABLE_REFRESH_MCP_TOOLS?[st]:[]"
+  },
+  {
+   "definition_offset": 201528250,
+   "hint": null,
+   "hint_source": null,
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "ToolSearch",
+   "name_offset": 196559402,
+   "slot": "...Qg()?[xCn]:[]"
+  },
+  {
+   "definition_offset": 202337862,
+   "hint": null,
+   "hint_source": null,
+   "module": "/$bunfs/root/chunk-4n4g22z6.js",
+   "name": "WaitForMcpServers",
+   "name_offset": 198475899,
+   "slot": "Dlr"
+  }
+ ],
+ "registry_source": {
+  "anchor": "getAllBaseTools:AC",
+  "function": "AC",
+  "module": "/$bunfs/root/chunk-0j1ny4y1.js",
+  "offset": 207624376,
+  "slots": 68
+ },
+ "schema": "veldo.proof-tools/v1",
+ "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+ "spec_id": "VELDO-0173",
+ "tool_classification": {
+  "Agent": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: delegate work to a subagent"
+  },
+  "AppifactRepl": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: run appifact SDK JavaScript against an artifact"
+  },
+  "Artifact": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: render an HTML file to a claude.ai web page"
+  },
+  "ArtifactCheck": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition carries no literal hint"
+  },
+  "ArtifactComments": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read and reply to comment threads on a published artifact; watch it for republishes"
+  },
+  "ArtifactData": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read and write a published artifact's shared database"
+  },
+  "AskUserQuestion": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: prompt the user with a multiple-choice question"
+  },
+  "Bash": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: execute shell commands"
+  },
+  "ClaudeDesign": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: work with Claude Design (claude.ai/design) projects"
+  },
+  "CronCreate": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: schedule a recurring or one-shot prompt"
+  },
+  "CronDelete": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: cancel a scheduled cron job"
+  },
+  "CronList": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list active cron jobs"
+  },
+  "DesignSync": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: sync local design system components to a claude.ai/design project"
+  },
+  "Edit": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: modify file contents in place"
+  },
+  "EndConversation": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: end the conversation \\u2014 only for sustained user abuse, or when the user explicitly asks to see it demonstrated"
+  },
+  "EnterPlanMode": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: switch to plan mode to design an approach before coding"
+  },
+  "EnterWorktree": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: create an isolated git worktree and switch into it"
+  },
+  "ExitPlanMode": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: present plan for approval and start coding (plan mode only)"
+  },
+  "ExitWorktree": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: exit a worktree session and return to the original directory"
+  },
+  "FetchInboxMessage": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read a relayed inbox message from a linked thread"
+  },
+  "Glob": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: find files by name pattern or wildcard"
+  },
+  "Grep": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: search file contents with regex (ripgrep)"
+  },
+  "LSP": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: code intelligence (definitions, references, symbols, hover)"
+  },
+  "ListAgents": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list agents you can SendMessage to"
+  },
+  "ListConnectors": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list the user's installed MCP connectors"
+  },
+  "ListMcpResourcesTool": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list resources from connected MCP servers"
+  },
+  "ListPlugins": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition carries no literal hint"
+  },
+  "ListSkills": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's subject: the user's enabled claude.ai skills"
+  },
+  "Monitor": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: watch, monitor, or keep an eye on a process/log/command or WebSocket \\u2014 stream each stdout line as a live notification"
+  },
+  "NotebookEdit": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: edit Jupyter notebook cells (.ipynb)"
+  },
+  "Poll": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: wait for and receive queued harness events"
+  },
+  "PowerShell": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: execute Windows PowerShell commands"
+  },
+  "Projects": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read and write the session's attached claude.ai project"
+  },
+  "ProposeGoal": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: propose a session goal condition for the user to approve with one keypress"
+  },
+  "PushNotification": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send a notification to the user via terminal and optionally mobile"
+  },
+  "REPL": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; this build registers no REPL tool: its registry slot is compiled out (function mr(){return null})",
+   "registered": false
+  },
+  "Read": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: read files, images, PDFs, notebooks"
+  },
+  "ReadMcpResourceDirTool": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list the children of an MCP directory resource"
+  },
+  "ReadMcpResourceTool": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read a specific MCP resource by URI"
+  },
+  "ReadNotifications": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read queued external notifications (webhooks, triggers)"
+  },
+  "RefreshMcpTools": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: refresh or re-sync tool lists from connected MCP servers, recover missing device or server tools"
+  },
+  "RemoteTrigger": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: manage scheduled cloud agent routines; inspect their run history and logs"
+  },
+  "ReportFindings": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: report code-review findings as a structured list"
+  },
+  "ScheduleWakeup": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: self-pace the dynamic /loop: pick a delay before the next tick, or stop/end/cancel the dynamic loop with stop:true (a fixed-interval /loop is a recurring cron \\u2014 cancel it with ${Jk})"
+  },
+  "SearchMcpRegistry": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: discover MCP connectors by keyword"
+  },
+  "SearchPlugins": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's description: Search the user's claude.ai plugin catalog by keyword to find plugins that might help complete the task."
+  },
+  "SearchSkills": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's description: Search the user's claude.ai skills by keyword to find skills that might help complete the task."
+  },
+  "SendFeedback": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: draft product or model-behavior feedback report queue"
+  },
+  "SendFile": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send files to another Claude Code session"
+  },
+  "SendMessage": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send messages to agent teammates"
+  },
+  "SendUserFile": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: deliver files (screenshots, reports, artifacts) to the user"
+  },
+  "SendUserMessage": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send a message to the user \\u2014 your primary visible output channel"
+  },
+  "ShareOnboardingGuide": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: upload ONBOARDING.md and get a team share link"
+  },
+  "ShowOnboardingRolePicker": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: show the Cowork onboarding role picker"
+  },
+  "Skill": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: invoke a slash-command skill"
+  },
+  "SuggestConnectors": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: resolve MCP connector payloads by directoryUuid"
+  },
+  "SuggestPluginInstall": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: render a plugin install card"
+  },
+  "SuggestSkills": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: render addable claude.ai skills by keyword"
+  },
+  "TaskCreate": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: create a task in the task list"
+  },
+  "TaskGet": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: retrieve a task by ID"
+  },
+  "TaskList": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list all tasks"
+  },
+  "TaskStop": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: kill a running background task"
+  },
+  "TaskUpdate": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: update a task"
+  },
+  "TodoWrite": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: manage the session task checklist"
+  },
+  "ToolSearch": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition carries no literal hint"
+  },
+  "WaitForMcpServers": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition carries no literal hint"
+  },
+  "WebFetch": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: fetch and extract content from a URL"
+  },
+  "WebSearch": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: search the web for current information"
+  },
+  "Workflow": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: orchestrate subagents with deterministic JavaScript workflow"
+  },
+  "Write": {
+   "class": "in_run",
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: create or overwrite files"
+  },
+  "enable__mcp__claude-in-chrome": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's label: Claude in Chrome"
+  },
+  "enable__mcp__remote-devices__Claude_Browser": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's label: Browser"
+  },
+  "enable__mcp__remote-devices__computer": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's label: Computer use"
+  },
+  "memory_list": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list the memory stores and the documents in them"
+  },
+  "memory_read": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read a document from a memory store"
+  },
+  "memory_write": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: save a document to a memory store"
+  },
+  "propose_skills": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: propose skills from recurring procedures for the user to review and save"
+  },
+  "request_computer": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's label: Your computer"
+  },
+  "self_hosted_runner_get_pool": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read self-hosted environment aggregates and queue counts"
+  },
+  "self_hosted_runner_list_runners": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list registered self-hosted runners for an environment"
+  },
+  "self_hosted_runner_list_secrets": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list self-hosted environment secrets (metadata only)"
+  },
+  "self_hosted_runner_list_sessions": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list queued/assigned sessions in a self-hosted environment"
+  },
+  "self_hosted_runner_read_health": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: probe local self-hosted runner /healthz endpoint"
+  },
+  "self_hosted_runner_read_metrics": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read self-hosted runner Prometheus gauges from /metrics"
+  },
+  "self_hosted_runner_requeue_session": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: requeue a stuck self-hosted runner session onto another runner"
+  },
+  "self_hosted_runner_spawn_local": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: start a local self-hosted runner process for try-it-out"
+  },
+  "self_hosted_runner_tail_log": {
+   "class": "outward",
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: tail self-hosted runner log file with secret redaction"
+  }
+ },
+ "tool_registry": [
+  "Agent",
+  "AppifactRepl",
+  "Artifact",
+  "ArtifactCheck",
+  "ArtifactComments",
+  "ArtifactData",
+  "AskUserQuestion",
+  "Bash",
+  "ClaudeDesign",
+  "CronCreate",
+  "CronDelete",
+  "CronList",
+  "DesignSync",
+  "Edit",
+  "EndConversation",
+  "EnterPlanMode",
+  "EnterWorktree",
+  "ExitPlanMode",
+  "ExitWorktree",
+  "FetchInboxMessage",
+  "Glob",
+  "Grep",
+  "LSP",
+  "ListAgents",
+  "ListConnectors",
+  "ListMcpResourcesTool",
+  "ListPlugins",
+  "ListSkills",
+  "Monitor",
+  "NotebookEdit",
+  "Poll",
+  "PowerShell",
+  "Projects",
+  "ProposeGoal",
+  "PushNotification",
+  "Read",
+  "ReadMcpResourceDirTool",
+  "ReadMcpResourceTool",
+  "ReadNotifications",
+  "RefreshMcpTools",
+  "RemoteTrigger",
+  "ReportFindings",
+  "ScheduleWakeup",
+  "SearchMcpRegistry",
+  "SearchPlugins",
+  "SearchSkills",
+  "SendFeedback",
+  "SendFile",
+  "SendMessage",
+  "SendUserFile",
+  "SendUserMessage",
+  "ShareOnboardingGuide",
+  "ShowOnboardingRolePicker",
+  "Skill",
+  "SuggestConnectors",
+  "SuggestPluginInstall",
+  "SuggestSkills",
+  "TaskCreate",
+  "TaskGet",
+  "TaskList",
+  "TaskStop",
+  "TaskUpdate",
+  "TodoWrite",
+  "ToolSearch",
+  "WaitForMcpServers",
+  "WebFetch",
+  "WebSearch",
+  "Workflow",
+  "Write",
+  "enable__mcp__claude-in-chrome",
+  "enable__mcp__remote-devices__Claude_Browser",
+  "enable__mcp__remote-devices__computer",
+  "memory_list",
+  "memory_read",
+  "memory_write",
+  "propose_skills",
+  "request_computer",
+  "self_hosted_runner_get_pool",
+  "self_hosted_runner_list_runners",
+  "self_hosted_runner_list_secrets",
+  "self_hosted_runner_list_sessions",
+  "self_hosted_runner_read_health",
+  "self_hosted_runner_read_metrics",
+  "self_hosted_runner_requeue_session",
+  "self_hosted_runner_spawn_local",
+  "self_hosted_runner_tail_log"
+ ],
+ "unregistered_in_run": {
+  "REPL": {
+   "offset": 207624350,
+   "slot": "function mr(){return null}",
+   "use": "let _=mr();if(_!==null&&Qk()&&!r?.skipReplFilter)"
+  }
+ },
+ "version": "2.1.281"
+}
