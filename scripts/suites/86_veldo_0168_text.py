@@ -21,6 +21,7 @@ def _v168_suite():
     production = {
         'control_channel_presentation.py': ROOT / ".veldo" / "control_channel_presentation.py",
         'control_channel_presentation_text.py': ROOT / ".veldo" / "control_channel_presentation_text.py",
+        'control_channel_presentation_v1.py': ROOT / ".veldo" / "control_channel_presentation_v1.py",
         'control_channel_projection.py': ROOT / ".veldo" / "control_channel_projection.py",
         'control_telegram_report.py': ROOT / ".veldo" / "control_telegram_report.py",
         'control_intake.py': ROOT / ".veldo" / "control_intake.py",
@@ -118,8 +119,8 @@ def _v168_suite():
                 Path(os.environ['VELDO_0168_CAPTURE']).write_text(json.dumps(receipt, indent=1) + '\n')
             shown = '\n'.join((receipt or {}).get('rendered', []))
             check('lines/decision', 'brief and signed risk preserve three lines and spacing',
-                  shown.count(expected(text)) == 2 and receipt['request']['brief'] == text
-                  and receipt['risk_statement'] == text)
+                  shown.count(expected(text)) == 2 and (receipt or {}).get('request', {}).get('brief') == text
+                  and (receipt or {}).get('risk_statement') == text)
             nid, notice_brief, _ = opened(text)
             entry = next(e for e in ing.inbox.index()['entries'] if e['id'] == nid)
             projected = projection._project(entry)
@@ -215,7 +216,7 @@ def _v168_suite():
                               and o.get('parts') for o in group) for group, tabs in zip(observations, (2, 1, 1)))
                   and all((attempt(obj.metrics, {}).get('rendering') or {}).get('sent', 0) > 0
                           for obj in (ing.presenter, projection, reporter))
-                  and (long.get('render_stats') or {}).get('hard_cuts') == len(hard))
+                  and ((long or {}).get('render_stats') or {}).get('hard_cuts') == len(hard))
 
             intake = IN.Intake(ing.inbox.store, ing.inbox.membership if hasattr(ing.inbox, 'membership') else A.CM,
                                A.AC, ing.acquirer, ing.conn, domain=A.ids['domain_uuid'],
@@ -259,8 +260,9 @@ def _v168_suite():
                   len(sent_texts) > 10 and all(t == t.strip(' \n') for t in sent_texts)
                   and all(p == p.strip(' \n') for p in soft_parts + parts + (separate or [])))
 
-            # Inventory all engine Bot API endpoints and all calls into the three in-scope send seams.
-            endpoints, calls = set(), set()
+            # Inventory all engine Bot API endpoints and all calls into the four in-scope send seams, in the
+            # engine's installed copies and in the production copies this suite runs.
+            inventories = {}
             def walk(node, file, parents=()):
                 if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
                     parents += (node.name,)
@@ -272,18 +274,25 @@ def _v168_suite():
                         calls.add((file, '.'.join(parents), receiver))
                 for child in ast.iter_child_nodes(node):
                     walk(child, file, parents)
-            for file in (ROOT / 'engine/.veldo').glob('*.py'):
-                walk(ast.parse(file.read_text()), file.name)
+            for label, folder in (('engine', ROOT / 'engine/.veldo'), ('production', organs)):
+                endpoints, calls = set(), set()
+                for file in sorted(folder.glob('*.py')):
+                    walk(ast.parse(file.read_text()), file.name)
+                inventories[label] = (endpoints, calls)
             wanted_endpoints = {('control_channel_projection.py', 'TelegramEdge.send'),
                                 ('control_channel_presentation.py', 'TelegramPresentationEdge.send')}
             wanted_calls = {('control_channel_projection.py', 'Projection._send', 'self.edge'),
                             ('control_channel_presentation.py', 'Presenter._send', 'self.edge'),
                             ('control_telegram_report.py', 'Reporter._send', 'self.edge'),
                             ('control_intake.py', 'Intake._ask', 'self.asker')}
+            # The repository's own doorbell (.veldo/request_doorbell.py, not installed into the engine) is
+            # named outside the set by the specification.
+            outside = {('request_doorbell.py', 'TelegramSink.send')}
             scaffold = load('v168_scaffold', ROOT / '.veldo/init_scaffold.py')
             assets = ['.veldo/control_channel_presentation_text.py', '.veldo/control_channel_presentation_v1.py']
             check('inventory/sends-and-assets', 'complete endpoint and send inventory; new renderer assets installed identically',
-                  endpoints == wanted_endpoints and calls == wanted_calls
+                  inventories['engine'] == (wanted_endpoints, wanted_calls)
+                  and inventories['production'] == (wanted_endpoints | outside, wanted_calls)
                   and all(rel in scaffold._FILES and (ROOT / rel).is_file()
                           and (ROOT / rel).read_bytes() == (ROOT / 'engine' / rel).read_bytes() for rel in assets))
         except Exception as error:
