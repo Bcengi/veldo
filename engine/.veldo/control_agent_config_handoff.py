@@ -290,7 +290,9 @@ def codex(configuration, capability, inventory, config, *, catalog=None):
     configuration['tools.experimental_request_user_input'] = {'enabled': False}
     configuration['features.sleep_tool'] = {'enabled': False}
     configuration['features.goals'] = False
-    configuration['features.multi_agent_v2'] = {'enabled': bool(set(revision['native_tools']) & {'multi_agent', 'sub_agents'})}
+    agents = bool(set(revision['native_tools']) & {'multi_agent', 'sub_agents'})
+    configuration['features.multi_agent'] = agents
+    configuration['features.multi_agent_v2'] = {'enabled': agents}
     configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'
     configuration['developer_instructions'] = capability['instructions']
     for server, entry in inventory.items():

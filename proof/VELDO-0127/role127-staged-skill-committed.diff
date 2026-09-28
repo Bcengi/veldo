@@ -1,6 +1,6 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -398,7 +398,7 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py (registered mutant)
+@@ -427,7 +427,7 @@
                  path = Path(capability['project']) / path
              path.parent.mkdir(parents=True, exist_ok=True)
              with path.open('a') as handle:

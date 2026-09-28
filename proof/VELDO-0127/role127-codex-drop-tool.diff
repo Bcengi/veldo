@@ -1,6 +1,6 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -281,7 +281,7 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py (registered mutant)
+@@ -296,7 +296,7 @@
      configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'
      configuration['developer_instructions'] = capability['instructions']
      for server, entry in inventory.items():
@@ -8,4 +8,4 @@
 +        configuration['mcp_servers'][server]['enabled_tools'] = []
          configuration['mcp_servers'][server]['required'] = True
      # The receiver stages only these generated skills in the clone's discovery directory.
-     files = {}
+     if catalog is None:

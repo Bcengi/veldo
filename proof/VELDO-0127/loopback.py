@@ -144,7 +144,8 @@ if __name__ == '__main__':
     cfg['mcp_servers'] = run['configuration']['mcp_servers']
     capability = {'revision':run['revision'], 'instructions':run['configuration']['developer_instructions'], 'skills':[]}
     H.codex(cfg, capability, {'jira':{'tools':['jira_search']}}, Path('/unused'))
-    result = capture(binary, cfg)
+    catalog = H.codex_model(X.load_qualification(), capability['revision'])
+    result = capture(binary, cfg, catalog=catalog)
     result['expected'] = run['expected']
     evidence = load('capture_evidence', ROOT / 'proof/VELDO-0127/evidence.py')
     result['production'] = evidence.production(ROOT)

@@ -1,6 +1,6 @@
---- a/.veldo/control_agent_config.py
-+++ b/.veldo/control_agent_config.py
-@@ -154,6 +154,9 @@
+--- .veldo/control_agent_config.py
++++ .veldo/control_agent_config.py (registered mutant)
+@@ -158,6 +158,9 @@
              self.observe(dict(about, outcome='refused', refusal=error.code))
              raise Refused(error.code) from None
          self.observe(dict(about, outcome='saved', role=name, revision=result['revision'], digest=result['digest']))

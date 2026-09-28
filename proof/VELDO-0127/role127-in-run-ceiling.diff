@@ -1,5 +1,5 @@
---- a/.veldo/control_engine_claude.py
-+++ b/.veldo/control_engine_claude.py
+--- .veldo/control_engine_claude.py
++++ .veldo/control_engine_claude.py (registered mutant)
 @@ -1389,7 +1389,7 @@
          native = revision.get('native_tools') if isinstance(revision, dict) else None
          if not isinstance(native, list) or not all(isinstance(n, str) and TOOL_NAME.fullmatch(n) for n in native):

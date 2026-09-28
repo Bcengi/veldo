@@ -1,56 +1,20 @@
 {
- "collaboration.followup_task": {
-  "capability": "Sends work to an existing agent and starts an idle agent turn.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
+ "list_mcp_resource_templates": {
+  "capability": "Lists resource templates of the configured role MCP servers.",
+  "classification": "c: owner decision required; no working suppression found",
+  "disposition": "Unresolved; retained as unexpected and never added to role grants.",
+  "evidence": "resource-investigation.json"
  },
- "collaboration.interrupt_agent": {
-  "capability": "Interrupts an existing agent turn.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
+ "list_mcp_resources": {
+  "capability": "Lists resources of the configured role MCP servers.",
+  "classification": "c: owner decision required; no working suppression found",
+  "disposition": "Unresolved; retained as unexpected and never added to role grants.",
+  "evidence": "resource-investigation.json"
  },
- "collaboration.list_agents": {
-  "capability": "Lists live agents in the current thread tree.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
- },
- "collaboration.send_message": {
-  "capability": "Sends a message to an existing agent.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
- },
- "collaboration.spawn_agent": {
-  "capability": "Creates a sub-agent to perform a task.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
- },
- "collaboration.wait_agent": {
-  "capability": "Waits for agent updates or new user input.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
- },
- "functions.exec": {
-  "capability": "Runs JavaScript that can invoke registered tools. Its embedded declarations include exec_command and write_stdin for shell and update_plan, but also ungranted apply_patch, MCP resource readers and clock__curr_time. It is not a shell-only alias.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
- },
- "functions.request_user_input_async": {
-  "capability": "Posts questions during work and accepts an asynchronous user reply; the role does not grant this capability.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
- },
- "functions.wait": {
-  "capability": "Resumes or terminates a yielded JavaScript cell. Its cell_id schema belongs to Code Mode, not to the shell process session_id schema.",
-  "classification": "c: owner decision required; no working switch found",
-  "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-  "evidence": "codex-tool-investigation.json"
+ "read_mcp_resource": {
+  "capability": "Reads a resource URI offered by a configured role MCP server.",
+  "classification": "c: owner decision required; no working suppression found",
+  "disposition": "Unresolved; retained as unexpected and never added to role grants.",
+  "evidence": "resource-investigation.json"
  }
 }

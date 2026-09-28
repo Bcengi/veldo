@@ -645,5 +645,19 @@
   }
  ],
  "direct_tool_conclusion": "Tested switches did not establish equality. No working switch claimed or installed.",
- "model_catalog_record": "codex-model-modes.json"
+ "model_catalog_record": "codex-model-modes.json",
+ "catalog_repair": {
+  "owner_messages": [
+   29393,
+   29398
+  ],
+  "baseline": "0fbf6f09",
+  "qualification_record": "../../.veldo/runtime/codex-qualification.json",
+  "new_observations": [
+   "catalog-loopback-gpt-6-astra.json",
+   "catalog-loopback-gpt-5.5.json"
+  ],
+  "resource_investigation": "resource-investigation.json",
+  "conclusion": "Catalog controls remove the prior extras and expose Jira directly. Code Mode is preserved. Only the three resource readers remain unexpected; comparison still fails closed."
+ }
 }

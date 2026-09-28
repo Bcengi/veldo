@@ -1,6 +1,6 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -196,7 +196,7 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py (registered mutant)
+@@ -197,7 +197,7 @@
          if not isinstance(value, list):
              return 'configuration_stop:' + field
          if field == 'slash_commands':

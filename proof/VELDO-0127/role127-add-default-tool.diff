@@ -1,6 +1,6 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -204,7 +204,7 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py (registered mutant)
+@@ -205,7 +205,7 @@
                  return 'configuration_stop:mcp_servers'
              value = [v['name'] for v in value]
          if field == 'tools' and set(value) - set(wanted[field]):

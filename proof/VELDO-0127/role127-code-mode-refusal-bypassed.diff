@@ -1,11 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -263,7 +263,7 @@
- def codex_model(modes, revision):
-     if (modes.get(revision['settings'].get('model')) == 'code_mode_only'
-             and set(revision['native_tools']) != CODEX_ALL_NATIVE):
--        raise Refused('configuration_stop:codex_code_mode_model')
-+        return None
- 
- 
- def codex(configuration, capability, inventory, config):
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py (registered mutant)
+@@ -265,7 +265,7 @@
+     if (not entry or bound.get('model_catalog_digest') != X.catalog_digest(catalog)
+             or not all(k in entry for k in ('experimental_supported_tools', 'apply_patch_tool_type', 'supports_search_tool'))):
+         if bound.get('model_tool_modes', {}).get(model) == 'code_mode_only':
+-            raise Refused('configuration_stop:codex_code_mode_model')
++            return None
+         raise Refused('configuration_stop:codex_model_catalog')
+     selected = copy.deepcopy(entry)
+     grants = set(revision['native_tools'])

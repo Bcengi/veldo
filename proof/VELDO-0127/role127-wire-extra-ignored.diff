@@ -1,11 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -336,7 +336,7 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py (registered mutant)
+@@ -365,7 +365,7 @@
      except Refused as error:
          return error.code
      if set(actual) - set(expected_names):
 -        return 'configuration_stop:codex_unexpected_tool'
 +        return None
-     if sorted(actual) != sorted(expected_names):
+     if set(actual) != set(expected_names):
          return 'configuration_stop:codex_missing_tool'
      return None

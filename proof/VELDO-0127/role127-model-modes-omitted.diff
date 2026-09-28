@@ -1,11 +1,11 @@
---- a/.veldo/control_engine_codex.py
-+++ b/.veldo/control_engine_codex.py
-@@ -505,7 +505,7 @@
-             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
-             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
-             'baseline': BASELINE, 'session_environment': session_environment(executable),
--            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': MODEL_TOOL_MODES,
-+            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': {},
-             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
-                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
-             'authentication': 'the subscription login of the account profile CODEX_HOME names',
+--- .veldo/control_engine_codex.py
++++ .veldo/control_engine_codex.py (registered mutant)
+@@ -542,7 +542,7 @@
+     if catalog:
+         bundled = bundled_catalog(executable)
+         record.update(model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
+-                      model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']})
++                      model_tool_modes={})
+     return record
+ 
+ 

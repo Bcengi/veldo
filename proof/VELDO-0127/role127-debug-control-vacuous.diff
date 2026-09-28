@@ -1,5 +1,5 @@
---- a/proof/VELDO-0127/evidence.py
-+++ b/proof/VELDO-0127/evidence.py
+--- proof/VELDO-0127/evidence.py
++++ proof/VELDO-0127/evidence.py (registered mutant)
 @@ -22,7 +22,7 @@
          bad.append('planted debug log reports instruction discovery')
      if not control.get('ran') or control.get('returncode') != 0:

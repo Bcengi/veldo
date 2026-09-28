@@ -1,0 +1,470 @@
+{
+ "binary_sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "model_catalog_digest": "sha256:9a20dee3ccdcfd4446aba4f76887d9d31f43b38641479932c92188adc89ee015",
+ "network": "loopback stand-in only; empty temporary HOME and CODEX_HOME; Landlock TCP restriction",
+ "string_search": {
+  "add_mcp_resource_tools": {
+   "count": 1
+  },
+  "RawMcpServerConfig": {
+   "count": 19
+  },
+  "omit_tools_from": {
+   "count": 17
+  },
+  "disabled_tools": {
+   "count": 22
+  },
+  "excluded_tool_namespaces": {
+   "count": 13
+  },
+  "resources_enabled": {
+   "count": 0
+  },
+  "disable_resources": {
+   "count": 0
+  },
+  "mcp_resource_tools": {
+   "count": 1
+  }
+ },
+ "probes": [
+  {
+   "model": "gpt-6-astra",
+   "case": "catalog",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ]
+     },
+     "actual": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec",
+      "exec_command",
+      "mcp__jira__jira_search",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource"
+     ],
+     "missing": [],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-a9m_fzjm\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-a9m_fzjm/profile\"))\nReading prompt from stdin...\n",
+   "request_digests": [
+    "744338d9d6bbbdb4474675b089ce7be88c28881f92bb247b27d9c3f2e8bf522e"
+   ]
+  },
+  {
+   "model": "gpt-6-astra",
+   "case": "server-disabled-tools",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ]
+     },
+     "actual": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec",
+      "exec_command",
+      "mcp__jira__jira_search",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource"
+     ],
+     "missing": [],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-ayo1ujpn\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-ayo1ujpn/profile\"))\nReading prompt from stdin...\n",
+   "request_digests": [
+    "8b45361df3a8fe8ad816f3bcc472572e6d062d54bd60c1a2f7cd03b6624c7c25"
+   ]
+  },
+  {
+   "model": "gpt-6-astra",
+   "case": "resource-tool-config",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ]
+     },
+     "actual": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec",
+      "exec_command",
+      "mcp__jira__jira_search",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource"
+     ],
+     "missing": [],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-e7iof10d\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-e7iof10d/profile\"))\nReading prompt from stdin...\n",
+   "request_digests": [
+    "92b4370e70f0f7b12dbb4aca24780a02e21cc325427cc9032059416a9a1f67c3"
+   ]
+  },
+  {
+   "model": "gpt-6-astra",
+   "case": "excluded-resource-names",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ]
+     },
+     "actual": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec",
+      "exec_command",
+      "mcp__jira__jira_search",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource"
+     ],
+     "missing": [],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-wkxar8fl\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-wkxar8fl/profile\"))\nReading prompt from stdin...\n",
+   "request_digests": [
+    "a0821dcf931fc5afd4b8848359b89989634d3f0241fcda9a3765db4f49048a81"
+   ]
+  },
+  {
+   "model": "gpt-6-astra",
+   "case": "server-omit-names",
+   "returncode": 1,
+   "observations": [],
+   "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-wzztzvpj\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-wzztzvpj/profile\"))\nError loading config.toml: unknown variant `list_mcp_resource_templates`, expected one of `code_mode`, `deferred`, `direct`\nin `mcp_servers.jira.omit_tools_from`\n\n",
+   "request_digests": []
+  },
+  {
+   "model": "gpt-6-astra",
+   "case": "server-omit-modes",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ]
+     },
+     "actual": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec",
+      "exec_command",
+      "mcp__jira__jira_search",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource"
+     ],
+     "missing": [
+      "mcp__jira__jira_search"
+     ],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-y0q3vcem\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-y0q3vcem/profile\"))\nReading prompt from stdin...\n",
+   "request_digests": [
+    "e10485eb6ac94d0f4d4413c4a0fc14a80de741f956267e12f2b2255d5997cfa3"
+   ]
+  },
+  {
+   "model": "gpt-5.5",
+   "case": "catalog",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ]
+     },
+     "actual": [
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec_command",
+      "mcp__jira__jira_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource"
+     ],
+     "missing": [],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-_y9wc_s0\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-_y9wc_s0/profile\"))\nReading prompt from stdin...\n",
+   "request_digests": [
+    "eb14757d30cf81cb6d5ce0feeef305b37b400cd40aa20e2ef742e42f4d75136a"
+   ]
+  }
+ ],
+ "remaining_case_c": [
+  "list_mcp_resource_templates",
+  "list_mcp_resources",
+  "read_mcp_resource"
+ ],
+ "scope": "Resource readers can access only resources of the role configured MCP servers. No suppression established."
+}

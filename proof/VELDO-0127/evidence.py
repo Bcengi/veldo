@@ -85,6 +85,13 @@ def problems(root, engine, record, handoff):
                                + '; missing=' + ','.join(observation['missing']))
             if run.get('wire_tools') != [wire_observation(r.get('body') or {}, expected, handoff) for r in requests]:
                 bad.append('Codex loopback tool observation missing or different')
+            try:
+                catalog = handoff.codex_model(qualification, revision)
+            except (handoff.Refused, KeyError):
+                catalog = None
+            if (not catalog or run.get('model_catalog') != catalog
+                    or not run.get('configuration', {}).get('model_catalog_json')):
+                bad.append('Codex generated catalog missing or different')
             if run.get('configuration', {}).get('model') != revision.get('settings', {}).get('model'):
                 bad.append('Codex model differs from accepted revision')
             tables = run.get('configuration', {}).get('mcp_servers', {})

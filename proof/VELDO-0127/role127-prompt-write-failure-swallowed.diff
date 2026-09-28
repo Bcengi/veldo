@@ -1,5 +1,5 @@
---- a/.veldo/control_launch.py
-+++ b/.veldo/control_launch.py
+--- .veldo/control_launch.py
++++ .veldo/control_launch.py (registered mutant)
 @@ -1887,7 +1887,7 @@
                          recorder.feed('stderr', chunk)
          feeder.join(timeout=1)

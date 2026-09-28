@@ -1,6 +1,6 @@
---- a/.veldo/control_engine_codex.py
-+++ b/.veldo/control_engine_codex.py
-@@ -673,7 +673,7 @@
+--- .veldo/control_engine_codex.py
++++ .veldo/control_engine_codex.py (registered mutant)
+@@ -707,7 +707,7 @@
      record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
      if not isinstance(record.get('session_environment'), list):
          raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))

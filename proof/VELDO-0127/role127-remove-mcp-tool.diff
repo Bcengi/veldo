@@ -1,6 +1,6 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -225,6 +225,7 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py (registered mutant)
+@@ -226,6 +226,7 @@
  def claude(extra, capability, inventory, config):
      revision = capability['revision']
      wanted = expected(capability, inventory)
@@ -8,7 +8,7 @@
      extra['expected'] = wanted
      if SETTINGS_FILE not in extra['files']:
          raise Refused('missing_evidence:engine_settings')
-@@ -248,7 +249,7 @@
+@@ -249,7 +250,7 @@
      if revision['settings'].get('model'):
          extra['argv'] += [OPTION + 'model', revision['settings']['model']]
      # MCP tools stay server-prefixed. Deny unselected tools, including a listed server's other tools.

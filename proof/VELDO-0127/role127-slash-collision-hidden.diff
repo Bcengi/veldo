@@ -1,6 +1,6 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -184,7 +184,7 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py (registered mutant)
+@@ -185,7 +185,7 @@
      for command in commands if isinstance(commands, list) else []:
          if isinstance(command, dict) and isinstance(command.get('name'), str):
              entries.setdefault(command['name'], []).append(command.get('builtin') is True)

@@ -1,6 +1,6 @@
---- a/proof/VELDO-0127/evidence.py
-+++ b/proof/VELDO-0127/evidence.py
-@@ -42,7 +42,7 @@
+--- proof/VELDO-0127/evidence.py
++++ proof/VELDO-0127/evidence.py (registered mutant)
+@@ -36,7 +36,7 @@
      except handoff.Refused:
          actual = []
      return {'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),

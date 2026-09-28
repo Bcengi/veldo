@@ -8947,22 +8947,60 @@ def cases():
              "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
+    # VELDO-0127 catalog controls and effective Code Mode definitions.
+    catalog_suite = '86_veldo_0127_agent_configuration.py'
+    add(127, 'role127-catalog-subagents-retained', catalog_suite, 'control_agent_config_handoff.py',
+        "        selected.pop('multi_agent_version', None)", "        pass", ['catalog/fields'])
+    add(127, 'role127-catalog-patch-retained', catalog_suite, 'control_agent_config_handoff.py',
+        "        selected['apply_patch_tool_type'] = None", "        pass", ['catalog/fields'])
+    add(127, 'role127-catalog-experiments-retained', catalog_suite, 'control_agent_config_handoff.py',
+        "if experimental.get(n, n) in grants]", "if True]", ['catalog/fields'])
+    add(127, 'role127-catalog-search-retained', catalog_suite, 'control_agent_config_handoff.py',
+        "        selected['supports_search_tool'] = False", "        pass", ['catalog/fields'])
+    add(127, 'role127-catalog-granted-subagents-lost', catalog_suite, 'control_agent_config_handoff.py',
+        "    if not grants.intersection({'sub_agents', 'multi_agent'}):", "    if True:", ['catalog/grants'])
+    add(127, 'role127-catalog-granted-patch-lost', catalog_suite, 'control_agent_config_handoff.py',
+        "    if 'apply_patch' not in grants:", "    if True:", ['catalog/grants'])
+    add(127, 'role127-catalog-granted-experiments-lost', catalog_suite, 'control_agent_config_handoff.py',
+        "if experimental.get(n, n) in grants]", "if False]", ['catalog/grants'])
+    add(127, 'role127-catalog-granted-search-lost', catalog_suite, 'control_agent_config_handoff.py',
+        "    if 'tool_search' not in grants:", "    if True:", ['catalog/grants'])
+    add(127, 'role127-catalog-reasoning-altered', catalog_suite, 'control_agent_config_handoff.py',
+        "    selected = copy.deepcopy(entry)",
+        "    selected = dict(copy.deepcopy(entry), default_reasoning_level='corrupted')", ['catalog/fields'])
+    add(127, 'role127-catalog-digest-unchecked', catalog_suite, 'control_agent_config_handoff.py',
+        "bound.get('model_catalog_digest') != X.catalog_digest(catalog)", "False", ['catalog/integrity'])
+    add(127, 'role127-catalog-functions-not-normalized', catalog_suite, 'control_agent_config_handoff.py',
+        "    name = name.removeprefix('functions.')", "    name = name", ['wire/normalization'])
+    add(127, 'role127-catalog-mcp-not-normalized', catalog_suite, 'control_agent_config_handoff.py',
+        "        name = name[:5] + name[5:].replace('.', '__', 1)", "        pass", ['wire/normalization'])
+    add(127, 'role127-catalog-nested-declarations-ignored', catalog_suite, 'control_agent_config_handoff.py',
+        "        if name == 'exec':", "        if False:", ['wire/normalization'])
+    add(127, 'role127-catalog-runner-not-expected', catalog_suite, 'control_agent_config_handoff.py',
+        "        names.extend(['exec', 'wait'])", "        pass", ['review/codex-tools'])
+    add(127, 'role127-catalog-resource-readers-hidden', catalog_suite, 'control_agent_config_handoff.py',
+        "    return sorted(names)\n\n\ndef codex_expected_tools",
+        "    return sorted(n for n in names if n not in ('list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource'))\n\n\ndef codex_expected_tools",
+        ['wire/resources'])
     # VELDO-0127 model-dependent qualification and lead capture, with no invented switch claims.
     add(127, 'role127-model-modes-omitted', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
-        "'model_tool_modes': MODEL_TOOL_MODES,", "'model_tool_modes': {},", ['review/codex-mode'])
+        "model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']}",
+        "model_tool_modes={}", ['review/codex-mode'])
     add(127, 'role127-model-baseline-unchecked', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
         "    if record.get('model_tool_modes') != MODEL_TOOL_MODES:", "    if False:", ['review/codex-mode'])
     add(127, 'role127-code-mode-refusal-bypassed', '86_veldo_0127_agent_configuration.py', 'control_agent_config_handoff.py',
         "        raise Refused('configuration_stop:codex_code_mode_model')", "        return None", ['review/codex-mode'])
     add(127, 'role127-lead-model-mode-ignored', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/live.py',
-        "    if model not in modes or modes[model] is not None:", "    if False:", ['review/codex-capture'])
+        "    if model not in modes:", "    if False:", ['review/codex-capture'])
+    result[-1]['dir'] = '.'
     add(127, 'role127-loopback-tool-observation-lost', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/live.py',
         "'wire_tools':wire_tools,", "'wire_tools':[],", ['review/codex-capture'])
+    result[-1]['dir'] = '.'
 
     # VELDO-0127 item 1: direct shell vocabulary and named, unmasked Code Mode evidence.
     add(127, 'role127-shell-wire-mapping-loses-wait', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
-        "NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan']}",
-        "NATIVE_TOOL_MAPPING = {'shell': ['exec_command'], 'update_plan': ['update_plan']}", ['review/codex-tools'])
+        "NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'],",
+        "NATIVE_TOOL_MAPPING = {'shell': ['exec_command'],", ['review/codex-tools'])
     add(127, 'role127-owner-tools-hidden', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/evidence.py',
         "'unexpected': sorted(set(actual) - set(wanted)),", "'unexpected': [],", ['review/codex-tools'])
     result[-1]['dir'] = '.'

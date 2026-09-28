@@ -1,5 +1,5 @@
---- a/.veldo/control_engine_claude.py
-+++ b/.veldo/control_engine_claude.py
+--- .veldo/control_engine_claude.py
++++ .veldo/control_engine_claude.py (registered mutant)
 @@ -1625,7 +1625,7 @@
          if self.stop is None:
              self.source, self.confirmed = SUBSCRIPTION_SOURCE, True
