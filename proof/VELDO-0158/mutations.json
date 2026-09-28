@@ -75,15 +75,15 @@
     true
    ]
   ],
-  "seconds": 3.794
+  "seconds": 3.795
  },
  "controls_green": true,
  "mutants": [
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0158 delivery/codex-environment detail: the generated mcp_servers table names each stdio credential by its variable in env_vars and the Atlassian bearer token by bearer_token_env_var, literals only in env [{'atlassian': {'bearer_token_env_var': 'VELDO_MCP_ATLASSIAN_AUTHORIZATION', 'url': 'https://mcp.atlassian.example.invalid/v1/mcp'}, 'notes': {'args': ['-B', '/run/user/1000/v158-owsd5kut/mcp-server.py', 'notes', 'NOTES_TOKEN'], 'command': '/usr/bin/python3', 'env': {'NOTES_TOKEN': 'cedarvng.meadowhhh.pebbleqzn'}}, 'tracker': {'args': ['-B', '/run/user/1000/v158-owsd5kut/mcp-server.py', 'tracker', 'TRACKER_TOKEN'], 'command': '/usr/bin/python3', 'env': {'MODE': 'read', 'TRACKER_TOKEN': 'amberwxb.harborffc.lanternvfh'}}}]",
-    "VELDO-0158 delivery/command-lines detail: codex: no process holds any value on its command line [[3878040, 3878047]]",
+    "VELDO-0158 delivery/codex-environment detail: the generated mcp_servers table names each stdio credential by its variable in env_vars and the Atlassian bearer token by bearer_token_env_var, literals only in env [{'atlassian': {'bearer_token_env_var': 'VELDO_MCP_ATLASSIAN_AUTHORIZATION', 'url': 'https://mcp.atlassian.example.invalid/v1/mcp'}, 'notes': {'args': ['-B', '/run/user/1000/v158-7qv0noqe/mcp-server.py', 'notes', 'NOTES_TOKEN'], 'command': '/usr/bin/python3', 'env': {'NOTES_TOKEN': 'cedarsmv.meadowcdn.pebblebtv'}}, 'tracker': {'args': ['-B', '/run/user/1000/v158-7qv0noqe/mcp-server.py', 'tracker', 'TRACKER_TOKEN'], 'command': '/usr/bin/python3', 'env': {'MODE': 'read', 'TRACKER_TOKEN': 'amberbvf.harbortdq.lanternjps'}}}]",
+    "VELDO-0158 delivery/command-lines detail: codex: no process holds any value on its command line [[3915061, 3915071]]",
     "VELDO-0158 delivery/not-in-packet-contract-journal detail: the journal and every byte of the store hold no value, nor anything the receiver reported [128 journal rows]"
    ],
    "diff": "proof/VELDO-0158/delivery158-codex-value-on-argv.diff",
@@ -170,7 +170,7 @@
      true
     ]
    ],
-   "seconds": 3.846,
+   "seconds": 3.849,
    "source_sha256": "fd7e0b0680beec7e19bea812539412310c291548451802772be271c0dd39f12b"
   },
   {
@@ -193,7 +193,7 @@
     "VELDO-0158 refusal/reference-not-found"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "17971c0e530dd02f19a00237ea3532bc55aeb7e63160b1f11fe64beadd7f2455",
+   "mutant_sha256": "790a966e59c27103c0e96c5573d5a0f388942c4d271b74da453921eb18033621",
    "name": "delivery158-run-without-server",
    "named_row_red": true,
    "named_rows": [
@@ -272,15 +272,15 @@
      true
     ]
    ],
-   "seconds": 4.47,
-   "source_sha256": "bd38dc03e16e536232362457fd3bf034bf16975ff9f21d3226c56bbf9db51ef9"
+   "seconds": 4.441,
+   "source_sha256": "584dda8751a398fde887840b5a170812bb1176024b47f25dcad643045a5c74a3"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0158 redaction/claude-keystore-value detail: every occurrence is replaced by the marker naming its kind and no line holds any part of either value [['amberdrp', 'harborqjv', 'lanternrss', 'cedarzwh', 'meadowbdg', 'pebbledzw'], 18 lines]",
+    "VELDO-0158 redaction/claude-keystore-value detail: every occurrence is replaced by the marker naming its kind and no line holds any part of either value [['amberzzr', 'harborbsg', 'lanternpvm', 'cedarjrn', 'meadowcjc', 'pebblegnv'], 18 lines]",
     "VELDO-0158 redaction/claude-keystore-value detail: each such line's redaction field names the kind [0 lines]",
-    "VELDO-0158 redaction/codex-keystore-value detail: every occurrence is replaced by the marker naming its kind and no line holds any part of either value [['amberdrp', 'harborqjv', 'lanternrss', 'cedarzwh', 'meadowbdg', 'pebbledzw'], 13 lines]",
+    "VELDO-0158 redaction/codex-keystore-value detail: every occurrence is replaced by the marker naming its kind and no line holds any part of either value [['amberzzr', 'harborbsg', 'lanternpvm', 'cedarjrn', 'meadowcjc', 'pebblegnv'], 13 lines]",
     "VELDO-0158 redaction/codex-keystore-value detail: each such line's redaction field names the kind [0 lines]",
     "VELDO-0158 redaction/per-run-set detail: a run selecting only the other server exited, its own value replaced [exited]"
    ],
@@ -291,7 +291,7 @@
     "VELDO-0158 redaction/per-run-set"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "0587bed382b83fbbe188db190a0b08ae2feeca9d9676d91a3af37a184000ec42",
+   "mutant_sha256": "aa82c2e0312ff7f9f706cd7812c0d44486ca6003cd4c43abe74765b3105535e4",
    "name": "delivery158-value-not-in-set",
    "named_row_red": true,
    "named_rows": [
@@ -369,15 +369,15 @@
      true
     ]
    ],
-   "seconds": 3.855,
-   "source_sha256": "bd38dc03e16e536232362457fd3bf034bf16975ff9f21d3226c56bbf9db51ef9"
+   "seconds": 3.842,
+   "source_sha256": "584dda8751a398fde887840b5a170812bb1176024b47f25dcad643045a5c74a3"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0158 delivery/claude-private-file detail: the engine's own environment and command line hold no value; each server received its credential in its environment from the file",
-    "VELDO-0158 delivery/command-lines detail: claude: the environments holding a value are its servers' alone [[3879431, 3879461, 3879473, 3879479], wanted [3879473, 3879479], inside [3879431, 3879461, 3879473, 3879479]]",
-    "VELDO-0158 delivery/own-server-only detail: claude: the tracker server holds none of the notes credential and the notes server none of the tracker's, though it asks for TRACKER_TOKEN"
+    "VELDO-0158 delivery/command-lines detail: claude: the environments holding a value are its servers' alone [[3916481, 3916512, 3916543, 3916548], wanted [3916543, 3916548], inside [3916481, 3916512, 3916543, 3916548]]",
+    "VELDO-0158 delivery/own-server-only detail: claude: the tracker server holds none of the notes credential and the notes server none of the tracker's"
    ],
    "diff": "proof/VELDO-0158/delivery158-claude-value-in-environment.diff",
    "failed_rows": [
@@ -463,14 +463,14 @@
      true
     ]
    ],
-   "seconds": 3.814,
+   "seconds": 3.851,
    "source_sha256": "17d82ed47515637855c80aeb1fa748932811495032a10a414eb79abf926b24a7"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0158 delivery/codex-environment detail: the generated mcp_servers table names each stdio credential by its variable in env_vars and the Atlassian bearer token by bearer_token_env_var, literals only in env [{'atlassian': {'bearer_token_env_var': 'VELDO_MCP_ATLASSIAN_AUTHORIZATION', 'url': 'https://mcp.atlassian.example.invalid/v1/mcp'}, 'notes': {'args': ['-B', '/run/user/1000/v158-xttbuhm9/mcp-server.py', 'notes', 'NOTES_TOKEN'], 'command': '/usr/bin/python3', 'env_vars': ['NOTES_TOKEN', 'TRACKER_TOKEN']}, 'tracker': {'args': ['-B', '/run/user/1000/v158-xttbuhm9/mcp-server.py', 'tracker', 'TRACKER_TOKEN'], 'command': '/usr/bin/python3', 'env': {'MODE': 'read'}, 'env_vars': ['TRACKER_TOKEN']}}]",
-    "VELDO-0158 delivery/own-server-only detail: codex: the tracker server holds none of the notes credential and the notes server none of the tracker's, though it asks for TRACKER_TOKEN"
+    "VELDO-0158 delivery/codex-environment detail: the generated mcp_servers table names each stdio credential by its variable in env_vars and the Atlassian bearer token by bearer_token_env_var, literals only in env [{'atlassian': {'bearer_token_env_var': 'VELDO_MCP_ATLASSIAN_AUTHORIZATION', 'url': 'https://mcp.atlassian.example.invalid/v1/mcp'}, 'notes': {'args': ['-B', '/run/user/1000/v158-0k_pngt3/mcp-server.py', 'notes', 'NOTES_TOKEN'], 'command': '/usr/bin/python3', 'env_vars': ['NOTES_TOKEN', 'TRACKER_TOKEN']}, 'tracker': {'args': ['-B', '/run/user/1000/v158-0k_pngt3/mcp-server.py', 'tracker', 'TRACKER_TOKEN'], 'command': '/usr/bin/python3', 'env': {'MODE': 'read'}, 'env_vars': ['TRACKER_TOKEN']}}]",
+    "VELDO-0158 delivery/own-server-only detail: codex: the tracker server holds none of the notes credential and the notes server none of the tracker's"
    ],
    "diff": "proof/VELDO-0158/delivery158-every-server-variable.diff",
    "failed_rows": [
@@ -555,7 +555,7 @@
      true
     ]
    ],
-   "seconds": 3.844,
+   "seconds": 3.836,
    "source_sha256": "fd7e0b0680beec7e19bea812539412310c291548451802772be271c0dd39f12b"
   },
   {
@@ -564,14 +564,14 @@
     "VELDO-0158 delivery/private-dir-removed detail: claude: the run's directory is gone once it was reaped",
     "VELDO-0158 delivery/private-dir-removed detail: codex: the run's directory is gone once it was reaped",
     "VELDO-0158 delivery/private-dir-removed detail: the Claude Code configuration file the engine read, holding the values, is gone",
-    "VELDO-0158 delivery/private-dir-removed detail: a refused launch leaves no run directory [['49e1e8adef570e87a91c728a23978054', '5549f3d96811a557fd7b9a9f1a42fa41', '8f967abdf3ee72331198b1f9b6a35db3', 'd55881618e2b838f5e99bf8852316db0']]"
+    "VELDO-0158 delivery/private-dir-removed detail: a refused launch leaves no run directory [['510abb1af55158353197bbf8c66712c2', '729064b2b8b7c271646f3acf7e2f1fb9', '91ede4e4dadbe7a43b5a54f28a8d9fd0', 'c2019410a614f081b661f368948fff87']]"
    ],
    "diff": "proof/VELDO-0158/delivery158-run-directory-kept.diff",
    "failed_rows": [
     "VELDO-0158 delivery/private-dir-removed"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "647bba444e3f0da429e37c9ef17a6e7757f57f62bd11bf5376ca9cfb1f590569",
+   "mutant_sha256": "9c35d3e6e7a4bfcc3723db0b359f7ebbff9e21c61771ab4618766ff763bf8ae3",
    "name": "delivery158-run-directory-kept",
    "named_row_red": true,
    "named_rows": [
@@ -648,8 +648,8 @@
      true
     ]
    ],
-   "seconds": 3.801,
-   "source_sha256": "bd38dc03e16e536232362457fd3bf034bf16975ff9f21d3226c56bbf9db51ef9"
+   "seconds": 3.768,
+   "source_sha256": "584dda8751a398fde887840b5a170812bb1176024b47f25dcad643045a5c74a3"
   }
  ],
  "mutations_per_row": {
@@ -757,7 +757,7 @@
      true
     ]
    ],
-   "seconds": 3.822,
+   "seconds": 3.857,
    "source_sha256": "17d82ed47515637855c80aeb1fa748932811495032a10a414eb79abf926b24a7"
   },
   "control_engine_codex.py": {
@@ -835,11 +835,11 @@
      true
     ]
    ],
-   "seconds": 3.846,
+   "seconds": 3.833,
    "source_sha256": "fd7e0b0680beec7e19bea812539412310c291548451802772be271c0dd39f12b"
   },
   "control_launch.py": {
-   "copy_sha256": "bd38dc03e16e536232362457fd3bf034bf16975ff9f21d3226c56bbf9db51ef9",
+   "copy_sha256": "584dda8751a398fde887840b5a170812bb1176024b47f25dcad643045a5c74a3",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 27,
@@ -913,13 +913,13 @@
      true
     ]
    ],
-   "seconds": 3.856,
-   "source_sha256": "bd38dc03e16e536232362457fd3bf034bf16975ff9f21d3226c56bbf9db51ef9"
+   "seconds": 3.87,
+   "source_sha256": "584dda8751a398fde887840b5a170812bb1176024b47f25dcad643045a5c74a3"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 158",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 38.948,
+ "serial_seconds": 38.942,
  "spec_id": "VELDO-0158",
  "suite": "scripts/suites/85_veldo_0158_credential_delivery.py"
 }

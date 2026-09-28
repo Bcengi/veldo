@@ -10,10 +10,10 @@
   "VELDO-0158 delivery/command-lines detail: claude: every process of the account was read while the run held [210 read, ready True]",
   "VELDO-0158 delivery/command-lines detail: claude: the environments holding a value are its servers' alone [[], wanted [], inside []]",
   "VELDO-0158 delivery/command-lines detail: codex: every process of the account was read while the run held [210 read, ready True]",
-  "VELDO-0158 delivery/command-lines detail: codex: the environments holding a value are its servers' and its engine's, all inside the run's own group [[], wanted [3875799], inside []]",
+  "VELDO-0158 delivery/command-lines detail: codex: the environments holding a value are its servers' and its engine's, all inside the run's own group [[], wanted [3917800], inside []]",
   "VELDO-0158 delivery/command-lines detail: every keystore lookup carried the reference alone, never a value",
-  "VELDO-0158 delivery/own-server-only detail: claude: the tracker server holds none of the notes credential and the notes server none of the tracker's, though it asks for TRACKER_TOKEN",
-  "VELDO-0158 delivery/own-server-only detail: codex: the tracker server holds none of the notes credential and the notes server none of the tracker's, though it asks for TRACKER_TOKEN",
+  "VELDO-0158 delivery/own-server-only detail: claude: the tracker server holds none of the notes credential and the notes server none of the tracker's",
+  "VELDO-0158 delivery/own-server-only detail: codex: the tracker server holds none of the notes credential and the notes server none of the tracker's",
   "VELDO-0158 delivery/own-server-only detail: the keystore was asked only for the selected servers' credentials [0 lookups]",
   "VELDO-0158 delivery/not-in-packet-contract-journal detail: the contracts and dispatch records name the selected revisions and hold no value, though both runs' servers received it [0 delivered]",
   "VELDO-0158 delivery/private-dir-removed detail: the Claude Code configuration file the engine read, holding the values, is gone",
@@ -78,7 +78,7 @@
   },
   ".veldo/control_launch.py": {
    "at_commit": "9f83b8e8756b5361bd07b0081b92a7a89d1a54397e444ac192a59fab2a676e67",
-   "now": "bd38dc03e16e536232362457fd3bf034bf16975ff9f21d3226c56bbf9db51ef9"
+   "now": "584dda8751a398fde887840b5a170812bb1176024b47f25dcad643045a5c74a3"
   },
   ".veldo/secretref.py": {
    "at_commit": "9557b11754c3f24bfd4ebbc6b09f27c702e1f475ba7540018f3a966e3cf82af3",
@@ -157,7 +157,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 3.993,
+ "seconds": 3.946,
  "spec_id": "VELDO-0158",
  "suite": "scripts/suites/85_veldo_0158_credential_delivery.py",
  "tree": "git archive 7851ae9bef69c2d9d8e54a0b95a823110113b1ef, unchanged; the current suite file run against it"
