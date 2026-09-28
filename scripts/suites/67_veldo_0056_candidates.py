@@ -281,7 +281,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
         upsert('authority:' + DOMAIN, 'authority', dict(state='active', generation=1))
         upsert('project:p1', 'project', dict(name='candidates'))
         upsert(DSP.review_policy_id(REPOSITORY), 'review_policy', DSP.review_policy_record(seed / '.veldo' / 'policy.yaml'))
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         def authorize(conn, command):

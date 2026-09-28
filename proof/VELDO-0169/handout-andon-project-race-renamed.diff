@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -832 +832 @@
+-            return 'stale_version' if moved else 'stale_subject'
++            return 'stale_subject'

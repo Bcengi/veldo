@@ -20,11 +20,29 @@ footprint:
   - ".veldo/control_andon*.py"
   - "engine/.veldo/control_claim.py"
   - ".veldo/control_claim.py"
-  - "engine/.veldo/control_eligibility*.py"
-  - ".veldo/control_eligibility*.py"
-  - "engine/.veldo/init_scaffold.py"
-  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
+  - "engine/.veldo/control_heartbeat.py"
+  - ".veldo/control_heartbeat.py"
   - "scripts/suites/*_veldo_0169_*.py"
+  - "scripts/suites/support/v169_*.py"
+  - "scripts/suites/62_veldo_0039_dispatch.py"
+  - "scripts/suites/63_veldo_0040_containment.py"
+  - "scripts/suites/63_veldo_0049_floor.py"
+  - "scripts/suites/64_veldo_0050_proof.py"
+  - "scripts/suites/67_veldo_0041_heartbeat.py"
+  - "scripts/suites/67_veldo_0056_candidates.py"
+  - "scripts/suites/67_veldo_0135_offers.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/suites/78_veldo_0060_claude_adapter.py"
+  - "scripts/suites/78_veldo_0160_account_pool.py"
+  - "scripts/suites/79_veldo_0061_codex_adapter.py"
+  - "scripts/suites/80_veldo_0155_claude_baseline.py"
+  - "scripts/suites/81_veldo_0156_codex_baseline.py"
+  - "scripts/suites/82_veldo_0129_worker_wiring.py"
+  - "scripts/suites/82_veldo_0141_execution_record.py"
+  - "scripts/suites/36_veldo_0023_journal.py"
   - "scripts/suites/58_veldo_0031_claims.py"
   - "scripts/suites/59_veldo_0031_review.py"
   - "scripts/suites/60_veldo_0064_inbox.py"
@@ -32,12 +50,10 @@ footprint:
   - "scripts/suites/69_veldo_0133_dispositions.py"
   - "scripts/suites/71_veldo_0076_projects.py"
   - "scripts/suites/72_veldo_0075_andon.py"
-  - "scripts/suites/73_veldo_0078_backlog.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0169-stopped-project-checks-where-work-is-taken.md"
-  - "specs/index.md"
   - "proof/VELDO-0169/*"
 behavior_bearing: true
 observability:
@@ -53,9 +69,14 @@ observability:
     version it read.
   error_taxonomy: >
     The refusals are the Gate's own names, unchanged: project_not_active:PAUSED, :CANCELED, :COMPLETED,
-    :owner_not_current, :not_a_project and missing_authority:project; a pause committed after the check
-    and before the write refuses as stale_version. A writer the census does not name, or a handout
-    writer that does not ask the check, fails the census by the writer's module and function.
+    :owner_not_current, :not_a_project and missing_authority:project, whether the caller's check or the
+    claim organ's and the station contract writer's own check inside the write names them; a pause
+    committed after the caller's check and before the write refuses as stale_version. The store's commit
+    path refuses a transaction writing a claim record that hands out work of a stopped project by the
+    same Gate names, whoever built the record. A writer the census does not name, a handout writer that
+    does not ask the check, or a claim built outside the claim organ, fails the census by the writer's
+    module and function. A station contract issued outside a command transaction is refused
+    outside_transaction; an andon resume race that is not a project race keeps stale_subject.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -179,3 +200,111 @@ unit through control_claim.Receiver (58, 59, 60, 66, 69, 71 and 73, by grep), wh
 an active project. The title names the census. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27: implemented on build-veldo-0169. Assignment resume, backlog disposition and andon
+resume use the shared eligibility Gate's project check and pin its project and owner reads;
+every claim asks it, including an absent or null project. Suite 82_veldo_0169_project_handouts
+scans engine syntax for claim transitions and station contract writers, and drives the three
+handout paths over stopped projects and intervening project and owner writes. Its 18 rows are
+red by assertion at 65125030. Finding 169 registers the declared falsifiers and read-pin
+mutations. The footprint gains scripts/drive.py because the requested proof command did not
+exist; it records this suite's red and mutation evidence using the recent proof driver pattern.
+Existing claim and andon fixtures now name active projects. Status and approval remain unchanged.
+
+2026-09-27: review-fix round on build-veldo-0169 (review rv169a), with the lead's decisions. The
+census did not meet AC1: it tied writers to entry points through a written table and found claim
+writers only by receiver name, so a copy of the resume without the check passed it. Now the claim
+organ refuses a claim, resume or unpark, and the andon's one station contract writer
+(Andon.issue_station_contract) refuses a contract, without the receipt Gate.project_problems makes
+when it finds no problem. The receipt names the unit, its project and the versions the check read,
+and is accepted only when those are the versions the writing transaction pinned and read; otherwise
+the write is refused missing_evidence:project_check or stale_subject:project_check and nothing is
+written. Each handout asks the check again inside its own store transaction; the claim receiver
+registers its transition on its own connection for that. The census
+(scripts/suites/support/v169_census.py) reads every reference to a callable named transition on any
+receiver, getattr and aliases included, every call of the station contract writer and every entity
+of its kind written elsewhere, follows each writer's action to where its parameters are built, and
+requires the check to come before the write and before each such build on every path; a construct it
+cannot resolve fails it. An andon resume race that is not a project race is stale_subject again. The
+suite is renumbered 84, since main's 82 is taken, and its driver moves to proof/VELDO-0169/drive.py
+beside main's scripts/drive.py. The footprint drops scripts/drive.py and gains the census and claim
+support modules and the sixteen suites whose fixture claims now carry the receipt. Status and
+approval remain unchanged.
+
+2026-09-27: second review-fix round on build-veldo-0169 (review rv169b), with the lead's decisions. The
+reviewer found that the project-check receipt was a plain dict any caller could build or rewrite, and
+that a transition returning a hand-built claim entity committed a claim on a paused project, since the
+claim kind had no store ownership. The receipt is removed: the consumer checks, it trusts no token.
+The claim organ (control_claim) now decides every claim in one function, `_decide`, reached through
+transition(conn, params, before), itself a store transaction transition: for a claim, a resume or an
+unpark it asks Gate.project_problems of the unit on the transaction's own connection while that
+transaction holds the write lock, and refuses by the Gate's name with nothing written.
+Andon.issue_station_contract does the same inside its command transaction. Callers pass nothing; they
+still ask the check first, to name a refusal early and pin what it read. The store gains organ-owned
+kinds (control_store.declare_organ and organ_write): the claim organ declares the claim kind when the
+claim receiver, the inbox or the heartbeat's renewals attach, and the store writes an entity of kind
+claim only when it is exactly what the declared organ returned in the same command transaction, so a
+hand-built claim, a generic upsert of one, an organ answer edited on the way out and another function
+offered as the organ are refused by name (entity_owned, foreign_transition), and an organ decision
+outside a command transaction is refused outside_transaction. The census keeps AC1: it now requires
+the check where each handout's parameters are built (or at the write, when they are built there or not
+resolved), refuses a claim built outside the claim organ, follows the organ's new signature, and
+resolves a module's own method or function named transition as not the organ. New rows of suite 84:
+organ/stopped (a paused, canceled, completed and owner-not-current project refuses the organ's claim,
+resume and unpark and the station contract writer on paths with no caller check), organ/outside,
+organ/ownership, guard/forge (the forge probe's cases) and organ/race (the owner's pause and resume
+from a second process while claims run, three rounds, with a delay between the receiver's check and
+its write, and through the organ bare); guard/resume-again now drives the reviewer's copies over a
+paused project. The fixture suites no longer carry receipts (support/v169_claims.py is removed): they
+register the organ as a transaction transition and declare it first. A claim a fixture sets in a state
+no transition makes is planted around execute (support/v169_rows.py), as 59_veldo_0037_aliases plants
+a revision. Suite 66 takes the launch fixture's claim through the installed organ, suite 79's second
+installation reaches the same organ file, and suite 71 reads the receiver's own check and pin
+directly, since the organ's own check now refuses those claims too. The footprint gains
+control_store.py, control_heartbeat.py and suite 70_veldo_0069_bindings. Filed, not built: the census
+does not resolve a callable reached through __dict__['transition'], a kind read as
+sys.modules[...].CONTRACT_KIND, or a kind given as another module's attribute (X.KIND); the store's
+checks at run time refuse all three. A store that already holds claims written before the organ was
+declared refuses the declaration (ownership_conflict), as every first ownership declaration does;
+the re-declaration path is Release 2. Status and approval remain unchanged.
+
+2026-09-27: third review-fix round on build-veldo-0169 (review rv169c), with the lead's decision that
+the data layer holds the invariant, with no identity bound to code bytes. The reviewer found that the
+claim-kind ownership of the second round bricked an existing factory (a store holding any claim
+written by main's organ refused the declaration at startup, ownership_conflict, and every later edit
+of control_claim.py would refuse it again), and that the store trusted conn.organ_writes, a public
+attribute any transition could set, so a hand-built claim for a paused project was accepted. The
+claim-kind declaration (control_store.declare_organ, organ_write, the entity_organs table) and
+conn.organ_writes are removed, and the claim receiver, the inbox and the heartbeat's renewals no
+longer declare anything, so an earlier store attaches exactly as on main. Instead the store's commit
+path (control_store.handout_problem) refuses, whole and by the Gate's own name, any transaction that
+writes a claim record handing out work (control_store.claim_handout: a new holder, a parked unit
+taken again, or a park cleared) when control_eligibility.Gate.project_problems, asked by the store on
+the transaction's own connection after the records are written, finds a problem for any unit the
+record names (its unit_id before and after, and every execution unit its id can name). It trusts no
+caller and no attribute, so the claim organ, a hand-built record, an injected attribute and the
+generic upsert are all held to it; the renewal of a claim already held, a release and a park pass
+unchanged. The store loads the Gate by a literal file name, so the installer's closure includes it, and imports
+importlib for it, which suite 36's row of VELDO-0023 now admits beside the rest of the standard
+library it names (the footprint gains that suite).
+The claim organ keeps its own check, which refuses earlier, before any other reason, by the same
+name. Suite 84 replaces organ/ownership with store/invariant (the reviewer's inject probe, a claim
+built by hand, the generic upsert, a hand-built resume and unpark, a record whose id names a paused
+unit and whose fields an active one, and one transaction that moves a unit into a paused project and
+claims it, all refused; a renewal and a release of a claim held before the pause and a hand-built
+claim of an active project written) and adds store/upgrade (the reviewer's upgrade probe: a store
+holding held, released and parked claims as main's organ wrote them, on units with no project, which
+the claim receiver and the inbox attach to, whose held claim is renewed and released, and whose units
+take a new claim only once their project is active). organ/stopped adds the hand-built claim, resume
+and unpark for each stopped state and the organ's precedence; organ/outside keeps the station
+contract writer alone. Finding 169 drops the four mutations of the removed ownership
+(organ-write-outside-transaction, store-claim-ownership-dropped, store-organ-content-ignored,
+store-organ-origin-unchecked) and gains store-invariant-skipped, store-invariant-ignores-resumes,
+store-reads-outside-transaction and store-id-unit-unchecked. Suites 58, 59, 66, 70 and 79 return to
+main's form where only the ownership needed a change (58 and 59 keep their active project, AC4, and
+copy the whole engine, which the store's check loads; 66 keeps its active project, and 66 and 79 the
+organ's three-argument registration); support/v169_rows.py now serves only the upgrade row. The footprint drops
+control_eligibility, init_scaffold, suites 70 and 73 and specs/index.md, none of which this branch
+changes. Status and approval remain unchanged.
+
+2026-09-27, fourth review (rv169d): a claim written under another kind at a claim id was not checked, because the store classified claims by kind while their readers find them by id. The store now treats any record at a claim: id as a claim and refuses one of another kind there (invalid_input:claim_kind). Row case in store/invariant and mutation store-claim-kind-unchecked (finding 169). Filed: a raw sqlite write through the store connection (a forged row), and a claim planted for a unit that does not exist yet.

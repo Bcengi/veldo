@@ -173,7 +173,7 @@ def _v135_suite():
         put('authority:' + DOMAIN, 'authority', dict(state='active', generation=1))
         put('project:p1', 'project', dict(name='floor'))
         put(DSP.review_policy_id(REPOSITORY), 'review_policy', DSP.review_policy_record(work / '.veldo' / 'policy.yaml'))
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         def authorize(conn, command):

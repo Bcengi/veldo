@@ -178,7 +178,7 @@ def _v60_suite():
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
         member('floor-service', 'service', ['result_acceptance'])
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         # The owner's Claude Code accounts, over profiles the local helper prepares.

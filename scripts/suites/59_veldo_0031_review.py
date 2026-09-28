@@ -38,6 +38,9 @@ class Fixture:
                   'control_enrollment', 'git_process', 'lander', 'policy_check', 'control_claim',
                   'control_claim_client'):
             shutil.copyfile(PRODUCTION.get(n, SRC / (n + '.py')), mods / (n + '.py'))
+        for source in SRC.glob('*.py'):
+            if not (mods / source.name).exists():
+                shutil.copyfile(source, mods / source.name)
         self.mods = mods
         self.C = load('claims31r', mods / 'control_claim.py')
         self.CC = load('client31r', mods / 'control_claim_client.py')
@@ -70,10 +73,12 @@ class Fixture:
         for w in ('worker-a', 'worker-b'):
             self.write(w, 'membership', dict(principal_type='agent_run', roles=[], scope='*'))
             self.write('key-' + w, 'verification_key', dict(principal=w, public_key=self.public[w], effective_at=0))
+        self.write('owner', 'membership', dict(principal_type='person', roles=['project_owner'], scope='*'))
+        self.write('project:claims', 'project', dict(name='claims', state='ACTIVE', owner='owner'))
         self.write('backlog', 'backlog_item', dict(state='PRIORITIZED', repository_uuid=self.ids['repository_uuid']))
         for u in units:
             self.write(u, 'execution_unit', dict(state='READY', repository_uuid=self.ids['repository_uuid'],
-                       backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-a', 'worker-b']))
+                       project='claims', backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-a', 'worker-b']))
         self.receiver = self.C.Receiver(self.conn, self.ids, 'owner', lambda m: self.sign('owner', m))
         self.server = None
 

@@ -342,6 +342,7 @@ class Inbox:
         self.journal_signer, self.sign = journal_signer, sign
         self.authority_generation, self.clock = authority_generation, clock
         self.intake = intake
+        self.gate = None
         self.states = states
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
@@ -363,6 +364,9 @@ class Inbox:
             result = {'ok': False, 'reason': 'unavailable_service'}
         observation.update(outcome='accepted' if result['ok'] else 'refused', reason=result['reason'])
         self.counts[observation['outcome']] += 1
+        if not result['ok']:
+            reasons = self.counts.setdefault('refused_by_reason', {})
+            reasons[result['reason']] = reasons.get(result['reason'], 0) + 1
         self.observations.append(observation)
         return result
 
@@ -466,7 +470,7 @@ class Inbox:
                     # answer's own journal record pinned it, so a later rotation strands nothing.
                     params['verified_by'] = {'key_id': key['key_id'], 'accepted_at': now}
             elif op == 'resume':
-                touched.update(self._resume(state, entities, current, principal, now, command, params))
+                touched.update(self._resume(state, entities, current, principal, now, command, params, observation))
             elif op == 'ask':
                 touched.update(self._ask(state, entities, aid, data, principal, now, params, observation))
             elif op == 'dispose':
@@ -489,6 +493,7 @@ class Inbox:
                 touched.update(self._question_on_end(state, entities, aid, data, op, principal, now, params, observation))
             touched.add(data['owner'])
         versions = {eid: entities.get(eid, {}).get('version', 0) for eid in touched}
+        versions.update(observation.get('project_versions', {}))
         observation['accepted_versions'] = versions
         stored = dict(command_id=command['command_id'], principal=principal, operation=OPERATION,
                       parameters=params, expected_versions=versions, artifact_digests=[], nonce=command['nonce'])
@@ -559,7 +564,23 @@ class Inbox:
                                  repository_uuid=self.ids['repository_uuid'], parked_on=aid)
         return cid
 
-    def _resume(self, state, entities, current, principal, now, command, params):
+    def _project_gate(self):
+        if self.gate is None:
+            eligibility = self.claims.organ('control_eligibility')
+            self.gate = eligibility.Gate(self.store, self.conn, domain_uuid=self.ids['domain_uuid'],
+                                         repository_uuid=self.ids['repository_uuid'],
+                                         authority_generation=self.authority_generation)
+        return self.gate
+
+    def _check_project(self, unit, entities, observation):
+        """Use the Gate's one rule and keep its exact read versions for the commit and refusal."""
+        refusals, read = self._project_gate().project_problems(unit)
+        observation.update(unit_id=unit, project=entities[unit]['data'].get('project'),
+                           project_versions=read, accepted_versions=dict(read))
+        if refusals:
+            raise Refused(refusals[0], 'the project takes no new work')
+
+    def _resume(self, state, entities, current, principal, now, command, params, observation):
         """The inputs a resume binds: the claim principal's eligibility, every input admission
         read, and the parked claim, unit and backlog. Admission is decided here and its inputs
         are pinned by version, so the transaction commits only against what was admitted."""
@@ -581,6 +602,7 @@ class Inbox:
                 or entities.get(backlog, {}).get('kind') != 'backlog_item'):
             raise Refused('invalid_input', 'the assignment blocks no execution unit of this repository')
         cid = self.claims.claim_id(repository, unit)
+        self._check_project(unit, entities, observation)
         params['resume'] = dict(action='resume', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid,
                                 holder=principal, generation=0, capabilities=capabilities,
                                 repository_uuid=repository, parked_on=params['assignment_id'])
@@ -813,6 +835,7 @@ class Inbox:
             inputs |= set(plan['siblings'])
             record.update(backlog_item_left=bool(plan['siblings']), open_siblings=list(plan['siblings']))
         else:
+            self._check_project(unit, entities, observation)
             plan['unpark'] = dict(action='unpark', unit_id=unit, backlog_item_uuid=backlog, claim_id=cid, holder=None,
                                   generation=0, capabilities=[], repository_uuid=repository, parked_on=source)
         params['dispose'] = plan
@@ -863,13 +886,13 @@ class Inbox:
                         domain_uuid=self.ids['domain_uuid'], repository_uuid=self.ids['repository_uuid'])
             changes = {aid: {'kind': ENTITY_KIND, 'data': data}}
             if 'release' in params:
-                changes.update(self.claims.transition(params['release'], before))
+                changes.update(self.claims.transition(self.conn, params['release'], before))
             return changes
         data = dict(before[aid]['data'])
         if op == 'resume':
             if data['request_version'] != params['request_version'] or data['state'] != 'SUBMITTED':
                 raise refused('stale_subject', 'the assignment no longer admits at this request version')
-            return self.claims.transition(params['resume'], before)
+            return self.claims.transition(self.conn, params['resume'], before)
         if op == 'ask':
             if data['request_version'] != params['request_version']:
                 raise refused('stale_subject', 'the assignment changed while the question was opened')
@@ -960,7 +983,7 @@ class Inbox:
                     raise refused('transition_refused', why)
                 changes[eid] = {'kind': kind, 'data': dict(current, state='CANCELED', disposition=mark)}
         if 'unpark' in plan:
-            changes.update(self.claims.transition(plan['unpark'], before))
+            changes.update(self.claims.transition(self.conn, plan['unpark'], before))
         return changes
 
     # -- readers ---------------------------------------------------------------------------

@@ -221,7 +221,7 @@ def _v141_suite():
         for who in ('runner', 'launch-receiver'):
             put(who, 'membership', dict(principal_type='service', roles=['reservation_service'], scope=[REPOSITORY],
                                         revoked_at=None, expires_at=None))
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         # The owner's accounts: Claude Code plain, Claude Code with a subscription token, and Codex.
