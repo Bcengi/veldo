@@ -209,6 +209,7 @@ Standard library only.
 import datetime
 import hashlib
 import json
+import importlib.util
 import math
 import os
 from pathlib import Path
@@ -1414,8 +1415,22 @@ def baseline(bound, run, environment=None, record=None, servers=()):
     argv = (list(base['options'][:2]) + [base['settings_option'], str(config / SETTINGS_FILE),
                                          base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:])
             + list(base['stream_options']) + list(options['argv']))
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],
-            'secrets': {}, 'routes': routes}
+    extra = {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],
+             'secrets': {}, 'routes': routes}
+    if run.get('capability'):
+        helper = _capability_handoff()
+        try:
+            return helper.claude(extra, run['capability'], helper.inventory(run['capability'], servers), config)
+        except helper.Refused as error:
+            raise Refused(error.code) from None
+    return extra
+
+
+def _capability_handoff():
+    spec = importlib.util.spec_from_file_location('claude_handoff', Path(__file__).with_name('control_agent_config_handoff.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _mcp_entry(server, routes):
@@ -1535,6 +1550,8 @@ class Guard:
         self.prompt = None
         self.confirmed = False
         self.released = False
+        self.expected = None
+        self.capabilities_confirmed = False
 
     def opening(self, prompt):
         """(bytes, close): the initialize control request, written at once with the engine's input left open;
@@ -1546,7 +1563,8 @@ class Guard:
     def release(self):
         """The prompt as the user message of stream JSON input, once, after a confirmed subscription login and
         with no stop; None otherwise (and ever after)."""
-        if not self.confirmed or self.stop is not None or self.prompt is None or self.released:
+        if (not self.confirmed or self.stop is not None or self.prompt is None or self.released
+                or (self.expected is not None and not self.capabilities_confirmed)):
             return None
         self.released = True
         message = {'type': 'user', 'message': {'role': 'user', 'content': self.prompt.decode('utf-8', 'replace')},
@@ -1604,6 +1622,12 @@ class Guard:
                 return self._answer(answer)
             return None
         if event.get('type') == 'system' and event.get('subtype') == 'init':
+            if self.expected is not None:
+                problem = _capability_handoff().difference(event, self.expected)
+                if problem:
+                    self.stop = problem
+                    return problem
+                self.capabilities_confirmed = True
             source = event.get('apiKeySource')
             if source != SUBSCRIPTION_SOURCE:
                 return self._stopped('apiKeySource', source)

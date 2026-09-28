@@ -146,6 +146,7 @@ Standard library only.
 import datetime
 import hashlib
 import json
+import importlib.util
 import os
 from pathlib import Path
 import re
@@ -691,12 +692,30 @@ def baseline(bound, run, environment=None, record=None, servers=()):
     secrets, routes = {}, []
     if servers:
         configuration['mcp_servers'] = {server['id']: _mcp_table(server, secrets, routes) for server in servers}
+    files = {}
+    wanted = None
+    if run.get('capability'):
+        helper = _capability_handoff()
+        try:
+            listing = helper.inventory(run['capability'], servers)
+            files = helper.codex(configuration, run['capability'], listing, Path(run['config']))
+            wanted = helper.expected(run['capability'], listing)
+        except helper.Refused as error:
+            raise Refused(error.code) from None
     argv = list(base['options'])
     for key in sorted(configuration):
         argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]
     text = ''.join('%s = %s\n' % (key, _toml(configuration[key])) for key in sorted(configuration))
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': {GENERATED_FILE: text.encode()},
-            'secrets': secrets, 'routes': routes}
+    files[GENERATED_FILE] = text.encode()
+    return {'argv': argv, 'environment': dict(base['environment']), 'files': files,
+            'secrets': secrets, 'routes': routes, 'expected': wanted}
+
+
+def _capability_handoff():
+    spec = importlib.util.spec_from_file_location('codex_handoff', Path(__file__).with_name('control_agent_config_handoff.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _mcp_table(server, secrets, routes):
