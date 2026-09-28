@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W131
 plan_revision: 4
-depends_on: [VELDO-0130, VELDO-0139]
+depends_on: [VELDO-0130, VELDO-0139, VELDO-0189]
 placement: [engine, distribution]
 protected_paths: []
 footprint:
@@ -32,6 +32,9 @@ footprint:
   - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0171_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/74_veldo_0140_standing_delegation.py"
+  - "scripts/suites/66_veldo_0047_authority.py"
+  - "scripts/suites/support/v171_tailscale.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -109,7 +112,9 @@ acceptance_criteria:
       sockets (none beyond loopback) and the Serve status. The suite drives a stand-in CLI that prints the
       outputs from proof/VELDO-0171/tailscale-capture.json exactly. Before building the stand-in, a
       recorded proof step runs only read-only commands on the owner's host: `tailscale version`,
-      `tailscale status --json` and `tailscale serve status --json`; their capture is scrubbed by a
+      `tailscale status --json`, `tailscale serve status --json`, `tailscale debug prefs` (its
+      OperatorUser field is the operator setting) and `tailscale serve --help` (its listing of `--bg` is
+      the background persistence evidence); their capture is scrubbed by a
       named field allowlist as in VELDO-0172 and committed at that path. The stand-in replays exactly
       those captured outputs for the captured states. Each refusal state and the status after
       `serve --bg` are field edits of the captured JSON, each edit listed in
@@ -159,11 +164,13 @@ acceptance_criteria:
       would differ is refused by name (invalid_input:state_root:differs:<path>) and never overwritten; the
       only change to an existing file is a step adding its own keys that the file lacks or holds as null.
       The store is written only under AC1's lock rule. An update of Veldo changes only what its new steps
-      add: the installed engine files under the install root are never replaced by a re-run (the engine
-      upgrade VELDO-0139 filed for Release 2). After a second run over a complete host, every file under
+      add: the installed engine files under the install root are replaced only by VELDO-0189's upgrade,
+      which runs first on a re-run over an older engine. After a second run over a complete host, every file under
       the state root, install root, unit directory, host trust and workspace binding is byte for byte the
       same, the journal head and the Serve status are unchanged, and no key is generated. Over a host set
-      up by VELDO-0139 alone, only the API steps write, and every earlier file is unchanged but for the
+      up by VELDO-0139 alone, laid down by the whole `.veldo` of commit 7fefdb9a (taken with `git archive`,
+      never that commit's setup module alone over the current engine), only VELDO-0189's upgrade and the
+      API steps write, and every earlier file outside the installed engine is unchanged but for the
       installation's service configuration naming the API configuration. Falsifier: Generate a new api
       edge key on every run, and the second-run row must fail on the changed key and the second
       enrollment in the journal.
@@ -208,7 +215,7 @@ implementation proof nor operational activation.
 The UI shell and its screens (VELDO-0145, VELDO-0131); other transports (the owner chose Tailscale);
 enrolling a second person's passkey (Release 3); sessions that survive a restart (Release 2); the execution
 record keys (VELDO-0167) and the receiver host trust key (VELDO-0170), which add their own steps to this
-re-run; replacing the installed engine files after an update (Release 2, VELDO-0139's Notes).
+re-run; replacing the installed engine files after an update (VELDO-0189, which this re-run runs first).
 
 ## What the reviewer judges
 
@@ -268,3 +275,48 @@ read-only Tailscale capture before the stand-in, allowlist scrubbing and exact r
 background persistence against the suite-owned invocation log after setup exits. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27: implementation preflight blocked at AC2. The three authorized read-only
+Tailscale captures succeeded, but neither JSON status output exposes the operator
+setting or a background-persistence capability. Their required pre-write refusals
+cannot be derived from those observations without inventing a CLI contract. Raw
+captures remain outside the repository; the allowlist-scrubbed capture and precise
+blocker are in proof/VELDO-0171/. No production change, fabricated refusal state,
+or live activation was made. The owner must resolve the observation source and
+capture contract; acceptance criteria and ready status are unchanged.
+
+2026-09-27, build: the three read-only commands cannot show the operator setting or `--bg` support, so the
+builder stopped before writing code. AC2 adds two read-only sources: `tailscale debug prefs` (OperatorUser) and
+`tailscale serve --help` (lists `--bg`). Back to draft for the owner's re-mark.
+
+2026-09-27: marked ready again by the owner (Telegram 29237, "Ok" after the explanation in 29235 and 29236).
+
+2026-09-28, build: implemented. Setup's API steps and `veldo factory passkey` are in
+.veldo/control_factory_setup_api.py; the re-run, which accepts only the arguments a state root was laid
+down with and never overwrites a file, is in control_factory_setup.py; the service admits the api edge
+enrollment setup sends while it runs (control_service.py), the API process is an entry point of the
+installed executable, the API's HTTP handler sends the content security policy on every response
+(control_api.py), and the API unit template is .veldo/services/veldo-api.service. The blocker record is
+replaced by the implementation: the five read-only captures (with `debug prefs` and `serve --help`) are
+scrubbed into proof/VELDO-0171/tailscale-capture.json, whose status after `serve --bg` names the target
+that invocation gave (@TARGET@), each suite run listening on a port of its own. Setup republishes the key
+projection itself, from a read-only view of the store, after the running service commits the enrollment,
+so over a VELDO-0139 host the earlier files that change are the installation's service configuration and
+that projection (AC1 requires it; the api purpose of the protected signer refuses a stale one). An
+installation whose fixed executable predates this change has no API process and is refused
+`unavailable_service:api:not_installed` before anything is written, the engine upgrade staying Release 2.
+The footprint adds scripts/suites/74_veldo_0140_standing_delegation.py and
+scripts/suites/support/v171_tailscale.py: suites 73 and 74 run setup too and now give it the same Tailscale
+stand-in, so no suite reaches the host's real CLI; and scripts/suites/66_veldo_0047_authority.py, whose list
+of the programs an installation runs by path (installed 0500) now names the API process. Proof in suite 85_veldo_0171_setup_api and
+proof/VELDO-0171/. The live Serve leg remains the lead's with the owner.
+
+2026-09-28: the owner asked for the engine upgrade in Release 1 (Telegram 29307, "For 0171, ok to add"),
+alongside his memory requirement of the same day (29306), which VELDO-0182 and VELDO-0183 take. AC4 now
+says the installed engine files are replaced only by VELDO-0189's upgrade, depends_on adds VELDO-0189, and
+the rows over a VELDO-0139 host lay that host down from the whole `.veldo` of commit 7fefdb9a with `git
+archive`, not only its setup module, so the host holds the older engine and the re-run's refusal
+`unavailable_service:api:not_installed` gives way to the upgrade. The text is the one on build-veldo-0171 at
+1dbf0b88, with these changes. Back to draft: the owner must re-mark it ready.
+
+2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.

@@ -1,0 +1,7 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -838,0 +839,4 @@
++    def resume_quick(self, sid, contract, permission, evidence, expected, command_id):
++        self._commit(dict(action='resume', stop_id=sid, unit_id=contract['unit'], contract=contract,
++                          permission=permission, evidence=evidence), expected, self.journal_signer, command_id, command_id)
++

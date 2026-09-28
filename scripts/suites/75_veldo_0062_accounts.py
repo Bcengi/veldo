@@ -91,6 +91,15 @@ def _v62_suite():
         spec.loader.exec_module(module)
         return module
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engines against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='v62-', dir=fast))
@@ -147,7 +156,7 @@ def _v62_suite():
         member('runner', 'service', ['reservation_service'])
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         # The owner's account records, over profiles the local helper prepares for either provider.
@@ -276,25 +285,25 @@ def _v62_suite():
         FAMILIES = ['ANTHROPIC_V62_' + probe, 'OPENAI_V62_' + probe, 'CODEX_V62_' + probe, 'CLAUDE_CODE_USE_V62_' + probe]
 
         def inherited_outcome(name):
-            if name in PROFILE_VARS or name.startswith(FAMILY) or DECIDED.get(name) in ('strip', 'setting'):
+            if name in PROFILE_VARS or name.startswith(FAMILY + ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')) or DECIDED.get(name) in ('strip', 'setting'):
                 return 'strip'
             return 'keep'
         STRIPPED = sorted({n for n in LISTED if inherited_outcome(n) == 'strip'} | set(NINE) | set(REDIRECTS)
-                          | set(FAMILIES))
+                          | set(FAMILIES) | {'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
         # Kept, planted: every kept listed name but the home names (the receiver's own tools need the real
         # ones; they are checked to arrive unchanged), a neutral name, count and threshold settings.
         KEPT = sorted({n for n in LISTED if inherited_outcome(n) == 'keep' and n not in HOME_NAMES}
-                      | {'V62_NEUTRAL_' + probe, 'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
+                      | {'V62_NEUTRAL_' + probe})
         # What the Claude adapter configures: the model table, the settings and a threshold setting, each of
         # which must reach the engine with its configured value; the Codex adapter a setting of its family.
-        CONFIGURED_CLAUDE = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | {'CLAUDE_CODE_IDLE_TOKEN_THRESHOLD'})
+        CONFIGURED_CLAUDE = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | {'CLAUDE_CODE_IDLE_TOKEN_THRESHOLD', 'CLAUDE_CODE_MAX_OUTPUT_TOKENS'})
         CONFIGURED_CODEX = ['CODEX_CA_CERTIFICATE', 'RUST_LOG']
         fake = '''#!%s -B
 import json, os, sqlite3, sys, time
 from pathlib import Path
 if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
-    print('Logged in using ChatGPT')
+    print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
 store, markers, domain = sys.argv[-3], Path(sys.argv[-2]), sys.argv[-1]
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
@@ -314,7 +323,7 @@ own = {'engine': Path(sys.argv[0]).name, 'pid': os.getpid(), 'dispatch': dispatc
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
 out = open(markers / ('%%d.out' %% os.getpid()), 'w')
 def say(event):
-    text = json.dumps(event)
+    text = json.dumps(complete_event(event))
     out.write(text + chr(10))
     out.flush()
     sys.stdout.write(text + chr(10))
@@ -334,7 +343,7 @@ def stream_input():
         message = json.loads(line)
         if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
             token = bool(os.environ.get('CLAUDE_CODE_OAUTH_TOKEN'))
-            account = dict({'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} if token else {'subscriptionType': 'Claude Max'},
+            account = dict({'tokenSource': 'CLAUDE_CODE_OAUTH_TOKEN'} if token else {'subscriptionType': 'Claude Team'},
                            apiProvider='firstParty')
             say({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
                                                           'response': {'account': account, 'pid': os.getpid()}}})
@@ -356,6 +365,7 @@ out.close()
 (markers / ('%%d.done' %% os.getpid())).write_text('done')
 sys.exit(payload.get('code', 0))
 ''' % (sys.executable,)
+        fake = fake_formats.embed(fake)
         for name in ('claude', 'codex'):
             (engines / name).write_text(fake)
             (engines / name).chmod(0o755)
@@ -376,7 +386,9 @@ sys.exit(payload.get('code', 0))
                 'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
                 'environment': {'DISABLE_AUTOUPDATER': '1'},
                 # VELDO-0155: the version is qualified with the everything-off baseline.
-                **({'baseline': L.ENGINES['claude_code'].BASELINE}
+                **({'baseline': L.ENGINES['claude_code'].BASELINE,
+                    'session_environment': (L.ENGINES['claude_code'].session_environment(versions / '2.1.281')
+                                            if hasattr(L.ENGINES['claude_code'], 'session_environment') else [])}
                    if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'BASELINE') else {})}}}))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
@@ -651,13 +663,15 @@ sys.exit(payload.get('code', 0))
                     'cache_creation': {'ephemeral_5m_input_tokens': create, 'ephemeral_1h_input_tokens': 0},
                     'server_tool_use': {'web_search_requests': 0, 'web_fetch_requests': 0}, 'service_tier': 'standard'}
 
+        @live_step
         def c_init(session=None):
             return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
                              'cwd': '/work', 'tools': ['Read', 'Edit', 'Bash'],
-                             'mcp_servers': [{'name': 'tracker', 'status': 'connected'}], 'model': 'configured-model',
+                             'mcp_servers': [], 'model': 'configured-model',
                              'permissionMode': 'default', 'slash_commands': [], 'output_style': 'default', 'skills': [],
                              'plugins': [], 'uuid': str(uuid.uuid4()), 'session_id': session or SESSION}}
 
+        @live_step
         def c_msg(mid, inp, out, read=0, create=0, parent=None, session=None):
             return {'line': {'type': 'assistant', 'parent_tool_use_id': parent, 'uuid': str(uuid.uuid4()),
                              'session_id': session or SESSION,
@@ -665,6 +679,7 @@ sys.exit(payload.get('code', 0))
                                          'content': [], 'stop_reason': None, 'stop_sequence': None,
                                          'usage': c_usage(inp, out, read, create)}}}
 
+        @live_step
         def c_result(inp, out, turns, cache=0, models=None, main=None, session=None):
             # `usage` is the main loop's; `modelUsage` per model over every call, the total accounted.
             models = models or {'configured-model': (inp, out, cache, 0)}
@@ -678,6 +693,7 @@ sys.exit(payload.get('code', 0))
                                for name, (i, o, r, c) in models.items()},
                 'permission_denials': [], 'uuid': str(uuid.uuid4()), 'session_id': session or SESSION}}
 
+        @live_step
         def c_rate(status, reset, kind='five_hour', utilization=None):
             info = {'status': status, 'rateLimitType': kind}
             if reset is not None:
@@ -768,6 +784,23 @@ sys.exit(payload.get('code', 0))
                 values = own.get('values') or {}
                 adapter = 'codex' if account.startswith('acct-x') else 'claude'
                 wanted = CONFIGURED[adapter]['environment']
+                # The account boundary also serves login checks before the exec wrapper.
+                # Keep its credential classification independently proven from binary tables;
+                # the wrapper's broader session strip must not conceal a broken login boundary.
+                login_env, login_error = attempt(lambda: ACC.login_environment(
+                    caller, account_record(account), HOST, L.STRIPPED, wanted, L.CREDENTIALS))
+                login_env = login_env or {}
+                check('login/recorded-account-profile', account + ': account boundary selects the registered profile',
+                      login_error is None and login_env.get(variable) == profiles[account])
+                login_strip = {n for n in caller if n in PROFILE_VARS or n.startswith(FAMILY)
+                               or DECIDED.get(n) in ('strip', 'setting') or n in NINE + REDIRECTS + FAMILIES}
+                check('login/no-paid-api', account + ': account boundary strips logins and settings before wrapper',
+                      login_error is None and all(n not in login_env for n in login_strip - set(wanted) - {variable}))
+                login_keep = {n for n in LISTED if n not in login_strip} | {'CLAUDE_CODE_MAX_OUTPUT_TOKENS'}
+                check('login/no-paid-api', account + ': account boundary distinguishes non-login counts and thresholds',
+                      all(login_env.get(n) == caller[n] for n in login_keep - set(wanted) if n in caller))
+                check('login/configured-environment', account + ': account boundary applies checked configuration',
+                      login_error is None and all(login_env.get(n) == v for n, v in wanted.items()))
                 # A name the adapter configures arrives with the configured value, and the account's own profile
                 # variable with its profile (the rows above), never with the caller's.
                 leaked = sorted(n for n in set(STRIPPED) & names
@@ -778,7 +811,7 @@ sys.exit(payload.get('code', 0))
                       bool(names) and not leaked)
                 missing = sorted(n for n in KEPT if n not in wanted and values.get(n) != caller[n])
                 homes = sorted(n for n in HOME_NAMES if n in os.environ and values.get(n) != os.environ[n])
-                check('login/no-paid-api', '%s: what is not a login still reached it unchanged: the %d kept names of '
+                check('login/no-paid-api', '%s: names outside the session prefixes still reached it unchanged: the %d kept names of '
                       'the lists (general proxy, CA, runtime, cloud, tool credentials, the not-secret thresholds and '
                       'usage settings), a neutral name, a count setting and the home names [%s, %s]'
                       % (account, len(KEPT), missing[:8], homes), bool(names) and not missing and not homes)
@@ -1572,6 +1605,7 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        fake_capture = conform_formats.conform_fake(locals(), '0062_accounts')
         for conn in connections:
             with contextlib.suppress(Exception):
                 conn.close()
@@ -1589,6 +1623,9 @@ sys.exit(payload.get('code', 0))
             if not observed:
                 print('  VELDO-0062 %s detail: no check ran' % name)
         expect('VELDO-0062 ' + name, ok)
+    for line in conform_formats.describe('0062_accounts', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0062_accounts', bool(fake_capture[1]) and not fake_capture[0])
     print('VELDO-0062 suite seconds: %.3f' % (time.monotonic() - started))
 
 

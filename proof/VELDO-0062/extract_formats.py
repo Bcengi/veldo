@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Extract the report formats and credential tables of the installed CLIs, VELDO-0062.
 
-Reads only the two binaries' bytes: the schema Claude Code embeds for its stream JSON (the zod
+Reads the allowlist-scrubbed live capture beside the two binaries' bytes: the schema Claude Code embeds for its stream JSON (the zod
 objects its SDK message types are built from) and the literals Codex's Rust binary carries for its
 `exec --json` events, its usage-limit message and its credential variables. Nothing is executed, no
 model runs, nothing logs in and no profile, credential or configuration file is opened.
@@ -67,12 +67,37 @@ class Js:
             self.cache[key] = list(re.finditer(r'(?<![A-Za-z0-9_$.])' + re.escape(name) + suffix, self.text))
         return self.cache[key]
 
+    # Windows searched around `near` before the whole text: a window answers only when the nearest match in it is
+    # provably the nearest in the whole text (every match that could be as near starts and ends inside it).
+    WINDOWS = (1 << 22, 1 << 24)
+    MARGIN = 1 << 20
+
+    def nearest(self, name, suffix, near):
+        """The match of `name` + `suffix` whose start is nearest `near` (the earliest on a tie), or None: the
+        same answer as min(self._sites(name, suffix), key=distance), found without scanning the whole text
+        when a window around `near` already proves it (no match of length under MARGIN that could be as near
+        lies outside the window)."""
+        distance = lambda m: abs(m.start() - near)
+        if (name, suffix) not in self.cache:
+            pattern = re.compile(r'(?<![A-Za-z0-9_$.])' + re.escape(name) + suffix)
+            size = len(self.text)
+            for width in self.WINDOWS:
+                lo, hi = max(0, near - width), min(size, near + width)
+                found = list(pattern.finditer(self.text, lo, hi))
+                if not found:
+                    continue
+                best = min(found, key=distance)
+                d = distance(best)
+                if (lo == 0 or near - d >= lo) and (hi == size or near + d + self.MARGIN <= hi):
+                    return best
+        sites = self._sites(name, suffix)
+        return min(sites, key=distance) if sites else None
+
     def array(self, name, near):
         """The string values of `name=[...]` nearest `near`, or None."""
-        sites = self._sites(name, r'=\[("(?:[^"\\]|\\.)*"(?:,"(?:[^"\\]|\\.)*")*)\]')
-        if not sites:
+        best = self.nearest(name, r'=\[("(?:[^"\\]|\\.)*"(?:,"(?:[^"\\]|\\.)*")*)\]', near)
+        if best is None:
             return None
-        best = min(sites, key=lambda m: abs(m.start() - near))
         return json.loads('[' + best.group(1) + ']')
 
     def tokens(self, at):
@@ -86,10 +111,9 @@ class Js:
 
     def definition(self, name, near):
         """The body of `name=f(()=>BODY)` or `name=d(...)` nearest `near` (minified names repeat)."""
-        sites = self._sites(name, r'=(f\(\(\)=>)?(?=[A-Za-z_$])')
-        if not sites:
+        best = self.nearest(name, r'=(f\(\(\)=>)?(?=[A-Za-z_$])', near)
+        if best is None:
             raise Moved('no definition of ' + name)
-        best = min(sites, key=lambda m: abs(m.start() - near))
         return best.end(), bool(best.group(1))
 
 
@@ -385,10 +409,10 @@ def _js_list(js, at, seen=()):
 
 def _definition(js, name, near):
     """The offset of the nearest `NAME=[` or `NAME=new Set([` (minified names repeat)."""
-    sites = js._sites(name, r'=(?:new Set\()?\[')
-    if not sites:
+    best = js.nearest(name, r'=(?:new Set\()?\[', near)
+    if best is None:
         raise Moved('no list named ' + name)
-    return min(sites, key=lambda m: abs(m.start() - near)).start()
+    return best.start()
 
 
 # VELDO-0160: Claude Code's rate-limit result. The usage-limit message its API error message and its
@@ -741,10 +765,10 @@ def _union_members(window, at, anchor):
 def _lazy(js, name, near):
     """The body of the lazy schema `name=f(()=>BODY` nearest `near` (a minified name is also bound to other
     values, which `Js.definition` could pick)."""
-    sites = js._sites(name, r'=f\(\(\)=>')
-    if not sites:
+    best = js.nearest(name, r'=f\(\(\)=>', near)
+    if best is None:
         raise Moved('no lazy schema ' + name)
-    return min(sites, key=lambda m: abs(m.start() - near)).end()
+    return best.end()
 
 
 def _tool_free(schema):
@@ -972,6 +996,136 @@ def claude_forms(text):
                              "only literals, enums, strings, numbers and booleans and no field naming a tool"}
 
 
+# The emitters that build an event line from their own object literal and then add fields statement by statement,
+# each by (event, the exact text its object starts with, the object's variable, the path of the object in the
+# table's events). A zod schema says what a field may hold, not whether the emitter writes it: a field the emitter
+# writes only under a condition (`...COND&&{field:...}`, `if(COND)VAR.field=...`, or a value ending in `??void 0`
+# or `:void 0`, which JSON drops) is optional whatever the schema or the capture says. system/init writes
+# messaging_socket_path only when the process bound its own cross-session inbox (`if(e.messagingSocketPath!==void 0)`,
+# the path the inbox bound; start-up unsets any inherited CLAUDE_CODE_MESSAGING_SOCKET first): the capture's run bound
+# one, and a worker whose inbox gate is off, which runs --bare, or whose bind fails prints none.
+CLAUDE_EMITTERS = (
+    ('system/init', 'g={type:"system",subtype:"init",cwd:e.cwd,', 'g', ('system/init',)),
+    ('initialize', 'Pe={commands:Zq(e),agents:r.map((de)=>({name:de.agentType,', 'Pe',
+     ('control_response', 'response', 'response')),
+)
+
+
+def _split_top(text, separator):
+    """`text` split at `separator` outside brackets and string literals."""
+    parts, depth, quote, start, i = [], 0, None, 0, 0
+    while i < len(text):
+        c = text[i]
+        if quote:
+            if c == '\\':
+                i += 1
+            elif c == quote:
+                quote = None
+        elif c in '"\'`':
+            quote = c
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            depth -= 1
+        elif depth == 0 and text.startswith(separator, i):
+            parts.append(text[start:i])
+            start = i + len(separator)
+            i = start
+            continue
+        i += 1
+    parts.append(text[start:])
+    return parts
+
+
+def _closing(text, at):
+    """The index just past the bracket that closes the one at `at`."""
+    depth, quote, i = 0, None, at
+    while i < len(text):
+        c = text[i]
+        if quote:
+            if c == '\\':
+                i += 1
+            elif c == quote:
+                quote = None
+        elif c in '"\'`':
+            quote = c
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            depth -= 1
+            if depth == 0:
+                return i + 1
+        i += 1
+    raise Moved('unclosed bracket at %d' % at)
+
+
+def _maybe_undefined(value):
+    """The value itself when it may be `void 0` (a `??void 0` fallback or a `:void 0` branch), else None."""
+    return value if re.search(r'(\?\?|:)void 0$', value) else None
+
+
+def _literal_presence(body, found, condition=None):
+    """Each key of an object literal's body: None when always written, else the condition it is written under."""
+    for part in _split_top(body, ','):
+        part = part.strip()
+        if part.startswith('...'):
+            spread = part[3:]
+            guard = _split_top(spread, '&&')
+            if len(guard) > 1 and guard[-1].startswith('{') and guard[-1].endswith('}'):
+                inner = '&&'.join(guard[:-1])
+                _literal_presence(guard[-1][1:-1], found, inner if condition is None else condition + '&&' + inner)
+            continue
+        m = re.match(r'([A-Za-z_$][A-Za-z0-9_$]*|"[^"]*"):', part)
+        if not m:
+            raise Moved('emitter literal: unreadable member %r' % part[:60])
+        key, value = m.group(1).strip('"'), part[m.end():]
+        found[key] = condition if condition is not None else _maybe_undefined(value)
+
+
+def claude_emitters(text):
+    """Which fields each emitter writes always and which only under a condition, read from its own text."""
+    emitters = {}
+    for event, anchor, variable, path in CLAUDE_EMITTERS:
+        if text.count(anchor) != 1:
+            raise Moved('%s emitter: anchor found %d times' % (event, text.count(anchor)))
+        at = text.index(anchor) + len(variable) + 1
+        end = _closing(text, at)
+        found = {}
+        _literal_presence(text[at + 1:end - 1], found)
+        # The function returns its object, alone (`return g}`) or last in a comma sequence (`,Pe}`).
+        stops = [s for s in (text.find('return %s}' % variable, end), text.find(',%s}' % variable, end)) if s >= 0]
+        stop = min(stops) if stops else -1
+        if stop < 0 or stop - end > 4000:
+            raise Moved('%s emitter: no return of its object' % event)
+        own = re.compile(re.escape(variable) + r'\.([A-Za-z_$][A-Za-z0-9_$]*)=(?!=)')
+        for statement in _split_top(text[end:stop], ';'):
+            statement = statement.strip()
+            if statement.startswith('return '):
+                statement = statement[len('return '):]
+            body, guard = statement, None
+            if statement.startswith('if('):
+                close = _closing(statement, 2)
+                guard, body = statement[3:close - 1], statement[close:]
+                parts = _split_top(guard, ',')
+                for part in parts[:-1]:
+                    m = own.match(part.strip())
+                    if m:
+                        value = part.strip()[m.end():]
+                        found[m.group(1)] = _maybe_undefined(value)
+                guard = parts[-1]
+            for part in _split_top(body, ','):
+                m = own.match(part.strip())
+                if m:
+                    value = part.strip()[m.end():]
+                    found[m.group(1)] = guard if guard is not None else _maybe_undefined(value)
+        if not found:
+            raise Moved('%s emitter: no fields read' % event)
+        emitters[event] = {'anchor': anchor, 'offset': text.index(anchor), 'path': list(path),
+                           'always': sorted(k for k, v in found.items() if v is None),
+                           'conditional': {k: v for k, v in sorted(found.items()) if v is not None}}
+    return emitters
+
+
 def claude(path):
     raw = Path(path).read_bytes()
     text = raw.decode('latin-1')
@@ -985,6 +1139,24 @@ def claude(path):
             raise Moved('%s: anchor found %d times' % (name, text.count(anchor)))
         schema, _ = Reader(js, depth=4).parse(text.index(anchor))
         events[name] = schema
+    # The initialize success answer is a control response. Its generic payload is a record;
+    # the account emitter names the optional fields absent from this subscription capture.
+    control_anchor = 'd({type:R("control_response"),response:Fe([_Y(),mY()])})'
+    account_anchor = ('account:{email:ie?.email,organization:ie?.organization,subscriptionType:ie?.subscription,'
+                      'tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}')
+    for anchor in (control_anchor, account_anchor):
+        if text.count(anchor) != 1:
+            raise Moved('initialize answer anchor moved')
+    control, _ = Reader(js, depth=4).parse(text.index(control_anchor))
+    success = control['fields']['response']['anyOf'][0]
+    control['fields']['response'] = success
+    account = {name: {'type': 'string', 'optional': expression.startswith('ie?.')}
+               for name, expression in re.findall(r'(\w+):(ie\?\.\w+|He\(\))', account_anchor)}
+    success['fields']['response'] = {'type': 'object', 'optional': True,
+                                     'fields': {'account': {'type': 'object', 'fields': account}},
+                                     'source': 'initialize success payload; account emitter in the binary',
+                                     'anchor': account_anchor}
+    events['control_response'] = control
     tables = []
     for name, anchor, decision, reason in CLAUDE_TABLES:
         at = text.find(anchor)
@@ -1024,7 +1196,8 @@ def claude(path):
     version = Path(path).resolve().name
     return {'binary': str(Path(path).resolve()), 'version': version, 'sha256': _digest(path),
             'source': 'the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)',
-            'events': events, 'notes': notes, 'credential_tables': tables, 'usage_limit': claude_limit(text),
+            'events': events, 'emitters': claude_emitters(text), 'notes': notes, 'credential_tables': tables,
+            'usage_limit': claude_limit(text),
             'tool_forms': claude_forms(text)}
 
 
@@ -1478,10 +1651,111 @@ def codex(path):
                 "than the CLI recorded under either reading")}}
 
 
+CAPTURE = HERE.parent / 'VELDO-0172' / 'capture.json'
+
+
+def event_name(line):
+    kind = line.get('type')
+    return kind + '/' + line['subtype'] if kind in ('system', 'result') else kind
+
+
+def observe_schema(schema, samples, source, path='', changes=None):
+    """Union the observed field universe with the binary schema, retaining its optional fields.
+
+    Samples carry their original stream line numbers, including inside arrays and model records.
+    Only types and paths enter the schema; scrubbed placeholders never become enum constants.
+    """
+    changes = [] if changes is None else changes
+    if not schema:
+        value = next((value for _, value in samples if value is not None), None)
+        kind = ('object' if isinstance(value, dict) else 'array' if isinstance(value, list) else
+                'boolean' if isinstance(value, bool) else 'number' if isinstance(value, (int, float)) else
+                'string' if isinstance(value, str) else 'any')
+        schema.update(type=kind, source=source, capture_lines=sorted({n for n, _ in samples}))
+        changes.append({'field': path, 'change': 'known', 'lines': schema['capture_lines']})
+        if kind == 'object':
+            schema['fields'] = {}
+        if kind == 'array':
+            schema['items'] = {}
+    if any(value is None for _, value in samples):
+        schema['nullable'] = True
+    kind = schema.get('type')
+    objects = [(n, value) for n, value in samples if isinstance(value, dict)]
+    if kind == 'object' and objects:
+        fields = schema['fields']
+        for key in sorted(set(fields) | {key for _, obj in objects for key in obj}):
+            present = [(n, obj[key]) for n, obj in objects if key in obj]
+            field = fields.setdefault(key, {})
+            if present:
+                observe_schema(field, present, source, path + '.' + key, changes)
+            if len(present) < len(objects) and not field.get('optional'):
+                field.update(optional=True, optional_source=source,
+                             omitted_lines=sorted({n for n, obj in objects if key not in obj}))
+                changes.append({'field': path + '.' + key, 'change': 'optional', 'lines': field['omitted_lines']})
+    elif kind == 'record' and objects:
+        observe_schema(schema['values'], [(n, v) for n, obj in objects for v in obj.values()],
+                       source, path + '.*', changes)
+    elif kind == 'array':
+        entries = [(n, v) for n, array in samples if isinstance(array, list) for v in array]
+        if entries:
+            observe_schema(schema['items'], entries, source, path + '[]', changes)
+    elif kind == 'any' and objects:
+        # An open binary payload stays open for uncaptured variants; its observed fields are still known.
+        observe_schema(schema.setdefault('observed', {}), objects, source, path, changes)
+    return schema
+
+
+def reconcile(table, capture_path=CAPTURE):
+    capture = json.loads(Path(capture_path).read_text())
+    changes = []
+    for engine, key in (('claude', 'claude_code'), ('codex', 'codex')):
+        events = table[key]['events']
+        groups = {}
+        for number, line in enumerate(capture['streams'][engine], 1):
+            groups.setdefault(event_name(line), []).append((number, line))
+        for event, samples in groups.items():
+            source = 'proof/VELDO-0172/capture.json:streams.' + engine
+            observe_schema(events.setdefault(event, {}), samples, source, event, changes)
+    for number, line in enumerate(capture['streams']['codex'], 1):
+        if isinstance(line.get('item'), dict):
+            item = line['item']
+            observe_schema(table['codex']['items'].setdefault(item['type'], {}), [(number, item)],
+                           'proof/VELDO-0172/capture.json:streams.codex', 'item.' + item['type'], changes)
+    # A field its emitter writes only under a condition is optional, though the capture's run met the condition.
+    for event, emitter in sorted(table['claude_code'].get('emitters', {}).items()):
+        node = table['claude_code']['events'][emitter['path'][0]]
+        for step in emitter['path'][1:]:
+            node = node['fields'][step]
+        source = 'claude_code.emitters.' + event
+        for key, condition in emitter['conditional'].items():
+            field = node['fields'].get(key)
+            if field is not None and not field.get('optional'):
+                field.update(optional=True, optional_source=source, optional_condition=condition)
+                changes.append({'field': '.'.join(emitter['path'] + [key]), 'change': 'optional', 'source': source})
+    def field_counts(node):
+        fields = list((node.get('fields') or {}).values())
+        counts = {'known': len(fields), 'optional': sum(bool(f.get('optional')) for f in fields),
+                  'from_capture': sum('capture_lines' in f for f in fields)}
+        children = fields + [node[k] for k in ('items', 'values', 'observed') if isinstance(node.get(k), dict)]
+        children += node.get('anyOf', [])
+        for child in children:
+            for key, count in field_counts(child).items():
+                counts[key] += count
+        return counts
+    metrics = {section: {event: field_counts(schema) for event, schema in table[section]['events'].items()}
+               for section in ('claude_code', 'codex')}
+    table['capture'] = {'path': 'proof/VELDO-0172/capture.json', 'sha256': _digest(capture_path),
+                        'recorded_run': '2026-09-26',
+                        'versions': {key: table[key]['version'] for key in ('claude_code', 'codex')},
+                        'changes': changes, 'metrics': metrics}
+    return table
+
+
 def extract(claude_path, codex_path):
-    return {'schema': 'veldo.cli-formats/v1', 'spec_id': 'VELDO-0062',
-            'generated_by': 'proof/VELDO-0062/extract_formats.py (reads the binaries\' bytes only)',
+    table = {'schema': 'veldo.cli-formats/v1', 'spec_id': 'VELDO-0062',
+            'generated_by': 'proof/VELDO-0062/extract_formats.py (reads binary schemas and the allowlist-scrubbed live capture)',
             'claude_code': claude(claude_path), 'codex': codex(codex_path)}
+    return reconcile(table)
 
 
 def main():

@@ -1,0 +1,108 @@
+{
+ "by_assertion": true,
+ "commit": "f7134094ea87fc609eed24250d5cfc3d13445b62",
+ "details": [
+  "VELDO-0085 detail: supersession/prepared-unit: allocate refuses prepared unit by name; refusal leaves authority unchanged; original unit stays admissible; allocate refuses admitted unit by name; admitted unit stays unchanged",
+  "VELDO-0085 detail: supersession/other-item: second item refused by name; refusal leaves authority unchanged; owning item still prepares",
+  "VELDO-0085 detail: supersession/main-role: other role refused by name; refusal leaves authority unchanged; main role republish before prepare supersedes"
+ ],
+ "failed_rows": [
+  "VELDO-0085 supersession/prepared-unit",
+  "VELDO-0085 supersession/other-item",
+  "VELDO-0085 supersession/main-role"
+ ],
+ "modules": {
+  ".veldo/control_alias.py": {
+   "at_commit": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353",
+   "now": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64"
+  },
+  ".veldo/control_backlog.py": {
+   "at_commit": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2",
+   "now": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2"
+  },
+  ".veldo/control_decomposition.py": {
+   "at_commit": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792",
+   "now": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792"
+  },
+  ".veldo/control_decomposition_binding.py": {
+   "at_commit": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48",
+   "now": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78",
+   "now": "20ab212fab85b3a029960f0419165b2b6e0fb613ee310b2efda943c5818aef78"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4",
+   "now": "e0d1376accb89628ff1db7e57060d4f576b30659146e5efdbfef1db6e88925e4"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0085 fields/invalid-id-no-artifact",
+   true
+  ],
+  [
+   "VELDO-0085 aliases/authority-counter",
+   true
+  ],
+  [
+   "VELDO-0085 binding/one-owner",
+   true
+  ],
+  [
+   "VELDO-0085 dependencies/eligibility",
+   true
+  ],
+  [
+   "VELDO-0085 priority/fresh-growth",
+   true
+  ],
+  [
+   "VELDO-0085 publication/other-process",
+   true
+  ],
+  [
+   "VELDO-0085 refusals/service-class",
+   true
+  ],
+  [
+   "VELDO-0085 dependencies/current-specification",
+   true
+  ],
+  [
+   "VELDO-0085 dependencies/prepare-mismatch",
+   true
+  ],
+  [
+   "VELDO-0085 supersession/prepared-unit",
+   false
+  ],
+  [
+   "VELDO-0085 supersession/other-item",
+   false
+  ],
+  [
+   "VELDO-0085 supersession/main-role",
+   false
+  ],
+  [
+   "VELDO-0085 publication/concurrent-current",
+   true
+  ],
+  [
+   "VELDO-0085 publication/stale-input",
+   true
+  ],
+  [
+   "VELDO-0085 install/assets",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 4.367,
+ "spec_id": "VELDO-0085",
+ "suite": "scripts/suites/82_veldo_0085_decomposition.py",
+ "tree": "git archive f7134094ea87fc609eed24250d5cfc3d13445b62, unchanged; the current suite file run against it"
+}

@@ -26,6 +26,24 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_dispatch.py"
+  - ".veldo/control_dispatch.py"
+  - "packs/*/.veldo/control_dispatch.py"
+  - "engine/.veldo/control_service_api.py"
+  - ".veldo/control_service_api.py"
+  - "packs/*/.veldo/control_service_api.py"
+  - "engine/.veldo/control_client_api.py"
+  - ".veldo/control_client_api.py"
+  - "packs/*/.veldo/control_client_api.py"
+  - "engine/.veldo/control_engine_claude.py"
+  - ".veldo/control_engine_claude.py"
+  - "packs/*/.veldo/control_engine_claude.py"
+  - "engine/runtime/claude-qualification.json"
+  - ".veldo/runtime/claude-qualification.json"
+  - "packs/*/runtime/claude-qualification.json"
+  - "proof/VELDO-0155/extract_baseline.py"
+  - "proof/VELDO-0155/claude-baseline.json"
+  - "scripts/suites/80_veldo_0155_claude_baseline.py"
   - "scripts/suites/*_veldo_0141_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -193,3 +211,75 @@ decides the result. AC1 keeps the complete record and its error-stream falsifier
 the keystore is VELDO-0144's in stage 2, so AC4 names the per-run set of resolved values the receiver
 replaces and tests it with a planted resolver that adds to that set; VELDO-0158 AC3 requires every value
 resolved from the keystore to enter the set. AC4's falsifier is unchanged. Status unchanged.
+
+2026-09-26, build (branch build-veldo-0141 from 3c85f33b): built as the criteria read. The launch receiver pipes
+the worker's error stream (it was discarded) and keeps every run's execution record (new
+`control_execution_record.py`): the wrapper's identity line, each engine output line and each error-stream line,
+in the order read, as one 0600 append-only file per dispatch under the factory state root's `records`, its
+header binding the dispatch, contract, unit, station, project, account and host. Each line is redacted before it
+is kept: first every value of the run's set of resolved credential values (`control_launch.RESOLVERS`, called as
+the worker is spawned; the account's subscription token is the one built in, VELDO-0158 AC3 adds the
+keystore's), then secret_scan's patterns and high-entropy spans, each replaced by a marker naming its kind and the
+line's `redacted` field naming the kinds. After each batch the receiver hints the API's hint socket (the
+receiver's `record_hints`); the exit record commits the record's line count, byte count and digest
+(`control_dispatch.exit`, `execution_record`); a last hint marks the end, and the receiver's end event carries the
+record's account (counts, redactions by kind, resolved kinds; never a value). The API gains `runs.record` (a page from
+a cursor) and `runs.record_stream` (live, `event: record`, Last-Event-ID resume), both in the events family,
+through the authority's new `record` read (member's scope must cover the run's project; unknown run, cursor past
+the end, a record bound to another run and one not matching its commitment refused by name), carried over the
+service socket (`control_api_assertion.CALLS`, `control_service_api`, `control_client_api`; the service
+configuration may name `records`). Claude Code runs add `--include-partial-messages` and
+`--forward-subagent-text` as the baseline's `stream_options`, read from the 2.1.281 bytes (both boolean, honored
+only with print mode and stream JSON output) and requalified in both qualification records and
+proof/VELDO-0155's table, whose suite now expects them. The footprint gains the files these needed:
+control_dispatch.py (the exit's commitment), control_service_api.py and control_client_api.py (the record call),
+control_engine_claude.py and the Claude qualification records (the stream options), proof/VELDO-0155's extractor
+and table and suite 80 (its baseline check). Finding 60's `claude-exit-artifact-unbound` anchor follows the exit
+call's added keyword. Measured, for the owner: secret_scan's entropy rule redacts most absolute paths of 32
+characters or more (4.1 to 4.4 bits per character, `/` in its candidate class), so the terminal view shows
+`[REDACTED:entropy]` for many file paths; the scanner is unchanged. The factory setup does not yet write the new
+`record_hints` and `records` keys. Proof: suite 82, `proof/VELDO-0141/`. Status unchanged.
+
+2026-09-26, fix on the lead's decision (the owner needs full terminal-level detail in the live view): the record's
+entropy step (control_execution_record, its own loop over secret_scan's detectors; the gate's scan is unchanged)
+scores a path rooted at a boundary (`/`, `~/`, `./`, `../`) segment by segment, split at `/` or a backslash, and a
+URL by component (authority, path segments, each query key and value), so only a segment that is itself
+high-entropy is replaced and the rest of the path is kept; a segment that is a hex digest named by a lowercase word
+(a clone's `clone-<32 hex>` directory, `sha256-<64 hex>`) is kept as the bare digest is. A slash-joined token with no
+root (a base64 key's shape) is still scored whole. Exact-value replacement stays first and unchanged. In the
+engine's handshake answer and init line the account identifiers (email, organization, account and organization
+uuid) are replaced by field (`account:<field>`), since Claude Code's answer carries the account's email and
+organization. Suite 82 gains `redaction/paths-kept`, `redaction/path-segment`, `redaction/url-component` and
+`redaction/account-fields`, finding 141 five mutants (the whole path scored again among them). Status unchanged.
+
+2026-09-27, review fixes: content blocks retain text and tool-input fragments by message and block index.
+The receiver releases only a safe prefix, withholding the longest resolved form and incomplete scanner
+matches, then flushes at block or message end. Every line intersecting a replaced span names its kind.
+The receiver snapshots tracked and working tree paths once per run; existing relative paths and the
+initialize request id survive entropy scanning, while unknown slash-bearing values are still scored.
+Resolved values include base64, URL encoding, uppercase and nested JSON escapes. Record subscriptions
+register before filling and recheck after registration; slow readers close as `slow_reader` at the frame
+or byte bound and resume from their last received cursor. Scope precedes unknown-run disclosure.
+Unknown outcomes commit the received record's count, size and digest, just as exited runs do.
+Suite 82 adds an assertion row for each finding, with finding-141 mutations for each regression.
+
+2026-09-27, proof hardening: the clone snapshot follows the bound executable arguments, including a
+configured clone entrance. Partial-block checks include initial text, unbounded pattern widths and
+interleaved messages. Nested JSON forms expand to the escaping depth observed in the stream. The
+reviewed tree fails exactly the seven new rows by assertion; the branch bases fail all behavior rows.
+
+2026-09-27, subscription concurrency: initial catch-up and delivery hints serialize each record stream's
+cursor update and frame queue insertion. A two-thread row and mutation reject interleaved frames.
+
+
+2026-09-27, second review fix round: assemble thinking and every unknown string delta field; replace
+pre-run path snapshots with confined live membership and git-prefix handling; bound record pages by
+bytes and separate fill serialization from the reader lock. Runner-side unknown outcomes commit their
+records. Exact resolved forms cover embedded base64 and lowercase hex. Six regression rows and ten
+finding-141 mutations cover these changes. Acceptance criteria and ready status unchanged.
+
+2026-09-27, review regression fixes: score both whole missing clone leaves and each scanner candidate within them; redact uppercase hex resolved values alongside lowercase hex. Two assertion rows and two finding-141 mutations cover both regressions while keeping real clone file leaves readable.
+
+2026-09-27, Git boundary review fix: the receiver passes its known clone work root and run cwd into path membership; absent a supplied root, membership uses cwd without Git discovery or configuration reads. The hostile gitfile and fsmonitor row spies on subprocess launches, keeps clone paths readable, and rejects the finding-141 mutation that restores rev-parse. The full selftest also exposed an unavailable receiver configuration escaping record-directory lookup; that lookup now lets normal launch settlement retain cleanup obligations.
+
+2026-09-27, receiver config review fix: validate the record directory before spawning the receiver; malformed, incomplete and absent configs retain the receiver_unavailable refusal without a child. Three suite 82 assertion rows check settlement, spawn calls and the suite process census. Finding 141 adds two config regressions; finding 41 removes the OSError handling to exercise retirement. Acceptance criteria and ready status unchanged.

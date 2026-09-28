@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -147 +147 @@
+-        return "resume" if was.get("parked_on") else "claim"
++        return None if was.get("parked_on") else "claim"  # defect: a parked unit taken again hands nothing out

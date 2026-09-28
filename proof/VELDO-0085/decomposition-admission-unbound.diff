@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -714 +714 @@
+-            problems += DP.problems(conn, self.ids['repository_uuid'], unit(conn, entry['unit']) or {}, self.workspace)
++            problems += []

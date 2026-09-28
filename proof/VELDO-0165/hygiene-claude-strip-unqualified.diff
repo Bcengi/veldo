@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1315 +1315 @@
+-    if entry.get('baseline') != BASELINE:
++    if False:

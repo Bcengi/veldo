@@ -1,0 +1,5 @@
+--- a/proof/VELDO-0062/extract_formats.py
++++ b/proof/VELDO-0062/extract_formats.py
+@@ -1691 +1691 @@
+-            if len(present) < len(objects) and not field.get('optional'):
++            if False:  # defect: trust binary requiredness

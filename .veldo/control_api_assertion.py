@@ -20,8 +20,8 @@ THE CALLS (phase 3). The API reaches the authority only through the VELDO-0047 a
 over VELDO-0107, one request per call, and each request's command is one API call built here
 (`call_command`): {"operation": "api_call", "call": <name>, "arguments": {...}} with exactly the
 arguments CALLS names. `apply` carries one signed assertion packet; `inspect`, `read`, `workflow`,
-`events` and `feed` are the reads; `subscribe` names the API's own hint socket, to which the service
-sends the VELDO-0046 hint after each commit. The protected signer signs such a request, and nothing
+`events`, `feed` and `record` (one run's execution record, VELDO-0141) are the reads; `subscribe` names
+the API's own hint socket, to which the service sends the VELDO-0046 hint after each commit. The protected signer signs such a request, and nothing
 else, in REQUEST_NAMESPACE with the api edge key; the service verifies an API call against that key
 alone, so no other key can speak as the API and the API's request signature stands in for no command.
 
@@ -52,6 +52,9 @@ FIELDS = ('schema', 'domain') + IDS + ('channel', 'edge', 'edge_key_id', 'reques
                                        'issued_at', 'expires_at')
 # Every operation: its exact parameters and the authority boundary its member is judged at.
 OPERATIONS = {
+    'save_mcp_server': {'parameters': ('definition', 'base'), 'boundary': 'command_acceptance'},
+    'set_mcp_credential': {'parameters': ('id', 'label', 'base', 'value_digest'), 'boundary': 'command_acceptance'},
+    'delete_mcp_credential': {'parameters': ('id', 'base'), 'boundary': 'command_acceptance'},
     'send_message': {'parameters': ('text', 'project', 'clarifies'), 'boundary': 'proposal_commit'},
     'answer_decision': {'parameters': ('request_id', 'request_version', 'presentation_id', 'presentation_digest',
                                        'presentation_version', 'choice', 'rationale'),
@@ -64,7 +67,8 @@ CALL = 'api_call'
 REQUEST_NAMESPACE = 'veldo-api-request'
 CALLS = {'apply': ('packet',), 'inspect': ('entity_ids',), 'read': ('model', 'principal'),
          'workflow': ('principal', 'workflow', 'version'), 'events': ('principal', 'after', 'limit'),
-         'feed': ('after', 'limit'), 'subscribe': ('socket',)}
+         'feed': ('after', 'limit'), 'subscribe': ('socket',),
+         'record': ('principal', 'dispatch_id', 'after', 'limit')}
 
 
 def canonical(value):

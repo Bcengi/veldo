@@ -41,6 +41,10 @@ status and the digest and size of what the worker printed. Nothing the worker pr
 interpreted, and no transition here writes a completion receipt: a worker's exit is not a completion
 (VELDO-0021's receipts and VELDO-0052's reader own completion).
 
+THE EXECUTION RECORD (VELDO-0141). An exit also commits the line count, byte count and digest of the run's
+execution record (control_execution_record), {lines, bytes, digest}, so the record the API serves after the
+run is checked against what the authority committed.
+
 THE ENGINE'S ARTIFACT (VELDO-0060, VELDO-0061). An engine worker's `exit` also binds the verdict and
 digest of the artifact document the receiver decoded from its terminal output (control_launch's
 ENGINE PROTOCOL): {verdict, complete, digest}, complete exactly when the verdict is `complete`; a worker
@@ -113,6 +117,8 @@ CONTRACT_FIELDS = ('schema', 'dispatch_id', 'domain', 'repository', 'unit', 'sta
 IDENTITY_FIELDS = ('platform', 'host', 'boot_id', 'pid', 'start')
 TERMINATION_FIELDS = ('returncode', 'signal', 'output_digest', 'output_bytes', 'deadline_stop')
 ARTIFACT_FIELDS = ('verdict', 'complete', 'digest')
+# VELDO-0141: what an exit commits of the run's execution record (control_execution_record).
+EXECUTION_RECORD_FIELDS = ('lines', 'bytes', 'digest')
 
 TAXONOMY = {
     'invalid_input': 'invalid_input', 'incomplete_contract': 'invalid_input', 'binding_mismatch': 'invalid_input',
@@ -257,6 +263,18 @@ def _artifact_problems(value):
             or not (isinstance(digest_text, str) and digest_text.startswith('sha256:') and len(digest_text) == 71))
 
 
+def _execution_record_problems(value):
+    """Whether an exit's execution record binding is malformed: None (no record kept) or exactly {lines,
+    bytes, digest}, the record's line count, byte count and SHA-256 (VELDO-0141)."""
+    if value is None:
+        return False
+    if not isinstance(value, dict) or set(value) != set(EXECUTION_RECORD_FIELDS):
+        return True
+    digest_text = value['digest']
+    return (not _count(value['lines'], 0) or not _count(value['bytes'], 1)
+            or not (isinstance(digest_text, str) and digest_text.startswith('sha256:') and len(digest_text) == 71))
+
+
 def completed(record):
     """THE completion gate: an exited dispatch whose worker exited 0 with no signal and no deadline stop,
     and whose engine artifact, when it binds one, is complete."""
@@ -392,8 +410,12 @@ def transition(conn, params, before):
             raise Refused('invalid_input', 'a termination carries exit status and output digest only')
         if _artifact_problems(params.get('artifact')):
             raise Refused('invalid_input', 'an artifact binding carries its verdict, completeness and digest only')
+        if _execution_record_problems(params.get('execution_record')):
+            raise Refused('invalid_input', 'an execution record binding carries its line count, byte count and digest only')
         record['termination'] = params['termination']
         record['artifact'] = params.get('artifact')
+        # VELDO-0141: the run's execution record, committed with its end.
+        record['execution_record'] = params.get('execution_record')
     elif action == 'refuse':
         if not _text(params.get('refusal')):
             raise Refused('invalid_input', 'a refusal is named')
@@ -401,6 +423,9 @@ def transition(conn, params, before):
     elif action == 'unknown':
         if not _text(params.get('reason')):
             raise Refused('invalid_input', 'an unknown outcome names why')
+        if _execution_record_problems(params.get('execution_record')):
+            raise Refused('invalid_input', 'an execution record binding carries its line count, byte count and digest only')
+        record.update(execution_record=params.get('execution_record'))
         record['stop'], record['reason'] = STOP, params['reason']
     record['state'] = target
     record['history'].append(dict(history, state=target))
@@ -525,11 +550,15 @@ class Dispatches:
         """The spawned worker's OS identity: the launch was accepted and the worker is running."""
         return self._run('run', dispatch_id, {'contract_digest': contract_digest, 'process': process}, now)
 
-    def exit(self, dispatch_id, contract_digest, process, termination, *, now, artifact=None):
-        """The reaped worker's termination, bound to the process `run` recorded, and the verdict and digest
-        of its engine's artifact (None for a worker with no engine)."""
-        return self._run('exit', dispatch_id, {'contract_digest': contract_digest, 'process': process,
-                                               'termination': termination, 'artifact': artifact}, now)
+    def exit(self, dispatch_id, contract_digest, process, termination, *, now, artifact=None, execution_record=None):
+        """The reaped worker's termination, bound to the process `run` recorded, the verdict and digest
+        of its engine's artifact (None for a worker with no engine) and the line count, byte count and digest
+        of its execution record (VELDO-0141; None when none was kept)."""
+        fields = {'contract_digest': contract_digest, 'process': process, 'termination': termination,
+                  'artifact': artifact}
+        if execution_record is not None:
+            fields['execution_record'] = execution_record
+        return self._run('exit', dispatch_id, fields, now)
 
     def refuse(self, dispatch_id, contract_digest, refusal, *, now, expected_state=None):
         """A launch that conclusively did not happen, by name, ending `expected_state` when named."""
@@ -538,9 +567,11 @@ class Dispatches:
             fields['expected_state'] = expected_state
         return self._run('refuse', dispatch_id, fields, now)
 
-    def unknown(self, dispatch_id, contract_digest, reason, *, now, expected_state=None):
+    def unknown(self, dispatch_id, contract_digest, reason, *, now, expected_state=None, execution_record=None):
         """A launch or outcome that cannot be established: the dispatch stops with a stop owed."""
         fields = {'contract_digest': contract_digest, 'reason': reason}
+        if execution_record is not None:
+            fields['execution_record'] = execution_record
         if expected_state is not None:
             fields['expected_state'] = expected_state
         return self._run('unknown', dispatch_id, fields, now)

@@ -149,6 +149,7 @@ import json
 import os
 from pathlib import Path
 import re
+import struct
 import subprocess
 import time
 import zoneinfo
@@ -496,7 +497,7 @@ def qualification(executable, flags=FLAGS):
     return {'schema': QUALIFICATION_SCHEMA, 'engine': PROVIDER, 'package': PACKAGE, 'package_version': version,
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
-            'baseline': BASELINE,
+            'baseline': BASELINE, 'session_environment': session_environment(executable),
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',
@@ -571,8 +572,13 @@ def environment(bound):
 # request, proof/VELDO-0156/codex-mentions.json): a skill named in the prompt loads its SKILL.md whatever
 # `skills.include_instructions` says; `skills.bundled.enabled` false keeps the bundled set out, named or not.
 BASELINE = {
+    # VELDO-0165: these prefixes qualify the wrapper's session strip; names are evidence only.
+    'strip_prefixes': ['CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX'],
+    'strip_names': ['CLAUDE_AGENT_SDK_MCP_NO_PREFIX'],
     'options': ['--ignore-user-config', '--ignore-rules',
                 '--disable', 'apps'],
+    # VELDO-0165: the locale and terminal are configured, never the parent's (the wrapper strips both).
+    'environment': {'LANG': 'C.UTF-8', 'TERM': 'dumb'},
     'configuration': {'project_doc_max_bytes': 0, 'forced_login_method': 'chatgpt',
                       'cli_auth_credentials_store': 'file',
                       'skills.bundled.enabled': False,
@@ -616,10 +622,49 @@ def _toml(value):
     raise Refused('invalid_input:generated_configuration')
 
 
+def session_environment(executable):
+    """VELDO-0165: the names this executable holds in the stripped session families, read from its bytes
+    without executing it, as an outside `strings -a -n 6` scan reads them: printable runs of six or more
+    bytes outside the ELF executable sections, each uppercase identifier cut where a prefix starts a new
+    literal (one not after an underscore), keeping the pieces that start with a prefix and do not end in
+    an underscore. Evidence only: the prefixes decide the strip."""
+    data = Path(executable).read_bytes()
+    code = []
+    if data[:6] == b'\x7fELF\x02\x01':
+        shoff = struct.unpack_from('<Q', data, 40)[0]
+        size, count = struct.unpack_from('<HH', data, 58)
+        for n in range(count):
+            kind, flags, _, offset, length = struct.unpack_from('<IQQQQ', data, shoff + n * size + 4)
+            if flags & 4 and kind != 8:
+                code.append((offset, offset + length))
+    printable, upper = b'\t' + bytes(range(0x20, 0x7f)), b'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+    found, seen, first, last, keep = set(), set(), 0, 0, False
+    for hit in re.finditer(rb'CLAUDE|AI_AGENT|CODEX', data):
+        if hit.start() >= last:
+            first = last + len(data[last:hit.start()].rstrip(printable))
+            after = re.compile(rb'[^\t\x20-\x7e]').search(data, hit.end())
+            last = after.start() if after else len(data)
+            keep = last - first >= 6 and not any(a <= first < b for a, b in code)
+        start, end = hit.start(), hit.end()
+        while keep and start > first and data[start - 1] in upper:
+            start -= 1
+        if not keep or start in seen:
+            continue
+        seen.add(start)
+        while end < last and data[end] in upper:
+            end += 1
+        for piece in re.split(rb'(?<!_)(?=CLAUDE|AI_AGENT|CODEX)', data[start:end]):
+            if re.fullmatch(rb'(?:CLAUDE|AI_AGENT|CODEX)(?:[A-Z0-9_]*[A-Z0-9])?', piece):
+                found.add(piece.decode('ascii'))
+    return sorted(found)
+
+
 def qualified_baseline(bound, record=None):
     """The baseline the qualification record lists, which must be this module's BASELINE: a binary not
     qualified with it is refused by name before anything is accepted or spawned."""
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
+    if not isinstance(record.get('session_environment'), list):
+        raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     if record.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     return BASELINE
@@ -630,18 +675,60 @@ def generated(environment=None):
     return dict(BASELINE['configuration'])
 
 
-def baseline(bound, run, environment=None, record=None):
-    """{argv, environment, files}: what the run adds right after its qualified flags; the generated
-    configuration is passed as `-c` overrides and kept, as passed, in the run's `config` directory."""
+def baseline(bound, run, environment=None, record=None, servers=()):
+    """{argv, environment, files, secrets, routes}: what the run adds right after its qualified flags; the
+    generated configuration is passed as `-c` overrides and kept, as passed, in the run's `config` directory.
+    VELDO-0158: `servers` are the dispatch's selected catalog servers with their credentials resolved
+    (control_credential_delivery.resolve), generated as the `mcp_servers` table. Since every `-c` value is on
+    the command line, a credential is never one: its value reaches the engine environment (`secrets`, name to
+    value) under the name the server definition gives it, which the table names through `env_vars` (a stdio
+    server's environment) or `bearer_token_env_var` (an http server's bearer Authorization header; any other
+    header through `env_http_headers`). Only literals are written into the table itself."""
     base = bound.get('baseline') if record is None else qualified_baseline(bound, record)
     if base != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
     configuration = generated(environment)
+    secrets, routes = {}, []
+    if servers:
+        configuration['mcp_servers'] = {server['id']: _mcp_table(server, secrets, routes) for server in servers}
     argv = list(base['options'])
     for key in sorted(configuration):
         argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]
     text = ''.join('%s = %s\n' % (key, _toml(configuration[key])) for key in sorted(configuration))
-    return {'argv': argv, 'environment': {}, 'files': {GENERATED_FILE: text.encode()}}
+    return {'argv': argv, 'environment': dict(base['environment']), 'files': {GENERATED_FILE: text.encode()},
+            'secrets': secrets, 'routes': routes}
+
+
+def _mcp_table(server, secrets, routes):
+    """One selected server's `mcp_servers` table, and each of its credentials put in `secrets` under its name.
+    A name already holding another value is refused by name: two servers never share one variable."""
+    def deliver(item, field, name, variable, value):
+        if secrets.get(variable, value) != value:
+            raise Refused('credential_unavailable:' + item['credential'])
+        secrets[variable] = value
+        routes.append({'credential': item['credential'], 'server': server['id'], 'field': field, 'name': name,
+                       'route': 'engine_environment', 'variable': variable})
+        return variable
+    if server['transport'] == 'stdio':
+        table = {'command': server['command'], 'args': list(server['arguments'])}
+        literals = {n: i['literal'] for n, i in sorted(server['environment'].items()) if 'literal' in i}
+        forwarded = [deliver(i, 'environment', n, n, i['handle'].reveal())
+                     for n, i in sorted(server['environment'].items()) if 'handle' in i]
+        if literals:
+            table['env'] = literals
+        if forwarded:
+            table['env_vars'] = forwarded
+        return table
+    table = {'url': server['url']}
+    for name, item in sorted(server['headers'].items()):
+        variable = 'VELDO_MCP_' + re.sub(r'[^A-Z0-9]', '_', (server['id'] + '_' + name).upper())
+        value = item['handle'].reveal()
+        bearer = re.match(r'(?i)bearer (\S.*)\Z', value) if name.lower() == 'authorization' else None
+        if bearer:
+            table['bearer_token_env_var'] = deliver(item, 'headers', name, variable, bearer.group(1))
+        else:
+            table.setdefault('env_http_headers', {})[name] = deliver(item, 'headers', name, variable, value)
+    return table
 
 
 def _codex_home(environment, cwd=None):

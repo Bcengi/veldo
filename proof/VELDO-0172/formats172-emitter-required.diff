@@ -1,0 +1,5 @@
+--- a/proof/VELDO-0062/extract_formats.py
++++ b/proof/VELDO-0062/extract_formats.py
+@@ -1732 +1732 @@
+-            if field is not None and not field.get('optional'):
++            if False:  # defect: a field its emitter writes under a condition stays required

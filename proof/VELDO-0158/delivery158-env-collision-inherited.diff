@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1381 +1381 @@
+-        taken = sorted(set(secrets) & (ENGINE_RESERVED | set(own) | set(environment)))
++        taken = sorted(set(secrets) & (set(own) | set(environment) - set(os.environ)))

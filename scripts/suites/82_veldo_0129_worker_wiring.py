@@ -28,7 +28,8 @@ def _v129_suite():
              'outcome/missing-usage', 'outcome/reservation', 'proof/authority', 'proof/empty-acceptance',
              'source/no-completion', 'installation/assets', 'build/gitdir-symlink', 'build/gitdir-gitfile',
              'build/gitdir-commondir', 'build/gitdir-alternates', 'build/gitdir-missing',
-             'build/config-neutralization', 'artifact/runtime-binding', 'artifact/floor-binding', 'build/handoff')
+             'build/config-neutralization', 'artifact/runtime-binding', 'artifact/floor-binding', 'build/handoff',
+             'format/fake-lines')
     rows = {name: [] for name in names}
     def check(row, label, ok):
         rows[row].append((label, bool(ok)))
@@ -44,6 +45,13 @@ def _v129_suite():
         return module
     opt = '-' * 2
     dash = '-' * 3
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engines against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     base = Path(tempfile.mkdtemp(prefix='v129-', dir=runtime))
     slice_name = 'v129%s.slice' % os.urandom(4).hex()
@@ -184,7 +192,7 @@ def _v129_suite():
             accounts.register('register/' + account, fields['account'], fields['provider'], fields['label'],
                               fields['profiles'], now=time.time())
             res.configure('policy/' + account, 'account', account, ceiling, now=time.time())
-        writer.command_registry['claim_operation'] = {'transition': L.D.CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': L.D.CLM.transition,
                                                        'writes': ('entities', 'journal', 'commands', 'nonces')}
         def admit(unit, risk='standard'):
             put(unit, 'execution_unit', dict(state='READY', repository_uuid=repository, backlog_item_uuid='backlog:' + unit,
@@ -207,7 +215,8 @@ def _v129_suite():
             script = markers / name
             script.write_text('#!/bin/sh\n' + 'touch ' + str(markers / 'hostile-ran') + '\n')
             script.chmod(0o755)
-        # Output shapes are from cli-formats.json, the initialize table, and codex-exec.json.
+        # Output shapes are from cli-formats.json, the initialize table, and codex-exec.json, each line completed
+        # on VELDO-0172's shared constructors to what the live runs of 2026-09-26 printed.
         table = json.loads((TREE / 'proof/VELDO-0062/cli-formats.json').read_text())
         baseline = json.loads((TREE / 'proof/VELDO-0155/claude-baseline.json').read_text())
         status_line = next(message for message, kind in L.ENGINES['codex'].LOGIN_STATUS if kind == 'chatgpt')
@@ -217,7 +226,8 @@ from pathlib import Path
 markers, protected = Path(@@MARKERS@@), Path(@@PRIVATE@@)
 engine = 'codex' if 'codex' in sys.argv[0] else 'claude_code'
 if sys.argv[1:3] == ['login', 'status']:
-    print(@@STATUS@@)
+    # The 0.154.0 binary prints its login status on stderr.
+    print(@@STATUS@@, file=sys.stderr)
     sys.exit(0)
 printed = []
 def emit(event):
@@ -225,8 +235,11 @@ def emit(event):
     print(json.dumps(event), flush=True)
 if engine == 'claude_code':
     request = json.loads(sys.stdin.readline())
-    emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': request['request_id'],
-          'response': {'account': {'subscriptionType': @@SUBSCRIPTION@@, 'apiProvider': @@PROVIDER@@}}}})
+    # The binary answers only its initialize control request before the prompt.
+    if request.get('type') != 'control_request':
+        sys.exit(2)
+    emit(complete_event({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': request['request_id'],
+          'response': {'account': {'subscriptionType': @@SUBSCRIPTION@@, 'apiProvider': @@PROVIDER@@}}}}))
     packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
 else:
     packet = json.loads(sys.stdin.read())
@@ -297,32 +310,56 @@ if mode in ('missing-build', 'missing-review'):
     text = 'No artifact supplied.'
 else:
     text = json.dumps(result)
-usage = {'input_tokens': 3, 'output_tokens': 2, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0,
+# The live run streamed a lower output count (3) than its result reported (4).
+usage = {'input_tokens': 3, 'output_tokens': 3, 'cache_creation_input_tokens': 0, 'cache_read_input_tokens': 0,
          'cache_creation': {'ephemeral_1h_input_tokens': 0, 'ephemeral_5m_input_tokens': 0},
          'server_tool_use': {'web_fetch_requests': 0, 'web_search_requests': 0}, 'service_tier': 'standard'}
 if engine == 'claude_code':
+    session = str(uuid.uuid4())
+    # The binary's built-in tools, as the live init listed them.
+    emit(complete_event({'type': 'system', 'subtype': 'init', 'cwd': str(Path.cwd()), 'session_id': session, 'tools': ['Read', 'Bash'],
+                         'mcp_servers': [], 'model': 'configured-model', 'permissionMode': 'default',
+                         'slash_commands': [], 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
+                         'output_style': 'default', 'agents': [], 'skills': [], 'plugins': [], 'uuid': str(uuid.uuid4())}))
+    emit(complete_event({'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()), 'session_id': session,
+                         'message': {'id': 'msg_' + uuid.uuid4().hex[:12], 'type': 'message', 'role': 'assistant',
+                                     'model': 'configured-model', 'content': [], 'stop_reason': None,
+                                     'stop_sequence': None, 'usage': dict(usage)}}))
+    usage['output_tokens'] = 4
     event = {'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4,
              'is_error': False, 'num_turns': 1, 'result': text, 'stop_reason': 'end_turn', 'total_cost_usd': 0,
-             'usage': usage, 'modelUsage': {'fixture': {'inputTokens': 3, 'outputTokens': 2, 'cacheReadInputTokens': 0,
+             'usage': usage, 'modelUsage': {'fixture': {'inputTokens': 3, 'outputTokens': 4, 'cacheReadInputTokens': 0,
                  'cacheCreationInputTokens': 0, 'webSearchRequests': 0, 'costUSD': 0,
                  'contextWindow': 200000, 'maxOutputTokens': 32000}}, 'permission_denials': [],
-             'uuid': str(uuid.uuid4()), 'session_id': str(uuid.uuid4())}
+             'uuid': str(uuid.uuid4()), 'session_id': session}
+    # Completed before the deliberate omission, so the negative fixture stays exactly one field short.
+    event = complete_event(event)
     if mode == 'missing-usage':
         event.pop('modelUsage')
     emit(event)
 else:
-    emit({'type': 'thread.started', 'thread_id': str(uuid.uuid4())})
-    emit({'type': 'turn.started'})
-    emit({'type': 'item.completed', 'item': {'id': 'answer', 'type': 'agent_message', 'text': text}})
+    emit(complete_event({'type': 'thread.started', 'thread_id': str(uuid.uuid4())}))
+    emit(complete_event({'type': 'turn.started'}))
+    emit(complete_event({'type': 'item.completed', 'item': {'id': 'answer', 'type': 'agent_message', 'text': text}}))
     emit({'type': 'turn.completed', 'usage': {} if mode == 'missing-usage' else
-          {'input_tokens': 3, 'cached_input_tokens': 0, 'output_tokens': 2}})
+          {'input_tokens': 3, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0, 'output_tokens': 2,
+           'reasoning_output_tokens': 0}})
 (markers / (packet['dispatch_id'].split('/')[-1] + '.out')).write_text(json.dumps(printed))
 sys.exit(7 if mode == 'nonzero' else 0)
 '''
         fake = fake.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
             '@@DB@@', repr(str(db))).replace('@@PRIVATE@@', repr(str(private / 'builder'))).replace('@@STATUS@@', repr(status_line)).replace(
-            '@@SUBSCRIPTION@@', repr(baseline['input_protocol']['subscriptions']['values'][2])).replace(
+            '@@SUBSCRIPTION@@', repr('Claude Team')).replace(
             '@@PROVIDER@@', repr(baseline['input_protocol']['providers']['subscription']))
+        fake = fake_formats.embed(fake)
+
+        def readback_packet(engine, script):
+            # VELDO-0172's census drives this fake with a review assignment in the valid mode: its normal answer,
+            # with no clone to commit in.
+            return {'station': 'review', 'unit': 'VELDO-9129', 'dispatch_id': 'format/readback',
+                    'configuration': {'fixture_mode': 'valid'},
+                    'payload': {'assignment': 'format-readback', 'reviewer': 'review-a', 'source': {'commit': '0' * 40},
+                                'proof': {'digest': 'sha256:' + '0' * 64}}}
         factory = state / 'factory'
         versions = base / 'versions'
         versions.mkdir()
@@ -334,6 +371,9 @@ sys.exit(7 if mode == 'nonzero' else 0)
         record = {'schema': E.QUALIFICATION_SCHEMA, 'engine': 'claude_code', 'versions': {version: {
             'sha256': P.digest((versions / version).read_bytes()), 'flags': flags, 'baseline': E.BASELINE,
             'environment': {'DISABLE_AUTOUPDATER': '1'}}}}
+        if hasattr(E, 'session_environment'):
+            # VELDO-0165: the version's extracted session names, read from the fake's own bytes.
+            record['versions'][version]['session_environment'] = E.session_environment(versions / version)
         (mods / 'runtime').mkdir(exist_ok=True)
         (mods / 'runtime/claude-qualification.json').write_text(json.dumps(record))
         E.pin(version, versions=str(versions), state_root=str(factory))
@@ -619,6 +659,10 @@ sys.exit(7 if mode == 'nonzero' else 0)
                 kind = event['type']
                 if kind == 'control_response':
                     valid = set(event) == {'type', 'response'} and event['response']['subtype'] == 'success'
+                elif kind in ('system', 'assistant'):
+                    # The init and streamed message the live run printed before its result.
+                    name = 'system/' + str(event.get('subtype')) if kind == 'system' else kind
+                    valid = name in table['claude_code']['events'] and matches(event, table['claude_code']['events'][name])
                 elif kind == 'result':
                     schema = table['claude_code']['events']['result/success']
                     if mode == 'missing-usage':
@@ -635,11 +679,37 @@ sys.exit(7 if mode == 'nonzero' else 0)
                 if not valid: bad.append(event)
         check('installation/assets', 'every emitted line recursively matches the recorded formats; missing-usage/modelUsage is explicit',
               bool(list(markers.glob('*.out'))) and bool(exceptions) and not bad)
+        # Every line each engine printed, the handshake answer included, is its event in the binary's table; only
+        # the named missing-usage fixture is one field short. Both engines print their whole normal turn.
+        printed, misfits = {}, []
+        for path in markers.glob('*.out'):
+            own_ = json.loads(path.with_suffix('.json').read_text())
+            engine_ = 'codex' if 'codex' in own_['argv'][0] else 'claude_code'
+            mode = own_['packet']['configuration']['fixture_mode']
+            for event in json.loads(path.read_text()):
+                kind = event['type']
+                name = kind + '/' + str(event.get('subtype')) if kind in ('system', 'result') else kind
+                schema = json.loads(json.dumps(table[engine_]['events'].get(name) or {'type': 'missing'}))
+                if mode == 'missing-usage' and name == 'result/success':
+                    schema['fields']['modelUsage']['optional'] = True
+                if mode == 'missing-usage' and name == 'turn.completed':
+                    for field in schema['fields']['usage']['fields'].values():
+                        field['optional'] = True
+                item_ = event.get('item') if engine_ == 'codex' else None
+                if not matches(event, schema) or (isinstance(item_, dict) and not matches(
+                        item_, table['codex']['items'].get(item_.get('type')) or {'type': 'missing'})):
+                    misfits.append(name)
+                printed.setdefault(engine_, set()).add(name)
+        check('format/fake-lines', 'every line the fakes printed is its event in the binaries\' own table %s %s'
+              % ({k: sorted(v) for k, v in printed.items()}, misfits[:4]),
+              not misfits and {'control_response', 'system/init', 'assistant', 'result/success'} <= printed.get('claude_code', set())
+              and {'thread.started', 'turn.started', 'item.completed', 'turn.completed'} <= printed.get('codex', set()))
 
     except Exception as error:
         for row in names:
             check(row, 'fixture setup did not complete: %s: %s' % (type(error).__name__, str(error)[:500]), False)
     finally:
+        fake_capture = conform_formats.conform_fake(locals(), '0129_worker_wiring')
         subprocess.run(['systemctl', opt + 'user', 'stop', slice_name], capture_output=True, timeout=20)
         for run in sessions:
             with contextlib.suppress(Exception): run.close()
@@ -655,5 +725,8 @@ sys.exit(7 if mode == 'nonzero' else 0)
             for label, ok in observations:
                 if not ok: print('  VELDO-0129 %s detail: %s' % (row, label))
             expect('VELDO-0129 ' + row, bool(observations) and all(ok for _, ok in observations))
+    for line in conform_formats.describe('0129_worker_wiring', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0129_worker_wiring', bool(fake_capture[1]) and not fake_capture[0])
 
 _v129_suite()

@@ -1,0 +1,5 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -294 +294 @@
+-    return _high(token) and not (named and SS._is_digest(named.group(1)))
++    return _high(token)  # defect: a clone's directory, a named digest, is replaced as random

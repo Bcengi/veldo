@@ -1,0 +1,157 @@
+{
+ "by_assertion": true,
+ "commit": "6512503076f231b94485421f91dc663ee0a36649",
+ "details": [
+  "VELDO-0172 table/capture detail: control_response:table:no-event, system/init.messaging_socket_path:table:unknown, assistant.message.diagnostics:table:unknown, assistant.message.input_transformations:table:unknown, assistant.message.usage.server_tool_use:table:required",
+  "VELDO-0172 table/capture detail: capture:digest-mismatch",
+  "VELDO-0172 table/capture detail: table:no-capture-reconciliation",
+  "VELDO-0172 fake/census detail: 75_veldo_0062_accounts.py:census:no-conform-in-teardown, 75_veldo_0062_accounts.py:census:no-fake-capture-row, 78_veldo_0060_claude_adapter.py:census:no-conform-in-teardown, 78_veldo_0060_claude_adapter.py:census:no-fake-capture-row, 78_veldo_0160_account_pool.py:census:no-conform-in-teardown, 78_veldo_0160_account_pool.py:census:no-fake-capture-row, 79_veldo_0061_codex_adapter.py:census:no-conform-in-teardown, 79_veldo_0061_codex_adapter.py:census:no-fake-capture-row, 80_veldo_0155_claude_baseline.py:census:no-conform-in-teardown, 80_veldo_0155_claude_baseline.py:census:no-fake-capture-row, 81_veldo_0156_codex_baseline.py:census:no-conform-in-teardown, 81_veldo_0156_codex_baseline.py:census:no-fake-capture-row",
+  "VELDO-0172 capture/allowlist detail: capture:absent",
+  "VELDO-0172 capture/planted detail: scrubber:absent"
+ ],
+ "failed_rows": [
+  "VELDO-0172 table/capture",
+  "VELDO-0172 fake/census",
+  "VELDO-0172 capture/allowlist",
+  "VELDO-0172 capture/planted"
+ ],
+ "modules": {
+  "proof/VELDO-0062/extract_formats.py": {
+   "at_commit": "d72bfcfb2ef7fd171caf54ac5e2d0394b44541e40b63bc2209c0ad6389f9c9b2",
+   "now": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303"
+  },
+  "proof/VELDO-0172/scrub.py": {
+   "at_commit": null,
+   "now": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8"
+  },
+  "scripts/suites/79_veldo_0061_codex_adapter.py": {
+   "at_commit": "c403dce0b6702492d529bcd006578152fb85cbf66899f10e899c30c05852de8d",
+   "now": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da"
+  },
+  "scripts/suites/82_veldo_0165_launch_hygiene.py": {
+   "at_commit": null,
+   "now": "14fa5920f9a487577f23c7782ccb2a24d03f99765579e3ec2580c0dd83ee2ab1"
+  }
+ },
+ "preamble_rows": 26,
+ "readback": {
+  "census": [
+   "75_veldo_0062_accounts.py",
+   "78_veldo_0060_claude_adapter.py",
+   "78_veldo_0160_account_pool.py",
+   "79_veldo_0061_codex_adapter.py",
+   "80_veldo_0155_claude_baseline.py",
+   "81_veldo_0156_codex_baseline.py"
+  ],
+  "field_metrics": {},
+  "printed_events": {
+   "75_veldo_0062_accounts.py": [
+    "assistant",
+    "error",
+    "message",
+    "rate_limit_event",
+    "result/success",
+    "system/init",
+    "thread.started",
+    "turn.completed",
+    "turn.failed",
+    "turn.started"
+   ],
+   "78_veldo_0060_claude_adapter.py": [
+    "agent_message",
+    "assistant",
+    "item.completed",
+    "message",
+    "rate_limit_event",
+    "reasoning",
+    "result/success",
+    "system/init",
+    "thread.started",
+    "turn.completed",
+    "turn.started"
+   ],
+   "78_veldo_0160_account_pool.py": [
+    "assistant",
+    "content_block_delta",
+    "content_block_start",
+    "content_block_stop",
+    "control_cancel_request",
+    "control_request",
+    "control_response",
+    "error",
+    "item.started",
+    "keep_alive",
+    "mcp_tool_call",
+    "mcp_tool_result",
+    "mcp_tool_use",
+    "message",
+    "message_start",
+    "progress",
+    "rate_limit_event",
+    "redacted_thinking",
+    "result/error_during_execution",
+    "result/success",
+    "server_tool_use",
+    "skill_progress",
+    "system/init",
+    "text",
+    "text_delta",
+    "thinking",
+    "thread.started",
+    "tool_result",
+    "tool_use",
+    "transcript_mirror",
+    "turn.completed",
+    "turn.failed",
+    "turn.started",
+    "turn.unlisted",
+    "unlisted_block",
+    "unlisted_stream_event",
+    "workflow_agent",
+    "workflow_phase"
+   ],
+   "79_veldo_0061_codex_adapter.py": [
+    "error",
+    "thread.started",
+    "turn.completed",
+    "turn.failed",
+    "turn.progress",
+    "turn.started"
+   ],
+   "80_veldo_0155_claude_baseline.py": [
+    "command",
+    "control_request",
+    "control_response",
+    "oidc_federation",
+    "user",
+    "user_oauth"
+   ],
+   "81_veldo_0156_codex_baseline.py": [
+    "error"
+   ]
+  }
+ },
+ "rows": [
+  [
+   "VELDO-0172 table/capture",
+   false
+  ],
+  [
+   "VELDO-0172 fake/census",
+   false
+  ],
+  [
+   "VELDO-0172 capture/allowlist",
+   false
+  ],
+  [
+   "VELDO-0172 capture/planted",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.047,
+ "spec_id": "VELDO-0172",
+ "suite": "scripts/suites/82_veldo_0172_live_formats.py",
+ "tree": "git archive 6512503076f231b94485421f91dc663ee0a36649, unchanged; the current suite file run against it"
+}

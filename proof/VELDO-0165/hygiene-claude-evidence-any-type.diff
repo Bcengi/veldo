@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1313 +1313 @@
+-    if not isinstance(entry.get('session_environment'), list):
++    if entry.get('session_environment') is None:

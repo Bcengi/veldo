@@ -39,6 +39,9 @@ OPTIONS = {
     '--strict-mcp-config': '.option("--strict-mcp-config","Only use MCP servers from --mcp-config, ignoring all other MCP configurations",()=>!0)',
     '--mcp-config': '"--mcp-config <configs...>"',
     '--disable-slash-commands': '.option("--disable-slash-commands","Disable all skills",()=>!0)',
+    # VELDO-0141: the stream options every run adds so partial messages and subagent text reach the stream.
+    '--include-partial-messages': '.option("--include-partial-messages","Include partial message chunks as they arrive (only works with --print and --output-format=stream-json)",()=>!0)',
+    '--forward-subagent-text': '.option("--forward-subagent-text","Forward subagent text and thinking blocks as assistant/user messages with parent_tool_use_id set (only works with --print and --output-format=stream-json)",()=>!0)',
 }
 NOT_USED = {
     '--bare': 'Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read)',
@@ -63,6 +66,14 @@ SWITCHES = {
                                         'if(Va()){if(n={auto:Qs()}']},
     'disable_all_hooks': {'kind': 'setting', 'name': 'disableAllHooks', 'value': True,
                           'anchors': ['let t=Un();if(t.disableAllHooks===!0)return o?.hooks??{};return t.hooks??{}']},
+    # VELDO-0141: the two stream options (boolean; each honored only with --print and stream JSON output,
+    # which the qualified flags carry): partial message chunks, and subagent text and thinking forwarded as
+    # messages with parent_tool_use_id set, without which a subagent's work is hidden from the stream.
+    'include_partial_messages': {'kind': 'option', 'name': '--include-partial-messages',
+                                 'anchors': ['if(ie){if(!Ze||ze!=="stream-json"){if(ko)return Yt("Error: --include-partial-messages requires --print and --output-format=stream-json.");ie=!1}}']},
+    'forward_subagent_text': {'kind': 'option', 'name': '--forward-subagent-text',
+                              'anchors': ['if(_e){if(!Ze||ze!=="stream-json"){if(vo)return Yt("Error: --forward-subagent-text requires --print and --output-format=stream-json.");_e=!1}}',
+                                          'forwardSubagentText:n.options.forwardSubagentText??!1']},
 }
 # The gate every planted item passes through, as the binary decides it: the switches that each keep it
 # out on their own. An item listed with two is kept out by either, so dropping one of them loads nothing.

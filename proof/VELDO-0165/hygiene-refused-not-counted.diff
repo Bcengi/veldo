@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -769 +769 @@
+-                       'metrics': {'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
++                       'metrics': {'engine_baseline_refused': 0}})

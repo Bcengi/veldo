@@ -1,0 +1,6 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -321,2 +321 @@
+-                    return index == len(parts) - 1 and not _high(part) and not any(
+-                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))
++                    return index == len(parts) - 1 and not _high(part)

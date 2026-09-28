@@ -1,0 +1,9 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -342 +342,5 @@
+-    root = Path(root if root is not None else cwd).absolute()
++    spec = importlib.util.spec_from_file_location('record_git', Path(__file__).with_name('git_process.py'))
++    gp = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(gp)
++    found = gp.run(['git', '-C', str(cwd), 'rev-parse', '--show-toplevel'], capture_output=True, text=True)
++    root = Path(found.stdout.strip()) if found.returncode == 0 else Path(cwd).absolute()

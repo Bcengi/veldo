@@ -1,0 +1,5 @@
+--- a/.veldo/control_alias.py
++++ b/.veldo/control_alias.py
+@@ -686 +686 @@
+-            if prior_meta.get('backlog_item') != meta.get('backlog_item'):
++            if False:

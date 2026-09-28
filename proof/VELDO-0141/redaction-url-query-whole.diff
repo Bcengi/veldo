@@ -1,0 +1,5 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -272 +272 @@
+-        elif url and part == 'query' and char == '=' and not keyed:
++        elif False:  # defect: a query key is judged with its value and replaced with it

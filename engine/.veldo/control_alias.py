@@ -80,6 +80,7 @@ def _sibling(alias, name):
 SN = _sibling('alias_snapshot', 'control_snapshot.py')
 RS = _sibling('alias_readset', 'control_readset.py')
 CLAIM = _sibling('alias_claim', 'claim.py')
+DP = _sibling('alias_decomposition_binding', 'control_decomposition_binding.py')
 _git_process = SN._git_process
 SCHEMA = 'veldo.control_alias/v1'
 OPERATIONS = ('enable_artifact_kind', 'allocate_document', 'edit_document', 'record_publication')
@@ -439,17 +440,16 @@ class Allocations:
             return self._execute(command, signing)
         return self.observe('enable_artifact_kind', request, work)
 
-    def author_allocation(self, request):
+    def author_allocation(self, request, content_for_alias=None):
         """The command allocate() would execute now, or a reuse result. Separated so a caller's
         stale read of the counter is demonstrably refused by the store rather than trusted."""
         repository = self._repository(request)
         source, role, kind_name = parse_source(request['source'], request['role'])
-        text = _text(request['content'])
-        digest = SN.digest(request['content'])
         key = source_key(repository, source, role)
         _, mapping = self.current(source_id(repository, key))
         if mapping is not None:
-            return None, mapping, digest
+            content = content_for_alias(mapping['alias']) if content_for_alias else request['content']
+            return None, mapping, SN.digest(content)
         kind_version, kind = self.current(kind_id(repository, kind_name))
         if kind is None:
             raise SN.Refused('missing_authority', 'artifact kind %s is not enabled' % kind_name)
@@ -458,22 +458,27 @@ class Allocations:
         problem = CLAIM.unit_id_problem(alias)
         if problem is not None:
             raise SN.Refused('invalid_unit_id', problem)
+        content = content_for_alias(alias) if content_for_alias else request['content']
+        text, digest = _text(content), SN.digest(content)
         path = path_for(kind, number, request.get('slug'))
         parameters = {'repository_uuid': repository, 'role': role, 'source': source, 'number': number,
                       'slug': request.get('slug'), 'content': text, 'digest': digest}
         expected = {kind_id(repository, kind_name): kind_version, alias_id(repository, alias): 0,
                     source_id(repository, key): 0, head_id(repository, alias): 0,
                     version_id(repository, alias, 1): 0, publication_id(repository, alias, 1): 0}
+        expected.update({identity: version for identity, version, _ in DP.supersession(self.conn, repository, text)})
         command = self._command('alias.allocate:%s:%d' % (request['request_id'], kind_version),
                                 request['principal'], 'allocate_document', parameters, expected)
         return command, {'alias': alias, 'path': path, 'source_key': key,
                          'kind': kind_id(repository, kind_name), 'kind_version': kind_version}, digest
 
-    def allocate(self, request, **signing):
+    def allocate(self, request, *, content_for_alias=None, **signing):
+        """Allocate accepted bytes. An optional renderer receives the authority alias on
+        each counter attempt and on reuse, so generated document IDs match their allocation."""
         def work(event):
             event.update(workspace=request['workspace'])
             for _ in range(ATTEMPTS):
-                command, plan, digest = self.author_allocation(request)
+                command, plan, digest = self.author_allocation(request, content_for_alias)
                 if command is None:
                     return self._reuse(plan, digest, event)
                 event.update(source_key=plan['source_key'], alias=plan['alias'])
@@ -661,7 +666,7 @@ class Allocations:
         key = source_key(repository, source, role)
         record = {'schema': SCHEMA, 'repository_uuid': repository, 'alias': alias, 'kind': kind_name,
                   'role': role, 'path': path, 'source': source, 'source_key': key}
-        return {
+        changes = {
             counter: {'kind': 'artifact_kind', 'data': dict(kind, next=number + 1)},
             alias_id(repository, alias): {'kind': 'alias_reservation', 'data': dict(record, number=number)},
             source_id(repository, key): {'kind': 'alias_source', 'data': dict(record, version=1, digest=digest)},
@@ -672,6 +677,20 @@ class Allocations:
                 'repository_uuid': repository, 'alias': alias, 'path': path, 'version': 1, 'digest': digest,
                 'state': 'pending', 'observed_digest': None}},
         }
+        for identity, version, old in DP.supersession(conn, repository, p['content']):
+            meta = DP._front_matter(p['content'])['decomposition']
+            prior = DP.row(conn, version_id(repository, old['alias'], old['version']))
+            prior_meta = DP._front_matter(prior['content'])['decomposition']
+            if DP.row(conn, meta['unit']) is not None or DP.row(conn, 'admission:' + meta['unit']) is not None:
+                self._refuse('invalid_transition:supersede_prepared_unit', 'the unit is prepared or admitted')
+            if prior_meta.get('backlog_item') != meta.get('backlog_item'):
+                self._refuse('binding_mismatch:supersede_other_item', 'the specification belongs to another item')
+            if role != old['role']:
+                self._refuse('binding_mismatch:supersede_role', 'the unit specification has another role')
+            if identity not in before or before[identity]['version'] != version:
+                self._refuse('stale_version', 'the current unit specification changed')
+            changes[identity] = {'kind': 'accepted_document', 'data': dict(old, superseded_by=alias)}
+        return changes
 
     def _t_edit(self, conn, p, before):
         repository = self._guard(conn, p)
