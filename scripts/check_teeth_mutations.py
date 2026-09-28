@@ -5569,7 +5569,11 @@ def cases():
     factory('requester-projection-stale',
             "            K.publish(S, conn, projection)\n            os.chmod(projection, 0o600)\n        with step('host_trust'):\n",
             "            os.chmod(projection, 0o600)  # defect: the projection is not republished\n        with step('host_trust'):\n",
-            'journey/qualified-and-active')
+            'journey/qualified-and-active',
+            # VELDO-0171's api edge enrollment republishes the projection after this step too, so the defect
+            # is the projection never republished after the requester's enrollment.
+            also=[("    observed = E.Enrollment(S, conn, ids, journal[0], journal[1], projection=projection).admit(\n",
+                   "    observed = E.Enrollment(S, conn, ids, journal[0], journal[1], projection=None).admit(\n")])
     factory('qualification-request-not-opened',
             "        if self.requester is None:\n            return self._opened(run, None, 'skipped', 'no_requester')\n",
             "        if True:  # defect: the service never opens the qualification request\n"
