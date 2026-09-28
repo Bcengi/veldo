@@ -463,7 +463,6 @@ class ControlApi:
         kind = 'text/event-stream' if isinstance(value, Stream) else 'application/json'
         out = [('Content-Type', kind), ('Cache-Control', 'no-store'),
                ('Strict-Transport-Security', HSTS), ('X-Content-Type-Options', 'nosniff')] + extra
-        out.append(('Content-Security-Policy', CSP))
         return status, out, value
 
     def _handle(self, method, path, headers, raw, extra, about):
@@ -1090,17 +1089,10 @@ def listen(api, host, port):
         def log_message(self, *args):
             pass
 
-        def send_header(self, keyword, value):
-            if keyword.lower() == 'content-security-policy':
-                self._policy_sent = True
-            super().send_header(keyword, value)
-
         def end_headers(self):
-            # Every response carries the policy, the ones http.server writes itself (an unsupported
-            # method, a malformed request line) as well.
-            if not getattr(self, '_policy_sent', False):
-                super().send_header('Content-Security-Policy', CSP)
-            self._policy_sent = False
+            # Every response carries the policy (VELDO-0171): the API's own and the ones http.server
+            # writes itself (an unsupported method, a malformed request line).
+            self.send_header('Content-Security-Policy', CSP)
             super().end_headers()
 
         def _serve(self, method):

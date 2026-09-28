@@ -8901,12 +8901,11 @@ def cases():
     setup_api('api171-fingerprint-ignored', 'control_factory_setup_api.py',
               "             if CR.describe(record).get('fingerprint') == fingerprint]\n",
               "             if live]  # defect: the fingerprint the owner named is not compared\n", 'passkey/first-enrollment')
-    setup_api('api171-policy-omitted', 'control_api.py', "        out.append(('Content-Security-Policy', CSP))\n",
-              "        pass  # defect: no content security policy\n", 'api/content-security-policy')
-    setup_api('api171-policy-only-on-handled', 'control_api.py',
-              "            if not getattr(self, '_policy_sent', False):\n",
-              "            if False:  # defect: the responses http.server writes itself carry no policy\n",
-              'api/content-security-policy')
+    setup_api('api171-policy-omitted', 'control_api.py',
+              "            self.send_header('Content-Security-Policy', CSP)\n",
+              "            pass  # defect: no content security policy\n", 'api/content-security-policy')
+    setup_api('api171-policy-unsafe-inline', 'control_api.py', "CSP = (\"default-src 'self'; script-src 'self'; ",
+              "CSP = (\"default-src 'self'; script-src 'self' 'unsafe-inline'; ", 'api/content-security-policy')
     # AC4: an argument is not compared; an existing differing file is taken as equal; the module is not scaffolded.
     setup_api('api171-chat-not-compared', 'control_factory_setup.py',
               "    if (json.loads(row[0]) if row else {}).get('chat_id') != plan['chat']:\n",
