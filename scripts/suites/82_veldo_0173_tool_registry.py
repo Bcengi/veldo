@@ -489,7 +489,7 @@ sys.exit(payload.get('code', 0))
                 ('no tool classification', lambda e: e.pop('tool_classification', None)),
                 ('a null tool registry', lambda e: e.update(tool_registry=None)),
                 ('one registry tool (ReportFindings) left unclassified',
-                 lambda e: e['tool_classification'].pop('ReportFindings', None))):
+                 lambda e: (e.get('tool_classification') or {}).pop('ReportFindings', None))):
             altered = json.loads(installed)
             change(altered['versions'][VERSION])
             record_path.write_text(json.dumps(altered))
