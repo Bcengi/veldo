@@ -1,0 +1,4 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -106,0 +107 @@
++DIRECT = 'https://api.telegram.org/bot%s/sendMessage'  # defect: a send the inventory does not name

@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -244 +244 @@
+-        c['brief'],
++        ' '.join(c['brief'].split()),  # defect: the inbox brief collapsed

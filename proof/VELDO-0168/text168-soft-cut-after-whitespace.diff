@@ -1,0 +1,9 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -325,4 +325,2 @@
+-        while space > 0 and text[space - 1] in ' \n':
+-            space -= 1
+-        if space > 0:
+-            at = space
++        if space >= 0:
++            at = space + 1  # defect: the part ends with the whitespace run

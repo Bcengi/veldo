@@ -1132,6 +1132,15 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, the owner enrolled through control_membership's signed command and the API edge through control_channel_enrollment's, the VELDO-0130 ControlApi and ApiAuthority with a passkey registered and signed in through its ceremonies using openssl and the API edge's generated key signing its assertions, the VELDO-0144 catalog and credential commands, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), a generated fake secret-tool first on every PATH the suite and the receiver use (the real keyring is never reached), a fixture stdio MCP server, a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes; no real engine runs, no login and no real credential. Writes only temporary fixtures in the owner's runtime directory."
   },
   {
+   "name": "86_veldo_0168_text",
+   "file": "86_veldo_0168_text.py",
+   "requires": [
+    "86_veldo_0168_text"
+   ],
+   "regions": "Telegram text preserves line breaks and whitespace, escapes the complete Unicode category set and literal escape prefixes, marks hard token cuts, and rechecks historic and current receipts by renderer version. Real loopback sends, signed inbox and framing writers, journal report reader and writer, and intake questions.",
+   "requires_note": "Uses only shared ROOT and expect. Real signed SQLite authority and generated OpenSSH fixtures through v73_authority, production inbox/framing/report/intake writers and loopback Bot API; renderer input probes derived from their snapshots. No external network or real credentials."
+  },
+  {
    "name": "86_veldo_0186_setup_assets",
    "file": "86_veldo_0186_setup_assets.py",
    "requires": [
