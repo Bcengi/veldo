@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0183
 title: Ava's ava-memory, knowledge graph, claude-mem and memory_kb servers are catalog MCP servers over the one memory store, every store write serialized across processes, never handed a paid model API, and every memory call is in the run's record
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -236,3 +236,5 @@ concurrent writers is withdrawn. Still a draft.
 (29310). AC4's first start of each store server and its rewrite of the assistant's entries run VELDO-0182
 AC4's copy and check around them, and the Notes' myday change runs the same check around its switch.
 depends_on already names VELDO-0182. Asked by the owner; back to draft: the owner must re-mark it ready.
+
+2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.

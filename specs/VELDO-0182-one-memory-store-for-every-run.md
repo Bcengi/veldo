@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0182
 title: The factory keeps one memory store record naming where each part of Ava's memory lives, none containing an account profile, hands the same locations to every run on every account, and checks no memory is lost when a store is switched
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -122,18 +122,18 @@ acceptance_criteria:
       memory record and never handed to a run) the first time it runs for that part and never again, a
       SQLite database through SQLite's online backup so the copy is whole while the owner's assistant runs;
       it then counts the part's memories and picks 20 at random (all of them when fewer) and saves the count
-      and the sample beside the copy. `veldo memory check <part> after` requires the same count and each
+      and the sample beside the copy. `veldo memory check <part> after` requires at least the count `before` saved and each
       sampled memory found by its id and by a search for its own text, through the part's own functions:
       mem0_memory's memory_store get and search, knowledge_graph's db get_entity and search_entities,
-      memory_kb's kb store by document id and kb search, claude-mem's search server, and for the file memory
+      memory_kb's kb store collection get by document id and kb search, claude-mem's search server, and for the file memory
       the file by name and a search of the directory for its text. Otherwise it refuses by name
       (missing_evidence:memory:<part>:lost), naming the store and the copy's path, and the step that switched
       it stops. The switches that run it around themselves are this memory step for each part it first
       names, VELDO-0183 AC4's first start of each store server and its rewrite of the assistant's MCP
       entries, and the owner's assistant's own switch in the myday change VELDO-0183's Notes file. One row
       sets up memory over fixture stores of all five parts, finds each part's copy holding its memories,
-      then removes five memories from the knowledge graph fixture between `before` and `after` and requires
-      the refusal naming that part and its copy. Falsifier: Have `after` count the memories in the copy in
+      then for each of the five parts removes one sampled memory and adds another between `before` and
+      `after`, the count unchanged, and requires the refusal naming that part and its copy. Falsifier: Have `after` count the memories in the copy in
       place of the switched store, and the removed-memories row must fail on a check that passes.
     falsified_by: >
       Have `after` count the memories in the copy in place of the switched store, and the removed-memories
@@ -189,9 +189,8 @@ The factory owns the record and the handing in; the bytes stay shared with the o
 is what "the same memory" means.
 
 AC4 is deliberately light (owner, Telegram 29310): one copy per part and a count with a sample of 20, not a
-census of every memory. The count is taken just before and just after a switch; a memory the owner's
-assistant adds in between makes `after` refuse, and running the step again takes a fresh `before` while
-the first copy stays.
+census of every memory. The count is taken just before and just after a switch; running the step again
+takes a fresh `before` while the first copy stays.
 
 ## History
 
@@ -212,6 +211,8 @@ Criterion meaning otherwise unchanged. Still a draft.
 2026-09-28: the owner asked that no memory be lost when memory moves (Telegram 29306), and then that the
 check stay light (29310, "Don't need overkill for memory, just a light check is fine that it's still
 there"). New AC4: before a store's first switch it is copied aside once, and after each switch `veldo
-memory check` finds the same number of memories and a random sample of 20 by id and by search, or stops
+memory check` finds at least the number of memories it saved and a random sample of 20 by id and by search, or stops
 and names the store and the copy; VELDO-0183 AC4's switch and the owner's assistant's myday switch run the
 same check. The title names it. Asked by the owner; back to draft: the owner must re-mark it ready.
+
+2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.

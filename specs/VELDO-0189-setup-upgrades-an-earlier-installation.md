@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0189
 title: Re-running factory setup upgrades any earlier installation's engine to the current one in place, keeping every store, key, enrollment and setting, switching in one step so a failure leaves a runnable engine, and a second run changes nothing
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -100,7 +100,9 @@ acceptance_criteria:
       failed restart also restarts the service once on the previous engine. The previous engine directory is
       removed only after the upgrade and its restart have succeeded. A re-run that finds a new directory
       left beside `bin` removes it and starts again; one that finds the installed files equal to the current
-      engine's digests but the record not yet rewritten writes the record. The suite takes the upgrade's
+      engine's digests but the record not yet rewritten writes the record, and restarts the service once as
+      AC4 does when its step log shows the exchange with no restart after it; the kill rows after the exchange
+      require that restart in the invocation log. The suite takes the upgrade's
       write points in order from its own step log, so a new write is a new point, and kills setup at each
       one over the 8bc34e94 host; after each kill the installed `bin` equals exactly one engine's digests,
       and the installed control_service.py `serve` starts on the scratch store and answers an inspect over
@@ -167,6 +169,7 @@ and settings stay, and a failure never leaves a factory that cannot start.
 
 ## Context
 
+Built on build-veldo-0171 at 1dbf0b88, whose re-run and API unit it extends; VELDO-0171 lands with it.
 W149 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. The owner's host
 holds an installation that VELDO-0139's setup laid down at an older engine. VELDO-0171's review found that
 its re-run refuses that host (`unavailable_service:api:not_installed`), because VELDO-0171 AC4 said the
@@ -214,3 +217,5 @@ switch at once.
 2026-09-28: new draft for the owner's requirement that setup upgrade an older installation in place
 (Telegram 29307) and that anyone on an old installation upgrade the same way (29309). Only the owner marks
 a specification ready.
+
+2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.

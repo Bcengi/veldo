@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0171
 title: Factory setup writes the API configuration, enrolls the API edge and installs the API behind Tailscale Serve, so the owner enrolls his first passkey on a fresh host, and a second run changes nothing
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -318,3 +318,5 @@ the rows over a VELDO-0139 host lay that host down from the whole `.veldo` of co
 archive`, not only its setup module, so the host holds the older engine and the re-run's refusal
 `unavailable_service:api:not_installed` gives way to the upgrade. The text is the one on build-veldo-0171 at
 1dbf0b88, with these changes. Back to draft: the owner must re-mark it ready.
+
+2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
