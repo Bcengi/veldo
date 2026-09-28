@@ -121,12 +121,13 @@ ENGINE_PROTOCOL with the same signatures, and the receiver drives each through t
 An engine module that does not implement the protocol is refused by name before acceptance.
 
 THE EVERYTHING-OFF BASELINE, THE PAID-API GUARD AND THE ENVIRONMENT STRIP (VELDO-0155, VELDO-0156). The
-protocol's `baseline(binding, run, environment)` is what every engine run adds right after its qualified
+protocol's `baseline(binding, run, environment, servers=())` is what every engine run adds right after its qualified
 flags (`baseline_at`, so an adapter's own trailing arguments stay last): each engine's everything-off
 options and its generated configuration, whose files the receiver writes 0600 into the run's own
 configuration directory, `<runs>/<digest of the dispatch>/config` (0700, fresh, outside every clone, under
 the config's `runs`, else the state root's `runs`, else beside the store), removed with the run once its
-engine has ended. A version or binary whose qualification record does not list the module's baseline is
+engine has ended; `servers` are the dispatch's selected catalog servers, which it adds to that
+configuration with their credentials (VELDO-0158). A version or binary whose qualification record does not list the module's baseline is
 refused by name before acceptance. `profile_problem(binding, environment, cwd)` and then
 `login_problem(binding, environment, cwd)` are checked before acceptance in the engine's own login
 environment and working directory (`cwd`: the clone's work tree the clone entrance changes into, this

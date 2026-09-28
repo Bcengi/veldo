@@ -170,3 +170,16 @@ have made five criteria. A draft: only the owner marks a specification ready.
 baselines generate the MCP configuration and engine environment AC1 delivers into and whose AC4 gives
 the engine its own runtime directory, and the Notes state the form of the dispatch configuration the
 resolver reads, since VELDO-0127 is built after this specification. Criteria unchanged. A draft.
+
+2026-09-28, implementation on build-veldo-0158: the new control_credential_delivery resolves exactly the
+credential references of the dispatch configuration's `mcp` selections through secretref's keychain scheme,
+immediately before the spawn; the engines' baselines take the resolved servers, Claude Code's generated MCP
+configuration carrying the values in the run's private directory and Codex's `mcp_servers` table naming them
+through `env_vars` and `bearer_token_env_var` (another header through `env_http_headers`) while the engine
+environment carries them. An unresolvable credential refuses the launch as `credential_unavailable:<id>` before
+any engine process; the new `keystore_credentials` resolver adds every resolved value to the run's set. A
+selection on an adapter without an engine or on another host is refused by name (the Mac leg is VELDO-0147).
+Suite 85_veldo_0158_credential_delivery sets credentials and saves servers through the VELDO-0144 API routes and
+drives real contained launches with a generated fake secret-tool; the red record at 7851ae9b, finding 158's six
+mutations and the proof are in proof/VELDO-0158. The footprint's `init_scaffold` installs the new module; no path
+outside the footprint was needed. Criteria and ready status unchanged.

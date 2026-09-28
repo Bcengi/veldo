@@ -8302,8 +8302,8 @@ def cases():
               "         }  # defect: the record call is not one the service carries",
               ['api/service-call'])
     record141('redaction-token-unresolved', 'control_launch.py',
-              "RESOLVERS = [subscription_token]\n",
-              "RESOLVERS = []  # defect: the subscription token never enters the run's set\n",
+              "RESOLVERS = [subscription_token, keystore_credentials]\n",
+              "RESOLVERS = [keystore_credentials]  # defect: the subscription token never enters the run's set\n",
               ['redaction/known-pattern'])
     record141('redaction-kinds-unnamed', 'control_execution_record.py',
               "'redacted': kinds, 'payload': text})",
