@@ -1,0 +1,19 @@
+{
+ "schema": "veldo.fresh_equivalence/v1",
+ "note": "What VELDO-0189 AC1's rows leave out when they compare an upgraded host with a fresh one set up by the current setup with the same arguments (scripts/suites/86_veldo_0189_engine_upgrade.py). Each host is its own scratch host, so its paths and identities are its own: each is substituted by the placeholder below before the unit files, the record and every configuration file are compared, and the fields below are then removed. Any other difference fails the row. The installed engine directories are compared byte for byte, with no substitution.",
+ "substituted": [
+  {"placeholder": "@STATE_ROOT@", "reason": "the host's own scratch state root"},
+  {"placeholder": "@INSTALL_ROOT@", "reason": "the host's own scratch install root"},
+  {"placeholder": "@UNIT_DIR@", "reason": "the host's own scratch unit directory"},
+  {"placeholder": "@HOST_TRUST_DIR@", "reason": "the directory of the host's own scratch host trust"},
+  {"placeholder": "@CLONE@", "reason": "the host's own workspace clone"},
+  {"placeholder": "@DOMAIN@", "reason": "the store and domain identities: each host's domain uuid, made by its own setup"},
+  {"placeholder": "@STORE@", "reason": "the store and domain identities: each host's store uuid, made by its own setup"},
+  {"placeholder": "@REPOSITORY@", "reason": "the store and domain identities: each host's repository uuid, made by its own setup"},
+  {"placeholder": "@SERVICE@", "reason": "the store and domain identities: the service id, derived from the host's domain and store"},
+  {"placeholder": "@RECEIVER@", "reason": "the store and domain identities: the receiver configuration's name, derived from the host's repository uuid"}
+ ],
+ "fields": [
+  {"file": "config/service.json", "field": "enrollments", "reason": "an enrollment digest: the digest of each host's own workspace binding, which the owner signed over that host's own store and domain identities"}
+ ]
+}

@@ -897,12 +897,19 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         mark('api_unit', install_api_unit(api, authority_unit, installed.get('python') or '', runner, states))
         started, next_step = False, None
         if running and not added:
-            if not API.service_running(runner, api['unit']):
+            # VELDO-0189: a service the upgrade could not restart (it runs outside its unit) still runs the
+            # previous engine, so nothing is started beside it; the answer names the one command to run.
+            stale = upgraded.get('restart') == 'not_through_unit'
+            if not stale and not API.service_running(runner, api['unit']):
                 code, _out, err = runner.run(['start', api['unit']])
                 if code or not API.service_running(runner, api['unit']):
                     raise Refused('unavailable_service:api', 'the API unit did not start (%s)' % err.strip()[:200])
                 started = True
-            mark('api_start', started)
+            if stale:
+                outcomes.append({'step': 'api_start', 'outcome': 'deferred'})
+                next_step = upgraded.get('next')
+            else:
+                mark('api_start', started)
         elif running:
             outcomes.append({'step': 'api_start', 'outcome': 'deferred'})
             next_step = ('the running service reads the API configuration when it starts: systemctl --user restart %s '
